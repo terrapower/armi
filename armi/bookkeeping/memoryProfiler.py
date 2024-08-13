@@ -434,6 +434,6 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                     "Average System RAM Usage",
                     "Processor Memory Usage (MB)",
                 ],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )

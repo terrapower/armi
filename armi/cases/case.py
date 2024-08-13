@@ -605,7 +605,7 @@ class Case:
                     tabulate.tabulate(
                         queryData,
                         headers=["Number", "Statement", "Question"],
-                        tablefmt="armi",
+                        tableFmt="armi",
                     )
                 )
             if context.CURRENT_MODE == context.Mode.INTERACTIVE:

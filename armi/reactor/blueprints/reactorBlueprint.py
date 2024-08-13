@@ -272,13 +272,13 @@ def summarizeMaterialData(container):
     materialData = sorted(materialData)
     runLog.info(
         tabulate.tabulate(
-            tabular_data=materialData,
+            data=materialData,
             headers=[
                 "Material Name",
                 "Source Location",
                 "Property Data was Modified\nfrom the Source?",
             ],
-            tablefmt="armi",
+            tableFmt="armi",
         )
     )
     return materialData

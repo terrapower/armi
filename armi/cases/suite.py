@@ -146,7 +146,7 @@ class CaseSuite:
                     for c in self
                 ],
                 headers=["Title", "Enabled", "Dependencies"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
@@ -301,7 +301,7 @@ class CaseSuite:
                 tabulate.tabulate(
                     [["Integration test directory: {}".format(os.getcwd())]],
                     ["SUMMARIZED INTEGRATION TEST DIFFERENCES:"],
-                    tablefmt=fmt,
+                    tableFmt=fmt,
                 )
             )
         )
@@ -313,10 +313,10 @@ class CaseSuite:
             data.append((testName, userFile, refFile, caseIssues))
             totalDiffs += caseIssues
 
-        print(tabulate.tabulate(data, header, tablefmt=fmt))
+        print(tabulate.tabulate(data, header, tableFmt=fmt))
         print(
             tabulate.tabulate(
-                [["Total number of differences: {}".format(totalDiffs)]], tablefmt=fmt
+                [["Total number of differences: {}".format(totalDiffs)]], tableFmt=fmt
             )
         )
 

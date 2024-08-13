@@ -498,7 +498,7 @@ class Core(composites.Composite):
                     ("Fissile Mass (kg)", fissileMass),
                     ("Heavy Metal Mass (kg)", heavyMetalMass),
                 ],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
@@ -1512,7 +1512,7 @@ class Core(composites.Composite):
                     ),
                 ],
                 headers=["Nuclide Category", "Nuclides"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 

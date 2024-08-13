@@ -268,9 +268,9 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
     else:
         runLog.extra(
             tabulate.tabulate(
-                tabular_data=reportTableData,
+                ddata=reportTableData,
                 headers=["Component", "Value"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 

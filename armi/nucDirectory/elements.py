@@ -122,9 +122,9 @@ Retrieve elements that are classified as actinides:
             ]
 
         sortedElements = sorted(elements.byZ.values())
-        return createTable(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
+        return createTable(tabulate(data=[getAttributes(elem) for elem in sortedElements],
                                     headers=attributes,
-                                    tablefmt='rst'),
+                                    tableFmt='rst'),
                            caption='List of elements',
                            label='nuclide-bases-table')
 """

@@ -479,7 +479,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                             ),
                         ]
                     ],
-                    tablefmt="plain",
+                    tableFmt="plain",
                 ),
                 single=True,
             )

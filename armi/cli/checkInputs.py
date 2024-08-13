@@ -118,7 +118,7 @@ class CheckInputEntryPoint(EntryPoint):
             tabulate.tabulate(
                 table,
                 headers=["case", "can start", "input is self consistent"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 

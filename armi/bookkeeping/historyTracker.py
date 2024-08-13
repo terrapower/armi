@@ -293,10 +293,10 @@ class HistoryTrackerInterface(interfaces.Interface):
             headers = [str(ts).replace(" ", "") for ts in times.keys()]
             out.write(
                 tabulate.tabulate(
+                    data=(times.values(),),
                     headers=headers,
-                    tabular_data=(times.values(),),
-                    tablefmt="plain",
-                    floatfmt="11.5E",
+                    tableFmt="plain",
+                    floatFmt="11.5E",
                 )
             )
             out.write("\n")
@@ -315,7 +315,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 out.write("\n\nkey: {0}\n".format(param))
 
                 data = [blockHistories[b][param].values() for b in blocks]
-                out.write(tabulate.tabulate(data, tablefmt="plain", floatfmt="11.5E"))
+                out.write(tabulate.tabulate(data, tableFmt="plain", floatFmt="11.5E"))
                 out.write("\n")
 
             # loc is a tuple, remove the spaces from the string representation so it is easy to load
@@ -325,14 +325,14 @@ class HistoryTrackerInterface(interfaces.Interface):
                 for loc in dbi.getHistory(a, ["location"])["location"].values()
             ]
             out.write("\n\nkey: location\n")
-            out.write(tabulate.tabulate((location,), tablefmt="plain"))
+            out.write(tabulate.tabulate((location,), tableFmt="plain"))
             out.write("\n\n\n")
 
             headers = "EOL bottom top center".split()
             data = [("", b.p.zbottom, b.p.ztop, b.p.z) for b in blocks]
             out.write(
                 tabulate.tabulate(
-                    data, headers=headers, tablefmt="plain", floatfmt="10.3f"
+                    data, headers=headers, tableFmt="plain", floatFmt="10.3f"
                 )
             )
 

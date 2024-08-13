@@ -42,7 +42,7 @@ def writeInitialVolumeFractions(b):
     """Write out the initial temperatures and component volume fractions."""
     headers = ["Component", "Temperature, °C", "Volume Fraction"]
     data = [(c, c.temperatureInC, volFrac) for c, volFrac in b.getVolumeFractions()]
-    print(tabulate.tabulate(tabular_data=data, headers=headers) + "\n")
+    print(tabulate.tabulate(data=data, headers=headers) + "\n")
 
 
 def plotVolFracsWithComponentTemps(b, uniformTemps):
