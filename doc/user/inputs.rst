@@ -76,8 +76,8 @@ Many settings are provided by the ARMI Framework, and others are defined by vari
 The ARMI GUI
 ------------
 The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the
-settings).  The GUI also enables the graphical manipulation of a reactor core map, and convenient
-automation of commands required to submit to a cluster.  The GUI is a front-end to these files. You
+settings). The GUI also enables the graphical manipulation of a reactor core map, and convenient
+automation of commands required to submit to a cluster. The GUI is a front-end to these files. You
 can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs
 them.
 
@@ -593,7 +593,7 @@ od
 Component Types
 ^^^^^^^^^^^^^^^
 Each component has a variety of dimensions to define the shape and composition. All dimensions are
-in cm.  The following is a list of included component shapes and their dimension inputs. Again,
+in cm. The following is a list of included component shapes and their dimension inputs. Again,
 additional/custom components with arbitrary dimensions may be provided by the user via plugins.
 
 .. exec::
@@ -740,7 +740,7 @@ Once components and blocks are defined, Assemblies can be created as extruded st
 bottom to top. The assemblies use YAML anchors to refer to the blocks defined in the previous section.
 
 .. note:: We aren't happy with the use of anchors to refer to blocks, and plan to change it (back) to just using the
-   block names directly.  However, the use of anchors for input to be applied to multiple assemblies (e.g. heights) is
+   block names directly. However, the use of anchors for input to be applied to multiple assemblies (e.g. heights) is
    quite nice.
 
 A complete definition of an inner-core assembly may be seen below::
@@ -779,24 +779,25 @@ specifier
    hex dragger.
 
 xs types
-  The **cross-section type** is a single capital letter that identifies which cross section (XS) set
-  will be applied to this block. Each cross section set must be defined for at least one block with
-  fissile fuel. When the lattice physics code executes in ARMI, it determines the representative
-  blocks from each cross section type and burnup group and runs it to create the cross section set
-  for all blocks of the same type and in the same burnup group. Generally, it is best to set blocks
-  that have much different compositions to have separate cross section types. The tradeoff is that
-  the more XS types you define, the more CPU time the case will take to run.
+  The **cross-section type** is usually a single capital letter that identifies which cross section
+  (XS) set will be applied to the block. Each cross section set must be defined for at least one
+  block with fissile fuel. When the lattice physics code executes in ARMI, it determines the
+  representative blocks from each cross section type and burnup group and runs it to create the
+  cross section set for all blocks of the same type and in the same burnup group. Generally, it is
+  best to set blocks that have much different compositions to have separate cross section types. The
+  tradeoff is that the more XS types you define, the more CPU time the case will take to run.
+
+  Representing xsType by a single letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
+  will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
 axial mesh points
-  Blocks will be broken up into this many uniform mesh points in the
-  deterministic neutronics solvers (e.g. DIF3D). This allows you to define
-  large blocks that have multiple flux points within them. You have to keep the
-  neutronic mesh somewhat uniform in order to maintain numerical stability of
-  the solvers. It is important to note that the axial mesh must be uniform
-  throughout the core for many physics kernels, so be sure all block interfaces
-  are consistent among all assemblies in the core. Blocks deplete and get most
-  state variables on the block mesh defined by the height specification.
-  Provisions for multiple meshes for different physics are being planned.
+  Blocks will be broken up into this many uniform mesh points in the deterministic neutronics
+  solvers (e.g. DIF3D). This allows you to define large blocks that have multiple flux points within
+  them. You have to keep the neutronic mesh somewhat uniform in order to maintain numerical
+  stability of the solvers. It is important to note that the axial mesh must be uniform throughout
+  the core for many physics kernels, so be sure all block interfaces are consistent among all
+  assemblies in the core. Blocks deplete and get most state variables on the block mesh defined by
+  the height specification. Provisions for multiple meshes for different physics are being planned.
 
 hotChannelFactors
   A label to define which set of hot channel factors (HCFs) get applied to
@@ -811,7 +812,7 @@ material modifications
   These are a variety of modifications that are made to the
   materials in blocks in these locations. It may include the fuel enrichment (mass frac.), poison
   enrichment (mass frac.), zirconium mass frac, and any additional options required to fully define
-  the material loaded in the component.  The material definitions in the material library define
+  the material loaded in the component. The material definitions in the material library define
   valid modifications for them.
 
   .. exec::
@@ -1315,8 +1316,8 @@ Nuclide Flags
 The ``nuclide flags`` setting allows the user to choose which nuclides they
 would like to consider in the problem, and whether or not each nuclide should
 transmute and decay. For example, sometimes you may not want to deplete trace
-elements in structural materials, but in other analysis you might.  If the
-nuclide should deplete, it must have ``burn: true``.  If it is to be included
+elements in structural materials, but in other analysis you might. If the
+nuclide should deplete, it must have ``burn: true``. If it is to be included
 in the problem at all, it must be have ``xs: true`` All nuclides that will be
 produced via transmutation/decay  must also have ``burn: true``, so if you add
 Thorium, make sure to add all other actinides in its chain. You can use the
@@ -1358,7 +1359,7 @@ deplete.::
         U238: {burn: true, xs: true}
 
 The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in
-``nuclide flags``.  A failure can also occur if the burn chain is missing a nuclide.
+``nuclide flags``. A failure can also occur if the burn chain is missing a nuclide.
 
 .. tip::
     We plan to upgrade the default behavior of this to inherit from all defined materials
