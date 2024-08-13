@@ -285,7 +285,6 @@ _ansiEscapePat = rf"""
 """
 _ansiCodes = re.compile(_ansiEscapePat, re.VERBOSE)
 _ansiCodesBytes = re.compile(_ansiEscapePat.encode("utf8"), re.VERBOSE)
-
 _floatWithThousandsSeparators = re.compile(
     r"^(([+-]?[0-9]{1,3})(?:,([0-9]{3}))*)?(?(1)\.[0-9]*|\.[0-9]+)?$"
 )
@@ -805,7 +804,7 @@ def _bool(val):
         return False
 
 
-def _normalizeTabularData(tabularData, headers, showIndex="default"):
+def _normalizeTabularData(data, headers, showIndex="default"):
     """Transform a supported data type to a list of lists & a list of headers, with header padding.
 
     Supported tabular data types:
@@ -833,29 +832,29 @@ def _normalizeTabularData(tabularData, headers, showIndex="default"):
         headers = list(headers)
 
     index = None
-    if type(tabularData) is dict:
+    if type(data) is dict:
         # dict-like
-        keys = tabularData.keys()
+        keys = data.keys()
         # columns have to be transposed
-        rows = list(zip_longest(*tabularData.values()))
+        rows = list(zip_longest(*data.values()))
 
         if headers == "keys":
             # headers should be strings
             headers = list(map(str, keys))
     else:
         # it's a usual iterable of iterables, or a NumPy array, or an iterable of dataclasses
-        rows = list(tabularData)
+        rows = list(data)
 
         if headers == "keys" and not rows:
             # an empty table
             headers = []
         elif (
             headers == "keys"
-            and hasattr(tabularData, "dtype")
-            and getattr(tabularData.dtype, "names")
+            and hasattr(data, "dtype")
+            and getattr(data.dtype, "names")
         ):
             # numpy record array
-            headers = tabularData.dtype.names
+            headers = data.dtype.names
         elif (
             headers == "keys"
             and len(rows) > 0
@@ -1007,7 +1006,7 @@ def _toStr(s, encoding="utf8", errors="ignore"):
 
 
 def tabulate(
-    tabular_data,
+    data,
     headers=(),
     tablefmt="simple",
     floatfmt=_DEFAULT_FLOATFMT,
@@ -1034,7 +1033,7 @@ def tabulate(
       2  10001
     ---  ---------
 
-    The first required argument (`tabular_data`) can be a list-of-lists (or another iterable of
+    The first required argument (`data`) can be a list-of-lists (or another iterable of
     iterables), a list of named tuples, a dictionary of iterables, an iterable of dictionaries, an
     iterable of dataclasses (Python 3.7+), a two-dimensional NumPy array, or NumPy record array.
 
@@ -1079,7 +1078,7 @@ def tabulate(
         values are: "global" (no override), "same" (follow column alignment), "right", "center",
         "left".
 
-    Note on intended behaviour: If there is no `tabular_data`, any column alignment argument is
+    Note on intended behaviour: If there is no `data`, any column alignment argument is
         ignored. Hence, in this case, header alignment cannot be inferred from column alignment.
 
     Table formats
@@ -1206,11 +1205,11 @@ def tabulate(
 
     Header column width can be specified in a similar way using `maxheadercolwidth`.
     """
-    if tabular_data is None:
-        tabular_data = []
+    if data is None:
+        data = []
 
     listOfLists, headers, headersPad = _normalizeTabularData(
-        tabular_data, headers, showIndex=showIndex
+        data, headers, showIndex=showIndex
     )
     listOfLists, separatingLines = _removeSeparatingLines(listOfLists)
 
