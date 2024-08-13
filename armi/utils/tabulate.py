@@ -41,7 +41,7 @@ PRESERVE_WHITESPACE = False
 
 _DEFAULT_FLOATFMT = "g"
 _DEFAULT_INTFMT = ""
-_DEFAULT_missingVal = ""
+_DEFAULT_MISSING_VAL = ""
 # default align will be overwritten by "left", "center" or "decimal" depending on the formatter
 _DEFAULT_ALIGN = "default"
 
@@ -1014,7 +1014,7 @@ def tabulate(
     intfmt=_DEFAULT_INTFMT,
     numAlign=_DEFAULT_ALIGN,
     strAlign=_DEFAULT_ALIGN,
-    missingVal=_DEFAULT_missingVal,
+    missingVal=_DEFAULT_MISSING_VAL,
     showIndex="default",
     disableNumParse=False,
     colGlobalAlign=None,
@@ -1312,7 +1312,7 @@ def tabulate(
     else:
         missingVals = list(missingVal)
         if len(missingVals) < len(cols):
-            missingVals.extend((len(cols) - len(missingVals)) * [_DEFAULT_missingVal])
+            missingVals.extend((len(cols) - len(missingVals)) * [_DEFAULT_MISSING_VAL])
     cols = [
         [_format(v, ct, flFmt, intFmt, missV, hasInvisible) for v in c]
         for c, ct, flFmt, intFmt, missV in zip(
