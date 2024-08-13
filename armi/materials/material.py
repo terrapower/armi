@@ -152,7 +152,7 @@ class Material:
         """Return empty list, representing that materials have no children."""
         return []
 
-    def getGrandparent(self):
+    def getAssociatedBlock(self):
         """Return the grandparent (typically block) associated with this material"""
         # would be nice to use composite.getAncestor, but material is not a composite
         component = self.parent
@@ -868,7 +868,7 @@ class FuelMaterial(Material):
     def puFrac(self):
         """Get the Pu Frac."""
         # ideally the parameters would be stored on component, not Block (parent, not grandparent)
-        myBlock = self.getGrandparent()
+        myBlock = self.getAssociatedBlock()
         if myBlock is not None:
             return myBlock.p.puFrac
         runLog.warning(
@@ -876,7 +876,7 @@ class FuelMaterial(Material):
             "Storing properties on the material objected will be deprecated in the near future.",
             single=true,
         )
-        return self_puFrac
+        return self._puFrac
 
     @puFrac.setter
     def puFrac(self, puFrac):
