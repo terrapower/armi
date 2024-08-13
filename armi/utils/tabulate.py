@@ -696,7 +696,7 @@ def _columnType(strings, hasInvisible=True, numparse=True):
     return reduce(_moreGeneric, types, bool)
 
 
-def _format(val, valtype, floatFmt, intfmt, missingVal="", hasInvisible=True):
+def _format(val, valtype, floatFmt, intFmt, missingVal="", hasInvisible=True):
     r"""Format a value according to its type.
 
     Unicode is supported:
@@ -714,7 +714,7 @@ def _format(val, valtype, floatFmt, intfmt, missingVal="", hasInvisible=True):
     if valtype is str:
         return f"{val}"
     elif valtype is int:
-        return format(val, intfmt)
+        return format(val, intFmt)
     elif valtype is bytes:
         try:
             return str(val, "ascii")
@@ -1010,7 +1010,7 @@ def tabulate(
     headers=(),
     tableFmt="simple",
     floatFmt=_DEFAULT_floatFmt,
-    intfmt=_DEFAULT_INTFMT,
+    intFmt=_DEFAULT_INTFMT,
     numAlign=_DEFAULT_ALIGN,
     strAlign=_DEFAULT_ALIGN,
     missingVal=_DEFAULT_MISSING_VAL,
@@ -1083,7 +1083,7 @@ def tabulate(
 
     Table formats
     -------------
-    `intfmt` is a format specification used for columns which contain numeric data without a decimal
+    `intFmt` is a format specification used for columns which contain numeric data without a decimal
     point. This can also be a list or tuple of format strings, one per column.
 
     `floatFmt` is a format specification used for columns which contain numeric data with a decimal
@@ -1299,11 +1299,11 @@ def tabulate(
         floatFormats = list(floatFmt)
         if len(floatFormats) < len(cols):
             floatFormats.extend((len(cols) - len(floatFormats)) * [_DEFAULT_floatFmt])
-    if isinstance(intfmt, str):
+    if isinstance(intFmt, str):
         # old version: just duplicate the string to use in each column
-        intFormats = len(cols) * [intfmt]
-    else:  # if intfmt is list, tuple etc we have one per column
-        intFormats = list(intfmt)
+        intFormats = len(cols) * [intFmt]
+    else:  # if intFmt is list, tuple etc we have one per column
+        intFormats = list(intFmt)
         if len(intFormats) < len(cols):
             intFormats.extend((len(cols) - len(intFormats)) * [_DEFAULT_INTFMT])
     if isinstance(missingVal, str):

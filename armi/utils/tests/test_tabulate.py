@@ -1415,9 +1415,9 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate([], tableFmt="simple")
         self.assertEqual(expected, result)
 
-    def test_intfmt(self):
+    def test_intFmt(self):
         """Output: integer format."""
-        result = tabulate([[10000], [10]], intfmt=",", tableFmt="plain")
+        result = tabulate([[10000], [10]], intFmt=",", tableFmt="plain")
         expected = "10,000\n    10"
         self.assertEqual(expected, result)
 
