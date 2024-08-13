@@ -787,9 +787,8 @@ xs types
   best to set blocks that have much different compositions to have separate cross section types. The
   tradeoff is that the more XS types you define, the more CPU time the case will take to run.
 
-  Representing xsType by a single letter limits users to 26 groups. So ARMI will allow 2-letter
-  xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups
-  are defined). This is useful for high-fidelity XS modeling.
+  Representing xsType by a single letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
+  will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
 axial mesh points
   Blocks will be broken up into this many uniform mesh points in the deterministic neutronics
