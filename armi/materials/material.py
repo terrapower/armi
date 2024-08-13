@@ -151,6 +151,12 @@ class Material:
         """Return empty list, representing that materials have no children."""
         return []
 
+    def getGrandparent(self):
+        """Return the grandparent (typically block) associated with this material"""
+        # would be nice to use composite.getAncestor, but material is not a composite
+        component = self.parent
+        return None if component is None else component.parent
+
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Return empty list, representing that this object has no children."""
         return []
@@ -845,9 +851,36 @@ class FuelMaterial(Material):
     class1_wt_frac = None
     class1_custom_isotopics = None
     class2_custom_isotopics = None
-    puFrac = 0.0
-    uFrac = 0.0
-    zrFrac = 0.0
+    puFracDefault = 0.0
+    uFracDefault = 0.0
+    zrFracDefault = 0.0
+
+    def __init__(self):
+        self._puFrac = 0
+        Material._init_()
+
+    @property
+    def puFrac(self):
+        """Get the Pu Frac."""
+        # ideally the parameters would be stored on component, not Block (parent, not grandparent)
+        myBlock = self.getGrandparent()
+        if myBlock is not None:
+            return myBlock.p.puFrac
+        runLog.warning(
+            "{self} has no block attached, deferring to internally stored Pu Frac. "
+            "Storing properties on the material objected will be deprecated in the near future.",
+            single=true,
+        )
+        return self_puFrac
+
+    @puFrac.setter
+    def x(self, puFrac):
+        runLog.warning(
+            "Materials should not store state, so this component will look at its (grand)parent for Pu fraction unless it us detached. "
+            "Storing properties on the material objected will be deprecated in the near future.",
+            single=true,
+        )
+        self._puFrac = puFrac
 
     def applyInputParams(
         self,
