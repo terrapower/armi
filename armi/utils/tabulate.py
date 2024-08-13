@@ -225,7 +225,7 @@ tabulate_formats = list(sorted(_table_formats.keys()))
 # The table formats for which multiline cells will be folded into subsequent table rows. The key is
 # the original format specified at the API. The value is the format that will be used to represent
 # the original format.
-multiline_formats = {
+multilineFormats = {
     "armi": "armi",
     "plain": "plain",
     "simple": "simple",
@@ -1280,10 +1280,10 @@ def tabulate(
 
     if (
         not isinstance(tablefmt, TableFormat)
-        and tablefmt in multiline_formats
+        and tablefmt in multilineFormats
         and _isMultiline(plainText)
     ):
-        tablefmt = multiline_formats.get(tablefmt, tablefmt)
+        tablefmt = multilineFormats.get(tablefmt, tablefmt)
         isMultiline = True
     else:
         isMultiline = False
