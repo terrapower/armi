@@ -947,8 +947,8 @@ def _wrapTextToColWidths(listOfLists, colwidths, numparses=True):
         numCols = len(listOfLists[0])
     else:
         numCols = 0
-    numparses = _expandIterable(numparses, numCols, True)
 
+    numparses = _expandIterable(numparses, numCols, True)
     result = []
 
     for row in listOfLists:
