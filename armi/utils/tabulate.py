@@ -1008,7 +1008,7 @@ def _toStr(s, encoding="utf8", errors="ignore"):
 def tabulate(
     data,
     headers=(),
-    tablefmt="simple",
+    tableFmt="simple",
     floatfmt=_DEFAULT_FLOATFMT,
     intfmt=_DEFAULT_INTFMT,
     numAlign=_DEFAULT_ALIGN,
@@ -1101,7 +1101,7 @@ def tabulate(
     other   ?  2.7
     -----  --  ----
 
-    Various plain-text table formats (`tablefmt`) are supported: 'plain', 'simple', 'grid',
+    Various plain-text table formats (`tableFmt`) are supported: 'plain', 'simple', 'grid',
     'orgtbl', 'rst', and `tsv`. Variable `tabulateFormats` contains the list of currently supported
     formats.
 
@@ -1114,7 +1114,7 @@ def tabulate(
     spam         41.9999
     eggs        451
 
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tablefmt="plain"))
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="plain"))
     spam   41.9999
     eggs  451
 
@@ -1127,7 +1127,7 @@ def tabulate(
     spam         41.9999
     eggs        451
 
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tablefmt="simple"))
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="simple"))
     ----  --------
     spam   41.9999
     eggs  451
@@ -1145,7 +1145,7 @@ def tabulate(
     | eggs      |  451      |
     +-----------+-----------+
 
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tablefmt="grid"))
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="grid"))
     +------+----------+
     | spam |  41.9999 |
     +------+----------+
@@ -1164,7 +1164,7 @@ def tabulate(
     eggs        451
     =========  =========
 
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tablefmt="rst"))
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="rst"))
     ====  ========
     spam   41.9999
     eggs  451
@@ -1193,7 +1193,7 @@ def tabulate(
             'This is a rather long description that might look better if it is wrapped a bit')], \
           headers=("Issue Id", "Author", "Description"), \
           maxColWidths=[None, None, 30], \
-          tablefmt="grid"  \
+          tableFmt="grid"  \
         ))
     +------------+------------+-------------------------------+
     |   Issue Id | Author     | Description                   |
@@ -1244,14 +1244,14 @@ def tabulate(
 
     # empty values in the first column of RST tables should be escaped
     # "" should be escaped as "\\ " or ".."
-    if tablefmt == "rst":
+    if tableFmt == "rst":
         listOfLists, headers = _rstEscapeFirstColumn(listOfLists, headers)
 
     # PrettyTable formatting does not use any extra padding. Numbers are not parsed and are treated
     # the same as strings for alignment. Check if pretty is the format being used and override the
     # defaults so it does not impact other formats.
     minPadding = MIN_PADDING
-    if tablefmt == "pretty":
+    if tableFmt == "pretty":
         minPadding = 0
         disableNumParse = True
         numAlign = "center" if numAlign == _DEFAULT_ALIGN else numAlign
@@ -1278,11 +1278,11 @@ def tabulate(
     hasInvisible = _ansiCodes.search(plainText) is not None
 
     if (
-        not isinstance(tablefmt, TableFormat)
-        and tablefmt in multilineFormats
+        not isinstance(tableFmt, TableFormat)
+        and tableFmt in multilineFormats
         and _isMultiline(plainText)
     ):
-        tablefmt = multilineFormats.get(tablefmt, tablefmt)
+        tableFmt = multilineFormats.get(tableFmt, tableFmt)
         isMultiline = True
     else:
         isMultiline = False
@@ -1385,15 +1385,15 @@ def tabulate(
         minwidths = [max(widthFn(cl) for cl in c) for c in cols]
         rows = list(zip(*cols))
 
-    if not isinstance(tablefmt, TableFormat):
-        tablefmt = _tableFormats.get(tablefmt, _tableFormats["simple"])
+    if not isinstance(tableFmt, TableFormat):
+        tableFmt = _tableFormats.get(tableFmt, _tableFormats["simple"])
 
     raDefault = rowAlign if isinstance(rowAlign, str) else None
     rowAligns = _expandIterable(rowAlign, len(rows), raDefault)
     _reinsertSeparatingLines(rows, separatingLines)
 
     return _formatTable(
-        tablefmt,
+        tableFmt,
         headers,
         alignsHeaders,
         rows,
