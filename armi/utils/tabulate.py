@@ -39,7 +39,7 @@ MIN_PADDING = 2
 # Whether or not to preserve leading/trailing whitespace in data.
 PRESERVE_WHITESPACE = False
 
-_DEFAULT_FLOATFMT = "g"
+_DEFAULT_floatFmt = "g"
 _DEFAULT_INTFMT = ""
 _DEFAULT_MISSING_VAL = ""
 # default align will be overwritten by "left", "center" or "decimal" depending on the formatter
@@ -696,7 +696,7 @@ def _columnType(strings, hasInvisible=True, numparse=True):
     return reduce(_moreGeneric, types, bool)
 
 
-def _format(val, valtype, floatfmt, intfmt, missingVal="", hasInvisible=True):
+def _format(val, valtype, floatFmt, intfmt, missingVal="", hasInvisible=True):
     r"""Format a value according to its type.
 
     Unicode is supported:
@@ -724,10 +724,10 @@ def _format(val, valtype, floatfmt, intfmt, missingVal="", hasInvisible=True):
         isAColoredNumber = hasInvisible and isinstance(val, (str, bytes))
         if isAColoredNumber:
             rawVal = _stripAnsi(val)
-            formattedVal = format(float(rawVal), floatfmt)
+            formattedVal = format(float(rawVal), floatFmt)
             return val.replace(rawVal, formattedVal)
         else:
-            return format(float(val), floatfmt)
+            return format(float(val), floatFmt)
     else:
         return f"{val}"
 
@@ -1009,7 +1009,7 @@ def tabulate(
     data,
     headers=(),
     tableFmt="simple",
-    floatfmt=_DEFAULT_FLOATFMT,
+    floatFmt=_DEFAULT_floatFmt,
     intfmt=_DEFAULT_INTFMT,
     numAlign=_DEFAULT_ALIGN,
     strAlign=_DEFAULT_ALIGN,
@@ -1086,10 +1086,10 @@ def tabulate(
     `intfmt` is a format specification used for columns which contain numeric data without a decimal
     point. This can also be a list or tuple of format strings, one per column.
 
-    `floatfmt` is a format specification used for columns which contain numeric data with a decimal
+    `floatFmt` is a format specification used for columns which contain numeric data with a decimal
     point. This can also be a list or tuple of format strings, one per column.
 
-    `None` values are replaced with a `missingVal` string (like `floatfmt`, this can also be a list
+    `None` values are replaced with a `missingVal` string (like `floatFmt`, this can also be a list
     of values for different columns):
 
     >>> print(tabulate([["spam", 1, None],
@@ -1292,13 +1292,13 @@ def tabulate(
     cols = list(zip_longest(*listOfLists))
     numparses = _expandNumparse(disableNumParse, len(cols))
     coltypes = [_columnType(col, numparse=np) for col, np in zip(cols, numparses)]
-    if isinstance(floatfmt, str):
+    if isinstance(floatFmt, str):
         # old version: just duplicate the string to use in each column
-        floatFormats = len(cols) * [floatfmt]
-    else:  # if floatfmt is list, tuple etc we have one per column
-        floatFormats = list(floatfmt)
+        floatFormats = len(cols) * [floatFmt]
+    else:  # if floatFmt is list, tuple etc we have one per column
+        floatFormats = list(floatFmt)
         if len(floatFormats) < len(cols):
-            floatFormats.extend((len(cols) - len(floatFormats)) * [_DEFAULT_FLOATFMT])
+            floatFormats.extend((len(cols) - len(floatFormats)) * [_DEFAULT_floatFmt])
     if isinstance(intfmt, str):
         # old version: just duplicate the string to use in each column
         intFormats = len(cols) * [intfmt]

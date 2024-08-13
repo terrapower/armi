@@ -1427,16 +1427,16 @@ class TestTabulateOutput(unittest.TestCase):
         result = tabulate([], headers="firstrow")
         self.assertEqual(expected, result)
 
-    def test_floatfmt(self):
+    def test_floatFmt(self):
         """Output: floating point format."""
-        result = tabulate([["1.23456789"], [1.0]], floatfmt=".3f", tableFmt="plain")
+        result = tabulate([["1.23456789"], [1.0]], floatFmt=".3f", tableFmt="plain")
         expected = "1.235\n1.000"
         self.assertEqual(expected, result)
 
-    def test_floatfmtMulti(self):
+    def test_floatFmtMulti(self):
         """Output: floating point format different for each column."""
         result = tabulate(
-            [[0.12345, 0.12345, 0.12345]], floatfmt=(".1f", ".3f"), tableFmt="plain"
+            [[0.12345, 0.12345, 0.12345]], floatFmt=(".1f", ".3f"), tableFmt="plain"
         )
         expected = "0.1  0.123  0.12345"
         self.assertEqual(expected, result)
