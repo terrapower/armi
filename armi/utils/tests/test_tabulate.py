@@ -43,13 +43,13 @@ from armi.utils.tabulate import _visibleWidth
 from armi.utils.tabulate import _wrapTextToColWidths
 from armi.utils.tabulate import SEPARATING_LINE
 from armi.utils.tabulate import tabulate
-from armi.utils.tabulate import tabulate_formats
+from armi.utils.tabulate import tabulateFormats
 
 
 class TestTabulateAPI(unittest.TestCase):
     def test_tabulateFormats(self):
-        """API: tabulate_formats is a list of strings."""
-        supported = tabulate_formats
+        """API: tabulateFormats is a list of strings."""
+        supported = tabulateFormats
         self.assertEqual(type(supported), list)
         for fmt in supported:
             self.assertEqual(type(fmt), str)

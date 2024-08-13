@@ -22,7 +22,7 @@ https://github.com/astanin/python-tabulate
 from collections import namedtuple
 from collections.abc import Iterable, Sized
 from functools import reduce, partial
-from itertools import chain, zip_longest as izip_longest
+from itertools import chain, zip_longest
 from textwrap import TextWrapper
 import dataclasses
 import math
@@ -30,7 +30,7 @@ import re
 
 from armi import runLog
 
-__all__ = ["tabulate", "tabulate_formats"]
+__all__ = ["tabulate", "tabulateFormats"]
 
 
 # minimum extra space in headers
@@ -220,7 +220,7 @@ _table_formats = {
 }
 
 
-tabulate_formats = list(sorted(_table_formats.keys()))
+tabulateFormats = list(sorted(_table_formats.keys()))
 
 # The table formats for which multiline cells will be folded into subsequent table rows. The key is
 # the original format specified at the API. The value is the format that will be used to represent
@@ -837,7 +837,7 @@ def _normalizeTabularData(tabularData, headers, showIndex="default"):
         # dict-like
         keys = tabularData.keys()
         # columns have to be transposed
-        rows = list(izip_longest(*tabularData.values()))
+        rows = list(zip_longest(*tabularData.values()))
 
         if headers == "keys":
             # headers should be strings
@@ -1103,7 +1103,7 @@ def tabulate(
     -----  --  ----
 
     Various plain-text table formats (`tablefmt`) are supported: 'plain', 'simple', 'grid',
-    'orgtbl', 'rst', and `tsv`. Variable `tabulate_formats` contains the list of currently supported
+    'orgtbl', 'rst', and `tsv`. Variable `tabulateFormats` contains the list of currently supported
     formats.
 
     "plain" format doesn't use any pseudographics to draw tables, it separates columns with a double
@@ -1290,7 +1290,7 @@ def tabulate(
     widthFn = _chooseWidthFn(hasInvisible, isMultiline)
 
     # format rows and columns, convert numeric values to strings
-    cols = list(izip_longest(*listOfLists))
+    cols = list(zip_longest(*listOfLists))
     numparses = _expandNumparse(disableNumParse, len(cols))
     coltypes = [_columnType(col, numparse=np) for col, np in zip(cols, numparses)]
     if isinstance(floatfmt, str):
