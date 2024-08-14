@@ -192,18 +192,72 @@ Every release should follow this process:
    archive the new documentation.
 7. Tell everyone!
 
-Module-Level Logging
-====================
-In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
-This is a custom, global logging object provided by the import:
+Logging with runLog
+===================
+ARMI provides a logging tool, ``runLog``, to be used in place of ``print`` for all logging during a
+simulation. It is very easy to use:
 
 .. code-block:: python
 
     from armi import runLog
 
-If you want a logger specific to a single module, say to provide debug logging for only
-one module, that functionality is provided by what might look like a bare Python logging
-import, but is actually calling the same underlying ``armi`` logging tooling:
+    runLog.debug("This will only be seen if you run in debug mode.")
+    runLog.info("Default log level.")
+    runLog.error("The run will die, or the results are invalid.")
+
+.. note::
+    Calling ``runLog.error()`` is not the same as calling Python's ``raise error``; a log statement
+    does not kill a run, or raise an error, it just puts some text in the log.
+
+When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
+at or above that log level will be seen during the simulation and in the final log files. To control
+the log level of an ARMI run, you use the setting ``verbosity`` in your settings file. You will
+probably be running ARMI in a parallel mode, and if you want the child processes to have a different
+log level than the main process, you can set ``branchVerbosity`` to the desired verbosity of all the
+child processes.
+
+For reference, here are the log levels that ARMI supports:
+
+.. list-table::
+    :widths: 20 20 60
+    :header-rows: 1
+
+    * - Level
+      - Value
+      - When to Use
+    * - debug
+      - 10
+      - This will only be seen if the simulation is run in debug mode.
+    * - extra
+      - 15
+      - More detailed than will normally be seen in a usual simulation.
+    * - info
+      - 20
+      - Use only for things that important enough to be visible during every normal simulation.
+    * - important
+      - 25
+      - More important than the default log level, but not a problem or issue.
+    * - prompt
+      - 27
+      - RESERVED for the ARMI CLI.
+    * - warning
+      - 30
+      - Use ONLY for issues that may or may not invalidate the simulation results.
+    * - error
+      - 40
+      - Use ONLY for problems that halt the program or invalidate the simulation results.
+    * - header
+      - 100
+      - Use ONLY to define major sections in the log files.
+
+
+Module-Level Logging
+--------------------
+The ``runLog`` tool also allows for you to log one module differently from the rest of the code
+base. For instance, you could set the log level to "debug" in just one Python file, to help testing
+during development.
+
+That functionality is provided by what might look like a bare Python logging import, but is actually calling the same underlying ``armi`` logging tooling:
 
 .. code-block:: python
 
@@ -214,10 +268,10 @@ In either case, you can then log using the same, easy interface:
 
 .. code-block:: python
 
-    runLog.info('information here')
-    runLog.error('extra error info here')
+    runLog.info('Normal stuff.')
+    runLog.error('Oh no!')
 
-Finally, you can change the logging level in either above scenario by doing:
+Finally, you can change the logging level in the above scenario by doing:
 
 .. code-block:: python
 

@@ -54,13 +54,12 @@ def defineSettings():
             default="",
             label="Fission Product Library",
             description=(
-                f"This setting can used when the `{CONF_FP_MODEL}` setting is set to "
-                "`explicitFissionProducts` and is used to configure all the nuclides that should "
-                "be modeled within the core. Setting this is equivalent to adding all nuclides in "
-                "the selected code library (i.e., MC2-3) within the blueprints `nuclideFlags` to "
-                "be [xs:true, burn:false]. This option acts as a short-cut so that analysts do not "
-                "need to change their inputs when modifying the fission product treatment for "
-                "calculations. This may be extended for other cross section generation codes."
+                f"This setting should be used when `{CONF_FP_MODEL}` is set to "
+                "`explicitFissionProducts`. It is used in conjunction with any nuclideFlags "
+                "defined in the blueprints to configure all the nuclides that are modeled within "
+                "the core. Selecting any library option will add all nuclides from the selected "
+                "library to the model so that analysts do not need to change their inputs when "
+                "modifying the fission product treatment for calculations."
             ),
             options=[
                 "",
