@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Pretty-print tabular data.
+r"""Pretty-print tabular data.
 
 This file started out as the MIT-licensed "tabulate". Though we have made, and will continue to
 make, many arbitrary changes as we need. Thanks to the tabulate team.
@@ -46,120 +46,169 @@ The following tabular data types are supported:
 - two-dimensional NumPy array
 - NumPy record arrays (names as columns)
 
-Headers
--------
-The second optional argument named `headers` defines a list of column headers to be used::
+Table headers
+-------------
+To print nice column headers, supply the second argument (`headers`):
 
-    >>> print(tabulate(table, headers=["Planet","R (km)", "mass (x 10^29 kg)"]))
-    Planet      R (km)    mass (x 10^29 kg)
-    --------  --------  -------------------
-    Sun         696000           1.9891e+09
-    Earth         6371        5973.6
-    Moon          1737          73.5
-    Mars          3390         641.85
+  - `headers` can be an explicit list of column headers
+  - if `headers="firstrow"`, then the first row of data is used
+  - if `headers="keys"`, then dictionary keys or column indices are used
 
-If `headers="firstrow"`, then the first row of data is used::
+Otherwise a headerless table is produced.
 
-    >>> print(tabulate([["Name","Age"],["Alice",24],["Bob",19]],
-    ...                headers="firstrow"))
-    Name      Age
-    ------  -----
-    Alice      24
-    Bob        19
+If the number of headers is less than the number of columns, they are supposed to be names of
+the last columns. This is consistent with the plain-text format of R::
 
-If `headers="keys"`, then the keys of a dictionary, or column indices are used. It also works for
-NumPy record arrays and lists of dictionaries or named tuples::
+    >>> print(tabulate([["sex","age"],["Alice","F",24],["Bob","M",19]],
+    ...       headers="firstrow"))
+           sex      age
+    -----  -----  -----
+    Alice  F         24
+    Bob    M         19
 
-    >>> print(tabulate({"Name": ["Alice", "Bob"],
-    ...                 "Age": [24, 19]}, headers="keys"))
-      Age  Name
-    -----  ------
-       24  Alice
-       19  Bob
+Column and Headers alignment
+----------------------------
+`tabulate` tries to detect column types automatically, and aligns the values properly. By
+default it aligns decimal points of the numbers (or flushes integer numbers to the right), and
+flushes everything else to the left. Possible column alignments (`numAlign`, `strAlign`) are:
+"right", "center", "left", "decimal" (only for `numAlign`), and None (to disable alignment).
 
-Row Indices
------------
-To add a "row index" column to a table, pass `showIndex="always"` or `showIndex=True` argument to
-`tabulate()`. To suppress row indices for all types of data, pass `showIndex="never"` or
-`showIndex=False`. To add a custom row index column, pass `showIndex=rowIDs`, where `rowIDs` is some
-iterable::
+`colGlobalAlign` allows for global alignment of columns, before any specific override from
+    `colAlign`. Possible values are: None (defaults according to coltype), "right", "center",
+    "decimal", "left".
+`colAlign` allows for column-wise override starting from left-most column. Possible values are:
+    "global" (no override), "right", "center", "decimal", "left".
+`headersGlobalAlign` allows for global headers alignment, before any specific override from
+    `headersAlign`. Possible values are: None (follow columns alignment), "right", "center",
+    "left".
+`headersAlign` allows for header-wise override starting from left-most given header. Possible
+    values are: "global" (no override), "same" (follow column alignment), "right", "center",
+    "left".
 
-    >>> print(tabulate([["F",24],["M",19]], showIndex="always"))
-    -  -  --
-    0  F  24
-    1  M  19
-    -  -  --
+Note on intended behaviour: If there is no `data`, any column alignment argument is ignored. Hence,
+in this case, header alignment cannot be inferred from column alignment.
 
-Table format
-------------
-There is more than one way to format a table in plain text. The third optional argument named
-`tableFmt` defines how the table is formatted. Supported table formats are:
+Table formats
+-------------
+`intFmt` is a format specification used for columns which contain numeric data without a decimal
+point. This can also be a list or tuple of format strings, one per column.
 
--   "armi"
--   "github"
--   "grid"
--   "plain"
--   "pretty"
--   "psql"
--   "rst"
--   "simple"
--   "tsv"
+`floatFmt` is a format specification used for columns which contain numeric data with a decimal
+point. This can also be a list or tuple of format strings, one per column.
 
+`None` values are replaced with a `missingVal` string (like `floatFmt`, this can also be a list
+of values for different columns)::
 
-Automating Multilines
----------------------
-While tabulate supports data passed in with multilines entries explicitly provided, it also provides
-some support to help manage this work internally.
+    >>> print(tabulate([["spam", 1, None],
+    ...                 ["eggs", 42, 3.14],
+    ...                 ["other", None, 2.7]], missingVal="?"))
+    -----  --  ----
+    spam    1  ?
+    eggs   42  3.14
+    other   ?  2.7
+    -----  --  ----
 
-The `maxcolwidths` argument is a list where each entry specifies the max width for it's respective
-column. Any cell that will exceed this will automatically wrap the content. To assign the same max
-width for all columns, a singular int scaler can be used.
+Various plain-text table formats (`tableFmt`) are supported: 'plain', 'simple', 'grid', 'rst', and
+`tsv`. Variable `tabulateFormats` contains the list of currently supported formats.
 
-Use `None` for any columns where an explicit maximum does not need to be provided, and thus no
-automate multiline wrapping will take place.
+"plain" format doesn't use any pseudographics to draw tables, it separates columns with a double
+space::
 
-The wrapping uses the python standard
-[textwrap.wrap](https://docs.python.org/3/library/textwrap.html#textwrap.wrap) function with default
-parameters - aside from width.
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
+    ...                 ["strings", "numbers"], "plain"))
+    strings      numbers
+    spam         41.9999
+    eggs        451
 
-This example demonstrates usage of automatic multiline wrapping, though typically the lines being
-wrapped would probably be significantly longer::
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="plain"))
+    spam   41.9999
+    eggs  451
 
-    >>> print(tabulate([["John Smith", "Middle Manager"]],
-              headers=["Name", "Title"],
-              tableFmt="grid",
-              maxColWidths=[None, 8]))
+"simple" format is like Pandoc simple_tables::
 
-    +------------+---------+
-    | Name       | Title   |
-    +============+=========+
-    | John Smith | Middle  |
-    |            | Manager |
-    +------------+---------+
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
+    ...                 ["strings", "numbers"], "simple"))
+    strings      numbers
+    ---------  ---------
+    spam         41.9999
+    eggs        451
 
-Adding Separating lines
------------------------
-One might want to add one or more separating lines to highlight different sections in a table.
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="simple"))
+    ----  --------
+    spam   41.9999
+    eggs  451
+    ----  --------
 
-The separating lines will be of the same type as the one defined by the specified formatter as
-either the linebetweenrows, linebelowheader, linebelow, lineabove or just a simple empty line when
-none is defined for the formatter::
+"grid" is similar to tables produced by Emacs table.el package or Pandoc grid_tables::
 
-    >>> from armi.utils.tabulate import tabulate, SEPARATING_LINE
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
+    ...                ["strings", "numbers"], "grid"))
+    +-----------+-----------+
+    | strings   |   numbers |
+    +===========+===========+
+    | spam      |   41.9999 |
+    +-----------+-----------+
+    | eggs      |  451      |
+    +-----------+-----------+
 
-    table = [["Earth", 6371],
-             ["Mars", 3390],
-             SEPARATING_LINE,
-             ["Moon", 1737]]
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="grid"))
+    +------+----------+
+    | spam |  41.9999 |
+    +------+----------+
+    | eggs | 451      |
+    +------+----------+
 
-    print(tabulate(table, tableFmt="simple"))
+"rst" is like a simple table format from reStructuredText; please note that reStructuredText
+accepts also "grid" tables::
 
-    -----  ----
-    Earth  6371
-    Mars   3390
-    -----  ----
-    Moon   1737
-    -----  ----
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
+    ...                ["strings", "numbers"], "rst"))
+    =========  =========
+    strings      numbers
+    =========  =========
+    spam         41.9999
+    eggs        451
+    =========  =========
+
+    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="rst"))
+    ====  ========
+    spam   41.9999
+    eggs  451
+    ====  ========
+
+Number parsing
+--------------
+By default, anything which can be parsed as a number is a number. This ensures numbers represented
+as strings are aligned properly. This can lead to weird results for particular strings such as
+specific git SHAs e.g. "42992e1" will be parsed into the number 429920 and aligned as such.
+
+To completely disable number parsing (and alignment), use `disableNumParse=True`. For more fine
+grained control, a list column indices is used to disable number parsing only on those columns e.g.
+`disableNumParse=[0, 2]` would disable number parsing only on the first and third columns.
+
+Column Widths and Auto Line Wrapping
+------------------------------------
+Tabulate will, by default, set the width of each column to the length of the longest element in that
+column. However, in situations where fields are expected to reasonably be too long to look good as a
+single line, tabulate can help automate word wrapping long fields for you. Use the parameter
+`maxcolwidth` to provide a list of maximal column widths::
+
+    >>> print(tabulate( \
+          [('1', 'John Smith', \
+            'This is a rather long description that might look better if it is wrapped a bit')], \
+          headers=("Issue Id", "Author", "Description"), \
+          maxColWidths=[None, None, 30], \
+          tableFmt="grid"  \
+        ))
+    +------------+------------+-------------------------------+
+    |   Issue Id | Author     | Description                   |
+    +============+============+===============================+
+    |          1 | John Smith | This is a rather long         |
+    |            |            | description that might look   |
+    |            |            | better if it is wrapped a bit |
+    +------------+------------+-------------------------------+
+
+Header column width can be specified in a similar way using `maxheadercolwidth`.
 """
 from collections import namedtuple
 from collections.abc import Iterable, Sized
@@ -181,14 +230,14 @@ MIN_PADDING = 2
 # Whether or not to preserve leading/trailing whitespace in data.
 PRESERVE_WHITESPACE = False
 
-_DEFAULT_floatFmt = "g"
-_DEFAULT_INTFMT = ""
+_DEFAULT_FLOAT_FMT = "g"
+_DEFAULT_INT_FMT = ""
 _DEFAULT_MISSING_VAL = ""
 # default align will be overwritten by "left", "center" or "decimal" depending on the formatter
 _DEFAULT_ALIGN = "default"
 
-# Constant that can be used as part of passed rows to generate a separating line
-# It is purposely an unprintable character, very unlikely to be used in a table
+# Constant that can be used as part of passed rows to generate a separating line. It is purposely an
+# unprintable character, very unlikely to be used in a table
 SEPARATING_LINE = "\001"
 
 Line = namedtuple("Line", ["begin", "hline", "sep", "end"])
@@ -638,11 +687,11 @@ def _stripAnsi(s):
     CSI sequences are simply removed from the output, while OSC hyperlinks are replaced with the
     link text. Note: it may be desirable to show the URI instead but this is not supported.
 
-    >>> repr(_stripAnsi('\x1B]8;;https://example.com\x1B\\This is a link\x1B]8;;\x1B\\'))
-    "'This is a link'"
+        >>> repr(_stripAnsi('\x1B]8;;https://example.com\x1B\\This is a link\x1B]8;;\x1B\\'))
+        "'This is a link'"
 
-    >>> repr(_stripAnsi('\x1b[31mred\x1b[0m text'))
-    "'red text'"
+        >>> repr(_stripAnsi('\x1b[31mred\x1b[0m text'))
+        "'red text'"
 
     """
     if isinstance(s, str):
@@ -838,13 +887,13 @@ def _columnType(strings, hasInvisible=True, numparse=True):
 def _format(val, valtype, floatFmt, intFmt, missingVal="", hasInvisible=True):
     r"""Format a value according to its type.
 
-    Unicode is supported:
+    Unicode is supported::
 
-    >>> hrow = ['\u0431\u0443\u043a\u0432\u0430', '\u0446\u0438\u0444\u0440\u0430'] ; \
-        tbl = [['\u0430\u0437', 2], ['\u0431\u0443\u043a\u0438', 4]] ; \
-        good_result = '\\u0431\\u0443\\u043a\\u0432\\u0430      \\u0446\\u0438\\u0444\\u0440\\u0430\\n-------  -------\\n\\u0430\\u0437             2\\n\\u0431\\u0443\\u043a\\u0438           4' ; \
-        tabulate(tbl, headers=hrow) == good_result
-    True
+        >>> hrow = ['\u0431\u0443\u043a\u0432\u0430', '\u0446\u0438\u0444\u0440\u0430'] ; \
+            tbl = [['\u0430\u0437', 2], ['\u0431\u0443\u043a\u0438', 4]] ; \
+            good_result = '\\u0431\\u0443\\u043a\\u0432\\u0430      \\u0446\\u0438\\u0444\\u0440\\u0430\\n-------  -------\\n\\u0430\\u0437             2\\n\\u0431\\u0443\\u043a\\u0438           4' ; \
+            tabulate(tbl, headers=hrow) == good_result
+        True
 
     """  # noqa
     if val is None:
@@ -1128,14 +1177,14 @@ def _toStr(s, encoding="utf8", errors="ignore"):
     2. decode() is called for the given parameter and assumes utf8 encoding, but the default error
        behavior is changed from 'strict' to 'ignore'
 
-    >>> repr(_toStr(b'foo'))
-    "'foo'"
+        >>> repr(_toStr(b'foo'))
+        "'foo'"
 
-    >>> repr(_toStr('foo'))
-    "'foo'"
+        >>> repr(_toStr('foo'))
+        "'foo'"
 
-    >>> repr(_toStr(42))
-    "'42'"
+        >>> repr(_toStr(42))
+        "'42'"
 
     """
     if isinstance(s, bytes):
@@ -1147,8 +1196,8 @@ def tabulate(
     data,
     headers=(),
     tableFmt="simple",
-    floatFmt=_DEFAULT_floatFmt,
-    intFmt=_DEFAULT_INTFMT,
+    floatFmt=_DEFAULT_FLOAT_FMT,
+    intFmt=_DEFAULT_INT_FMT,
     numAlign=_DEFAULT_ALIGN,
     strAlign=_DEFAULT_ALIGN,
     missingVal=_DEFAULT_MISSING_VAL,
@@ -1162,184 +1211,60 @@ def tabulate(
     rowAlign=None,
     maxHeaderColWidths=None,
 ):
-    r"""Format a fixed width table for pretty printing.
+    """Format a fixed width table for pretty printing.
 
-    >>> print(tabulate([[1, 2.34], [-56, "8.999"], ["2", "10001"]]))
-    ---  ---------
-      1      2.34
-    -56      8.999
-      2  10001
-    ---  ---------
-
-    The first required argument (`data`) can be a list-of-lists (or another iterable of iterables),
-    a list of named tuples, a dictionary of iterables, an iterable of dictionaries, an iterable of
-    dataclasses (Python 3.7+), a two-dimensional NumPy array, or NumPy record array.
-
-    Table headers
-    -------------
-    To print nice column headers, supply the second argument (`headers`):
-
-      - `headers` can be an explicit list of column headers
-      - if `headers="firstrow"`, then the first row of data is used
-      - if `headers="keys"`, then dictionary keys or column indices are used
-
-    Otherwise a headerless table is produced.
-
-    If the number of headers is less than the number of columns, they are supposed to be names of
-    the last columns. This is consistent with the plain-text format of R.
-
-    >>> print(tabulate([["sex","age"],["Alice","F",24],["Bob","M",19]],
-    ...       headers="firstrow"))
-           sex      age
-    -----  -----  -----
-    Alice  F         24
-    Bob    M         19
-
-    Column and Headers alignment
-    ----------------------------
-    `tabulate` tries to detect column types automatically, and aligns the values properly. By
-    default it aligns decimal points of the numbers (or flushes integer numbers to the right), and
-    flushes everything else to the left. Possible column alignments (`numAlign`, `strAlign`) are:
-    "right", "center", "left", "decimal" (only for `numAlign`), and None (to disable alignment).
-
-    `colGlobalAlign` allows for global alignment of columns, before any specific override from
-        `colAlign`. Possible values are: None (defaults according to coltype), "right", "center",
-        "decimal", "left".
-    `colAlign` allows for column-wise override starting from left-most column. Possible values are:
+    Parameters
+    ----------
+    data : object
+        The tabular data you want to print. This can be a list-of-lists/iterables, dict-of-lists/
+        iterables, 2D numpy arrays, or list of dataclasses.
+    headers=(), optional
+        Nice column names. If this is "firstrow", the first row of the data will be used. If it is
+        "keys"m, then dictionary keys or column indices are used.
+    tableFmt : str, optional
+        There are custom table formats defined in this file, and you can choose between them with
+        this string: "armi", "simple", "plain", "grid", "github", "pretty", "psql", "rst", "tsv".
+    floatFmt : str, optional
+        A format specification used for columns which contain numeric data with a decimal point.
+        This can also be a list or tuple of format strings, one per column.
+    intFmt : str, optional
+        A format specification used for columns which contain numeric data without a decimal point.
+        This can also be a list or tuple of format strings, one per column.
+    numAlign : str, optional
+        Specially align numbers, options: "right", "center", "left", "decimal".
+    strAlign : str, optional
+        Specially align strings, options: "right", "center", "left".
+    missingVal : str, optional
+        `None` values are replaced with a `missingVal` string.
+    showIndex : str, optional
+        Show these rows of data. If "always", show row indices for all types of data. If "never",
+        don't show row indices for all types of data. If showIndex is an iterable, show its values..
+    disableNumParse : bool, optional
+        To disable number parsing (and alignment), use `disableNumParse=True`. For more fine grained
+        control, `[0, 2]` would disable number parsing on the first and third columns.
+    colGlobalAlign : str, optional
+        Allows for global alignment of columns, before any specific override from `colAlign`.
+        Possible values are: None, "right", "center", "decimal", "left".
+    colAlign : str, optional
+        Allows for column-wise override starting from left-most column. Possible values are:
         "global" (no override), "right", "center", "decimal", "left".
-    `headersGlobalAlign` allows for global headers alignment, before any specific override from
-        `headersAlign`. Possible values are: None (follow columns alignment), "right", "center",
-        "left".
-    `headersAlign` allows for header-wise override starting from left-most given header. Possible
-        values are: "global" (no override), "same" (follow column alignment), "right", "center",
-        "left".
+    maxColWidths : list, optional
+        A list of the maximum column widths.
+    headersGlobalAlign : str, optional
+        Allows for global headers alignment, before any specific override from `headersAlign`.
+        Possible values are: None (follow columns alignment), "right", "center", "left".
+    headersAlign : str, optional
+        Allows for header-wise override starting from left-most given header. Possible values are:
+        "global" (no override), "same" (follow column alignment), "right", "center", "left".
+    rowAlign : str, optional
+        How do you want to align rows: "right", "center", "decimal", "left".
+    maxHeaderColWidths : list, optional
+        List of column widths for the header.
 
-    Note on intended behaviour: If there is no `data`, any column alignment argument is
-        ignored. Hence, in this case, header alignment cannot be inferred from column alignment.
-
-    Table formats
-    -------------
-    `intFmt` is a format specification used for columns which contain numeric data without a decimal
-    point. This can also be a list or tuple of format strings, one per column.
-
-    `floatFmt` is a format specification used for columns which contain numeric data with a decimal
-    point. This can also be a list or tuple of format strings, one per column.
-
-    `None` values are replaced with a `missingVal` string (like `floatFmt`, this can also be a list
-    of values for different columns):
-
-    >>> print(tabulate([["spam", 1, None],
-    ...                 ["eggs", 42, 3.14],
-    ...                 ["other", None, 2.7]], missingVal="?"))
-    -----  --  ----
-    spam    1  ?
-    eggs   42  3.14
-    other   ?  2.7
-    -----  --  ----
-
-    Various plain-text table formats (`tableFmt`) are supported: 'plain', 'simple', 'grid',
-    'orgtbl', 'rst', and `tsv`. Variable `tabulateFormats` contains the list of currently supported
-    formats.
-
-    "plain" format doesn't use any pseudographics to draw tables, it separates columns with a double
-    space:
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
-    ...                 ["strings", "numbers"], "plain"))
-    strings      numbers
-    spam         41.9999
-    eggs        451
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="plain"))
-    spam   41.9999
-    eggs  451
-
-    "simple" format is like Pandoc simple_tables:
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
-    ...                 ["strings", "numbers"], "simple"))
-    strings      numbers
-    ---------  ---------
-    spam         41.9999
-    eggs        451
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="simple"))
-    ----  --------
-    spam   41.9999
-    eggs  451
-    ----  --------
-
-    "grid" is similar to tables produced by Emacs table.el package or Pandoc grid_tables:
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
-    ...                ["strings", "numbers"], "grid"))
-    +-----------+-----------+
-    | strings   |   numbers |
-    +===========+===========+
-    | spam      |   41.9999 |
-    +-----------+-----------+
-    | eggs      |  451      |
-    +-----------+-----------+
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="grid"))
-    +------+----------+
-    | spam |  41.9999 |
-    +------+----------+
-    | eggs | 451      |
-    +------+----------+
-
-    "rst" is like a simple table format from reStructuredText; please note that reStructuredText
-    accepts also "grid" tables:
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]],
-    ...                ["strings", "numbers"], "rst"))
-    =========  =========
-    strings      numbers
-    =========  =========
-    spam         41.9999
-    eggs        451
-    =========  =========
-
-    >>> print(tabulate([["spam", 41.9999], ["eggs", "451.0"]], tableFmt="rst"))
-    ====  ========
-    spam   41.9999
-    eggs  451
-    ====  ========
-
-    Number parsing
-    --------------
-    By default, anything which can be parsed as a number is a number. This ensures numbers
-    represented as strings are aligned properly. This can lead to weird results for particular
-    strings such as specific git SHAs e.g. "42992e1" will be parsed into the number 429920 and
-    aligned as such.
-
-    To completely disable number parsing (and alignment), use `disableNumParse=True`. For more fine
-    grained control, a list column indices is used to disable number parsing only on those columns
-    e.g. `disableNumParse=[0, 2]` would disable number parsing only on the first and third columns.
-
-    Column Widths and Auto Line Wrapping
-    ------------------------------------
-    Tabulate will, by default, set the width of each column to the length of the longest element in
-    that column. However, in situations where fields are expected to reasonably be too long to look
-    good as a single line, tabulate can help automate word wrapping long fields for you. Use the
-    parameter `maxcolwidth` to provide a list of maximal column widths
-
-    >>> print(tabulate( \
-          [('1', 'John Smith', \
-            'This is a rather long description that might look better if it is wrapped a bit')], \
-          headers=("Issue Id", "Author", "Description"), \
-          maxColWidths=[None, None, 30], \
-          tableFmt="grid"  \
-        ))
-    +------------+------------+-------------------------------+
-    |   Issue Id | Author     | Description                   |
-    +============+============+===============================+
-    |          1 | John Smith | This is a rather long         |
-    |            |            | description that might look   |
-    |            |            | better if it is wrapped a bit |
-    +------------+------------+-------------------------------+
-
-    Header column width can be specified in a similar way using `maxheadercolwidth`.
+    Returns
+    -------
+    str
+        A text representation of the tabular data.
     """
     if data is None:
         data = []
@@ -1434,14 +1359,14 @@ def tabulate(
     else:  # if floatFmt is list, tuple etc we have one per column
         floatFormats = list(floatFmt)
         if len(floatFormats) < len(cols):
-            floatFormats.extend((len(cols) - len(floatFormats)) * [_DEFAULT_floatFmt])
+            floatFormats.extend((len(cols) - len(floatFormats)) * [_DEFAULT_FLOAT_FMT])
     if isinstance(intFmt, str):
         # old version: just duplicate the string to use in each column
         intFormats = len(cols) * [intFmt]
     else:  # if intFmt is list, tuple etc we have one per column
         intFormats = list(intFmt)
         if len(intFormats) < len(cols):
-            intFormats.extend((len(cols) - len(intFormats)) * [_DEFAULT_INTFMT])
+            intFormats.extend((len(cols) - len(intFormats)) * [_DEFAULT_INT_FMT])
     if isinstance(missingVal, str):
         missingVals = len(cols) * [missingVal]
     else:
