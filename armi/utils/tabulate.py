@@ -14,10 +14,152 @@
 
 """Pretty-print tabular data.
 
-This file started out as the MIT-licensed "tabulate". Though we have made, and will continue to make
-many arbitrary changes as we need. Thanks to the tabulate team.
+This file started out as the MIT-licensed "tabulate". Though we have made, and will continue to
+make, many arbitrary changes as we need. Thanks to the tabulate team.
 
 https://github.com/astanin/python-tabulate
+
+Usage
+-----
+The module provides just one function, `tabulate`, which takes a list of lists or other tabular data
+type as the first argument, and outputs anicely-formatted plain-text table::
+
+    >>> from armi.utils.tabulate import tabulate
+
+    >>> table = [["Sun",696000,1989100000],["Earth",6371,5973.6],
+    ...          ["Moon",1737,73.5],["Mars",3390,641.85]]
+
+    >>> print(tabulate(table))
+    -----  ------  -------------
+    Sun    696000     1.9891e+09
+    Earth    6371  5973.6
+    Moon     1737    73.5
+    Mars     3390   641.85
+    -----  ------  -------------
+
+The following tabular data types are supported:
+
+- list of lists or another iterable of iterables
+- list or another iterable of dicts (keys as columns)
+- dict of iterables (keys as columns)
+- list of dataclasses (field names as columns)
+- two-dimensional NumPy array
+- NumPy record arrays (names as columns)
+
+Headers
+-------
+The second optional argument named `headers` defines a list of column headers to be used::
+
+    >>> print(tabulate(table, headers=["Planet","R (km)", "mass (x 10^29 kg)"]))
+    Planet      R (km)    mass (x 10^29 kg)
+    --------  --------  -------------------
+    Sun         696000           1.9891e+09
+    Earth         6371        5973.6
+    Moon          1737          73.5
+    Mars          3390         641.85
+
+If `headers="firstrow"`, then the first row of data is used::
+
+    >>> print(tabulate([["Name","Age"],["Alice",24],["Bob",19]],
+    ...                headers="firstrow"))
+    Name      Age
+    ------  -----
+    Alice      24
+    Bob        19
+
+If `headers="keys"`, then the keys of a dictionary, or column indices are used. It also works for
+NumPy record arrays and lists of dictionaries or named tuples::
+
+    >>> print(tabulate({"Name": ["Alice", "Bob"],
+    ...                 "Age": [24, 19]}, headers="keys"))
+      Age  Name
+    -----  ------
+       24  Alice
+       19  Bob
+
+Row Indices
+-----------
+To add a "row index" column to a table, pass `showIndex="always"` or `showIndex=True` argument to
+`tabulate()`. To suppress row indices for all types of data, pass `showIndex="never"` or
+`showIndex=False`. To add a custom row index column, pass `showIndex=rowIDs`, where `rowIDs` is some
+iterable::
+
+    >>> print(tabulate([["F",24],["M",19]], showIndex="always"))
+    -  -  --
+    0  F  24
+    1  M  19
+    -  -  --
+
+Table format
+------------
+There is more than one way to format a table in plain text. The third optional argument named
+`tableFmt` defines how the table is formatted. Supported table formats are:
+
+-   "armi"
+-   "github"
+-   "grid"
+-   "plain"
+-   "pretty"
+-   "psql"
+-   "rst"
+-   "simple"
+-   "tsv"
+
+
+Automating Multilines
+---------------------
+While tabulate supports data passed in with multilines entries explicitly provided, it also provides
+some support to help manage this work internally.
+
+The `maxcolwidths` argument is a list where each entry specifies the max width for it's respective
+column. Any cell that will exceed this will automatically wrap the content. To assign the same max
+width for all columns, a singular int scaler can be used.
+
+Use `None` for any columns where an explicit maximum does not need to be provided, and thus no
+automate multiline wrapping will take place.
+
+The wrapping uses the python standard
+[textwrap.wrap](https://docs.python.org/3/library/textwrap.html#textwrap.wrap) function with default
+parameters - aside from width.
+
+This example demonstrates usage of automatic multiline wrapping, though typically the lines being
+wrapped would probably be significantly longer::
+
+    >>> print(tabulate([["John Smith", "Middle Manager"]],
+              headers=["Name", "Title"],
+              tableFmt="grid",
+              maxColWidths=[None, 8]))
+
+    +------------+---------+
+    | Name       | Title   |
+    +============+=========+
+    | John Smith | Middle  |
+    |            | Manager |
+    +------------+---------+
+
+Adding Separating lines
+-----------------------
+One might want to add one or more separating lines to highlight different sections in a table.
+
+The separating lines will be of the same type as the one defined by the specified formatter as
+either the linebetweenrows, linebelowheader, linebelow, lineabove or just a simple empty line when
+none is defined for the formatter::
+
+    >>> from armi.utils.tabulate import tabulate, SEPARATING_LINE
+
+    table = [["Earth", 6371],
+             ["Mars", 3390],
+             SEPARATING_LINE,
+             ["Moon", 1737]]
+
+    print(tabulate(table, tableFmt="simple"))
+
+    -----  ----
+    Earth  6371
+    Mars   3390
+    -----  ----
+    Moon   1737
+    -----  ----
 """
 from collections import namedtuple
 from collections.abc import Iterable, Sized
@@ -1029,9 +1171,9 @@ def tabulate(
       2  10001
     ---  ---------
 
-    The first required argument (`data`) can be a list-of-lists (or another iterable of
-    iterables), a list of named tuples, a dictionary of iterables, an iterable of dictionaries, an
-    iterable of dataclasses (Python 3.7+), a two-dimensional NumPy array, or NumPy record array.
+    The first required argument (`data`) can be a list-of-lists (or another iterable of iterables),
+    a list of named tuples, a dictionary of iterables, an iterable of dictionaries, an iterable of
+    dataclasses (Python 3.7+), a two-dimensional NumPy array, or NumPy record array.
 
     Table headers
     -------------
