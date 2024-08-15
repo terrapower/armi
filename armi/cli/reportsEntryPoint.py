@@ -78,10 +78,8 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         )
 
     def invoke(self):
-        nodes = self.args.nodes
-
         if self.args.h5db is None:
-            # Just do begining stuff, no database is given...
+            # Just do BOL stuff, no database is given.
             if self.cs is not None:
                 site = createReportFromSettings(self.cs)
                 if self.args.view:
@@ -90,8 +88,9 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                 raise RuntimeError(
                     "No Settings with Blueprint or Database, cannot gerenate a report"
                 )
-
         else:
+            self._cleanArgs()
+            nodes = self.args.nodes
             report = reports.ReportContent("Overview")
             pm = getPluginManagerOrFail()
             db = databaseFactory(self.args.h5db, "r")
@@ -102,7 +101,6 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                 with directoryChangers.ForcedCreationDirectoryChanger(
                     "reportsOutputFiles"
                 ):
-
                     dbNodes = list(db.genTimeSteps())
                     cs = db.loadCS()
                     if self.args.bp is None:
@@ -118,6 +116,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                     )
                     stage = reports.ReportStage.Standard
                     for cycle, node in dbNodes:
+                        # check to see if we should skip this time node
                         if nodes is not None and (cycle, node) not in nodes:
                             continue
 
@@ -148,14 +147,47 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                     if self.args.view:
                         webbrowser.open(site)
 
+    @staticmethod
+    def toTwoTuple(strInput):
+        """Convert a string to a two-tuple of integers.
+
+        Parameters
+        ----------
+        strInput : str
+            Representing a simple two-tuple of integers: '(1,3)'.
+
+        Returns
+        -------
+        tuple
+            A tuple of two integers.
+        """
+        s = strInput.replace("(", "").replace(")", "").split(",")
+        return tuple([int(s[0]), int(s[1])])
+
+    def _cleanArgs(self):
+        """The string arguments passed to this Entry Point need to be converted to integers."""
+        if self.args.min_node is not None and type(self.args.min_node) is str:
+            self.args.min_node = ReportsEntryPoint.toTwoTuple(self.args.min_node)
+
+        if self.args.max_node is not None and type(self.args.max_node) is str:
+            self.args.max_node = ReportsEntryPoint.toTwoTuple(self.args.max_node)
+
+        if self.args.nodes is not None and type(self.args.nodes) is str:
+            self.args.nodes = [
+                ReportsEntryPoint.toTwoTuple(n) for n in self.args.nodes.split(")")[:-1]
+            ]
+
 
 def createReportFromSettings(cs):
     """
     Create BEGINNING reports, given a settings file.
 
-    This will construct a reactor from the given settings and create BOL reports for
-    that reactor/settings.
+    This will construct a reactor from the given settings and create BOL reports for that
+    reactor/settings.
     """
+    if cs is None:
+        raise RuntimeError("No Settings with Blueprint or Database, cannot gerenate a report")
+
     blueprint = blueprints.loadFromCs(cs)
     r = reactors.factory(cs, blueprint)
     report = reports.ReportContent("Overview")
