@@ -19,7 +19,7 @@ from armi.bookkeeping.report import newReports as reports
 from armi.cli import entryPoint
 from armi.reactor import blueprints
 from armi.reactor import reactors
-from armi.utils import directoryChangers
+from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
@@ -85,16 +85,14 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         else:
             self._cleanArgs()
             nodes = self.args.nodes
+            blueprint = self.args.bp
 
             report = reports.ReportContent("Overview")
-            blueprint = self.args.bp
             pm = getPluginManagerOrFail()
             db = databaseFactory(self.args.h5db, "r")
 
             with db:
-                with directoryChangers.ForcedCreationDirectoryChanger(
-                    "reportsOutputFiles"
-                ):
+                with ForcedCreationDirectoryChanger("reportsOutputFiles"):
                     dbNodes = list(db.genTimeSteps())
                     cs = db.loadCS()
                     if self.args.bp is None:
@@ -200,9 +198,7 @@ def createReportFromSettings(cs):
     pm = getPluginManagerOrFail()
     report.title = r.name
 
-    with directoryChangers.ForcedCreationDirectoryChanger(
-        "{}-reports".format(cs.caseTitle)
-    ):
+    with ForcedCreationDirectoryChanger("{}-reports".format(cs.caseTitle)):
         _ = pm.hook.getReportContents(
             r=r,
             cs=cs,
