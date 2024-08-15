@@ -1462,7 +1462,7 @@ class Database3:
                 )
 
                 if "attrs" not in group:
-                    attrGroup = group.create_group("attrs", track_order=True)
+                    attrGroup = group.create_group("attrs")
                 else:
                     attrGroup = group["attrs"]
                 dataName = str(len(attrGroup)) + "_" + key
