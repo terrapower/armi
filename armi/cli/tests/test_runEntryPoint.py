@@ -371,6 +371,31 @@ class TestReportsEntryPoint(unittest.TestCase):
         with self.assertRaises(ValueError):
             ReportsEntryPoint.toTwoTuple("[1,5]")
 
+    def test_cleanArgs(self):
+        rep = ReportsEntryPoint()
+        rep.addOptions()
+
+        node0 = "(0,0)"
+        node3 = "(3,3)"
+        nodesStr = "(0,2)(1,3)(2,9)"
+
+        rep.parse_args(["--nodes", nodesStr])
+        self.assertEqual(rep.args.nodes, nodesStr)
+        rep._cleanArgs()
+        self.assertEqual(rep.args.nodes[0], (0, 2))
+        self.assertEqual(rep.args.nodes[1], (1, 3))
+        self.assertEqual(rep.args.nodes[2], (2, 9))
+
+        rep.parse_args(["--min-node", node0])
+        self.assertEqual(rep.args.min_node, node0)
+        rep._cleanArgs()
+        self.assertEqual(rep.args.min_node, (0, 0))
+
+        rep.parse_args(["--max-node", node3])
+        self.assertEqual(rep.args.max_node, node3)
+        rep._cleanArgs()
+        self.assertEqual(rep.args.max_node, (3, 3))
+
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
     def test_compareIsotxsLibsBasics(self):
