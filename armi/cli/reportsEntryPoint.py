@@ -23,7 +23,7 @@ from armi.utils import directoryChangers
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
-    """Create report from database files."""
+    """Create a report from a database file."""
 
     name = "report"
     settingsArgument = "optional"
@@ -43,8 +43,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         self.parser.add_argument(
             "--output-name",
             "-o",
-            help="Base name for output file(s). File extensions will be added as "
-            "appropriate",
+            help="Base name for output file(s). File extensions will be added as appropriate",
             type=str,
             default=None,
         )
@@ -57,15 +56,15 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         )
         self.parser.add_argument(
             "--max-node",
-            help="An optional (cycle,timeNode) tuple to specify the latest time step "
-            "that should be included",
+            help="An optional (cycle,timeNode) tuple to specify the latest time step that should "
+            "be included",
             type=str,
             default=None,
         )
         self.parser.add_argument(
             "--min-node",
-            help="An optional (cycle,timeNode) tuple to specify the earliest time step "
-            "that should be included",
+            help="An optional (cycle,timeNode) tuple to specify the earliest time step that should "
+            "be included",
             type=str,
             default=None,
         )
@@ -80,22 +79,17 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
     def invoke(self):
         if self.args.h5db is None:
             # Just do BOL stuff, no database is given.
-            if self.cs is not None:
-                site = createReportFromSettings(self.cs)
-                if self.args.view:
-                    webbrowser.open(site)
-            else:
-                raise RuntimeError(
-                    "No Settings with Blueprint or Database, cannot gerenate a report"
-                )
+            site = createReportFromSettings(self.cs)
+            if self.args.view:
+                webbrowser.open(site)
         else:
             self._cleanArgs()
             nodes = self.args.nodes
+
             report = reports.ReportContent("Overview")
+            blueprint = self.args.bp
             pm = getPluginManagerOrFail()
             db = databaseFactory(self.args.h5db, "r")
-            if self.args.bp is not None:
-                blueprint = self.args.bp
 
             with db:
                 with directoryChangers.ForcedCreationDirectoryChanger(
@@ -184,9 +178,21 @@ def createReportFromSettings(cs):
 
     This will construct a reactor from the given settings and create BOL reports for that
     reactor/settings.
+
+    Parameters
+    ----------
+    cs : Settings
+        A standard ARMI Settings object, to define a run.
+
+    Returns
+    -------
+    str
+        A string representing the HTML for a web page.
     """
     if cs is None:
-        raise RuntimeError("No Settings with Blueprint or Database, cannot gerenate a report")
+        raise RuntimeError(
+            "No Settings with Blueprint or Database, cannot gerenate a report"
+        )
 
     blueprint = blueprints.loadFromCs(cs)
     r = reactors.factory(cs, blueprint)

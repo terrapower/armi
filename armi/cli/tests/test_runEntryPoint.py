@@ -347,6 +347,30 @@ class TestReportsEntryPoint(unittest.TestCase):
             # The "fake.h5" doesn't exist, so this should fail.
             rep.invoke()
 
+    def test_toTwoTuple(self):
+        result = ReportsEntryPoint.toTwoTuple("(1,2)")
+        self.assertEqual(result, (1, 2))
+
+        result = ReportsEntryPoint.toTwoTuple("(-931,223)")
+        self.assertEqual(result, (-931, 223))
+
+        result = ReportsEntryPoint.toTwoTuple("(-7,7")
+        self.assertEqual(result, (-7, 7))
+
+        # here is a funny edge case
+        result = ReportsEntryPoint.toTwoTuple("(1,2,3)")
+        self.assertEqual(result, (1, 2))
+
+        # test some cases that SHOULD fail
+        with self.assertRaises(ValueError):
+            ReportsEntryPoint.toTwoTuple("(1,)")
+
+        with self.assertRaises(ValueError):
+            ReportsEntryPoint.toTwoTuple("()")
+
+        with self.assertRaises(ValueError):
+            ReportsEntryPoint.toTwoTuple("[1,5]")
+
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
     def test_compareIsotxsLibsBasics(self):
