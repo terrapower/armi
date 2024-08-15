@@ -72,7 +72,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     o.initializeInterfaces(r)
 
     a = assemblies.HexAssembly("fuel")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     b = blocks.HexBlock("TestBlock")
     b.setType("fuel")
     dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
@@ -109,7 +109,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     o.initializeInterfaces(r)
 
     a = assemblies.CartesianAssembly("fuel")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     b = blocks.CartesianBlock("TestBlock")
     b.setType("fuel")
     dims = {

@@ -235,7 +235,7 @@ class SettingsReader:
             self.inputVersion = setts[CONF_VERSIONS]["armi"]
         else:
             runLog.warning(
-                "Versions setting section not found. Continuing with uncontrolled verisons."
+                "Versions setting section not found. Continuing with uncontrolled versions."
             )
             self.inputVersion = "uncontrolled"
 

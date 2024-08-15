@@ -498,7 +498,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
-        a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
+        a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
         otherBlock = deepcopy(self.block)
         a.add(self.block)
         a.add(otherBlock)
@@ -510,7 +510,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_summing(self):
         a = assemblies.Assembly("dummy")
-        a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
+        a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
         otherBlock = deepcopy(self.block)
         a.add(self.block)
         a.add(otherBlock)

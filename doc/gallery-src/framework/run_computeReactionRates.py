@@ -80,7 +80,7 @@ def createDummyReactor():
 
     # Create a single fuel assembly
     a = assemblies.HexAssembly("fuel assembly")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]
 
     # Create a single fuel block
