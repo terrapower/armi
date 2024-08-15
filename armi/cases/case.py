@@ -39,7 +39,6 @@ import trace
 
 import coverage
 import six
-import tabulate
 
 from armi import context
 from armi import getPluginManager
@@ -55,6 +54,7 @@ from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.reactor import systemLayoutInput
 from armi.utils import pathTools
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import DirectoryChanger
@@ -605,7 +605,7 @@ class Case:
                     tabulate.tabulate(
                         queryData,
                         headers=["Number", "Statement", "Question"],
-                        tablefmt="armi",
+                        tableFmt="armi",
                     )
                 )
             if context.CURRENT_MODE == context.Mode.INTERACTIVE:

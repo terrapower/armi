@@ -40,7 +40,6 @@ from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy
 import six
-import tabulate
 
 from armi import context, runLog, utils
 from armi.nucDirectory import elements, nucDir, nuclideBases
@@ -48,7 +47,9 @@ from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
-from armi.utils import densityTools, units
+from armi.utils import densityTools
+from armi.utils import tabulate
+from armi.utils import units
 from armi.utils.densityTools import calculateNumberDensity
 
 

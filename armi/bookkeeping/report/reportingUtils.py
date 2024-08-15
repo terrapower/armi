@@ -23,7 +23,6 @@ import pathlib
 import re
 import subprocess
 import sys
-import tabulate
 import textwrap
 import time
 
@@ -39,6 +38,7 @@ from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
 from armi.utils import iterables
 from armi.utils import plotting
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils import units
 
@@ -84,7 +84,7 @@ def writeWelcomeHeaders(o, cs):
         ]
 
         runLog.header("=========== Case Information ===========")
-        runLog.info(tabulate.tabulate(caseInfo, tablefmt="armi"))
+        runLog.info(tabulate.tabulate(caseInfo, tableFmt="armi"))
 
     def _listInputFiles(cs):
         """
@@ -170,7 +170,7 @@ def writeWelcomeHeaders(o, cs):
             tabulate.tabulate(
                 inputFileData,
                 headers=["Input Type", "Path", "SHA-1 Hash"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
@@ -199,7 +199,7 @@ def writeWelcomeHeaders(o, cs):
                 tabulate.tabulate(
                     nodeMappingData,
                     headers=["Machine", "Number of Processors", "Ranks"],
-                    tablefmt="armi",
+                    tableFmt="armi",
                 )
             )
 
@@ -224,7 +224,7 @@ def writeWelcomeHeaders(o, cs):
             paramStr = [str(p) for p in param]
             operatingData.append((name, textwrap.fill(", ".join(paramStr))))
         runLog.header("=========== Reactor Cycle Information ===========")
-        runLog.info(tabulate.tabulate(operatingData, tablefmt="armi"))
+        runLog.info(tabulate.tabulate(operatingData, tableFmt="armi"))
 
     if context.MPI_RANK > 0:
         return  # prevent the worker nodes from printing the same thing
@@ -429,7 +429,7 @@ def getInterfaceStackSummary(o):
             "EOL order",
             "BOL forced",
         ),
-        tablefmt="armi",
+        tableFmt="armi",
     )
     text = text
     return text
@@ -439,7 +439,7 @@ def writeTightCouplingConvergenceSummary(convergenceSummary):
     runLog.info("Tight Coupling Convergence Summary")
     runLog.info(
         tabulate.tabulate(
-            convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+            convergenceSummary, headers="keys", showIndex=True, tableFmt="armi"
         )
     )
 

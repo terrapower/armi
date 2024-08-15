@@ -817,7 +817,7 @@ material modifications
 
   .. exec::
       from armi.materials import Material
-      from tabulate import tabulate
+      from armi.utils.tabulate import tabulate
 
       data = []
       for m in Material.__subclasses__():
@@ -846,8 +846,8 @@ material modifications
       data.sort(key=lambda t: t[0])
       return tabulate(
           headers=("Material Name", "Available Modifications"),
-          tabular_data=data,
-          tablefmt="rst",
+          data=data,
+          tableFmt="rst",
       )
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of

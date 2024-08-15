@@ -34,10 +34,10 @@ independent interfaces:
 from enum import IntEnum
 
 import numpy
-import tabulate
 
 from armi import plugins, runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils import tabulate
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -268,9 +268,9 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
     else:
         runLog.extra(
             tabulate.tabulate(
-                tabular_data=reportTableData,
+                data=reportTableData,
                 headers=["Component", "Value"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
