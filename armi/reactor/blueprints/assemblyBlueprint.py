@@ -205,7 +205,7 @@ class AssemblyBlueprint(yamlize.Object):
             a.p.flags = flags
 
         # set a basic grid with the right number of blocks with bounds to be adjusted.
-        a.spatialGrid = grids.axialUnitGrid(len(blocks))
+        a.spatialGrid = grids.AxialGrid.fromNCells(len(blocks))
         a.spatialGrid.armiObject = a
 
         # TODO: Remove mesh points from blueprints entirely. Submeshing should be

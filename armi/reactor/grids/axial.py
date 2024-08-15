@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import List, Optional, TYPE_CHECKING, NoReturn
-import warnings
 
 import numpy
 
@@ -85,21 +84,3 @@ class AxialGrid(StructuredGrid):
             Pitch in cm
 
         """
-
-
-def axialUnitGrid(
-    numCells: int, armiObject: Optional["ArmiObject"] = None
-) -> AxialGrid:
-    """
-    Build a 1-D unit grid in the k-direction based on a number of times. Each mesh is 1cm wide.
-
-    .. deprecated:: 0.3
-        Use :class:`AxialUnitGrid` class instead
-
-    """
-    warnings.warn(
-        "Use grids.AxialGrid class rather than function",
-        PendingDeprecationWarning,
-        stacklevel=2,
-    )
-    return AxialGrid.fromNCells(numCells, armiObject)
