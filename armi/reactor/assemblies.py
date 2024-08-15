@@ -347,7 +347,7 @@ class Assembly(composites.Composite):
                 bx.clearCache()
 
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -401,7 +401,7 @@ class Assembly(composites.Composite):
                 )
 
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -1179,7 +1179,7 @@ class Assembly(composites.Composite):
             reordering.
         """
         # replace grid with one that has the right number of locations
-        self.spatialGrid = grids.axialUnitGrid(len(self))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(self))
         self.spatialGrid.armiObject = self
         for zi, b in enumerate(self):
             b.spatialLocator = self.spatialGrid[0, 0, zi]

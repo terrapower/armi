@@ -20,7 +20,7 @@ Bug Fixes
 
 Quality Work
 ------------
-#. TBD
+#. Removing code that causes a deprecation warning (converting ``axialUnitGrid`` to ``AxialGrid.fromNCells``) (`PR#1809 <https://github.com/terrapower/armi/pull/1809>`_)
 
 Changes that Affect Requirements
 --------------------------------

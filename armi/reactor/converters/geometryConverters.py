@@ -756,7 +756,7 @@ class HexToRZThetaConverter(GeometryConverter):
             thetaIndex, radialIndex, 0
         ]
         newAssembly.p.AziMesh = 2
-        newAssembly.spatialGrid = grids.axialUnitGrid(
+        newAssembly.spatialGrid = grids.AxialGrid.fromNCells(
             len(self.meshConverter.axialMesh), armiObject=newAssembly
         )
 
