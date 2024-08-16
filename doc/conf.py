@@ -333,10 +333,10 @@ release = meta.__version__
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 """
-'library/xml.rst' - ignores the library/xml.rst file (replaces entry in unused_docs)
-'library/xml' - ignores the library/xml directory (replaces entry in exclude_trees)
-'library/xml*' - ignores all files and directories starting with library/xml
-'**/.svn' - ignores all .svn directories (replaces entry in exclude_dirnames)
+'library/xml.rst' – ignores the library/xml.rst file (replaces entry in unused_docs)
+'library/xml' – ignores the library/xml directory (replaces entry in exclude_trees)
+'library/xml*' – ignores all files and directories starting with library/xml
+'**/.svn' – ignores all .svn directories (replaces entry in exclude_dirnames)
 """
 exclude_patterns = [
     "**/Python27*",

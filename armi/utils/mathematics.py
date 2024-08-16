@@ -26,7 +26,7 @@ SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 def average1DWithinTolerance(vals, tolerance=0.2):
     """
-    Compute the average of a series of 1D arrays with a tolerance.
+    Compute the average of a series of arrays with a tolerance.
 
     Tuned for averaging assembly meshes or block heights.
 
@@ -34,13 +34,6 @@ def average1DWithinTolerance(vals, tolerance=0.2):
     ----------
     vals : 2D np.array
         could be assembly x axial mesh tops or heights
-    tolerance : float
-        The accuracy to which we need to know the average.
-
-    Returns
-    -------
-    1D np.array
-        The average of all the input 1D NumPy arrays.
     """
     vals = np.array(vals)
 
@@ -64,7 +57,7 @@ def average1DWithinTolerance(vals, tolerance=0.2):
     return avg
 
 
-def convertToSlice(x, increment=0):
+def convertToSlice(x, increment=False):
     """
     Convert a int, float, list of ints or floats, None, or slice
     to a slice. Also optionally increments that slice to make it easy to line
@@ -79,8 +72,6 @@ def convertToSlice(x, increment=0):
         list of int: select these index numbers.
         None: select all indices.
         slice: select this slice
-    increment : integer (or boolean), optional
-        Step size, when taking your slices. (`False` is zero.)
 
     Returns
     -------
@@ -209,7 +200,7 @@ def expandRepeatedFloats(repeatedList):
 
 
 def findClosest(listToSearch, val, indx=False):
-    """
+    r"""
     Find closest item in a list.
 
     Parameters
@@ -334,7 +325,7 @@ def isMonotonic(inputIter, relation):
 
 
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
-    """
+    r"""
     Does a linear interpolation (or extrapolation) for y=f(x).
 
     Parameters
@@ -382,8 +373,8 @@ def minimizeScalarFunc(
     method=None,
     tol=1.0e-3,
 ):
-    """
-    Use SciPy minimize with the given function, goal value, and first guess.
+    r"""
+    Use scipy minimize with the given function, goal value, and first guess.
 
     Parameters
     ----------
@@ -505,15 +496,11 @@ def parabolaFromPoints(p1, p2, p3):
     ----------
     p1 : tuple
         first point (x,y) coordinates
-    p2 : tuple
-        second (x,y) points
-    p3 : tuple
-        third (x,y) points
+    p2,p3: tuple, second and third points.
 
     Returns
     -------
-    tuple
-        3 floats: a,b,c coefficients of y=ax^2+bx+c
+    a,b,c coefficients of y=ax^2+bx+c
     """
     A = np.array(
         [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
@@ -531,7 +518,7 @@ def parabolaFromPoints(p1, p2, p3):
 
 
 def parabolicInterpolation(ap, bp, cp, targetY):
-    """
+    r"""
     Given parabola coefficients, this interpolates the time
     that would give k=targetK.
 
@@ -545,13 +532,10 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
     Parameters
     ----------
-    ap : float
-        coefficients ap of a parabola y = ap*x^2 + bp*x + cp
-    bp : float
-        coefficients bp of a parabola y = ap*x^2 + bp*x + cp
-    cp : float
-        coefficients cp of a parabola y = ap*x^2 + bp*x + cp
-    targetY : float
+    ap, bp,cp : floats
+        coefficients of a parabola y = ap*x^2 + bp*x + cp
+
+    targetK : float
         The keff to find the cycle length of
 
     Returns
@@ -603,10 +587,13 @@ def resampleStepwise(xin, yin, xout, avg=True):
     ----------
     xin : list
         interval points / mesh points
+
     yin : list
         interval values / inter-mesh values
+
     xout : list
         new interval points / new mesh points
+
     avg : bool
         By default, this is set to True, forcing the resampling to be done
         by averaging. But if this is False, the resmampling will be done by
@@ -672,19 +659,19 @@ def rotateXY(x, y, degreesCounterclockwise=None, radiansCounterclockwise=None):
 
     Parameters
     ----------
-    x : float
-        X coordinates, array-like
-    y : float
-        Y coordinates, array-like
+    x, y : array_like
+        coordinates
+
     degreesCounterclockwise : float
         Degrees to rotate in the CCW direction
+
     radiansCounterclockwise : float
         Radians to rotate in the CCW direction
 
     Returns
     -------
-    tuple
-        xr, yr: the rotated coordinates
+    xr, yr : array_like
+        the rotated coordinates.
     """
     if radiansCounterclockwise is None:
         radiansCounterclockwise = degreesCounterclockwise * math.pi / 180.0
