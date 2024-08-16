@@ -28,6 +28,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
     name = "report"
     settingsArgument = "optional"
     description = "Convert ARMI databases into a report"
+    report_out_dir = "reportsOutputFiles"
 
     def __init__(self):
         entryPoint.EntryPoint.__init__(self)
@@ -92,7 +93,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             db = databaseFactory(self.args.h5db, "r")
 
             with db:
-                with ForcedCreationDirectoryChanger("reportsOutputFiles"):
+                with ForcedCreationDirectoryChanger(self.report_out_dir):
                     dbNodes = list(db.genTimeSteps())
                     cs = db.loadCS()
                     if self.args.bp is None:
@@ -157,7 +158,9 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         return tuple([int(s[0]), int(s[1])])
 
     def _cleanArgs(self):
-        """The string arguments passed to this Entry Point need to be converted to integers."""
+        """The string arguments passed to this entry point, on the command line, need to be
+        converted to integers.
+        """
         if self.args.min_node is not None and type(self.args.min_node) is str:
             self.args.min_node = ReportsEntryPoint.toTwoTuple(self.args.min_node)
 

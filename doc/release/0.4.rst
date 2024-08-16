@@ -18,6 +18,7 @@ API Changes
 
 Bug Fixes
 ---------
+#. Fixed error parsing command line integers in ``ReportsEntryPoint``. (`PR#1824 <https://github.com/terrapower/armi/pull/1824>`_)
 #. TBD
 
 Quality Work
