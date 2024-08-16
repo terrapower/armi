@@ -430,11 +430,11 @@ class TestReportsEntryPoint(unittest.TestCase):
         self.assertEqual(rep.args.max_node, (3, 3))
 
     def test_reportsEntryPointBasics(self):
-        with TemporaryDirectoryChanger():
+        with TemporaryDirectoryChanger() as newDir:
             # set up output names
             fileNameDB = buildTestDB(self._testMethodName, 1, 1)
             outputFile = f"{self._testMethodName}.txt"
-            outDir = "reportsOutputFiles"
+            outDir = os.path.join(newDir.destination, "reportsOutputFiles")
 
             # define report
             rep = ReportsEntryPoint()
