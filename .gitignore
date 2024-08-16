@@ -1,4 +1,4 @@
-# No non-source python resources.
+# No non-source python resources
 *.pyc
 *.pyd
 *.pyo
@@ -8,7 +8,6 @@
 *.dll
 *.lib
 .apidocs/
-.coverage
 /bin
 armi/tests/tutorials/case-suite
 bin/*
@@ -28,7 +27,7 @@ htmlcov/
 monkeytype.*
 wheelhouse
 
-# No workspace crumbs.
+# No workspace crumbs
 **/.coverage*
 **/__pycache__
 **/logs/*
@@ -40,8 +39,12 @@ wheelhouse
 *~
 .*.swp
 .cache/
+.coverage
+.DS_Store
 .externalToolBuilders/
+.hypothesis/
 .idea/
+.ipynb_checkpoints
 .metadata
 .mypy_cache/
 .project
@@ -49,6 +52,7 @@ wheelhouse
 .pytest_cache/
 .ruff_cache/
 .settings
+.tox
 .vim-bookmarks
 .vscode
 armi-venv/*
@@ -61,7 +65,7 @@ tags
 temp-*
 venv*/
 
-# Misc. exclusions
+# Ignore common data files
 *.avi
 *.diff
 *.h5
@@ -70,14 +74,7 @@ venv*/
 *.ppm
 *.txt
 
-# metadata file specific to MacOS
-.DS_Store
-
 # vis files
 *.vtd
 *.vtu
 *.xdmf
-
-# fixtures
-.ipynb_checkpoints
-.tox
