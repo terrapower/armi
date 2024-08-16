@@ -1,80 +1,81 @@
-# No non-source python resources
+# No non-source python resources.
 *.pyc
-*.pyd
 *.pyo
+*.pyd
 *.pyx
 
 # No build artifacts
-*.dll
-*.lib
-.apidocs/
-/bin
-armi/tests/tutorials/case-suite
-bin/*
 build
-coverage.lcov
-coverage.xml
-coverage_results.*
-dist-*/
+wheelhouse
+*.lib
+*.dll
+bin/*
+/bin
 dist/
+dist-*/
 doc/_build
-doc/gallery
-doc/gallery-src/framework/*.yaml
+doc/user/tutorials
 doc/tutorials/anl-afci-177*
 doc/tutorials/case-suite
-doc/user/tutorials
+armi/tests/tutorials/case-suite
+.apidocs/
+doc/gallery
+doc/gallery-src/framework/*.yaml
+.coverage
+coverage.xml
+coverage.lcov
+coverage_results.*
 htmlcov/
 monkeytype.*
-wheelhouse
 
-# No workspace crumbs
-**/.coverage*
-**/__pycache__
-**/logs/*
-*.ascii
-*.egg-info/
-*.sublime-project
-*.sublime-workspace
-*.temp
+# No workspace crumbs.
 *~
 .*.swp
-.cache/
-.coverage
-.DS_Store
-.externalToolBuilders/
-.hypothesis/
-.idea/
-.ipynb_checkpoints
-.metadata
-.mypy_cache/
-.project
-.pydevproject
-.pytest_cache/
-.ruff_cache/
 .settings
-.tox
-.vim-bookmarks
 .vscode
-armi-venv/*
+.project
+.metadata
+.idea/
+.pydevproject
+*.sublime-project
+*.sublime-workspace
+*.egg-info/
+phabricator-lint.txt
+temp-*
+tags
+*.temp
+.externalToolBuilders/
+.cache/
+.pytest_cache/
+pytestdebug.log
 dump-temp-*
 dump-tests*
-phabricator-lint.txt
-pytestdebug.log
-reportsOutputFiles/
-tags
-temp-*
+.vim-bookmarks
+armi-venv/*
 venv*/
+.mypy_cache/
+**/__pycache__
+**/.coverage*
+**/logs/*
+*.ascii
 
-# Ignore common data files
-*.avi
-*.diff
-*.h5
+# Misc. exclusions
 *.html
-*.mp4
+*.diff
+*.avi
 *.ppm
+*.mp4
+*.h5
 *.txt
 
+# metadata file specific to MacOS
+.DS_Store
+
 # vis files
-*.vtd
 *.vtu
+*.vtd
 *.xdmf
+
+# fixtures
+.ipynb_checkpoints
+.tox
