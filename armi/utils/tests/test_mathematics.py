@@ -113,9 +113,11 @@ class TestMath(unittest.TestCase):
         self.assertEqual(-2.4594981981654e-101, fixed)
 
     def test_getFloat(self):
-        self.assertEqual(getFloat(1.0), 1.0)
-        self.assertEqual(getFloat("1.0"), 1.0)
         self.assertIsNone(getFloat("word"))
+
+        for flt in [-9.123 + f * 0.734 for f in range(25)]:
+            self.assertEqual(getFloat(flt), flt)
+            self.assertEqual(getFloat(str(flt)), flt)
 
     def test_getStepsFromValues(self):
         steps = getStepsFromValues([1.0, 3.0, 6.0, 10.0], prevValue=0.0)
