@@ -331,21 +331,19 @@ def expandElementalMassFracsToNuclides(
         by specifying them with ``elementExpansionPairs``, which maps each element to a list of
         particular NuclideBases; if left unspecified, all naturally-occurring isotopes are included.
 
-        Explicitly specifying the expansion isotopes provides a way for particular
-        naturally-occurring isotopes to be excluded from the expansion, e.g. excluding O-18 from an
-        expansion of elemental oxygen.
+        Explicitly specifying the expansion isotopes provides a way for particular naturally-
+        occurring isotopes to be excluded from the expansion, e.g. excluding O-18 from an expansion
+        of elemental oxygen.
 
     Parameters
     ----------
     massFracs : dict(str, float)
         dictionary of nuclide or element names with mass fractions. Elements will be expanded in
         place using natural isotopics.
-
     elementExpansionPairs : (Element, [NuclideBase]) pairs
         element objects to expand (from nuclidBase.element) and list of NuclideBases to expand into
         (or None for all natural)
     """
-    # expand elements
     for element, isotopicSubset in elementExpansionPairs:
         massFrac = massFracs.pop(element.symbol, None)
         if massFrac is None:
@@ -357,7 +355,7 @@ def expandElementalMassFracsToNuclides(
         massFracs.update(expandedNucs)
 
         total = sum(expandedNucs.values())
-        if massFrac > 0.0 and abs(total - massFrac) / massFrac > 1e-6:
+        if massFrac > 0.0 and abs(total - massFrac) / massFrac > 1e-8:
             raise ValueError(
                 "Mass fractions not normalized properly {}!".format((total, massFrac))
             )
@@ -371,8 +369,8 @@ def expandElementalNuclideMassFracs(
     """
     Return a dictionary of nuclide names to isotopic mass fractions.
 
-    If an isotopic subset is passed in, the mass fractions get scaled up
-    s.t. the total mass fraction remains constant.
+    If an isotopic subset is passed in, the mass fractions get scaled up but the total mass fraction
+    remains constant.
 
     Parameters
     ----------
@@ -381,20 +379,21 @@ def expandElementalNuclideMassFracs(
     massFrac : float
         Mass fraction of the initial element
     isotopicSubset : list of NuclideBases
-        Natural isotopes to include in the expansion. Useful e.g. for
-        excluding O18 from an expansion of Oxygen.
+        Natural isotopes to include in the expansion. Useful e.g. for excluding O18 from an
+        expansion of Oxygen.
     """
     elementNucBases = element.getNaturalIsotopics()
     if isotopicSubset:
         expandedNucBases = [nb for nb in elementNucBases if nb in isotopicSubset]
     else:
         expandedNucBases = elementNucBases
+
     elementalWeightGperMole = sum(nb.weight * nb.abundance for nb in expandedNucBases)
     if not any(expandedNucBases):
         raise ValueError(
-            "Cannot expand element `{}` into isotopes: `{}`"
-            "".format(element, expandedNucBases)
+            f"Cannot expand element `{element}` into isotopes: `{expandedNucBases}`"
         )
+
     expanded = {}
     for nb in expandedNucBases:
         expanded[nb.name] = (

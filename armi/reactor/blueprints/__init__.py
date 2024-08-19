@@ -352,9 +352,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         Also builds meta-data about which nuclides are in the problem.
 
-        This system works by building a dictionary in the
-        ``elementsToExpand`` attribute with ``Element`` keys
-        and list of ``NuclideBase`` values.
+        This system works by building a dictionary in the ``elementsToExpand`` attribute with
+        ``Element`` keys and list of ``NuclideBase`` values.
 
         The actual expansion of elementals to isotopics occurs during
         :py:meth:`Component construction <armi.reactor.blueprints.componentBlueprint.
@@ -385,13 +384,13 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         self.customIsotopics = self.customIsotopics or isotopicOptions.CustomIsotopics()
         eleKeep, eleExpand = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
 
-        # Flag all elementals for expansion unless they've been flagged otherwise by
-        # user input or automatic lattice/datalib rules.
+        # Flag all elementals for expansion unless they've been flagged otherwise by user input or
+        # automatic lattice/datalib rules.
         for nucBase in nuclideBases.instances:
             isAlreadyIsotopic = not isinstance(nucBase, nuclideBases.NaturalNuclideBase)
             if isAlreadyIsotopic:
-                # `elemental` may be a NaturalNuclideBase or a NuclideBase
-                # skip all NuclideBases (isotopics)
+                # `elemental` may be a NaturalNuclideBase or a NuclideBase skip all NuclideBases
+                # (isotopics)
                 continue
 
             # we now know its an elemental
@@ -405,10 +404,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 currentSet = inerts
             else:
                 # This was not specified in the nuclide flags at all as burn or xs.
-                # If a material with this in its composition is brought in
-                # it's nice from a user perspective to allow it.
-                # But current behavior is that all nuclides in problem
-                # must be declared up front.
+                # If a material with this in its composition is brought in it's nice from a user
+                # perspective to allow it.
+                # But current behavior is that all nuclides in problem must be declared up front.
                 continue
 
             self.elementsToExpand.append(elemental.element)
@@ -425,15 +423,14 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
                 # code-specific expansion required based on code and ENDF
                 newNuclides = eleExpand[elemental]
-                # overlay code details onto nuclideFlags for other parts of the code
-                # that will use them.
-                # TODO: would be better if nuclideFlags did this upon reading s.t.
-                # order didn't matter. On the other hand, this is the only place in
-                # the code where NuclideFlags get built and have user settings around
-                # (hence "resolve").
-                # This must be updated because the operative expansion code just uses the flags
+                # Overlay code details onto nuclideFlags.
                 #
-                # Also, if this element is not in nuclideFlags at all, we just don't add it
+                # Also, if this element is not in nuclideFlags at all, we just don't add it.
+                #
+                # TODO: Would be better if nuclideFlags did this upon reading then order didn't
+                # matter. On the other hand, this is the only place in the code where NuclideFlags
+                # get built and have user settings around (hence "resolve").
+                # This must be updated because the operative expansion code just uses the flags.
                 nuclideFlags[elemental.element.symbol].expandTo = [
                     nb.name for nb in newNuclides
                 ]

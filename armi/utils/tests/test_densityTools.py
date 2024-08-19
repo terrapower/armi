@@ -95,12 +95,17 @@ class TestDensityTools(unittest.TestCase):
         subset = [nuclideBases.byName["O16"], nuclideBases.byName["O17"]]
         m1 = densityTools.expandElementalNuclideMassFracs(elemental, massFrac)
         m2 = densityTools.expandElementalNuclideMassFracs(elemental, massFrac, subset)
+
+        # subsetting should correctly ignore O18
         self.assertIn("O18", m1)
         self.assertNotIn("O18", m2)
-        self.assertAlmostEqual(1.0, sum(m1.values()))
-        self.assertAlmostEqual(1.0, sum(m2.values()))
+
+        # the total normalization should be done correctly
+        self.assertAlmostEqual(1.0, sum(m1.values()), delta=1e-12)
+        self.assertAlmostEqual(1.0, sum(m2.values()), delta=1e-12)
+
         # expect some small difference due to renormalization
-        self.assertNotAlmostEqual(m1["O17"], m2["O17"])
+        self.assertNotEqual(m1["O17"], m2["O17"])
         self.assertAlmostEqual(m1["O17"], m2["O17"], delta=1e-5)
 
     def test_applyIsotopicsMix(self):
@@ -112,13 +117,12 @@ class TestDensityTools(unittest.TestCase):
         fertileMassFracs = {"U238": 0.3, "PU240": 0.7}
         densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)
 
-        self.assertAlmostEqual(
-            uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1
-        )  # HM blended
-        self.assertAlmostEqual(
-            uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
-        )  # HM blended
-        self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
+        # HM blended
+        self.assertAlmostEqual(uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1)
+        # HM blended
+        self.assertAlmostEqual(uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3)
+        # non-HM stays unchanged
+        self.assertAlmostEqual(uo2.massFrac["O"], massFracO)
 
     def test_getNDensFromMasses(self):
         """

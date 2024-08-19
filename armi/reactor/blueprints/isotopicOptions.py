@@ -119,17 +119,14 @@ class NuclideFlag(yamlize.Object):
         self.expandTo = expandTo
 
     def __repr__(self):
-        return "<NuclideFlag name:{} burn:{} xs:{}>".format(
-            self.nuclideName, self.burn, self.xs
-        )
+        return f"<NuclideFlag name:{self.nuclideName} burn:{self.burn} xs:{self.xs}>"
 
     def fileAsActiveOrInert(self, activeSet, inertSet):
         """
         Given a nuclide or element name, file it as either active or inert.
 
-        If isotopic expansions are requested, include the isotopics
-        rather than the NaturalNuclideBase, as the NaturalNuclideBase will never
-        occur in such a problem.
+        If isotopic expansions are requested, include the isotopics rather than the
+        NaturalNuclideBase, as the NaturalNuclideBase will never occur in such a problem.
         """
         undefBurnChainActiveNuclides = set()
         nb = nuclideBases.byName[self.nuclideName]
@@ -448,15 +445,13 @@ def getDefaultNuclideFlags():
 
     Notes
     -----
-    The nuclideFlags input on blueprints has confused new users and is infrequently
-    changed. It will be moved to be a user setting, but in any case a reasonable default
-    should be provided. We will by default model medium-lived and longer actinides between
-    U234 and CM247.
+    The nuclideFlags input on blueprints has confused new users and is infrequently changed. It will
+    be moved to be a user setting, but in any case a reasonable default should be provided. We will
+    by default model medium-lived and longer actinides between U234 and CM247.
 
     We will include B10 and B11 without depletion, sodium, and structural elements.
 
     We will include LFPs with depletion.
-
     """
     nuclideFlags = {}
     actinides = {
@@ -511,7 +506,6 @@ def eleExpandInfoBasedOnCodeENDF(cs):
         For example: {oxygen: [oxygen16]} indicates that all
         oxygen should be expanded to O16, ignoring natural
         O17 and O18. (variables are Natural/NuclideBases)
-
     """
     elementalsToKeep = set()
     oxygenElementals = [nuclideBases.byName["O"]]
@@ -600,15 +594,13 @@ def genDefaultNucFlags():
 
 def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
     """
-    This function is responsible for examining the fission product model treatment
-    that is selected by the user and adding a set of nuclides to the `nuclideFlags`
-    list.
+    This function is responsible for examining the fission product model treatment that is selected
+    by the user and adding a set of nuclides to the `nuclideFlags` list.
 
     Notes
     -----
-    The reason for adding this method is that when switching between fission product
-    modeling treatments it can be time-consuming to manually adjust the ``nuclideFlags``
-    inputs.
+    The reason for adding this method is that when switching between fission product modeling
+    treatments it can be time-consuming to manually adjust the ``nuclideFlags`` inputs.
 
     See Also
     --------
@@ -631,8 +623,8 @@ def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
 
 def getAllNuclideBasesByLibrary(cs):
     """
-    Return a list of nuclide bases available for cross section modeling
-    based on the ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
+    Return a list of nuclide bases available for cross section modeling based on the
+    ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
     """
     nbs = []
     if cs[CONF_FP_MODEL] == "explicitFissionProducts":
