@@ -314,6 +314,30 @@ assemblies:
             28  # Number of nuclides defined in `nuclide flags` without Zr
         )
 
+    def test_expandTo(self):
+        """A quick, end-to-end test that using "expandTo" in blueprints works as intended."""
+        # build a new Assembly, with only C12 instead of C
+        cs = settings.Settings()
+        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
+        newYaml = self.yamlString.replace(
+            "C: {burn: false, xs: true}",
+            'C: {burn: false, xs: true, expandTo: ["C12"]}',
+        )
+        self.assertNotEqual(self.yamlString, newYaml)
+        bp = blueprints.Blueprints.load(newYaml)
+        newAssem = bp.constructAssem(cs, name="fuel a")
+
+        # prove the correct nuclides are in each assembly
+        self.assertIn("C", self.a.getNumberDensities())
+        self.assertNotIn("C12", self.a.getNumberDensities())
+        self.assertIn("C12", newAssem.getNumberDensities())
+        self.assertNotIn("C", newAssem.getNumberDensities())
+
+        # prove that the total mass was not changed
+        oldSum = sum(self.a.getNumberDensities().values())
+        newSum = sum(newAssem.getNumberDensities().values())
+        self.assertEqual(oldSum, newSum)
+
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
         fuel = self.a[0].getComponent(Flags.FUEL)
