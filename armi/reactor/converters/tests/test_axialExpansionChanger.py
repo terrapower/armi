@@ -18,6 +18,8 @@ import os
 import unittest
 from statistics import mean
 
+from numpy import array, linspace, zeros
+
 from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
@@ -35,7 +37,6 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import units
-from numpy import array, linspace, zeros
 
 
 class AxialExpansionTestBase(unittest.TestCase):
@@ -448,6 +449,10 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         .. test:: Ensure the ACLP does not move during fuel-only expansion.
             :id: T_ARMI_AXIAL_EXP_PRESC1
             :tests: R_ARMI_AXIAL_EXP_PRESC
+
+        .. test:: Ensure the component volumes are correctly updated during prescribed expansion.
+            :id: T_ARMI_AXIAL_EXP_PRESC1
+            :tests: R_ARMI_AXIAL_EXP_PRESC
         """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
@@ -489,6 +494,15 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             aclp.p.ztop,
             msg="ACLP ztop has changed. It should not with fuel component only expansion!",
         )
+
+        # verify that the component volumes are correctly updated
+        for b in assembly:
+            for c in b:
+                self.assertAlmostEqual(
+                    c.getArea() * b.getHeight(),
+                    c.getVolume(),
+                    places=12,
+                )
 
     def test_reset(self):
         self.obj.setAssembly(self.a)
