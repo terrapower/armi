@@ -475,6 +475,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
+        # get total assembly fluid mass pre-expansion
+        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
+
         # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
@@ -482,6 +485,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         pList = zeros(len(cList)) + 1.01
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
+
+        # get total assembly fluid mass post-expansion
+        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
 
         # do assertion
         self.assertEqual(
@@ -503,6 +509,17 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     c.getVolume(),
                     places=12,
                 )
+        # verify that the total assembly fluid mass is preserved through expansion
+        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
+
+    @staticmethod
+    def _getTotalAssemblyFluidMass(assembly) -> float:
+        totalAssemblyFluidMass = 0.0
+        for b in assembly:
+            for c in b:
+                if isinstance(c.material, materials.material.Fluid):
+                    totalAssemblyFluidMass += c.getMass()
+        return totalAssemblyFluidMass
 
     def test_reset(self):
         self.obj.setAssembly(self.a)
