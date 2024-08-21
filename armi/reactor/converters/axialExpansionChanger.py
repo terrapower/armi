@@ -16,11 +16,12 @@
 from statistics import mean
 from typing import List
 
+from numpy import array
+
 from armi import runLog
 from armi.materials import material
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.flags import Flags
-from numpy import array
 
 TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.FUEL,
@@ -364,8 +365,8 @@ class AxialExpansionChanger:
 
             _checkBlockHeight(b)
             # Call Component.clearCache to update the Component volume, and therefore the masses,
-            # of all solid components.
-            for c in getSolidComponents(b):
+            # of all components.
+            for c in b:
                 c.clearCache()
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
