@@ -18,57 +18,237 @@ from logging import DEBUG
 
 import yamlize
 
+from armi import runLog
 from armi import settings
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
-from armi import runLog
 from armi.tests import mockRunLogs
+
+
+class TestExpandTo(unittest.TestCase):
+    yamlString = r"""
+nuclide flags:
+    AM241: {burn: true, xs: true}
+    AM242: {burn: true, xs: true}
+    AM243: {burn: true, xs: true}
+    C: {burn: false, xs: true}
+    CM242: {burn: true, xs: true}
+    CM243: {burn: true, xs: true}
+    CM244: {burn: true, xs: true}
+    CM245: {burn: true, xs: true}
+    CM246: {burn: true, xs: true}
+    CM247: {burn: true, xs: true}
+    CR: {burn: true, xs: true}
+    DUMP1: {burn: true, xs: true}
+    DUMP2: {burn: true, xs: true}
+    FE: {burn: false, xs: true}
+    LFP35: {burn: true, xs: true}
+    LFP38: {burn: true, xs: true}
+    LFP39: {burn: true, xs: true}
+    LFP40: {burn: true, xs: true}
+    LFP41: {burn: true, xs: true}
+    MN: {burn: true, xs: true}
+    MO: {burn: true, xs: true}
+    NI: {burn: true, xs: true}
+    NP237: {burn: true, xs: true}
+    NP238: {burn: true, xs: true}
+    PU236: {burn: true, xs: true}
+    PU238: {burn: true, xs: true}
+    PU239: {burn: true, xs: true}
+    PU240: {burn: true, xs: true}
+    PU241: {burn: true, xs: true}
+    PU242: {burn: true, xs: true}
+    SI: {burn: true, xs: true}
+    U234: {burn: true, xs: true}
+    U235: {burn: true, xs: true}
+    U236: {burn: true, xs: true}
+    U238: {burn: true, xs: true}
+    V: {burn: true, xs: true}
+    W: {burn: true, xs: true}
+    ZR: {burn: false, xs: true}
+
+custom isotopics:
+    steel:
+        input format: mass fractions
+        C: 1.0
+        density: 10.0
+
+blocks:
+    uzr fuel: &block_0
+        fuel: &basic_fuel
+            shape: Hexagon
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1.0
+            op: 1.0
+
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 1.0
+            od: 1.0
+
+assemblies:
+    fuel a: &assembly_a
+        specifier: IC
+        blocks: [*block_0]
+        height: [10]
+        axial mesh points: [1]
+        xs types: [A]
+
+"""
+
+    yaml = """
+nuclide flags:
+  O:
+    burn: false
+    xs: true
+    expandTo:
+
+custom isotopics:
+  oxygen:
+    input format: number densities
+    O: 1
+
+blocks:
+    fuel inner: &block_inner_fuel
+        intercoolant:
+            shape: Hexagon
+            material: Custom
+            isotopics: oxygen
+            Tinput: 25
+            Thot: 450.0
+            ip: 0
+            op: 1.074569931823542 # make the area 1cm^2, i.e. op = sqrt(2/sqrt(3))
+            mult: 1.0
+assemblies:
+    inner fuel:
+        specifier: IC
+        blocks:
+            - *block_inner_fuel
+        height: [1]
+        axial mesh points: [1]
+        xs types:
+            - A
+"""
+
+    def test_expandToOxygen16(self):
+        """PASSES: Just expandTo O16, and it passes."""
+        cs = settings.Settings()
+
+        newYaml2 = self.yaml.replace("    expandTo:", "    expandTo:\n      - O16")
+        bp = blueprints.Blueprints.load(newYaml2)
+        a = bp.constructAssem(cs, name="inner fuel")
+        newSum = sum(a.getNumberDensities().values())
+        correctTotal = 1.0002744781201818
+        self.assertEqual(correctTotal, newSum)
+
+    def test_expandToOxygen17(self):
+        """FAILS: Just expandTo O17."""
+        cs = settings.Settings()
+
+        newYaml2 = self.yaml.replace("    expandTo:", "    expandTo:\n      - O17")
+        bp = blueprints.Blueprints.load(newYaml2)
+        a = bp.constructAssem(cs, name="inner fuel")
+        newSum = sum(a.getNumberDensities().values())
+        correctTotal = 1.0002744781201818
+        self.assertEqual(correctTotal, newSum)
+
+    def test_expandToOxygen16and17(self):
+        """FAILS: A quick, end-to-end test that using "expandTo" in blueprints works as intended."""
+        cs = settings.Settings()
+        bp0 = blueprints.Blueprints.load(self.yaml)
+        a0 = bp0.constructAssem(cs, name="inner fuel")
+
+        newYaml = self.yaml.replace(
+            "    expandTo:", "    expandTo:\n      - O16\n      - O17"
+        )
+        bp1 = blueprints.Blueprints.load(newYaml)
+        a1 = bp1.constructAssem(cs, name="inner fuel")
+
+        oldSum = sum(a0.getNumberDensities().values())
+        newSum = sum(a1.getNumberDensities().values())
+
+        correctTotal = 1.0002744781201818
+        self.assertEqual(oldSum, correctTotal)  # passes
+        self.assertEqual(oldSum, newSum)
+
+    def test_expandTo(self):
+        """FAILS: A quick, end-to-end test that using "expandTo" in blueprints works as intended."""
+        cs = settings.Settings()
+        bp0 = blueprints.Blueprints.load(self.yamlString)
+        a0 = bp0.constructAssem(cs, name="fuel a")
+
+        # build a new Assembly, with only C12 instead of C
+        newYaml = self.yamlString.replace(
+            "C: {burn: false, xs: true}",
+            'C: {burn: false, xs: true, expandTo: ["C12"]}',
+        )
+        self.assertNotEqual(self.yamlString, newYaml)
+        bp1 = blueprints.Blueprints.load(newYaml)
+        a1 = bp1.constructAssem(cs, name="fuel a")
+
+        # prove the correct nuclides are in each assembly
+        self.assertIn("C", a0.getNumberDensities())
+        self.assertNotIn("C12", a0.getNumberDensities())
+        self.assertIn("C12", a1.getNumberDensities())
+        self.assertNotIn("C", a1.getNumberDensities())
+
+        # prove that the total mass was not changed
+        oldSum = sum(a0.getNumberDensities().values())
+        newSum = sum(a1.getNumberDensities().values())
+        self.assertEqual(oldSum, newSum)
 
 
 class TestCustomIsotopics(unittest.TestCase):
     yamlPreamble = r"""
 nuclide flags:
-    U238: {burn: true, xs: true}
-    U235: {burn: true, xs: true}
-    U234: {burn: true, xs: true}
-    ZR: {burn: false, xs: true}
     AL: {burn: false, xs: true}
-    FE: {burn: false, xs: true}
-    C: {burn: false, xs: true}
-    DUMP2: {burn: true, xs: true}
-    DUMP1: {burn: true, xs: true}
-    LFP35: {burn: true, xs: true}
-    PU239: {burn: true, xs: true}
-    NP237: {burn: true, xs: true}
-    LFP38: {burn: true, xs: true}
-    LFP39: {burn: true, xs: true}
-    PU240: {burn: true, xs: true}
-    PU236: {burn: true, xs: true}
-    PU238: {burn: true, xs: true}
-    U236: {burn: true, xs: true}
-    LFP40: {burn: true, xs: true}
-    PU241: {burn: true, xs: true}
     AM241: {burn: true, xs: true}
-    LFP41: {burn: true, xs: true}
-    PU242: {burn: true, xs: true}
-    AM243: {burn: true, xs: true}
-    CM244: {burn: true, xs: true}
-    CM242: {burn: true, xs: true}
     AM242: {burn: true, xs: true}
-    CM245: {burn: true, xs: true}
-    NP238: {burn: true, xs: true}
+    AM243: {burn: true, xs: true}
+    C: {burn: false, xs: true}
+    CM242: {burn: true, xs: true}
     CM243: {burn: true, xs: true}
+    CM244: {burn: true, xs: true}
+    CM245: {burn: true, xs: true}
     CM246: {burn: true, xs: true}
     CM247: {burn: true, xs: true}
-    NI: {burn: true, xs: true}
-    W: {burn: true, xs: true, expandTo: ["W182", "W183", "W184", "W186"]}
-    MN: {burn: true, xs: true}
     CR: {burn: true, xs: true}
-    V: {burn: true, xs: true}
-    SI: {burn: true, xs: true}
+    DUMP1: {burn: true, xs: true}
+    DUMP2: {burn: true, xs: true}
+    FE: {burn: false, xs: true}
+    LFP35: {burn: true, xs: true}
+    LFP38: {burn: true, xs: true}
+    LFP39: {burn: true, xs: true}
+    LFP40: {burn: true, xs: true}
+    LFP41: {burn: true, xs: true}
+    MN: {burn: true, xs: true}
     MO: {burn: true, xs: true}
+    NI: {burn: true, xs: true}
+    NP237: {burn: true, xs: true}
+    NP238: {burn: true, xs: true}
+    PU236: {burn: true, xs: true}
+    PU238: {burn: true, xs: true}
+    PU239: {burn: true, xs: true}
+    PU240: {burn: true, xs: true}
+    PU241: {burn: true, xs: true}
+    PU242: {burn: true, xs: true}
+    SI: {burn: true, xs: true}
+    U234: {burn: true, xs: true}
+    U235: {burn: true, xs: true}
+    U236: {burn: true, xs: true}
+    U238: {burn: true, xs: true}
+    V: {burn: true, xs: true}
+    W: {burn: true, xs: true, expandTo: ["W182", "W183", "W184", "W186"]}
+    ZR: {burn: false, xs: true}
 
 custom isotopics:
     uranium isotopic mass fractions:
@@ -313,30 +493,6 @@ assemblies:
         cls.numCustomNuclides = (
             28  # Number of nuclides defined in `nuclide flags` without Zr
         )
-
-    def test_expandTo(self):
-        """A quick, end-to-end test that using "expandTo" in blueprints works as intended."""
-        # build a new Assembly, with only C12 instead of C
-        cs = settings.Settings()
-        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
-        newYaml = self.yamlString.replace(
-            "C: {burn: false, xs: true}",
-            'C: {burn: false, xs: true, expandTo: ["C12"]}',
-        )
-        self.assertNotEqual(self.yamlString, newYaml)
-        bp = blueprints.Blueprints.load(newYaml)
-        newAssem = bp.constructAssem(cs, name="fuel a")
-
-        # prove the correct nuclides are in each assembly
-        self.assertIn("C", self.a.getNumberDensities())
-        self.assertNotIn("C12", self.a.getNumberDensities())
-        self.assertIn("C12", newAssem.getNumberDensities())
-        self.assertNotIn("C", newAssem.getNumberDensities())
-
-        # prove that the total mass was not changed
-        oldSum = sum(self.a.getNumberDensities().values())
-        newSum = sum(newAssem.getNumberDensities().values())
-        self.assertEqual(oldSum, newSum)
 
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
