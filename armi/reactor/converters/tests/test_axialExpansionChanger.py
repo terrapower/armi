@@ -451,7 +451,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             :tests: R_ARMI_AXIAL_EXP_PRESC
 
         .. test:: Ensure the component volumes are correctly updated during prescribed expansion.
-            :id: T_ARMI_AXIAL_EXP_PRESC1
+            :id: T_ARMI_AXIAL_EXP_PRESC2
             :tests: R_ARMI_AXIAL_EXP_PRESC
         """
         # build test assembly with ACLP
