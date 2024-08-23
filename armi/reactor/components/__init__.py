@@ -453,6 +453,15 @@ class DerivedShape(UnshapedComponent):
         cold : bool, optional
             Ignored for this component
         """
+        if cold:
+            # At cold temp, the DerivedShape has the area of the parent minus the other siblings
+            parentArea = self.parent.getArea()
+            # NOTE: the assumption is there is only one DerivedShape in each Component
+            siblings = sum(
+                [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
+            )
+            return parentArea - siblings
+
         if self.parent.derivedMustUpdate:
             self.computeVolume()
 

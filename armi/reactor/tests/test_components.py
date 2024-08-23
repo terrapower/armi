@@ -17,6 +17,7 @@ import copy
 import math
 import unittest
 
+from armi.materials import air, alloy200
 from armi.materials.material import Material
 from armi.reactor import components
 from armi.reactor import flags
@@ -44,7 +45,7 @@ from armi.reactor.components import (
     ComponentType,
 )
 from armi.reactor.components import materials
-from armi.materials import air, alloy200
+from armi.reactor.tests.test_reactors import loadTestReactor
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -480,6 +481,31 @@ class TestDerivedShape(TestShapedComponent):
 
         # test the computeVolume method on the one DerivedShape in thi block
         self.assertAlmostEqual(c.computeVolume(), 1386.5232044586771)
+
+
+class TestDerivedShapeGetArea(unittest.TestCase):
+    def test_getAreaColdTrue(self):
+        """Prove that the DerivedShape.getArea() works at cold=True."""
+        # load one-block test reactor
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        b = r.core[0][0]
+
+        # ensure there is a DerivedShape in this Block
+        shapes = set([type(c) for c in b])
+        self.assertIn(Circle, shapes)
+        self.assertIn(DerivedShape, shapes)
+        self.assertIn(Helix, shapes)
+        self.assertIn(Hexagon, shapes)
+
+        # prove that getArea works on the block level
+        self.assertEqual(b.getArea(cold=True), b.getArea(cold=False))
+
+        # prove that getArea preserves the sum of all the areas, even if there is a DerivedShape
+        totalAreaCold = sum([c.getArea(cold=True) for c in b])
+        totalAreaHot = sum([c.getArea(cold=False) for c in b])
+        self.assertEqual(totalAreaCold, totalAreaHot)
 
 
 class TestCircle(TestShapedComponent):

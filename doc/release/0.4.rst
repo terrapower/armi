@@ -18,6 +18,7 @@ API Changes
 
 Bug Fixes
 ---------
+#. Fixed ``DerivedShape.getArea`` for ``cold=True``. (`PR#1831 <https://github.com/terrapower/armi/pull/1831>`_)
 #. TBD
 
 Quality Work
