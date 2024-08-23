@@ -158,7 +158,7 @@ class UnshapedComponent(Component):
         Parameters
         ----------
         cold : bool, optional
-            Ignored for this component
+            Compute the area with as-input dimensions, instead of thermally-expanded?
         """
         coldArea = self.p.area
         if cold:
@@ -172,6 +172,13 @@ class UnshapedComponent(Component):
 
         This is the smallest it can possibly be. Since this is used to determine
         the outer component, it will never be allowed to be the outer one.
+
+        Parameters
+        ----------
+        Tc : float
+            Ignored for this component
+        cold : bool, optional
+            Compute the area with as-input dimensions, instead of thermally-expanded?
 
         Notes
         -----
@@ -451,7 +458,7 @@ class DerivedShape(UnshapedComponent):
         Parameters
         ----------
         cold : bool, optional
-            Ignored for this component
+            Compute the area with as-input dimensions, instead of thermally-expanded?
         """
         if cold:
             # At cold temp, the DerivedShape has the area of the parent minus the other siblings
