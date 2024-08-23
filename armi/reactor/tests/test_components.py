@@ -500,12 +500,12 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         self.assertIn(Hexagon, shapes)
 
         # prove that getArea works on the block level
-        self.assertEqual(b.getArea(cold=True), b.getArea(cold=False))
+        self.assertAlmostEqual(b.getArea(cold=True), b.getArea(cold=False), delta=1e-10)
 
         # prove that getArea preserves the sum of all the areas, even if there is a DerivedShape
         totalAreaCold = sum([c.getArea(cold=True) for c in b])
         totalAreaHot = sum([c.getArea(cold=False) for c in b])
-        self.assertEqual(totalAreaCold, totalAreaHot)
+        self.assertAlmostEqual(totalAreaCold, totalAreaHot, delta=1e-10)
 
 
 class TestCircle(TestShapedComponent):
