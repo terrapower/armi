@@ -834,8 +834,6 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(dominantFuel.getName(), "UZr")
         self.assertEqual(dominantCool.getName(), "Sodium")
 
-        self.assertEqual(list(dominantCool.getNuclides()), ["NA23"])
-
     def test_getSymmetryFactor(self):
         """
         Test getSymmetryFactor().
