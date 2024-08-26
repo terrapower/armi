@@ -1020,11 +1020,14 @@ def _normalizeTabularData(data, headers, showIndex="default"):
         headers = list(headers)
 
     index = None
-    if type(data) is dict:
+    if hasattr(data, "keys"):
         # dict-like
         keys = data.keys()
         # columns have to be transposed
-        rows = list(zip_longest(*data.values()))
+        rows = []
+        vals = list(data.values())
+        for i in range(len(vals[0])):
+            rows.append(tuple(v[i] for v in vals))
 
         if headers == "keys":
             # headers should be strings

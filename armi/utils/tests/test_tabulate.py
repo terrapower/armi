@@ -397,35 +397,35 @@ class TestTabulateInputs(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_tightCouplingExample(self):
-        """Input: Example from tight coupling."""
+        """Input: Real world-ish example from tight coupling."""
         # the two examples below should both produce the same output:
-        border = "--  ------------------------------  --------------  --------------------------------"
+        border = "--  ------------------------------  --------------  ----------------------------"
         expected = "\n".join(
             [
                 border,
-                "      criticalCrIteration: keffUnc    dif3d: power    thInterface: THaverageCladTemp",
+                "      criticalCrIteration: keffUnc    dif3d: power    thInterface: THavgCladTemp",
                 border,
-                " 0                     8.01234e-05      0.00276543                        0.00123456",
+                " 0                     9.01234e-05      0.00876543                    0.00123456",
                 border,
             ]
         )
 
-        # use a regular dictionry
+        # the data is a regular dictionry
         data = {
-            "criticalCrIteration: keffUnc": [8.01234e-05],
-            "dif3d: power": [0.00276543],
-            "thInterface: THaverageCladTemp": [0.00123456],
+            "criticalCrIteration: keffUnc": [9.01234e-05],
+            "dif3d: power": [0.00876543],
+            "thInterface: THavgCladTemp": [0.00123456],
         }
         result = tabulate(data, headers="keys", showIndex=True, tableFmt="armi")
         self.assertEqual(expected, result)
 
-        # use a defaultdict
+        # the data is a defaultdict
         dataD = defaultdict(list)
-        for key, val in data.items():
-            dataD[key].append(val)
+        for key, vals in data.items():
+            for val in vals:
+                dataD[key].append(val)
 
         result2 = tabulate(dataD, headers="keys", showIndex=True, tableFmt="armi")
-        print(result2)
         self.assertEqual(expected, result2)
 
 
