@@ -432,7 +432,7 @@ class Material:
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
+        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC)[0])
         return tAtTargetDensity
 
     @property

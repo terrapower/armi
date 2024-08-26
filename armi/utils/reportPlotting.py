@@ -29,7 +29,7 @@ import itertools
 import math
 import os
 
-from matplotlib import cm
+from matplotlib import colormaps
 from matplotlib import colors as mpltcolors
 import matplotlib.path
 import matplotlib.projections.polar
@@ -305,7 +305,7 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     plt.legend()
     plt.title("Block burnups used to generate XS for {0}".format(name))
     plt.xlabel("Time (years)")
-    plt.ylabel("Burnup (% FIMA)")
+    plt.ylabel(r"Burnup (% FIMA)")
 
     plt.ylim(0, maxbu * 1.05)
     figName = name + ".bugroups." + extension
@@ -727,7 +727,7 @@ def plotAxialProfile(zVals, dataVals, fName, metadata, nPlot=1, yLog=False):
         dataVals = numpy.log10(abs(dataVals))
 
     if nPlot > 1:
-        colormap = cm.get_cmap("jet")
+        colormap = colormaps["jet"]
         norm = mpltcolors.Normalize(0, nPlot - 1)
 
         # alternate between line styles to help distinguish neighboring groups (close on the color map)
