@@ -1023,11 +1023,12 @@ def _normalizeTabularData(data, headers, showIndex="default"):
     if hasattr(data, "keys"):
         # dict-like
         keys = data.keys()
-        # columns have to be transposed
-        rows = []
+
+        # fill out default values, to ensure all data lists are the same length
         vals = list(data.values())
-        for i in range(len(vals[0])):
-            rows.append(tuple(v[i] for v in vals))
+        maxLen = max([len(v) for v in vals], default=0)
+        vals = [[v for v in vv] + [None] * (maxLen - len(vv)) for vv in vals]
+        rows = [tuple(v[i] for v in vals) for i in range(maxLen)]
 
         if headers == "keys":
             # headers should be strings
