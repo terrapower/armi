@@ -398,14 +398,7 @@ class TestTabulateInputs(unittest.TestCase):
 
     def test_tightCouplingExample(self):
         """Input: Example from tight coupling."""
-        # use a regular dictionry
-        data = {
-            "criticalCrIteration: keffUnc": [8.01234e-05],
-            "dif3d: power": [0.00276543],
-            "thInterface: THaverageCladTemp": [0.00123456],
-        }
-        result = tabulate(data, headers="keys", showIndex=True, tableFmt="armi")
-
+        # the two examples below should both produce the same output:
         border = "--  ------------------------------  --------------  --------------------------------"
         expected = "\n".join(
             [
@@ -416,6 +409,14 @@ class TestTabulateInputs(unittest.TestCase):
                 border,
             ]
         )
+
+        # use a regular dictionry
+        data = {
+            "criticalCrIteration: keffUnc": [8.01234e-05],
+            "dif3d: power": [0.00276543],
+            "thInterface: THaverageCladTemp": [0.00123456],
+        }
+        result = tabulate(data, headers="keys", showIndex=True, tableFmt="armi")
         self.assertEqual(expected, result)
 
         # use a defaultdict
