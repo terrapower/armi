@@ -98,7 +98,6 @@ class Reactor(composites.Composite):
         self.spatialLocator = None
         self.p.maxAssemNum = 0
         self.p.cycle = 0
-        self.p.flags |= Flags.REACTOR
         self.core = None
         self.sfp = None
         self.blueprints = blueprints
@@ -123,7 +122,7 @@ class Reactor(composites.Composite):
 
     def add(self, container):
         composites.Composite.add(self, container)
-        cores = self.getChildrenWithFlags(Flags.CORE)
+        cores = [c for c in self.getChildren(deep=True) if isinstance(c, Core)]
         if cores:
             if len(cores) != 1:
                 raise ValueError(
@@ -283,7 +282,6 @@ class Core(composites.Composite):
             Name of the object. Flags will inherit from this.
         """
         composites.Composite.__init__(self, name)
-        self.p.flags = Flags.fromStringIgnoreErrors(name)
         self.assembliesByName = {}
         self.circularRingList = {}
         self.blocksByName = {}  # lookup tables

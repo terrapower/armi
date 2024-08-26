@@ -72,9 +72,8 @@ from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
-from armi.reactor.flags import Flags
 from armi.reactor.parameters import parameterCollections
-from armi.reactor.reactors import Core
+from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import getNodesPerCycle
 from armi.utils.textProcessors import resolveMarkupInclusions
@@ -854,11 +853,7 @@ class Database3:
             comp.add(child)
 
         if isinstance(comp, Core):
-            # TODO: This is also an issue related to geoms and which core is "The Core".
-            # We only have a good geom for the main core, so can't do process loading on
-            # the SFP, etc.
-            if comp.hasFlags(Flags.CORE):
-                comp.processLoading(cs, dbLoad=True)
+            comp.processLoading(cs, dbLoad=True)
         elif isinstance(comp, Assembly):
             comp.calculateZCoords()
 
@@ -1311,8 +1306,7 @@ class Database3:
         Returns
         -------
         dict
-            Dictionary ArmiObject (input): dict of str/list pairs containing ((cycle,
-            node), value).
+            Dictionary ArmiObject (input): dict of str/list pairs containing ((cycle, node), value).
         """
         histData: Histories = {
             c: collections.defaultdict(collections.OrderedDict) for c in comps
@@ -1329,8 +1323,7 @@ class Database3:
             if "layout" not in h5TimeNodeGroup:
                 # Layout hasn't been written for this time step, so whatever is in there
                 # didn't come from the DatabaseInterface. Probably because it's the
-                # current time step and something has created the group to store aux
-                # data
+                # current time step and something has created the group to store aux data
                 continue
 
             cycle = h5TimeNodeGroup.attrs["cycle"]
@@ -1419,7 +1412,7 @@ class Database3:
 
                         histData[c][paramName][cycle, timeNode] = val
 
-        r = comps[0].getAncestorWithFlags(Flags.REACTOR)
+        r = comps[0].getAncestor(lambda c: isinstance(c, Reactor))
         cycleNode = r.p.cycle, r.p.timeNode
         for c, paramHistories in histData.items():
             for paramName, hist in paramHistories.items():
