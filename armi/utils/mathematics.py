@@ -66,9 +66,8 @@ def average1DWithinTolerance(vals, tolerance=0.2):
 
 def convertToSlice(x, increment=0):
     """
-    Convert a int, float, list of ints or floats, None, or slice
-    to a slice. Also optionally increments that slice to make it easy to line
-    up lists that don't start with 0.
+    Convert a int, float, list of ints or floats, None, or slice to a slice. Also optionally
+    increments that slice to make it easy to line up lists that don't start with 0.
 
     Use this with np.array (np.ndarray) types to easily get selections of it's elements.
 
@@ -85,11 +84,11 @@ def convertToSlice(x, increment=0):
     Returns
     -------
     slice : slice
-        Returns a slice object that can be used in an array
-        like a[x] to select from its members.
-        Also, the slice has its index numbers decremented by 1.
-        It can also return a numpy array, which can be used
-        to slice other numpy arrays in the same way as a slice.
+        Returns a slice object that can be used in an array like a[x] to select from its members.
+        Also, the slice has its index numbers decremented by 1. It can also return a numpy array,
+        which can be used to slice other numpy arrays in the same way as a slice.
+    increment : int
+        Step size to take, if you want to take less then every datum in the collection.
 
     Examples
     --------
@@ -111,19 +110,12 @@ def convertToSlice(x, increment=0):
     >>> a[utils.convertToSlice([1, 3])]
     array([11, 13])
 
-
     >>> a[utils.convertToSlice([1, 3], increment=-1)]
     array([10, 12])
 
     >>> a[utils.convertToSlice(slice(2, 3, None), increment=-1)]
     array([11])
     """
-    if increment is False:
-        increment = 0
-
-    if not isinstance(increment, int):
-        raise Exception("increment must be False or an integer in utils.convertToSlice")
-
     if x is None:
         x = np.s_[:]
 
@@ -152,15 +144,11 @@ def convertToSlice(x, increment=0):
         jstep = x.step
 
         return np.s_[jstart:jstop:jstep]
-
     elif isinstance(x, np.ndarray):
         return np.array([i + increment for i in x])
-
     else:
         raise Exception(
-            (
-                "It is not known how to handle x type: " "{0} in utils.convertToSlice"
-            ).format(type(x))
+            f"It is not known how to handle x type: {type(x)} in utils.convertToSlice"
         )
 
 
