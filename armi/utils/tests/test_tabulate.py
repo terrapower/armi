@@ -395,6 +395,28 @@ class TestTabulateInputs(unittest.TestCase):
         result = tabulate(lb, headers=["bytes"])
         self.assertEqual(expected, result)
 
+    def test_tightCouplingExample(self):
+        """Input: Example from tight coupling."""
+        data = {
+            "criticalCrIteration: keffUnc": [8.01234e-05],
+            "dif3d: power": [0.00276543],
+            "thInterface: THaverageCladTemp": [0.00123456],
+        }
+        result = tabulate(data, headers="keys", showIndex=True, tableFmt="armi")
+
+        border = "--  ------------------------------  --------------  --------------------------------"
+        expected = "\n".join(
+            [
+                border,
+                "      criticalCrIteration: keffUnc    dif3d: power    thInterface: THaverageCladTemp",
+                border,
+                " 0                     8.01234e-05      0.00276543                        0.00123456",
+                border,
+            ]
+        )
+
+        self.assertEqual(expected, result)
+
 
 class TestTabulateInternal(unittest.TestCase):
     def test_alignColumnDecimal(self):
