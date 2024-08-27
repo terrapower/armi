@@ -22,7 +22,7 @@ for primitive shapes should be created.
 
 import math
 
-import numpy
+import numpy as np
 from pyevtk.hl import unstructuredGridToVTK
 from pyevtk.vtk import VtkHexahedron, VtkQuadraticHexahedron
 
@@ -54,13 +54,13 @@ class VtkMesh:
         """
         Parameters
         ----------
-        vertices : numpy array
-            An Nx3 numpy array with one row per (x,y,z) vertex
-        connectivity : numpy array
+        vertices : np array
+            An Nx3 np array with one row per (x,y,z) vertex
+        connectivity : np array
             A 1-D array containing the vertex indices belonging to each cell
-        offsets : numpy array
+        offsets : np array
             A 1-D array containing the index of the first vertex for the next cell
-        cellTypes : numpy array
+        cellTypes : np array
             A 1-D array contining the cell type ID for each cell
         """
         self.vertices = vertices
@@ -71,35 +71,35 @@ class VtkMesh:
     @staticmethod
     def empty():
         return VtkMesh(
-            numpy.empty((0, 3), dtype=numpy.float64),
-            numpy.array([], dtype=numpy.int32),
-            numpy.array([], dtype=numpy.int32),
-            numpy.array([], dtype=numpy.int32),
+            np.empty((0, 3), dtype=np.float64),
+            np.array([], dtype=np.int32),
+            np.array([], dtype=np.int32),
+            np.array([], dtype=np.int32),
         )
 
     @property
     def x(self):
-        return numpy.array(self.vertices[:, 0])
+        return np.array(self.vertices[:, 0])
 
     @property
     def y(self):
-        return numpy.array(self.vertices[:, 1])
+        return np.array(self.vertices[:, 1])
 
     @property
     def z(self):
-        return numpy.array(self.vertices[:, 2])
+        return np.array(self.vertices[:, 2])
 
     def append(self, other):
         """Add more cells to the mesh."""
         connectOffset = self.vertices.shape[0]
         offsetOffset = self.offsets[-1] if self.offsets.size > 0 else 0
 
-        self.vertices = numpy.vstack((self.vertices, other.vertices))
-        self.connectivity = numpy.append(
+        self.vertices = np.vstack((self.vertices, other.vertices))
+        self.connectivity = np.append(
             self.connectivity, other.connectivity + connectOffset
         )
-        self.offsets = numpy.append(self.offsets, other.offsets + offsetOffset)
-        self.cellTypes = numpy.append(self.cellTypes, other.cellTypes)
+        self.offsets = np.append(self.offsets, other.offsets + offsetOffset)
+        self.cellTypes = np.append(self.cellTypes, other.cellTypes)
 
     def write(self, path, data) -> str:
         """
@@ -193,25 +193,23 @@ def _createHexBlockMesh(b: blocks.HexBlock) -> VtkMesh:
     zMax = b.p.ztop
 
     gridOffset = b.spatialLocator.getGlobalCoordinates()[:2]
-    gridOffset = numpy.tile(gridOffset, (6, 1))
+    gridOffset = np.tile(gridOffset, (6, 1))
 
     pitch = b.getPitch()
-    hexVerts2d = numpy.array(hexagon.corners(rotation=0)) * pitch
+    hexVerts2d = np.array(hexagon.corners(rotation=0)) * pitch
     hexVerts2d += gridOffset
 
     # we need a top and bottom hex
-    hexVerts2d = numpy.vstack((hexVerts2d, hexVerts2d))
+    hexVerts2d = np.vstack((hexVerts2d, hexVerts2d))
 
     # fold in z locations to get 3d coordinates
-    hexVerts = numpy.hstack(
-        (hexVerts2d, numpy.array([[zMin] * 6 + [zMax] * 6]).transpose())
-    )
+    hexVerts = np.hstack((hexVerts2d, np.array([[zMin] * 6 + [zMax] * 6]).transpose()))
 
     return VtkMesh(
         hexVerts,
-        numpy.array(list(range(12))),
-        numpy.array([12]),
-        numpy.array([_HEX_PRISM_TID]),
+        np.array(list(range(12))),
+        np.array([12]),
+        np.array([_HEX_PRISM_TID]),
     )
 
 
@@ -222,13 +220,13 @@ def _createCartesianBlockMesh(b: blocks.CartesianBlock) -> VtkMesh:
     zMax = b.p.ztop
 
     gridOffset = b.spatialLocator.getGlobalCoordinates()[:2]
-    gridOffset = numpy.tile(gridOffset, (4, 1))
+    gridOffset = np.tile(gridOffset, (4, 1))
 
     pitch = b.getPitch()
     halfPitchX = pitch[0] * 0.5
     halfPitchY = pitch[0] * 0.5
 
-    rectVerts = numpy.array(
+    rectVerts = np.array(
         [
             [halfPitchX, halfPitchY],
             [-halfPitchX, halfPitchY],
@@ -239,18 +237,16 @@ def _createCartesianBlockMesh(b: blocks.CartesianBlock) -> VtkMesh:
     rectVerts += gridOffset
 
     # make top/bottom rectangles
-    boxVerts = numpy.vstack((rectVerts, rectVerts))
+    boxVerts = np.vstack((rectVerts, rectVerts))
 
     # fold in z coordinates
-    boxVerts = numpy.hstack(
-        (boxVerts, numpy.array([[zMin] * 4 + [zMax] * 4]).transpose())
-    )
+    boxVerts = np.hstack((boxVerts, np.array([[zMin] * 4 + [zMax] * 4]).transpose()))
 
     return VtkMesh(
         boxVerts,
-        numpy.array(list(range(8))),
-        numpy.array([8]),
-        numpy.array([VtkHexahedron.tid]),
+        np.array(list(range(8))),
+        np.array([8]),
+        np.array([VtkHexahedron.tid]),
     )
 
 
@@ -285,13 +281,13 @@ def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
         (rOut, thIn, (zIn + zOut) * 0.5),
         (rOut, thOut, (zIn + zOut) * 0.5),
     ]
-    vertsXYZ = numpy.array(
+    vertsXYZ = np.array(
         [[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ]
     )
 
     return VtkMesh(
         vertsXYZ,
-        numpy.array(list(range(20))),
-        numpy.array([20]),
-        numpy.array([VtkQuadraticHexahedron.tid]),
+        np.array(list(range(20))),
+        np.array([20]),
+        np.array([VtkQuadraticHexahedron.tid]),
     )

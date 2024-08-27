@@ -54,7 +54,7 @@ from typing import (
 )
 
 import h5py
-import numpy
+import numpy as np
 
 from armi import context, getApp, meta, runLog, settings
 from armi.bookkeeping.db.jaggedArray import JaggedArray
@@ -219,7 +219,7 @@ class Database3:
             (os.path.abspath(sys.modules[p[1].__module__].__file__), p[1].__name__)
             for p in plugins
         ]
-        ps = numpy.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
+        ps = np.array([str(p[0]) + ":" + str(p[1]) for p in ps]).astype("S")
         self.h5db.attrs["pluginPaths"] = ps
         self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
 
@@ -242,7 +242,7 @@ class Database3:
         h5db.attrs["python"] = sys.version
         h5db.attrs["armiLocation"] = os.path.dirname(context.ROOT)
         h5db.attrs["startTime"] = context.START_TIME
-        h5db.attrs["machines"] = numpy.array(context.MPI_NODENAMES).astype("S")
+        h5db.attrs["machines"] = np.array(context.MPI_NODENAMES).astype("S")
 
         # store platform data
         platform_data = uname()
@@ -865,9 +865,9 @@ class Database3:
         return comp
 
     def _writeParams(self, h5group, comps) -> tuple:
-        def _getShape(arr: [numpy.ndarray, List, Tuple]):
-            """Get the shape of a numpy.ndarray, list, or tuple."""
-            if isinstance(arr, numpy.ndarray):
+        def _getShape(arr: [np.ndarray, List, Tuple]):
+            """Get the shape of a np.ndarray, list, or tuple."""
+            if isinstance(arr, np.ndarray):
                 return arr.shape
             elif isinstance(arr, (list, tuple)):
                 return (len(arr),)
@@ -900,9 +900,9 @@ class Database3:
                         linkedDims.append("")
                         data.append(val)
 
-                data = numpy.array(data)
+                data = np.array(data)
                 if any(linkedDims):
-                    attrs["linkedDims"] = numpy.array(linkedDims).astype("S")
+                    attrs["linkedDims"] = np.array(linkedDims).astype("S")
             else:
                 # NOTE: after loading, the previously unset values will be defaulted
                 temp = [c.p.get(paramDef.name, paramDef.default) for c in comps]
@@ -910,7 +910,7 @@ class Database3:
                     data, sAttrs = paramDef.serializer.pack(temp)
                     assert (
                         data.dtype.kind != "O"
-                    ), "{} failed to convert {} to a numpy-supported type.".format(
+                    ), "{} failed to convert {} to a np-supported type.".format(
                         paramDef.serializer.__name__, paramDef.name
                     )
                     attrs.update(sAttrs)
@@ -918,14 +918,12 @@ class Database3:
                     attrs[_SERIALIZER_VERSION] = paramDef.serializer.version
                 else:
                     # check if temp is a jagged array
-                    if any(isinstance(x, (numpy.ndarray, list)) for x in temp):
+                    if any(isinstance(x, (np.ndarray, list)) for x in temp):
                         jagged = len(set([_getShape(x) for x in temp])) != 1
                     else:
                         jagged = False
                     data = (
-                        JaggedArray(temp, paramDef.name)
-                        if jagged
-                        else numpy.array(temp)
+                        JaggedArray(temp, paramDef.name) if jagged else np.array(temp)
                     )
                     del temp
 
@@ -937,13 +935,13 @@ class Database3:
                 data, specialAttrs = packSpecialData(data, paramDef.name)
                 attrs.update(specialAttrs)
 
-            else:  # numpy.ndarray
+            else:  # np.ndarray
                 # Convert Unicode to byte-string
                 if data.dtype.kind == "U":
                     data = data.astype("S")
 
                 if data.dtype.kind == "O":
-                    # Something was added to the data array that caused numpy to want to
+                    # Something was added to the data array that caused np to want to
                     # treat it as a general-purpose Object array. This usually happens
                     # because:
                     # - the data contain NoDefaults
@@ -1043,23 +1041,23 @@ class Database3:
                 assert dataSet.attrs[_SERIALIZER_NAME] == pDef.serializer.__name__
                 assert _SERIALIZER_VERSION in dataSet.attrs
 
-                data = numpy.array(
+                data = np.array(
                     pDef.serializer.unpack(
                         data, dataSet.attrs[_SERIALIZER_VERSION], attrs
                     )
                 )
 
-            if data.dtype.type is numpy.string_:
-                data = numpy.char.decode(data)
+            if data.dtype.type is np.string_:
+                data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
                 data = unpackSpecialData(data, attrs, paramName)
 
             linkedDims = []
             if "linkedDims" in attrs:
-                linkedDims = numpy.char.decode(attrs["linkedDims"])
+                linkedDims = np.char.decode(attrs["linkedDims"])
 
-            # iterating of numpy is not fast...
+            # iterating of np is not fast...
             for c, val, linkedDim in itertools.zip_longest(
                 comps, data.tolist(), linkedDims, fillvalue=""
             ):
@@ -1187,7 +1185,7 @@ class Database3:
 
             lLocation = layout.location
             # filter for objects that live under the desired ancestor and at a desired location
-            objectIndicesInLayout = numpy.array(
+            objectIndicesInLayout = np.array(
                 [
                     i
                     for i, (ancestor, loc) in enumerate(zip(ancestors, lLocation))
@@ -1195,10 +1193,10 @@ class Database3:
                 ]
             )
 
-            # This could also be way more efficient if lLocation were a numpy array
+            # This could also be way more efficient if lLocation were a np array
             objectLocationsInLayout = [lLocation[i] for i in objectIndicesInLayout]
 
-            objectIndicesInData = numpy.array(layout.indexInData)[
+            objectIndicesInData = np.array(layout.indexInData)[
                 objectIndicesInLayout
             ].tolist()
 
@@ -1215,7 +1213,7 @@ class Database3:
             for paramName in params or h5GroupForType.keys():
                 if paramName == "location":
                     # location is special, since it is stored in layout/
-                    data = numpy.array(layout.location)[objectIndicesInLayout]
+                    data = np.array(layout.location)[objectIndicesInLayout]
                 elif paramName in h5GroupForType:
                     dataSet = h5GroupForType[paramName]
                     try:
@@ -1228,8 +1226,8 @@ class Database3:
                         )
                         raise
 
-                    if data.dtype.type is numpy.string_:
-                        data = numpy.char.decode(data)
+                    if data.dtype.type is np.string_:
+                        data = np.char.decode(data)
 
                     if dataSet.attrs.get("specialFormatting", False):
                         if dataSet.attrs.get("nones", False):
@@ -1244,7 +1242,7 @@ class Database3:
                             )
                 else:
                     # Nothing in the database for this param, so use the default value
-                    data = numpy.repeat(
+                    data = np.repeat(
                         parameters.byNameAndType(paramName, compType).default,
                         len(comps),
                     )
@@ -1350,7 +1348,7 @@ class Database3:
                         )
                     )
                     raise ee
-                layoutIndicesForType = numpy.where(layout.type == compTypeName)[0]
+                layoutIndicesForType = np.where(layout.type == compTypeName)[0]
                 serialNumsForType = layout.serialNum[layoutIndicesForType].tolist()
                 layoutIndexInData = layout.indexInData[layoutIndicesForType].tolist()
 
@@ -1376,7 +1374,7 @@ class Database3:
                         locs = []
                         for id in indexInData:
                             locs.append((layout.location[layoutIndicesForType[id]]))
-                        data = numpy.array(locs)
+                        data = np.array(locs)
                     elif paramName in h5GroupForType:
                         dataSet = h5GroupForType[paramName]
                         try:
@@ -1389,8 +1387,8 @@ class Database3:
                             )
                             raise
 
-                        if data.dtype.type is numpy.string_:
-                            data = numpy.char.decode(data)
+                        if data.dtype.type is np.string_:
+                            data = np.char.decode(data)
 
                         if dataSet.attrs.get("specialFormatting", False):
                             if dataSet.attrs.get("nones", False):
@@ -1405,17 +1403,17 @@ class Database3:
                                 )
                     else:
                         # Nothing in the database, so use the default value
-                        data = numpy.repeat(
+                        data = np.repeat(
                             parameters.byNameAndType(paramName, compType).default,
                             len(reorderedComps),
                         )
 
-                    # iterating of numpy is not fast..
+                    # iterating of np is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
                         if paramName == "location":
                             val = tuple(val)
                         elif isinstance(val, list):
-                            val = numpy.array(val)
+                            val = np.array(val)
 
                         histData[c][paramName][cycle, timeNode] = val
 
@@ -1508,20 +1506,20 @@ class Database3:
 
 
 def packSpecialData(
-    arrayData: [numpy.ndarray, JaggedArray], paramName: str
-) -> Tuple[Optional[numpy.ndarray], Dict[str, Any]]:
+    arrayData: [np.ndarray, JaggedArray], paramName: str
+) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
     """
-    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
+    Reduce data that wouldn't otherwise play nicely with HDF5/np arrays to a format
     that will.
 
     This is the main entry point for conforming "strange" data into something that will
-    both fit into a numpy array/HDF5 dataset, and be recoverable to its original-ish
+    both fit into a np array/HDF5 dataset, and be recoverable to its original-ish
     state when reading it back in. This is accomplished by detecting a handful of known
     offenders and using various HDF5 attributes to store necessary auxiliary data. It is
     important to keep in mind that the data that is passed in has already been converted
-    to a numpy array, so the top dimension is always representing the collection of
+    to a np array, so the top dimension is always representing the collection of
     composites that are storing the parameters. For instance, if we are dealing with a
-    Block parameter, the first index in the numpy array of data is the block index; so
+    Block parameter, the first index in the np array of data is the block index; so
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
@@ -1556,7 +1554,7 @@ def packSpecialData(
     if isinstance(arrayData, JaggedArray):
         data = arrayData.flattenedArray
     else:
-        # Check to make sure that we even need to do this. If the numpy data type is
+        # Check to make sure that we even need to do this. If the np data type is
         # not "O", chances are we have nice, clean data.
         if arrayData.dtype != "O":
             return arrayData, {}
@@ -1570,7 +1568,7 @@ def packSpecialData(
 
     # find locations of Nones. The below works for ndarrays, whereas `data == None`
     # gives a single True/False value
-    nones = numpy.where([d is None for d in data])[0]
+    nones = np.where([d is None for d in data])[0]
 
     if len(nones) == data.shape[0]:
         # Everything is None, so why bother?
@@ -1597,15 +1595,15 @@ def packSpecialData(
         # for most keys.
         attrs["dict"] = True
         keys = sorted({k for d in data for k in d})
-        data = numpy.array([[d.get(k, numpy.nan) for k in keys] for d in data])
+        data = np.array([[d.get(k, np.nan) for k in keys] for d in data])
         if data.dtype == "O":
             # The data themselves are nasty. We could support this, but best to wait for
             # a credible use case.
             raise TypeError(
-                "Unable to coerce dictionary data into usable numpy array for "
+                "Unable to coerce dictionary data into usable np array for "
                 "{}".format(paramName)
             )
-        attrs["keys"] = numpy.array(keys).astype("S")
+        attrs["keys"] = np.array(keys).astype("S")
 
         return data, attrs
 
@@ -1616,23 +1614,23 @@ def packSpecialData(
         attrs["noneLocations"] = arrayData.nones
         return data, attrs
 
-    # conform non-numpy arrays to numpy
+    # conform non-np arrays to np
     for i, val in enumerate(data):
         if isinstance(val, (list, tuple)):
-            data[i] = numpy.array(val)
+            data[i] = np.array(val)
 
-    if not any(isinstance(d, numpy.ndarray) for d in data):
+    if not any(isinstance(d, np.ndarray) for d in data):
         # looks like 1-D plain-old-data
         data = replaceNonesWithNonsense(data, paramName, nones)
         return data, attrs
 
-    if any(isinstance(d, (tuple, list, numpy.ndarray)) for d in data):
+    if any(isinstance(d, (tuple, list, np.ndarray)) for d in data):
         data = replaceNonesWithNonsense(data, paramName, nones)
         return data, attrs
 
     if len(nones) == 0:
         raise TypeError(
-            "Cannot write {} to the database, it did not resolve to a numpy/HDF5 "
+            "Cannot write {} to the database, it did not resolve to a np/HDF5 "
             "type.".format(paramName)
         )
 
@@ -1640,9 +1638,9 @@ def packSpecialData(
     raise TypeError("Failed to process special data for {}".format(paramName))
 
 
-def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarray:
+def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
     """
-    Extract data from a specially-formatted HDF5 dataset into a numpy array.
+    Extract data from a specially-formatted HDF5 dataset into a np array.
 
     This should invert the operations performed by :py:func:`packSpecialData`.
 
@@ -1659,7 +1657,7 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
 
     Returns
     -------
-    numpy.ndarray
+    np.ndarray
         An ndarray containing the closest possible representation of the data that was
         originally written to the database.
 
@@ -1683,14 +1681,14 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
         data = JaggedArray.fromH5(data, offsets, shapes, nones, data.dtype, paramName)
         return data
     if attrs.get("dict", False):
-        keys = numpy.char.decode(attrs["keys"])
+        keys = np.char.decode(attrs["keys"])
         unpackedData = []
         assert data.ndim == 2
         for d in data:
             unpackedData.append(
-                {key: value for key, value in zip(keys, d) if not numpy.isnan(value)}
+                {key: value for key, value in zip(keys, d) if not np.isnan(value)}
             )
-        return numpy.array(unpackedData)
+        return np.array(unpackedData)
 
     raise ValueError(
         "Do not recognize the type of special formatting that was applied "
@@ -1698,7 +1696,7 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     )
 
 
-def collectBlockNumberDensities(blocks) -> Dict[str, numpy.ndarray]:
+def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     """
     Collect block-by-block homogenized number densities for each nuclide.
 
@@ -1719,7 +1717,7 @@ def collectBlockNumberDensities(blocks) -> Dict[str, numpy.ndarray]:
     nucDensityMatrix = []
     for block in blocks:
         nucDensityMatrix.append(block.getNuclideNumberDensities(nucNames))
-    nucDensityMatrix = numpy.array(nucDensityMatrix)
+    nucDensityMatrix = np.array(nucDensityMatrix)
 
     dataDict = dict()
     for ni, nb in enumerate(nucBases):

@@ -244,7 +244,7 @@ Place a single line between each of these groups, for example:
     import os
     import math
 
-    import numpy
+    import numpy as np
     from matplotlib import pyplot
 
     from armi import runLog

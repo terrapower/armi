@@ -17,7 +17,7 @@ import subprocess
 import unittest
 
 import h5py
-import numpy
+import numpy as np
 
 from armi.bookkeeping.db import _getH5File
 from armi.bookkeeping.db import database3
@@ -222,22 +222,22 @@ class TestDatabase3Smaller(unittest.TestCase):
 
     def _compareArrays(self, ref, src):
         """
-        Compare two numpy arrays.
+        Compare two np arrays.
 
-        Comparing numpy arrays that may have unsavory data (NaNs, Nones, jagged
+        Comparing np arrays that may have unsavory data (NaNs, Nones, jagged
         data, etc.) is really difficult. For now, convert to a list and compare
         element-by-element.
         """
         self.assertEqual(type(ref), type(src))
-        if isinstance(ref, numpy.ndarray):
+        if isinstance(ref, np.ndarray):
             ref = ref.tolist()
             src = src.tolist()
 
         for v1, v2 in zip(ref, src):
             # Entries may be None
-            if isinstance(v1, numpy.ndarray):
+            if isinstance(v1, np.ndarray):
                 v1 = v1.tolist()
-            if isinstance(v2, numpy.ndarray):
+            if isinstance(v2, np.ndarray):
                 v2 = v2.tolist()
             self.assertEqual(v1, v2)
 
@@ -318,19 +318,17 @@ class TestDatabase3Smaller(unittest.TestCase):
     # TODO: This should be expanded.
     def test_replaceNones(self):
         """Super basic test that we handle Nones correctly in database read/writes."""
-        data3 = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        data1 = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
-        data1iNones = numpy.array([1, 2, None, 5, 6])
-        data1fNones = numpy.array([None, 2.0, None, 5.0, 6.0])
-        data2fNones = numpy.array(
-            [None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object
-        )
-        twoByTwo = numpy.array([[1, 2], [3, 4]])
-        twoByOne = numpy.array([[1], [None]])
-        threeByThree = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        data3 = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        data1 = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+        data1iNones = np.array([1, 2, None, 5, 6])
+        data1fNones = np.array([None, 2.0, None, 5.0, 6.0])
+        data2fNones = np.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object)
+        twoByTwo = np.array([[1, 2], [3, 4]])
+        twoByOne = np.array([[1], [None]])
+        threeByThree = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         dataJag = JaggedArray([twoByTwo, threeByThree], "testParam")
         dataJagNones = JaggedArray([twoByTwo, twoByOne, threeByThree], "testParam")
-        dataDict = numpy.array(
+        dataDict = np.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
         )
         self._compareRoundTrip(data3)
@@ -355,7 +353,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": numpy.eye(64),
+                "fakeBigData": np.eye(64),
                 "someString": randomText,
             },
         )
@@ -378,7 +376,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             attrs = database3.Database3._resolveAttrs(
                 tnGroup["layout/serialNum"].attrs, tnGroup
             )
-            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(64)))
+            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)

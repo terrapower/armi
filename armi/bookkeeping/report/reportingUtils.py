@@ -26,7 +26,7 @@ import sys
 import textwrap
 import time
 
-import numpy
+import numpy as np
 
 from armi import context
 from armi import interfaces
@@ -701,7 +701,7 @@ def summarizePinDesign(core):
             designInfo["zrFrac"].append(fuel.getMassFrac("ZR"))
 
         # assumption made that all lists contain only numerical data
-        designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
+        designInfo = {key: np.average(data) for key, data in designInfo.items()}
 
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():

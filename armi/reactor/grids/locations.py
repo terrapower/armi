@@ -16,7 +16,7 @@ from typing import Optional, TYPE_CHECKING, Union, Hashable, Tuple, List, Iterat
 from abc import ABC, abstractmethod
 import math
 
-import numpy
+import numpy as np
 
 if TYPE_CHECKING:
     # Avoid some circular imports
@@ -158,13 +158,13 @@ class LocationBase(ABC):
 
     @property
     @abstractmethod
-    def indices(self) -> numpy.ndarray:
+    def indices(self) -> np.ndarray:
         """Get the non-grid indices (i,j,k) of this locator.
 
         This strips off the annoying ``grid`` tagalong which is there to ensure proper
         equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
 
-        It is a numpy array for two reasons:
+        It is a np array for two reasons:
 
         1. It can be added and subtracted for the recursive computations
            through different coordinate systems
@@ -239,21 +239,21 @@ class IndexLocation(LocationBase):
         return None
 
     @property
-    def indices(self) -> numpy.ndarray:
+    def indices(self) -> np.ndarray:
         """
         Get the non-grid indices (i,j,k) of this locator.
 
         This strips off the annoying ``grid`` tagalong which is there to ensure proper
         equality (i.e. (0,0,0) in a storage rack is not equal to (0,0,0) in a core).
 
-        It is a numpy array for two reasons:
+        It is a np array for two reasons:
 
         1. It can be added and subtracted for the recursive computations
            through different coordinate systems
         2. It can be written/read from the database.
 
         """
-        return numpy.array(self[:3])
+        return np.array(self[:3])
 
     def getCompleteIndices(self) -> IJKType:
         """
@@ -339,8 +339,8 @@ class IndexLocation(LocationBase):
         return math.sqrt(
             (
                 (
-                    numpy.array(self.getGlobalCoordinates())
-                    - numpy.array(other.getGlobalCoordinates())
+                    np.array(self.getGlobalCoordinates())
+                    - np.array(other.getGlobalCoordinates())
                 )
                 ** 2
             ).sum()
@@ -429,7 +429,7 @@ class MultiIndexLocation(IndexLocation):
         self._locations.pop(location)
 
     @property
-    def indices(self) -> List[numpy.ndarray]:
+    def indices(self) -> List[np.ndarray]:
         """
         Return indices for all locations.
 

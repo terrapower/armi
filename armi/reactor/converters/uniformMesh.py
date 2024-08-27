@@ -58,7 +58,7 @@ import copy
 import collections
 from timeit import default_timer as timer
 
-import numpy
+import numpy as np
 
 import armi
 from armi import runLog
@@ -186,8 +186,8 @@ class UniformMeshGenerator:
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
 
-        averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
-        self._commonMesh = numpy.array(averageMesh)
+        averageMesh = average1DWithinTolerance(np.array(allMeshes))
+        self._commonMesh = np.array(averageMesh)
 
     def _decuspAxialMesh(self):
         """
@@ -254,7 +254,7 @@ class UniformMeshGenerator:
             preference="top",
         )
 
-        self._commonMesh = numpy.array(combinedMesh)
+        self._commonMesh = np.array(combinedMesh)
 
     def _filterMesh(
         self, meshList, minimumMeshSize, anchorPoints, preference="bottom", warn=False
@@ -1392,7 +1392,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, (tuple, list, numpy.ndarray)):
+            if isinstance(val, (tuple, list, np.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1402,13 +1402,13 @@ class ParamMapper:
         paramVals = []
         for paramName in paramNames:
             val = block.p[paramName]
-            # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, list, numpy.ndarray)):
-                paramVals.append(numpy.array(val) if len(val) > 0 else None)
+            # list-like should be treated as a np array
+            if isinstance(val, (tuple, list, np.ndarray)):
+                paramVals.append(np.array(val) if len(val) > 0 else None)
             else:
                 paramVals.append(val)
 
-        return numpy.array(paramVals, dtype=object)
+        return np.array(paramVals, dtype=object)
 
     @staticmethod
     def _scalarParamSetter(block, vals, paramNames):
@@ -1422,7 +1422,7 @@ class ParamMapper:
         for paramName, vals in zip(paramNames, arrayVals):
             if vals is None:
                 continue
-            block.p[paramName] = numpy.array(vals)
+            block.p[paramName] = np.array(vals)
 
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
