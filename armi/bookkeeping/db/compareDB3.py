@@ -315,7 +315,7 @@ def _diffSpecialData(
     Compare specially-formatted datasets.
 
     This employs the pack/unpackSpecialData functions to reconstitute complicated
-    datasets for comparison. These usually don't behave well as giant np arrays, so
+    datasets for comparison. These usually don't behave well as giant numpy arrays, so
     we go element-by-element to calculate the diffs, then concatenate them.
     """
     name = refData.name
@@ -380,7 +380,7 @@ def _diffSpecialData(
                 diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
-            # make sure not to try to compare empty arrays. np is mediocre at
+            # make sure not to try to compare empty arrays. numpy is mediocre at
             # these; they are super degenerate and cannot participate in concatenation.
             # Why?
             if 0 not in dSrc.shape:

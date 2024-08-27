@@ -749,7 +749,7 @@ def replaceNonesWithNonsense(
     Parameters
     ----------
     data
-        The np array containing ``None`` values that need to be replaced.
+        The numpy array containing ``None`` values that need to be replaced.
 
     paramName
         The name of the parameter who's data we are treating. Only used for diagnostics.
@@ -763,8 +763,8 @@ def replaceNonesWithNonsense(
     Notes
     -----
     This only supports situations where the data is a straight-up ``None``, or a valid,
-    database-storable np array (or easily convertable to one (e.g. tuples/lists with
-    numerical values)). This does not support, for instance, a np ndarray with some
+    database-storable numpy array (or easily convertable to one (e.g. tuples/lists with
+    numerical values)). This does not support, for instance, a numpy ndarray with some
     Nones in it.
 
     For example, the following is supported::
