@@ -605,8 +605,8 @@ class Assembly_TestCase(unittest.TestCase):
 
         for refBlock, curBlock in zip(self.assembly, assembly2):
             numNucs = 0
-            for nuc in self.assembly.getAncestorWithFlags(
-                Flags.REACTOR
+            for nuc in self.assembly.getAncestor(
+                lambda c: isinstance(c, reactors.Reactor)
             ).blueprints.allNuclidesInProblem:
                 numNucs += 1
                 # Block level density

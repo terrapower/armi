@@ -98,7 +98,6 @@ class Reactor(composites.Composite):
         self.spatialLocator = None
         self.p.maxAssemNum = 0
         self.p.cycle = 0
-        self.p.flags |= Flags.REACTOR
         self.core = None
         self.sfp = None
         self.blueprints = blueprints
@@ -123,7 +122,7 @@ class Reactor(composites.Composite):
 
     def add(self, container):
         composites.Composite.add(self, container)
-        cores = self.getChildrenWithFlags(Flags.CORE)
+        cores = [c for c in self.getChildren(deep=True) if isinstance(c, Core)]
         if cores:
             if len(cores) != 1:
                 raise ValueError(
@@ -251,10 +250,9 @@ class Core(composites.Composite):
         :implements: R_ARMI_R_CORE
 
         A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a child of a
-        :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor can contain multiple
-        objects of the Core type. The instance attribute name ``r.core`` is reserved for the object
-        representating the active core. A reactor may also have a spent fuel pool instance
-        attribute, ``r.sfp``\ , which is also of type :py:class:`core <armi.reactor.reactors.Core>`.
+        :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor should only contain
+        one object of the Core type. The instance attribute name ``r.core`` is reserved for the
+        object representating the active core.
 
         Most of the operations to retrieve information from the ARMI reactor data model are mediated
         through Core objects. For example,
@@ -266,7 +264,6 @@ class Core(composites.Composite):
     params : dict
         Core-level parameters are scalar values that have time dependence. Examples are keff,
         maxPercentBu, etc.
-
     assemblies : list
         List of assembly objects that are currently in the core
     """
@@ -283,7 +280,6 @@ class Core(composites.Composite):
             Name of the object. Flags will inherit from this.
         """
         composites.Composite.__init__(self, name)
-        self.p.flags = Flags.fromStringIgnoreErrors(name)
         self.assembliesByName = {}
         self.circularRingList = {}
         self.blocksByName = {}  # lookup tables
