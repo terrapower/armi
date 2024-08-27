@@ -1506,7 +1506,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        integratedFlux : np.array
+        integratedFlux : np.ndarray
             multigroup neutron tracklength in [n-cm/s]
         """
         if adjoint:
@@ -1606,7 +1606,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        totalEnergyGenConstant: np.array
+        totalEnergyGenConstant: np.ndarray
             Total (fission + capture) energy generation group constants (Joules/cm)
         """
         return (
@@ -1623,7 +1623,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        fissionEnergyGenConstant: np.array
+        fissionEnergyGenConstant: np.ndarray
             Energy generation group constants (Joules/cm)
 
         Raises
@@ -1650,7 +1650,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        fissionEnergyGenConstant: np.array
+        fissionEnergyGenConstant: np.ndarray
             Energy generation group constants (Joules/cm)
 
         Raises
@@ -1674,7 +1674,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        energyDepConstants: np.array
+        energyDepConstants: np.ndarray
             Neutron energy generation group constants (in Joules/cm)
 
         Raises
@@ -1698,7 +1698,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        energyDepConstants: np.array
+        energyDepConstants: np.ndarray
             Energy generation group constants (in Joules/cm)
 
         Raises

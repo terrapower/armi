@@ -625,7 +625,7 @@ def computeNeutronEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : np.array
+    energyDepositionConsts : np.ndarray
         Neutron energy deposition group constants. (J/cm)
 
     Notes
@@ -664,7 +664,7 @@ def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : np.array
+    energyDepositionConsts : np.ndarray
         gamma energy deposition group constants. (J/cm)
 
     Notes
@@ -707,7 +707,7 @@ def computeFissionEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    fissionEnergyFactor: np.array
+    fissionEnergyFactor: np.ndarray
         Fission energy generation group constants (in Joules/cm)
     """
     fissionEnergyFactor = computeMacroscopicGroupConstants(
@@ -751,7 +751,7 @@ def computeCaptureEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    captureEnergyFactor: np.array
+    captureEnergyFactor: np.ndarray
         Capture energy generation group constants (in Joules/cm)
     """
     captureEnergyFactor = None
@@ -849,7 +849,7 @@ def computeMacroscopicGroupConstants(
 
     Returns
     -------
-    macroGroupConstant : np.array
+    macroGroupConstant : np.ndarray
         Macroscopic group constants for the requested reaction.
     """
     skippedNuclides = []

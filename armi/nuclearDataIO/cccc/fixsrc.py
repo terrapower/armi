@@ -60,7 +60,7 @@ class FIXSRC(cccc.Stream):
             If 'wb', this class writes a FIXSRC binary file.
             If 'rb', this class reads a preexisting FIXSRC binary file.
 
-        fixSrc : np array
+        fixSrc : np.ndarray
             Core-wide multigroup gamma fixed-source data.
         """
         cccc.Stream.__init__(self, fileName, fileMode)
