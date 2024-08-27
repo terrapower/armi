@@ -62,7 +62,7 @@ class Category:
     -----
     * `cumulative` parameters are accumulated over many time steps
     * `pinQuantities` parameters are defined on the pin level within a block
-    * `multiGroupQuantities` parameters have group dependence (often a 1D np array)
+    * `multiGroupQuantities` parameters have group dependence (often a 1D numpy array)
     * `fluxQuantities` parameters are related to neutron or gamma flux
     * `neutronics` parameters are calculated in a neutronics global flux solve
     * `gamma` parameters are calculated in a fixed-source gamma solve
@@ -124,14 +124,14 @@ class Serializer:
     Abstract class describing serialize/deserialize operations for Parameter data.
 
     Parameters need to be stored to and read from database files. This currently requires that the
-    Parameter data be converted to a np array of a datatype supported by the ``h5py`` package.
-    Some parameters may contain data that are not trivially representable in np/HDF5, and need
+    Parameter data be converted to a numpy array of a datatype supported by the ``h5py`` package.
+    Some parameters may contain data that are not trivially representable in numpy/HDF5, and need
     special treatment. Subclassing ``Serializer`` and setting it as a ``Parameter``\ s
     ``serializer`` allows for special operations to be performed on the parameter values as they are
     stored to the database or read back in.
 
     The ``Database3`` already knows how to handle certain cases where the data are not
-    straightforward to get into a np array, such as when:
+    straightforward to get into a numpy array, such as when:
 
       - There are ``None``\ s.
 
@@ -159,7 +159,7 @@ class Serializer:
 
         Important physical parameters are stored in every ARMI object. These parameters represent
         the plant's state during execution of the model. Currently, this requires that the
-        parameters be serializable to a np array of a datatype supported by the ``h5py`` package
+        parameters be serializable to a numpy array of a datatype supported by the ``h5py`` package
         so that the data can be written to, and subsequently read from, an HDF5 file.
 
         This class allows for these parameters to be serialized in a custom manner by providing
@@ -202,7 +202,7 @@ class Serializer:
 
 
 def isNumpyArray(paramStr):
-    """Helper meta-function to create a method that sets a Parameter value to a numpy array.
+    """Helper meta-function to create a method that sets a Parameter value to a NumPy array.
 
     Parameters
     ----------
@@ -212,7 +212,7 @@ def isNumpyArray(paramStr):
     Returns
     -------
     function
-        A setter method on the Parameter class to force the value to be a numpy array.
+        A setter method on the Parameter class to force the value to be a NumPy array.
     """
 
     def setParameter(selfObj, value):
@@ -725,7 +725,7 @@ class ParameterBuilder:
         serializer: Optional subclass of Serializer
             A class describing how the parameter data should be stored to the database.
             This is usually only needed in exceptional cases where it is difficult to
-            store a parameter in a np array.
+            store a parameter in a numpy array.
 
         Notes
         -----

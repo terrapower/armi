@@ -1900,7 +1900,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return realVal
 
     def getChildParamValues(self, param):
-        """Get the child parameter values in a np array."""
+        """Get the child parameter values in a numpy array."""
         return np.array([child.p[param] for child in self])
 
     def isFuel(self):
@@ -2473,7 +2473,7 @@ class Composite(ArmiObject):
     **Details about spatial representation**
 
     Spatial representation of a ``Composite`` is handled through a combination of the
-    ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a np
+    ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy
     triple representing either:
 
     1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype

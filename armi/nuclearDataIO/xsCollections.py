@@ -99,7 +99,7 @@ class XSCollection:
 
     _zeroes = {}
     """
-    A dict of np arrays set to the size of XSLibrary.numGroups.
+    A dict of numpy arrays set to the size of XSLibrary.numGroups.
 
     This is used to initialize cross sections which may not exist for the specific nuclide.
     Consequently, there should never be a situation where a cross section does not exist.
@@ -849,7 +849,7 @@ def computeMacroscopicGroupConstants(
 
     Returns
     -------
-    macroGroupConstant : np array
+    macroGroupConstant : np.array
         Macroscopic group constants for the requested reaction.
     """
     skippedNuclides = []
