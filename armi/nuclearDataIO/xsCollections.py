@@ -161,7 +161,7 @@ class XSCollection:
         Notes
         -----
         These containers were originally
-        dicts, but upgraded to objects with np values as specialization
+        dicts, but upgraded to objects with numpy values as specialization
         was needed. This access method could/should be phased out.
         """
         return self.__dict__[key]
@@ -230,7 +230,7 @@ class XSCollection:
         """Zero out all the cross sections; this is useful for creating dummy cross sections."""
         for xsAttr in ALL_XS:
             value = getattr(self, xsAttr)
-            # it should either be a list, a np array, or a sparse matrix
+            # it should either be a list, a numpy array, or a sparse matrix
             if isinstance(value, list):
                 value = [0.0] * len(value)
             elif isinstance(value, np.ndarray):
@@ -625,7 +625,7 @@ def computeNeutronEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : np array
+    energyDepositionConsts : np.array
         Neutron energy deposition group constants. (J/cm)
 
     Notes
@@ -664,7 +664,7 @@ def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : np array
+    energyDepositionConsts : np.array
         gamma energy deposition group constants. (J/cm)
 
     Notes

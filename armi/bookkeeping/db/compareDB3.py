@@ -380,7 +380,7 @@ def _diffSpecialData(
                 diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
-            # make sure not to try to compare empty arrays. numpy is mediocre at
+            # make sure not to try to compare empty arrays. Numpy is mediocre at
             # these; they are super degenerate and cannot participate in concatenation.
             # Why?
             if 0 not in dSrc.shape:

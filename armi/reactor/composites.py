@@ -59,7 +59,7 @@ class FlagSerializer(parameters.Serializer):
 
     This operates by converting each set of Flags (too large to fit in a uint64) into a
     sequence of enough uint8 elements to represent all flags. These constitute a
-    dimension of a 2-D np array containing all Flags for all objects provided to the
+    dimension of a 2-D numpy array containing all Flags for all objects provided to the
     ``pack()`` function.
     """
 
@@ -68,7 +68,7 @@ class FlagSerializer(parameters.Serializer):
     @staticmethod
     def pack(data):
         """
-        Flags are represented as a 2-D np array of uint8 (single-byte, unsigned
+        Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
         reader and the writer can agree on the meaning of each bit.
