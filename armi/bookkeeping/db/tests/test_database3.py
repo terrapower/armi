@@ -222,7 +222,7 @@ class TestDatabase3Smaller(unittest.TestCase):
 
     def _compareArrays(self, ref, src):
         """
-        Compare two nunpy arrays.
+        Compare two numpy arrays.
 
         Comparing numpy arrays that may have unsavory data (NaNs, Nones, jagged
         data, etc.) is really difficult. For now, convert to a list and compare

@@ -1193,7 +1193,7 @@ class Database3:
                 ]
             )
 
-            # This could also be way more efficient if lLocation were a np array
+            # This could also be way more efficient if lLocation were a numpy array
             objectLocationsInLayout = [lLocation[i] for i in objectIndicesInLayout]
 
             objectIndicesInData = np.array(layout.indexInData)[
@@ -1513,13 +1513,13 @@ def packSpecialData(
     that will.
 
     This is the main entry point for conforming "strange" data into something that will
-    both fit into a np array/HDF5 dataset, and be recoverable to its original-ish
+    both fit into a numpy array/HDF5 dataset, and be recoverable to its original-ish
     state when reading it back in. This is accomplished by detecting a handful of known
     offenders and using various HDF5 attributes to store necessary auxiliary data. It is
     important to keep in mind that the data that is passed in has already been converted
-    to a np array, so the top dimension is always representing the collection of
+    to a numpy array, so the top dimension is always representing the collection of
     composites that are storing the parameters. For instance, if we are dealing with a
-    Block parameter, the first index in the np array of data is the block index; so
+    Block parameter, the first index in the numpy array of data is the block index; so
     if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
     where each element is a dictionary. This routine supports a number of different
     "strange" things:
@@ -1554,7 +1554,7 @@ def packSpecialData(
     if isinstance(arrayData, JaggedArray):
         data = arrayData.flattenedArray
     else:
-        # Check to make sure that we even need to do this. If the np data type is
+        # Check to make sure that we even need to do this. If the numpy data type is
         # not "O", chances are we have nice, clean data.
         if arrayData.dtype != "O":
             return arrayData, {}
@@ -1614,7 +1614,7 @@ def packSpecialData(
         attrs["noneLocations"] = arrayData.nones
         return data, attrs
 
-    # conform non-np arrays to np
+    # conform non-numpy arrays to numpy
     for i, val in enumerate(data):
         if isinstance(val, (list, tuple)):
             data[i] = np.array(val)
@@ -1630,7 +1630,7 @@ def packSpecialData(
 
     if len(nones) == 0:
         raise TypeError(
-            "Cannot write {} to the database, it did not resolve to a np/HDF5 "
+            "Cannot write {} to the database, it did not resolve to a numpy/HDF5 "
             "type.".format(paramName)
         )
 
@@ -1640,7 +1640,7 @@ def packSpecialData(
 
 def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
     """
-    Extract data from a specially-formatted HDF5 dataset into a np array.
+    Extract data from a specially-formatted HDF5 dataset into a numpy array.
 
     This should invert the operations performed by :py:func:`packSpecialData`.
 
