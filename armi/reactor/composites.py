@@ -2103,7 +2103,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        flux : np.array
+        flux : np.ndarray
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
@@ -2996,7 +2996,7 @@ class Composite(ArmiObject):
 
         Returns
         -------
-        integratedFlux : np.array
+        integratedFlux : np.ndarray
             multigroup neutron tracklength in [n-cm/s]
         """
         integratedMgFlux = np.zeros(1)
@@ -3254,7 +3254,7 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     xsSuffix : str
         cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
         second burnup group of type A
-    mgFlux : np.nArray
+    mgFlux : np.ndarray
         integrated mgFlux (n-cm/s)
     nDens : float
         number density (atom/bn-cm)
