@@ -29,7 +29,6 @@ settings:
       meshSubdivisionsPerCm: 10
   cycleLength: 365.25
   economics: false
-  epsCyclic: 1.0
   epsEig: 1e-10
   genXS: Neutron
   geomFile: zpprTestGeom.xml
