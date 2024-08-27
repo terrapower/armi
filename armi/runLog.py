@@ -44,16 +44,15 @@ Or change the log level the same way:
 
     runLog.setVerbosity('debug')
 """
-from glob import glob
 import collections
 import logging
 import operator
 import os
 import sys
 import time
+from glob import glob
 
 from armi import context
-
 
 # global constants
 _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
@@ -344,14 +343,6 @@ def concatenateLogs(logDir=None):
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
     if not len(stdoutFiles):
         info("No log files found to concatenate.")
-
-        # If the log dir is empty, we can delete it.
-        try:
-            os.rmdir(logDir)
-        except:  # noqa: bare-except
-            # low priority concern: it's an empty log dir.
-            pass
-
         return
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
@@ -362,8 +353,10 @@ def concatenateLogs(logDir=None):
         stdoutFile = os.path.normpath(stdoutPath).split(os.sep)[-1]
         prefix = STDOUT_LOGGER_NAME + "."
         if stdoutFile[0 : len(prefix)] == prefix:
-            caseTitle = stdoutFile.split(".")[-3]
-            break
+            candidate = stdoutFile.split(".")[-3]
+            if len(candidate) > 0:
+                caseTitle = candidate
+                break
 
     combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
     with open(combinedLogName, "w") as workerLog:

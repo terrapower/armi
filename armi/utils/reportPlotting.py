@@ -29,7 +29,7 @@ import itertools
 import math
 import os
 
-from matplotlib import cm
+from matplotlib import colormaps
 from matplotlib import colors as mpltcolors
 import matplotlib.path
 import matplotlib.projections.polar
@@ -60,15 +60,13 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         The burnup groups in the problem
 
     extension : str, optional
-        The file extention for saving plots
+        The file extension for saving plots
 
     history: armi.bookkeeping.historyTracker.HistoryTrackerInterface object
         The history tracker interface
     """
     try:
-        data = dbi.getHistory(
-            reactor, params=["cycle", "time", "eFeedMT", "eSWU", "eFuelCycleCost"]
-        )
+        data = dbi.getHistory(reactor, params=["cycle", "time", "eFeedMT", "eSWU"])
         data.update(
             dbi.getHistory(
                 reactor.core,
@@ -143,7 +141,7 @@ def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
         The minimum y-axis value. If any ordinates are less than this value,
         it will be ignored.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -183,7 +181,7 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     ymin : float, optional
         Minimum y-axis value to target.
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -228,7 +226,7 @@ def buVsTime(name, scalars, extension=None):
     scalars : dict
         Scalar values for this case
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
@@ -280,11 +278,11 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     buGroups : list of float
         The burnup groups in the problem
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
     """
     extension = extension or settings.Settings()["outputFileExtension"]
 
-    if not history.xsHistory:
+    if history is None or not history.xsHistory:
         return
 
     colors = itertools.cycle(["b", "g", "r", "c", "m", "y", "k"])
@@ -307,7 +305,7 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     plt.legend()
     plt.title("Block burnups used to generate XS for {0}".format(name))
     plt.xlabel("Time (years)")
-    plt.ylabel("Burnup (% FIMA)")
+    plt.ylabel(r"Burnup (% FIMA)")
 
     plt.ylim(0, maxbu * 1.05)
     figName = name + ".bugroups." + extension
@@ -331,7 +329,7 @@ def movesVsCycle(name, scalars, extension=None):
     name : str
         reactor.name
     extension : str, optional
-        The file extention for saving the figure
+        The file extension for saving the figure
 
     See Also
     --------
@@ -729,7 +727,7 @@ def plotAxialProfile(zVals, dataVals, fName, metadata, nPlot=1, yLog=False):
         dataVals = numpy.log10(abs(dataVals))
 
     if nPlot > 1:
-        colormap = cm.get_cmap("jet")
+        colormap = colormaps["jet"]
         norm = mpltcolors.Normalize(0, nPlot - 1)
 
         # alternate between line styles to help distinguish neighboring groups (close on the color map)

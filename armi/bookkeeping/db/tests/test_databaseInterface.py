@@ -46,7 +46,7 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "refOneBlockReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refOneBlockReactor.yaml"
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
@@ -83,7 +83,9 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: Database3 = self.dbi.database
@@ -95,15 +97,13 @@ class TestDatabaseInterface(unittest.TestCase):
         self.td.__exit__(None, None, None)
         # test_interactBOL leaves behind some dirt (accessible after db close) that the
         # TempDirChanger is not catching
-        bolDirt = os.path.join(PROJECT_ROOT, "armiRun.h5")
-        if os.path.exists(bolDirt):
-            os.remove(bolDirt)
-
-    def test_interactEveryNodeReturn(self):
-        """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
-        self.o.cs["tightCoupling"] = True
-        self.dbi.interactEveryNode(0, 0)
-        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
+        bolDirt = [
+            os.path.join(PROJECT_ROOT, "armiRun.h5"),
+            os.path.join(PROJECT_ROOT, "armiRunSmallest.h5"),
+        ]
+        for dirt in bolDirt:
+            if os.path.exists(dirt):
+                os.remove(dirt)
 
     def test_interactBOL(self):
         self.assertIsNotNone(self.dbi._db)
@@ -118,6 +118,56 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertEqual(self.dbi.distributable(), 4)
         self.dbi.interactDistributeState()
         self.assertEqual(self.dbi.distributable(), 4)
+
+    def test_demonstrateWritingInteractions(self):
+        """Test what nodes are written to the database during the interaction calls."""
+        self.o.cs["burnSteps"] = 2  # make test insensitive to burn steps
+        r = self.r
+
+        # BOC/BOL doesn't write anything
+        r.p.cycle, r.p.timeNode = 0, 0
+        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
+        self.dbi.interactBOL()
+        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
+        self.dbi.interactBOC(0)
+        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
+
+        # but the first time node does
+        self.dbi.interactEveryNode(0, 0)
+        self.assertTrue(self.dbi.database.hasTimeStep(0, 0))
+
+        # EOC 0 shouldn't write, its written by last time node
+        r.p.cycle, r.p.timeNode = 0, self.o.cs["burnSteps"]
+        self.assertFalse(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode))
+        self.dbi.interactEOC(r.p.cycle)
+        self.assertFalse(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode))
+
+        # The last node of the step should write though
+        self.assertFalse(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode))
+        self.dbi.interactEveryNode(r.p.cycle, r.p.timeNode)
+        self.assertTrue(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode))
+
+        # EOL should also write, but lets write last time node first
+        r.p.cycle, r.p.timeNode = self.o.cs["nCycles"] - 1, self.o.cs["burnSteps"]
+        self.assertFalse(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode))
+        self.dbi.interactEveryNode(r.p.cycle, r.p.timeNode)
+        self.assertTrue(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode))
+
+        # now write EOL
+        self.assertFalse(self.dbi.database.hasTimeStep(r.p.cycle, r.p.timeNode, "EOL"))
+        self.dbi.interactEOL()  # this also saves and closes db
+
+        # reopen db to show EOL is written
+        with Database3(self._testMethodName + ".h5", "r") as db:
+            self.assertTrue(db.hasTimeStep(r.p.cycle, r.p.timeNode, "EOL"))
+            # and confirm that last time node is still there/separate
+            self.assertTrue(db.hasTimeStep(r.p.cycle, r.p.timeNode))
+
+    def test_interactEveryNodeReturnTightCoupling(self):
+        """Test that the DB is NOT written to if cs["tightCoupling"] = True."""
+        self.o.cs["tightCoupling"] = True
+        self.dbi.interactEveryNode(0, 0)
+        self.assertFalse(self.dbi.database.hasTimeStep(0, 0))
 
     def test_timeNodeLoop_tightCoupling(self):
         """Test that database is written out after the coupling loop has completed."""
@@ -300,7 +350,8 @@ class TestDatabaseReading(unittest.TestCase):
         # than the original input file. This allows settings to be
         # changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
-        newSettings["nCycles"] = 2
+        cls.nCycles = 2
+        newSettings["nCycles"] = cls.nCycles
         newSettings["burnSteps"] = 2
         o, r = loadTestReactor(customSettings=newSettings)
         reduceTestReactorRings(r, o.cs, 3)
@@ -459,6 +510,18 @@ class TestDatabaseReading(unittest.TestCase):
             numDensVec2.append(c2.p.numberDensities[k])
 
         assert_allclose(numDensVec1, numDensVec2)
+
+    def test_timesteps(self):
+        with Database3(self.dbName, "r") as db:
+            # build time steps in the DB file
+            timesteps = []
+            for cycle in range(self.nCycles):
+                for bStep in range(3):
+                    timesteps.append(f"/c0{cycle}n0{bStep}")
+            timesteps.append("/c01n02EOL")
+
+            # verify the timesteps are correct, including the EOL
+            self.assertEqual(list(db.keys()), timesteps)
 
 
 class TestBadName(unittest.TestCase):

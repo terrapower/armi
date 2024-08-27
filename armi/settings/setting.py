@@ -65,7 +65,7 @@ class Setting:
         self,
         name,
         default,
-        description=None,
+        description,
         label=None,
         options=None,
         schema=None,
@@ -83,7 +83,7 @@ class Setting:
             the setting's name
         default : object
             The setting's default value
-        description : str, optional
+        description : str
             The description of the setting
         label : str, optional
             the shorter description used for the ARMI GUI
@@ -113,6 +113,9 @@ class Setting:
             will result in errors, requiring to user to update their input by hand to
             use more current settings.
         """
+        assert description, f"Setting {name} defined without description."
+        assert description != "None", f"Setting {name} defined without description."
+
         self.name = name
         self.description = description or name
         self.label = label or name
@@ -121,13 +124,12 @@ class Setting:
         self.subLabels = subLabels
         self.isEnvironment = isEnvironment
         self.oldNames: List[Tuple[str, Optional[datetime.date]]] = oldNames or []
-
         self._default = default
+        self._value = copy.deepcopy(default)  # break link from _default
         # Retain the passed schema so that we don't accidentally stomp on it in
         # addOptions(), et.al.
         self._customSchema = schema
         self._setSchema()
-        self._value = copy.deepcopy(default)  # break link from _default
 
     @property
     def underlyingType(self):

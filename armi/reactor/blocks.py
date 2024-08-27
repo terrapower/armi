@@ -1065,9 +1065,11 @@ class Block(composites.Composite):
         nPins = [
             sum(
                 [
-                    int(c.getDimension("mult"))
-                    if isinstance(c, basicShapes.Circle)
-                    else 0
+                    (
+                        int(c.getDimension("mult"))
+                        if isinstance(c, basicShapes.Circle)
+                        else 0
+                    )
                     for c in self.iterComponents(compType)
                 ]
             )
@@ -1206,9 +1208,7 @@ class Block(composites.Composite):
             and c.hasFlags(Flags.GAP)
             and c.getDimension("id") == 0
         )
-        if self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap:
-            return True
-        return False
+        return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
     def getPitch(self, returnComp=False):
         """
@@ -1233,6 +1233,7 @@ class Block(composites.Composite):
         ----------
         returnComp : bool, optional
             If true, will return the component that has the maximum pitch as well
+
         Returns
         -------
         pitch : float or None
@@ -1820,13 +1821,13 @@ class HexBlock(Block):
         by omitting this detailed data and only providing the necessary level of detail for
         the uniform mesh reactor: number densities on each block.
 
-        .. note: Individual components within a block can have different temperatures, and this
+        Individual components within a block can have different temperatures, and this
         can affect cross sections. This temperature variation is captured by the lattice physics
         module. As long as temperature distribution is correctly captured during cross section
         generation, it doesn't need to be transferred to the neutronics solver directly through
         this copy operation.
 
-        .. note: If you make a new block, you must add it to an assembly and a reactor.
+        If you make a new block, you must add it to an assembly and a reactor.
 
         Returns
         -------
@@ -2315,7 +2316,7 @@ class HexBlock(Block):
         """
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:  # noqa: bare-except
+        except Exception:
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE

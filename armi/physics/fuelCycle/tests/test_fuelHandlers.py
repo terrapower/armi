@@ -110,7 +110,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         # generate an assembly
         self.assembly = assemblies.HexAssembly("TestAssemblyType")
-        self.assembly.spatialGrid = grids.axialUnitGrid(1)
+        self.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         for _ in range(1):
             self.assembly.add(copy.deepcopy(self.block))
 
@@ -708,7 +708,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:  # noqa: bare-except
+                except Exception:
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -858,7 +858,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:  # noqa: bare-except
+                except Exception:
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -873,6 +873,25 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # try to discharge assembly 1 and replace with assembly 2
         with self.assertRaises(ValueError):
             fh.dischargeSwap(a2, a1)
+
+    def test_getAssembliesInRings(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        aList0 = fh._getAssembliesInRings([0], Flags.FUEL, False, None, False)
+        self.assertEqual(len(aList0), 1)
+
+        aList1 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, False)
+        self.assertEqual(len(aList1), 3)
+
+        aList2 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, True, None, False)
+        self.assertEqual(len(aList2), 3)
+
+        aList3 = fh._getAssembliesInRings(
+            [0, 1, 2, "SFP"], Flags.FUEL, True, None, False
+        )
+        self.assertEqual(len(aList3), 4)
+
+        aList4 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, True)
+        self.assertEqual(len(aList4), 3)
 
 
 class TestFuelPlugin(unittest.TestCase):

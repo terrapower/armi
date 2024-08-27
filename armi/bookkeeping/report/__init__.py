@@ -27,7 +27,6 @@ def setData(name, value, group=None, reports=None):
         Any value desired.
     group : data.Group
     reports : data.Report
-
     """
     from armi.bookkeeping.report.reportInterface import ReportInterface
 

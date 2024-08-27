@@ -13,8 +13,7 @@
 # limitations under the License.
 
 """
-Defines containers for the reading and writing standard interface files
-for reactor physics codes.
+Defines containers for the reading and writing standard interface files for reactor physics codes.
 
 .. impl:: Generic tool for reading and writing Committee on Computer Code Coordination (CCCC) format
     files for reactor physics codes
@@ -73,8 +72,8 @@ for reactor physics codes.
 """
 import io
 import itertools
-import struct
 import os
+import struct
 from copy import deepcopy
 from typing import List
 
@@ -84,7 +83,7 @@ from armi import runLog
 from armi.nuclearDataIO import nuclearFileMetadata
 
 IMPLICIT_INT = "IJKLMN"
-"""Letters that trigger implicit integer types in old FORTRAN 77 codes"""
+"""Letters that trigger implicit integer types in old FORTRAN 77 codes."""
 
 
 class IORecord:
@@ -174,7 +173,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -191,7 +189,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -203,7 +200,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -215,7 +211,6 @@ class IORecord:
         The method has a seemingly odd signature, because it is used for both reading and writing.
         When writing, the :code:`val` should have value, but when the record is being read,
         :code:`val` can be :code:`None` or anything else; it is ignored.
-
         """
         raise NotImplementedError()
 
@@ -240,7 +235,7 @@ class IORecord:
             "string": lambda val: self.rwString(val, strLength),
             "double": self.rwDouble,
         }
-        action = actions.get(containedType, None)
+        action = actions.get(containedType)
         if action is None:
             raise Exception(
                 'Cannot pack or unpack the type "{}".'.format(containedType)
@@ -337,7 +332,6 @@ class BinaryRecordReader(IORecord):
     This class reads a single CCCC record in binary format. A CCCC record consists of a leading and
     ending integer indicating how many bytes the record is. The data contained within the record may
     be integer, float, double, or string.
-
     """
 
     def open(self):
@@ -401,7 +395,7 @@ class BinaryRecordReader(IORecord):
 
 
 class BinaryRecordWriter(IORecord):
-    r"""
+    """
     Reads a single CCCC record in binary format.
 
     Reads binary information sequentially.
@@ -561,7 +555,9 @@ class Stream:
     """
     An abstract CCCC IO stream.
 
-    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
+    Warning
+    -------
+    This is more of a stream Parser/Serializer than an actual stream.
 
     Notes
     -----
@@ -668,7 +664,9 @@ class StreamWithDataContainer(Stream):
     This is a relatively common pattern so some of the boilerplate
     is handled here.
 
-    .. warning:: This is more of a stream Parser/Serializer than an actual stream.
+    Warning
+    -------
+    This is more of a stream Parser/Serializer than an actual stream.
 
     Notes
     -----

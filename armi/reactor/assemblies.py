@@ -40,15 +40,6 @@ class Assembly(composites.Composite):
     """
     A single assembly in a reactor made up of blocks built from the bottom up.
     Append blocks to add them up. Index blocks with 0 being the bottom.
-
-    Attributes
-    ----------
-    pinNum : int
-        The number of pins in this assembly.
-
-    pinPeakingFactors : list of floats
-        The assembly-averaged pin power peaking factors. This is the ratio of pin
-        power to AVERAGE pin power in an assembly.
     """
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
@@ -75,14 +66,13 @@ class Assembly(composites.Composite):
         """
         # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
-            assemNum = randint(-9e12, -1)
+            assemNum = randint(-9000000000000, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
         self.setType(typ)
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
-        self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
         self.lastLocationLabel = self.LOAD_QUEUE
 
     def __repr__(self):
@@ -167,7 +157,7 @@ class Assembly(composites.Composite):
         otherwise have been the same object.
         """
         # Default to a random negative assembly number (unique enough)
-        self.p.assemNum = randint(-9e12, -1)
+        self.p.assemNum = randint(-9000000000000, -1)
         self.renumber(self.p.assemNum)
 
     def add(self, obj: blocks.Block):
@@ -357,7 +347,7 @@ class Assembly(composites.Composite):
                 bx.clearCache()
 
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -411,7 +401,7 @@ class Assembly(composites.Composite):
                 )
 
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -1189,7 +1179,7 @@ class Assembly(composites.Composite):
             reordering.
         """
         # replace grid with one that has the right number of locations
-        self.spatialGrid = grids.axialUnitGrid(len(self))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(self))
         self.spatialGrid.armiObject = self
         for zi, b in enumerate(self):
             b.spatialLocator = self.spatialGrid[0, 0, zi]

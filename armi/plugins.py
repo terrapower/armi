@@ -49,8 +49,7 @@ Some things you may want to bring in via a plugin includes:
 - :py:mod:`armi.settings` and their validators
 - :py:mod:`armi.reactor.components` for custom geometry
 - :py:mod:`armi.reactor.flags` for custom reactor components
-- :py:mod:`armi.interfaces` to define new calculation sequences and interactions with
-  new codes
+- :py:mod:`armi.interfaces` to define new calculation sequences and interactions with new codes
 - :py:mod:`armi.reactor.parameters` to represent new physical state on the reactor
 - :py:mod:`armi.materials` for custom materials
 - Elements of the :py:mod:`armi.gui`
@@ -89,34 +88,35 @@ and only have access to the state passed into them to perform their function. Th
 deliberate design choice to keep the plugin system simple and to preclude a large class
 of potential bugs. At some point it may make sense to revisit this.
 
-Other customization points
---------------------------
+**Other customization points**
+
 While the Plugin API is the main place for ARMI framework customization, there are
 several other areas where ARMI may be extended or customized. These typically pre-dated
 the Plugin-based architecture, and as the need arise may be migrated to here.
 
- - Component types: Component types are registered dynamically through some metaclass
-   magic, found in :py:class:`armi.reactor.components.component.ComponentType` and
-   :py:class:`armi.reactor.composites.CompositeModelType`. Simply defining a new
-   Component subclass should register it with the appropriate ARMI systems. While this
-   is convenient, it does lead to potential issues, as the behavior of ARMI becomes
-   sensitive to module import order and the like; the containing module needs to be
-   imported before the registration occurs, which can be surprising.
+    - Component types: Component types are registered dynamically through some metaclass
+      magic, found in :py:class:`armi.reactor.components.component.ComponentType` and
+      :py:class:`armi.reactor.composites.CompositeModelType`. Simply defining a new
+      Component subclass should register it with the appropriate ARMI systems. While this
+      is convenient, it does lead to potential issues, as the behavior of ARMI becomes
+      sensitive to module import order and the like; the containing module needs to be
+      imported before the registration occurs, which can be surprising.
 
- - Interface input files: Interfaces used to be discovered dynamically, rather than
-   explicitly as they are now in the :py:meth:`armi.plugins.ArmiPlugin.exposeInterfaces`
-   plugin hook. Essentially they functioned as ersatz plugins. One of the ways that they
-   would customize ARMI behavior is through the
-   :py:meth:`armi.physics.interface.Interface.specifyInputs` static method, which is
-   still used to determine inter-Case dependencies and support cloning and hashing Case
-   inputs. Going forward, this approach will likely be deprecated in favor of a plugin
-   hook.
+    - Interface input files: Interfaces used to be discovered dynamically, rather than
+      explicitly as they are now in the :py:meth:`armi.plugins.ArmiPlugin.exposeInterfaces`
+      plugin hook. Essentially they functioned as ersatz plugins. One of the ways that they
+      would customize ARMI behavior is through the
+      :py:meth:`armi.physics.interface.Interface.specifyInputs` static method, which is
+      still used to determine inter-Case dependencies and support cloning and hashing Case
+      inputs. Going forward, this approach will likely be deprecated in favor of a plugin
+      hook.
 
- - Fuel handler logic: The
-   :py:class:`armi.physics.fuelCycle.fuelHandlers.FuelHandlerInterface` supports
-   customization through the dynamic loading of fuel handler logic modules, based on
-   user settings. This also predated the plugin infrastructure, and may one day be
-   replaced with plugin-based fuel handler logic.
+    - Fuel handler logic: The
+      :py:class:`armi.physics.fuelCycle.fuelHandlers.FuelHandlerInterface` supports
+      customization through the dynamic loading of fuel handler logic modules, based on
+      user settings. This also predated the plugin infrastructure, and may one day be
+      replaced with plugin-based fuel handler logic.
+
 """
 from typing import Callable, Dict, List, Union, TYPE_CHECKING
 
@@ -309,10 +309,12 @@ class ArmiPlugin:
         corresponding ``Component`` type that should activate it. For instance a
         ``HexBlock`` would be created when the largest component is a ``Hexagon``::
 
+            [(Hexagon, HexBlock)]
+
         Returns
         -------
         list
-            [(Hexagon, HexBlock)]
+            ``[(compType, BlockType), ...]``
         """
 
     @staticmethod
@@ -337,11 +339,13 @@ class ArmiPlugin:
 
         Example
         -------
-        [
-            (HexBlock, HexAssembly),
-            (CartesianBlock, CartesianAssembly),
-            (ThRZBlock, ThRZAssembly),
-        ]
+        .. code::
+
+            [
+                (HexBlock, HexAssembly),
+                (CartesianBlock, CartesianAssembly),
+                (ThRZBlock, ThRZAssembly),
+            ]
 
         Returns
         -------
@@ -363,16 +367,16 @@ class ArmiPlugin:
         list
             (name, section, resolutionMethod) tuples, where:
 
-             - name : The name of the attribute to add to the Blueprints class; this
-               should be a valid Python identifier.
+            - name : The name of the attribute to add to the Blueprints class; this
+              should be a valid Python identifier.
 
-             - section : An instance of ``yaml.Attribute`` defining the data that is
-               described by the Blueprints section.
+            - section : An instance of ``yaml.Attribute`` defining the data that is
+              described by the Blueprints section.
 
-             - resolutionMethod : A callable that takes a Blueprints object and case
-               settings as arguments. This will be called like an unbound instance
-               method on the passed Blueprints object to initialize the state of the new
-               Blueprints section.
+            - resolutionMethod : A callable that takes a Blueprints object and case
+              settings as arguments. This will be called like an unbound instance
+              method on the passed Blueprints object to initialize the state of the new
+              Blueprints section.
 
         Notes
         -----
@@ -807,7 +811,7 @@ class PluginError(RuntimeError):
     These should always come from some form of programmer error, and indicates
     conditions such as:
 
-     - A plugin improperly implementing a hook, when possible to detect.
-     - A collision between components provided by plugins (e.g. two plugins providing
-       the same Blueprints section)
+    - A plugin improperly implementing a hook, when possible to detect.
+    - A collision between components provided by plugins (e.g. two plugins providing
+      the same Blueprints section)
     """

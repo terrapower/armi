@@ -231,7 +231,7 @@ class Layout:
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
             self.material.append(comp.material.__class__.__name__)
-        except:  # noqa: bare-except
+        except Exception:
             self.temperatures.append((-900, -900))  # an impossible temperature
             self.material.append("")
 
@@ -418,23 +418,34 @@ class Layout:
                 "layout/indexInData", data=self.indexInData, compression="gzip"
             )
             h5group.create_dataset(
-                "layout/numChildren", data=self.numChildren, compression="gzip"
+                "layout/numChildren",
+                data=self.numChildren,
+                compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
-                "layout/location", data=self.location, compression="gzip"
+                "layout/location",
+                data=self.location,
+                compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
                 "layout/locationType",
                 data=numpy.array(self.locationType).astype("S"),
                 compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
                 "layout/material",
                 data=numpy.array(self.material).astype("S"),
                 compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
-                "layout/temperatures", data=self.temperatures, compression="gzip"
+                "layout/temperatures",
+                data=self.temperatures,
+                compression="gzip",
+                track_order=True,
             )
 
             h5group.create_dataset(
@@ -445,31 +456,41 @@ class Layout:
                 compression="gzip",
             )
 
-            gridsGroup = h5group.create_group("layout/grids")
+            gridsGroup = h5group.create_group("layout/grids", track_order=True)
             gridsGroup.attrs["nGrids"] = len(self.gridParams)
             gridsGroup.create_dataset(
-                "type", data=numpy.array([gp[0] for gp in self.gridParams]).astype("S")
+                "type",
+                data=numpy.array([gp[0] for gp in self.gridParams]).astype("S"),
+                track_order=True,
             )
 
             for igrid, gridParams in enumerate(gp[1] for gp in self.gridParams):
-                thisGroup = gridsGroup.create_group(str(igrid))
-                thisGroup.create_dataset("unitSteps", data=gridParams.unitSteps)
+                thisGroup = gridsGroup.create_group(str(igrid), track_order=True)
+                thisGroup.create_dataset(
+                    "unitSteps", data=gridParams.unitSteps, track_order=True
+                )
 
                 for ibound, bound in enumerate(gridParams.bounds):
                     if bound is not None:
                         bound = numpy.array(bound)
-                        thisGroup.create_dataset("bounds_{}".format(ibound), data=bound)
+                        thisGroup.create_dataset(
+                            "bounds_{}".format(ibound), data=bound, track_order=True
+                        )
 
                 thisGroup.create_dataset(
-                    "unitStepLimits", data=gridParams.unitStepLimits
+                    "unitStepLimits", data=gridParams.unitStepLimits, track_order=True
                 )
 
                 offset = gridParams.offset
                 thisGroup.attrs["offset"] = offset is not None
                 if offset is not None:
-                    thisGroup.create_dataset("offset", data=offset)
-                thisGroup.create_dataset("geomType", data=gridParams.geomType)
-                thisGroup.create_dataset("symmetry", data=gridParams.symmetry)
+                    thisGroup.create_dataset("offset", data=offset, track_order=True)
+                thisGroup.create_dataset(
+                    "geomType", data=gridParams.geomType, track_order=True
+                )
+                thisGroup.create_dataset(
+                    "symmetry", data=gridParams.symmetry, track_order=True
+                )
         except RuntimeError:
             runLog.error("Failed to create datasets in: {}".format(h5group))
             raise
@@ -816,7 +837,7 @@ def replaceNonesWithNonsense(
 
     try:
         data = data.astype(realType)
-    except:  # noqa: bare-except
+    except Exception:
         raise ValueError(
             "Could not coerce data for {} to {}, data:\n{}".format(
                 paramName, realType, data

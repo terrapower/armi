@@ -36,23 +36,19 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Dict, Optional, Type, Tuple, List, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy
 import six
-import tabulate
 
-from armi import context
-from armi import runLog
-from armi import utils
-from armi.nucDirectory import elements
-from armi.nucDirectory import nucDir, nuclideBases
+from armi import context, runLog, utils
+from armi.nucDirectory import elements, nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools
+from armi.utils import tabulate
 from armi.utils import units
 from armi.utils.densityTools import calculateNumberDensity
 
@@ -217,7 +213,7 @@ def _defineBaseParameters():
         the DB, it is possible to recover the flags from that.
         * Storing flags to the DB may be complicated, since it is easier to imagine a
         number of flags that is greater than the width of natively-supported integer
-        types, requiring some extra tricks to store the flages in an HDF5 file.
+        types, requiring some extra tricks to store the flags in an HDF5 file.
         * Allowing flags to be modified by plugins further complicates things, in that
         it is important to ensure that the meaning of all bits in the flag value are
         consistent between a database state and the current ARMI environment. This may
@@ -2255,7 +2251,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        material : Material object, optional
+        material : armi.materials.material.Material, optional
             The material to match
         materialName : str, optional
             The material name to match.
@@ -2453,7 +2449,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        mat : Material
+        mat : armi.materials.material.Material
              the first instance of the most dominant material (by volume) in this object.
 
         See Also
@@ -2997,7 +2993,6 @@ class Composite(ArmiObject):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -3007,15 +3002,17 @@ class Composite(ArmiObject):
             multigroup neutron tracklength in [n-cm/s]
         """
         integratedMgFlux = numpy.zeros(1)
-
         for c in self:
-            integratedMgFlux = integratedMgFlux + c.getIntegratedMgFlux(
-                adjoint=adjoint, gamma=gamma
-            )
+            mgFlux = c.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma)
+            if mgFlux is not None:
+                integratedMgFlux = integratedMgFlux + mgFlux
+
         return integratedMgFlux
 
     def _getReactionRates(self, nucName, nDensity=None):
         """
+        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+
         Parameters
         ----------
         nucName : str
@@ -3030,16 +3027,21 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
+        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
+
+        This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
+        heirarchy than ``Block``.
         """
         from armi.reactor.blocks import Block
+        from armi.reactor.reactors import Core
 
         if nDensity is None:
             nDensity = self.getNumberDensity(nucName)
+
         try:
             return getReactionRateDict(
                 nucName,
-                self.getAncestorWithFlags(Flags.CORE).lib,
+                self.getAncestor(lambda c: isinstance(c, Core)).lib,
                 self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
                 self.getIntegratedMgFlux(),
                 nDensity,
@@ -3059,7 +3061,7 @@ class Composite(ArmiObject):
 
     def getReactionRates(self, nucName, nDensity=None):
         """
-        Get the reaction rates of a certain nuclide on this object.
+        Get the reaction rates of a certain nuclide on this ArmiObject.
 
         Parameters
         ----------
@@ -3075,18 +3077,23 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        This is volume integrated NOT (1/cm3-s)
+        This is volume integrated NOT (1/cm3-s).
 
-        If you set nDensity to 1 this makes 1-group cross section generation easier
+        If you set nDensity to 1 this makes 1-group cross section generation easier.
         """
-        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+        from armi.reactor.components import Component
 
-        # not all composite objects are iterable (i.e. components), so in that
-        # case just examine only the object itself
-        for armiObject in self.getChildren() or [self]:
-            for rxName, val in armiObject._getReactionRates(
-                nucName, nDensity=nDensity
-            ).items():
+        # find child objects
+        objects = self.getChildren(
+            deep=True, predicate=lambda x: isinstance(x, Component)
+        )
+        if not len(objects):
+            objects = [self]
+
+        # The reaction rates for this object is the sum of its children
+        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+        for armiObject in objects:
+            for rxName, val in armiObject._getReactionRates(nucName, nDensity).items():
                 rxnRates[rxName] += val
 
         return rxnRates

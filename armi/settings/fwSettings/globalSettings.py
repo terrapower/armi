@@ -26,8 +26,8 @@ import voluptuous as vol
 
 from armi import context
 from armi.settings import setting
-from armi.utils.mathematics import isMonotonic
 from armi.settings.fwSettings import tightCouplingSettings
+from armi.utils.mathematics import isMonotonic
 
 
 # Framework settings
@@ -54,7 +54,6 @@ CONF_CYCLE_LENGTH = "cycleLength"
 CONF_CYCLE_LENGTHS = "cycleLengths"
 CONF_CYCLES = "cycles"
 CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION = "cyclesSkipTightCouplingInteraction"
-CONF_DEBUG = "debug"
 CONF_DEBUG_MEM = "debugMem"
 CONF_DEBUG_MEM_SIZE = "debugMemSize"
 CONF_DECAY_CONSTANTS = "decayConstants"
@@ -221,8 +220,9 @@ def defineSettings() -> List[setting.Setting]:
             default=True,
             label="Input Height Considered Hot",
             description=(
-                "This is a flag to determine if block heights, as provided in blueprints, are at hot dimensions. "
-                "If false, block heights are at cold/as-built dimensions and will be thermally expanded as appropriate."
+                "This is a flag to determine if block heights, as provided in blueprints, are at "
+                "hot dimensions. If false, block heights are at cold/as-built dimensions and will "
+                "be thermally expanded as appropriate."
             ),
         ),
         setting.Setting(
@@ -236,8 +236,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_TRACE,
             default=False,
             label="Use the Python Tracer",
-            description="Activate Python trace module to print out each line as it's "
-            "executed",
+            description="Activate Python trace module to print out each line as it's executed",
             isEnvironment=True,
         ),
         setting.Setting(
@@ -305,8 +304,7 @@ def defineSettings() -> List[setting.Setting]:
             default=1.0,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
-            "time that the plant is operating. If variable, use `availabilityFactors` "
-            "setting.",
+            "time that the plant is operating. If variable, use `availabilityFactors` setting.",
             oldNames=[
                 ("capacityFactor", None),
             ],
@@ -424,7 +422,8 @@ def defineSettings() -> List[setting.Setting]:
             CONF_BURNUP_PEAKING_FACTOR,
             default=0.0,
             label="Burn-up Peaking Factor",
-            description="None",
+            description="The peak/avg factor for burnup and DPA. If it is not set the current flux "
+            "peaking is used (this is typically conservatively high).",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -441,20 +440,24 @@ def defineSettings() -> List[setting.Setting]:
             description="A comment describing this case",
         ),
         setting.Setting(
-            CONF_COPY_FILES_FROM, default=[], label="None", description="None"
+            CONF_COPY_FILES_FROM,
+            default=[],
+            label="Copy These Files",
+            description="A list of files that need to be copied at the start of a run.",
         ),
         setting.Setting(
-            CONF_COPY_FILES_TO, default=[], label="None", description="None"
-        ),
-        setting.Setting(
-            CONF_DEBUG, default=False, label="Python Debug Mode", description="None"
+            CONF_COPY_FILES_TO,
+            default=[],
+            label="Copy to These Directories",
+            description="A list of directories to copy provided files into at the start of a run."
+            "This list can be of length zero (copy to working dir), 1 (copy all files to the same "
+            f"place), or it must be the same length as {CONF_COPY_FILES_FROM}",
         ),
         setting.Setting(
             CONF_DEBUG_MEM,
             default=False,
             label="Debug Memory",
-            description="Turn on memory debugging options to help find problems with "
-            "the code",
+            description="Turn on memory debugging options to help find problems with the code",
         ),
         setting.Setting(
             CONF_DEBUG_MEM_SIZE,
@@ -489,8 +492,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Detailed Assems - ID",
             description="Assembly numbers(IDs) for assemblies that will have "
             "'detailed' treatment. This option will track assemblies that not in the "
-            "core at BOL. Note: This option is interpreted differently by different "
-            "modules.",
+            "core at BOL. Note: This option is interpreted differently by different modules.",
             schema=vol.Schema([int]),
         ),
         setting.Setting(
@@ -524,7 +526,8 @@ def defineSettings() -> List[setting.Setting]:
             CONF_FRESH_FEED_TYPE,
             default="feed fuel",
             label="Fresh Feed Type",
-            description="None",
+            description="The type of fresh fuel added to the core, used in certain pre-defined "
+            "fuel shuffling logic sequences.",
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
         ),
         setting.Setting(
@@ -663,7 +666,10 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
-            CONF_REMOVE_PER_CYCLE, default=3, label="Move per Cycle", description="None"
+            CONF_REMOVE_PER_CYCLE,
+            default=3,
+            label="Remove per Cycle",
+            description="The number of fuel assemblies removed per cycle at equilibrium.",
         ),
         setting.Setting(
             CONF_RUN_TYPE,

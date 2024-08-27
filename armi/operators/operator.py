@@ -469,7 +469,7 @@ class Operator:
         if writeDB:
             # database has not yet been written, so we need to write it.
             dbi = self.getInterface("database")
-            dbi.writeDBEveryNode(cycle, timeNode)
+            dbi.writeDBEveryNode()
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
@@ -487,9 +487,7 @@ class Operator:
 
         halt = False
 
-        cycleNodeTag = self._expandCycleAndTimeNodeArgs(
-            *args, interactionName=interactionName
-        )
+        cycleNodeTag = self._expandCycleAndTimeNodeArgs(interactionName)
         runLog.header(
             "===========  Triggering {} Event ===========".format(
                 interactionName + cycleNodeTag
@@ -497,9 +495,7 @@ class Operator:
         )
 
         for statePointIndex, interface in enumerate(activeInterfaces, start=1):
-            self.printInterfaceSummary(
-                interface, interactionName, statePointIndex, *args
-            )
+            self.printInterfaceSummary(interface, interactionName, statePointIndex)
 
             # maybe make this a context manager
             if printMemUsage:
@@ -528,6 +524,9 @@ class Operator:
                     )
                 )
 
+            # Allow inherited classes to clean up things after an interaction
+            self._finalizeInteract()
+
         runLog.header(
             "===========  Completed {} Event ===========\n".format(
                 interactionName + cycleNodeTag
@@ -536,41 +535,53 @@ class Operator:
 
         return halt
 
-    def printInterfaceSummary(self, interface, interactionName, statePointIndex, *args):
+    def _finalizeInteract(self):
+        """Member called after each interface has completed its interaction.
+
+        Useful for cleaning up data.
+        """
+        pass
+
+    def printInterfaceSummary(self, interface, interactionName, statePointIndex):
         """
         Log which interaction point is about to be executed.
 
         This looks better as multiple lines but it's a lot easier to grep as one line.
         We leverage newlines instead of long banners to save disk space.
         """
-        nodeInfo = self._expandCycleAndTimeNodeArgs(
-            *args, interactionName=interactionName
-        )
+        nodeInfo = self._expandCycleAndTimeNodeArgs(interactionName)
         line = "=========== {:02d} - {:30s} {:15s} ===========".format(
             statePointIndex, interface.name, interactionName + nodeInfo
         )
         runLog.header(line)
 
-    @staticmethod
-    def _expandCycleAndTimeNodeArgs(*args, interactionName):
+    def _expandCycleAndTimeNodeArgs(self, interactionName):
         """Return text annotating information for current run event.
 
         Notes
         -----
         - Init, BOL, EOL: empty
-        - Everynode: (cycle, time node)
-        - BOC: cycle number
-        - Coupling: iteration number
+        - Everynode: cycle, time node
+        - BOC, EOC: cycle number
+        - Coupled: cycle, time node, iteration number
         """
-        cycleNodeInfo = ""
-        if args:
-            if len(args) == 1:
-                if interactionName == "Coupled":
-                    cycleNodeInfo = f" - iteration {args[0]}"
-                elif interactionName in ("BOC", "EOC"):
-                    cycleNodeInfo = f" - cycle {args[0]}"
-            else:
-                cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
+        if interactionName == "Coupled":
+            cycleNodeInfo = (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+                f"year {'{0:.2f}'.format(self.r.p.time)} - iteration "
+                f"{self.r.core.p.coupledIteration}"
+            )
+        elif interactionName in ("BOC", "EOC"):
+            cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}"
+            # - timestep: cycle 2
+        elif interactionName in ("Init", "BOL", "EOL"):
+            cycleNodeInfo = ""
+        else:
+            cycleNodeInfo = (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+                f"year {'{0:.2f}'.format(self.r.p.time)}"
+            )
+
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
@@ -647,7 +658,7 @@ class Operator:
         activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
-    def interactAllEOL(self):
+    def interactAllEOL(self, excludedInterfaceNames=()):
         """
         Run interactEOL for all enabled interfaces.
 
@@ -658,7 +669,7 @@ class Operator:
         order. This allows, for example, an interface that must run
         first to also run last.
         """
-        activeInterfaces = self.getActiveInterfaces("EOL")
+        activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
         self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
@@ -1017,7 +1028,7 @@ class Operator:
 
         # Ensure the name of the interface isn't in some exclusion list.
         nameCheck = lambda i: True
-        if interactState == "EveryNode" or interactState == "EOC":
+        if interactState in ("EveryNode", "EOC", "EOL"):
             nameCheck = lambda i: i.name not in excludedInterfaceNames
         elif interactState == "BOC" and cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
             nameCheck = lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
@@ -1067,6 +1078,8 @@ class Operator:
         """
         if self.r:
             self.r.o = None
+            for comp in self.r:
+                comp.parent = None
         self.r = None
         for i in self.interfaces:
             i.o = None

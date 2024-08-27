@@ -76,8 +76,8 @@ Many settings are provided by the ARMI Framework, and others are defined by vari
 The ARMI GUI
 ------------
 The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the
-settings).  The GUI also enables the graphical manipulation of a reactor core map, and convenient
-automation of commands required to submit to a cluster.  The GUI is a front-end to these files. You
+settings). The GUI also enables the graphical manipulation of a reactor core map, and convenient
+automation of commands required to submit to a cluster. The GUI is a front-end to these files. You
 can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs
 them.
 
@@ -188,7 +188,7 @@ In the case that only a single state is to be examined (i.e. no burnup), the use
 In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
 option.
 The simple cycle history consists of the following case settings:
-    
+
     * ``power``
     * ``nCycles`` (default = 1)
     * ``burnSteps`` (default = 4)
@@ -216,7 +216,7 @@ An example simple cycle history might look like
 Note the use of the special shorthand list notation, where repeated values in a list can be specified using an "R" followed by the number of times the value is to be repeated.
 
 The above scheme would represent 3 cycles of operation:
-    
+
     1. 100% power for 90 days, split into two segments of 45 days each, followed by 10 days shutdown (i.e. 90% capacity)
 
     2. 50% power for 30 days, split into two segments of 15 days each, followed by 70 days shutdown (i.e. 15% capacity)
@@ -227,8 +227,8 @@ In each cycle, criticality calculations will be performed at 3 nodes evenly-spac
 This input format can be useful for quick scoping and certain types of real analyses, but clearly has its limitations.
 
 To overcome these limitations, the detailed cycle history, consisting of the ``cycles`` setting may be specified instead.
-For each cycle, an entry to the ``cycles`` list is made with the following optional fields: 
-    
+For each cycle, an entry to the ``cycles`` list is made with the following optional fields:
+
     * ``name``
     * ``power fractions``
     * ``cumulative days``, ``step days``, or ``burn steps`` + ``cycle length``
@@ -283,7 +283,7 @@ Restart cases
 ^^^^^^^^^^^^^
 Oftentimes the user is interested in re-examining just a specific set of time nodes from an existing run.
 In these cases, it is sometimes not necessary to rerun an entire reactor history, and one may instead use one of the following options:
-    
+
     1. Snapshot, where the reactor state is loaded from a database and just a single time node is run.
 
     2. Restart, where the cycle history is loaded from a database and the calculation continues through the remaining specified time history.
@@ -302,7 +302,7 @@ To run a snapshot, the following settings must be added to your case settings:
 An example of a snapshot run input:
 
 .. code-block:: yaml
-       
+
        runType: Snapshots
        reloadDBName: my-old-results.h5
        dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
@@ -316,10 +316,10 @@ To run a restart, the following settings must be added to your case settings:
     * If you would like to change the specified reactor history (see :ref:`restart-cases`), keep the history up to the restarting cycle/node unchanged, and just alter the history after that point. This means that the cycle history specified in your restart run should include all cycles/nodes up to the end of the simulation. For complicated restarts, it may be necessary to use the detailed ``cycles`` setting, even if the original case only used the simple history option.
 
 A few examples of restart cases:
-    
+
     - Restarting a calculation at a specific cycle/node and continuing for the remainder of the originally-specified cycle history:
         .. code-block:: yaml
-               
+
                # old settings
                nCycles: 2
                burnSteps: 2
@@ -329,7 +329,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 2
                burnSteps: 2
@@ -342,7 +342,7 @@ A few examples of restart cases:
 
     - Add an additional cycle to the end of a case:
         .. code-block:: yaml
-            
+
                # old settings
                nCycles: 1
                burnSteps: 2
@@ -352,7 +352,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 2
                burnSteps: 2
@@ -365,7 +365,7 @@ A few examples of restart cases:
 
     - Restart but cut the reactor history short:
         .. code-block:: yaml
-            
+
                # old settings
                nCycles: 3
                burnSteps: 2
@@ -375,7 +375,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 2
                burnSteps: 2
@@ -388,7 +388,7 @@ A few examples of restart cases:
 
     - Restart with a different number of steps in the third cycle using the detailed ``cycles`` setting:
         .. code-block:: yaml
-            
+
                # old settings
                nCycles: 3
                burnSteps: 2
@@ -398,7 +398,7 @@ A few examples of restart cases:
                loadingFile: my-blueprints.yaml
 
         .. code-block:: yaml
-            
+
                # restart settings
                nCycles: 3
                cycles:
@@ -497,7 +497,7 @@ The ARMI data model is represented schematically below, and the blueprints are d
 :ref:`custom isotopics <custom-isotopics>`:
     Special setting: defines user-specified isotopic compositions.
 
-The core map input files can be graphically manipulated with the 
+The core map input files can be graphically manipulated with the
 :py:mod:`Grid editor <armi.utils.gridEditor>`.
 
 
@@ -555,7 +555,7 @@ Component name
     The component name (``fuel``) is specified at the top. Some physics kernels interpret names specially, so
     pay attention to any naming conventions. As a general rule, you can expect that people will be doing regex
     on your name, so you should not use any of these characters in your component names:
-    ``. ^ $ * + ? { } [ ] \ | ( ) :``. 
+    ``. ^ $ * + ? { } [ ] \ | ( ) :``.
 
 shape
     The shape will be extruded to the length specified in the ``assemblies`` input section below. ARMI contains
@@ -593,7 +593,7 @@ od
 Component Types
 ^^^^^^^^^^^^^^^
 Each component has a variety of dimensions to define the shape and composition. All dimensions are
-in cm.  The following is a list of included component shapes and their dimension inputs. Again,
+in cm. The following is a list of included component shapes and their dimension inputs. Again,
 additional/custom components with arbitrary dimensions may be provided by the user via plugins.
 
 .. exec::
@@ -740,7 +740,7 @@ Once components and blocks are defined, Assemblies can be created as extruded st
 bottom to top. The assemblies use YAML anchors to refer to the blocks defined in the previous section.
 
 .. note:: We aren't happy with the use of anchors to refer to blocks, and plan to change it (back) to just using the
-   block names directly.  However, the use of anchors for input to be applied to multiple assemblies (e.g. heights) is
+   block names directly. However, the use of anchors for input to be applied to multiple assemblies (e.g. heights) is
    quite nice.
 
 A complete definition of an inner-core assembly may be seen below::
@@ -760,13 +760,13 @@ A complete definition of an inner-core assembly may be seen below::
                 nozzleType: Inner
                 xs types: [A, B, C, D, E, F]
 
-.. note:: 
-        While component dimensions are entered as cold dimensions, axial heights may be entered as 
-        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights 
+.. note::
+        While component dimensions are entered as cold dimensions, axial heights may be entered as
+        either cold or hot dimensions. In older versions of ARMI, it was required to enter heights
         in the hot dimension (this behavior is preserved by setting `inputHeightsConsideredHot: True`).
-        However, with the 
-        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`, 
-        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then 
+        However, with the
+        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`,
+        heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then
         be expanded to its hot dimensions upon construction.
 
 For many cases, a shared height and axial mesh point definition is sufficient. These can be included
@@ -779,24 +779,25 @@ specifier
    hex dragger.
 
 xs types
-  The **cross-section type** is a single capital letter that identifies which cross section (XS) set
-  will be applied to this block. Each cross section set must be defined for at least one block with
-  fissile fuel. When the lattice physics code executes in ARMI, it determines the representative
-  blocks from each cross section type and burnup group and runs it to create the cross section set
-  for all blocks of the same type and in the same burnup group. Generally, it is best to set blocks
-  that have much different compositions to have separate cross section types. The tradeoff is that
-  the more XS types you define, the more CPU time the case will take to run.
+  The **cross-section type** is usually a single capital letter that identifies which cross section
+  (XS) set will be applied to the block. Each cross section set must be defined for at least one
+  block with fissile fuel. When the lattice physics code executes in ARMI, it determines the
+  representative blocks from each cross section type and burnup group and runs it to create the
+  cross section set for all blocks of the same type and in the same burnup group. Generally, it is
+  best to set blocks that have much different compositions to have separate cross section types. The
+  tradeoff is that the more XS types you define, the more CPU time the case will take to run.
+
+  Representing xsType by a single letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
+  will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
 
 axial mesh points
-  Blocks will be broken up into this many uniform mesh points in the
-  deterministic neutronics solvers (e.g. DIF3D). This allows you to define
-  large blocks that have multiple flux points within them. You have to keep the
-  neutronic mesh somewhat uniform in order to maintain numerical stability of
-  the solvers. It is important to note that the axial mesh must be uniform
-  throughout the core for many physics kernels, so be sure all block interfaces
-  are consistent among all assemblies in the core. Blocks deplete and get most
-  state variables on the block mesh defined by the height specification.
-  Provisions for multiple meshes for different physics are being planned.
+  Blocks will be broken up into this many uniform mesh points in the deterministic neutronics
+  solvers (e.g. DIF3D). This allows you to define large blocks that have multiple flux points within
+  them. You have to keep the neutronic mesh somewhat uniform in order to maintain numerical
+  stability of the solvers. It is important to note that the axial mesh must be uniform throughout
+  the core for many physics kernels, so be sure all block interfaces are consistent among all
+  assemblies in the core. Blocks deplete and get most state variables on the block mesh defined by
+  the height specification. Provisions for multiple meshes for different physics are being planned.
 
 hotChannelFactors
   A label to define which set of hot channel factors (HCFs) get applied to
@@ -811,12 +812,12 @@ material modifications
   These are a variety of modifications that are made to the
   materials in blocks in these locations. It may include the fuel enrichment (mass frac.), poison
   enrichment (mass frac.), zirconium mass frac, and any additional options required to fully define
-  the material loaded in the component.  The material definitions in the material library define
+  the material loaded in the component. The material definitions in the material library define
   valid modifications for them.
 
   .. exec::
       from armi.materials import Material
-      from tabulate import tabulate
+      from armi.utils.tabulate import tabulate
 
       data = []
       for m in Material.__subclasses__():
@@ -845,8 +846,8 @@ material modifications
       data.sort(key=lambda t: t[0])
       return tabulate(
           headers=("Material Name", "Available Modifications"),
-          tabular_data=data,
-          tablefmt="rst",
+          data=data,
+          tableFmt="rst",
       )
 
   The class 1/class 2 modifications in fuel materials are used to identify mixtures of
@@ -1043,6 +1044,15 @@ Example grid definitions are shown below::
 .. tip:: We have gone through some effort to allow both pin and core grid definitions to share this
     input and it may improve in the future.
 
+You may set up some kinds of grids (e.g. 1/3 and full core hex or Cartesian core
+loadings) using our interactive graphical grid editor described more in
+:py:mod:`armi.utils.gridEditor`.
+
+.. figure:: /.static/gridEditor.png
+    :align: center
+
+    An example of the Grid Editor being used on a FFTF input file
+
 .. _custom-isotopics:
 
 Custom Isotopics
@@ -1071,6 +1081,30 @@ ARMI will expand elemental nuclides to their natural isotopics in most cases (to
 nuclear data library).
 
 The (mass) ``density`` input is invalid when specifying ``number densities``; the code will present an error message.
+
+Material density may be specified in custom isotopics either explicitly in a ``mass fractions`` input
+format (shown above) or implicitly with ``number densities``. This is fairly straightforward for the
+``Custom`` material, as it has no baseline density. Density may also be specified for components using
+materials which have entries in the materials library. Users should be aware of the following interactions
+when specifying a custom density for components using a library material:
+
+    1. The library material density will not be changed. Only the component(s) with the custom isotopics
+    entry will have the density modification.
+
+    2. Density specified by custom isotopics will override all other density modifications in the component
+    construction phase (e.g. ``TD_frac`` entries).
+
+    3. Only the component density is changed, not other material properties are altered to account for the
+    change in composition/density.
+
+    4. Density can only be specified using custom isotopics for non- ``Custom`` materials that have some
+    initial density. Don't try to make ``Void`` have mass!
+
+Densities specified using ``Custom Isotopics`` are applied in component construction, and should be specified
+at the input temperature for the component. Note that when overriding the density of a library material, all
+other properties of that material (e.g. expansion coefficients) will continue to be used as if the component
+consisted of the library material. In other words, ARMI will still think the component is made out of the
+original material!
 
 Advanced topics
 ---------------
@@ -1282,8 +1316,8 @@ Nuclide Flags
 The ``nuclide flags`` setting allows the user to choose which nuclides they
 would like to consider in the problem, and whether or not each nuclide should
 transmute and decay. For example, sometimes you may not want to deplete trace
-elements in structural materials, but in other analysis you might.  If the
-nuclide should deplete, it must have ``burn: true``.  If it is to be included
+elements in structural materials, but in other analysis you might. If the
+nuclide should deplete, it must have ``burn: true``. If it is to be included
 in the problem at all, it must be have ``xs: true`` All nuclides that will be
 produced via transmutation/decay  must also have ``burn: true``, so if you add
 Thorium, make sure to add all other actinides in its chain. You can use the
@@ -1325,7 +1359,7 @@ deplete.::
         U238: {burn: true, xs: true}
 
 The code will crash if materials used in :ref:`blocks-and-components` contain nuclides not defined in
-``nuclide flags``.  A failure can also occur if the burn chain is missing a nuclide.
+``nuclide flags``. A failure can also occur if the burn chain is missing a nuclide.
 
 .. tip::
     We plan to upgrade the default behavior of this to inherit from all defined materials
@@ -1467,16 +1501,16 @@ Fuel Management Tips
 Some mistakes are common. Follow these tips.
 
     * Always make sure your assembly-level types in the settings file are up to date
-    with the grids in your bluepints file. Otherwise you'll be moving feeds when you
-    want to move igniters, or something.
+      with the grids in your bluepints file. Otherwise you'll be moving feeds when you
+      want to move igniters, or something.
     * Use the exclusions list! If you move a cascade and then the next cascade tries
-    to run, it will choose your newly-moved assemblies if they fit your criteria in
-    ``findAssemblies``. This leads to very confusing results. Therefore, once you move
-    assemblies, you should default to adding them to the exclusions list.
+      to run, it will choose your newly-moved assemblies if they fit your criteria in
+      ``findAssemblies``. This leads to very confusing results. Therefore, once you move
+      assemblies, you should default to adding them to the exclusions list.
     * Print cascades during debugging. After you've built a cascade to swap, print it
-    out and check the locations and types of each assembly in it. Is it what you want?
+      out and check the locations and types of each assembly in it. Is it what you want?
     * Watch ``typeNum`` in the database. You can get good intuition about what is
-    getting moved by viewing this parameter.
+      getting moved by viewing this parameter.
 
 Running a branch search
 -----------------------
@@ -1544,7 +1578,7 @@ with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 Settings Report
 ===============
-This document lists all the `settings <#the-settings-input-file>`_ in ARMI.  
+This document lists all the `settings <#the-settings-input-file>`_ in ARMI.
 
 They are all accessible to developers
 through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically
@@ -1555,6 +1589,7 @@ through ``self.cs``.
 .. exec::
     from armi import settings
     import textwrap
+    from dochelpers import escapeSpecialCharacters
 
     def looks_like_path(s):
         """Super quick, not robust, check if a string looks like a file path."""
@@ -1573,7 +1608,8 @@ through ``self.cs``.
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
         content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
-        content += '     - {}\n'.format(' '.join(wrapper.wrap(str(setting.description) or '')))
+        description = escapeSpecialCharacters(str(setting.description) or "")
+        content += "     - {}\n".format(" ".join(wrapper.wrap(description)))
         default = str(getattr(setting, 'default', None)).split("/")[-1]
         options = str(getattr(setting,'options','') or '')
         if looks_like_path(default):

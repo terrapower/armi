@@ -67,7 +67,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         self.assertIn("XE135", fissionProductNames)
 
     def test_fpApplication(self):
-        o, r = loadTestReactor()
+        o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
         # Set up the global LFPs and check that they are setup.
         self.assertTrue(fpModel._useGlobalLFPs)
@@ -91,14 +91,19 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
 
 
 class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
-    """Tests the fission product model interface behavior when explicit fission products are enabled."""
+    """
+    Tests the fission product model interface behavior when explicit fission products are enabled.
+
+    These tests can use a smaller test reactor, and so will be faster.
+    """
 
     def setUp(self):
         o, r = loadTestReactor(
             customSettings={
                 CONF_FP_MODEL: "explicitFissionProducts",
                 CONF_FISSION_PRODUCT_LIBRARY_NAME: "MC2-3",
-            }
+            },
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
         self.r = r
         self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
@@ -124,6 +129,26 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         nuclideList = b.getNuclides()
         for nb in nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, nuclideList)
+
+
+class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
+    """
+    Tests the fission product model interface behavior when explicit fission products are enabled.
+
+    These tests require a large test reactor, and will lead to slower tests.
+    """
+
+    def setUp(self):
+        o, r = loadTestReactor(
+            customSettings={
+                CONF_FP_MODEL: "explicitFissionProducts",
+                CONF_FISSION_PRODUCT_LIBRARY_NAME: "MC2-3",
+            }
+        )
+        self.r = r
+        self.fpModel = fissionProductModel.FissionProductModel(o.r, o.cs)
+        # Set up the global LFPs and check that they are setup.
+        self.assertFalse(self.fpModel._useGlobalLFPs)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
         """Test that the depletable blocks contain all the MC2-3 modeled nuclides.

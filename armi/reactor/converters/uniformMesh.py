@@ -32,9 +32,9 @@ Requirements
 
 
 .. warning::
-    This procedure can cause numerical diffusion in some cases. For example, 
+    This procedure can cause numerical diffusion in some cases. For example,
     if a control rod tip block has a large coolant block below it, things like peak
-    absorption rate can get lost into it. We recalculate some but not all 
+    absorption rate can get lost into it. We recalculate some but not all
     reaction rates in the re-mapping process based on a flux remapping. To avoid this,
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
@@ -369,15 +369,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
     Notes
     -----
     There are several staticmethods available on this class that allow for:
+
         - Creation of a new reactor without applying a new uniform axial mesh. See:
-        `<UniformMeshGeometryConverter.initNewReactor>`
+          `<UniformMeshGeometryConverter.initNewReactor>`
         - Creation of a new assembly with a new axial mesh applied. See:
-        `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+          `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
         - Resetting the parameter state of an assembly back to the defaults for the
-        provided block parameters. See:
-        `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+          provided block parameters. See:
+          `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
         - Mapping number densities and block parameters between one assembly to
-        another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+          another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
     This class is meant to be extended for specific physics calculations that require a
     uniform mesh. The child types of this class should define custom
@@ -390,9 +391,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
     is being applied to prevent the numerical diffusion problem.
 
     - "in" is used when mapping parameters into the uniform assembly
-    from the non-uniform assembly.
+      from the non-uniform assembly.
     - "out" is used when mapping parameters from the uniform assembly back
-    to the non-uniform assembly.
+      to the non-uniform assembly.
 
     .. warning::
         If a parameter is calculated by a physics solver while the reactor is in its
@@ -1027,7 +1028,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     @staticmethod
     def _createNewAssembly(sourceAssembly):
         a = sourceAssembly.__class__(sourceAssembly.getType())
-        a.spatialGrid = grids.axialUnitGrid(len(sourceAssembly))
+        a.spatialGrid = grids.AxialGrid.fromNCells(len(sourceAssembly))
         a.setName(sourceAssembly.getName())
         return a
 

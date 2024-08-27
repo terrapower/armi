@@ -43,36 +43,31 @@ import subprocess
 import sys
 from platform import uname
 from typing import (
+    Any,
+    Dict,
+    Generator,
+    List,
     Optional,
+    Sequence,
     Tuple,
     Type,
-    Dict,
-    Any,
-    List,
-    Sequence,
-    Generator,
 )
 
 import h5py
 import numpy
 
-from armi import context
-from armi import getApp
-from armi import meta
-from armi import runLog
-from armi import settings
+from armi import context, getApp, meta, runLog, settings
+from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.layout import (
-    Layout,
     DB_VERSION,
+    Layout,
     replaceNonesWithNonsense,
     replaceNonsenseWithNones,
 )
-from armi.bookkeeping.db.typedefs import History, Histories
+from armi.bookkeeping.db.typedefs import Histories, History
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor import systemLayoutInput
+from armi.reactor import grids, parameters, systemLayoutInput
 from armi.reactor.assemblies import Assembly
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component
@@ -124,7 +119,8 @@ class Database3:
     `doc/user/outputs/database` for more details.
     """
 
-    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d)$")
+    # Allows matching for, e.g., c01n02EOL
+    timeNodeGroupPattern = re.compile(r"^c(\d\d)n(\d\d).*$")
 
     def __init__(self, fileName: os.PathLike, permission: str):
         """
@@ -291,7 +287,7 @@ class Database3:
             try:
                 commit_hash = subprocess.check_output(["git", "describe"])
                 return commit_hash.decode("utf-8").strip()
-            except:  # noqa: bare-except
+            except Exception:
                 return unknown
         else:
             return unknown
@@ -652,7 +648,7 @@ class Database3:
         if groupName in self.h5db:
             return self.h5db[groupName]
         else:
-            group = self.h5db.create_group(groupName)
+            group = self.h5db.create_group(groupName, track_order=True)
             group.attrs["cycle"] = r.p.cycle
             group.attrs["timeNode"] = r.p.timeNode
             return group
@@ -868,14 +864,23 @@ class Database3:
 
         return comp
 
-    def _writeParams(self, h5group, comps):
+    def _writeParams(self, h5group, comps) -> tuple:
+        def _getShape(arr: [numpy.ndarray, List, Tuple]):
+            """Get the shape of a numpy.ndarray, list, or tuple."""
+            if isinstance(arr, numpy.ndarray):
+                return arr.shape
+            elif isinstance(arr, (list, tuple)):
+                return (len(arr),)
+            else:
+                return (1,)
+
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
             # Only create the group if it doesnt already exist. This happens when
             # re-writing params in the same time node (e.g. something changed between
             # EveryNode and EOC)
-            g = h5group.create_group(groupName)
+            g = h5group.create_group(groupName, track_order=True)
         else:
             g = h5group[groupName]
 
@@ -912,41 +917,48 @@ class Database3:
                     attrs[_SERIALIZER_NAME] = paramDef.serializer.__name__
                     attrs[_SERIALIZER_VERSION] = paramDef.serializer.version
                 else:
-                    data = numpy.array(temp)
+                    # check if temp is a jagged array
+                    if any(isinstance(x, (numpy.ndarray, list)) for x in temp):
+                        jagged = len(set([_getShape(x) for x in temp])) != 1
+                    else:
+                        jagged = False
+                    data = (
+                        JaggedArray(temp, paramDef.name)
+                        if jagged
+                        else numpy.array(temp)
+                    )
                     del temp
 
-            # Convert Unicode to byte-string
-            if data.dtype.kind == "U":
-                data = data.astype("S")
+            # - Check to see if the array is jagged. If so, flatten, store the
+            # data offsets and array shapes, and None locations as attrs.
+            # - If not jagged, all top-level ndarrays are the same shape, so it is
+            # easier to replace Nones with ndarrays filled with special values.
+            if isinstance(data, JaggedArray):
+                data, specialAttrs = packSpecialData(data, paramDef.name)
+                attrs.update(specialAttrs)
 
-            if data.dtype.kind == "O":
-                # Something was added to the data array that caused numpy to want to
-                # treat it as a general-purpose Object array. This usually happens
-                # because:
-                # - the data contain NoDefaults
-                # - the data contain one or more Nones,
-                # - the data contain special types like tuples, dicts, etc
-                # - the data are composed of arrays that numpy would otherwise happily
-                # convert to a higher-order array, but the dimensions of the sub-arrays
-                # are inconsistent ("jagged")
-                # - there is some sort of honest-to-goodness weird object
-                # We want to support the first two cases with minimal intrusion, since
-                # these should be pretty easy to faithfully represent in the db. The
-                # jagged case should be supported as well, but may require a less
-                # faithful representation (e.g. flattened), but the last case isn't
-                # really worth supporting.
+            else:  # numpy.ndarray
+                # Convert Unicode to byte-string
+                if data.dtype.kind == "U":
+                    data = data.astype("S")
 
-                # Here is one proposal:
-                # - Check to see if the array is jagged. all(shape == shape[0]). If not,
-                # flatten, store the data offsets and array shapes, and None locations
-                # as attrs
-                # - If not jagged, all top-level ndarrays are the same shape, so it is
-                # easier to replace Nones with ndarrays filled with special values.
-                if parameters.NoDefault in data:
-                    data = None
-                else:
-                    data, specialAttrs = packSpecialData(data, paramDef.name)
-                    attrs.update(specialAttrs)
+                if data.dtype.kind == "O":
+                    # Something was added to the data array that caused numpy to want to
+                    # treat it as a general-purpose Object array. This usually happens
+                    # because:
+                    # - the data contain NoDefaults
+                    # - the data contain one or more Nones,
+                    # - the data contain special types like tuples, dicts, etc
+                    # - there is some sort of honest-to-goodness weird object
+                    # We want to support the first two cases with minimal intrusion, since
+                    # these should be pretty easy to faithfully represent in the db.
+                    # The last case isn't really worth supporting.
+
+                    if parameters.NoDefault in data:
+                        data = None
+                    else:
+                        data, specialAttrs = packSpecialData(data, paramDef.name)
+                        attrs.update(specialAttrs)
 
             if data is None:
                 continue
@@ -958,7 +970,9 @@ class Database3:
                         "should have been empty".format(paramDef.name, g)
                     )
 
-                dataset = g.create_dataset(paramDef.name, data=data, compression="gzip")
+                dataset = g.create_dataset(
+                    paramDef.name, data=data, compression="gzip", track_order=True
+                )
                 if any(attrs):
                     Database3._writeAttrs(dataset, h5group, attrs)
             except Exception:
@@ -982,7 +996,9 @@ class Database3:
         nDens = collectBlockNumberDensities(blocks)
 
         for nucName, numDens in nDens.items():
-            h5group.create_dataset(nucName, data=numDens, compression="gzip")
+            h5group.create_dataset(
+                nucName, data=numDens, compression="gzip", track_order=True
+            )
 
     @staticmethod
     def _readParams(h5group, compTypeName, comps, allowMissing=False):
@@ -1357,10 +1373,10 @@ class Database3:
                 # 3) not performing parameter renaming. This may become necessary
                 for paramName in params or h5GroupForType.keys():
                     if paramName == "location":
-                        # cast to a numpy array so that we can use list indices
-                        data = numpy.array(layout.location)[layoutIndicesForType][
-                            indexInData
-                        ]
+                        locs = []
+                        for id in indexInData:
+                            locs.append((layout.location[layoutIndicesForType[id]]))
+                        data = numpy.array(locs)
                     elif paramName in h5GroupForType:
                         dataSet = h5GroupForType[paramName]
                         try:
@@ -1396,7 +1412,9 @@ class Database3:
 
                     # iterating of numpy is not fast..
                     for c, val in zip(reorderedComps, data.tolist()):
-                        if isinstance(val, list):
+                        if paramName == "location":
+                            val = tuple(val)
+                        elif isinstance(val, list):
                             val = numpy.array(val)
 
                         histData[c][paramName][cycle, timeNode] = val
@@ -1408,7 +1426,7 @@ class Database3:
                 if cycleNode not in hist:
                     try:
                         hist[cycleNode] = c.p[paramName]
-                    except:  # noqa: bare-except
+                    except Exception:
                         if paramName == "location":
                             hist[cycleNode] = c.spatialLocator.indices
 
@@ -1490,7 +1508,7 @@ class Database3:
 
 
 def packSpecialData(
-    data: numpy.ndarray, paramName: str
+    arrayData: [numpy.ndarray, JaggedArray], paramName: str
 ) -> Tuple[Optional[numpy.ndarray], Dict[str, Any]]:
     """
     Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
@@ -1522,9 +1540,10 @@ def packSpecialData(
 
     Parameters
     ----------
-    data
-        An ndarray storing the data that we want to stuff into the database. These are
-        usually dtype=Object, which is how we usually end up here in the first place.
+    arrayData
+        An ndarray or JaggedArray object storing the data that we want to stuff into
+        the database. If the data is jagged, a special JaggedArray instance is passed
+        in, which contains a 1D array with offsets and shapes.
 
     paramName
         The parameter name that we are trying to store data for. This is mostly used for
@@ -1534,10 +1553,15 @@ def packSpecialData(
     --------
     unpackSpecialData
     """
-    # Check to make sure that we even need to do this. If the numpy data type is
-    # not "O", chances are we have nice, clean data.
-    if data.dtype != "O":
-        return data, {}
+    if isinstance(arrayData, JaggedArray):
+        data = arrayData.flattenedArray
+    else:
+        # Check to make sure that we even need to do this. If the numpy data type is
+        # not "O", chances are we have nice, clean data.
+        if arrayData.dtype != "O":
+            return arrayData, {}
+        else:
+            data = arrayData
 
     attrs: Dict[str, Any] = {"specialFormatting": True}
 
@@ -1560,7 +1584,7 @@ def packSpecialData(
     # A robust solution would need
     # to do this on a case-by-case basis, and re-do it any time we want to
     # write, since circumstances may change. Not only that, but we may need
-    # to do perform more that one of these operations to get to an array
+    # to perform more than one of these operations to get to an array
     # that we want to put in the database.
     if any(isinstance(d, dict) for d in data):
         # we're assuming that a dict is {str: float}. We store the union of
@@ -1585,6 +1609,13 @@ def packSpecialData(
 
         return data, attrs
 
+    if isinstance(arrayData, JaggedArray):
+        attrs["jagged"] = True
+        attrs["offsets"] = arrayData.offsets
+        attrs["shapes"] = arrayData.shapes
+        attrs["noneLocations"] = arrayData.nones
+        return data, attrs
+
     # conform non-numpy arrays to numpy
     for i, val in enumerate(data):
         if isinstance(val, (list, tuple)):
@@ -1593,45 +1624,6 @@ def packSpecialData(
     if not any(isinstance(d, numpy.ndarray) for d in data):
         # looks like 1-D plain-old-data
         data = replaceNonesWithNonsense(data, paramName, nones)
-        return data, attrs
-
-    # check if data is jagged
-    candidate = next((d for d in data if d is not None))
-    shape = candidate.shape
-    ndim = candidate.ndim
-    isJagged = (
-        not all(d.shape == shape for d in data if d is not None) or candidate.size == 0
-    )
-
-    if isJagged:
-        assert all(
-            val.ndim == ndim for val in data if val is not None
-        ), "Inconsistent dimensions in jagged array for: {}\nDimensions: {}".format(
-            paramName, [val.ndim for val in data if val is not None]
-        )
-        attrs["jagged"] = True
-
-        # offsets[i] is the index of the zero-th element of sub-array i
-        offsets = numpy.array(
-            [0]
-            + list(
-                itertools.accumulate(val.size if val is not None else 0 for val in data)
-            )[:-1]
-        )
-
-        # shapes[i] is the shape of the i-th sub-array. Nones are represented by all
-        # zeros
-        shapes = numpy.array(
-            list(val.shape if val is not None else ndim * (0,) for val in data)
-        )
-
-        data = numpy.delete(data, nones)
-
-        data = numpy.concatenate(data, axis=None)
-
-        attrs["offsets"] = offsets
-        attrs["shapes"] = shapes
-        attrs["noneLocations"] = nones
         return data, attrs
 
     if any(isinstance(d, (tuple, list, numpy.ndarray)) for d in data):
@@ -1687,21 +1679,9 @@ def unpackSpecialData(data: numpy.ndarray, attrs, paramName: str) -> numpy.ndarr
     if attrs.get("jagged", False):
         offsets = attrs["offsets"]
         shapes = attrs["shapes"]
-        ndim = len(shapes[0])
-        emptyArray = numpy.ndarray(ndim * (0,), dtype=data.dtype)
-        unpackedJaggedData: List[Optional[numpy.ndarray]] = []
-        for offset, shape in zip(offsets, shapes):
-            if tuple(shape) == ndim * (0,):
-                # Start with an empty array. This may be replaced with a None later
-                unpackedJaggedData.append(emptyArray)
-            else:
-                unpackedJaggedData.append(
-                    numpy.ndarray(shape, dtype=data.dtype, buffer=data[offset:])
-                )
-        for i in attrs["noneLocations"]:
-            unpackedJaggedData[i] = None
-
-        return numpy.array(unpackedJaggedData, dtype=object)
+        nones = attrs["noneLocations"]
+        data = JaggedArray.fromH5(data, offsets, shapes, nones, data.dtype, paramName)
+        return data
     if attrs.get("dict", False):
         keys = numpy.char.decode(attrs["keys"])
         unpackedData = []

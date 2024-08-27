@@ -134,7 +134,7 @@ def buildTestAssemblies():
     assemblieObjs = []
     for numBlocks, blockTemplate in zip([1, 1, 5, 4], [block, block2, block, block]):
         assembly = assemblies.HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numBlocks)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
         assembly.spatialGrid.armiObject = assembly
         for _i in range(numBlocks):
             newBlock = copy.deepcopy(blockTemplate)
@@ -184,7 +184,7 @@ def makeTestAssembly(
 ):
     coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
-    a.spatialGrid = grids.axialUnitGrid(numBlocks)
+    a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
     a.spatialGrid.armiObject = a
     a.spatialLocator = coreGrid[2, 2, 0]
     return a
@@ -719,16 +719,14 @@ class Assembly_TestCase(unittest.TestCase):
         for param in paramDict:
             cur = list(self.assembly.getChildParamValues(param))
             ref = []
-            x = 0
-            for b in self.blockList:
-                ref.append(self.blockList[x].p[param])
-                x += 1
-            places = 6
-            self.assertAlmostEqual(cur, ref, places=places)
+            for i, b in enumerate(self.blockList):
+                ref.append(self.blockList[i].p[param])
+            self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getMaxParam(self):
         for bi, b in enumerate(self.assembly):
             b.p.power = bi
+
         self.assertAlmostEqual(
             self.assembly.getMaxParam("power"), len(self.assembly) - 1
         )
@@ -739,7 +737,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.assembly[2].p.power = 10.0
 
         heights = self.assembly.getElevationsMatchingParamValue("power", 15.0)
-
         self.assertListEqual(heights, [12.5, 20.0])
 
     def test_calcAvgParam(self):

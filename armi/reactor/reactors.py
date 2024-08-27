@@ -28,7 +28,6 @@ import os
 import time
 
 import numpy
-import tabulate
 
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
@@ -58,6 +57,7 @@ from armi.settings.fwSettings.globalSettings import (
 )
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
+from armi.utils import tabulate
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 
@@ -241,7 +241,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
 
 
 class Core(composites.Composite):
-    """
+    r"""
     Reactor structure made up of assemblies. Could be a Core, spent fuel pool, reactor head, etc.
 
     This has the bulk of the data management operations.
@@ -254,7 +254,7 @@ class Core(composites.Composite):
         :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor can contain multiple
         objects of the Core type. The instance attribute name ``r.core`` is reserved for the object
         representating the active core. A reactor may also have a spent fuel pool instance
-        attribute, ``r.sfp``, which is also of type :py:class:`core <armi.reactor.reactors.Core>`.
+        attribute, ``r.sfp``\ , which is also of type :py:class:`core <armi.reactor.reactors.Core>`.
 
         Most of the operations to retrieve information from the ARMI reactor data model are mediated
         through Core objects. For example,
@@ -498,7 +498,7 @@ class Core(composites.Composite):
                     ("Fissile Mass (kg)", fissileMass),
                     ("Heavy Metal Mass (kg)", heavyMetalMass),
                 ],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
@@ -1262,8 +1262,8 @@ class Core(composites.Composite):
         return assems
 
     def getNozzleTypes(self):
-        """
-        Get a dictionary of all of the assembly ``nozzleType``s in the core.
+        r"""
+        Get a dictionary of all of the assembly ``nozzleType``\ s in the core.
 
         Returns
         -------
@@ -1512,7 +1512,7 @@ class Core(composites.Composite):
                     ),
                 ],
                 headers=["Nuclide Category", "Nuclides"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
@@ -1733,7 +1733,7 @@ class Core(composites.Composite):
     def findNeighbors(
         self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
     ):
-        """
+        r"""
         Find assemblies that are next to this assembly.
 
         Return a list of neighboring assemblies.
@@ -1764,7 +1764,7 @@ class Core(composites.Composite):
 
             The ``duplicateAssembliesOnReflectiveBoundary`` setting only works for
             1/3 core symmetry with periodic boundary conditions. For these types
-            of geometries, if this setting is ``True``, neighbor lists for
+            of geometries, if this setting is ``True``\ , neighbor lists for
             assemblies along a periodic boundary will include the assemblies
             along the opposite periodic boundary that are effectively neighbors.
 
