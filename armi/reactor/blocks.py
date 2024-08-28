@@ -2033,13 +2033,7 @@ class HexBlock(Block):
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self.rotatePins(rotNum)
         self._rotateBoundaryParameters(rotNum)
-        # This specifically uses the .get() functionality to avoid an error if this
-        # parameter does not exist.
-        dispx = self.p.get("displacementX")
-        dispy = self.p.get("displacementY")
-        if (dispx is not None) and (dispy is not None):
-            self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
-            self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
+        self._rotateDisplacement(rad)
 
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.
@@ -2093,6 +2087,15 @@ class HexBlock(Block):
                     f"b.rotate() method received unexpected data type for {param} on block {self}\n"
                     + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
                 )
+
+    def _rotateDisplacement(self, rad: float):
+        # This specifically uses the .get() functionality to avoid an error if this
+        # parameter does not exist.
+        dispx = self.p.get("displacementX")
+        dispy = self.p.get("displacementY")
+        if (dispx is not None) and (dispy is not None):
+            self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
+            self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
     def rotatePins(self, rotNum, justCompute=False):
         """
