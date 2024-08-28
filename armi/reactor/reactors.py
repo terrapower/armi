@@ -27,7 +27,7 @@ import itertools
 import os
 import time
 
-import numpy
+import numpy as np
 
 from armi import getPluginManagerOrFail, materials, nuclearDataIO
 from armi import runLog
@@ -1626,7 +1626,7 @@ class Core(composites.Composite):
                 newFlux.extend(oneGroup)
             flux = newFlux
 
-        return numpy.array(flux)
+        return np.array(flux)
 
     def getAssembliesOfType(self, typeSpec, exactMatch=False):
         """Return a list of assemblies in the core that are of type assemType."""
@@ -2083,7 +2083,7 @@ class Core(composites.Composite):
                 for axis, (collection, subdivisions) in enumerate(
                     zip((iMesh, jMesh, kMesh), numPoints)
                 ):
-                    axisVal = float(base[axis])  # convert from numpy.float64
+                    axisVal = float(base[axis])  # convert from np.float64
                     step = float(top[axis] - axisVal) / subdivisions
                     for _subdivision in range(subdivisions):
                         collection.add(round(axisVal, units.FLOAT_DIMENSION_DECIMALS))
@@ -2124,7 +2124,7 @@ class Core(composites.Composite):
         refAssem = self.refAssem
         refMesh = self.findAllAxialMeshPoints([refAssem])
         avgHeight = average1DWithinTolerance(
-            numpy.array(
+            np.array(
                 [
                     [
                         h
@@ -2136,7 +2136,7 @@ class Core(composites.Composite):
                 ]
             )
         )
-        self.p.axialMesh = list(numpy.append([0.0], avgHeight.cumsum()))
+        self.p.axialMesh = list(np.append([0.0], avgHeight.cumsum()))
 
     def findAxialMeshIndexOf(self, heightCm):
         """

@@ -13,7 +13,7 @@
 # limitations under the License.
 from typing import List, Optional, TYPE_CHECKING, NoReturn
 
-import numpy
+import numpy as np
 
 from armi.reactor.grids.locations import IJType, LocationBase
 from armi.reactor.grids.structuredGrid import StructuredGrid
@@ -44,7 +44,7 @@ class AxialGrid(StructuredGrid):
         """
         # Need float bounds or else we truncate integers
         return cls(
-            bounds=(None, None, numpy.arange(numCells + 1, dtype=numpy.float64)),
+            bounds=(None, None, np.arange(numCells + 1, dtype=np.float64)),
             armiObject=armiObject,
         )
 

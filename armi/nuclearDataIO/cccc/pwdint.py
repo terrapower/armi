@@ -25,7 +25,7 @@ Examples
 
 """
 
-import numpy
+import numpy as np
 
 from armi.nuclearDataIO import cccc
 
@@ -54,7 +54,7 @@ class PwdintData(cccc.DataContainer):
 
     def __init__(self):
         cccc.DataContainer.__init__(self)
-        self.powerDensity = numpy.array([])
+        self.powerDensity = np.array([])
 
 
 class PwdintStream(cccc.StreamWithDataContainer):
@@ -111,9 +111,9 @@ class PwdintStream(cccc.StreamWithDataContainer):
         if self._data.powerDensity.size == 0:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._data.powerDensity = numpy.zeros(
+            self._data.powerDensity = np.zeros(
                 (imax, jmax, kmax),
-                dtype=numpy.float32,
+                dtype=np.float32,
             )
         for ki in range(kmax):
             for bi in range(nblck):

@@ -29,7 +29,7 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 # ruff: noqa: F405
 import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.reactor.components.component import *  # noqa: F403
@@ -132,7 +132,7 @@ class UnshapedComponent(Component):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=np.NaN,
         modArea=None,
         isotopics=None,
         mergeWith=None,
@@ -224,12 +224,12 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=np.NaN,
         op=None,
         isotopics=None,
         mergeWith=None,
         components=None,
-        volume=numpy.NaN,
+        volume=np.NaN,
     ):
         Component.__init__(
             self,
