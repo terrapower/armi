@@ -38,7 +38,7 @@ def buildTestAssembly(materialName: str, hot: bool = False):
         height = 10.0 + 0.02 * (250.0 - 25.0)
 
     assembly = HexAssembly("testAssemblyType")
-    assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+    assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
     assembly.spatialGrid.armiObject = assembly
     assembly.add(buildTestBlock("shield", materialName, hotTemp, height))
     assembly.add(buildTestBlock("fuel", materialName, hotTemp, height))
