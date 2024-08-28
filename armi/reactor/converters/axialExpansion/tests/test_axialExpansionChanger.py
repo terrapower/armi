@@ -390,7 +390,7 @@ class TestConservation(AxialExpansionTestBase):
         """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
         assembly.spatialGrid.armiObject = assembly
         assembly.add(buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.add(buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
@@ -503,7 +503,7 @@ class TestExceptions(AxialExpansionTestBase):
     def test_isTopDummyBlockPresent(self):
         # build test assembly without dummy
         assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
         assembly.spatialGrid.armiObject = assembly
         assembly.add(buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.calculateZCoords()

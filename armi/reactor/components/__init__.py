@@ -29,13 +29,13 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 # ruff: noqa: F405
 import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
-from armi.reactor.components.component import *  # noqa: undefined-local-with-import-star
-from armi.reactor.components.basicShapes import *  # noqa: undefined-local-with-import-star
-from armi.reactor.components.complexShapes import *  # noqa: undefined-local-with-import-star
-from armi.reactor.components.volumetricShapes import *  # noqa: undefined-local-with-import-star
+from armi.reactor.components.component import *  # noqa: F403
+from armi.reactor.components.basicShapes import *  # noqa: F403
+from armi.reactor.components.complexShapes import *  # noqa: F403
+from armi.reactor.components.volumetricShapes import *  # noqa: F403
 
 
 def factory(shape, bcomps, kwargs):
@@ -132,7 +132,7 @@ class UnshapedComponent(Component):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=np.NaN,
         modArea=None,
         isotopics=None,
         mergeWith=None,
@@ -158,7 +158,7 @@ class UnshapedComponent(Component):
         Parameters
         ----------
         cold : bool, optional
-            Ignored for this component
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
         """
         coldArea = self.p.area
         if cold:
@@ -172,6 +172,13 @@ class UnshapedComponent(Component):
 
         This is the smallest it can possibly be. Since this is used to determine
         the outer component, it will never be allowed to be the outer one.
+
+        Parameters
+        ----------
+        Tc : float
+            Ignored for this component
+        cold : bool, optional
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
 
         Notes
         -----
@@ -217,12 +224,12 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=np.NaN,
         op=None,
         isotopics=None,
         mergeWith=None,
         components=None,
-        volume=numpy.NaN,
+        volume=np.NaN,
     ):
         Component.__init__(
             self,
@@ -358,25 +365,22 @@ class DerivedShape(UnshapedComponent):
 
         Notes
         -----
-        If a parent exists, this will iterate over it and then determine
-        both the volume and area based on its context within the scope
-        of the parent object by considering the volumes and areas of
-        the surrounding components.
+        If a parent exists, this will iterate over it and then determine both the volume and area
+        based on its context within the scope of the parent object by considering the volumes and
+        areas of the surrounding components.
 
-        Since some components are volumetric shapes, this must consider the volume
-        so that it wraps around in all three dimensions.
+        Since some components are volumetric shapes, this must consider the volume so that it wraps
+        around in all three dimensions.
 
-        But there are also situations where we need to handle zero-height blocks
-        with purely 2D components. Thus we track area and volume fractions here
-        when possible.
+        But there are also situations where we need to handle zero-height blocks with purely 2D
+        components. Thus we track area and volume fractions here when possible.
         """
         if self.parent is None:
             raise ValueError(
                 f"Cannot compute volume/area of {self} without a parent object."
             )
 
-        # Determine the volume/areas of the non-derived shape components
-        # within the parent.
+        # Determine the volume/areas of the non-derived shape components within the parent.
         siblingVolume = 0.0
         siblingArea = 0.0
         for sibling in self.parent.getChildren():
@@ -391,7 +395,7 @@ class DerivedShape(UnshapedComponent):
             try:
                 if siblingArea is not None:
                     siblingArea += sibling.getArea()
-            except:  # noqa: bare-except
+            except Exception:
                 siblingArea = None
 
         remainingVolume = self.getMaxVolume() - siblingVolume
@@ -454,8 +458,17 @@ class DerivedShape(UnshapedComponent):
         Parameters
         ----------
         cold : bool, optional
-            Ignored for this component
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
         """
+        if cold:
+            # At cold temp, the DerivedShape has the area of the parent minus the other siblings
+            parentArea = self.parent.getArea()
+            # NOTE: the assumption is there is only one DerivedShape in each Component
+            siblings = sum(
+                [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
+            )
+            return parentArea - siblings
+
         if self.parent.derivedMustUpdate:
             self.computeVolume()
 

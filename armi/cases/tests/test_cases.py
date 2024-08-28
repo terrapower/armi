@@ -47,8 +47,7 @@ GEOM_INPUT = """<?xml version="1.0" ?>
     <assembly name="A3" pos="1"  ring="2"/>
 </reactor>
 """
-# This gets made into a StringIO multiple times because
-# it gets read multiple times.
+# This gets made into a StringIO multiple times because it gets read multiple times.
 
 BLUEPRINT_INPUT = """
 nuclide flags:
@@ -234,7 +233,10 @@ class TestArmiCase(unittest.TestCase):
 
                 self.assertIn("Triggering BOL Event", mock.getStdout())
                 self.assertIn("xsGroups", mock.getStdout())
-                self.assertIn("Completed EveryNode - cycle 0", mock.getStdout())
+                self.assertIn(
+                    "Completed EveryNode - timestep: cycle 0, node 0, year 0.00 Event",
+                    mock.getStdout(),
+                )
 
     def test_clone(self):
         testTitle = "CLONE_TEST"
@@ -425,10 +427,6 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.assertEqual(self.c1.title, "c1")
         self.c1.title = "new_bob"
         self.assertEqual(self.c1.title, "new_bob")
-
-    def test_buildCommand(self):
-        cmd = self.c1.buildCommand()
-        self.assertEqual(cmd, 'python -u  -m armi run "c1.yaml"')
 
 
 class TestCaseSuiteComparison(unittest.TestCase):

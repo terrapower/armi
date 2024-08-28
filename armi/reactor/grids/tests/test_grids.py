@@ -18,7 +18,7 @@ import math
 import unittest
 import pickle
 
-import numpy
+import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
 from armi.reactor import geometry
@@ -108,7 +108,7 @@ class TestSpatialLocator(unittest.TestCase):
         pinIndexLoc = grids.IndexLocation(1, 5, 0, blockGrid)
         pinFree = grids.CoordinateLocation(1.0, 2.0, 3.0, blockGrid)
 
-        assert_allclose(blockLoc.getCompleteIndices(), numpy.array((2, 3, 3)))
+        assert_allclose(blockLoc.getCompleteIndices(), np.array((2, 3, 3)))
         assert_allclose(blockLoc.getGlobalCoordinates(), (2.0, 3.0, 3.5))
         assert_allclose(blockLoc.getGlobalCellBase(), (1.5, 2.5, 3))
         assert_allclose(blockLoc.getGlobalCellTop(), (2.5, 3.5, 4))
@@ -457,7 +457,7 @@ class TestHexGrid(unittest.TestCase):
             grid = grids.HexGrid(
                 unitSteps=((1.5 / math.sqrt(3), 0.0, 0.0), (0.5, 1, 0.0), (0, 0, 0)),
                 unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
-                offset=numpy.array([offset, offset, offset]),
+                offset=np.array([offset, offset, offset]),
             )
 
             # test number of rings before converting pitch
@@ -499,7 +499,7 @@ class TestHexGrid(unittest.TestCase):
                     (0, 0, 0),
                 ),
                 unitStepLimits=((-3, 3), (-3, 3), (0, 1)),
-                offset=numpy.array(offsets),
+                offset=np.array(offsets),
             )
 
             # test number of rings before converting pitch
@@ -510,7 +510,7 @@ class TestHexGrid(unittest.TestCase):
             grid.changePitch(2.0)
             self.assertAlmostEqual(grid.pitch, 2.0, delta=1e-9)
             v2 = grid.getCoordinates((1, 0, 0))
-            correction = numpy.array([0.5, math.sqrt(3) / 2, 0])
+            correction = np.array([0.5, math.sqrt(3) / 2, 0])
             assert_allclose(v1 + correction, v2)
 
             # basic sanity: test number of rings has not changed
@@ -625,7 +625,7 @@ class TestThetaRZGrid(unittest.TestCase):
 
     def test_positions(self):
         grid = grids.ThetaRZGrid(
-            bounds=(numpy.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30])
+            bounds=(np.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30])
         )
         assert_allclose(
             grid.getCoordinates((1, 0, 1)), (math.sqrt(2) / 2, math.sqrt(2) / 2, 15.0)

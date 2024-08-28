@@ -39,7 +39,6 @@ from armi.reactor.assemblies import (
     Flags,
     grids,
     HexAssembly,
-    numpy,
     runLog,
 )
 from armi.reactor.tests import test_reactors
@@ -134,7 +133,7 @@ def buildTestAssemblies():
     assemblieObjs = []
     for numBlocks, blockTemplate in zip([1, 1, 5, 4], [block, block2, block, block]):
         assembly = assemblies.HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numBlocks)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
         assembly.spatialGrid.armiObject = assembly
         for _i in range(numBlocks):
             newBlock = copy.deepcopy(blockTemplate)
@@ -184,7 +183,7 @@ def makeTestAssembly(
 ):
     coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
-    a.spatialGrid = grids.axialUnitGrid(numBlocks)
+    a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
     a.spatialGrid.armiObject = a
     a.spatialLocator = coreGrid[2, 2, 0]
     return a
@@ -605,8 +604,8 @@ class Assembly_TestCase(unittest.TestCase):
 
         for refBlock, curBlock in zip(self.assembly, assembly2):
             numNucs = 0
-            for nuc in self.assembly.getAncestorWithFlags(
-                Flags.REACTOR
+            for nuc in self.assembly.getAncestor(
+                lambda c: isinstance(c, reactors.Reactor)
             ).blueprints.allNuclidesInProblem:
                 numNucs += 1
                 # Block level density
@@ -632,7 +631,7 @@ class Assembly_TestCase(unittest.TestCase):
                     continue
                 ref = refBlock.p[refParam]
                 cur = curBlock.p[refParam]
-                if isinstance(cur, numpy.ndarray):
+                if isinstance(cur, np.ndarray):
                     self.assertTrue((cur == ref).all())
                 else:
                     if refParam == "location":
@@ -659,7 +658,7 @@ class Assembly_TestCase(unittest.TestCase):
                 continue
             ref = self.assembly.p[param]
             cur = assembly2.p[param]
-            if isinstance(cur, numpy.ndarray):
+            if isinstance(cur, np.ndarray):
                 assert_allclose(cur, ref)
             else:
                 self.assertEqual(cur, ref)
@@ -719,16 +718,14 @@ class Assembly_TestCase(unittest.TestCase):
         for param in paramDict:
             cur = list(self.assembly.getChildParamValues(param))
             ref = []
-            x = 0
-            for b in self.blockList:
-                ref.append(self.blockList[x].p[param])
-                x += 1
-            places = 6
-            self.assertAlmostEqual(cur, ref, places=places)
+            for i, b in enumerate(self.blockList):
+                ref.append(self.blockList[i].p[param])
+            self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getMaxParam(self):
         for bi, b in enumerate(self.assembly):
             b.p.power = bi
+
         self.assertAlmostEqual(
             self.assembly.getMaxParam("power"), len(self.assembly) - 1
         )
@@ -739,7 +736,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.assembly[2].p.power = 10.0
 
         heights = self.assembly.getElevationsMatchingParamValue("power", 15.0)
-
         self.assertListEqual(heights, [12.5, 20.0])
 
     def test_calcAvgParam(self):
@@ -955,35 +951,29 @@ class Assembly_TestCase(unittest.TestCase):
             for b in self.assembly:
                 b.p.percentBu = None
             self.assertTrue(
-                numpy.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
+                np.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
             )
 
             # multiDimensional param
             for b, flux in zip(self.assembly, [[1, 10], [2, 8], [3, 6]]):
                 b.p.mgFlux = flux
             self.assertTrue(
-                numpy.allclose(
-                    [2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0)
-                )
+                np.allclose([2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0))
             )
             self.assertTrue(
-                numpy.allclose(
-                    [1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
             for b in self.assembly:
                 b.p.mgFlux = [0.0] * 2
             self.assertTrue(
-                numpy.allclose(
-                    [0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
 
             # single value param at corner
             for b, temp in zip(self.assembly, [100, 200, 300]):
                 b.p.THcornTemp = [temp + iCorner for iCorner in range(6)]
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
-            self.assertTrue(numpy.allclose([200, 201, 202, 203, 204, 205], value))
+            self.assertTrue(np.allclose([200, 201, 202, 203, 204, 205], value))
         finally:
             percentBuDef.location = originalLoc
 

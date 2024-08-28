@@ -224,10 +224,10 @@ class AxialExpansionChanger:
 
         Notes
         -----
-        When considering thermal expansion, if there is an axial temperature distribution on the assembly,
-        the axial expansion methodology will NOT perfectly preseve mass. The magnitude of the gradient of
-        the temperature distribution is the primary factor in determining the cumulative loss of mass conservation.
-        Additional details will be documented in :ref:`axialExpansion` of the documentation.
+        When considering thermal expansion, if there is an axial temperature distribution on the
+        assembly, the axial expansion methodology will NOT perfectly preserve mass. The magnitude of
+        the gradient of the temperature distribution is the primary factor in determining the
+        cumulative loss of mass conservation.
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(

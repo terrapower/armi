@@ -77,7 +77,7 @@ import struct
 from copy import deepcopy
 from typing import List
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nuclearDataIO import nuclearFileMetadata
@@ -235,7 +235,7 @@ class IORecord:
             "string": lambda val: self.rwString(val, strLength),
             "double": self.rwDouble,
         }
-        action = actions.get(containedType, None)
+        action = actions.get(containedType)
         if action is None:
             raise Exception(
                 'Cannot pack or unpack the type "{}".'.format(containedType)
@@ -243,7 +243,7 @@ class IORecord:
         # this little trick will make this work for both reading and writing, yay!
         if contents is None or len(contents) == 0:
             contents = [None for _ in range(length)]
-        return numpy.array([action(contents[ii]) for ii in range(length)])
+        return np.array([action(contents[ii]) for ii in range(length)])
 
     def rwMatrix(self, contents, *shape):
         """A method for reading and writing a matrix of floating point values.
@@ -289,20 +289,20 @@ class IORecord:
         Notes
         -----
         This can be important for performance when reading large matrices (e.g. scatter
-        matrices). It may be worth investigating ``numpy.frombuffer`` on read and
+        matrices). It may be worth investigating ``np.frombuffer`` on read and
         something similar on write.
 
         With shape, the first shape argument should be the outermost loop because
         these are stored in column major order (the FORTRAN way).
 
-        Note that numpy.ndarrays can be built with ``order="F"`` to have column-major ordering.
+        Note that np.ndarrays can be built with ``order="F"`` to have column-major ordering.
 
         So if you have ``((MR(I,J),I=1,NCINTI),J=1,NCINTJ)`` you would pass in
         the shape as (NCINTJ, NCINTI).
         """
         fortranShape = list(reversed(shape))
         if contents is None or contents.size == 0:
-            contents = numpy.empty(fortranShape)
+            contents = np.empty(fortranShape)
         for index in itertools.product(*[range(ii) for ii in shape]):
             fortranIndex = tuple(reversed(index))
             contents[fortranIndex] = func(contents[fortranIndex])

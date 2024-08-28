@@ -20,7 +20,7 @@ Most temperatures may be specified in either K or C and the functions will conve
 import warnings
 
 from scipy.optimize import fsolve
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
@@ -33,7 +33,7 @@ FAIL_ON_RANGE = False
 
 
 class Material:
-    """
+    r"""
     A material is made up of elements or isotopes. It has bulk properties like density.
 
     .. impl:: The abstract material class.
@@ -62,7 +62,7 @@ class Material:
     massFrac : dict
         Mass fractions for all nuclides in the material keyed on the nuclide symbols
     refDens : float
-        A reference density used by some materials, for instance `SimpleSolid`s, during thermal
+        A reference density used by some materials, for instance `SimpleSolid`\ s, during thermal
         expansion
     theoreticalDensityFrac : float
         Fraction of the material's density in reality, which is commonly different from 1.0 in solid
@@ -344,8 +344,8 @@ class Material:
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
-        massDensities = numpy.array([self.massFrac[nuc] for nuc in nucsNames]) * density
-        atomicMasses = numpy.array(
+        massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
+        atomicMasses = np.array(
             [nuclideBases.byName[nuc].weight for nuc in nucsNames]
         )  # in AMU
         molesPerCC = massDensities / atomicMasses  # item-wise division
@@ -413,7 +413,7 @@ class Material:
         updatedDensity = updatedMassDensities.sum()
         massFracs = updatedMassDensities / updatedDensity
 
-        if not numpy.isclose(sum(massFracs), 1.0, atol=1e-10):
+        if not np.isclose(sum(massFracs), 1.0, atol=1e-10):
             raise RuntimeError(
                 f"The mass fractions {massFracs} in {self} do not sum to 1.0."
             )
@@ -432,7 +432,7 @@ class Material:
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
+        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC)[0])
         return tAtTargetDensity
 
     @property
@@ -640,7 +640,7 @@ class Material:
             msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(
                 val, minT, maxT, self.name, label
             )
-            if FAIL_ON_RANGE or numpy.isnan(val):
+            if FAIL_ON_RANGE or np.isnan(val):
                 runLog.error(msg)
                 raise ValueError
             else:

@@ -19,7 +19,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 import io
 
-import numpy
+import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
@@ -324,11 +324,11 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         block = self.r.core[0][0]
         # get nuclides in first component in block
         adjList = block[0].getNuclides()
-        block.p.detailedNDens = numpy.array([1.0])
+        block.p.detailedNDens = np.array([1.0])
         block.p.pdensDecay = 1.0
         block._updateDetailedNdens(frac=0.5, adjustList=adjList)
         self.assertEqual(block.p.pdensDecay, 0.5)
-        self.assertEqual(block.p.detailedNDens, numpy.array([0.5]))
+        self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
 class Block_TestCase(unittest.TestCase):
@@ -804,7 +804,7 @@ class Block_TestCase(unittest.TestCase):
         cur = self.block.getWettedPerimeter()
 
         wire = self.block.getComponent(Flags.WIRE)
-        correctionFactor = numpy.hypot(
+        correctionFactor = np.hypot(
             1.0,
             math.pi
             * wire.getDimension("helixDiameter")
@@ -1010,8 +1010,12 @@ class Block_TestCase(unittest.TestCase):
         u5 = self.block.getNumberDensity("U235")
         ref = u5 / (u8 + u5)
 
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
+
+        # test the zero edge case
+        self.block.adjustUEnrich(0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
 
     def test_getNumberOfAtoms(self):
         self.block.clearNumberDensities()
@@ -1217,6 +1221,10 @@ class Block_TestCase(unittest.TestCase):
             ],
         )
 
+        # test edge case
+        cur = self.block.getComponentsOfMaterial(None, "UZr")
+        self.assertEqual(cur[0], ref)
+
     def test_getComponentByName(self):
         """Test children by name.
 
@@ -1345,7 +1353,7 @@ class Block_TestCase(unittest.TestCase):
 
         # Test with no powerKeySuffix
         self.block.setPinPowers(neutronPower)
-        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[totalPowerKey], np.array(neutronPower))
         self.assertIsNone(self.block.p[neutronPowerKey])
         self.assertIsNone(self.block.p[gammaPowerKey])
 
@@ -1354,8 +1362,8 @@ class Block_TestCase(unittest.TestCase):
             neutronPower,
             powerKeySuffix=NEUTRON,
         )
-        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
-        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[totalPowerKey], np.array(neutronPower))
+        assert_allclose(self.block.p[neutronPowerKey], np.array(neutronPower))
         self.assertIsNone(self.block.p[gammaPowerKey])
 
         # Test with gamma powers
@@ -1363,9 +1371,9 @@ class Block_TestCase(unittest.TestCase):
             gammaPower,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
-        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
-        assert_allclose(self.block.p[gammaPowerKey], numpy.array(gammaPower))
+        assert_allclose(self.block.p[totalPowerKey], np.array(totalPower))
+        assert_allclose(self.block.p[neutronPowerKey], np.array(neutronPower))
+        assert_allclose(self.block.p[gammaPowerKey], np.array(gammaPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
@@ -1669,8 +1677,8 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(totalHexArea, self.block.getArea())
         self.assertAlmostEqual(ref, self.block.getComponent(Flags.COOLANT).getArea())
 
-        self.assertTrue(numpy.allclose(numFE56, self.block.getNumberOfAtoms("FE56")))
-        self.assertTrue(numpy.allclose(numU235, self.block.getNumberOfAtoms("U235")))
+        self.assertTrue(np.allclose(numFE56, self.block.getNumberOfAtoms("FE56")))
+        self.assertTrue(np.allclose(numU235, self.block.getNumberOfAtoms("U235")))
 
     def _testDimensionsAreLinked(self):
         prevC = None
@@ -1697,7 +1705,7 @@ class Block_TestCase(unittest.TestCase):
 
         .. warning:: This will likely be pushed to the component level.
         """
-        fluxes = numpy.ones((33, 10))
+        fluxes = np.ones((33, 10))
         self.block.setPinMgFluxes(fluxes)
         self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
         self.block.setPinMgFluxes(fluxes * 3, gamma=True)

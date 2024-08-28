@@ -29,7 +29,7 @@ import math
 from typing import Dict, Union, Sequence, List, Tuple
 
 
-class auto:  # noqa: invalid-class-name
+class auto:  # noqa: N801
     """
     Empty class for requesting a lazily-evaluated automatic field value.
 

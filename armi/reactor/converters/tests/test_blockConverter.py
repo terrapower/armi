@@ -16,7 +16,7 @@
 import os
 import unittest
 
-import numpy
+import numpy as np
 
 from armi.reactor.converters import blockConverters
 from armi.reactor import blocks
@@ -79,6 +79,22 @@ class TestBlockConverter(unittest.TestCase):
         converter = blockConverters.ComponentMerger(block, soluteName, solventName)
         convertedBlock = converter.convert()
         self.assertNotIn(soluteName, convertedBlock.getComponentNames())
+        self._checkAreaAndComposition(block, convertedBlock)
+
+    def test_dissolveMultiple(self):
+        """Test dissolving multiple components into another."""
+        self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
+        self._test_dissolve_multi(
+            loadTestBlock(), ["inner liner", "outer liner"], "clad"
+        )
+
+    def _test_dissolve_multi(self, block, soluteNames, solventName):
+        converter = blockConverters.MultipleComponentMerger(
+            block, soluteNames, solventName
+        )
+        convertedBlock = converter.convert()
+        for soluteName in soluteNames:
+            self.assertNotIn(soluteName, convertedBlock.getComponentNames())
         self._checkAreaAndComposition(block, convertedBlock)
 
     def test_build_NthRing(self):
@@ -326,7 +342,7 @@ class TestToCircles(unittest.TestCase):
     def test_fromHex(self):
         actualRadii = blockConverters.radiiFromHexPitches([7.47, 7.85, 8.15])
         expected = [3.92203, 4.12154, 4.27906]
-        self.assertTrue(numpy.allclose(expected, actualRadii, rtol=1e-5))
+        self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
     def test_fromRingOfRods(self):
         # JOYO-LMFR-RESR-001, rev 1, Table A.2, 5th layer (ring 6)
@@ -334,7 +350,7 @@ class TestToCircles(unittest.TestCase):
             0.76 * 5, 6 * 5, [0.28, 0.315]
         )
         expected = [3.24034, 3.28553, 3.62584, 3.67104]
-        self.assertTrue(numpy.allclose(expected, actualRadii, rtol=1e-5))
+        self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
 
 def _buildJoyoFuel():

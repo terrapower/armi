@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for run cli entry point."""
+from glob import glob
 from shutil import copyfile
 import logging
 import os
@@ -37,6 +38,50 @@ from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorR
 from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
+
+
+def buildTestDB(fileName, numNodes=1, numCycles=1):
+    """This function builds a (super) simple test DB.
+
+    Notes
+    -----
+    This needs to be run inside a temp directory.
+
+    Parameters
+    ----------
+    fileName : str
+        The file name (not path) we want for the ARMI test DB.
+    numNodes : int, optional
+        The number of nodes we want in the DB, default 1.
+    numCycles : int, optional
+        The number of cycles we want in the DB, default 1.
+
+    Returns
+    -------
+    str
+        Database file name.
+    """
+    o, r = loadTestReactor(
+        TEST_ROOT,
+        inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+    )
+
+    # create the tests DB
+    dbi = DatabaseInterface(r, o.cs)
+    dbi.initDB(fName=f"{fileName}.h5")
+    db = dbi.database
+
+    # populate the db with something
+    r.p.cycle = 0
+    for node in range(abs(numNodes)):
+        for cycle in range(abs(numCycles)):
+            r.p.timeNode = node
+            r.p.cycle = cycle
+            r.p.cycleLength = 100
+            db.writeToDB(r)
+
+    db.close()
+    return f"{fileName}.h5"
 
 
 class TestInitializationEntryPoints(unittest.TestCase):
@@ -252,6 +297,8 @@ class TestExtractInputs(unittest.TestCase):
                 self.assertIn("Writing settings to", mock.getStdout())
                 self.assertIn("Writing blueprints to", mock.getStdout())
 
+            db.close()
+
 
 class TestInjectInputs(unittest.TestCase):
     def test_injectInputsBasics(self):
@@ -333,17 +380,76 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
 
 
 class TestReportsEntryPoint(unittest.TestCase):
-    def test_reportsEntryPointBasics(self):
-        rep = ReportsEntryPoint()
-        rep.addOptions()
-        rep.parse_args(["-h5db", "/path/to/fake.h5"])
+    def test_toTwoTuple(self):
+        result = ReportsEntryPoint.toTwoTuple("(1,2)")
+        self.assertEqual(result, (1, 2))
 
-        self.assertEqual(rep.name, "report")
-        self.assertEqual(rep.settingsArgument, "optional")
+        result = ReportsEntryPoint.toTwoTuple("(-931,223)")
+        self.assertEqual(result, (-931, 223))
+
+        result = ReportsEntryPoint.toTwoTuple("(-7,7")
+        self.assertEqual(result, (-7, 7))
+
+        # here is a funny edge case
+        result = ReportsEntryPoint.toTwoTuple("(1,2,3)")
+        self.assertEqual(result, (1, 2))
+
+        # test some cases that SHOULD fail
+        with self.assertRaises(ValueError):
+            ReportsEntryPoint.toTwoTuple("(1,)")
 
         with self.assertRaises(ValueError):
-            # The "fake.h5" doesn't exist, so this should fail.
+            ReportsEntryPoint.toTwoTuple("()")
+
+        with self.assertRaises(ValueError):
+            ReportsEntryPoint.toTwoTuple("[1,5]")
+
+    def test_cleanArgs(self):
+        rep = ReportsEntryPoint()
+        rep.addOptions()
+
+        node0 = "(0,0)"
+        node3 = "(3,3)"
+        nodesStr = "(0,2)(1,3)(2,9)"
+
+        rep.parse_args(["--nodes", nodesStr])
+        self.assertEqual(rep.args.nodes, nodesStr)
+        rep._cleanArgs()
+        self.assertEqual(rep.args.nodes[0], (0, 2))
+        self.assertEqual(rep.args.nodes[1], (1, 3))
+        self.assertEqual(rep.args.nodes[2], (2, 9))
+
+        rep.parse_args(["--min-node", node0])
+        self.assertEqual(rep.args.min_node, node0)
+        rep._cleanArgs()
+        self.assertEqual(rep.args.min_node, (0, 0))
+
+        rep.parse_args(["--max-node", node3])
+        self.assertEqual(rep.args.max_node, node3)
+        rep._cleanArgs()
+        self.assertEqual(rep.args.max_node, (3, 3))
+
+    def test_reportsEntryPointBasics(self):
+        with TemporaryDirectoryChanger() as newDir:
+            # set up output names
+            fileNameDB = buildTestDB(self._testMethodName, 1, 1)
+            outputFile = f"{self._testMethodName}.txt"
+            outDir = os.path.join(newDir.destination, "reportsOutputFiles")
+
+            # define report
+            rep = ReportsEntryPoint()
+            rep.addOptions()
+            rep.parse_args(["-h5db", fileNameDB, "-o", outputFile])
+
+            # validate report options
+            self.assertEqual(rep.name, "report")
+            self.assertEqual(rep.settingsArgument, "optional")
+
+            # Run report, and make sure there are output files
             rep.invoke()
+            self.assertTrue(os.path.exists(os.path.join(outDir, "index.html")))
+            outFiles = glob(os.path.join(outDir, f"*{self._testMethodName}*"))
+            self.assertGreater(len(outFiles), 2)
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
@@ -453,3 +559,5 @@ class TestVisFileEntryPointCommand(unittest.TestCase):
             self.assertIsNone(vf.args.min_node)
             self.assertIsNone(vf.args.max_node)
             self.assertEqual(vf.args.output_name, "test_visFileEntryPointBasics")
+
+            self.db.close()

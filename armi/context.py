@@ -15,10 +15,8 @@
 """
 Module containing global constants that reflect the executing context of ARMI.
 
-This contains information about the circumstatces under which an ARMI application is
-running. Things like the MPI environment, executing user, etc. live here. These are
-re-exported by the `armi` package, but live here so that import loops won't lead to
-as many issues.
+ARMI's global state information: operating system information, environment data, user data, memory
+parallelism, temporary storage locations, and if operational mode (interactive, gui, or batch).
 """
 from logging import DEBUG
 import datetime
@@ -29,14 +27,8 @@ import os
 import sys
 import time
 
-# h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound
-# to atexit below doesn't lead to a segfault on python exit. The Database3 module is
-# imported at call time, since it itself needs stuff that is initialized in this module
-# to import properly.  However, if that import leads to the first time that h5py is
-# imported in this process, doing so will cause a segfault. The theory here is that this
-# happens because the h5py extension module is not safe to import (for whatever reason)
-# when the python interpreter is in whatever state it's in when the atexit callbacks are
-# being invoked.  Importing early avoids this.
+# h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound to atexit
+# below doesn't lead to a segfault on python exit.
 #
 # Minimal code to reproduce the issue:
 #
@@ -47,31 +39,25 @@ import time
 #
 # >>> atexit.register(willSegFault)
 
-import h5py  # noqa: unused-import
+import h5py  # noqa: F401
 
 
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
 
-# App name is used when spawning new tasks that should invoke a specific ARMI
-# application. For instance, the framework provides some features to help with
-# submitting tasks to an HPC cluster. Sometimes these tasks are themselves only using
-# ARMI functionality, so running `python -m armi` is fine. Other times, the task is
-# specific to an application, requiring something like `python -m myArmiApp`
+# App name is used when spawning new tasks that should invoke a specific ARMI application. Sometimes
+# these tasks only use ARMI functionality, so running `python -m armi` is fine. Other times, the
+# task is specific to an application, requiring something like: `python -m myArmiApp`
 APP_NAME = "armi"
 
 
 class Mode(enum.Enum):
     """
-    Mode represents different run modes possible in ARMI.
+    Mode represents different run types possible in ARMI.
 
-    The modes can be Batch, Interactive, or GUI. In different modes, there are different
-    types of interactions possible.
-
-    Mode is generally auto-detected based on your terminal. It can also be set in
-    various CLI entry points, which are the implementations of
-    :py:class:`armi.cli.entryPoint.EntryPoint`. Lastly, each entry point has a
-    ``--batch`` command line argument that can force Batch mode.
+    The modes can be Batch, Interactive, or GUI. Mode is generally auto-detected based on your
+    terminal. It can also be set in various CLI entry points. Each entry point has a ``--batch``
+    command line argument that can force Batch mode.
     """
 
     BATCH = 1
@@ -93,16 +79,18 @@ DOC = os.path.abspath(os.path.join(PROJECT_ROOT, "doc"))
 USER = getpass.getuser()
 START_TIME = time.ctime()
 
-# Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file
-# In this mode you cannot respond to prompts or anything
-CURRENT_MODE = Mode.INTERACTIVE if sys.stdout.isatty() else Mode.BATCH
+# Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file. In this
+# mode you cannot respond to prompts. (This does not work reliably for both Windows and Linux so an
+# os-specific solution is applied.)
+isatty = sys.stdout.isatty() if "win" in sys.platform else sys.stdin.isatty()
+CURRENT_MODE = Mode.INTERACTIVE if isatty else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
 MPI_COMM = None
 # MPI_RANK represents the index of the CPU that is running.
 # 0 is typically the primary CPU, while 1+ are typically workers.
-# MPI_SIZE is the total number of CPUs
 MPI_RANK = 0
+# MPI_SIZE is the total number of CPUs.
 MPI_SIZE = 1
 LOCAL = "local"
 MPI_NODENAME = LOCAL
@@ -110,13 +98,11 @@ MPI_NODENAMES = [LOCAL]
 
 
 try:
-    # Check for MPI
-    # The mpi4py module uses cPickle to serialize python objects in preparation for
-    # network transmission. Sometimes, when cPickle fails, it gives very cryptic error
-    # messages that do not help much. If you uncomment th following line, you can trick
-    # mpi4py into using the pure-python pickle module in place of cPickle and now you
-    # will generally get much more meaningful and useful error messages Then comment it
-    # back out because it's slow.
+    # Check for MPI. The mpi4py module uses cPickle to serialize python objects in preparation for
+    # network transmission. Sometimes, when cPickle fails, it gives very cryptic error messages that
+    # do not help much. If you uncomment th following line, you can trick mpi4py into using the
+    # pure-python pickle module in place of cPickle and now you will generally get much more
+    # meaningful and useful error messages Then comment it back out because it's slow.
     # import sys, pickle; sys.modules['cPickle'] = pickle
     from mpi4py import MPI
 
@@ -125,20 +111,16 @@ try:
     MPI_SIZE = MPI_COMM.Get_size()
     MPI_NODENAME = MPI.Get_processor_name()
     MPI_NODENAMES = MPI_COMM.allgather(MPI_NODENAME)
-
-    # fix an exceptional error case when we are not in "interactive mode"
-    if MPI_SIZE > 1 and CURRENT_MODE == Mode.INTERACTIVE:
-        CURRENT_MODE = Mode.BATCH
 except ImportError:
     # stick with defaults
     pass
 
 try:
-    # trying a windows approach
+    # trying a Windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
-except:  # noqa: bare-except
-    # non-windows
+except Exception:
+    # non-Windows
     APP_DATA = os.path.expanduser("~/.armi")
 
 if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
@@ -151,13 +133,14 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
         raise OSError("Directory doesn't exist {0}".format(APP_DATA))
 
 if MPI_COMM is not None:
-    MPI_COMM.barrier()  # make sure app data exists before workers proceed.
+    # Make sure app data exists before workers proceed.
+    MPI_COMM.barrier()
 
 MPI_DISTRIBUTABLE = MPI_SIZE > 1
 
 _FAST_PATH = os.path.join(os.getcwd())
 """
-A directory available for high-performance I/O
+A directory available for high-performance I/O.
 
 .. warning:: This is not a constant and can change at runtime.
 """
@@ -170,17 +153,16 @@ def activateLocalFastPath() -> None:
     """
     Specify a local temp directory to be the fast path.
 
-    ``FAST_PATH`` is often a local hard drive on a cluster node. It's a high-performance
+    ``FAST_PATH`` is often a local hard drive on a cluster node. It should be a high-performance
     scratch space. Different processors on the same node should have different fast paths.
-    Some old code may MPI_RANK-dependent folders/filenames as well, but this is no longer
-    necessary.
 
-    .. warning:: This path will be obliterated when the job ends so be careful.
+    Notes
+    -----
+    This path will be obliterated when the job ends.
 
-    Note also
-    that this path is set at import time, so if a series of unit tests come through that
-    instantiate one operator after the other, the path will already exist the second time.
-    The directory is created in the Operator constructor.
+    This path is set at import time, so if a series of unit tests come through that instantiate one
+    operator after the other, the path will already exist the second time. The directory is created
+    in the Operator constructor.
     """
     global _FAST_PATH, _FAST_PATH_IS_TEMPORARY, APP_DATA
 
@@ -206,9 +188,8 @@ def getFastPath() -> str:
 
     Notes
     -----
-    It's too dangerous to use ``FAST_PATH`` directly as it can change between import and
-    runtime. For example, a module that does ``from armi.context import FAST_PATH`` is
-    disconnected from the official ``FAST_PATH`` controlled by this module.
+    This exists because it's dangerous to use ``FAST_PATH`` directly. as it can change between
+    import and runtime.
     """
     return _FAST_PATH
 
@@ -217,19 +198,17 @@ def cleanTempDirs(olderThanDays=None):
     """
     Clean up temporary files after a run.
 
-    The Windows HPC system sends a SIGBREAK signal when the user cancels a job, which
-    is NOT handled by ``atexit``. Notably SIGBREAK doesn't exist off Windows.
-    For the SIGBREAK signal to work with a Microsoft HPC, the ``TaskCancelGracePeriod``
-    option must be configured to be non-zero. This sets the period between SIGBREAK
-    and SIGTERM/SIGINT. To do cleanups in this case, we must use the ``signal`` module.
-    Actually, even then it does not work because MS ``mpiexec`` does not pass signals
-    through.
+    Some Windows HPC systems send a SIGBREAK signal when the user cancels a job, which is NOT
+    handled by ``atexit``. Notably, SIGBREAK does not exist outside Windows. For the SIGBREAK signal
+    to work with a Windows HPC, the ``TaskCancelGracePeriod`` option must be configured to be non-
+    zero. This sets the period between SIGBREAK and SIGTERM/SIGINT. To do cleanups in this case, we
+    must use the ``signal`` module. Actually, even then it does not work because MS ``mpiexec`` does
+    not pass signals through.
 
     Parameters
     ----------
     olderThanDays: int, optional
-        If provided, deletes other ARMI directories if they are older than the requested
-        time.
+        If provided, deletes other ARMI directories if they are older than the requested time.
     """
     from armi import runLog
     from armi.utils.pathTools import cleanPath
@@ -259,12 +238,14 @@ def cleanTempDirs(olderThanDays=None):
 
 def cleanAllArmiTempDirs(olderThanDays: int) -> None:
     """
-    Delete all ARMI-related files from other unrelated runs after `olderThanDays` days (in
-    case this failed on earlier runs).
-
-    .. warning:: This will break any concurrent runs that are still running.
+    Delete all ARMI-related files from other unrelated runs after `olderThanDays` days (in case this
+    failed on earlier runs).
 
     This is a useful utility in HPC environments when some runs crash sometimes.
+
+    Warning
+    -------
+    This will break any concurrent runs that are still running.
     """
     from armi.utils.pathTools import cleanPath
 
@@ -284,7 +265,7 @@ def cleanAllArmiTempDirs(olderThanDays: int) -> None:
             if runIsOldAndLikleyComplete or fromThisRun:
                 # Delete old files
                 cleanPath(dirPath, mpiRank=MPI_RANK)
-        except:  # noqa: bare-except
+        except Exception:
             pass
 
 
@@ -294,14 +275,12 @@ def disconnectAllHdfDBs() -> None:
 
     Notes
     -----
-    This is a hack to help ARMI exit gracefully when the garbage collector and h5py have
-    issues destroying objects. After lots of investigation, the root cause for why this
-    was having issues was never identified. It appears that when several HDF5 files are
-    open in the same run (e.g.  when calling armi.init() multiple times from a
-    post-processing script), when these h5py File objects were closed, the garbage
-    collector would raise an exception related to the repr'ing the object. We
-    get around this by using the garbage collector to manually disconnect all open HdfDB
-    objects.
+    This is a hack to help ARMI exit gracefully when the garbage collector and h5py have issues
+    destroying objects. The root cause for why this was having issues was never identified. It
+    appears that when several HDF5 files are open in the same run (e.g. when calling ``armi.init()``
+    multiple times from a post-processing script), when these h5py File objects were closed, the
+    garbage collector would raise an exception related to the repr'ing the object. We get around
+    this by using the garbage collector to manually disconnect all open HdfDBs.
     """
     from armi.bookkeeping.db import Database3
 

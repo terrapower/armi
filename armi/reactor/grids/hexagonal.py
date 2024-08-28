@@ -14,11 +14,9 @@
 from math import sqrt
 from typing import Tuple, List, Optional
 
-import numpy
+import numpy as np
 
 from armi.reactor import geometry
-from armi.utils import hexagon
-
 from armi.reactor.grids.constants import (
     BOUNDARY_0_DEGREES,
     BOUNDARY_120_DEGREES,
@@ -27,11 +25,12 @@ from armi.reactor.grids.constants import (
 )
 from armi.reactor.grids.locations import IJKType, IJType
 from armi.reactor.grids.structuredGrid import StructuredGrid
+from armi.utils import hexagon
 
 COS30 = sqrt(3) / 2.0
 SIN30 = 1.0 / 2.0
 # going counter-clockwise from "position 1" (top right)
-TRIANGLES_IN_HEXAGON = numpy.array(
+TRIANGLES_IN_HEXAGON = np.array(
     [
         (+COS30, SIN30),
         (+0, 1.0),
@@ -64,43 +63,44 @@ class HexGrid(StructuredGrid):
     Notes
     -----
     In an axial plane (i, j) are as follows (flats up)::
-             _____
-            /     \
-      _____/  0,1  \_____
-     /     \       /     \
-    / -1,1  \_____/  1,0  \
-    \       /     \       /
-     \_____/  0,0  \_____/
-     /     \       /     \
-    / -1,0  \_____/  1,-1 \
-    \       /     \       /
-     \_____/  0,-1 \_____/
-           \       /
-            \_____/
+
+                 _____
+                /     \
+          _____/  0,1  \_____
+         /     \       /     \
+        / -1,1  \_____/  1,0  \
+        \       /     \       /
+         \_____/  0,0  \_____/
+         /     \       /     \
+        / -1,0  \_____/  1,-1 \
+        \       /     \       /
+         \_____/  0,-1 \_____/
+               \       /
+                \_____/
 
     In an axial plane (i, j) are as follows (corners up)::
 
-           / \     / \
-         /     \ /     \
-        |  0,1  |  1,0  |
-        |       |       |
-       / \     / \     / \
-     /     \ /     \ /     \
-    | -1,1  |  0,0  |  1,-1 |
-    |       |       |       |
-     \     / \     / \     /
-       \ /     \ /     \ /
-        | -1,0  |  0,-1 |
-        |       |       |
-         \     / \     /
-           \ /     \ /
+               / \     / \
+             /     \ /     \
+            |  0,1  |  1,0  |
+            |       |       |
+           / \     / \     / \
+         /     \ /     \ /     \
+        | -1,1  |  0,0  |  1,-1 |
+        |       |       |       |
+         \     / \     / \     /
+           \ /     \ /     \ /
+            | -1,0  |  0,-1 |
+            |       |       |
+             \     / \     /
+               \ /     \ /
 
     Basic hexagon geometry::
 
-    - pitch = sqrt(3) * side
-    - long diagonal = 2 * side
-    - Area = (sqrt(3) / 4) * side^2
-    - perimeter = 6 * side
+        - pitch = sqrt(3) * side
+        - long diagonal = 2 * side
+        - Area = (sqrt(3) / 4) * side^2
+        - perimeter = 6 * side
 
     """
 
@@ -348,22 +348,22 @@ class HexGrid(StructuredGrid):
         -----
         In an axial plane, the (ring, position) coordinates are as follows::
 
-             Flat-to-Flat                    Corners Up
-                 _____
-                /     \                      / \     / \
-          _____/  2,2  \_____              /     \ /     \
-         /     \       /     \            |  2,2  |  2,1  |
-        /  2,3  \_____/  2,1  \           |       |       |
-        \       /     \       /          / \     / \     / \
-         \_____/  1,1  \_____/         /     \ /     \ /     \
-         /     \       /     \        |  2,3  |  1,1  |  2,6  |
-        /  2,4  \_____/  2,6  \       |       |       |       |
-        \       /     \       /        \     / \     / \     /
-         \_____/  2,5  \_____/           \ /     \ /     \ /
-               \       /                  |  2,4  |  2,5  |
-                \_____/                   |       |       |
-                                           \     / \     /
-                                             \ /     \ /
+                 Flat-to-Flat                    Corners Up
+                     _____
+                    /     \                      / \     / \
+              _____/  2,2  \_____              /     \ /     \
+             /     \       /     \            |  2,2  |  2,1  |
+            /  2,3  \_____/  2,1  \           |       |       |
+            \       /     \       /          / \     / \     / \
+             \_____/  1,1  \_____/         /     \ /     \ /     \
+             /     \       /     \        |  2,3  |  1,1  |  2,6  |
+            /  2,4  \_____/  2,6  \       |       |       |       |
+            \       /     \       /        \     / \     / \     /
+             \_____/  2,5  \_____/           \ /     \ /     \ /
+                   \       /                  |  2,4  |  2,5  |
+                    \_____/                   |       |       |
+                                               \     / \     /
+                                                 \ /     \ /
 
         """
         i, j, _edge = HexGrid._indicesAndEdgeFromRingAndPos(ring, pos)
@@ -455,7 +455,7 @@ class HexGrid(StructuredGrid):
         identicals = [(-i - j, i), (j, -i - j)]
         return identicals
 
-    def triangleCoords(self, indices: IJKType) -> numpy.ndarray:
+    def triangleCoords(self, indices: IJKType) -> np.ndarray:
         """
         Return 6 coordinate pairs representing the centers of the 6 triangles in a
         hexagon centered here.
@@ -500,7 +500,7 @@ class HexGrid(StructuredGrid):
 
     def changePitch(self, newPitchCm: float):
         """Change the hex pitch."""
-        unitSteps = numpy.array(HexGrid._getRawUnitSteps(newPitchCm, self.cornersUp))
+        unitSteps = np.array(HexGrid._getRawUnitSteps(newPitchCm, self.cornersUp))
         self._unitSteps = unitSteps[self._stepDims]
 
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False) -> bool:
@@ -540,10 +540,7 @@ class HexGrid(StructuredGrid):
             # Even ring; upper edge assem included.
             maxPos2 += 1
 
-        if pos <= maxPos1 or pos >= maxPos2:
-            return True
-
-        return False
+        return bool(pos <= maxPos1 or pos >= maxPos2)
 
     def generateSortedHexLocationList(self, nLocs: int):
         """
@@ -568,7 +565,7 @@ class HexGrid(StructuredGrid):
         # round to avoid differences due to floating point math
         locList.sort(
             key=lambda loc: (
-                round(numpy.linalg.norm(loc.getGlobalCoordinates()), 6),
+                round(np.linalg.norm(loc.getGlobalCoordinates()), 6),
                 loc.i,
                 loc.j,
             )

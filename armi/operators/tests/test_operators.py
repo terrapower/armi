@@ -207,14 +207,27 @@ class OperatorTests(unittest.TestCase):
         self.assertIn("history", interfaceNames)
         self.assertNotIn("xsGroups", interfaceNames)
 
-        # Test EOL
-        interfaces = self.o.getActiveInterfaces("EOL")
-        self.assertEqual(interfaces[-1].name, "main")
-
         # Test Coupled
         interfaces = self.o.getActiveInterfaces("Coupled")
         for test, ref in zip(interfaces, self.activeInterfaces):
             self.assertEqual(test.name, ref.name)
+
+        # Test EOL
+        interfaces = self.o.getActiveInterfaces("EOL")
+        self.assertEqual(interfaces[-1].name, "main")
+
+        # Test excludedInterfaceNames
+        excludedInterfaceNames = ["fissionProducts", "fuelHandler", "xsGroups"]
+        interfaces = self.o.getActiveInterfaces(
+            "EOL", excludedInterfaceNames=excludedInterfaceNames
+        )
+        interfaceNames = [ii.name for ii in interfaces]
+        self.assertIn("history", interfaceNames)
+        self.assertIn("main", interfaceNames)
+        self.assertIn("snapshot", interfaceNames)
+        self.assertNotIn("fissionProducts", interfaceNames)
+        self.assertNotIn("fuelHandler", interfaceNames)
+        self.assertNotIn("xsGroups", interfaceNames)
 
     def test_loadStateError(self):
         """The ``loadTestReactor()`` test tool does not have any history in the DB to load from."""
@@ -277,7 +290,7 @@ class TestCreateOperator(unittest.TestCase):
 
         # validate some more nitty-gritty operator details come from settings
         burnStepsSetting = cs["burnSteps"]
-        if type(burnStepsSetting) != list:
+        if type(burnStepsSetting) is not list:
             burnStepsSetting = [burnStepsSetting]
         self.assertEqual(o.burnSteps, burnStepsSetting)
         self.assertEqual(o.maxBurnSteps, max(burnStepsSetting))
@@ -543,32 +556,46 @@ settings:
 
 
 class TestInterfaceAndEventHeaders(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            customSettings={CONF_TIGHT_COUPLING: True},
+        )
+        cls.r.p.cycle = 0
+        cls.r.p.timeNode = 1
+        cls.r.p.time = 11.01
+        cls.r.core.p.coupledIteration = 7
+
     def test_expandCycleAndTimeNodeArgs_Empty(self):
-        """When *args are empty, cycleNodeInfo should be an empty string."""
+        """When cycleNodeInfo should be an empty string."""
         for task in ["Init", "BOL", "EOL"]:
             self.assertEqual(
-                Operator._expandCycleAndTimeNodeArgs(interactionName=task), ""
+                self.o._expandCycleAndTimeNodeArgs(interactionName=task), ""
             )
 
-    def test_expandCycleAndTimeNodeArgs_OneArg(self):
-        """When *args is a single value, cycleNodeInfo should return the right string."""
-        cycle = 0
+    def test_expandCycleAndTimeNodeArgs_Cycle(self):
+        """When cycleNodeInfo should return only the cycle."""
         for task in ["BOC", "EOC"]:
             self.assertEqual(
-                Operator._expandCycleAndTimeNodeArgs(cycle, interactionName=task),
-                f" - cycle {cycle}",
+                self.o._expandCycleAndTimeNodeArgs(interactionName=task),
+                f" - timestep: cycle {self.r.p.cycle}",
             )
+
+    def test_expandCycleAndTimeNodeArgs_EveryNode(self):
+        """When cycleNodeInfo should return the cycle and node."""
         self.assertEqual(
-            Operator._expandCycleAndTimeNodeArgs(cycle, interactionName="Coupled"),
-            f" - iteration {cycle}",
+            self.o._expandCycleAndTimeNodeArgs(interactionName="EveryNode"),
+            f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+            f"year {'{0:.2f}'.format(self.r.p.time)}",
         )
 
-    def test_expandCycleAndTimeNodeArgs_TwoArg(self):
-        """When *args is two values, cycleNodeInfo should return the right string."""
-        cycle, timeNode = 0, 0
+    def test_expandCycleAndTimeNodeArgs_Coupled(self):
+        """When cycleNodeInfo should return the cycle, node, and iteration number."""
         self.assertEqual(
-            Operator._expandCycleAndTimeNodeArgs(
-                cycle, timeNode, interactionName="EveryNode"
+            self.o._expandCycleAndTimeNodeArgs(interactionName="Coupled"),
+            (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, year "
+                f"{'{0:.2f}'.format(self.r.p.time)} - iteration {self.r.core.p.coupledIteration}"
             ),
-            f" - cycle {cycle}, node {timeNode}",
         )

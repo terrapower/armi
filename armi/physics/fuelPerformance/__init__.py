@@ -14,31 +14,26 @@
 """
 Generic fuel performance plugin package.
 
-Fuel performance deals with addressing fuel system limits and predicting
-behaviors that are coupled to other physics within the reactor. Often
-fuel performance models address chemical, thermal and mechanical behaviors
-of the fuel system.
+Fuel performance deals with addressing fuel system limits and predicting behaviors that are coupled
+to other physics within the reactor. Often fuel performance models address chemical, thermal and
+mechanical behaviors of the fuel system.
 
-The following general phenomena fall into the fuel performance category 
-of physics for solid fuel (e.g., SFR, LWR, TRISO):
+The following general phenomena fall into the fuel performance category of physics for solid fuel
+(e.g., SFR, LWR, TRISO):
 
-* chemical degradation on the inside of fuel cladding such as
-  fuel-clad chemical interaction (FCCI)
+* chemical degradation on the inside of fuel cladding such as fuel-clad chemical interaction (FCCI)
 * corrosion or erosion processes on the outside of the fuel cladding
-* the fuel-clad mechanical interaction (FCMI) resulting in cladding stress 
-  and strain
+* the fuel-clad mechanical interaction (FCMI) resulting in cladding stress and strain
 * pressurization of the fuel pin due to released fission gases
-* high temperatures of the fuel which affect material properties and feedback
-  during accident scenarios
+* high temperatures of the fuel which affect material properties and feedback during accident
+  scenarios
 
-Fuel performance is typically coupled with thermal analysis because the thermal
-conditions of the fuel affects the performance and properties of the fuel
-change with temperature and burnup.
+Fuel performance is typically coupled with thermal analysis because the thermal conditions of the
+fuel affects the performance and properties of the fuel change with temperature and burnup.
 
-In many cases, fuel performance is coupled with neutronic analysis as well,
-because the fission gases are strong neutron absorbers. In some reactors,
-significant composition changes during irradiation can influence neutronics
-as well (e.g. sodium thermal bond being squeezed out of pins). Finally, 
-fuel temperatures impact the Doppler reactivity coefficient.
+In many cases, fuel performance is coupled with neutronic analysis as well, because the fission
+gases are strong neutron absorbers. In some reactors, significant composition changes during
+irradiation can influence neutronics as well (e.g. sodium thermal bond being squeezed out of pins).
+Finally,  fuel temperatures impact the Doppler reactivity coefficient.
 """
-from .plugin import FuelPerformancePlugin  # noqa: unused-import
+from armi.physics.fuelPerformance.plugin import FuelPerformancePlugin  # noqa: F401

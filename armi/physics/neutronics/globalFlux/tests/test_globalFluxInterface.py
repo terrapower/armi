@@ -16,7 +16,7 @@ import logging
 import unittest
 from unittest.mock import patch
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi import settings
@@ -171,14 +171,31 @@ class TestGlobalFluxInterface(unittest.TestCase):
         Check that a 1000 pcm rx swing is observed due to the mock.
         """
         cs = settings.Settings()
+        cs["burnSteps"] = 2
         _o, r = test_reactors.loadTestReactor(
             inputFileName="smallestTestReactor/armiRunSmallest.yaml"
         )
         gfi = MockGlobalFluxInterface(r, cs)
+        bocKeff = 1.1
+        r.core.p.keffUnc = 1.1
         gfi.interactBOC()
+
+        r.p.cycle, r.p.timeNode = 0, 0
         gfi.interactEveryNode(0, 0)
-        gfi.interactEOC()
-        self.assertAlmostEqual(r.core.p.rxSwing, 1000)
+        self.assertAlmostEqual(gfi._bocKeff, r.core.p.keffUnc)
+        r.core.p.keffUnc = 1.05
+        r.p.cycle, r.p.timeNode = 0, 1
+        gfi.interactEveryNode(0, 1)
+        # doesn't change since its not the first node
+        self.assertAlmostEqual(gfi._bocKeff, bocKeff)
+        r.core.p.keffUnc = 1.01
+        r.p.cycle, r.p.timeNode = 0, 2
+        gfi.interactEveryNode(0, 2)
+        self.assertAlmostEqual(gfi._bocKeff, bocKeff)
+        self.assertAlmostEqual(r.core.p.rxSwing, -1e5 * (1.1 - 1.01) / (1.1 * 1.01))
+        gfi.interactBOC(0)
+        # now its zeroed at BOC
+        self.assertAlmostEqual(r.core.p.rxSwing, 0)
 
     def test_getIOFileNames(self):
         cs = settings.Settings()
@@ -368,10 +385,10 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         block = r.core.getFirstBlock()
         self.assertGreater(block.p.detailedDpaRate, 0)
         self.assertEqual(block.p.detailedDpa, 0)
-        block.p.pointsEdgeDpa = numpy.array([0 for i in range(6)])
-        block.p.pointsCornerDpa = numpy.array([0 for i in range(6)])
-        block.p.pointsEdgeDpaRate = numpy.array([1.0e-5 for i in range(6)])
-        block.p.pointsCornerDpaRate = numpy.array([1.0e-5 for i in range(6)])
+        block.p.pointsEdgeDpa = np.array([0 for i in range(6)])
+        block.p.pointsCornerDpa = np.array([0 for i in range(6)])
+        block.p.pointsEdgeDpaRate = np.array([1.0e-5 for i in range(6)])
+        block.p.pointsCornerDpaRate = np.array([1.0e-5 for i in range(6)])
 
         # Test DoseResultsMapper. Pass in full list of blocks to apply() in order
         # to exercise blockList option (does not change behavior, since this is what
@@ -381,8 +398,8 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
         dosemapper.apply(r, blockList=r.core.getBlocks())
         self.assertGreater(block.p.detailedDpa, 0)
-        self.assertGreater(numpy.min(block.p.pointsCornerDpa), 0)
-        self.assertGreater(numpy.min(block.p.pointsEdgeDpa), 0)
+        self.assertGreater(np.min(block.p.pointsCornerDpa), 0)
+        self.assertGreater(np.min(block.p.pointsEdgeDpa), 0)
 
         mapper.clearFlux()
         self.assertEqual(len(block.p.mgFlux), 0)
@@ -526,4 +543,4 @@ def applyDummyFlux(r, ng=33):
     """Set arbitrary flux distribution on a Reactor."""
     for b in r.core.getBlocks():
         b.p.power = 1.0
-        b.p.mgFlux = numpy.arange(ng, dtype=numpy.float64)
+        b.p.mgFlux = np.arange(ng, dtype=np.float64)

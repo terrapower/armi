@@ -312,7 +312,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             :id: T_ARMI_SETTINGS_DEFAULTS
             :tests: R_ARMI_SETTINGS_DEFAULTS
         """
-        a = setting.Setting("testsetting", 0)
+        a = setting.Setting("testsetting", 0, description="whatever")
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
@@ -399,7 +399,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         removed by Setting.__getstate__, and that has been a problem in the past.
         """
         # get a baseline: show how the Setting object looks to start
-        s1 = setting.Setting("testCopy", 765)
+        s1 = setting.Setting("testCopy", 765, description="whatever")
         self.assertEqual(s1.name, "testCopy")
         self.assertEqual(s1._value, 765)
         self.assertTrue(hasattr(s1, "schema"))
@@ -417,7 +417,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         when the Setting value is set to a non-default value.
         """
         # get a baseline: show how the Setting object looks to start
-        s1 = setting.Setting("testCopy", 765)
+        s1 = setting.Setting("testCopy", 765, description="whatever")
         s1.value = 999
         self.assertEqual(s1.name, "testCopy")
         self.assertEqual(s1._value, 999)
@@ -487,7 +487,9 @@ class TestFlagListSetting(unittest.TestCase):
         flagsAsStringList = ["DUCT", "FUEL", "CLAD"]
         flagsAsFlagList = [Flags.DUCT, Flags.FUEL, Flags.CLAD]
 
-        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        fs = setting.FlagListSetting(
+            name="testFlagSetting", default=[], description="whatever"
+        )
         # Set the value as a list of strings first
         fs.value = flagsAsStringList
         self.assertEqual(fs.value, flagsAsFlagList)
@@ -500,7 +502,9 @@ class TestFlagListSetting(unittest.TestCase):
 
     def test_invalidFlagListTypeError(self):
         """Test raising a TypeError when a list is not provided."""
-        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        fs = setting.FlagListSetting(
+            name="testFlagSetting", default=[], description="whatever"
+        )
         with self.assertRaises(TypeError):
             fs.value = "DUCT"
 
