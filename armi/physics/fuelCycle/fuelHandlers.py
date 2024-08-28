@@ -54,19 +54,9 @@ class FuelHandler:
     """
 
     def __init__(self, operator):
-        # we need access to the operator to find the core, get settings, grab
-        # other interfaces, etc.
+        # we need access to the operator to find the core, get settings, grab other interfaces, etc.
         self.o = operator
         self.moved = []
-        self._handleBackwardsCompatibility()
-
-    def _handleBackwardsCompatibility(self):
-        # prepSearch used to be part of the API but is deprecated. This will
-        # trigger a warning if it's implemented.
-        # We have to do this hack until we phase out old inputs.
-        # This basically asks: "Did the custom subclass override prepSearch?"
-        if self.prepSearch.__func__ is not FuelHandler.prepSearch:
-            self.prepSearch()
 
     @property
     def cycle(self):
@@ -206,31 +196,6 @@ class FuelHandler:
     def prepCore(self):
         """Aux function to run before XS generation (do moderation, etc)."""
         pass
-
-    def prepSearch(self, *args, **kwargs):
-        """
-        Optional method that can be implemented in preparation of shuffling.
-
-        Often used to prepare the scope of a shuffling branch search.
-
-        Notes
-        -----
-        This was used historically to keep a long-lived fuel handler in sync
-        with the reactor and can now technically be removed from the API, but
-        many historical fuel management inputs still expect it to be called
-        by the framework, so here it remains. New developments should
-        avoid using it. Most code using it has been refactored to just use
-        a ``_prepSearch`` private method.
-
-        It now should not be used and will trigger a DeprecationWarning
-        in the constructor. It's still here because old user-input code
-        calls the parent's prepSearch, which is this.
-        """
-        warnings.warn(
-            "`FuelHandler.prepSearch` is being deprecated from the framework. Please "
-            "change your fuel management input to call this method directly.",
-            DeprecationWarning,
-        )
 
     def findAssembly(
         self,
