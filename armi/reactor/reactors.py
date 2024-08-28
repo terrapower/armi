@@ -20,44 +20,36 @@ Core is a high-level object in the data model in ARMI. They contain assemblies w
 more refinement in representing the physical reactor. The reactor is the owner of many of the plant-
 wide state variables such as keff, cycle, and node.
 """
-from typing import Optional
 import collections
 import copy
 import itertools
 import os
 import time
+from typing import Optional
 
 import numpy
 
-from armi import getPluginManagerOrFail, materials, nuclearDataIO
-from armi import runLog
+from armi import getPluginManagerOrFail, materials, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor import reactorParameters
-from armi.reactor import zones
+from armi.reactor import composites, geometry, grids, parameters, reactorParameters, zones
 from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
-    CONF_MATERIAL_NAMESPACE_ORDER,
-    CONF_FRESH_FEED_TYPE,
-    CONF_SORT_REACTOR,
-    CONF_GEOM_FILE,
-    CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_STATIONARY_BLOCK_FLAGS,
-    CONF_ZONE_DEFINITIONS,
-    CONF_TRACK_ASSEMS,
-    CONF_CIRCULAR_RING_PITCH,
     CONF_AUTOMATIC_VARIABLE_MESH,
-    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_CIRCULAR_RING_PITCH,
     CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_FRESH_FEED_TYPE,
+    CONF_GEOM_FILE,
+    CONF_MATERIAL_NAMESPACE_ORDER,
+    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_SORT_REACTOR,
+    CONF_STATIONARY_BLOCK_FLAGS,
+    CONF_TRACK_ASSEMS,
+    CONF_ZONE_DEFINITIONS,
 )
-from armi.utils import createFormattedStrWithDelimiter, units
-from armi.utils import directoryChangers
-from armi.utils import tabulate
+from armi.utils import createFormattedStrWithDelimiter, directoryChangers, tabulate, units
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 
@@ -122,7 +114,10 @@ class Reactor(composites.Composite):
 
     def add(self, container):
         composites.Composite.add(self, container)
-        cores = [c for c in self.getChildren(deep=True) if isinstance(c, Core)]
+        cores = [
+            c for c in self.getChildren(deep=True)
+            if isinstance(c, Core) and not isinstance(c, SpentFuelPool)
+        ]
         if cores:
             if len(cores) != 1:
                 raise ValueError(
@@ -309,8 +304,8 @@ class Core(composites.Composite):
 
     def setOptionsFromCs(self, cs):
         from armi.physics.fuelCycle.settings import (
-            CONF_JUMP_RING_NUM,
             CONF_CIRCULAR_RING_MODE,
+            CONF_JUMP_RING_NUM,
         )
 
         # these are really "user modifiable modeling constants"
