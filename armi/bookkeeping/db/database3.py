@@ -910,7 +910,7 @@ class Database3:
                     data, sAttrs = paramDef.serializer.pack(temp)
                     assert (
                         data.dtype.kind != "O"
-                    ), "{} failed to convert {} to a np-supported type.".format(
+                    ), "{} failed to convert {} to a numpy-supported type.".format(
                         paramDef.serializer.__name__, paramDef.name
                     )
                     attrs.update(sAttrs)
@@ -1509,7 +1509,7 @@ def packSpecialData(
     arrayData: [np.ndarray, JaggedArray], paramName: str
 ) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
     """
-    Reduce data that wouldn't otherwise play nicely with HDF5/np arrays to a format
+    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
     that will.
 
     This is the main entry point for conforming "strange" data into something that will
@@ -1600,7 +1600,7 @@ def packSpecialData(
             # The data themselves are nasty. We could support this, but best to wait for
             # a credible use case.
             raise TypeError(
-                "Unable to coerce dictionary data into usable np array for "
+                "Unable to coerce dictionary data into usable numpy array for "
                 "{}".format(paramName)
             )
         attrs["keys"] = np.array(keys).astype("S")
