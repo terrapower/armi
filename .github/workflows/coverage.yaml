@@ -35,7 +35,7 @@ jobs:
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
           coverage combine --rcfile=pyproject.toml --keep -a
       - name: Publish to coveralls.io
-        uses: coverallsapp/github-action@v1.1.2
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: coverage.lcov
+          file: coverage.lcov

@@ -14,10 +14,9 @@
 from abc import ABC, abstractmethod
 from typing import Union, Optional, Hashable, TYPE_CHECKING, Dict, Iterable, Tuple, List
 
-import numpy
+import numpy as np
 
 from armi.reactor import geometry
-
 from armi.reactor.grids.locations import LocationBase, IndexLocation, IJType, IJKType
 
 if TYPE_CHECKING:
@@ -226,7 +225,7 @@ class Grid(ABC):
         self,
         indices: Union[IJKType, List[IJKType]],
         nativeCoords: bool = False,
-    ) -> numpy.ndarray:
+    ) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -238,11 +237,11 @@ class Grid(ABC):
         """Restore state from backup."""
 
     @abstractmethod
-    def getCellBase(self, indices: IJKType) -> numpy.ndarray:
+    def getCellBase(self, indices: IJKType) -> np.ndarray:
         """Return the lower left case of this cell in cm."""
 
     @abstractmethod
-    def getCellTop(self, indices: IJKType) -> numpy.ndarray:
+    def getCellTop(self, indices: IJKType) -> np.ndarray:
         """Get the upper right of this cell in cm."""
 
     @staticmethod

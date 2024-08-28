@@ -205,9 +205,6 @@ class Flags(Flag):
     MEDIUM = auto()
     LOW = auto()
 
-    CORE = auto()
-    REACTOR = auto()
-
     # general kinds of assemblies or blocks
     MATERIAL = auto()
     FUEL = auto()

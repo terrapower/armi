@@ -15,7 +15,7 @@
 import unittest
 
 import h5py
-import numpy
+import numpy as np
 
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -33,7 +33,7 @@ class TestJaggedArray(unittest.TestCase):
 
     def test_roundTrip(self):
         """Basic test that we handle Nones correctly in database read/writes."""
-        dataSet = [1, 2.0, None, [], [3, 4], (5, 6, 7), numpy.array([8, 9, 10, 11])]
+        dataSet = [1, 2.0, None, [], [3, 4], (5, 6, 7), np.array([8, 9, 10, 11])]
         self._compareRoundTrip(dataSet, "test-numbers")
 
     def test_roundTripBool(self):
@@ -43,7 +43,7 @@ class TestJaggedArray(unittest.TestCase):
 
     def test_flatten(self):
         """Test the recursive flattening static method."""
-        testdata = [(1, 2), [3, 4, 5], [], None, 6, numpy.array([7, 8, 9])]
+        testdata = [(1, 2), [3, 4, 5], [], None, 6, np.array([7, 8, 9])]
         flatArray = JaggedArray.flatten(testdata)
         self.assertEqual(flatArray, [1, 2, 3, 4, 5, None, 6, 7, 8, 9])
 
@@ -57,7 +57,7 @@ class TestJaggedArray(unittest.TestCase):
         """
         paramName = "test_old"
         data = [[1, 2], None, [3, 4, 5], None, None, [6, 7, 8, 9]]
-        flattenedArray = numpy.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+        flattenedArray = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
         shapes = [(2,), (0,), (3,), (0,), (0,), (4,)]
         offsets = [0, 2, 2, 5, 5, 5, 5]
         nones = [1, 3, 4]
@@ -141,26 +141,26 @@ class TestJaggedArray(unittest.TestCase):
 
         """
         # self.assertEqual(type(src), JaggedArray)
-        if isinstance(ref, numpy.ndarray):
+        if isinstance(ref, np.ndarray):
             ref = ref.tolist()
             src = src.tolist()
 
         for v1, v2 in zip(ref, src):
             # Entries may be None
-            if isinstance(v1, numpy.ndarray):
+            if isinstance(v1, np.ndarray):
                 v1 = v1.tolist()
             elif isinstance(v1, tuple):
                 v1 = list(v1)
             elif isinstance(v1, int):
-                v1 = numpy.array([v1])
+                v1 = np.array([v1])
             elif isinstance(v1, float):
-                v1 = numpy.array([v1], dtype=numpy.float64)
+                v1 = np.array([v1], dtype=np.float64)
             elif v1 is None:
                 pass
             elif len(v1) == 0:
                 v1 = None
 
-            if isinstance(v2, numpy.ndarray):
+            if isinstance(v2, np.ndarray):
                 v2 = v2.tolist()
 
             self.assertEqual(v1, v2)

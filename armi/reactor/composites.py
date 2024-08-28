@@ -38,7 +38,7 @@ import operator
 import timeit
 from typing import Dict, List, Optional, Tuple, Type, Union
 
-import numpy
+import numpy as np
 import six
 
 from armi import context, runLog, utils
@@ -87,9 +87,9 @@ class FlagSerializer(parameters.Serializer):
         functionality without having to do unholy things to ARMI's actual set of
         ``reactor.flags.Flags``.
         """
-        npa = numpy.array(
-            [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
-        ).reshape((len(data), flagCls.width()))
+        npa = np.array([b for f in data for b in f.to_bytes()], dtype=np.uint8).reshape(
+            (len(data), flagCls.width())
+        )
 
         return npa, {"flag_order": flagCls.sortedFields()}
 
@@ -1283,7 +1283,7 @@ class ArmiObject(metaclass=CompositeModelType):
             multiplying the number densities within each child Composite by the volume
             of the child Composite and dividing by the total volume of the Composite.
         """
-        volumes = numpy.array(
+        volumes = np.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
                 for c in self
@@ -1300,7 +1300,7 @@ class ArmiObject(metaclass=CompositeModelType):
             densListForEachComp.append(
                 [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
             )
-        nucDensForEachComp = numpy.array(densListForEachComp)  # c x n
+        nucDensForEachComp = np.array(densListForEachComp)  # c x n
 
         return volumes.dot(nucDensForEachComp) / totalVol
 
@@ -1901,7 +1901,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getChildParamValues(self, param):
         """Get the child parameter values in a numpy array."""
-        return numpy.array([child.p[param] for child in self])
+        return np.array([child.p[param] for child in self])
 
     def isFuel(self):
         """True if this is a fuel block."""
@@ -2103,7 +2103,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        flux : numpy.array
+        flux : np.ndarray
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
@@ -2857,9 +2857,7 @@ class Composite(ArmiObject):
                     # out of sync, and this parameter was also globally modified and
                     # readjusted to the original value.
                     curVal = self.p[key]
-                    if isinstance(val, numpy.ndarray) or isinstance(
-                        curVal, numpy.ndarray
-                    ):
+                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
                             errors[self, key].append(nodeRank)
                     elif curVal != val:
@@ -2998,10 +2996,10 @@ class Composite(ArmiObject):
 
         Returns
         -------
-        integratedFlux : numpy.array
+        integratedFlux : np.ndarray
             multigroup neutron tracklength in [n-cm/s]
         """
-        integratedMgFlux = numpy.zeros(1)
+        integratedMgFlux = np.zeros(1)
         for c in self:
             mgFlux = c.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma)
             if mgFlux is not None:
@@ -3256,7 +3254,7 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     xsSuffix : str
         cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
         second burnup group of type A
-    mgFlux : numpy.nArray
+    mgFlux : np.ndarray
         integrated mgFlux (n-cm/s)
     nDens : float
         number density (atom/bn-cm)

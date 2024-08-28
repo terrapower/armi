@@ -1,81 +1,80 @@
-# No non-source python resources.
+# No non-source python resources
 *.pyc
-*.pyo
 *.pyd
+*.pyo
 *.pyx
 
 # No build artifacts
-build
-wheelhouse
-*.lib
 *.dll
-bin/*
-/bin
-dist/
-dist-*/
-doc/_build
-doc/user/tutorials
-doc/tutorials/anl-afci-177*
-doc/tutorials/case-suite
-armi/tests/tutorials/case-suite
+*.lib
 .apidocs/
+/bin
+armi/tests/tutorials/case-suite
+bin/*
+build
+coverage.lcov
+coverage.xml
+coverage_results.*
+dist-*/
+dist/
+doc/_build
 doc/gallery
 doc/gallery-src/framework/*.yaml
-.coverage
-coverage.xml
-coverage.lcov
-coverage_results.*
+doc/tutorials/anl-afci-177*
+doc/tutorials/case-suite
+doc/user/tutorials
 htmlcov/
 monkeytype.*
+wheelhouse
 
-# No workspace crumbs.
-*~
-.*.swp
-.settings
-.vscode
-.project
-.metadata
-.idea/
-.pydevproject
-*.sublime-project
-*.sublime-workspace
-*.egg-info/
-phabricator-lint.txt
-temp-*
-tags
-*.temp
-.externalToolBuilders/
-.cache/
-.pytest_cache/
-pytestdebug.log
-dump-temp-*
-dump-tests*
-.vim-bookmarks
-armi-venv/*
-venv*/
-.mypy_cache/
-**/__pycache__
+# No workspace crumbs
 **/.coverage*
+**/__pycache__
 **/logs/*
 *.ascii
+*.egg-info/
+*.sublime-project
+*.sublime-workspace
+*.temp
+*~
+.*.swp
+.cache/
+.coverage
+.DS_Store
+.externalToolBuilders/
+.hypothesis/
+.idea/
+.ipynb_checkpoints
+.metadata
+.mypy_cache/
+.project
+.pydevproject
+.pytest_cache/
+.ruff_cache/
+.settings
+.tox
+.vim-bookmarks
+.vscode
+armi-venv/*
+dump-temp-*
+dump-tests*
+phabricator-lint.txt
+pytestdebug.log
+reportsOutputFiles/
+tags
+temp-*
+venv*/
 
-# Misc. exclusions
-*.html
-*.diff
+# Ignore common data files
 *.avi
-*.ppm
-*.mp4
+*.diff
 *.h5
+*.html
+*.mp4
+*.ppm
 *.txt
 
-# metadata file specific to MacOS
-.DS_Store
-
 # vis files
-*.vtu
 *.vtd
+*.vtu
 *.xdmf
-
-# fixtures
-.ipynb_checkpoints
-.tox
