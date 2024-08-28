@@ -2045,47 +2045,48 @@ class HexBlock(Block):
             rotations have taken place.
 
         """
-        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for param in params:
-            if isinstance(self.p[param], list):
-                if len(self.p[param]) == 6:
-                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
-                elif self.p[param] == []:
+        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for name in names:
+            original = self.p[name]
+            if isinstance(original, list):
+                if len(original) == 6:
+                    self.p[name] = original[-rotNum:] + original[:-rotNum]
+                elif original == []:
                     # List hasn't been defined yet, no warning needed.
                     pass
                 else:
                     msg = (
                         "No rotation method defined for spatial parameters that aren't "
                         "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
+                        f"on {name}"
                     )
                     runLog.warning(msg)
-            elif isinstance(self.p[param], np.ndarray):
-                if len(self.p[param]) == 6:
-                    self.p[param] = np.concatenate(
-                        (self.p[param][-rotNum:], self.p[param][:-rotNum])
+            elif isinstance(original, np.ndarray):
+                if len(original) == 6:
+                    self.p[name] = np.concatenate(
+                        (original[-rotNum:], original[:-rotNum])
                     )
-                elif len(self.p[param]) == 0:
+                elif len(original) == 0:
                     # Hasn't been defined yet, no warning needed.
                     pass
                 else:
                     msg = (
                         "No rotation method defined for spatial parameters that aren't "
                         "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
+                        f"on {name}"
                     )
                     runLog.warning(msg)
-            elif isinstance(self.p[param], (int, float)):
+            elif isinstance(original, (int, float)):
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-            elif self.p[param] is None:
+            elif original is None:
                 # param is not set yet. no rotations as well.
                 pass
             else:
                 raise TypeError(
-                    f"b.rotate() method received unexpected data type for {param} on block {self}\n"
-                    + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
+                    f"b.rotate() method received unexpected data type for {name} on block {self}\n"
+                    + f"expected list, np.ndarray, int, or float. received {original}"
                 )
 
     def _rotateDisplacement(self, rad: float):
