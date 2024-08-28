@@ -31,7 +31,14 @@ import numpy
 
 from armi import getPluginManagerOrFail, materials, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import composites, geometry, grids, parameters, reactorParameters, zones
+from armi.reactor import (
+    composites,
+    geometry,
+    grids,
+    parameters,
+    reactorParameters,
+    zones,
+)
 from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
@@ -49,7 +56,12 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TRACK_ASSEMS,
     CONF_ZONE_DEFINITIONS,
 )
-from armi.utils import createFormattedStrWithDelimiter, directoryChangers, tabulate, units
+from armi.utils import (
+    createFormattedStrWithDelimiter,
+    directoryChangers,
+    tabulate,
+    units,
+)
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 
@@ -115,7 +127,8 @@ class Reactor(composites.Composite):
     def add(self, container):
         composites.Composite.add(self, container)
         cores = [
-            c for c in self.getChildren(deep=True)
+            c
+            for c in self.getChildren(deep=True)
             if isinstance(c, Core) and not isinstance(c, SpentFuelPool)
         ]
         if cores:
