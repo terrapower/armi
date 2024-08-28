@@ -31,7 +31,9 @@ from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 class TestReportContentCreation(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 

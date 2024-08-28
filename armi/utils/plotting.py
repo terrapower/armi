@@ -42,7 +42,6 @@ import numpy
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
-from armi.nuclearDataIO.cccc.rtflux import RtfluxData
 from armi.reactor import grids
 from armi.reactor.components import Helix, Circle, DerivedShape
 from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
@@ -409,9 +408,7 @@ def plotFaceMap(
     else:
         plt.show()
 
-    # don't close figure here. Have caller call plotting.close or plt.close when
-    # they are done with it.
-
+    plt.close(fig)
     return fName
 
 
@@ -822,8 +819,8 @@ def plotAssemblyTypes(
     if fileName:
         fig.savefig(fileName)
         runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
-        plt.close(fig)
 
+    plt.close(fig)
     return fig
 
 
@@ -1090,7 +1087,6 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
     if fName:
         plt.savefig(fName)
-        plt.close()
         report.setData(
             "Flux Plot {}".format(os.path.split(fName)[1]),
             os.path.abspath(fName),
@@ -1098,6 +1094,8 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         )
     else:
         plt.show()
+
+    plt.close()
 
 
 def makeHistogram(x, y):
@@ -1203,9 +1201,8 @@ def _makeBlockPinPatches(block, cold):
             )
         else:
             raise TypeError(
-                "Shape of the pitch-defining element is not a Square or Hex it is {}, cannot plot for this type of block".format(
-                    comp.shape
-                )
+                "Shape of the pitch-defining element is not a Square or Hex it is "
+                f"{comp.shape}, cannot plot for this type of block."
             )
         patches.append(derivedPatch)
         data.append(material)
@@ -1465,88 +1462,6 @@ def plotBlockDiagram(
     plt.close()
 
     return os.path.abspath(fName)
-
-
-def plotTriangleFlux(
-    rtfluxData: RtfluxData,
-    axialZ,
-    energyGroup,
-    hexPitch=math.sqrt(3.0),
-    hexSideSubdivisions=1,
-    imgFileExt=".png",
-):
-    """
-    Plot region total flux for one core-wide axial slice on triangular/hexagonal geometry.
-
-    .. warning:: This will run on non-triangular meshes but will look wrong.
-
-    Parameters
-    ----------
-    rtfluxData : RtfluxData object
-        The RTFLUX/ATFLUX data object containing all read file data.
-        Alternatively, this could be a FIXSRC file object,
-        but only if FIXSRC.fixSrc is first renamed FIXSRC.triangleFluxes.
-    axialZ : int
-        The DIF3D axial node index of the core-wide slice to plot.
-    energyGroup : int
-        The energy group index to plot.
-    hexPitch: float, optional
-        The flat-to-flat hexagonal assembly pitch in this core.
-        By default, it is sqrt(3) so that the triangle edge length is 1 if hexSideSubdivisions=1.
-    hexSideSubdivisions : int, optional
-        By default, it is 1 so that the triangle edge length is 1 if hexPitch=sqrt(3).
-    imgFileExt : str, optional
-        The image file extension.
-
-    Examples
-    --------
-    >>> rtflux = rtflux.RtfluxStream.readBinary("RTFLUX")
-    >>> plotTriangleFlux(rtflux, axialZ=10, energyGroup=4)
-    """
-    triHeightInCm = hexPitch / 2.0 / hexSideSubdivisions
-    sideLengthInCm = triHeightInCm / (math.sqrt(3.0) / 2.0)
-    s2InCm = sideLengthInCm / 2.0
-
-    vals = rtfluxData.groupFluxes[:, :, axialZ, energyGroup]
-    patches = []
-    colorVals = []
-    for i in range(vals.shape[0]):
-        for j in range(vals.shape[1]):
-            # use (i+j)%2 for rectangular meshing
-            flipped = i % 2
-            xInCm = s2InCm * (i - j)
-            yInCm = triHeightInCm * j + sideLengthInCm / 2.0 / math.sqrt(3) * (
-                1 + flipped
-            )
-
-            flux = vals[i][j]
-
-            if flux:
-                triangle = patches.mpatches.RegularPolygon(
-                    (xInCm, yInCm),
-                    3,
-                    radius=sideLengthInCm / math.sqrt(3),
-                    orientation=math.pi * flipped,
-                    linewidth=0.0,
-                )
-
-                patches.append(triangle)
-                colorVals.append(flux)
-
-    collection = PatchCollection(patches, alpha=1.0, linewidths=(0,), edgecolors="none")
-    # add color map to this collection ONLY (pins, not ducts)
-    collection.set_array(numpy.array(colorVals))
-
-    plt.figure()
-    ax = plt.gca()
-    ax.add_collection(collection)
-    colbar = plt.colorbar(collection)
-    colbar.set_label("n/s/cm$^3$")
-    plt.ylabel("cm")
-    plt.xlabel("cm")
-    ax.autoscale_view()
-    plt.savefig("RTFLUX-z" + str(axialZ + 1) + "-g" + str(energyGroup + 1) + imgFileExt)
-    plt.close()
 
 
 def plotNucXs(

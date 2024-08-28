@@ -436,14 +436,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.interactEOL()
 
     def test_repeatShuffles(self):
-        """Loads the ARMI test reactor with a custom shuffle logic file and shuffles assemblies twice.
-
-        Notes
-        -----
-        The custom shuffle logic is executed by :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel`
-        within :py:meth:`armi.physics.fuelCycle.tests.test_fuelHandlers.TestFuelHandler.runShuffling`. There are
-        two primary assertions: spent fuel pool assemblies are in the correct location and the assemblies were shuffled
-        into their correct locations. This process is repeated twice to ensure repeatability.
+        """Loads the ARMI test reactor with a custom shuffle logic file and shuffles assemblies
+        twice.
 
         .. test:: Execute user-defined shuffle operations based on a reactor model.
             :id: T_ARMI_SHUFFLE
@@ -452,6 +446,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
         .. test:: Move an assembly from one position in the core to another.
             :id: T_ARMI_SHUFFLE_MOVE0
             :tests: R_ARMI_SHUFFLE_MOVE
+
+        Notes
+        -----
+        The custom shuffle logic is executed by
+        :py:meth:`armi.physics.fuelCycle.fuelHandlerInterface.FuelHandlerInterface.manageFuel` in
+        :py:meth:`armi.physics.fuelCycle.tests.test_fuelHandlers.TestFuelHandler.runShuffling`.
+        There are two primary assertions: spent fuel pool assemblies are in the correct location and
+        the assemblies were shuffled into their correct locations. This process is repeated twice to
+        ensure repeatability.
         """
         # check labels before shuffling:
         for a in self.r.sfp.getChildren():
@@ -461,9 +464,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh = self.r.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
-        # make sure the generated shuffles file matches the tracked one.
-        # This will need to be updated if/when more assemblies are added to the test reactor
-        # but must be done carefully. Do not blindly rebaseline this file.
+        # Make sure the generated shuffles file matches the tracked one.  This will need to be
+        # updated if/when more assemblies are added to the test reactor but must be done carefully.
+        # Do not blindly rebaseline this file.
         self.compareFilesLineByLine("armiRun-SHUFFLES.txt", "armiRun2-SHUFFLES.txt")
 
         # store locations of each assembly
@@ -644,8 +647,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_transferDifferentNumberStationaryBlocks(self):
         """
-        Test the _transferStationaryBlocks method
-        for the case where the input assemblies have
+        Test the _transferStationaryBlocks method for the case where the input assemblies have
         different numbers of stationary blocks.
         """
         # grab stationary block flags
@@ -674,8 +676,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_transferUnalignedLocationStationaryBlocks(self):
         """
-        Test the _transferStationaryBlocks method
-        for the case where the input assemblies have
+        Test the _transferStationaryBlocks method for the case where the input assemblies have
         unaligned locations of stationary blocks.
         """
         # grab stationary block flags
@@ -809,8 +810,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_dischargeSwapIncompatibleStationaryBlocks(self):
         """
-        Test the _transferStationaryBlocks method
-        for the case where the input assemblies have
+        Test the _transferStationaryBlocks method for the case where the input assemblies have
         different numbers as well as unaligned locations of stationary blocks.
         """
         # grab stationary block flags
@@ -873,6 +873,25 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # try to discharge assembly 1 and replace with assembly 2
         with self.assertRaises(ValueError):
             fh.dischargeSwap(a2, a1)
+
+    def test_getAssembliesInRings(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        aList0 = fh._getAssembliesInRings([0], Flags.FUEL, False, None, False)
+        self.assertEqual(len(aList0), 1)
+
+        aList1 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, False)
+        self.assertEqual(len(aList1), 3)
+
+        aList2 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, True, None, False)
+        self.assertEqual(len(aList2), 3)
+
+        aList3 = fh._getAssembliesInRings(
+            [0, 1, 2, "SFP"], Flags.FUEL, True, None, False
+        )
+        self.assertEqual(len(aList3), 4)
+
+        aList4 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, True)
+        self.assertEqual(len(aList4), 3)
 
 
 class TestFuelPlugin(unittest.TestCase):

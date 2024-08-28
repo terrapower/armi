@@ -18,7 +18,7 @@ import six
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
+from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A
@@ -33,8 +33,8 @@ def getBlockParameterDefinitions():
             "orientation",
             units=units.DEGREES,
             description=(
-                "Triple representing rotations counterclockwise around each spatial axis. For example, "
-                "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
+                "Triple representing rotations counterclockwise around each spatial axis. For "
+                "example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
             ),
             default=None,
         )
@@ -161,7 +161,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "residence",
             units=units.DAYS,
-            description="Duration that a block has been in the core multiplied by the fraction of full power generated in that time.",
+            description=(
+                "Duration that a block has been in the core multiplied by the fraction "
+                "of full power generated in that time."
+            ),
             categories=["cumulative"],
         )
 
@@ -345,7 +348,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "axialExpTargetComponent",
             units=units.UNITLESS,
-            description="The name of the target component used for axial expansion and contraction of solid components.",
+            description=(
+                "The name of the target component used for axial expansion and "
+                "contraction of solid components."
+            ),
             default="",
             saveToDB=True,
         )
@@ -447,18 +453,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "rxFuelDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Doppler constant",
-        )
-
-        pb.defParam(
-            "rxFuelVoidedDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel voided-coolant Doppler constant",
-        )
-
-        pb.defParam(
             "rxFuelTemperatureCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Fuel temperature coefficient",
@@ -478,12 +472,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "rxCladDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Clad Doppler constant",
-        )
-
-        pb.defParam(
             "rxCladTemperatureCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Clad temperature coefficient",
@@ -494,12 +482,6 @@ def getBlockParameterDefinitions():
             "rxStructureDensityCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Structure density coefficient",
-        )
-
-        pb.defParam(
-            "rxStructureDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Structure Doppler constant",
         )
 
         pb.defParam(
@@ -548,6 +530,30 @@ def getBlockParameterDefinitions():
             "rxFuelVoidedDopplerCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel voided-coolant Doppler coefficient",
+        )
+
+        pb.defParam(
+            "rxFuelDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Fuel Doppler constant",
+        )
+
+        pb.defParam(
+            "rxFuelVoidedDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Fuel voided-coolant Doppler constant",
+        )
+
+        pb.defParam(
+            "rxStructureDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Structure Doppler constant",
+        )
+
+        pb.defParam(
+            "rxCladDopplerConstant",
+            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
+            description="Clad Doppler constant",
         )
 
         pb.defParam(
@@ -625,12 +631,11 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "assemNum",
             units=units.UNITLESS,
-            description="Index that refers, nominally, to the assemNum parameter of "
-            "the containing Assembly object. This is stored on the Block to aid in "
-            "visualizing shuffle patterns and the like, and should not be used within "
-            "the code. These are not guaranteed to be consistent with the containing "
-            "Assembly, so they should not be used as a reliable means to reconstruct "
-            "the model.",
+            description="Index that refers, nominally, to the assemNum parameter of the containing "
+            "Assembly object. This is stored on the Block to aid in visualizing shuffle patterns "
+            "and the like, and should not be used within the code. These are not guaranteed to be "
+            "consistent with the containing Assembly, so they should not be used as a reliable "
+            "means to reconstruct the model.",
             categories=[parameters.Category.retainOnReplacement],
         )
 
@@ -780,6 +785,7 @@ def getBlockParameterDefinitions():
             units=units.PERCENT_FIMA,
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
+            categories=["cumulative", "eq cumulative shift"],
         )
 
         pb.defParam(
@@ -799,7 +805,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "smearDensity",
             units=units.UNITLESS,
-            description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
+            description=(
+                "Smear density of fuel pins in this block. Defined as the ratio of fuel "
+                "area to total space inside cladding."
+            ),
             location=ParamLocation.AVERAGE,
         )
 

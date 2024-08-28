@@ -67,7 +67,9 @@ class TestVisDump(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
-        _, cls.r = test_reactors.loadTestReactor()
+        _, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         cls.hexBlock = cls.r.core.getBlocks()[0]
 

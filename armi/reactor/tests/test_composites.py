@@ -326,7 +326,6 @@ class TestCompositePattern(unittest.TestCase):
 
 
 class TestCompositeTree(unittest.TestCase):
-
     blueprintYaml = """
     name: test assembly
     height: [1, 1]  # 2 blocks
@@ -391,7 +390,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def setUp(self):
         self.Block = loadTestBlock()
-        self.r = self.Block.r
+        self.r = self.Block.core.r
         self.Block.setHeight(100.0)
         self.refDict = {
             "U235": 0.00275173784234,
@@ -439,7 +438,10 @@ class TestCompositeTree(unittest.TestCase):
         runLog.info(self.r.core.getFirstBlock().getComponents()[0].constituentReport())
 
     def test_getNuclides(self):
-        """The getNuclides should return all keys that have ever been in this block, including values that are at trace."""
+        """
+        The getNuclides should return all keys that have ever been in this block, including values
+        that are at trace.
+        """
         cur = self.Block.getNuclides()
         ref = self.refDict.keys()
         for key in ref:
@@ -448,9 +450,8 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getFuelMass(self):
         """
-        This test creates a dummy assembly and ensures that the assembly, block, and fuel component masses are
-        consistent.
-        `getFuelMass` ensures that the fuel component is used to `getMass`.
+        This test creates a dummy assembly and ensures that the assembly, block, and fuel component
+        masses are consistent. `getFuelMass` ensures that the fuel component is used to `getMass`.
         """
         cs = settings.Settings()
         assemDesign = assemblyBlueprint.AssemblyBlueprint.load(self.blueprintYaml)
@@ -463,18 +464,6 @@ class TestCompositeTree(unittest.TestCase):
             self.assertEqual(b.getFuelMass(), fuel.getMass())
 
         self.assertEqual(fuelMass, a.getFuelMass())
-
-    def test_getNeutronEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getNeutronEnergyDepositionConstants()
-
-    def test_getGammaEnergyDepositionConstants(self):
-        """Until we improve test architecture, this test can not be more interesting."""
-        with self.assertRaises(RuntimeError):
-            # fails because this test reactor does not have a cross-section library
-            _x = self.r.core.getGammaEnergyDepositionConstants()
 
     def test_getChildrenIncludeMaterials(self):
         """Test that the ``StateRetainer`` retains material properties when they are modified."""
@@ -759,10 +748,6 @@ class TestMiscMethods(unittest.TestCase):
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
         self.assertEqual(len(report), len(self.obj))
-
-    def test_printDensities(self):
-        lines = self.obj.printDensities()
-        self.assertEqual(len(lines), len(self.obj.getNuclides()))
 
     def test_getAtomicWeight(self):
         weight = self.obj.getAtomicWeight()

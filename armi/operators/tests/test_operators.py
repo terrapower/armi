@@ -62,7 +62,9 @@ class InterfaceC(Interface):
 
 class OperatorTests(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor()
+        self.o, self.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_operatorData(self):
@@ -169,7 +171,9 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
     def test_interfaceIsActive(self):
-        self.o, _r = test_reactors.loadTestReactor()
+        self.o, _r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
@@ -236,14 +240,7 @@ class OperatorTests(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 self.o.snapshotRequest(0, 1)
                 self.assertIn("ISOTXS-c0", mock.getStdout())
-                self.assertIn(
-                    "DIF3D input for snapshot: armiRun-flux-c0n1.inp",
-                    mock.getStdout(),
-                )
-                self.assertIn(
-                    "DIF3D output for snapshot: armiRun-flux-c0n1.out",
-                    mock.getStdout(),
-                )
+                self.assertIn("DIF3D input for snapshot", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
@@ -255,14 +252,7 @@ class OperatorTests(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 self.o.snapshotRequest(0, 2, iteration=1)
                 self.assertIn("ISOTXS-c0", mock.getStdout())
-                self.assertIn(
-                    "DIF3D input for snapshot: armiRun-flux-c0n2i1.inp",
-                    mock.getStdout(),
-                )
-                self.assertIn(
-                    "DIF3D output for snapshot: armiRun-flux-c0n2i1.out",
-                    mock.getStdout(),
-                )
+                self.assertIn("DIF3D input for snapshot", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
@@ -412,7 +402,8 @@ class TestTightCoupling(unittest.TestCase):
 
         Notes
         -----
-        - Assertion #1: ensure that the convergence of Keff, eps, is greater than 1e-5 (the prescribed convergence criteria)
+        - Assertion #1: ensure that the convergence of Keff, eps, is greater than 1e-5 (the
+          prescribed convergence criteria)
         - Assertion #2: ensure that eps is (prevIterKeff - currIterKeff)
         """
         prevIterKeff = 0.9

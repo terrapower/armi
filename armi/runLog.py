@@ -344,14 +344,6 @@ def concatenateLogs(logDir=None):
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
     if not len(stdoutFiles):
         info("No log files found to concatenate.")
-
-        # If the log dir is empty, we can delete it.
-        try:
-            os.rmdir(logDir)
-        except:  # noqa: bare-except
-            # low priority concern: it's an empty log dir.
-            pass
-
         return
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))

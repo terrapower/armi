@@ -24,7 +24,11 @@ from armi.tests import mockRunLogs, TEST_ROOT
 
 class TestMemoryProfiler(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, {"debugMem": True})
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT,
+            {"debugMem": True},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
         self.memPro = self.o.getInterface("memoryProfiler")
 
     def tearDown(self):
