@@ -19,6 +19,7 @@ many arbitrary changes as we need. Thanks to the tabulate team.
 
 https://github.com/astanin/python-tabulate
 """
+from collections import defaultdict
 from collections import namedtuple
 from collections import OrderedDict
 from collections import UserDict
@@ -394,6 +395,38 @@ class TestTabulateInputs(unittest.TestCase):
         )
         result = tabulate(lb, headers=["bytes"])
         self.assertEqual(expected, result)
+
+    def test_tightCouplingExample(self):
+        """Input: Real world-ish example from tight coupling."""
+        # the two examples below should both produce the same output:
+        border = "--  ------------------------------  --------------  ----------------------------"
+        expected = "\n".join(
+            [
+                border,
+                "      criticalCrIteration: keffUnc    dif3d: power    thInterface: THavgCladTemp",
+                border,
+                " 0                     9.01234e-05      0.00876543                    0.00123456",
+                border,
+            ]
+        )
+
+        # the data is a regular dictionry
+        data = {
+            "criticalCrIteration: keffUnc": [9.01234e-05],
+            "dif3d: power": [0.00876543],
+            "thInterface: THavgCladTemp": [0.00123456],
+        }
+        result = tabulate(data, headers="keys", showIndex=True, tableFmt="armi")
+        self.assertEqual(expected, result)
+
+        # the data is a defaultdict
+        dataD = defaultdict(list)
+        for key, vals in data.items():
+            for val in vals:
+                dataD[key].append(val)
+
+        result2 = tabulate(dataD, headers="keys", showIndex=True, tableFmt="armi")
+        self.assertEqual(expected, result2)
 
 
 class TestTabulateInternal(unittest.TestCase):
