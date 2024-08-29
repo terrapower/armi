@@ -213,9 +213,11 @@ class FuelHandler:
             return candidate[0] < current[0]
 
     @staticmethod
-    def _getParamWithBlockLevelMax(a, paramName, blockLevelMax):
+    def _getParamMax(a, paramName, blockLevelMax=True):
+        """Get parameter with Block-level maximum."""
         if blockLevelMax:
             return a.getChildParamValues(paramName).max()
+
         return a.p[paramName]
 
     def findAssembly(
@@ -412,10 +414,7 @@ class FuelHandler:
             compVal = compareTo * mult
         elif param:
             # assume compareTo is an assembly
-            compVal = (
-                FuelHandler._getParamWithBlockLevelMax(compareTo, param, blockLevelMax)
-                * mult
-            )
+            compVal = FuelHandler._getParamMax(compareTo, param, blockLevelMax) * mult
 
         if coords:
             # find the assembly closest to xt,yt if coords are given without considering params.
@@ -464,18 +463,14 @@ class FuelHandler:
                         if isinstance(minVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMinVal = (
-                                FuelHandler._getParamWithBlockLevelMax(
-                                    a, minVal[0], blockLevelMax
-                                )
+                                FuelHandler._getParamMax(a, minVal[0], blockLevelMax)
                                 * minVal[1]
                             )
                         else:
                             realMinVal = minVal
 
                         if (
-                            FuelHandler._getParamWithBlockLevelMax(
-                                a, minParam, blockLevelMax
-                            )
+                            FuelHandler._getParamMax(a, minParam, blockLevelMax)
                             < realMinVal
                         ):
                             # this assembly does not meet the minVal specifications. Skip it.
@@ -492,18 +487,14 @@ class FuelHandler:
                         if isinstance(maxVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMaxVal = (
-                                FuelHandler._getParamWithBlockLevelMax(
-                                    a, maxVal[0], blockLevelMax
-                                )
+                                FuelHandler._getParamMax(a, maxVal[0], blockLevelMax)
                                 * maxVal[1]
                             )
                         else:
                             realMaxVal = maxVal
 
                         if (
-                            FuelHandler._getParamWithBlockLevelMax(
-                                a, maxParam, blockLevelMax
-                            )
+                            FuelHandler._getParamMax(a, maxParam, blockLevelMax)
                             > realMaxVal
                         ):
                             # this assembly has a maxParam that's higher than maxVal and therefore
@@ -531,26 +522,19 @@ class FuelHandler:
                 # Now find the assembly with the param closest to the target val.
                 if param:
                     diff = abs(
-                        FuelHandler._getParamWithBlockLevelMax(a, param, blockLevelMax)
-                        - compVal
+                        FuelHandler._getParamMax(a, param, blockLevelMax) - compVal
                     )
 
                     if (
                         forceSide == 1
-                        and FuelHandler._getParamWithBlockLevelMax(
-                            a, param, blockLevelMax
-                        )
-                        > compVal
+                        and FuelHandler._getParamMax(a, param, blockLevelMax) > compVal
                         and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=1, so that means look in rings further out
                         minDiff = (diff, a)
                     elif (
                         forceSide == -1
-                        and FuelHandler._getParamWithBlockLevelMax(
-                            a, param, blockLevelMax
-                        )
-                        < compVal
+                        and FuelHandler._getParamMax(a, param, blockLevelMax) < compVal
                         and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=-1, so that means look in rings closer in from the targetRing

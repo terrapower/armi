@@ -154,13 +154,13 @@ class MockXSGM(CrossSectionGroupManager):
 
 
 class TestFuelHandler(FuelHandlerTestHelper):
-    def test_getParamWithBlockLevelMax(self):
+    def test_getParamMax(self):
         a = self.assembly
 
-        res = fuelHandlers.FuelHandler._getParamWithBlockLevelMax(a, "kInf", True)
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
         self.assertEqual(res, 0.0)
 
-        res = fuelHandlers.FuelHandler._getParamWithBlockLevelMax(a, "kInf", False)
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
         self.assertEqual(res, 0.0)
 
     def test_interactBOC(self):
