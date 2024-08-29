@@ -44,6 +44,8 @@ def setBlockNeutronVelocities(r, neutronVelocities):
 
     Parameters
     ----------
+    r : Reactor
+        A Reactor object, that we want to modify.
     neutronVelocities : dict
         Dictionary that is keyed with the ``representativeBlock`` XS IDs with values of multigroup neutron
         velocity data computed by MC2.
