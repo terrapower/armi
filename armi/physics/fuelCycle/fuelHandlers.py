@@ -197,6 +197,27 @@ class FuelHandler:
         """Aux function to run before XS generation (do moderation, etc)."""
         pass
 
+    @staticmethod
+    def _compareAssem(candidate, current):
+        """Check whether the candidate assembly should replace the current ideal assembly.
+
+        Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide whether the
+        candidate is better than the current ideal. This first compares the diff1 and diff2 values.
+        If diff1 is sufficiently less than diff2, a1 wins, returning True. Otherwise, False. If
+        diff1 and diff2 are sufficiently close, the assembly with the lesser assemNum wins. This
+        should result in a more stable comparison than on floating-point comparisons alone.
+        """
+        if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
+            return candidate[1].p.assemNum < current[1].p.assemNum
+        else:
+            return candidate[0] < current[0]
+
+    @staticmethod
+    def _getParamWithBlockLevelMax(a, paramName, blockLevelMax):
+        if blockLevelMax:
+            return a.getChildParamValues(paramName).max()
+        return a.p[paramName]
+
     def findAssembly(
         self,
         targetRing=None,
@@ -274,10 +295,8 @@ class FuelHandler:
             a value or a (parameter, multiplier) tuple for setting upper bounds
 
         mandatoryLocations : list, optional
-            a list of string-representations of locations in the core for limiting the search to
-            several places
-
-            Any locations also included in `excludedLocations` will be excluded.
+            A list of string-representations of locations in the core for limiting the search to
+            several places. Any locations also included in `excludedLocations` will be excluded.
 
         excludedLocations : list, optional
             a list of string-representations of locations in the core that will be excluded from
@@ -346,29 +365,8 @@ class FuelHandler:
                                      typeSpec=Flags.FEED | Flags.FUEL)
 
         """
-
-        def compareAssem(candidate, current):
-            """Check whether the candidate assembly should replace the current ideal
-            assembly.
-
-            Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide
-            whether the candidate is better than the current ideal. This first compares
-            the diff1 and diff2 values. If diff1 is sufficiently less than diff2, a1
-            wins, returning True. Otherwise, False. If diff1 and diff2 are sufficiently
-            close, the assembly with the lesser assemNum wins. This should result in a
-            more stable comparison than on floating-point comparisons alone.
-            """
-            if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
-                return candidate[1].p.assemNum < current[1].p.assemNum
-            else:
-                return candidate[0] < current[0]
-
-        def getParamWithBlockLevelMax(a, paramName):
-            if blockLevelMax:
-                return a.getChildParamValues(paramName).max()
-            return a.p[paramName]
-
-        assemList = []  # list for storing multiple results if findMany is true.
+        # list for storing multiple results if findMany is true.
+        assemList = []
 
         # process input arguments
         if targetRing is None:
@@ -417,7 +415,10 @@ class FuelHandler:
             compVal = compareTo * mult
         elif param:
             # assume compareTo is an assembly
-            compVal = getParamWithBlockLevelMax(compareTo, param) * mult
+            compVal = (
+                FuelHandler._getParamWithBlockLevelMax(compareTo, param, blockLevelMax)
+                * mult
+            )
 
         if coords:
             # find the assembly closest to xt,yt if coords are given without considering params.
@@ -466,12 +467,20 @@ class FuelHandler:
                         if isinstance(minVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMinVal = (
-                                getParamWithBlockLevelMax(a, minVal[0]) * minVal[1]
+                                FuelHandler._getParamWithBlockLevelMax(
+                                    a, minVal[0], blockLevelMax
+                                )
+                                * minVal[1]
                             )
                         else:
                             realMinVal = minVal
 
-                        if getParamWithBlockLevelMax(a, minParam) < realMinVal:
+                        if (
+                            FuelHandler._getParamWithBlockLevelMax(
+                                a, minParam, blockLevelMax
+                            )
+                            < realMinVal
+                        ):
                             # this assembly does not meet the minVal specifications. Skip it.
                             innocent = False
                             break  # for speed (not a big deal here)
@@ -486,12 +495,20 @@ class FuelHandler:
                         if isinstance(maxVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMaxVal = (
-                                getParamWithBlockLevelMax(a, maxVal[0]) * maxVal[1]
+                                FuelHandler._getParamWithBlockLevelMax(
+                                    a, maxVal[0], blockLevelMax
+                                )
+                                * maxVal[1]
                             )
                         else:
                             realMaxVal = maxVal
 
-                        if getParamWithBlockLevelMax(a, maxParam) > realMaxVal:
+                        if (
+                            FuelHandler._getParamWithBlockLevelMax(
+                                a, maxParam, blockLevelMax
+                            )
+                            > realMaxVal
+                        ):
                             # this assembly has a maxParam that's higher than maxVal and therefore
                             # doesn't qualify. skip it.
                             innocent = False
@@ -516,23 +533,32 @@ class FuelHandler:
 
                 # Now find the assembly with the param closest to the target val.
                 if param:
-                    diff = abs(getParamWithBlockLevelMax(a, param) - compVal)
+                    diff = abs(
+                        FuelHandler._getParamWithBlockLevelMax(a, param, blockLevelMax)
+                        - compVal
+                    )
 
                     if (
                         forceSide == 1
-                        and getParamWithBlockLevelMax(a, param) > compVal
-                        and compareAssem((diff, a), minDiff)
+                        and FuelHandler._getParamWithBlockLevelMax(
+                            a, param, blockLevelMax
+                        )
+                        > compVal
+                        and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=1, so that means look in rings further out
                         minDiff = (diff, a)
                     elif (
                         forceSide == -1
-                        and getParamWithBlockLevelMax(a, param) < compVal
-                        and compareAssem((diff, a), minDiff)
+                        and FuelHandler._getParamWithBlockLevelMax(
+                            a, param, blockLevelMax
+                        )
+                        < compVal
+                        and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=-1, so that means look in rings closer in from the targetRing
                         minDiff = (diff, a)
-                    elif compareAssem((diff, a), minDiff):
+                    elif FuelHandler._compareAssem((diff, a), minDiff):
                         # no preference of which side, just take the one with the closest param.
                         minDiff = (diff, a)
                 else:

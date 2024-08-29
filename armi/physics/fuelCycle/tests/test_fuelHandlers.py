@@ -416,8 +416,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         expected = lastB.parent
         self.assertIs(assem, expected)
 
-        # test the impossible: an block with burnup less than
-        # 110% of its own burnup
+        # test the impossible: an block with burnup less than 110% of its own burnup
         assem = fh.findAssembly(
             param="percentBu",
             compareTo=100,
