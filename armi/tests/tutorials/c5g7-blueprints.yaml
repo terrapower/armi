@@ -54,14 +54,9 @@ custom isotopics:
         input format: number densities
         AL27: 6.00e-2
     fission chamber:
-        # Fission Chamber composition isn't well defined so this is a guess...
-        # U235 density is based on Macros of UO2 for fission XS in group 3. Group 3
-        # was chosen because it is below the U-238 fast fission cutoff, but also the
-        # U-235 fission cross section is not high enough the self shielding will play
-        # a large role. This assuming U235 is the only fissioning isotope. Assuming the
-        # fission chamber is ~90% enriched (90.9% by atom but wanted only 1 sig fig).
-        # Had very similar macro absorption XS as guide tube, so using same
-        # Al and water with just a little U.
+        # NEA/NSC/DOC(96)2 Documents:
+        # "Central guide tube contains: moderator (as defined in Table 2)
+        # and 1.0E-8 at/(b cm) of U-235"
         input format: number densities
         H: 6.70e-2
         O: 3.35E-2
