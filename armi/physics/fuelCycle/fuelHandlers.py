@@ -281,15 +281,13 @@ class FuelHandler:
 
         maxParam : float or list, optional
             a parameter to compare to maxVal for setting upper bounds of acceptable assemblies.
-            If list,
-            must correspond to parameters in maxVal in order.
+            If list, must correspond to parameters in maxVal in order.
 
         minVal : float or list, optional
             a value or a (parameter, multiplier) tuple for setting lower bounds
 
-            For instance, if minParam = 'timeToLimit' and minVal=10, only assemblies with
-            timeToLimit higher than 10 will be returned.  (Of course, there is also maxParam and
-            maxVal)
+            For instance, if minParam='timeToLimit' and minVal=10, only assemblies with timeToLimit
+            higher than 10 will be returned. (Of course, there is also maxParam and maxVal)
 
         maxVal : float or list, optional
             a value or a (parameter, multiplier) tuple for setting upper bounds
@@ -333,20 +331,19 @@ class FuelHandler:
             default: false.
 
         findFromSfp : bool, optional
-            if true, will look in the spent-fuel pool instead of in the core.
+            If true, will look in the spent-fuel pool instead of in the core.
 
         maxNumAssems : int, optional
             The maximum number of assemblies to return. Only relevant if findMany==True
 
         circularRingFlag : bool, optional
-            A flag to toggle on using rings that are based on distance from the center of the
-            reactor
+            Toggle using rings that are based on distance from the center of the reactor
 
         Notes
         -----
-        The call signature on this method may have gotten slightly out of hand as
-        valuable capabilities were added in fuel management studies. For additional expansion,
-        it may be worth reconsidering the design of these query operations ;).
+        The call signature on this method may have gotten slightly out of hand as valuable
+        capabilities were added in fuel management studies. For additional expansion, it may be
+        worth reconsidering the design of these query operations.
 
         Returns
         -------
