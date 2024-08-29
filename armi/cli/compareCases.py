@@ -217,4 +217,4 @@ class CompareSuites(CompareCases):
         )
 
         if nIssues > 0:
-            sys.exit(nIssues)
+            sys.exit(1)
