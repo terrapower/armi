@@ -212,6 +212,18 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fh.outage(factor=1.0)
         self.assertEqual(len(fh.moved), 0)
 
+    def test_outageEdgeCase(self):
+        class MockFH(fuelHandlers.FuelHandler):
+            def chooseSwaps(self, factor=1.0):
+                self.moved = [None]
+
+        # mock up a fuel handler
+        fh = MockFH(self.o)
+
+        # test edge case
+        with self.assertRaises(AttributeError):
+            fh.outage(factor=1.0)
+
     def test_isAssemblyInAZone(self):
         # build a fuel handler
         fh = fuelHandlers.FuelHandler(self.o)
