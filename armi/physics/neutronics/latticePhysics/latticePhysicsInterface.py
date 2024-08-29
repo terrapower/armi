@@ -20,9 +20,9 @@ Parent classes for codes responsible for generating broad-group cross sections
 import os
 import shutil
 
+from armi import interfaces
 from armi import nuclearDataIO
-from armi import interfaces, runLog
-from armi.utils import codeTiming
+from armi import runLog
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
@@ -32,18 +32,10 @@ from armi.physics.neutronics.settings import (
     CONF_XS_KERNEL,
     CONF_LATTICE_PHYSICS_FREQUENCY,
 )
-from armi.utils.customExceptions import important
 from armi.physics.neutronics import LatticePhysicsFrequency
-
+from armi.utils import codeTiming
 
 LATTICE_PHYSICS = "latticePhysics"
-
-
-@important
-def SkippingXsGen_BuChangedLessThanTolerance(tolerance):
-    return "Skipping XS Generation this cycle because median block burnups changes less than {}%".format(
-        tolerance
-    )
 
 
 def setBlockNeutronVelocities(r, neutronVelocities):
@@ -503,9 +495,6 @@ class LatticePhysicsInterface(interfaces.Interface):
                             "Burnup has changed in xsID {} from {} to {}. "
                             "Recalculating Cross-sections".format(xsID, buOld, buNow)
                         )
-
-            if not idsChangedBurnup:
-                SkippingXsGen_BuChangedLessThanTolerance(self._burnupTolerance)
 
         return idsChangedBurnup
 
