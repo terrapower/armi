@@ -45,6 +45,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
 from armi.utils import hexagon
+from armi.utils import iterables
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -2049,24 +2050,10 @@ class HexBlock(Block):
         names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
         for name in names:
             original = self.p[name]
-            if isinstance(original, list):
+            if isinstance(original, (list, np.ndarray)):
                 if len(original) == 6:
-                    self.p[name] = original[-rotNum:] + original[:-rotNum]
-                elif original == []:
-                    # List hasn't been defined yet, no warning needed.
-                    pass
-                else:
-                    msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {name}"
-                    )
-                    runLog.warning(msg)
-            elif isinstance(original, np.ndarray):
-                if len(original) == 6:
-                    self.p[name] = np.concatenate(
-                        (original[-rotNum:], original[:-rotNum])
-                    )
+                    # Rotate by making the -rotNum item be first
+                    self.p[name] = iterables.pivot(original, -rotNum)
                 elif len(original) == 0:
                     # Hasn't been defined yet, no warning needed.
                     pass
