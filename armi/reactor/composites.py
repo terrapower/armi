@@ -51,6 +51,7 @@ from armi.utils import densityTools
 from armi.utils import tabulate
 from armi.utils import units
 from armi.utils.densityTools import calculateNumberDensity
+from armi.utils.flags import auto
 
 
 class FlagSerializer(parameters.Serializer):
@@ -68,7 +69,7 @@ class FlagSerializer(parameters.Serializer):
     @staticmethod
     def pack(data):
         """
-        Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
+        Flags are represented as a 2D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
         reader and the writer can agree on the meaning of each bit.
@@ -103,7 +104,6 @@ class FlagSerializer(parameters.Serializer):
         ----------
         inp : int
             input bitfield
-
         mapping : dict
             dictionary mapping from old bit position -> new bit position
         """
@@ -168,11 +168,14 @@ class FlagSerializer(parameters.Serializer):
         # Make sure that all of the old flags still exist
         if not flagSetIn.issubset(flagSetNow):
             missingFlags = flagSetIn - flagSetNow
-            raise ValueError(
-                "The set of flags in the database includes unknown flags. "
-                "Make sure you are using the correct ARMI app. Missing flags:\n"
-                "{}".format(missingFlags)
+            runLog.warning(
+                "The set of flags in the database includes unknown flags. For convenience, we will "
+                f"add these to the system: {missingFlags}"
             )
+            flagCls.extend({k: auto() for k in missingFlags})
+
+        flagOrderNow = flagCls.sortedFields()
+        flagSetNow = set(flagOrderNow)
 
         if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
             out = [flagCls.from_bytes(row.tobytes()) for row in data]
