@@ -122,7 +122,7 @@ class CaseSuite:
 
         for cs in csFiles:
             case = armicase.Case(cs=cs, caseSuite=self)
-            if skipInspection:
+            if not skipInspection:
                 case.checkInputs()
             self.add(case)
 
