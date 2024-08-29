@@ -154,6 +154,15 @@ class MockXSGM(CrossSectionGroupManager):
 
 
 class TestFuelHandler(FuelHandlerTestHelper):
+    def test_getParamWithBlockLevelMax(self):
+        a = self.assembly
+
+        res = fuelHandlers.FuelHandler._getParamWithBlockLevelMax(a, "kInf", True)
+        self.assertEqual(res, 0.0)
+
+        res = fuelHandlers.FuelHandler._getParamWithBlockLevelMax(a, "kInf", False)
+        self.assertEqual(res, 0.0)
+
     def test_interactBOC(self):
         # set up mock interface
         self.o.addInterface(MockLatticePhysicsInterface(self.r, self.o.cs))
