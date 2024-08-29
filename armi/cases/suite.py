@@ -86,7 +86,12 @@ class CaseSuite:
         return len(self._cases)
 
     def discover(
-        self, rootDir=None, patterns=None, ignorePatterns=None, recursive=True
+        self,
+        rootDir=None,
+        patterns=None,
+        ignorePatterns=None,
+        recursive=True,
+        skipInspection=False,
     ):
         """
         Finds case objects by searching for a pattern of file paths, and adds them to
@@ -104,6 +109,8 @@ class CaseSuite:
             file patterns to exclude matching file names
         recursive : bool, optional
             if True, recursively search for settings files
+        skipInspection : bool, optional
+            if True, skip running the check inputs
         """
         csFiles = settings.recursivelyLoadSettingsFiles(
             rootDir or os.path.abspath(os.getcwd()),
@@ -115,7 +122,8 @@ class CaseSuite:
 
         for cs in csFiles:
             case = armicase.Case(cs=cs, caseSuite=self)
-            case.checkInputs()
+            if skipInspection:
+                case.checkInputs()
             self.add(case)
 
     def echoConfiguration(self):
