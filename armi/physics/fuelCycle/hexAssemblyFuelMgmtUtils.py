@@ -24,6 +24,7 @@ import math
 import numpy as np
 
 from armi import runLog
+from armi.utils.hexagon import getIndexOfRotatedCell
 from armi.reactor.flags import Flags
 from armi.utils.mathematics import findClosest
 
@@ -101,10 +102,7 @@ def getOptimalAssemblyOrientation(a, aPrev):
             prevAssemPowHereMIN = float("inf")
 
             for possibleRotation in range(6):
-                # get rotated pin index
-                indexLookup = maxBuBlock.rotatePins(possibleRotation, justCompute=True)
-                # rotated index of highest-BU pin
-                index = int(indexLookup[maxBuPinIndexAssem])
+                index = getIndexOfRotatedCell(maxBuPinIndexAssem, possibleRotation)
                 # get pin power at this index in the previously assembly located here
                 # power previously at rotated index
                 prevAssemPowHere = aPrev[bIndexMaxBu].p.linPowByPin[index - 1]
