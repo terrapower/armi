@@ -175,7 +175,6 @@ class FlagSerializer(parameters.Serializer):
             flagCls.extend({k: auto() for k in missingFlags})
 
         flagOrderNow = flagCls.sortedFields()
-        flagSetNow = set(flagOrderNow)
 
         if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
             out = [flagCls.from_bytes(row.tobytes()) for row in data]
