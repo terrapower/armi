@@ -19,8 +19,10 @@ Notes
 These algorithms are defined in assemblyRotationAlgorithms.py, but they are used in:
 ``FuelHandler.outage()``.
 
-.. warning:: Nothing should do in this file, but rotation algorithms.
+.. warning:: Nothing should go in this file, but rotation algorithms.
 """
+import math
+
 from armi import runLog
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
@@ -28,8 +30,12 @@ from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 
 
+def _rotationNumberToRadians(rot: int) -> float:
+    return rot * math.pi / 3
+
+
 def buReducingAssemblyRotation(fh):
-    r"""
+    """
     Rotates all detail assemblies to put the highest bu pin in the lowest power orientation.
 
     Parameters
@@ -48,29 +54,37 @@ def buReducingAssemblyRotation(fh):
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
         # no point in rotation if there's no pin detail
         if aNow in hist.getDetailAssemblies():
-            rot = getOptimalAssemblyOrientation(aNow, aPrev)
-            aNow.rotatePins(rot)  # rot = integer between 0 and 5
+            _rotateByComparingLocations(aNow, aPrev)
             numRotated += 1
-            # Print out rotation operation (mainly for testing)
-            # hex indices (i,j) = (ring,pos)
-            (i, j) = aNow.spatialLocator.getRingPos()
-            runLog.important(
-                "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, rot)
-            )
 
-    # rotate NON-MOVING assemblies (stationary)
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
         for a in hist.getDetailAssemblies():
             if a not in fh.moved:
-                rot = getOptimalAssemblyOrientation(a, a)
-                a.rotatePins(rot)  # rot = integer between 0 and 6
+                _rotateByComparingLocations(a, a)
                 numRotated += 1
-                (i, j) = a.spatialLocator.getRingPos()
-                runLog.important(
-                    "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, rot)
-                )
 
     runLog.info("Rotated {0} assemblies".format(numRotated))
+
+
+def _rotateByComparingLocations(aNow, aPrev):
+    """Rotate an assembly based on its previous location.
+
+    Parameters
+    ----------
+    aNow : Assembly
+        Assembly to be rotated
+    aPrev : Assembly
+        Assembly that previously occupied the location of this assembly.
+        If ``aNow`` has not been moved, this should be ``aNow``
+
+    """
+    rot = getOptimalAssemblyOrientation(aNow, aPrev)
+    radians = _rotationNumberToRadians(rot)
+    aNow.rotate(radians)
+    (ring, pos) = aNow.spatialLocator.getRingPos()
+    runLog.important(
+        "Rotating Assembly ({0},{1}) to Orientation {2}".format(ring, pos, rot)
+    )
 
 
 def simpleAssemblyRotation(fh):
@@ -98,13 +112,14 @@ def simpleAssemblyRotation(fh):
     runLog.info("Rotating assemblies by 60 degrees")
     numRotated = 0
     hist = fh.o.getInterface("history")
+    rot = math.radians(60)
     for a in hist.getDetailAssemblies():
         if a in fh.moved or fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
-            a.rotatePins(1)
+            a.rotate(rot)
             numRotated += 1
-            i, j = a.spatialLocator.getRingPos()  # hex indices (i,j) = (ring,pos)
+            ring, pos = a.spatialLocator.getRingPos()
             runLog.extra(
-                "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, 1)
+                "Rotating Assembly ({0},{1}) to Orientation {2}".format(ring, pos, 1)
             )
 
     runLog.extra("Rotated {0} assemblies".format(numRotated))
