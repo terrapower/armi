@@ -1243,7 +1243,7 @@ class Assembly(composites.Composite):
 
             This method loops through every ``Block`` in this ``Assembly`` and rotates
             it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction, and must be divisible by increments of PI/6
+            counter-clockwise direction, and must be divisible by increments of PI/3
             (60 degrees). To actually perform the ``Block`` rotation, the
             :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
@@ -1254,9 +1254,9 @@ class Assembly(composites.Composite):
 
         Warning
         -------
-        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
+        rad must be in 60-degree increments! (i.e., PI/3, PI, 2 * PI/3, etc)
         """
-        for b in self.getBlocks():
+        for b in self:
             b.rotate(rad)
 
     def isOnWhichSymmetryLine(self):
