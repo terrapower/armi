@@ -315,11 +315,6 @@ class Assembly(composites.Composite):
 
         return sum(plenumTemps) / len(plenumTemps)
 
-    def rotatePins(self, *args, **kwargs):
-        """Rotate an assembly, which means rotating the indexing of pins."""
-        for b in self:
-            b.rotatePins(*args, **kwargs)
-
     def doubleResolution(self):
         """
         Turns each block into two half-size blocks.
