@@ -13,6 +13,7 @@
 # limitations under the License.
 """Test hexagon tools."""
 import math
+import random
 import unittest
 
 from armi.utils import hexagon
@@ -43,3 +44,43 @@ class TestHexagon(unittest.TestCase):
         self.assertEqual(hexagon.numPositionsInRing(2), 6)
         self.assertEqual(hexagon.numPositionsInRing(3), 12)
         self.assertEqual(hexagon.numPositionsInRing(4), 18)
+
+    def test_rotatedCellCenter(self):
+        # Cell one is always the center of the hexagon and its position
+        # is rotation invariant
+        for rot in range(6):
+            self.assertTrue(hexagon.getIndexOfRotatedCell(1, rot), 1)
+
+    def test_rotatedFirstRing(self):
+        """Simple test for the corners of the first ring are maintained during rotation."""
+        # A 60 degree rotation is just incrementing the cell index by one here
+        locations = list(range(2, 8))
+        for locIndex, initialPosition in enumerate(locations):
+            for rot in range(6):
+                actual = hexagon.getIndexOfRotatedCell(initialPosition, rot)
+                newIndex = (locIndex + rot) % 6
+                expectedPosition = locations[newIndex]
+                self.assertEqual(
+                    actual, expectedPosition, msg=f"{initialPosition=}, {rot=}"
+                )
+
+    def test_rotateFuzzy(self):
+        """Select some position number and rotation and check for consistency."""
+        N_DRAWS = 100
+        for _ in range(N_DRAWS):
+            self._rotateFuzzyInner()
+
+    def _rotateFuzzyInner(self):
+        rot = random.randint(1, 5)
+        initialCell = random.randint(2, 300)
+        testInfoMsg = f"{rot=}, {initialCell=}"
+        newCell = hexagon.getIndexOfRotatedCell(initialCell, rot)
+        self.assertNotEqual(newCell, initialCell, msg=testInfoMsg)
+        # should be in the same ring
+        initialRing = hexagon.numRingsToHoldNumCells(initialCell)
+        newRing = hexagon.numRingsToHoldNumCells(newCell)
+        self.assertEqual(newRing, initialRing, msg=testInfoMsg)
+        # If we un-rotate, we should get our initial ring
+        reverseRot = (6 - rot) % 6
+        reverseCell = hexagon.getIndexOfRotatedCell(newCell, reverseRot)
+        self.assertEqual(reverseCell, initialCell, msg=testInfoMsg)
