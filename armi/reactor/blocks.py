@@ -2160,15 +2160,7 @@ class HexBlock(Block):
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Rotation does not change the pin ring!
-                ring = hexagon.numRingsToHoldNumCells(pinNum)
-
-                # Rotate the pin position within the ring
-                tot_pins = hexagon.numPositionsInRing(ring)
-                newPinLocation = pinNum + (ring - 1) * rotNum
-                if newPinLocation > tot_pins:
-                    newPinLocation -= (ring - 1) * 6
-
+                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
