@@ -241,10 +241,11 @@ class TestCompareSuites(unittest.TestCase):
         with TemporaryDirectoryChanger():
             cs = CompareSuites()
             cs.addOptions()
-            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5", "-I"])
 
             self.assertEqual(cs.name, "compare-suites")
             self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
+            self.assertTrue(cs.args.skip_inspection)
             self.assertIsNone(cs.args.weights)
 
 
