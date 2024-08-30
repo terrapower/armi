@@ -2032,7 +2032,7 @@ class HexBlock(Block):
         :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self.rotatePins(rotNum)
+        self._rotatePins(rotNum)
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
 
@@ -2085,7 +2085,7 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def rotatePins(self, rotNum, justCompute=False):
+    def _rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
         not rotate all block quantities, just the pins.
