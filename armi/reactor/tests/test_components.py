@@ -1804,3 +1804,11 @@ class TestMaterialAdjustments(unittest.TestCase):
     def test_getEnrichment(self):
         self.fuel.adjustMassEnrichment(0.3)
         self.assertAlmostEqual(self.fuel.getEnrichment(), 0.3)
+
+    def test_finalizeLoadDBAdjustsTD(self):
+        """Ensure component is fully loaded through finalize methods."""
+        tdFrac = 0.54321
+        comp = self.fuel
+        comp.p.theoreticalDensityFrac = tdFrac
+        comp.finalizeLoadingFromDB()
+        self.assertEqual(comp.material.getTD(), tdFrac)
