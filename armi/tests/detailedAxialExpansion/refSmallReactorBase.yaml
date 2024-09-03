@@ -61,7 +61,7 @@ blocks:
             mult: 1.0
             op: 16.75
 
-    SodiumBlock : &block_dummy
+    SodiumBlock: &block_dummy
         flags: dummy
         coolant:
             shape: Hexagon
@@ -183,7 +183,7 @@ blocks:
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    aclp plenum : &block_aclp
+    aclp plenum: &block_aclp
         gap: *component_plenum_gap
         clad: *component_plenum_clad
         wire: *component_plenum_wire
@@ -495,7 +495,7 @@ assemblies:
         xs types: *igniter_fuel_xs_types
     lead test fuel:
         specifier: LA
-        blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum,  *block_aclp, *block_plenum, *block_duct, *block_dummy]
+        blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum, *block_aclp, *block_plenum, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:
