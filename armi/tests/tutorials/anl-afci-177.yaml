@@ -1,5 +1,5 @@
 # This file is part of the walthrough_inputs tutorial in ARMI, which
-# uses .. literalinclude to bring in sections of this file. Thus, 
+# uses .. literalinclude to bring in sections of this file. Thus,
 # the comments and order are important. These will get wiped out
 # if you load and re-write a settings file via the ARMI gui, unfortunately.
 # begin-settings

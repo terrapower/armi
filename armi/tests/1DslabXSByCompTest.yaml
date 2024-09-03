@@ -1,11 +1,11 @@
 nuclide flags:
-  NA23: { burn: false, xs: true }
-  FE: { burn: false, xs: true }
-  U235: { burn: false, xs: true }
-  U238: { burn: false, xs: true }
-  PU239: { burn: false, xs: true }
-  PU240: { burn: false, xs: true }
-  PU241: { burn: false, xs: true }
+  NA23: {burn: false, xs: true}
+  FE: {burn: false, xs: true}
+  U235: {burn: false, xs: true}
+  U238: {burn: false, xs: true}
+  PU239: {burn: false, xs: true}
+  PU240: {burn: false, xs: true}
+  PU241: {burn: false, xs: true}
 custom isotopics:
   eUranium:
     input format: number densities
