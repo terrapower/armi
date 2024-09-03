@@ -3,18 +3,17 @@ name: ARMI unit tests
 on:
   push:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
 
 jobs:
   build:
-
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        python: [3.9, '3.10', '3.11', '3.12']
+        python: [3.9, "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v2

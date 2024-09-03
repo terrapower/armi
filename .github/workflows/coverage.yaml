@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Update package index
         run: sudo apt-get update
       - name: Install ARMI and MPI

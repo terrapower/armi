@@ -3,14 +3,13 @@ name: ARMI MacOS Tests
 on:
   push:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
   pull_request:
     paths-ignore:
-      - 'doc/**'
+      - "doc/**"
 
 jobs:
   build:
-
     runs-on: macos-14
 
     steps:
@@ -18,7 +17,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       - name: Upgrade PIP
         run: python -m pip install --upgrade pip
       - name: Run Unit Tests on MacOS
