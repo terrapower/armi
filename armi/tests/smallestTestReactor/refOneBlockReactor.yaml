@@ -67,4 +67,3 @@ assemblies:
             U235_wt_frac: &igniter_fuel_u235_wt_frac [0.11]
             ZR_wt_frac: &igniter_fuel_zr_wt_frac [0.06]
         xs types: &igniter_fuel_xs_types [A]
-

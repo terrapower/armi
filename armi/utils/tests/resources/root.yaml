@@ -6,5 +6,5 @@ billy:
   full_name: William Person
   # comment
   children:
-    - *bobby
-    - !include lower/includeA.yaml
+  - *bobby
+  - !include lower/includeA.yaml
