@@ -226,6 +226,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     pDefs = componentParameters.getComponentParameterDefinitions()
 
+    material: materials.Material
+
     def __init__(
         self,
         name,
