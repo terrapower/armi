@@ -345,3 +345,4 @@ custom isotopics:
         comp = a[0][0]
         mat = comp.material
         self.assertEqual(mat.getTD(), 0.5)
+        self.assertEqual(comp.p.theoreticalDensityFrac, 0.5)
