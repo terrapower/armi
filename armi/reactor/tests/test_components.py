@@ -708,6 +708,22 @@ class TestCircle(TestShapedComponent):
         self.component.p.flags = flags.Flags.MODERATOR
         self.assertEqual(self.component.getFuelMass(), 0.0)
 
+    def test_theoreticalDensitySetter(self):
+        """Ensure only fraction theoretical densities are supported."""
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 1)
+        with self.assertRaises(ValueError):
+            self.component.p.theoreticalDensityFrac = 2.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 1)
+        self.component.p.theoreticalDensityFrac = 0.2
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 0.2)
+        with self.assertRaises(ValueError):
+            self.component.p.theoreticalDensityFrac = -1.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 0.2)
+        self.component.p.theoreticalDensityFrac = 1.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 1)
+        self.component.p.theoreticalDensityFrac = 0.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 0)
+
 
 class TestComponentExpansion(unittest.TestCase):
     tCold = 20
