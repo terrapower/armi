@@ -1,48 +1,48 @@
 nuclide flags:
-  PU237: { burn: false, xs: true, expandTo: [] }
-  PU240: { burn: false, xs: true, expandTo: [] }
-  PU241: { burn: false, xs: true, expandTo: [] }
-  AR: { burn: false, xs: true, expandTo: [] }
-  PA233: { burn: false, xs: true, expandTo: [] }
-  NP238: { burn: false, xs: true, expandTo: [] }
-  AR36: { burn: false, xs: true, expandTo: [] }
-  TH230: { burn: false, xs: true, expandTo: [] }
-  AR38: { burn: false, xs: true, expandTo: [] }
-  U238: { burn: false, xs: true, expandTo: [] }
-  U239: { burn: false, xs: true, expandTo: [] }
-  C: { burn: false, xs: true, expandTo: [] }
-  LFP35: { burn: false, xs: true, expandTo: [] }
-  U233: { burn: false, xs: true, expandTo: [] }
-  U234: { burn: false, xs: true, expandTo: [] }
-  U235: { burn: false, xs: true, expandTo: [] }
-  U236: { burn: false, xs: true, expandTo: [] }
-  U237: { burn: false, xs: true, expandTo: [] }
-  PU239: { burn: false, xs: true, expandTo: [] }
-  PU238: { burn: false, xs: true, expandTo: [] }
-  TH234: { burn: false, xs: true, expandTo: [] }
-  TH232: { burn: false, xs: true, expandTo: [] }
-  AR40: { burn: false, xs: true, expandTo: [] }
-  LFP39: { burn: false, xs: true, expandTo: [] }
-  DUMP2: { burn: false, xs: true, expandTo: [] }
-  LFP41: { burn: false, xs: true, expandTo: [] }
-  LFP40: { burn: false, xs: true, expandTo: [] }
-  PU242: { burn: false, xs: true, expandTo: [] }
-  PU236: { burn: false, xs: true, expandTo: [] }
-  U232: { burn: false, xs: true, expandTo: [] }
-  DUMP1: { burn: false, xs: true, expandTo: [] }
-  LFP38: { burn: false, xs: true, expandTo: [] }
-  AM243: { burn: false, xs: true, expandTo: [] }
-  PA231: { burn: false, xs: true, expandTo: [] }
-  CM244: { burn: false, xs: true, expandTo: [] }
-  CM242: { burn: false, xs: true, expandTo: [] }
-  AM242: { burn: false, xs: true, expandTo: [] }
-  CM245: { burn: false, xs: true, expandTo: [] }
-  CM243: { burn: false, xs: true, expandTo: [] }
-  CM246: { burn: false, xs: true, expandTo: [] }
-  CM247: { burn: false, xs: true, expandTo: [] }
-  O: { burn: false, xs: true, expandTo: [O16] }
-  N: { burn: false, xs: true, expandTo: [N14] }
-  ZR: { burn: false, xs: true, expandTo: [] }
+  PU237: {burn: false, xs: true, expandTo: []}
+  PU240: {burn: false, xs: true, expandTo: []}
+  PU241: {burn: false, xs: true, expandTo: []}
+  AR: {burn: false, xs: true, expandTo: []}
+  PA233: {burn: false, xs: true, expandTo: []}
+  NP238: {burn: false, xs: true, expandTo: []}
+  AR36: {burn: false, xs: true, expandTo: []}
+  TH230: {burn: false, xs: true, expandTo: []}
+  AR38: {burn: false, xs: true, expandTo: []}
+  U238: {burn: false, xs: true, expandTo: []}
+  U239: {burn: false, xs: true, expandTo: []}
+  C: {burn: false, xs: true, expandTo: []}
+  LFP35: {burn: false, xs: true, expandTo: []}
+  U233: {burn: false, xs: true, expandTo: []}
+  U234: {burn: false, xs: true, expandTo: []}
+  U235: {burn: false, xs: true, expandTo: []}
+  U236: {burn: false, xs: true, expandTo: []}
+  U237: {burn: false, xs: true, expandTo: []}
+  PU239: {burn: false, xs: true, expandTo: []}
+  PU238: {burn: false, xs: true, expandTo: []}
+  TH234: {burn: false, xs: true, expandTo: []}
+  TH232: {burn: false, xs: true, expandTo: []}
+  AR40: {burn: false, xs: true, expandTo: []}
+  LFP39: {burn: false, xs: true, expandTo: []}
+  DUMP2: {burn: false, xs: true, expandTo: []}
+  LFP41: {burn: false, xs: true, expandTo: []}
+  LFP40: {burn: false, xs: true, expandTo: []}
+  PU242: {burn: false, xs: true, expandTo: []}
+  PU236: {burn: false, xs: true, expandTo: []}
+  U232: {burn: false, xs: true, expandTo: []}
+  DUMP1: {burn: false, xs: true, expandTo: []}
+  LFP38: {burn: false, xs: true, expandTo: []}
+  AM243: {burn: false, xs: true, expandTo: []}
+  PA231: {burn: false, xs: true, expandTo: []}
+  CM244: {burn: false, xs: true, expandTo: []}
+  CM242: {burn: false, xs: true, expandTo: []}
+  AM242: {burn: false, xs: true, expandTo: []}
+  CM245: {burn: false, xs: true, expandTo: []}
+  CM243: {burn: false, xs: true, expandTo: []}
+  CM246: {burn: false, xs: true, expandTo: []}
+  CM247: {burn: false, xs: true, expandTo: []}
+  O: {burn: false, xs: true, expandTo: [O16]}
+  N: {burn: false, xs: true, expandTo: [N14]}
+  ZR: {burn: false, xs: true, expandTo: []}
 custom isotopics: {}
 blocks: {}
 assemblies:

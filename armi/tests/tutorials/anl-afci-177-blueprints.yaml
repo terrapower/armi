@@ -9,7 +9,7 @@ blocks:
             Tinput: 25.0
             Thot: 450.0
             id: 0.6962
-            od:  0.808
+            od: 0.808
             mult: 271
 # end-block-clad
         wire:
@@ -167,7 +167,7 @@ blocks:
             Tinput: 25.0
             Thot: 450.0
             id: 0.6962
-            od:  0.808
+            od: 0.808
             mult: 271
         wire:
             shape: Helix
@@ -308,27 +308,27 @@ assemblies:
         blocks: [*block_reflector]
         height: [307.74]
         axial mesh points: [1]
-        xs types:  [A]
+        xs types: [A]
 # end-assemblies-rr
     radial shield:
         specifier: SH
         blocks: [*block_shield]
         height: [307.74]
         axial mesh points: [1]
-        xs types:  [A]
+        xs types: [A]
 # end-assemblies-sh
     control:
         specifier: PC
         blocks: [*block_control]
         height: [307.74]
         axial mesh points: [1]
-        xs types:  [A]
+        xs types: [A]
     ultimate shutdown:
         specifier: US
         blocks: [*block_control]
         height: [307.74]
         axial mesh points: [1]
-        xs types:  [A]
+        xs types: [A]
 # end-assemblies-section
 systems:
     core:
