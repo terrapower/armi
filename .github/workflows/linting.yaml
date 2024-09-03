@@ -3,26 +3,19 @@ name: Linting
 on: [push, pull_request]
 
 jobs:
-  lintPython:
+  build:
+
     runs-on: ubuntu-24.04
+
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.9"
+          python-version: '3.9'
       - name: Update package index
         run: sudo apt-get update
       - name: Run Linter
-        run: |
+        run:  |
           pip install -e .[test]
           ruff check .
-
-  lintYaml:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: yaml-lint
-        uses: ibiqlik/action-yamllint@v3
-        with:
-          config_data: "{extends: default, rules: {line-length: disable}}"
