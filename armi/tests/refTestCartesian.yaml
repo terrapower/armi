@@ -27,6 +27,6 @@ settings:
   power: 400000000.0
   summarizeAssemDesign: false
   targetK: 1.002
-  transientForSensitivity: ''
+  transientForSensitivity: ""
   versions:
     armi: uncontrolled
