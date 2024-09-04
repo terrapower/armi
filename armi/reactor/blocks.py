@@ -2017,8 +2017,7 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the pinLocation parameter, is also updated via
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
+        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
 
         Parameters
         ----------
@@ -2027,9 +2026,6 @@ class HexBlock(Block):
             in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
             and 2 * PI)
 
-        See Also
-        --------
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotatePins(rotNum)
