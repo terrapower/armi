@@ -27,7 +27,6 @@ import shutil
 import unittest
 
 from armi import context, mpiActions
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.utils.directoryChangersMpi import MpiDirectoryChanger
 
 
