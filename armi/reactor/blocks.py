@@ -18,34 +18,25 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import math
+from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases
-from armi import runLog
+from armi import nuclideBases, runLog
 from armi.bookkeeping import report
 from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA
-from armi.physics.neutronics import NEUTRON
-from armi.reactor import blockParameters
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.reactor import blockParameters, components, composites, geometry, grids, parameters
 from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools
-from armi.utils import hexagon
-from armi.utils import units
+from armi.utils import densityTools, hexagon, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -2082,7 +2073,7 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def rotatePins(self, rotNum, justCompute=False):
+    def rotatePins(self, rotNum, justCompute=False, numPins=0):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
         not rotate all block quantities, just the pins.
@@ -2098,6 +2089,21 @@ class HexBlock(Block):
             self.p.pinLocation. If False, rotateIndexLookup will be returned AND assigned to the
             object variable self.p.pinLocation.  Useful for figuring out which rotation is best
             to minimize burnup, etc.
+
+        numPins : int, optional
+            Option to provide the number of pins in the assembly to be rotated instead of
+            checking the multiplicity of the cladding component. This can be useful in at least
+            two scenarios:
+
+                1. The pins in the block to be rotated do not have a cladding
+                   (e.g., solid steel reflector slugs)
+                2. The pin lattice has missing locations (e.g., 6 corner pins
+                   removed) so the number of apparent pins does not make a full
+                   hex lattice (19, 37, 61, 91, etc.). The math for rotating the
+                   pin numbers only works on a regular hex lattice. If the block
+                   has a nonstandard number of pins, then the mapping from the
+                   regular lattice pin index to a nonstandard lattice pin index
+                   must be applied outside of this method.
 
         Returns
         -------
@@ -2143,7 +2149,13 @@ class HexBlock(Block):
 
         # Pin numbers start at 1. Number of pins in the block is assumed to be based on
         # cladding count.
-        numPins = self.getNumComponents(Flags.CLAD)
+        if numPins == 0:
+            numPins = self.getNumComponents(Flags.CLAD)
+            hexRings = [3 * r * (r - 1) + 1 for r in range(1, 11)]
+            for i in range(len(hexRings) - 1):
+                if numPins > hexRings[i] and numPins < hexRings[i + 1]:
+                    # round numPins up
+                    numPins = hexRings[i + 1]
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
         # Look up the current orientation and add this to it. The math below just rotates
