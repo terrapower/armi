@@ -38,7 +38,7 @@ Examples
     blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
 
 """
-import numpy
+import numpy as np
 from scipy import sparse
 
 from armi import runLog
@@ -116,7 +116,7 @@ class XSCollection:
     def getDefaultXs(cls, numGroups):
         default = cls._zeroes.get(numGroups, None)
         if default is None:
-            default = numpy.zeros(numGroups)
+            default = np.zeros(numGroups)
             cls._zeroes[numGroups] = default
         return default
 
@@ -233,8 +233,8 @@ class XSCollection:
             # it should either be a list, a numpy array, or a sparse matrix
             if isinstance(value, list):
                 value = [0.0] * len(value)
-            elif isinstance(value, numpy.ndarray):
-                value = numpy.zeros(value.shape)
+            elif isinstance(value, np.ndarray):
+                value = np.zeros(value.shape)
             elif value is None:  # assume it is scipy.sparse
                 pass
             elif value.nnz >= 0:
@@ -268,7 +268,7 @@ class XSCollection:
         oneGroupXS : float
             The one group cross section in the same units as the input cross section.
         """
-        mult = numpy.array(crossSection) * numpy.array(weights)
+        mult = np.array(crossSection) * np.array(weights)
         return sum(mult) / sum(weights)
 
     def compare(self, other, flux, relativeTolerance=0, verbose=False):
@@ -289,7 +289,7 @@ class XSCollection:
                         )
 
             elif sparse.issparse(myXsData) and sparse.issparse(theirXsData):
-                if not numpy.allclose(
+                if not np.allclose(
                     myXsData.todense(),
                     theirXsData.todense(),
                     rtol=relativeTolerance,
@@ -448,7 +448,7 @@ class MacroscopicCrossSectionCreator:
     def _initializeMacros(self):
         m = self.macros
         for xsName in BASIC_XS + DERIVED_XS:
-            setattr(m, xsName, numpy.zeros(self.ng))
+            setattr(m, xsName, np.zeros(self.ng))
 
         for matrixName in BASIC_SCAT_MATRIX:
             # lil_matrices are good for indexing but bad for certain math operations.
@@ -574,7 +574,7 @@ def computeBlockAverageChi(b, isotxsLib):
     fission source weighting).
     """
     numGroups = isotxsLib.numGroups
-    numerator = numpy.zeros(numGroups)
+    numerator = np.zeros(numGroups)
     denominator = 0.0
     numberDensities = b.getNumberDensities()
     for nucObj in isotxsLib.getNuclides(b.getMicroSuffix()):
@@ -586,7 +586,7 @@ def computeBlockAverageChi(b, isotxsLib):
     if denominator != 0.0:
         return numerator / denominator
     else:
-        return numpy.zeros(numGroups)
+        return np.zeros(numGroups)
 
 
 def _getLibTypeSuffix(libType):
@@ -625,7 +625,7 @@ def computeNeutronEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : numpy array
+    energyDepositionConsts : np.ndarray
         Neutron energy deposition group constants. (J/cm)
 
     Notes
@@ -664,7 +664,7 @@ def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : numpy array
+    energyDepositionConsts : np.ndarray
         gamma energy deposition group constants. (J/cm)
 
     Notes
@@ -707,7 +707,7 @@ def computeFissionEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    fissionEnergyFactor: numpy.array
+    fissionEnergyFactor: np.ndarray
         Fission energy generation group constants (in Joules/cm)
     """
     fissionEnergyFactor = computeMacroscopicGroupConstants(
@@ -751,14 +751,14 @@ def computeCaptureEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    captureEnergyFactor: numpy.array
+    captureEnergyFactor: np.ndarray
         Capture energy generation group constants (in Joules/cm)
     """
     captureEnergyFactor = None
     for xs in CAPTURE_XS:
         if captureEnergyFactor is None:
-            captureEnergyFactor = numpy.zeros(
-                numpy.shape(
+            captureEnergyFactor = np.zeros(
+                np.shape(
                     computeMacroscopicGroupConstants(
                         xs, numberDensities, lib, microSuffix, libType="micros"
                     )
@@ -829,33 +829,27 @@ def computeMacroscopicGroupConstants(
     constantName : str
         Name of the reaction for which to obtain the group constants. This name should match a
         cross section name or an attribute in the collection.
-
     numberDensities : dict
         nucName keys, number density values (atoms/bn-cm) of all nuclides in the composite for which
         the macroscopic group constants are computed. See composite `getNuclideNumberDensities` method.
-
     lib : library object
         Microscopic cross section library.
-
     microSuffix : str
         Microscopic library suffix (e.g. 'AB') for this composite.
         See composite `getMicroSuffix` method.
-
     libType : str, optional
         The block attribute containing the desired microscopic XS for this block:
         either "micros" for neutron XS or "gammaXS" for gamma XS.
-
     multConstant : str, optional
         Name of constant by which the group constants will be multiplied. This name should match a
         cross section name or an attribute in the collection.
-
     multLib : library object, optional
         Microscopic cross section nuclide library to obtain the multiplier from.
         If None, same library as base cross section is used.
 
     Returns
     -------
-    macroGroupConstant : numpy array
+    macroGroupConstant : np.ndarray
         Macroscopic group constants for the requested reaction.
     """
     skippedNuclides = []
@@ -890,16 +884,16 @@ def computeMacroscopicGroupConstants(
         multiplierVal = _getXsMultiplier(multLibNuclide, multConstant, libType)
 
         if macroGroupConstants is None:
-            macroGroupConstants = numpy.zeros(microGroupConstants.shape)
+            macroGroupConstants = np.zeros(microGroupConstants.shape)
 
         if (
             microGroupConstants.shape != macroGroupConstants.shape
             and not microGroupConstants.any()
         ):
-            microGroupConstants = numpy.zeros(macroGroupConstants.shape)
+            microGroupConstants = np.zeros(macroGroupConstants.shape)
 
         macroGroupConstants += (
-            numpy.asarray(numberDensity) * microGroupConstants * multiplierVal
+            np.asarray(numberDensity) * microGroupConstants * multiplierVal
         )
 
     if skippedNuclides:
@@ -925,12 +919,12 @@ def _getXsMultiplier(libNuclide, multiplier, libType):
         try:
             microCollection = getattr(libNuclide, libType)
             multiplierVal = getattr(microCollection, multiplier)
-        except:  # noqa: bare-except
+        except Exception:
             multiplierVal = libNuclide.isotxsMetadata[multiplier]
     else:
         multiplierVal = 1.0
 
-    return numpy.asarray(multiplierVal)
+    return np.asarray(multiplierVal)
 
 
 def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
@@ -939,7 +933,7 @@ def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
     else:
         microCollection = libNuclide
 
-    microGroupConstants = numpy.asarray(getattr(microCollection, constantName))
+    microGroupConstants = np.asarray(getattr(microCollection, constantName))
 
     if not microGroupConstants.any():
         runLog.debug(

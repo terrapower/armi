@@ -18,7 +18,7 @@ and/or photon flux.
 import math
 from typing import Dict, Optional
 
-import numpy
+import numpy as np
 import scipy.integrate
 
 from armi import interfaces
@@ -33,7 +33,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -85,7 +85,7 @@ class GlobalFluxInterface(interfaces.Interface):
 
     def interactBOC(self, cycle=None):
         interfaces.Interface.interactBOC(self, cycle)
-        self.r.core.p.rxSwing = 0.0  # zero out rxSwing until EOC.
+        self.r.core.p.rxSwing = 0.0  # zero out rxSwing until last time node.
         self.r.core.p.maxDetailedDpaThisCycle = 0.0  # zero out cumulative params
         self.r.core.p.dpaFullWidthHalfMax = 0.0
         self.r.core.p.elevationOfACLP3Cycles = 0.0
@@ -102,23 +102,30 @@ class GlobalFluxInterface(interfaces.Interface):
         is up to date with the reactor state.
         """
         interfaces.Interface.interactEveryNode(self, cycle, node)
-
-        if self.r.p.timeNode == 0:
-            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+        self._setRxSwingRelatedParams()
 
     def interactCoupled(self, iteration):
         """Runs during a tightly-coupled physics iteration to updated the flux and power."""
         interfaces.Interface.interactCoupled(self, iteration)
-        if self.r.p.timeNode == 0:
-            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+        self._setRxSwingRelatedParams()
 
-    def interactEOC(self, cycle=None):
-        interfaces.Interface.interactEOC(self, cycle)
-        if self._bocKeff is not None:
-            self.r.core.p.rxSwing = (
-                (self.r.core.p.keff - self._bocKeff)
-                / self._bocKeff
-                * units.ABS_REACTIVITY_TO_PCM
+    def _setRxSwingRelatedParams(self):
+        """Set Params Related to Rx Swing."""
+        if self.r.p.timeNode == 0:
+            # track boc uncontrolled keff for rxSwing param.
+            self._bocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+
+        # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
+        lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
+        if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
+
+            eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+            swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
+            self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
+            runLog.info(
+                f"BOC Uncontrolled keff: {self._bocKeff},  "
+                f"EOC Uncontrolled keff: {self.r.core.p.keffUnc}, "
+                f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
             )
 
     def checkEnergyBalance(self):
@@ -723,7 +730,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         currentCorePower = 0.0
         for b in self.r.core.getBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
-            b.p.power = numpy.dot(
+            b.p.power = np.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
             )
             b.p.flux = sum(b.getMgFlux())
@@ -994,13 +1001,13 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             # if it is a non-hex block, this should be a no-op
             if b.p.pointsCornerDpaRate is not None:
                 if b.p.pointsCornerDpa is None:
-                    b.p.pointsCornerDpa = numpy.zeros((6,))
+                    b.p.pointsCornerDpa = np.zeros((6,))
                 b.p.pointsCornerDpa = (
                     b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
                 )
             if b.p.pointsEdgeDpaRate is not None:
                 if b.p.pointsEdgeDpa is None:
-                    b.p.pointsEdgeDpa = numpy.zeros((6,))
+                    b.p.pointsEdgeDpa = np.zeros((6,))
                 b.p.pointsEdgeDpa = (
                     b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
                 )
@@ -1199,7 +1206,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         peakAvg = (0.0, None)
         loadPadTop = loadPadBottom + loadPadLength
 
-        zrange = numpy.linspace(loadPadBottom, loadPadTop, 100)
+        zrange = np.linspace(loadPadBottom, loadPadTop, 100)
         for a in self.r.core.getAssemblies(Flags.FUEL):
             # scan over the load pad to find the peak dpa
             # no caching.
@@ -1225,20 +1232,6 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 def computeDpaRate(mgFlux, dpaXs):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
-
-    Parameters
-    ----------
-    mgFlux : list
-        multigroup neutron flux in #/cm^2/s
-
-    dpaXs : list
-        DPA cross section in barns to convolute with flux to determine DPA rate
-
-    Returns
-    -------
-    dpaPerSecond : float
-        The dpa/s in this material due to this flux
-
 
     .. impl:: Compute DPA rates.
         :id: I_ARMI_FLUX_DPA
@@ -1272,11 +1265,23 @@ def computeDpaRate(mgFlux, dpaXs):
         the number density of the structural material cancels out. It's in the macroscopic
         cross-section and in the original number of atoms.
 
+    Parameters
+    ----------
+    mgFlux : list
+        multigroup neutron flux in #/cm^2/s
+
+    dpaXs : list
+        DPA cross section in barns to convolute with flux to determine DPA rate
+
+    Returns
+    -------
+    dpaPerSecond : float
+        The dpa/s in this material due to this flux
+
     Raises
     ------
     RuntimeError
        Negative dpa rate.
-
     """
     displacements = 0.0
     if len(mgFlux) != len(dpaXs):
@@ -1312,20 +1317,6 @@ def calcReactionRates(obj, keff, lib):
     r"""
     Compute 1-group reaction rates for this object (usually a block).
 
-    Parameters
-    ----------
-    obj : Block
-        The object to compute reaction rates on. Notionally this could be upgraded to be
-        any kind of ArmiObject but with params defined as they are it currently is only
-        implemented for a block.
-
-    keff : float
-        The keff of the core. This is required to get the neutron production rate correct
-        via the neutron balance statement (since nuSigF has a 1/keff term).
-
-    lib : XSLibrary
-        Microscopic cross sections to use in computing the reaction rates.
-
     .. impl:: Return the reaction rates for a given ArmiObject
         :id: I_ARMI_FLUX_RX_RATES
         :implements: R_ARMI_FLUX_RX_RATES
@@ -1359,6 +1350,20 @@ def calcReactionRates(obj, keff, lib):
 
             \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
             dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+
+    Parameters
+    ----------
+    obj : Block
+        The object to compute reaction rates on. Notionally this could be upgraded to be
+        any kind of ArmiObject but with params defined as they are it currently is only
+        implemented for a block.
+
+    keff : float
+        The keff of the core. This is required to get the neutron production rate correct
+        via the neutron balance statement (since nuSigF has a 1/keff term).
+
+    lib : XSLibrary
+        Microscopic cross sections to use in computing the reaction rates.
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

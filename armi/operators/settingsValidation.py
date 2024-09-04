@@ -637,7 +637,7 @@ class Inspector:
                     availabilities = expandRepeatedFloats(
                         self.cs["availabilityFactors"]
                     ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
-                except:  # noqa: bare-except
+                except Exception:
                     return True
 
                 # This will be a full decay step and any power fraction will be ignored. May be ok.

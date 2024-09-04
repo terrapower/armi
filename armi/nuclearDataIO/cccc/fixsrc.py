@@ -20,7 +20,7 @@ This enables photon transport problems. [CCCC-IV]_
 """
 import collections
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nuclearDataIO import cccc
@@ -28,7 +28,7 @@ from armi.nuclearDataIO import cccc
 
 def readBinary(fileName):
     """Read a binary FIXSRC file."""
-    with FIXSRC(fileName, "rb", numpy.zeros((0, 0, 0, 0))) as fs:
+    with FIXSRC(fileName, "rb", np.zeros((0, 0, 0, 0))) as fs:
         fs.readWrite()
     return fs.fixSrc
 
@@ -60,7 +60,7 @@ class FIXSRC(cccc.Stream):
             If 'wb', this class writes a FIXSRC binary file.
             If 'rb', this class reads a preexisting FIXSRC binary file.
 
-        fixSrc : numpy array
+        fixSrc : np.ndarray
             Core-wide multigroup gamma fixed-source data.
         """
         cccc.Stream.__init__(self, fileName, fileMode)

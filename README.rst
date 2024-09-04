@@ -60,8 +60,7 @@ found in [#touranarmi]_.
 
 Quick start
 -----------
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+ on
-Windows or Linux.
+Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
 commands. You probably want to do this in a virtual environment as described in the `Installation
@@ -70,7 +69,7 @@ dependencies could conflict with your system dependencies.
 
 First, upgrade your version of pip::
 
-    $ pip install pip>=22.1
+    $ pip install -U pip>=22.1
 
 Now clone and install ARMI::
 

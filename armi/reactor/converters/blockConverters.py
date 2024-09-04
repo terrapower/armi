@@ -16,7 +16,7 @@
 import copy
 import math
 
-import numpy
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.patches import Wedge
@@ -311,7 +311,8 @@ class MultipleComponentMerger(BlockConverter):
                 soluteName, self.solventName, minID=self.specifiedMinID
             )
         solvent = self._sourceBlock.getComponentByName(self.solventName)
-        BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
+        if solvent.__class__ is not components.DerivedShape:
+            BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
         return self._sourceBlock
 
 
@@ -479,7 +480,7 @@ class BlockAvgToCylConverter(BlockConverter):
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
         p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.YlGn)
-        p.set_array(numpy.array(colors))
+        p.set_array(np.array(colors))
         ax.add_collection(p)
         ax.autoscale_view(True, True, True)
         ax.set_aspect("equal")

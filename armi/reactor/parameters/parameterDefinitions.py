@@ -30,9 +30,8 @@ import enum
 import functools
 import re
 
-import numpy
+import numpy as np
 
-from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
 
@@ -180,7 +179,7 @@ class Serializer:
     version: Optional[str] = None
 
     @staticmethod
-    def pack(data: Sequence[any]) -> Tuple[numpy.ndarray, Dict[str, any]]:
+    def pack(data: Sequence[any]) -> Tuple[np.ndarray, Dict[str, any]]:
         """
         Given unpacked data, return packed data and a dictionary of attributes needed to unpack it.
 
@@ -196,7 +195,7 @@ class Serializer:
 
     @classmethod
     def unpack(
-        cls, data: numpy.ndarray, version: Any, attrs: Dict[str, any]
+        cls, data: np.ndarray, version: Any, attrs: Dict[str, any]
     ) -> Sequence[any]:
         """Given packed data and attributes, return the unpacked data."""
         raise NotImplementedError()
@@ -217,10 +216,10 @@ def isNumpyArray(paramStr):
     """
 
     def setParameter(selfObj, value):
-        if value is None or isinstance(value, numpy.ndarray):
+        if value is None or isinstance(value, np.ndarray):
             setattr(selfObj, "_p_" + paramStr, value)
         else:
-            setattr(selfObj, "_p_" + paramStr, numpy.array(value))
+            setattr(selfObj, "_p_" + paramStr, np.array(value))
 
     return setParameter
 
@@ -265,16 +264,12 @@ class Parameter:
         categories,
         serializer: Optional[Type[Serializer]] = None,
     ):
-        assert self._validName.match(name), "{} is not a valid param name".format(name)
         # nonsensical to have a serializer with no intention of saving to DB
         assert not (serializer is not None and not saveToDB)
         assert serializer is None or saveToDB
-        # TODO: This warning is temporary. At some point, it will become an AssertionError.
-        if not len(description):
-            runLog.warning(
-                f"DeprecationWarning: Parameter {name} defined without description.",
-                single=True,
-            )
+        assert self._validName.match(name), "{} is not a valid param name".format(name)
+        assert len(description), f"Parameter {name} defined without description."
+
         self.collectionType = _Undefined
         self.name = name
         self.fieldName = "_p_" + name

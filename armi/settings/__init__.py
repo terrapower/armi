@@ -29,8 +29,8 @@ from ruamel import yaml
 
 from armi import runLog
 from armi.settings.caseSettings import Settings
-from armi.settings.setting import Default  # noqa: unused-import
-from armi.settings.setting import Option  # noqa: unused-import
+from armi.settings.setting import Default  # noqa: F401
+from armi.settings.setting import Option  # noqa: F401
 from armi.settings.setting import Setting
 from armi.utils.customExceptions import InvalidSettingsFileError
 

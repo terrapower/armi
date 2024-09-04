@@ -90,8 +90,8 @@ class CheckInputEntryPoint(EntryPoint):
         )
 
     def invoke(self):
-        import tabulate
         from armi import cases
+        from armi.utils import tabulate
 
         suite = cases.CaseSuite(self.cs)
         suite.discover(patterns=self.args.patterns, recursive=self.args.recursive)
@@ -118,7 +118,7 @@ class CheckInputEntryPoint(EntryPoint):
             tabulate.tabulate(
                 table,
                 headers=["case", "can start", "input is self consistent"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 

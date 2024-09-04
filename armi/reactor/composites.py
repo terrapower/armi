@@ -36,25 +36,22 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Dict, Optional, Type, Tuple, List, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
-import numpy
+import numpy as np
 import six
-import tabulate
 
-from armi import context
-from armi import runLog
-from armi import utils
-from armi.nucDirectory import elements
-from armi.nucDirectory import nucDir, nuclideBases
+from armi import context, runLog, utils
+from armi.nucDirectory import elements, nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools
+from armi.utils import tabulate
 from armi.utils import units
 from armi.utils.densityTools import calculateNumberDensity
+from armi.utils.flags import auto
 
 
 class FlagSerializer(parameters.Serializer):
@@ -72,7 +69,7 @@ class FlagSerializer(parameters.Serializer):
     @staticmethod
     def pack(data):
         """
-        Flags are represented as a 2-D numpy array of uint8 (single-byte, unsigned
+        Flags are represented as a 2D numpy array of uint8 (single-byte, unsigned
         integers), where each row contains the bytes representing a single Flags
         instance. We also store the list of field names so that we can verify that the
         reader and the writer can agree on the meaning of each bit.
@@ -91,9 +88,9 @@ class FlagSerializer(parameters.Serializer):
         functionality without having to do unholy things to ARMI's actual set of
         ``reactor.flags.Flags``.
         """
-        npa = numpy.array(
-            [b for f in data for b in f.to_bytes()], dtype=numpy.uint8
-        ).reshape((len(data), flagCls.width()))
+        npa = np.array([b for f in data for b in f.to_bytes()], dtype=np.uint8).reshape(
+            (len(data), flagCls.width())
+        )
 
         return npa, {"flag_order": flagCls.sortedFields()}
 
@@ -107,7 +104,6 @@ class FlagSerializer(parameters.Serializer):
         ----------
         inp : int
             input bitfield
-
         mapping : dict
             dictionary mapping from old bit position -> new bit position
         """
@@ -172,11 +168,14 @@ class FlagSerializer(parameters.Serializer):
         # Make sure that all of the old flags still exist
         if not flagSetIn.issubset(flagSetNow):
             missingFlags = flagSetIn - flagSetNow
-            raise ValueError(
-                "The set of flags in the database includes unknown flags. "
-                "Make sure you are using the correct ARMI app. Missing flags:\n"
-                "{}".format(missingFlags)
+            runLog.warning(
+                "The set of flags in the database includes unknown flags. For convenience, we will "
+                f"add these to the system: {missingFlags}"
             )
+            flagCls.extend({k: auto() for k in missingFlags})
+
+        flagOrderNow = flagCls.sortedFields()
+        flagSetNow = set(flagOrderNow)
 
         if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
             out = [flagCls.from_bytes(row.tobytes()) for row in data]
@@ -217,7 +216,7 @@ def _defineBaseParameters():
         the DB, it is possible to recover the flags from that.
         * Storing flags to the DB may be complicated, since it is easier to imagine a
         number of flags that is greater than the width of natively-supported integer
-        types, requiring some extra tricks to store the flages in an HDF5 file.
+        types, requiring some extra tricks to store the flags in an HDF5 file.
         * Allowing flags to be modified by plugins further complicates things, in that
         it is important to ensure that the meaning of all bits in the flag value are
         consistent between a database state and the current ARMI environment. This may
@@ -1287,7 +1286,7 @@ class ArmiObject(metaclass=CompositeModelType):
             multiplying the number densities within each child Composite by the volume
             of the child Composite and dividing by the total volume of the Composite.
         """
-        volumes = numpy.array(
+        volumes = np.array(
             [
                 c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
                 for c in self
@@ -1304,7 +1303,7 @@ class ArmiObject(metaclass=CompositeModelType):
             densListForEachComp.append(
                 [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
             )
-        nucDensForEachComp = numpy.array(densListForEachComp)  # c x n
+        nucDensForEachComp = np.array(densListForEachComp)  # c x n
 
         return volumes.dot(nucDensForEachComp) / totalVol
 
@@ -1905,7 +1904,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getChildParamValues(self, param):
         """Get the child parameter values in a numpy array."""
-        return numpy.array([child.p[param] for child in self])
+        return np.array([child.p[param] for child in self])
 
     def isFuel(self):
         """True if this is a fuel block."""
@@ -2107,7 +2106,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        flux : numpy.array
+        flux : np.ndarray
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
@@ -2255,7 +2254,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        material : Material object, optional
+        material : armi.materials.material.Material, optional
             The material to match
         materialName : str, optional
             The material name to match.
@@ -2453,7 +2452,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        mat : Material
+        mat : armi.materials.material.Material
              the first instance of the most dominant material (by volume) in this object.
 
         See Also
@@ -2861,9 +2860,7 @@ class Composite(ArmiObject):
                     # out of sync, and this parameter was also globally modified and
                     # readjusted to the original value.
                     curVal = self.p[key]
-                    if isinstance(val, numpy.ndarray) or isinstance(
-                        curVal, numpy.ndarray
-                    ):
+                    if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
                             errors[self, key].append(nodeRank)
                     elif curVal != val:
@@ -2997,25 +2994,26 @@ class Composite(ArmiObject):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
         Returns
         -------
-        integratedFlux : numpy.array
+        integratedFlux : np.ndarray
             multigroup neutron tracklength in [n-cm/s]
         """
-        integratedMgFlux = numpy.zeros(1)
-
+        integratedMgFlux = np.zeros(1)
         for c in self:
-            integratedMgFlux = integratedMgFlux + c.getIntegratedMgFlux(
-                adjoint=adjoint, gamma=gamma
-            )
+            mgFlux = c.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma)
+            if mgFlux is not None:
+                integratedMgFlux = integratedMgFlux + mgFlux
+
         return integratedMgFlux
 
     def _getReactionRates(self, nucName, nDensity=None):
         """
+        Helper to get the reaction rates of a certain nuclide on one ArmiObject.
+
         Parameters
         ----------
         nucName : str
@@ -3030,16 +3028,21 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier
+        If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
+
+        This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
+        heirarchy than ``Block``.
         """
         from armi.reactor.blocks import Block
+        from armi.reactor.reactors import Core
 
         if nDensity is None:
             nDensity = self.getNumberDensity(nucName)
+
         try:
             return getReactionRateDict(
                 nucName,
-                self.getAncestorWithFlags(Flags.CORE).lib,
+                self.getAncestor(lambda c: isinstance(c, Core)).lib,
                 self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
                 self.getIntegratedMgFlux(),
                 nDensity,
@@ -3059,7 +3062,7 @@ class Composite(ArmiObject):
 
     def getReactionRates(self, nucName, nDensity=None):
         """
-        Get the reaction rates of a certain nuclide on this object.
+        Get the reaction rates of a certain nuclide on this ArmiObject.
 
         Parameters
         ----------
@@ -3075,18 +3078,23 @@ class Composite(ArmiObject):
 
         Notes
         -----
-        This is volume integrated NOT (1/cm3-s)
+        This is volume integrated NOT (1/cm3-s).
 
-        If you set nDensity to 1 this makes 1-group cross section generation easier
+        If you set nDensity to 1 this makes 1-group cross section generation easier.
         """
-        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+        from armi.reactor.components import Component
 
-        # not all composite objects are iterable (i.e. components), so in that
-        # case just examine only the object itself
-        for armiObject in self.getChildren() or [self]:
-            for rxName, val in armiObject._getReactionRates(
-                nucName, nDensity=nDensity
-            ).items():
+        # find child objects
+        objects = self.getChildren(
+            deep=True, predicate=lambda x: isinstance(x, Component)
+        )
+        if not len(objects):
+            objects = [self]
+
+        # The reaction rates for this object is the sum of its children
+        rxnRates = {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0}
+        for armiObject in objects:
+            for rxName, val in armiObject._getReactionRates(nucName, nDensity).items():
                 rxnRates[rxName] += val
 
         return rxnRates
@@ -3249,7 +3257,7 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     xsSuffix : str
         cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
         second burnup group of type A
-    mgFlux : numpy.nArray
+    mgFlux : np.ndarray
         integrated mgFlux (n-cm/s)
     nDens : float
         number density (atom/bn-cm)

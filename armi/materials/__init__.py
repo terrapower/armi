@@ -171,7 +171,7 @@ def resolveMaterialClassByName(name: str, namespaceOrder: List[str] = None):
 
     Returns
     -------
-    matCls : Material
+    matCls : armi.materials.material.Material
         The material
 
     Raises

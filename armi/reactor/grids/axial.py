@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from typing import List, Optional, TYPE_CHECKING, NoReturn
-import warnings
 
-import numpy
+import numpy as np
 
 from armi.reactor.grids.locations import IJType, LocationBase
 from armi.reactor.grids.structuredGrid import StructuredGrid
@@ -26,7 +25,7 @@ if TYPE_CHECKING:
 class AxialGrid(StructuredGrid):
     """1-D grid in the k-direction (z).
 
-    .. note:::
+    .. note::
 
         It is recommended to use :meth:`fromNCells` rather than calling
         the ``__init_`` constructor directly
@@ -45,7 +44,7 @@ class AxialGrid(StructuredGrid):
         """
         # Need float bounds or else we truncate integers
         return cls(
-            bounds=(None, None, numpy.arange(numCells + 1, dtype=numpy.float64)),
+            bounds=(None, None, np.arange(numCells + 1, dtype=np.float64)),
             armiObject=armiObject,
         )
 
@@ -85,22 +84,3 @@ class AxialGrid(StructuredGrid):
             Pitch in cm
 
         """
-
-
-def axialUnitGrid(
-    numCells: int, armiObject: Optional["ArmiObject"] = None
-) -> AxialGrid:
-    """
-    Build a 1-D unit grid in the k-direction based on a number of times. Each mesh is 1cm wide.
-
-    .. deprecated::
-
-        Use :class:`AxialUnitGrid` class instead
-
-    """
-    warnings.warn(
-        "Use grids.AxialGrid class rather than function",
-        PendingDeprecationWarning,
-        stacklevel=2,
-    )
-    return AxialGrid.fromNCells(numCells, armiObject)

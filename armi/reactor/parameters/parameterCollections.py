@@ -17,7 +17,7 @@ import pickle
 from typing import Any, Optional, List, Set
 import sys
 
-import numpy
+import numpy as np
 import six
 
 from armi import runLog
@@ -35,13 +35,13 @@ GLOBAL_SERIAL_NUM = -1
 """
 The serial number for all ParameterCollections
 
-This is a counter of the number of instances of all types. They are useful for tracking
-items through the history of a database.
+This is a counter of the number of instances of all types. They are useful for tracking items
+through the history of a database.
 
 .. warning::
 
-        This is not MPI safe. We also have not done anything to make it thread safe,
-        except that the GIL exists.
+    This is not MPI safe. We also have not done anything to make it thread safe,
+    except that the GIL exists.
 """
 
 
@@ -70,8 +70,8 @@ class _ParameterCollectionType(type):
     """
     Simple metaclass to make sure that expected class attributes are present.
 
-    These attributes shouldn't  be shared among different subclasses, so this
-    makes sure that each subclass gets its own.
+    These attributes shouldn't  be shared among different subclasses, so this makes sure that each
+    subclass gets its own.
     """
 
     def __new__(mcl, name, bases, attrs):
@@ -85,15 +85,13 @@ class _ParameterCollectionType(type):
 class ParameterCollection(metaclass=_ParameterCollectionType):
     """An empty class for holding state information in the ARMI data structure.
 
-    A parameter collection stores one or more formally-defined values ("parameters").
-    Until a given ParameterCollection subclass has been instantiated, new parameters may
-    be added to its parameter definitions (e.g., from plugins). Upon first
-    instantiation, ``applyParameters()`` will be called, binding the parameter
-    definitions to the Collection class as descriptors.
+    A parameter collection stores one or more formally-defined values ("parameters"). Until a given
+    ParameterCollection subclass has been instantiated, new parameters may be added to its parameter
+    definitions (e.g., from plugins). Upon first instantiation, ``applyParameters()`` will be
+    called, binding the parameter definitions to the Collection class as descriptors.
 
-    It is illegal to redefine a parameter with the same name in the same class, or its
-    subclasses, and attempting to do so should result in exceptions in
-    ``applyParameters()``.
+    It is illegal to redefine a parameter with the same name in the same class, or its subclasses,
+    and attempting to do so should result in exceptions in ``applyParameters()``.
 
     Attributes
     ----------
@@ -104,13 +102,12 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         Keys are ``(paramName, timeStep)``.
 
     assigned : int Flag
-        indicates the synchronization state of the parameter collection. This is used to
-        reduce the amount of information that is transmitted during database, and MPI
-        operations as well as determine the collection's state when exiting a
-        ``Composite.retainState``.
+        indicates the synchronization state of the parameter collection. This is used to reduce the
+        amount of information that is transmitted during database, and MPI operations as well as
+        determine the collection's state when exiting a ``Composite.retainState``.
 
-        This attribute when used with the ``Parameter.assigned`` attribute allows us to
-        efficiently perform many operations.
+        This attribute when used with the ``Parameter.assigned`` attribute allows us to efficiently
+        perform many operations.
 
     See Also
     --------
@@ -125,9 +122,9 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     # The ArmiObject class that this ParameterCollection belongs to
     _ArmiObject = None
 
-    # A set of all instance attributes that are settable on an instance. This prevents
-    # inadvertent setting of values that aren't proper parameters. Named _slots, as
-    # it is used to emulate some of the behaviors of __slots__.
+    # A set of all instance attributes that are settable on an instance. This prevents inadvertent
+    # setting of values that aren't proper parameters. Named _slots, as it is used to emulate some
+    # of the behaviors of __slots__.
     _slots: Set[str] = set()
 
     def __init__(self, _state: Optional[List[Any]] = None):
@@ -484,8 +481,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         for pd, currentValue in currentData.items():
             # correct for global paramDef.assigned assumption
             retainedValue = getattr(self, pd.fieldName)
-            if isinstance(retainedValue, numpy.ndarray) or isinstance(
-                currentValue, numpy.ndarray
+            if isinstance(retainedValue, np.ndarray) or isinstance(
+                currentValue, np.ndarray
             ):
                 if (retainedValue != currentValue).any():
                     setattr(self, pd.fieldName, currentValue)

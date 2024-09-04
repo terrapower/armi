@@ -39,18 +39,18 @@ https://docs.python.org/3/library/gc.html#gc.garbage
 from typing import Optional
 import gc
 import sys
-import tabulate
 
 from armi import context
 from armi import interfaces
 from armi import mpiActions
 from armi import runLog
 from armi.reactor.composites import ArmiObject
+from armi.utils import tabulate
 
 try:
+    # psutil is an optional requirement, since it doesnt support MacOS very well
     import psutil
 
-    # psutil is an optional requirement, since it doesnt support MacOS very well
     _havePsutil = True
 except ImportError:
     runLog.warning(
@@ -340,14 +340,19 @@ class SystemAndProcessMemoryUsage:
         # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
+        self.processVirtualMemoryInMB: Optional[float] = None
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
             self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)
+            self.processVirtualMemoryInMB = psutil.Process().memory_info().vms / (
+                1024.0**2
+            )
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
             self.percentNodeRamUsed -= other.percentNodeRamUsed
             self.processMemoryInMB -= other.processMemoryInMB
+            self.processVirtualMemoryInMB -= other.processVirtualMemoryInMB
         return self
 
 
@@ -429,6 +434,6 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                     "Average System RAM Usage",
                     "Processor Memory Usage (MB)",
                 ],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )

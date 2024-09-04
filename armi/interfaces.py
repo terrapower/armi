@@ -29,7 +29,7 @@ from typing import NamedTuple
 from typing import List
 from typing import Dict
 
-import numpy
+import numpy as np
 from numpy.linalg import norm
 
 from armi import getPluginManagerOrFail, settings, utils
@@ -38,7 +38,7 @@ from armi.reactor import parameters
 from armi.utils import textProcessors
 
 
-class STACK_ORDER:  # noqa: invalid-class-name
+class STACK_ORDER:  # noqa: N801
     """
     Constants that help determine the order of modules in the interface stack.
 
@@ -118,7 +118,7 @@ class TightCoupler:
         Maximum number of tight coupling iterations allowed
     """
 
-    _SUPPORTED_TYPES = [float, int, list, numpy.ndarray]
+    _SUPPORTED_TYPES = [float, int, list, np.ndarray]
 
     def __init__(self, param, tolerance, maxIters):
         self.parameter = param
@@ -126,7 +126,7 @@ class TightCoupler:
         self.maxIters = maxIters
         self._numIters = 0
         self._previousIterationValue = None
-        self.eps = numpy.inf
+        self.eps = np.inf
 
     def __repr__(self):
         return (
@@ -204,12 +204,12 @@ class TightCoupler:
         else:
             dim = self.getListDimension(val)
             if dim == 1:  # 1D array
-                self.eps = norm(numpy.subtract(val, previous), ord=2)
+                self.eps = norm(np.subtract(val, previous), ord=2)
             elif dim == 2:  # 2D array
                 epsVec = []
                 for old, new in zip(previous, val):
-                    epsVec.append(norm(numpy.subtract(old, new), ord=2))
-                self.eps = norm(epsVec, ord=numpy.inf)
+                    epsVec.append(norm(np.subtract(old, new), ord=2))
+                self.eps = norm(epsVec, ord=np.inf)
             else:
                 raise RuntimeError(
                     "Currently only support up to 2D arrays for calculating convergence of arrays."

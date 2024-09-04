@@ -110,7 +110,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         # generate an assembly
         self.assembly = assemblies.HexAssembly("TestAssemblyType")
-        self.assembly.spatialGrid = grids.axialUnitGrid(1)
+        self.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         for _ in range(1):
             self.assembly.add(copy.deepcopy(self.block))
 
@@ -708,7 +708,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:  # noqa: bare-except
+                except Exception:
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )
@@ -858,7 +858,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                             for sbf in sBFList
                         )
                     )
-                except:  # noqa: bare-except
+                except Exception:
                     a1[block.spatialLocator.k - 1].setType(
                         a1[block.spatialLocator.k - 1].p.type, sBFList[0]
                     )

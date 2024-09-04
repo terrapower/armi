@@ -33,7 +33,7 @@ See [GAMSOR]_.
 
 .. [GAMSOR] Smith, M. A., Lee, C. H., and Hill, R. N. GAMSOR: Gamma Source Preparation and DIF3D
             Flux Solution. United States: N. p., 2016. Web. doi:10.2172/1343095. `On OSTI
-            <https://www.osti.gov/biblio/1343095-gamsor-gamma-source-preparation-dif3d-flux-solution>`_
+            <https://www.osti.gov/biblio/1343095-gamsor-gamma-source-preparation-dif3d-flux-solution>`__
 """
 
 from armi import runLog

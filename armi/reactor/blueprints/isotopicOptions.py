@@ -387,7 +387,7 @@ class CustomIsotopic(yamlize.Map):
 
         Parameters
         ----------
-        material : Material
+        material : armi.materials.material.Material
             An ARMI Material instance.
         """
         material.massFrac = dict(self.massFracs)
@@ -424,7 +424,7 @@ class CustomIsotopics(yamlize.KeyedList):
 
         Parameters
         ----------
-        material : Material
+        material : armi.materials.material.Material
             Material instance to adjust.
 
         customIsotopicName : str

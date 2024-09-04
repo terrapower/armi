@@ -20,7 +20,7 @@ See  [GAMSOR]_ and [MC23]_.
 .. [MC23] Lee, Changho, Jung, Yeon Sang, and Yang, Won Sik. MC2-3: Multigroup Cross Section
           Generation Code for Fast Reactor Analysis Nuclear. United States: N. p., 2018. Web.
           doi:10.2172/1483949. (`OSTI
-          <https://www.osti.gov/biblio/1483949-mc2-multigroup-cross-section-generation-code-fast-reactor-analysis-nuclear>`_)
+          <https://www.osti.gov/biblio/1483949-mc2-multigroup-cross-section-generation-code-fast-reactor-analysis-nuclear>`__)
 """
 
 import traceback
@@ -222,7 +222,7 @@ class PmatrxIO(cccc.Stream):
             self._rwGroupStructure()
             self._rwDoseConversionFactor()
             self._rwIsotopes(numNucs)
-        except:  # noqa: bare-except
+        except Exception:
             runLog.error(traceback.format_exc())
             raise OSError("Failed to read/write {}".format(self))
         finally:

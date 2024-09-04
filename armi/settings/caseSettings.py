@@ -467,7 +467,9 @@ class Settings:
                 elif key in settings.__settings:
                     settings.__settings[key].setValue(val)
                 else:
-                    settings.__settings[key] = Setting(key, val)
+                    settings.__settings[key] = Setting(
+                        key, val, description="Description from cs.modified()"
+                    )
 
         return settings
 

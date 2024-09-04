@@ -72,7 +72,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     o.initializeInterfaces(r)
 
     a = assemblies.HexAssembly("fuel")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     b = blocks.HexBlock("TestBlock")
     b.setType("fuel")
     dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
@@ -109,7 +109,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     o.initializeInterfaces(r)
 
     a = assemblies.CartesianAssembly("fuel")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     b = blocks.CartesianBlock("TestBlock")
     b.setType("fuel")
     dims = {
@@ -383,6 +383,16 @@ class HexReactorTests(ReactorTests):
         actualSuffixes = self.r.core.getAllXsSuffixes()
         expectedSuffixes = ["AA"]
         self.assertListEqual(expectedSuffixes, actualSuffixes)
+
+    def test_genBlocksByLocName(self):
+        self.r.core.genBlocksByLocName()
+        self.assertGreater(len(self.r.core.blocksByLocName), 300)
+        self.assertIn("009-009-004", self.r.core.blocksByLocName)
+
+    def test_setPitchUniform(self):
+        self.r.core.setPitchUniform(0.0)
+        for b in self.r.core.getBlocks():
+            self.assertEqual(b.getPitch(), 0.0)
 
     def test_countBlocksOfType(self):
         numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL])
@@ -823,8 +833,6 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(dominantDuct.getName(), "HT9")
         self.assertEqual(dominantFuel.getName(), "UZr")
         self.assertEqual(dominantCool.getName(), "Sodium")
-
-        self.assertEqual(list(dominantCool.getNuclides()), ["NA23"])
 
     def test_getSymmetryFactor(self):
         """

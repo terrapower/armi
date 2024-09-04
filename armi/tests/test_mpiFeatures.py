@@ -351,3 +351,21 @@ class MpiPathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir3))
+
+
+class TestContextMpi(unittest.TestCase):
+    """Parallel tests for the Context module."""
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_rank(self):
+        self.assertGreater(context.MPI_RANK, -1)
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_nonNoneData(self):
+        self.assertGreater(len(context.APP_DATA), 0)
+        self.assertGreater(len(context.DOC), 0)
+        self.assertGreater(len(context.getFastPath()), 0)
+        self.assertGreater(len(context.PROJECT_ROOT), 0)
+        self.assertGreater(len(context.RES), 0)
+        self.assertGreater(len(context.ROOT), 0)
+        self.assertGreater(len(context.USER), 0)
