@@ -52,6 +52,7 @@ from typing import (
     Tuple,
     Type,
 )
+import gc
 
 import h5py
 import numpy as np
@@ -683,7 +684,17 @@ class Database3:
         """
         runLog.extra("Copying DB to shared working directory.")
         self.h5db.flush()
+
+        # Close the h5 file so it can be copied
+        self.h5db.close()
+        self.h5db = None
         shutil.copy(self._fullPath, self._fileName)
+
+        # Garbage collect so we don't have multiple databases hanging around in memory
+        gc.collect()
+
+        # Reload the file in append mode and continue on our merry way
+        self.h5db = h5py.File(self._fullPath, "r+")
 
     def load(
         self,
