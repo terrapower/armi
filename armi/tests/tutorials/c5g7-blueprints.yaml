@@ -124,7 +124,7 @@ blocks:
             isotopics: moderator
             Tinput: 450.0
             Thot: 450.0
-        # Moderator within the guide tube    
+        # Moderator within the guide tube
         inner moderator guide tube: &guide_tube_moderator
             shape: Circle
             material: SaturatedWater
@@ -178,9 +178,9 @@ blocks:
             widthInner: 21.42
             widthOuter: 21.42
             mult: 1.0
-            latticeIDs: [FC] 
-            # latticeIDs is needed to ensure that the center of the bounding 
-            # Component shares the same center/origin as the rest of the 
+            latticeIDs: [FC]
+            # latticeIDs is needed to ensure that the center of the bounding
+            # Component shares the same center/origin as the rest of the
             # components in the block. See #332."
 # end-block-uo2
     mox: &block_mox
@@ -263,7 +263,7 @@ assemblies:
             - *block_mod
         height: *heights
         axial mesh points: *mesh
-        xs types: [A,A,A,A]
+        xs types: [A, A, A, A]
     mox:
         flags: fuel
         specifier: MOX
@@ -274,7 +274,7 @@ assemblies:
             - *block_mod
         height: *heights
         axial mesh points: *mesh
-        xs types: [A,A,A,A]
+        xs types: [A, A, A, A]
     mod:
         specifier: MOD
         blocks:
@@ -284,16 +284,16 @@ assemblies:
             - *block_mod
         height: *heights
         axial mesh points: *mesh
-        xs types: [A,A,A,A]
+        xs types: [A, A, A, A]
 # end-assemblies
 systems:
     core:
-      grid name: core
+        grid name: core
 
-      origin:
-          x: 0.0
-          y: 0.0
-          z: 0.0
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
 # end-systems
 grids:
     core:
@@ -359,7 +359,7 @@ grids:
 # end-grid-MOX
 nuclide flags:
     H: {burn: false, xs: true}
-    O: 
+    O:
         burn: false
         xs: true
         expandTo: ["O16", "O17"] # O18 is not in many nuclear data sets.
