@@ -701,6 +701,16 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
 
+    def test_enableBuGroupUpdates(self):
+        self.csm._buGroupUpdatesEnabled = False
+        self.csm.enableBuGroupUpdates()
+        self.assertTrue(self.csm.enableBuGroupUpdates)
+
+    def test_disableBuGroupUpdates(self):
+        self.csm._buGroupUpdatesEnabled = False
+        res = self.csm.disableBuGroupUpdates()
+        self.assertFalse(res)
+
     def test_updateBurnupGroups(self):
         self.blockList[1].p.percentBu = 3.1
         self.blockList[2].p.percentBu = 10.0
