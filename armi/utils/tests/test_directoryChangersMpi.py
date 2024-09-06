@@ -15,6 +15,9 @@
 """
 Test the MpiDirectoryChanger.
 
+These tests will be generally ignored by pytest if you are trying to run
+them in an environment without MPI installed.
+
 To run these tests from the command line, install MPI and mpi4py, and do:
 
 mpiexec -n 2 python -m pytest test_parallel.py
@@ -28,6 +31,13 @@ import unittest
 
 from armi import context, mpiActions
 from armi.utils.directoryChangersMpi import MpiDirectoryChanger
+
+# determine if this is a parallel run, and MPI is installed
+MPI_EXE = None
+if shutil.which("mpiexec.exe") is not None:
+    MPI_EXE = "mpiexec.exe"
+elif shutil.which("mpiexec") is not None:
+    MPI_EXE = "mpiexec"
 
 
 class RevealYourDirectory(mpiActions.MpiAction):
@@ -49,7 +59,7 @@ class TestMPI(unittest.TestCase):
         if context.MPI_RANK == 0:
             shutil.rmtree(self.targetDir)
 
-    @unittest.skipIf(context.MPI_SIZE <= 1, "Parallel test only")
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_MpiDirectoryChanger(self):
         # make sure all workers start outside the targetDir
         self.assertNotIn(self.targetDir, os.getcwd())

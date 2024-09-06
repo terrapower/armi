@@ -32,3 +32,4 @@ jobs:
           pytest -n 4 armi
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/tests/test_mpiFeatures.py || true
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/tests/test_mpiParameters.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/utils/tests/test_directoryChangersMpi.py || true
