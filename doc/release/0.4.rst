@@ -19,7 +19,7 @@ API Changes
 #. Removing deprecated method ``prepSearch``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing unused function ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Allow for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
-#. Add ``numPins`` argument to HexBlock.rotatePins() (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Add ``numPins`` argument to HexBlock.rotatePins() (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. TBD
 
 Bug Fixes
