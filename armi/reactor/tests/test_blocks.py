@@ -13,32 +13,31 @@
 # limitations under the License.
 """Tests blocks.py."""
 import copy
+import io
 import math
 import os
 import unittest
 from unittest.mock import MagicMock, patch
-import io
 
 import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
-from armi.reactor import blueprints
-from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
+from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
-from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import blocks, components, geometry, grids
+from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.nuclearDataIO import xsCollections
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -151,7 +150,7 @@ def loadTestBlock(cold=True):
         "id": 0.90,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    outerLiner = components.Circle("outer liner", "HT9", **outerLinerDims)
+    outerLiner = components.Circle("outer liner", "Inconel800", **outerLinerDims)
 
     linerLinerGapDims = {
         "Tinput": hotTempStructure,

@@ -18,18 +18,16 @@ import unittest
 
 import numpy as np
 
-from armi.reactor.converters import blockConverters
-from armi.reactor import blocks
-from armi.reactor import components
-from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
-from armi.utils import hexagon
-from armi.reactor import grids
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
+from armi.reactor import blocks, components, grids
+from armi.reactor.converters import blockConverters
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.utils import hexagon
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestBlockConverter(unittest.TestCase):
@@ -87,6 +85,25 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve_multi(
             loadTestBlock(), ["inner liner", "outer liner"], "clad"
         )
+
+    def test_dissolveZeroArea(self):
+        """Test dissolving a zero-area component into another."""
+        self._test_dissolve(loadTestBlock(), "gap2", "outer liner")
+
+    def test_dissolveIntoZeroArea(self):
+        """Test dissolving a component into a zero-area solvent (raises ValueError)."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(loadTestBlock(), "outer liner", "gap2")
+
+    def test_dissolveNegativeArea(self):
+        """Test dissolving a zero-area component into another."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(loadTestBlock(cold=False), "gap3", "clad")
+
+    def test_dissolveIntoNegativeArea(self):
+        """Test dissolving a zero-area component into another."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(loadTestBlock(cold=False), "clad", "gap3")
 
     def _test_dissolve_multi(self, block, soluteNames, solventName):
         converter = blockConverters.MultipleComponentMerger(
