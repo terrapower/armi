@@ -209,7 +209,8 @@ class TestDatabaseInterface(unittest.TestCase):
 
         # Go through a few time nodes to ensure appending is working
         for timeNode in range(self.o.cs["burnSteps"]):
-            r.p.cycle, r.p.timeNode = 0, timeNode
+            r.p.cycle = 0
+            r.p.timeNode = timeNode
             self.dbi.interactEveryNode(r.p.cycle, r.p.timeNode)
 
             # The file should have been copied to working directory
