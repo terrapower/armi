@@ -30,7 +30,14 @@ from armi.bookkeeping import report
 from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
-from armi.reactor import blockParameters, components, composites, geometry, grids, parameters
+from armi.reactor import (
+    blockParameters,
+    components,
+    composites,
+    geometry,
+    grids,
+    parameters,
+)
 from armi.reactor.components import basicShapes
 from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
