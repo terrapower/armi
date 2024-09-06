@@ -1,1221 +1,1221 @@
 AM241:
-- transmutation:
-    branch: 1.0
-    products:
-    - PU240
-    type: n2n
-- transmutation:
-    branch: 0.1384
-    products:
-    - PU242
-    type: nGamma
-- transmutation:
-    branch: 0.6616
-    products:
-    - CM242
-    - DUMP2
-    type: nGamma
-- transmutation:
-    branch: 0.2
-    products:
-    - AM242M
-    - DUMP2
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.6500e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- decay:
-    branch: 1.0
-    products:
-    - NP237
-    type: ad
-- decay:
-    branch: 4.120055e-12
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU240
+      type: n2n
+  - transmutation:
+      branch: 0.1384
+      products:
+        - PU242
+      type: nGamma
+  - transmutation:
+      branch: 0.6616
+      products:
+        - CM242
+        - DUMP2
+      type: nGamma
+  - transmutation:
+      branch: 0.2
+      products:
+        - AM242M
+        - DUMP2
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.6500e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - decay:
+      branch: 1.0
+      products:
+        - NP237
+      type: ad
+  - decay:
+      branch: 4.120055e-12
+      products:
+        - LFP41
+      type: sf
 AM242G:
-- transmutation:
-    branch: 1.0
-    products:
-    - AM241
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - AM243
-    type: nGamma
-- decay:
-    branch: 0.173
-    products:
-    - PU242
-    type: ec
-- decay:
-    branch: 0.827
-    products:
-    - CM242
-    type: bmd
+  - transmutation:
+      branch: 1.0
+      products:
+        - AM241
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - AM243
+      type: nGamma
+  - decay:
+      branch: 0.173
+      products:
+        - PU242
+      type: ec
+  - decay:
+      branch: 0.827
+      products:
+        - CM242
+      type: bmd
 AM242M:
-- transmutation:
-    branch: 1.0
-    products:
-    - AM241
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - AM243
-    type: nGamma
-- decay:
-    branch: 0.822865
-    products:
-    - PU242
-    type: ec
-- decay:
-    branch: 0.172135
-    products:
-    - CM242
-    type: bmd
-- decay:
-    branch: 0.005
-    products:
-    - NP238
-    type: ad
+  - transmutation:
+      branch: 1.0
+      products:
+        - AM241
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - AM243
+      type: nGamma
+  - decay:
+      branch: 0.822865
+      products:
+        - PU242
+      type: ec
+  - decay:
+      branch: 0.172135
+      products:
+        - CM242
+      type: bmd
+  - decay:
+      branch: 0.005
+      products:
+        - NP238
+      type: ad
 AM243:
-- transmutation:
-    branch: 0.5
-    products:
-    - AM242M
-    type: n2n
-- transmutation:
-    branch: 0.0865
-    products:
-    - CM242
-    type: n2n
-- transmutation:
-    branch: 0.4135
-    products:
-    - PU242
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CM244
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - NP239
-    - PU239
-    type: ad
+  - transmutation:
+      branch: 0.5
+      products:
+        - AM242M
+      type: n2n
+  - transmutation:
+      branch: 0.0865
+      products:
+        - CM242
+      type: n2n
+  - transmutation:
+      branch: 0.4135
+      products:
+        - PU242
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM244
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - NP239
+        - PU239
+      type: ad
 B10:
-- transmutation:
-    branch: 1.0
-    products:
-    - B11
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LI7
-    - DUMP1
-    type: nalph
-- transmutation:
-    branch: 1.0
-    products:
-    - DUMP1
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - BE9
-    - DUMP1
-    type: nd
-- transmutation:
-    branch: 1.0
-    products:
-    - BE10
-    - DUMP1
-    type: np
+  - transmutation:
+      branch: 1.0
+      products:
+        - B11
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LI7
+        - DUMP1
+      type: nalph
+  - transmutation:
+      branch: 1.0
+      products:
+        - DUMP1
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - BE9
+        - DUMP1
+      type: nd
+  - transmutation:
+      branch: 1.0
+      products:
+        - BE10
+        - DUMP1
+      type: np
 B11:
-- transmutation:
-    branch: 1.0
-    products:
-    - DUMP1
-    type: nGamma
-- transmutation:
-    # n-alphas to Li-8 -> Be-8 -> 2 alphas
-    branch: 1.0
-    products:
-    - HE4
-    - DUMP1
-    type: nalph
-    productParticle: HE4
-- transmutation:
-    branch: 1.0
-    products:
-    - B10
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - BE9
-    - DUMP1
-    type: nt
+  - transmutation:
+      branch: 1.0
+      products:
+        - DUMP1
+      type: nGamma
+  - transmutation:
+      # n-alphas to Li-8 -> Be-8 -> 2 alphas
+      branch: 1.0
+      products:
+        - HE4
+        - DUMP1
+      type: nalph
+      productParticle: HE4
+  - transmutation:
+      branch: 1.0
+      products:
+        - B10
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - BE9
+        - DUMP1
+      type: nt
 BE9:
-- transmutation:
-    branch: 1.0
-    products:
-    - LI6
-    - DUMP1
-    type: nalph
-- transmutation:
-    branch: 1.0
-    products:
-    - LI7
-    - DUMP1
-    type: nt
+  - transmutation:
+      branch: 1.0
+      products:
+        - LI6
+        - DUMP1
+      type: nalph
+  - transmutation:
+      branch: 1.0
+      products:
+        - LI7
+        - DUMP1
+      type: nt
 BK249:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM244
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CF250
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - CF249
-    type: bmd
-- decay:
-    branch: 4.755215e-10
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM244
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF250
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - CF249
+      type: bmd
+  - decay:
+      branch: 4.755215e-10
+      products:
+        - LFP41
+      type: sf
 CF249:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM244
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CF250
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - CM245
-    type: ad
-- decay:
-    branch: 5.00000e-09
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM244
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF250
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - CM245
+      type: ad
+  - decay:
+      branch: 5.00000e-09
+      products:
+        - LFP41
+      type: sf
 CF250:
-- transmutation:
-    branch: 1.0
-    products:
-    - CF249
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CF251
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - CM246
-    type: ad
-- decay:
-    branch: 7.70000e-04
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF249
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF251
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - CM246
+      type: ad
+  - decay:
+      branch: 7.70000e-04
+      products:
+        - LFP41
+      type: sf
 CF251:
-- transmutation:
-    branch: 1.0
-    products:
-    - CF250
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CF252
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - CM247
-    type: ad
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF250
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF252
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - CM247
+      type: ad
 CF252:
-- transmutation:
-    branch: 1.0
-    products:
-    - CF251
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: nGamma
-- decay:
-    branch: 9.69080e-01
-    products:
-    - CM248
-    type: ad
-- decay:
-    branch: 3.093567e-02
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CF251
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: nGamma
+  - decay:
+      branch: 9.69080e-01
+      products:
+        - CM248
+      type: ad
+  - decay:
+      branch: 3.093567e-02
+      products:
+        - LFP41
+      type: sf
 CM242:
-- transmutation:
-    branch: 0.99
-    products:
-    - AM241
-    type: n2n
-- transmutation:
-    branch: 0.01
-    products:
-    - NP237
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CM243
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - PU238
-    type: ad
-- decay:
-    branch: 6.794544e-08
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 0.99
+      products:
+        - AM241
+      type: n2n
+  - transmutation:
+      branch: 0.01
+      products:
+        - NP237
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM243
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - PU238
+      type: ad
+  - decay:
+      branch: 6.794544e-08
+      products:
+        - LFP41
+      type: sf
 CM243:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM242
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - CM244
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- decay:
-    branch: 0.9971
-    products:
-    - PU239
-    type: ad
-- decay:
-    branch: 0.0029
-    products:
-    - AM243
-    type: ec
-- decay:
-    branch: 5.30000e-11
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM242
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM244
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - decay:
+      branch: 0.9971
+      products:
+        - PU239
+      type: ad
+  - decay:
+      branch: 0.0029
+      products:
+        - AM243
+      type: ec
+  - decay:
+      branch: 5.30000e-11
+      products:
+        - LFP41
+      type: sf
 CM244:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM243
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CM245
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - PU240
-    type: ad
-- decay:
-    branch: 1.340741e-06
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM243
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM245
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - PU240
+      type: ad
+  - decay:
+      branch: 1.340741e-06
+      products:
+        - LFP41
+      type: sf
 CM245:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM244
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CM246
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - PU241
-    type: ad
-- decay:
-    branch: 6.10000e-09
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM244
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM246
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - PU241
+      type: ad
+  - decay:
+      branch: 6.10000e-09
+      products:
+        - LFP41
+      type: sf
 CM246:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM245
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CM247
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - PU242
-    type: ad
-- decay:
-    branch: 2.61500e-04
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM245
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM247
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - PU242
+      type: ad
+  - decay:
+      branch: 2.61500e-04
+      products:
+        - LFP41
+      type: sf
 CM247:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM246
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - CM248
-    - DUMP2
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - AM243
-    type: ad
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM246
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM248
+        - DUMP2
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - AM243
+      type: ad
 CM248:
-- transmutation:
-    branch: 1.0
-    products:
-    - CM247
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - BK249
-    type: nGamma
-- decay:
-    branch: 0.9161
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 8.39000e-02
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - CM247
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - BK249
+      type: nGamma
+  - decay:
+      branch: 0.9161
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 8.39000e-02
+      products:
+        - LFP41
+      type: sf
 H3:
-- decay:
-    branch: 1.0
-    products:
-    - HE3
-    - DUMP1
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - HE3
+        - DUMP1
+      type: bmd
 HE3:
-- transmutation:
-    branch: 1.0
-    products:
-    - HE4
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - H3
-    type: np
+  - transmutation:
+      branch: 1.0
+      products:
+        - HE4
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - H3
+      type: np
 HE4: []
 IN113:
-- transmutation:
-    branch: 0.995
-    products:
-    - SN114
-    - DUMP1
-    type: nGamma
-- transmutation:
-    branch: 0.005
-    products:
-    - CD114
-    - DUMP1
-    type: nGamma
+  - transmutation:
+      branch: 0.995
+      products:
+        - SN114
+        - DUMP1
+      type: nGamma
+  - transmutation:
+      branch: 0.005
+      products:
+        - CD114
+        - DUMP1
+      type: nGamma
 IN115:
-- transmutation:
-    branch: 0.9997
-    products:
-    - SN116
-    - DUMP1
-    type: nGamma
-- transmutation:
-    branch: 0.0003
-    products:
-    - CD116
-    - DUMP1
-    type: nGamma
+  - transmutation:
+      branch: 0.9997
+      products:
+        - SN116
+        - DUMP1
+      type: nGamma
+  - transmutation:
+      branch: 0.0003
+      products:
+        - CD116
+        - DUMP1
+      type: nGamma
 LI6:
-- transmutation:
-    branch: 1.0
-    products:
-    - LI7
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - HE4
-    - DUMP1
-    type: nt
+  - transmutation:
+      branch: 1.0
+      products:
+        - LI7
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - HE4
+        - DUMP1
+      type: nt
 LI7:
-# LI7 n,gammas to Be8 which splits into two alphas, so we model both here by setting the productParticle to HE4
-- transmutation:
-    branch: 1.0
-    products:
-    - HE4
-    - DUMP1
-    type: nGamma
-    productParticle: HE4
-- transmutation:
-    branch: 1.0
-    products:
-    - LI6
-    type: n2n
+  # LI7 n,gammas to Be8 which splits into two alphas, so we model both here by setting the productParticle to HE4
+  - transmutation:
+      branch: 1.0
+      products:
+        - HE4
+        - DUMP1
+      type: nGamma
+      productParticle: HE4
+  - transmutation:
+      branch: 1.0
+      products:
+        - LI6
+      type: n2n
 NP237:
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP38
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.2500e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - NP238
-    - PU238
-    type: nGamma
-- transmutation:
-    branch: 0.346
-    products:
-    - PU236
-    type: n2n
-- transmutation:
-    branch: 0.374
-    products:
-    - U236
-    type: n2n
-- transmutation:
-    branch: 0.28
-    products:
-    - DUMP2
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - PA233
-    - DUMP2
-    type: ad
-- decay:
-    branch: 2.139954e-12
-    products:
-    - DUMP1
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP38
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.2500e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP238
+        - PU238
+      type: nGamma
+  - transmutation:
+      branch: 0.346
+      products:
+        - PU236
+      type: n2n
+  - transmutation:
+      branch: 0.374
+      products:
+        - U236
+      type: n2n
+  - transmutation:
+      branch: 0.28
+      products:
+        - DUMP2
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - PA233
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 2.139954e-12
+      products:
+        - DUMP1
+      type: sf
 NP238:
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP38
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - NP239
-    - PU239
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - NP237
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - PU238
-    type: bmd
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP38
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP239
+        - PU239
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP237
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - PU238
+      type: bmd
 PA231:
-- transmutation:
-    branch: 1.0
-    products:
-    - U232
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - U232
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: n2n
 PA233:
-- transmutation:
-    branch: 1.0
-    products:
-    - U234
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - U233
-    type: bmd
+  - transmutation:
+      branch: 1.0
+      products:
+        - U234
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - U233
+      type: bmd
 PU236:
-- transmutation:
-    branch: 1.0
-    products:
-    - NP237
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - U232
-    - DUMP2
-    type: ad
-- decay:
-    branch: 1.90000e-09
-    products:
-    - LFP38
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP237
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - U232
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 1.90000e-09
+      products:
+        - LFP38
+      type: sf
 PU238:
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP38
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PU239
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - NP237
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - U234
-    type: ad
-- decay:
-    branch: 1.838574e-09
-    products:
-    - LFP38
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP38
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU239
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP237
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - U234
+      type: ad
+  - decay:
+      branch: 1.838574e-09
+      products:
+        - LFP38
+      type: sf
 PU239:
-- transmutation:
-    branch: 1.0
-    products:
-    - PU238
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP39
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.4200e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PU240
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - U235
-    type: ad
-- decay:
-    branch: 4.399635e-12
-    products:
-    - LFP39
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU238
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP39
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.4200e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU240
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - U235
+      type: ad
+  - decay:
+      branch: 4.399635e-12
+      products:
+        - LFP39
+      type: sf
 PU240:
-- transmutation:
-    branch: 1.0
-    products:
-    - PU239
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP40
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.9179e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PU241
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - U236
-    type: ad
-- decay:
-    branch: 5.656034e-08
-    products:
-    - LFP40
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU239
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP40
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.9179e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU241
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - U236
+      type: ad
+  - decay:
+      branch: 5.656034e-08
+      products:
+        - LFP40
+      type: sf
 PU241:
-- transmutation:
-    branch: 1.0
-    products:
-    - PU240
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.4100e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PU242
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - AM241
-    type: bmd
-- decay:
-    branch: 5.729878e-15
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU240
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.4100e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU242
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - AM241
+      type: bmd
+  - decay:
+      branch: 5.729878e-15
+      products:
+        - LFP41
+      type: sf
 PU242:
-- transmutation:
-    branch: 1.0
-    products:
-    - PU241
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP41
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.6348e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - AM243
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - U238
-    type: ad
-- decay:
-    branch: 5.482456e-06
-    products:
-    - LFP41
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU241
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP41
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.6348e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - AM243
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - U238
+      type: ad
+  - decay:
+      branch: 5.482456e-06
+      products:
+        - LFP41
+      type: sf
 TH232:
-- transmutation:
-    branch: 1.0
-    products:
-    - PA233
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PA231
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 1.410000e-11
-    products:
-    - LFP35
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - PA233
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PA231
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 1.410000e-11
+      products:
+        - LFP35
+      type: sf
 U232:
-- transmutation:
-    branch: 1.0
-    products:
-    - U233
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PA231
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 8.612316e-13
-    products:
-    - LFP35
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - U233
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PA231
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 8.612316e-13
+      products:
+        - LFP35
+      type: sf
 U233:
-- transmutation:
-    branch: 1.0
-    products:
-    - U234
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.1400e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - U232
-    type: n2n
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 1.326638e-12
-    products:
-    - LFP35
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - U234
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.1400e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - U232
+      type: n2n
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 1.326638e-12
+      products:
+        - LFP35
+      type: sf
 U234:
-- transmutation:
-    branch: 1.0
-    products:
-    - U233
-    - DUMP2
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.5925e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - U235
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 1.169048e-11
-    products:
-    - LFP35
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - U233
+        - DUMP2
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.5925e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - U235
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 1.169048e-11
+      products:
+        - LFP35
+      type: sf
 U235:
-- transmutation:
-    branch: 1.0
-    products:
-    - U234
-    - DUMP2
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.0800e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - U236
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 2.011429e-09
-    products:
-    - LFP35
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - U234
+        - DUMP2
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.0800e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - U236
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 2.011429e-09
+      products:
+        - LFP35
+      type: sf
 U236:
-- transmutation:
-    branch: 1.0
-    products:
-    - U235
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - NP237
-    type: nGamma
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP35
-    type: fission
-- transmutation:
-    branch: 1.3094e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: ad
-- decay:
-    branch: 1.201026e-09
-    products:
-    - LFP35
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - U235
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP237
+      type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP35
+      type: fission
+  - transmutation:
+      branch: 1.3094e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: ad
+  - decay:
+      branch: 1.201026e-09
+      products:
+        - LFP35
+      type: sf
 U238:
-- transmutation:
-    branch: 1.0
-    products:
-    - NP237
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP38
-    type: fission
-# add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
-- transmutation:
-    branch: 1.0262e-04
-    products:
-    - H3
-    - DUMP1
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - NP239
-    - PU239
-    type: nGamma
-- decay:
-    branch: 5.448780e-07
-    products:
-    - LFP38
-    type: sf
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP237
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP38
+      type: fission
+  # add tritium from ternary fission from JEFF3.1.1 on top of the LFPs (400 keV)
+  - transmutation:
+      branch: 1.0262e-04
+      products:
+        - H3
+        - DUMP1
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP239
+        - PU239
+      type: nGamma
+  - decay:
+      branch: 5.448780e-07
+      products:
+        - LFP38
+      type: sf
 NP239:
-- transmutation:
-    branch: 1.0
-    products:
-    - NP238
-    type: n2n
-- transmutation:
-    branch: 1.0
-    products:
-    - LFP38
-    type: fission
-- transmutation:
-    branch: 1.0
-    products:
-    - PU240
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - PU239
-    type: bmd
+  - transmutation:
+      branch: 1.0
+      products:
+        - NP238
+      type: n2n
+  - transmutation:
+      branch: 1.0
+      products:
+        - LFP38
+      type: fission
+  - transmutation:
+      branch: 1.0
+      products:
+        - PU240
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - PU239
+      type: bmd
 Y89:
-- transmutation:
-    branch: 1.0
-    products:
-    - SR89
-    type: np
+  - transmutation:
+      branch: 1.0
+      products:
+        - SR89
+      type: np
 SR89:
-- transmutation:
-    branch: 1.0
-    products:
-    - SR90
-    type: nGamma
-- decay:
-    branch: 1.0
-    products:
-    - Y89
-    type: bmd
+  - transmutation:
+      branch: 1.0
+      products:
+        - SR90
+      type: nGamma
+  - decay:
+      branch: 1.0
+      products:
+        - Y89
+      type: bmd
 SR90:
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: bmd
 S32:
-- transmutation:
-    branch: 1.0
-    products:
-    - P32
-    type: np
-- transmutation:
-    branch: 1.0
-    products:
-    - S33
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - P32
+      type: np
+  - transmutation:
+      branch: 1.0
+      products:
+        - S33
+      type: nGamma
 P32:
-- decay:
-    branch: 1.0
-    products:
-    - S32
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - S32
+      type: bmd
 S33:
-- transmutation:
-    branch: 1.0
-    products:
-    - S34
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - S34
+      type: nGamma
 S34:
-- transmutation:
-    branch: 1.0
-    products:
-    - S35
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - S35
+      type: nGamma
 S35:
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: bmd
 S36:
-- transmutation:
-    branch: 1.0
-    products:
-    - S37
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - S37
+      type: nGamma
 S37:
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: bmd
 TI46:
-- transmutation:
-    branch: 1.0
-    products:
-    - TI47
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - TI47
+      type: nGamma
 TI47:
-- transmutation:
-    branch: 1.0
-    products:
-    - SC47
-    type: np
-- transmutation:
-    branch: 1.0
-    products:
-    - TI48
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - SC47
+      type: np
+  - transmutation:
+      branch: 1.0
+      products:
+        - TI48
+      type: nGamma
 SC47:
-- decay:
-    branch: 1.0
-    products:
-    - TI47
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - TI47
+      type: bmd
 TI48:
-- transmutation:
-    branch: 1.0
-    products:
-    - TI49
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - TI49
+      type: nGamma
 TI49:
-- transmutation:
-    branch: 1.0
-    products:
-    - TI50
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - TI50
+      type: nGamma
 TI50:
-- transmutation:
-    branch: 1.0
-    products:
-    - TI51
-    type: nGamma
+  - transmutation:
+      branch: 1.0
+      products:
+        - TI51
+      type: nGamma
 TI51:
-- decay:
-    branch: 1.0
-    products:
-    - DUMP2
-    type: bmd
+  - decay:
+      branch: 1.0
+      products:
+        - DUMP2
+      type: bmd

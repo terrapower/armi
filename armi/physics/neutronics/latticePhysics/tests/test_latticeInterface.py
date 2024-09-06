@@ -209,6 +209,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertIsNone(self.o.r.core.lib)
 
+    def test_getSuffix(self):
+        self.assertEqual(self.latticeInterface._getSuffix(7), "")
+
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
     """Test variations of _newLibraryShouldBeCreated."""

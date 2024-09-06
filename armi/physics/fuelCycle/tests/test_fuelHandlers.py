@@ -154,6 +154,15 @@ class MockXSGM(CrossSectionGroupManager):
 
 
 class TestFuelHandler(FuelHandlerTestHelper):
+    def test_getParamMax(self):
+        a = self.assembly
+
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+        self.assertEqual(res, 0.0)
+
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+        self.assertEqual(res, 0.0)
+
     def test_interactBOC(self):
         # set up mock interface
         self.o.addInterface(MockLatticePhysicsInterface(self.r, self.o.cs))
@@ -211,6 +220,18 @@ class TestFuelHandler(FuelHandlerTestHelper):
         )
         fh.outage(factor=1.0)
         self.assertEqual(len(fh.moved), 0)
+
+    def test_outageEdgeCase(self):
+        class MockFH(fuelHandlers.FuelHandler):
+            def chooseSwaps(self, factor=1.0):
+                self.moved = [None]
+
+        # mock up a fuel handler
+        fh = MockFH(self.o)
+
+        # test edge case
+        with self.assertRaises(AttributeError):
+            fh.outage(factor=1.0)
 
     def test_isAssemblyInAZone(self):
         # build a fuel handler
@@ -404,8 +425,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         expected = lastB.parent
         self.assertIs(assem, expected)
 
-        # test the impossible: an block with burnup less than
-        # 110% of its own burnup
+        # test the impossible: an block with burnup less than 110% of its own burnup
         assem = fh.findAssembly(
             param="percentBu",
             compareTo=100,

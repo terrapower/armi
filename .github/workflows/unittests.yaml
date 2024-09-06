@@ -1,5 +1,8 @@
 name: ARMI unit tests
 
+permissions:
+  contents: read
+
 on:
   push:
     paths-ignore:
