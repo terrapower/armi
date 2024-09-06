@@ -150,7 +150,7 @@ def loadTestBlock(cold=True):
         "id": 0.90,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    outerLiner = components.Circle("outer liner", "Inconel800", **outerLinerDims)
+    outerLiner = components.Circle("outer liner", "HT9", **outerLinerDims)
 
     linerLinerGapDims = {
         "Tinput": hotTempStructure,
