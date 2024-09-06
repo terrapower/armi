@@ -33,6 +33,7 @@ Refer to :py:mod:`armi.bookkeeping.db` for information about versioning.
 """
 import collections
 import copy
+import gc
 import io
 import itertools
 import os
@@ -52,7 +53,6 @@ from typing import (
     Tuple,
     Type,
 )
-import gc
 
 import h5py
 import numpy as np
