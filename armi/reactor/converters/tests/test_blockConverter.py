@@ -53,12 +53,13 @@ def buildSimpleFuelBlockNegativeArea():
     fuel = components.Circle("fuel", "UZr", **fuelDims)
     clad = components.Circle("clad", "HT9", **cladDims)
     gapDims = {
-        "Tinput": coldTemp,
-        "Thot": hotTempFuel,
-        "od": clad.id,
-        "id": fuel.od,
-        "mult": 127,
+        "Tinput": 25,
+        "Thot": 600,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
     }
+    gapDims["components"] = {"fuel": fuel, "clad": clad}
     gap = components.Circle("gap", "Void", **gapDims)
     duct = components.Hexagon("duct", "HT9", **ductDims)
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
