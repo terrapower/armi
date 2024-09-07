@@ -39,3 +39,4 @@ class TestThermalHydraulicsPlugin(TestPlugin):
 
         self.assertTrue(cs[CONF_DO_TH])
         self.assertEqual(cs[CONF_TH_KERNEL], thKernelName)
+
