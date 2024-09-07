@@ -14,12 +14,10 @@
 
 """Unit tests for the thermal hydraulics plugin."""
 from armi.physics import thermalHydraulics
-from armi.physics.thermalHydraulics.settings import (
-    CONF_DO_TH,
-    CONF_TH_KERNEL
-)
+from armi.physics.thermalHydraulics.settings import CONF_DO_TH, CONF_TH_KERNEL
 from armi.settings import caseSettings
 from armi.tests.test_plugins import TestPlugin
+
 
 class TestThermalHydraulicsPlugin(TestPlugin):
     plugin = thermalHydraulics.ThermalHydraulicsPlugin
