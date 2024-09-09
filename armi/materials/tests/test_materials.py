@@ -95,6 +95,10 @@ class _Material_Test:
         densKgM3 = self.mat.pseudoDensityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
 
+    def test_wrappedDensity(self):
+        """Test that the density decorator is applied."""
+        self.assertTrue(hasattr(self.mat.density, "__wrapped__"))
+
 
 class MaterialConstructionTests(unittest.TestCase):
     def test_material_initialization(self):
