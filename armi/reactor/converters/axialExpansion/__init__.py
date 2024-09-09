@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Particles! Expand axially!."""
+"""The top-level axial expansion module, and a small set of assembly expansion utilities."""
 
 from armi.materials import material
 from armi.reactor.flags import Flags
