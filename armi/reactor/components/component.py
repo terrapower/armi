@@ -1268,8 +1268,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         density = composites.Composite.density(self)
 
         if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case, defer to Material.
-            density = self.material.density(Tc=self.temperatureInC)
+            # possible that there are no nuclides in this component yet. In that case,
+            # defer to Material. Material.density is wrapped to warn if it's attached
+            # to a parent. Avoid that by calling the inner function directly
+            density = self.material.density.__wrapped__(
+                self.material, Tc=self.temperatureInC
+            )
 
         return density
 
