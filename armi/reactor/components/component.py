@@ -23,7 +23,6 @@ import re
 import numpy as np
 
 from armi import materials
-from armi.materials import void
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
