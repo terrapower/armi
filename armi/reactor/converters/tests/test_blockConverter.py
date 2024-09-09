@@ -72,7 +72,7 @@ def buildSimpleFuelBlockNegativeArea():
     b.add(coolant)
     b.add(intercoolant)
 
-    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
+    b.getVolumeFractions()
 
     return b
 
