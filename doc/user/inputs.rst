@@ -765,7 +765,7 @@ A complete definition of an inner-core assembly may be seen below::
         either cold or hot dimensions. In older versions of ARMI, it was required to enter heights
         in the hot dimension (this behavior is preserved by setting `inputHeightsConsideredHot: True`).
         However, with the
-        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger>`,
+        :py:class:`axial expansion changer <armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger>`,
         heights may be entered at cold temperatures (`inputHeightsConsideredHot: False`). Each Assembly will then
         be expanded to its hot dimensions upon construction.
 

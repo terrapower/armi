@@ -96,7 +96,7 @@ def expandColdDimsToHot(
 
     See Also
     --------
-    :py:meth:`armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
+    :py:meth:`armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
     """
     assems = list(assems)
     if not referenceAssembly:
@@ -125,7 +125,7 @@ class AxialExpansionChanger:
     ----------
     linked : :py:class:`AssemblyAxialLinkage`
         establishes object containing axial linkage information
-    expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.ExpansionData>`
+    expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.expansionData.ExpansionData>`
         establishes object to store and access relevant expansion data
 
     Notes
