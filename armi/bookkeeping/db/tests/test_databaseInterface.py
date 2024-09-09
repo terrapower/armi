@@ -77,6 +77,31 @@ class MockInterface(interfaces.Interface):
         self.action(cycle, node)
 
 
+class TestDatabaseInterfaceBOL(unittest.TestCase):
+    """Test the DatabaseInterface class at the BOL."""
+
+    def test_interactBOL(self):
+        """This test is in its own class, because of temporary directory issues."""
+        with directoryChangers.TemporaryDirectoryChanger():
+            self.o, self.r = loadTestReactor(
+                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            )
+            self.dbi = DatabaseInterface(self.r, self.o.cs)
+
+            dbName = f"{self._testMethodName}.h5"
+            self.dbi.initDB(fName=dbName)
+            self.db: Database3 = self.dbi.database
+            self.stateRetainer = self.r.retainState().__enter__()
+            self.assertIsNotNone(self.dbi._db)
+            self.dbi.interactBOL()
+            self.dbi.closeDB()
+            self.dbi._db = None
+            self.assertIsNone(self.dbi._db)
+
+            if os.path.exists(dbName):
+                os.remove(dbName)
+
+
 class TestDatabaseInterface(unittest.TestCase):
     """Tests for the DatabaseInterface class."""
 
@@ -104,15 +129,6 @@ class TestDatabaseInterface(unittest.TestCase):
         for dirt in bolDirt:
             if os.path.exists(dirt):
                 os.remove(dirt)
-
-    def test_interactBOL(self):
-        self.assertIsNotNone(self.dbi._db)
-        self.dbi.interactBOL()
-
-        self.dbi._db = None
-        self.assertIsNone(self.dbi._db)
-        self.dbi.interactBOL()
-        self.assertIsNotNone(self.dbi._db)
 
     def test_distributable(self):
         self.assertEqual(self.dbi.distributable(), 4)

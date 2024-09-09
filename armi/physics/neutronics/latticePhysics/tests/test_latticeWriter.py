@@ -20,6 +20,9 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
 )
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    setBlockNeutronVelocities,
+)
 from armi.physics.neutronics.latticePhysics.latticePhysicsWriter import (
     LatticePhysicsWriter,
 )
@@ -65,6 +68,13 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         )
         self.block = self.r.core.getFirstBlock()
         self.w = FakeLatticePhysicsWriter(self.block, self.r, self.o)
+
+    def test_setBlockNeutronVelocities(self):
+        d = defaultdict(float)
+        d["AA"] = 10.0
+        setBlockNeutronVelocities(self.r, d)
+        tot = sum([b.p.mgNeutronVelocity for b in self.r.core.getBlocks()])
+        self.assertGreater(tot, 3000.0)
 
     def test_latticePhysicsWriter(self):
         """Super basic test of the LatticePhysicsWriter."""
