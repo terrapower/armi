@@ -104,3 +104,10 @@ class ReactorPlugin(plugins.ArmiPlugin):
             "core": Core,
             "sfp": SpentFuelPool,
         }
+
+    @staticmethod
+    @plugins.HOOKIMPL(trylast=True)
+    def getAxialExpansionChanger():
+        from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+
+        return AxialExpansionChanger
