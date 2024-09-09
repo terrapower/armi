@@ -151,7 +151,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
         else:
             pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
-                for (attrName, section, resolver) in plug:
+                for attrName, section, resolver in plug:
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
@@ -326,7 +326,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                axialExpansionChanger.axialExpansionChanger.expandColdDimsToHot(
+                axialExpansionChanger.AxialExpansionChanger.expandColdDimsToHot(
                     assemsToExpand,
                     cs[CONF_DETAILED_AXIAL_EXPANSION],
                 )

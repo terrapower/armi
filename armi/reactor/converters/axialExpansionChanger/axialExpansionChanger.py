@@ -52,71 +52,6 @@ def makeAssemsAbleToSnapToUniformMesh(
         a.makeAxialSnapList(referenceAssembly)
 
 
-def expandColdDimsToHot(
-    assems: list,
-    isDetailedAxialExpansion: bool,
-    referenceAssembly=None,
-):
-    """
-    Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights.
-
-    .. impl:: Perform expansion during core construction based on block heights at a specified temperature.
-        :id: I_ARMI_INP_COLD_HEIGHT
-        :implements: R_ARMI_INP_COLD_HEIGHT
-
-        This method is designed to be used during core construction to axially thermally expand the
-        assemblies to their "hot" temperatures (as determined by ``Thot`` values in blueprints).
-        First, The Assembly is prepared for axial expansion via ``setAssembly``. In
-        ``applyColdHeightMassIncrease``, the number densities on each Component is adjusted to
-        reflect that Assembly inputs are at cold (i.e., ``Tinput``) temperatures. To expand to
-        the requested hot temperatures, thermal expansion factors are then computed in
-        ``computeThermalExpansionFactors``. Finally, the Assembly is axially thermally expanded in
-        ``axiallyExpandAssembly``.
-
-        If the setting ``detailedAxialExpansion`` is ``False``, then each Assembly gets its Block mesh
-        set to match that of the "reference" Assembly (see ``getDefaultReferenceAssem`` and ``setBlockMesh``).
-
-        Once the Assemblies are axially expanded, the Block BOL heights are updated. To account for the change in
-        Block volume from axial expansion, ``completeInitialLoading`` is called to update any volume-dependent
-        Block information.
-
-    Parameters
-    ----------
-    assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
-        list of assemblies to be thermally expanded
-    isDetailedAxialExpansion: bool
-        If False, assemblies will be forced to conform to the reference mesh after expansion
-    referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
-        Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
-        If not provided, will assume the finest mesh assembly which is typically fuel.
-
-    Notes
-    -----
-    Calling this method will result in an increase in mass via applyColdHeightMassIncrease!
-
-    See Also
-    --------
-    :py:meth:`armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
-    """
-    assems = list(assems)
-    if not referenceAssembly:
-        referenceAssembly = getDefaultReferenceAssem(assems)
-    axialExpChanger = AxialExpansionChanger(isDetailedAxialExpansion)
-    for a in assems:
-        axialExpChanger.setAssembly(a, expandFromTinputToThot=True)
-        axialExpChanger.applyColdHeightMassIncrease()
-        axialExpChanger.expansionData.computeThermalExpansionFactors()
-        axialExpChanger.axiallyExpandAssembly()
-    if not isDetailedAxialExpansion:
-        for a in assems:
-            a.setBlockMesh(referenceAssembly.getAxialMesh())
-    # update block BOL heights to reflect hot heights
-    for a in assems:
-        for b in a:
-            b.p.heightBOL = b.getHeight()
-            b.completeInitialLoading()
-
-
 class AxialExpansionChanger:
     """
     Axially expand or contract assemblies or an entire core.
@@ -147,6 +82,71 @@ class AxialExpansionChanger:
         self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
+
+    @classmethod
+    def expandColdDimsToHot(
+        cls,
+        assems: list,
+        isDetailedAxialExpansion: bool,
+        referenceAssembly=None,
+    ):
+        """Expand BOL assemblies, resolve disjoint axial mesh (if needed), and update block BOL heights.
+
+        .. impl:: Perform expansion during core construction based on block heights at a specified temperature.
+            :id: I_ARMI_INP_COLD_HEIGHT
+            :implements: R_ARMI_INP_COLD_HEIGHT
+
+            This method is designed to be used during core construction to axially thermally expand the
+            assemblies to their "hot" temperatures (as determined by ``Thot`` values in blueprints).
+            First, The Assembly is prepared for axial expansion via ``setAssembly``. In
+            ``applyColdHeightMassIncrease``, the number densities on each Component is adjusted to
+            reflect that Assembly inputs are at cold (i.e., ``Tinput``) temperatures. To expand to
+            the requested hot temperatures, thermal expansion factors are then computed in
+            ``computeThermalExpansionFactors``. Finally, the Assembly is axially thermally expanded in
+            ``axiallyExpandAssembly``.
+
+            If the setting ``detailedAxialExpansion`` is ``False``, then each Assembly gets its Block mesh
+            set to match that of the "reference" Assembly (see ``getDefaultReferenceAssem`` and ``setBlockMesh``).
+
+            Once the Assemblies are axially expanded, the Block BOL heights are updated. To account for the change in
+            Block volume from axial expansion, ``completeInitialLoading`` is called to update any volume-dependent
+            Block information.
+
+        Parameters
+        ----------
+        assems: list[:py:class:`Assembly <armi.reactor.assemblies.Assembly>`]
+            list of assemblies to be thermally expanded
+        isDetailedAxialExpansion: bool
+            If False, assemblies will be forced to conform to the reference mesh after expansion
+        referenceAssembly: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`, optional
+            Assembly whose mesh other meshes will conform to if isDetailedAxialExpansion is False.
+            If not provided, will assume the finest mesh assembly which is typically fuel.
+
+        Notes
+        -----
+        Calling this method will result in an increase in mass via applyColdHeightMassIncrease!
+
+        See Also
+        --------
+        :py:meth:`armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
+        """
+        assems = list(assems)
+        if not referenceAssembly:
+            referenceAssembly = getDefaultReferenceAssem(assems)
+        axialExpChanger = cls(isDetailedAxialExpansion)
+        for a in assems:
+            axialExpChanger.setAssembly(a, expandFromTinputToThot=True)
+            axialExpChanger.applyColdHeightMassIncrease()
+            axialExpChanger.expansionData.computeThermalExpansionFactors()
+            axialExpChanger.axiallyExpandAssembly()
+        if not isDetailedAxialExpansion:
+            for a in assems:
+                a.setBlockMesh(referenceAssembly.getAxialMesh())
+        # update block BOL heights to reflect hot heights
+        for a in assems:
+            for b in a:
+                b.p.heightBOL = b.getHeight()
+                b.completeInitialLoading()
 
     def performPrescribedAxialExpansion(
         self, a, componentLst: list, percents: list, setFuel=True
