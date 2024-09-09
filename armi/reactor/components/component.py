@@ -1263,7 +1263,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
-    def density(self):
+    def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
