@@ -123,9 +123,9 @@ class AxialExpansionChanger:
 
     Attributes
     ----------
-    linked : :py:class:`AssemblyAxialLinkage`
+    linked: :py:class:`AssemblyAxialLinkage`
         establishes object containing axial linkage information
-    expansionData : :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.expansionData.ExpansionData>`
+    expansionData: :py:class:`ExpansionData <armi.reactor.converters.axialExpansionChanger.expansionData.ExpansionData>`
         establishes object to store and access relevant expansion data
 
     Notes
