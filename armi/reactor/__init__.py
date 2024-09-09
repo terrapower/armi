@@ -94,9 +94,9 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL(trylast=True)
-    def defineSystemBuilders() -> Dict[
-        str, Callable[[str], Union["Core", "SpentFuelPool"]]
-    ]:
+    def defineSystemBuilders() -> (
+        Dict[str, Callable[[str], Union["Core", "SpentFuelPool"]]]
+    ):
         from armi.reactor.reactors import Core
         from armi.reactor.assemblyLists import SpentFuelPool
 
