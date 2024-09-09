@@ -23,6 +23,7 @@ import re
 import numpy as np
 
 from armi import materials
+from armi.materials import void
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
@@ -1266,7 +1267,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
-        if not density:
+        if not density and not isinstance(self.material, void.Void):
             # possible that there are no nuclides in this component yet. In that case, defer to Material.
             density = self.material.density(Tc=self.temperatureInC)
 
