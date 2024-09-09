@@ -130,6 +130,7 @@ from armi.utils import flags
 # https://coverage.readthedocs.io/en/stable/excluding.html
 if TYPE_CHECKING:  # pragma: no cover
     from armi.reactor.composites import Composite
+    from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
@@ -663,6 +664,44 @@ class ArmiPlugin:
         -----
         The default :class:`~armi.reactor.ReactorPlugin` defines a ``"core"`` lookup
         and a ``"sfp"`` lookup, triggered to run after all other hooks have been run.
+        """
+
+    @staticmethod
+    @HOOKSPEC(firstresult=True)
+    def getAxialExpansionChanger() -> type["AxialExpansionChanger"]:
+        """Produce the class responsible for performing thermal axial expansion.
+
+        Plugins can provide this hook to override or negate axial thermal expansion.
+        Will be used during initial construction of the core and assemblies, and
+        can be a standard class for performing all the thermally driven axial
+        expansion.
+
+        The first object returned that is not ``None`` will be used.
+        Plugins are encouraged to add the ``tryfirst=True`` arguments to their
+        ``HOOKIMPL`` invocations to make sure their specific are earlier in the
+        hook call sequence. The default reactor plugin
+        :class:`armi.reactor.ReactorPlugin` is marked ``trylast=True`` to help
+        put other implementations earlier in the sequence.
+
+        Returns
+        -------
+        type of :class:`armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
+
+        Notes
+        -----
+        This hook **should not** provide an instance of the class. The construction
+        of the changer will be handled by applications and plugins that need it.
+
+        Examples
+        --------
+        >>> class MyPlugin(ArmiPlugin):
+        ...     @staticmethod
+        ...     @HOOKIMPL(tryfirst=True)
+        ...     def getAxialExpansionChanger():
+        ...         from myproject.physics import BespokeAxialExpansion
+        ...
+        ...         return BespokeAxialExpansion
+
         """
 
 
