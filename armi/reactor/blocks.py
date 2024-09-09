@@ -1554,7 +1554,7 @@ class Block(composites.Composite):
 
             Sets the ``axialExpTargetComponent`` parameter on the block to the name of the Component
             which is passed in. This is then used by the
-            :py:class:`~armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger`
+            :py:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
             class during axial expansion.
 
             This method is typically called from within
