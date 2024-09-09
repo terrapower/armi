@@ -97,11 +97,6 @@ class AssemblyAxialLinkage:
         - keys = :py:class:`Component <armi.reactor.components.component.Component>`
         - values = list of axially linked components; index 0 = lower linked component;
           index 1: upper linked component.
-
-    See Also
-    --------
-    - self._getLinkedComponents
-    - self._getLinkedBlocks()
     """
 
     def __init__(self, StdAssem):
