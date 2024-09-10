@@ -28,9 +28,9 @@ import abc
 import itertools
 
 from armi import runLog
-from armi.utils import units
-from armi.reactor import grids
 from armi.reactor import composites
+from armi.reactor import grids
+from armi.utils import units
 
 
 class AutoFiller(abc.ABC):
@@ -100,7 +100,6 @@ class AssemblyList(composites.Composite):
     """
 
     def __init__(self, name, parent=None):
-
         composites.Composite.__init__(self, name)
         self.parent = parent
         # make a Cartesian assembly rack by default. Anything that really cares about
@@ -111,8 +110,7 @@ class AssemblyList(composites.Composite):
 
     @property
     def r(self):
-        # This needs to be here until we remove the dependency of Reactor upon
-        # AssemblyLists
+        # This needs to be here until we remove the dependency of Reactor upon AssemblyLists
         from armi.reactor import reactors
 
         return self.getAncestor(fn=lambda x: isinstance(x, reactors.Reactor))
@@ -128,14 +126,12 @@ class AssemblyList(composites.Composite):
         ----------
         assem : Assembly
             The Assembly to add to the list
-
         loc : LocationBase, optional
-            If provided, the assembly is inserted at that location. If it is not
-            provided, the locator on the Assembly object will be used. If the
-            Assembly's locator belongs to ``self.spatialGrid``, the Assembly's
-            existing locator will not be used. This is unlike the Core, which would try
-            to use the same indices, but move the locator to the Core's grid. With a
-            locator, the associated ``AutoFiller`` will be used.
+            If provided, the assembly is inserted at that location. If it is not provided, the
+            locator on the Assembly object will be used. If the Assembly's locator belongs to
+            ``self.spatialGrid``, the Assembly's existing locator will not be used. This is unlike
+            the Core, which would try to use the same indices, but move the locator to the Core's
+            grid. With a locator, the associated ``AutoFiller`` will be used.
         """
         if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
@@ -166,6 +162,7 @@ class AssemblyList(composites.Composite):
         return None
 
     def count(self):
+        """TODO: JOHN! FIX!"""
         if not self.getChildren():
             return
 
@@ -202,12 +199,11 @@ class SpentFuelPool(AssemblyList):
         assem : Assembly
             The Assembly to add to the list
         loc : LocationBase, optional
-            If provided, the assembly is inserted at that location. If it is not
-            provided, the locator on the Assembly object will be used. If the
-            Assembly's locator belongs to ``self.spatialGrid``, the Assembly's
-            existing locator will not be used. This is unlike the Core, which would try
-            to use the same indices, but move the locator to the Core's grid. With a
-            locator, the associated ``AutoFiller`` will be used.
+            If provided, the assembly is inserted at that location. If it is not provided, the
+            locator on the Assembly object will be used. If the Assembly's locator belongs to
+            ``self.spatialGrid``, the Assembly's existing locator will not be used. This is unlike
+            the Core, which would try to use the same indices, but move the locator to the Core's
+            grid. With a locator, the associated ``AutoFiller`` will be used.
         """
         # If the assembly added has a negative ID, that is a placeholder, fix it.
         if assem.p.assemNum < 0:
@@ -250,8 +246,8 @@ class SpentFuelPool(AssemblyList):
         Parameters
         ----------
         startIndex : int, optional
-            The default is to start counting at zero. But if you are renumbering assemblies
-            across the entire Reactor, you may want to start at a different number.
+            The default is to start counting at zero. But if you are renumbering assemblies across
+            the entire Reactor, you may want to start at a different number.
 
         Returns
         -------

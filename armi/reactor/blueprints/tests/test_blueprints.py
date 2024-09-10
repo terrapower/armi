@@ -35,19 +35,10 @@ from armi.reactor.blueprints.gridBlueprint import saveToStream
 
 
 class TestBlueprints(unittest.TestCase):
-    """Test that the basic functionality of faithfully receiving user input to construct
-    ARMI data model objects works as expected.
+    """Test that the basic functionality of faithfully receiving user input to construct ARMI data
+    model objects works as expected.
 
-    Values are hopefully not hardcoded in here, just sanity checks that nothing messed
-    up as this is code has VERY high incidental coverage from other tests.
-
-    NOTE: as it stands it seems a little hard to test more granularity with the
-    blueprints file as each initialization is intended to be a complete load from the
-    input file, and each load also
-    makes calls out to the reactor for some assembly initialization steps.
-
-    TODO: see the above note, and try to test blueprints on a wider range of input
-    files, touching on each failure case.
+    Try to ensure you test for ideas and not exact matches here, to make the tests more robust.
     """
 
     @classmethod

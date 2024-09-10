@@ -70,8 +70,6 @@ def buildSimpleFuelBlock():
     b.add(coolant)
     b.add(intercoolant)
 
-    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
-
     return b
 
 
@@ -231,8 +229,6 @@ def loadTestBlock(cold=True):
     block.add(coolant)
     block.add(duct)
     block.add(interSodium)
-
-    block.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     block.setHeight(16.0)
 
