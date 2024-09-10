@@ -1565,10 +1565,6 @@ class Block(composites.Composite):
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
             Component specified to be target component for axial expansion changer
-
-        See Also
-        --------
-        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
