@@ -1276,7 +1276,6 @@ class HexAssembly(Assembly):
         ------
         ValueError
             If rotation is not divisible by pi / 3.
-
         """
         if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
             return super().rotate(rad)

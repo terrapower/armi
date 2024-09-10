@@ -76,7 +76,6 @@ def _rotateByComparingLocations(aNow, aPrev):
     aPrev : Assembly
         Assembly that previously occupied the location of this assembly.
         If ``aNow`` has not been moved, this should be ``aNow``
-
     """
     rot = getOptimalAssemblyOrientation(aNow, aPrev)
     radians = _rotationNumberToRadians(rot)
