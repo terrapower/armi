@@ -84,3 +84,17 @@ class TestHexagon(unittest.TestCase):
         reverseRot = (6 - rot) % 6
         reverseCell = hexagon.getIndexOfRotatedCell(newCell, reverseRot)
         self.assertEqual(reverseCell, initialCell, msg=testInfoMsg)
+
+    def test_positionsUpToRing(self):
+        """Test totalPositionsUpToRing is consistent with numPositionsInRing."""
+        self.assertEqual(hexagon.totalPositionsUpToRing(1), 1)
+        self.assertEqual(hexagon.totalPositionsUpToRing(2), 7)
+        self.assertEqual(hexagon.totalPositionsUpToRing(3), 19)
+
+        totalPositions = 19
+        for ring in range(4, 30):
+            posInThisRing = hexagon.numPositionsInRing(ring)
+            totalPositions += posInThisRing
+            self.assertEqual(
+                hexagon.totalPositionsUpToRing(ring), totalPositions, msg=f"{ring=}"
+            )
