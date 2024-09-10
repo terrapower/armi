@@ -1,5 +1,8 @@
 name: Coverage
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -12,6 +15,8 @@ on:
 
 jobs:
   build:
+    # Deploying coverage to coveralls.io should not happen on forks
+    if: github.repository == 'terrapower/armi'
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -54,19 +54,9 @@ class FuelHandler:
     """
 
     def __init__(self, operator):
-        # we need access to the operator to find the core, get settings, grab
-        # other interfaces, etc.
+        # we need access to the operator to find the core, get settings, grab other interfaces, etc.
         self.o = operator
         self.moved = []
-        self._handleBackwardsCompatibility()
-
-    def _handleBackwardsCompatibility(self):
-        # prepSearch used to be part of the API but is deprecated. This will
-        # trigger a warning if it's implemented.
-        # We have to do this hack until we phase out old inputs.
-        # This basically asks: "Did the custom subclass override prepSearch?"
-        if self.prepSearch.__func__ is not FuelHandler.prepSearch:
-            self.prepSearch()
 
     @property
     def cycle(self):
@@ -207,30 +197,28 @@ class FuelHandler:
         """Aux function to run before XS generation (do moderation, etc)."""
         pass
 
-    def prepSearch(self, *args, **kwargs):
+    @staticmethod
+    def _compareAssem(candidate, current):
+        """Check whether the candidate assembly should replace the current ideal assembly.
+
+        Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide whether the
+        candidate is better than the current ideal. This first compares the diff1 and diff2 values.
+        If diff1 is sufficiently less than diff2, a1 wins, returning True. Otherwise, False. If
+        diff1 and diff2 are sufficiently close, the assembly with the lesser assemNum wins. This
+        should result in a more stable comparison than on floating-point comparisons alone.
         """
-        Optional method that can be implemented in preparation of shuffling.
+        if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
+            return candidate[1].p.assemNum < current[1].p.assemNum
+        else:
+            return candidate[0] < current[0]
 
-        Often used to prepare the scope of a shuffling branch search.
+    @staticmethod
+    def _getParamMax(a, paramName, blockLevelMax=True):
+        """Get parameter with Block-level maximum."""
+        if blockLevelMax:
+            return a.getChildParamValues(paramName).max()
 
-        Notes
-        -----
-        This was used historically to keep a long-lived fuel handler in sync
-        with the reactor and can now technically be removed from the API, but
-        many historical fuel management inputs still expect it to be called
-        by the framework, so here it remains. New developments should
-        avoid using it. Most code using it has been refactored to just use
-        a ``_prepSearch`` private method.
-
-        It now should not be used and will trigger a DeprecationWarning
-        in the constructor. It's still here because old user-input code
-        calls the parent's prepSearch, which is this.
-        """
-        warnings.warn(
-            "`FuelHandler.prepSearch` is being deprecated from the framework. Please "
-            "change your fuel management input to call this method directly.",
-            DeprecationWarning,
-        )
+        return a.p[paramName]
 
     def findAssembly(
         self,
@@ -295,24 +283,20 @@ class FuelHandler:
 
         maxParam : float or list, optional
             a parameter to compare to maxVal for setting upper bounds of acceptable assemblies.
-            If list,
-            must correspond to parameters in maxVal in order.
+            If list, must correspond to parameters in maxVal in order.
 
         minVal : float or list, optional
             a value or a (parameter, multiplier) tuple for setting lower bounds
 
-            For instance, if minParam = 'timeToLimit' and minVal=10, only assemblies with
-            timeToLimit higher than 10 will be returned.  (Of course, there is also maxParam and
-            maxVal)
+            For instance, if minParam='timeToLimit' and minVal=10, only assemblies with timeToLimit
+            higher than 10 will be returned. (Of course, there is also maxParam and maxVal)
 
         maxVal : float or list, optional
             a value or a (parameter, multiplier) tuple for setting upper bounds
 
         mandatoryLocations : list, optional
-            a list of string-representations of locations in the core for limiting the search to
-            several places
-
-            Any locations also included in `excludedLocations` will be excluded.
+            A list of string-representations of locations in the core for limiting the search to
+            several places. Any locations also included in `excludedLocations` will be excluded.
 
         excludedLocations : list, optional
             a list of string-representations of locations in the core that will be excluded from
@@ -349,20 +333,19 @@ class FuelHandler:
             default: false.
 
         findFromSfp : bool, optional
-            if true, will look in the spent-fuel pool instead of in the core.
+            If true, will look in the spent-fuel pool instead of in the core.
 
         maxNumAssems : int, optional
             The maximum number of assemblies to return. Only relevant if findMany==True
 
         circularRingFlag : bool, optional
-            A flag to toggle on using rings that are based on distance from the center of the
-            reactor
+            Toggle using rings that are based on distance from the center of the reactor
 
         Notes
         -----
-        The call signature on this method may have gotten slightly out of hand as
-        valuable capabilities were added in fuel management studies. For additional expansion,
-        it may be worth reconsidering the design of these query operations ;).
+        The call signature on this method may have gotten slightly out of hand as valuable
+        capabilities were added in fuel management studies. For additional expansion, it may be
+        worth reconsidering the design of these query operations.
 
         Returns
         -------
@@ -381,29 +364,8 @@ class FuelHandler:
                                      typeSpec=Flags.FEED | Flags.FUEL)
 
         """
-
-        def compareAssem(candidate, current):
-            """Check whether the candidate assembly should replace the current ideal
-            assembly.
-
-            Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide
-            whether the candidate is better than the current ideal. This first compares
-            the diff1 and diff2 values. If diff1 is sufficiently less than diff2, a1
-            wins, returning True. Otherwise, False. If diff1 and diff2 are sufficiently
-            close, the assembly with the lesser assemNum wins. This should result in a
-            more stable comparison than on floating-point comparisons alone.
-            """
-            if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
-                return candidate[1].p.assemNum < current[1].p.assemNum
-            else:
-                return candidate[0] < current[0]
-
-        def getParamWithBlockLevelMax(a, paramName):
-            if blockLevelMax:
-                return a.getChildParamValues(paramName).max()
-            return a.p[paramName]
-
-        assemList = []  # list for storing multiple results if findMany is true.
+        # list for storing multiple results if findMany is true.
+        assemList = []
 
         # process input arguments
         if targetRing is None:
@@ -452,7 +414,7 @@ class FuelHandler:
             compVal = compareTo * mult
         elif param:
             # assume compareTo is an assembly
-            compVal = getParamWithBlockLevelMax(compareTo, param) * mult
+            compVal = FuelHandler._getParamMax(compareTo, param, blockLevelMax) * mult
 
         if coords:
             # find the assembly closest to xt,yt if coords are given without considering params.
@@ -501,12 +463,16 @@ class FuelHandler:
                         if isinstance(minVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMinVal = (
-                                getParamWithBlockLevelMax(a, minVal[0]) * minVal[1]
+                                FuelHandler._getParamMax(a, minVal[0], blockLevelMax)
+                                * minVal[1]
                             )
                         else:
                             realMinVal = minVal
 
-                        if getParamWithBlockLevelMax(a, minParam) < realMinVal:
+                        if (
+                            FuelHandler._getParamMax(a, minParam, blockLevelMax)
+                            < realMinVal
+                        ):
                             # this assembly does not meet the minVal specifications. Skip it.
                             innocent = False
                             break  # for speed (not a big deal here)
@@ -521,12 +487,16 @@ class FuelHandler:
                         if isinstance(maxVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMaxVal = (
-                                getParamWithBlockLevelMax(a, maxVal[0]) * maxVal[1]
+                                FuelHandler._getParamMax(a, maxVal[0], blockLevelMax)
+                                * maxVal[1]
                             )
                         else:
                             realMaxVal = maxVal
 
-                        if getParamWithBlockLevelMax(a, maxParam) > realMaxVal:
+                        if (
+                            FuelHandler._getParamMax(a, maxParam, blockLevelMax)
+                            > realMaxVal
+                        ):
                             # this assembly has a maxParam that's higher than maxVal and therefore
                             # doesn't qualify. skip it.
                             innocent = False
@@ -551,23 +521,25 @@ class FuelHandler:
 
                 # Now find the assembly with the param closest to the target val.
                 if param:
-                    diff = abs(getParamWithBlockLevelMax(a, param) - compVal)
+                    diff = abs(
+                        FuelHandler._getParamMax(a, param, blockLevelMax) - compVal
+                    )
 
                     if (
                         forceSide == 1
-                        and getParamWithBlockLevelMax(a, param) > compVal
-                        and compareAssem((diff, a), minDiff)
+                        and FuelHandler._getParamMax(a, param, blockLevelMax) > compVal
+                        and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=1, so that means look in rings further out
                         minDiff = (diff, a)
                     elif (
                         forceSide == -1
-                        and getParamWithBlockLevelMax(a, param) < compVal
-                        and compareAssem((diff, a), minDiff)
+                        and FuelHandler._getParamMax(a, param, blockLevelMax) < compVal
+                        and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=-1, so that means look in rings closer in from the targetRing
                         minDiff = (diff, a)
-                    elif compareAssem((diff, a), minDiff):
+                    elif FuelHandler._compareAssem((diff, a), minDiff):
                         # no preference of which side, just take the one with the closest param.
                         minDiff = (diff, a)
                 else:
