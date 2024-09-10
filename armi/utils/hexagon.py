@@ -174,7 +174,6 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
     ValueError
         If ``initialCellIndex`` is not positive.
         If ``orientationNumber`` is less than zero or greater than five.
-
     """
     if orientationNumber < 0 or orientationNumber > 5:
         raise ValueError(

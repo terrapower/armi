@@ -261,7 +261,6 @@ def pivot(items, position: int):
     Returns
     -------
     list or numpy.ndarray
-
     """
     if isinstance(items, np.ndarray):
         return np.concatenate((items[position:], items[:position]))
