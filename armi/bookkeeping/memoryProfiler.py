@@ -68,6 +68,18 @@ def describeInterfaces(cs):
     return (MemoryProfiler, {})
 
 
+def printCurrentMemoryState(mpiTasksPerNode):
+    """Print the current memory footprint and available memory."""
+    nNodes = len(set(context.MPI_NODENAMES))
+    totalMemRequestInGB = getTotalJobMemory(context.MPI_SIZE, mpiTasksPerNode)
+    currentMemUsageInGB = getCurrentMemoryUsage() /1024
+    availMemInGB = totalMemRequestInGB - currentMemUsageInMB / 1024
+    runLog.info(
+        f"Currently {currentMemUsageInMB} GB of memory is in use."
+        f"There is memory ({availMemInGB} GB of memory available)."
+    )
+
+
 class MemoryProfiler(interfaces.Interface):
 
     name = "memoryProfiler"
@@ -399,6 +411,10 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
             SYS_MEM HOSTNAME     ...
             SYS_MEM HOSTNAME     ...
         """
+        # prints the bottom line memory state...
+        # the code after this is somewhat confusing to interpret
+        printCurrentMemoryState(self.cs["mpiTasksPerNode"])
+
         printedNodes = set()
         prefix = description or "SYS_MEM"
 
