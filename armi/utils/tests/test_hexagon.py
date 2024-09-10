@@ -79,7 +79,7 @@ class TestHexagon(unittest.TestCase):
         initialRing = hexagon.numRingsToHoldNumCells(initialCell)
         newRing = hexagon.numRingsToHoldNumCells(newCell)
         self.assertEqual(newRing, initialRing, msg=testInfoMsg)
-        # If we un-rotate, we should get our initial ring
+        # If we un-rotate, we should get our initial cell
         reverseRot = (6 - rot) % 6
         reverseCell = hexagon.getIndexOfRotatedCell(newCell, reverseRot)
         self.assertEqual(reverseCell, initialCell, msg=testInfoMsg)
