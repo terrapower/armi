@@ -113,7 +113,7 @@ class TestHexagon(unittest.TestCase):
             hexagon.getIndexOfRotatedCell(index, 0)
 
     def test_rotatedCellOrientationErrors(self):
-        """ "Test errors for invalid orientation numbers during rotation."""
+        """Test errors for invalid orientation numbers during rotation."""
         for _ in range(self.N_FUZZY_DRAWS):
             upper = random.randint(6, 100)
             self._testRotOrientation(upper)
