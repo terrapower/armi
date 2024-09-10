@@ -11,6 +11,7 @@ New Features
 #. ARMI now supports Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
+#. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. TBD
 
 API Changes
