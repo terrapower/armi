@@ -1320,14 +1320,14 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This should **only** be called internally by the database loader. Otherwise
         some properties could be doubly applied.
+
+        This exists because the theoretical density is initially defined as a material
+        modification, and then stored as a Material attribute. When reading from blueprints,
+        the blueprint loader sets the theoretical density parameter from the Material
+        attribute. Component parameters are also set when reading from the database.
+        But, we need to set the Material attribute so routines that fetch a material's
+        density property account for the theoretical density.
         """
-        # This exists because the theoretical density is initially defined as a material
-        # modification, and then stored as a Material attribute. When reading from blueprints,
-        # the blueprint loader sets the theoretical density parameter from the Material
-        # attribute. Component parameters are also set when reading from the database.
-        # But, we need to set the Material attribute so routines that fetch a material's
-        # density property account for the theoretical density.
-        # See https://github.com/terrapower/armi/issues/1440
         self.material.adjustTD(self.p.theoreticalDensityFrac)
 
 

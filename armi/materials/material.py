@@ -40,11 +40,6 @@ def parentAwareDensityRedirect(f):
     different results from ``Component.density``. The component's density
     is considered the source of truth because it incorporates changes in volume,
     composition, and temperature in concert with the state of the reactor.
-
-    See Also
-    --------
-    - https://github.com/terrapower/armi/issues/1440
-
     """
 
     @functools.wraps(f)
