@@ -16,17 +16,15 @@
 import copy
 import math
 
-import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.patches import Wedge
+import numpy as np
 from matplotlib.collections import PatchCollection
+from matplotlib.patches import Wedge
 
-from armi.reactor import blocks
-from armi.reactor import grids
-from armi.reactor import components
-from armi.reactor.flags import Flags
 from armi import runLog
+from armi.reactor import blocks, components, grids
+from armi.reactor.flags import Flags
 
 SIN60 = math.sin(math.radians(60.0))
 
@@ -141,12 +139,15 @@ class BlockConverter:
                 "Components are not of compatible shape to be merged "
                 "solute: {}, solvent: {}".format(solute, solvent)
             )
-        if solute.getArea() <= 0 or solvent.getArea() <= 0:
+        if solute.getArea() < 0:
             raise ValueError(
-                "Cannot merge components if either have negative area. "
-                "{} area: {}, {} area : {}".format(
-                    solute, solvent, solute.getArea(), solvent.getArea()
-                )
+                "Cannot merge solute with negative area into a solvent. "
+                "{} area: {}".format(solute, solute.getArea())
+            )
+        if solvent.getArea() <= 0:
+            raise ValueError(
+                "Cannot merge into a solvent with negative or 0 area. "
+                "{} area: {}".format(solvent, solvent.getArea())
             )
 
     def restablishLinks(self, solute, solvent, soluteLinks):
