@@ -20,6 +20,9 @@ from armi.utils import hexagon
 
 
 class TestHexagon(unittest.TestCase):
+    N_FUZZY_DRAWS: int = 10
+    """Number of random draws to use in some fuzzy testing"""
+
     def test_hexagon_area(self):
         """
         Area of a hexagon.
@@ -97,3 +100,37 @@ class TestHexagon(unittest.TestCase):
             self.assertEqual(
                 hexagon.totalPositionsUpToRing(ring), totalPositions, msg=f"{ring=}"
             )
+
+    def test_rotatedCellIndexErrors(self):
+        """Test errors for non-positive initial cell indices during rotation."""
+        self._testNonPosRotIndex(0)
+        for _ in range(self.N_FUZZY_DRAWS):
+            index = random.randint(-100, -1)
+            self._testNonPosRotIndex(index)
+
+    def _testNonPosRotIndex(self, index: int):
+        with self.assertRaisesRegex(ValueError, ".*must be positive", msg=f"{index=}"):
+            hexagon.getIndexOfRotatedCell(index, 0)
+
+    def test_rotatedCellOrientationErrors(self):
+        """ "Test errors for invalid orientation numbers during rotation."""
+        for _ in range(self.N_FUZZY_DRAWS):
+            upper = random.randint(6, 100)
+            self._testRotOrientation(upper)
+            lower = random.randint(-100, -1)
+            self._testRotOrientation(lower)
+
+    def _testRotOrientation(self, orientation: int):
+        with self.assertRaisesRegex(
+            ValueError, "Orientation number", msg=f"{orientation=}"
+        ):
+            hexagon.getIndexOfRotatedCell(
+                initialCellIndex=1, orientationNumber=orientation
+            )
+
+    def test_indexWithNoRotation(self):
+        """Test that the initial cell location is returned if not rotated."""
+        for _ in range(self.N_FUZZY_DRAWS):
+            ix = random.randint(1, 300)
+            postRotation = hexagon.getIndexOfRotatedCell(ix, orientationNumber=0)
+            self.assertEqual(postRotation, ix)
