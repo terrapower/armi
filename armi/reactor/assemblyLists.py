@@ -27,10 +27,8 @@ Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel po
 import abc
 import itertools
 
-from armi import runLog
 from armi.reactor import composites
 from armi.reactor import grids
-from armi.utils import units
 
 
 class AutoFiller(abc.ABC):
@@ -161,31 +159,6 @@ class AssemblyList(composites.Composite):
 
         return None
 
-    def count(self):
-        """TODO: JOHN! FIX!"""
-        if not self.getChildren():
-            return
-
-        runLog.important("Count:")
-        totCount = 0
-        thisTimeCount = 0
-        a = self.getChildren()[0]
-        lastTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
-
-        for a in self.getChildren():
-            thisTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
-
-            if thisTime != lastTime:
-                runLog.important(
-                    "Number of assemblies moved at t={0:6.2f}: {1:04d}. Cumulative: {2:04d}".format(
-                        lastTime, thisTimeCount, totCount
-                    )
-                )
-                lastTime = thisTime
-                thisTimeCount = 0
-            totCount += 1  # noqa: SIM113
-            thisTimeCount += 1
-
 
 class SpentFuelPool(AssemblyList):
     """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
@@ -212,32 +185,6 @@ class SpentFuelPool(AssemblyList):
             assem.renumber(newNum)
 
         super().add(assem, loc)
-
-    def report(self):
-        title = "{0} Report".format(self.name)
-        runLog.important("-" * len(title))
-        runLog.important(title)
-        runLog.important("-" * len(title))
-        totFis = 0.0
-        for a in self.getChildren():
-            runLog.important(
-                "{assembly:15s} discharged at t={dTime:10f} after {residence:10f} yrs. It entered at cycle: {cycle}. "
-                "It has {fiss:10f} kg (x {mult}) fissile and peak BU={bu:.2f} %.".format(
-                    assembly=a,
-                    dTime=a.p.dischargeTime,
-                    residence=(a.p.dischargeTime - a.p.chargeTime),
-                    cycle=a.p.chargeCycle,
-                    fiss=a.getFissileMass() * a.p.multiplicity,
-                    bu=a.getMaxParam("percentBu"),
-                    mult=a.p.multiplicity,
-                )
-            )
-            totFis += a.getFissileMass() * a.p.multiplicity / 1000  # convert to kg
-        runLog.important(
-            "Total full-core fissile inventory of {0} is {1:.4E} MT".format(
-                self, totFis / 1000.0
-            )
-        )
 
     def normalizeNames(self, startIndex=0):
         """

@@ -29,6 +29,7 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
 from armi.utils import directoryChangers
 from armi.utils import reportPlotting
+from armi.utils import units
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -166,11 +167,66 @@ class ReportInterface(interfaces.Interface):
                 report_.writeHTML()
 
     # --------------------------------------------
-    #        Misc Summaries
+    #        Ex-Core Summaries
     # --------------------------------------------
     def writeRunSummary(self):
         """Make a summary of the run."""
         # spent fuel pool report
         if self.r.sfp is not None:
-            self.r.sfp.report()
-            self.r.sfp.count()
+            self.reportSFP(self.r.sfp)
+            self.countAssembliesSFP(self.r.sfp)
+
+    @staticmethod
+    def reportSFP(sfp):
+        """A high-level summary of the Spent Fuel Pool."""
+        title = "SpentFuellPool Report"
+        runLog.important("-" * len(title))
+        runLog.important(title)
+        runLog.important("-" * len(title))
+        totFis = 0.0
+        for a in sfp.getChildren():
+            runLog.important(
+                "{assembly:15s} discharged at t={dTime:10f} after {residence:10f} yrs. It entered at cycle: {cycle}. "
+                "It has {fiss:10f} kg (x {mult}) fissile and peak BU={bu:.2f} %.".format(
+                    assembly=a,
+                    dTime=a.p.dischargeTime,
+                    residence=(a.p.dischargeTime - a.p.chargeTime),
+                    cycle=a.p.chargeCycle,
+                    fiss=a.getFissileMass() * a.p.multiplicity,
+                    bu=a.getMaxParam("percentBu"),
+                    mult=a.p.multiplicity,
+                )
+            )
+            totFis += a.getFissileMass() * a.p.multiplicity / 1000  # convert to kg
+
+        runLog.important(
+            "Total full-core fissile inventory of {0} is {1:.4E} MT".format(
+                sfp, totFis / 1000.0
+            )
+        )
+
+    @staticmethod
+    def countAssembliesSFP(sfp):
+        """Report on the count of assemblies in the SFP at each timestep."""
+        if not sfp.getChildren():
+            return
+
+        runLog.important("Count:")
+        totCount = 0
+        thisTimeCount = 0
+        a = sfp.getChildren()[0]
+        lastTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
+
+        for a in sfp.getChildren():
+            thisTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
+
+            if thisTime != lastTime:
+                runLog.important(
+                    "Number of assemblies moved at t={0:6.2f}: {1:04d}. Cumulative: {2:04d}".format(
+                        lastTime, thisTimeCount, totCount
+                    )
+                )
+                lastTime = thisTime
+                thisTimeCount = 0
+            totCount += 1  # noqa: SIM113
+            thisTimeCount += 1
