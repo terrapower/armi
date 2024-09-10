@@ -31,6 +31,7 @@ from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 
 
 def _rotationNumberToRadians(rot: int) -> float:
+    """Convert a rotation number to radians, assuming a HexAssembly."""
     return rot * math.pi / 3
 
 
