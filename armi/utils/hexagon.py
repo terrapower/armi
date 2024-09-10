@@ -147,7 +147,7 @@ def numPositionsInRing(ring):
     return (ring - 1) * 6 if ring != 1 else 1
 
 
-def totalPositionUpToRing(ring: int) -> int:
+def totalPositionsUpToRing(ring: int) -> int:
     """Return the number of positions in a hexagon with a given number of rings."""
     return 1 + 3 * ring * (ring - 1)
 
@@ -183,7 +183,7 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
         if orientationNumber == 0:
             return initialCellIndex
         ring = numRingsToHoldNumCells(initialCellIndex)
-        tot_pins = totalPositionUpToRing(ring)
+        tot_pins = totalPositionsUpToRing(ring)
         newPinLocation = initialCellIndex + (ring - 1) * orientationNumber
         if newPinLocation > tot_pins:
             newPinLocation -= (ring - 1) * 6
