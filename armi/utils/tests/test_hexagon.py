@@ -46,8 +46,7 @@ class TestHexagon(unittest.TestCase):
         self.assertEqual(hexagon.numPositionsInRing(4), 18)
 
     def test_rotatedCellCenter(self):
-        # Cell one is always the center of the hexagon and its position
-        # is rotation invariant
+        """Test that location of the center cell is invariant through rotation."""
         for rot in range(6):
             self.assertTrue(hexagon.getIndexOfRotatedCell(1, rot), 1)
 
