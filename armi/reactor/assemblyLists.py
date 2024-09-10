@@ -27,8 +27,8 @@ Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel po
 import abc
 import itertools
 
-from armi.reactor import composites
 from armi.reactor import grids
+from armi.reactor.excoreStructure import ExcoreStructure
 
 
 class AutoFiller(abc.ABC):
@@ -88,7 +88,7 @@ class RowMajorAutoFiller(AutoFiller):
         """
 
 
-class AssemblyList(composites.Composite):
+class AssemblyList(ExcoreStructure):
     """
     A quasi-arbitrary collection of Assemblies.
 
@@ -98,20 +98,13 @@ class AssemblyList(composites.Composite):
     """
 
     def __init__(self, name, parent=None):
-        composites.Composite.__init__(self, name)
+        ExcoreStructure.__init__(self, name)
         self.parent = parent
         # make a Cartesian assembly rack by default. Anything that really cares about
         # the layout should specify one manually or in Blueprints
         self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
 
         self._filler = RowMajorAutoFiller(self, 10)
-
-    @property
-    def r(self):
-        # This needs to be here until we remove the dependency of Reactor upon AssemblyLists
-        from armi.reactor import reactors
-
-        return self.getAncestor(fn=lambda x: isinstance(x, reactors.Reactor))
 
     def __repr__(self):
         return "<AssemblyList object: {0}>".format(self.name)
