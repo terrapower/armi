@@ -83,12 +83,12 @@ class SystemBlueprint(yamlize.Object):
 
     def __init__(self, name=None, gridName=None, origin=None):
         """
-        A Reactor Level Structure like a core or SFP.
+        A Reactor-level structure like a core, or ex-core like SFP.
 
         Notes
         -----
-        yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        this is only needed for when you want to make this object from a non-YAML source.
+        yamlize does not call an __init__ method, instead it uses __new__ and setattr this is only
+        needed for when you want to make this object from a non-YAML source.
         """
         self.name = name
         self.gridName = gridName
@@ -96,11 +96,9 @@ class SystemBlueprint(yamlize.Object):
 
     @staticmethod
     def _resolveSystemType(typ: str):
-        # Loop over all plugins that could be attached and determine if any tell us how to build a
-        # specific systems attribute. Sub-optimial as this check is called for each system (e.g.,
-        # core, spent fuel pool). It is assumed that the number of systems is currently low enough
-        # to justify this structure.
-
+        """Loop over all plugins that could be attached and determine if any tell us how to build a
+        specific systems attribute.
+        """
         manager = getPluginManagerOrFail()
 
         # Only need this to handle the case we don't find the system we expect
@@ -119,7 +117,7 @@ class SystemBlueprint(yamlize.Object):
         )
 
     def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
-        """Build a core/IVS/EVST/whatever and fill it with children.
+        """Build a core/SFP/IVS/EVST/whatever and fill it with children.
 
         Parameters
         ----------
@@ -158,8 +156,7 @@ class SystemBlueprint(yamlize.Object):
 
         system = self._resolveSystemType(self.typ)(self.name)
 
-        # Some systems may not require a prescribed grid design. Only try to use one if
-        # it was provided
+        # Some systems may not require a prescribed grid design. Only use one if provided
         if gridDesign is not None:
             spatialGrid = gridDesign.construct()
             system.spatialGrid = spatialGrid
@@ -171,34 +168,30 @@ class SystemBlueprint(yamlize.Object):
         )
         system.spatialLocator = spatialLocator
         if context.MPI_RANK != 0:
-            # on non-primary nodes we don't bother building up the assemblies
-            # because they will be populated with DistributeState.
+            # Non-primary nodes get the assemblies via DistributeState.
             return None
 
-        # TODO: This is also pretty specific to Core-like things. We envision systems
-        # with non-Core-like structure. Again, probably only doable with subclassing of
-        # Blueprints
+        # TODO: This is also pretty specific to Core-like things. We envision systems with non-Core-
+        # like structure. Probably doable by subclassing Blueprints
         if loadAssems and gridDesign is not None:
             self._loadAssemblies(cs, system, gridDesign.gridContents, bp)
 
-            # TODO: This post-construction work is specific to Cores for now. We need to
-            # generalize this. Things to consider:
-            # - Should the Core be able to do geom modifications itself, since it already
-            # has the grid constructed from the grid design?
-            # - Should the summary be so specifically Material data? Should this be done for
-            # non-Cores? Like geom modifications, could this just be done in processLoading?
-            # Should it be invoked higher up, by whatever code is requesting the Reactor be
-            # built from Blueprints?
+            # TODO: This is specific to Cores. We need to generalize this. Things to consider:
+            #
+            # - Should the Core be able to do geom modifications itself, since it already has the
+            #   grid constructed from the grid design?
+            # - Should this be done for non-Cores? Like geom modifications, could this just be done
+            #   in processLoading? Should it be invoked higher up, by whatever code is requesting
+            #   the Reactor be built from Blueprints?
             if isinstance(system, reactors.Core):
                 summarizeMaterialData(system)
                 self._modifyGeometry(system, gridDesign)
                 system.processLoading(cs)
+
         return system
 
     def _loadAssemblies(self, cs, container, gridContents, bp):
-        runLog.header(
-            "=========== Adding Assemblies to {} ===========".format(container)
-        )
+        runLog.header(f"=========== Adding Assemblies to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
@@ -212,17 +205,17 @@ class SystemBlueprint(yamlize.Object):
 
         if badLocations:
             raise ValueError(
-                "Geometry core map xml had assemblies outside the "
-                "first third core, but had third core symmetry. \n"
-                "Please update symmetry to be `full core` or "
-                "remove assemblies outside the first third. \n"
-                "The locations outside the first third are {}".format(badLocations)
+                "Geometry core map xml had assemblies outside the first third, but had third core "
+                "symmetry.\nPlease update symmetry to be `full core` or remove assemblies outside "
+                f"the first third.\nThe locations outside the first third are {badLocations}"
             )
 
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
         # all cases should have no edge assemblies. They are added ephemerally when needed
-        from armi.reactor.converters import geometryConverters  # circular imports
+        from armi.reactor.converters import (
+            geometryConverters,
+        )  # preventing circular imports
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()

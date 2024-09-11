@@ -638,9 +638,9 @@ class FuelHandler:
         if "SFP" in ringList and self.r.sfp is None:
             sfpAssems = []
             runLog.warning(
-                f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}."
-                "To get assemblies from an SFP, you must add an SFP system to the blueprints"
-                f"or otherwise instantiate a SpentFuelPool object as r.sfp"
+                f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}. To get "
+                "assemblies from an SFP, you must add an SFP system to the blueprints or otherwise "
+                f"instantiate a SpentFuelPool object as r.sfp."
             )
         else:
             sfpAssems = self.r.sfp.getChildren()
