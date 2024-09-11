@@ -22,16 +22,11 @@ import re
 
 import numpy as np
 
-from armi import materials
-from armi import runLog
+from armi import materials, runLog
 from armi.bookkeeping import report
-from armi.materials import custom
-from armi.materials import material
-from armi.materials import void
+from armi.materials import custom, material, void
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites
-from armi.reactor import flags
-from armi.reactor import parameters
+from armi.reactor import composites, flags, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -278,7 +273,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         thisOD = self.getBoundingCircleOuterDiameter(cold=True)
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
         try:
-            return thisOD < thatOD
+            if thisOD == thatOD:
+                thisID = self.getCircleInnerDiameter(cold=True)
+                thatID = other.getCircleInnerDiameter(cold=True)
+                return thisID < thatID
+            else:
+                return thisOD < thatOD
         except Exception:
             raise ValueError(
                 "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
