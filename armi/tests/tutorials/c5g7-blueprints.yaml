@@ -46,28 +46,22 @@ custom isotopics:
         input format: number densities
         H: 6.70e-2
         O: 3.35E-2
-        B: 2.87E-5
+        B: 2.78E-5
     Zr clad:
         input format: number densities
         ZR: 4.30E-2
     Al clad:
         input format: number densities
-        AL: 6.00e-2
+        AL27: 6.00e-2
     fission chamber:
-        # Fission Chamber composition isn't well defined so this is a guess...
-        # U235 density is based on Macros of UO2 for fission XS in group 3. Group 3
-        # was chosen because it is below the U-238 fast fission cutoff, but also the
-        # U-235 fission cross section is not high enough the self shielding will play
-        # a large role. This assuming U235 is the only fissioning isotope. Assuming the
-        # fission chamber is ~90% enriched (90.9% by atom but wanted only 1 sig fig).
-        # Had very similar macro absorption XS as guide tube, so using same
-        # Al and water with just a little U.
+        # NEA/NSC/DOC(96)2 Documents:
+        # "Central guide tube contains: moderator (as defined in Table 2)
+        # and 1.0E-8 at/(b cm) of U-235"
         input format: number densities
         H: 6.70e-2
         O: 3.35E-2
-        B: 2.87E-5
-        U235: 6.0e-8
-        U238: 6.0e-9
+        B: 2.78E-5
+        U235: 1.0e-8
 # end-custom-isotopics
 blocks:
     uo2: &block_uo2
@@ -77,15 +71,15 @@ blocks:
             shape: Circle
             material: UO2
             isotopics: UO2
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             od: .8190
             latticeIDs: [U]
         gap 1: &fuel_gap_1
             shape: Circle
             material: Void
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             id: fuel.od
             od: zirconium clad.id
             latticeIDs: [U]
@@ -93,16 +87,16 @@ blocks:
             shape: Circle
             material: Custom
             isotopics: Zr clad
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             id: .8360
             od: .9500
             latticeIDs: [U]
         gap 2: &fuel_gap_2
             shape: Circle
             material: Void
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             id: zirconium clad.od
             od: aluminum clad.id
             latticeIDs: [U]
@@ -113,8 +107,8 @@ blocks:
             shape: Circle
             material: Custom
             isotopics: Al clad
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             id: .9700
             od: 1.0800
             latticeIDs: [U]
@@ -129,16 +123,16 @@ blocks:
             shape: Circle
             material: SaturatedWater
             isotopics: moderator
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             od: guide tube.id
             latticeIDs: [GT]
         guide tube: &guide_tube
             shape: Circle
             material: Custom
             isotopics: Al clad
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             id: .6800
             od: 1.0800
             latticeIDs: [GT]
@@ -155,8 +149,8 @@ blocks:
             shape: Circle
             material: Custom
             isotopics: fission chamber
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             od: .8190 # No documentation fission chamber dims of composition
             latticeIDs: [FC]
         inner moderator FC: &fission_chamber_mod
@@ -164,8 +158,8 @@ blocks:
             # has same od as fuel, so there needs to be something in the gap.
             shape: Circle
             material: Void
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             id: fission chamber.od
             od: guide tube.id
             latticeIDs: [FC]
@@ -173,8 +167,8 @@ blocks:
         # dummy component for assembly sizing
             shape: Square
             material: Void
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             widthInner: 21.42
             widthOuter: 21.42
             mult: 1.0
@@ -189,24 +183,24 @@ blocks:
             shape: Circle
             material: UO2
             isotopics: mox low
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             od: .8190
             latticeIDs: [ML]
         mox medium fuel:
             shape: Circle
             material: UO2
             isotopics: mox medium
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             od: .8190
             latticeIDs: [MM]
         mox high fuel:
             shape: Circle
             material: UO2
             isotopics: mox high
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             od: .8190
             latticeIDs: [MH]
         void 1:
@@ -236,8 +230,8 @@ blocks:
             shape: Square
             material: SaturatedWater
             isotopics: moderator
-            Tinput: 25.0
-            Thot: 25.0
+            Tinput: 20.0
+            Thot: 20.0
             widthOuter: 21.42
             mult: 1.0
 # end-block-mod

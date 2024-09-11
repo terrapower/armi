@@ -12,7 +12,7 @@ settings:
   genReports: false
   genXS: Neutron
   groupStructure: ARMI45
-  loadingFile: Godiva-blueprints.yaml
+  loadingFile: godiva-blueprints.yaml
   neutronicsKernel: DIF3D-FD
   neutronicsOutputsToSave: All
   neutronicsType: both
