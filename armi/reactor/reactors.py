@@ -38,7 +38,7 @@ from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
-from armi.reactor.assemblyLists import SpentFuelPool
+from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
@@ -99,7 +99,7 @@ class Reactor(composites.Composite):
         self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.core = None
-        self.sfp = None
+        self.excore = {}
         self.blueprints = blueprints
 
     def __getstate__(self):
@@ -120,6 +120,16 @@ class Reactor(composites.Composite):
     def __repr__(self):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
 
+    @property
+    def sfp(self):
+        """TODO: For backwards compatibility, give the reactor an sfp property."""
+        return self.excore.get("sfp", None)
+
+    @sfp.setter
+    def sfp(self, newSfp):
+        """TODO: For backwards compatibility, give the reactor an sfp property."""
+        self.excore["sfp"] = newSfp
+
     def add(self, container):
         composites.Composite.add(self, container)
         cores = [c for c in self.getChildren(deep=True) if isinstance(c, Core)]
@@ -131,8 +141,11 @@ class Reactor(composites.Composite):
                 )
             self.core = cores[0]
 
-        if isinstance(container, SpentFuelPool):
-            self.sfp = container
+        if isinstance(container, ExcoreStructure):
+            nomen = container.name.replace(" ", "").lower()
+            if nomen == "spentfuelpool":
+                nomen = "sfp"
+            self.excore[nomen] = container
 
     def incrementAssemNum(self):
         """
