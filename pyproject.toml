@@ -326,7 +326,6 @@ armi = [
     "tests/refSmallReactorBase.yaml",
     "tests/refSmallSfpGrid.yaml",
     "tests/refTestCartesian.yaml",
-    "tests/sfpGeom.yaml",
     "tests/smallestTestReactor/armiRunSmallest.yaml",
     "tests/smallestTestReactor/refOneBlockReactor.yaml",
     "tests/smallestTestReactor/refSmallestReactor.yaml",
