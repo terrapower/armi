@@ -42,18 +42,18 @@ from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
-    CONF_MATERIAL_NAMESPACE_ORDER,
-    CONF_FRESH_FEED_TYPE,
-    CONF_SORT_REACTOR,
-    CONF_GEOM_FILE,
-    CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_STATIONARY_BLOCK_FLAGS,
-    CONF_ZONE_DEFINITIONS,
-    CONF_TRACK_ASSEMS,
-    CONF_CIRCULAR_RING_PITCH,
     CONF_AUTOMATIC_VARIABLE_MESH,
-    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_CIRCULAR_RING_PITCH,
     CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_FRESH_FEED_TYPE,
+    CONF_GEOM_FILE,
+    CONF_MATERIAL_NAMESPACE_ORDER,
+    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_SORT_REACTOR,
+    CONF_STATIONARY_BLOCK_FLAGS,
+    CONF_TRACK_ASSEMS,
+    CONF_ZONE_DEFINITIONS,
 )
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
@@ -137,13 +137,14 @@ class Reactor(composites.Composite):
             if len(cores) != 1:
                 raise ValueError(
                     "Only 1 core may be specified at this time. Please adjust input. "
-                    "Cores found: {}".format(cores)
+                    f"{len(cores)} cores found."
                 )
             self.core = cores[0]
 
         if isinstance(container, ExcoreStructure):
             nomen = container.name.replace(" ", "").lower()
             if nomen == "spentfuelpool":
+                # special case
                 nomen = "sfp"
             self.excore[nomen] = container
 

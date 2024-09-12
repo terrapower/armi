@@ -11,28 +11,33 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""TODO."""
+"""TODO: JOHN."""
 
 from armi.reactor import grids
 from armi.reactor.composites import Composite
 
 
 class ExcoreStructure(Composite):
-    """TODO."""
+    """TODO: JOHN.
+
+    An ex-core structure is expected to:
+
+    - be a child of the Reactor,
+    - have a grid associated with it,
+    - contain a hierarchical set of ArmiObjects.
+    """
 
     def __init__(self, name, parent=None):
         Composite.__init__(self, name)
         self.parent = parent
 
-        # TODO: Replace this.
+        # TODO: JOHN This is a nonsense placeholder.
         self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
 
     @property
     def r(self):
-        # This needs to be here until we remove the dependency of Reactor upon AssemblyLists
         from armi.reactor import reactors
 
-        # TODO: Does is every excore structure a child of the Reactor directly, or one step removed?
         return self.getAncestor(fn=lambda x: isinstance(x, reactors.Reactor))
 
     def __repr__(self):
