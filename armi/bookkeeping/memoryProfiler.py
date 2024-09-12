@@ -36,6 +36,7 @@ See Also
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
+from os import cpu_count
 from typing import Optional
 import gc
 import sys
@@ -68,6 +69,42 @@ def describeInterfaces(cs):
     return (MemoryProfiler, {})
 
 
+def getTotalJobMemory(nRanks, tasksPerNode):
+    """Function to calculate the total memory of a cluster job. This is a constant during a simulation."""
+    CPU_PER_NODE = cpu_count()
+    RAM_PER_CPU_GB = psutil.virtual_memory().total / (1024**3) / CPU_PER_NODE
+    if tasksPerNode == 0:
+        tasksPerNode = CPU_PER_NODE
+    cpusPerRank = CPU_PER_NODE / tasksPerNode
+    jobMem = nRanks * cpusPerRank * RAM_PER_CPU_GB
+    return jobMem
+
+
+def getCurrentMemoryUsage():
+    """This scavenges the memory profiler in ARMI to get the current memory usage."""
+    memUsageAction = PrintSystemMemoryUsageAction()
+    memUsageAction.broadcast()
+    smpu = SystemAndProcessMemoryUsage()
+    memUsages = memUsageAction.gather(smpu)
+    # We grab virtual memory instead of physical. There is a large discrepancy
+    # sometimes and we'd rather be conservative
+    memoryUsageInMB = sum([mu.processVirtualMemoryInMB for mu in memUsages])
+    return memoryUsageInMB
+
+
+def printCurrentMemoryState(mpiTasksPerNode):
+    """Print the current memory footprint and available memory."""
+    totalMemoryInGB = getTotalJobMemory(context.MPI_SIZE, mpiTasksPerNode)
+    currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
+    availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
+    runLog.info(
+        f"Currently using {currentMemoryUsageInGB} GB of memory. "
+        f"There is {availableMemoryInGB} GB of memory left. "
+        f"There is a total allocation of {totalMemoryInGB} GB."
+    )
+    # return totalMemoryInGB, availableMemoryInGB, currentMemoryUsageInGB
+
+
 class MemoryProfiler(interfaces.Interface):
 
     name = "memoryProfiler"
@@ -78,6 +115,11 @@ class MemoryProfiler(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
+
+        # prints the bottom line memory state...
+        # the code after this is somewhat confusing to interpret
+        printCurrentMemoryState(self.cs["mpiTasksPerNode"])
+
         mpiAction = PrintSystemMemoryUsageAction()
         mpiAction.broadcast().invoke(self.o, self.r, self.cs)
         mpiAction.printUsage("BOL SYS_MEM")
@@ -88,6 +130,10 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEveryNode(self, cycle, node):
+        # prints the bottom line memory state...
+        # the code after this is somewhat confusing to interpret
+        printCurrentMemoryState(self.cs["mpiTasksPerNode"])
+
         mp = PrintSystemMemoryUsageAction()
         mp.broadcast()
         mp.invoke(self.o, self.r, self.cs)
