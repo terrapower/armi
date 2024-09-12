@@ -26,6 +26,7 @@ from armi import interfaces
 from armi import plugins
 from armi import settings
 from armi import utils
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.flags import Flags
@@ -42,13 +43,25 @@ class PluginFlags1(plugins.ArmiPlugin):
         return {"SUPER_FLAG": utils.flags.auto()}
 
 
+class SillyAxialExpansionChanger(AxialExpansionChanger):
+    pass
+
+
+class SillyAxialPlugin(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def getAxialExpansionChanger() -> type[SillyAxialExpansionChanger]:
+        return SillyAxialExpansionChanger
+
+
 class TestPluginRegistration(unittest.TestCase):
     def setUp(self):
         """
         Manipulate the standard App. We can't just configure our own, since the
         pytest environment bleeds between tests.
         """
-        self._backupApp = deepcopy(getApp())
+        self.app = getApp()
+        self._backupApp = deepcopy(self.app)
 
     def tearDown(self):
         """Restore the App to its original state."""
@@ -68,7 +81,7 @@ class TestPluginRegistration(unittest.TestCase):
             :id: T_ARMI_PLUGIN_REGISTER
             :tests: R_ARMI_PLUGIN
         """
-        app = getApp()
+        app = self.app
 
         # show the new plugin isn't loaded yet
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
@@ -91,6 +104,15 @@ class TestPluginRegistration(unittest.TestCase):
 
         # show the flag exists now
         self.assertEqual(type(Flags.SUPER_FLAG._value), int)
+
+    def test_axialExpansionHook(self):
+        """Test that plugins can override the axial expansion of assemblies via a hook."""
+        pm = self.app.pluginManager
+        first = pm.hook.getAxialExpansionChanger()
+        self.assertIs(first, AxialExpansionChanger)
+        pm.register(SillyAxialPlugin)
+        second = pm.hook.getAxialExpansionChanger()
+        self.assertIs(second, SillyAxialExpansionChanger)
 
 
 class TestPluginBasics(unittest.TestCase):
