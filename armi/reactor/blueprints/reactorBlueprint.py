@@ -117,7 +117,7 @@ class SystemBlueprint(yamlize.Object):
         )
 
     def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
-        """Build a core/SFP/IVS/EVST/whatever and fill it with children.
+        """Build a core or ex-core grid and fill it with children.
 
         Parameters
         ----------
@@ -133,6 +133,11 @@ class SystemBlueprint(yamlize.Object):
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
             within the initNewReactor() method.
 
+        Returns
+        -------
+        Composite
+            A Composite object with a grid, like a Spent Fuel Pool or other ex-core structure.
+
         Raises
         ------
         ValueError
@@ -140,8 +145,6 @@ class SystemBlueprint(yamlize.Object):
         ValueError
             for 1/3 core maps, assemblies are defined outside the expected 1/3 core region
         """
-        from armi.reactor import reactors  # avoid circular import
-
         runLog.info("Constructing the `{}`".format(self.name))
 
         if geom is not None and self.name == "core":
@@ -149,8 +152,7 @@ class SystemBlueprint(yamlize.Object):
         else:
             if not bp.gridDesigns:
                 raise ValueError(
-                    "The input must define grids to construct a reactor, but "
-                    "does not. Update input."
+                    "The input must define grids to construct a reactor, but does not. Update input."
                 )
             gridDesign = bp.gridDesigns.get(self.gridName, None)
 
@@ -171,19 +173,40 @@ class SystemBlueprint(yamlize.Object):
             # Non-primary nodes get the assemblies via DistributeState.
             return None
 
-        # TODO: This is also pretty specific to Core-like things. We envision systems with non-Core-
-        # like structure. Probably doable by subclassing Blueprints
+        system = self._constructAssemblies(cs, bp, loadAssems, system, gridDesign)
+
+        # TODO: We should allow for non-Assembly objects/geometries to be loaded into the grid. For
+        #       instance, an ex-core grid may define ducts, not just Assemblies.
+
+        return system
+
+    def _constructAssemblies(self, cs, bp, loadAssems, system, gridDesign):
+        """Fill a grid with assemblies, if there are any to fill.
+
+        Parameters
+        ----------
+        cs : Settings object.
+            armi settings to apply
+        bp : Blueprints object.
+            armi blueprints to apply
+        loadAssems : bool
+            whether to fill reactor with assemblies, as defined in blueprints, or not
+        system : Composite
+            The composite we are building.
+        gridDesign : GridBlueprint
+            The defintion of the grid on the object.
+
+        Returns
+        -------
+        Composite
+            A Composite object with a grid, like a Spent Fuel Pool or other ex-core structure.
+        """
+        from armi.reactor.reactors import Core  # avoid circular import
+
         if loadAssems and gridDesign is not None:
             self._loadAssemblies(cs, system, gridDesign.gridContents, bp)
 
-            # TODO: This is specific to Cores. We need to generalize this. Things to consider:
-            #
-            # - Should the Core be able to do geom modifications itself, since it already has the
-            #   grid constructed from the grid design?
-            # - Should this be done for non-Cores? Like geom modifications, could this just be done
-            #   in processLoading? Should it be invoked higher up, by whatever code is requesting
-            #   the Reactor be built from Blueprints?
-            if isinstance(system, reactors.Core):
+            if isinstance(system, Core):
                 summarizeMaterialData(system)
                 self._modifyGeometry(system, gridDesign)
                 system.processLoading(cs)
