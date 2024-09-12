@@ -97,10 +97,12 @@ class ReactorPlugin(plugins.ArmiPlugin):
     def defineSystemBuilders() -> Dict[
         str, Callable[[str], Union["Core", "SpentFuelPool"]]
     ]:
-        from armi.reactor.reactors import Core
         from armi.reactor.assemblyLists import SpentFuelPool
+        from armi.reactor.excoreStructure import ExcoreStructure
+        from armi.reactor.reactors import Core
 
         return {
             "core": Core,
+            "excore": ExcoreStructure,
             "sfp": SpentFuelPool,
         }

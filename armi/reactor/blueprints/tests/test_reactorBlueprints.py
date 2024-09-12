@@ -16,14 +16,15 @@
 import os
 import unittest
 
-from armi.reactor.assemblyLists import SpentFuelPool
-from armi.reactor import blueprints
-from armi.reactor.reactors import Core
 from armi import settings
+from armi.reactor import blueprints
 from armi.reactor import reactors
-from armi.reactor.blueprints import reactorBlueprint
+from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.blueprints import gridBlueprint
+from armi.reactor.blueprints import reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
+from armi.reactor.excoreStructure import ExcoreStructure
+from armi.reactor.reactors import Core
 
 CORE_BLUEPRINT = """
 core:
@@ -39,6 +40,13 @@ sfp:
         x: 0.0
         y: 12.1
         z: 1.1
+evst:
+    type: excore
+    grid name: evst
+    origin:
+        x: 0.0
+        y: 100.0
+        z: 0.0
 """
 
 GRIDS = """
@@ -52,6 +60,15 @@ sfp:
     lattice pitch:
         x: 25.0
         y: 25.0
+    geom: cartesian
+    symmetry: full
+    lattice map: |
+      IC IC
+      IC IC
+evst:
+    lattice pitch:
+        x: 32.0
+        y: 32.0
     geom: cartesian
     symmetry: full
     lattice map: |
@@ -73,10 +90,12 @@ class TestReactorBlueprints(unittest.TestCase):
     def setUp(self):
         # add testMethodName to avoid I/O collisions during parallel testing
         self.systemDesigns = reactorBlueprint.Systems.load(CORE_BLUEPRINT)
-        self.gridDesigns = gridBlueprint.Grids.load(GRIDS.format(self._testMethodName))
+        self.gridDesigns = gridBlueprint.Grids.load(GRIDS)
 
     def test_simple_read(self):
+        self.assertAlmostEqual(self.systemDesigns["core"].origin.y, 10.1)
         self.assertAlmostEqual(self.systemDesigns["sfp"].origin.y, 12.1)
+        self.assertAlmostEqual(self.systemDesigns["evst"].origin.y, 100)
 
     def _setupReactor(self):
         fnames = [self._testMethodName + n for n in ["geometry.xml", "sfp-geom.xml"]]
@@ -97,10 +116,11 @@ class TestReactorBlueprints(unittest.TestCase):
         reactor = reactors.Reactor(cs.caseTitle, bp)
         core = bp.systemDesigns["core"].construct(cs, bp, reactor)
         sfp = bp.systemDesigns["sfp"].construct(cs, bp, reactor)
+        evst = bp.systemDesigns["evst"].construct(cs, bp, reactor)
         for fn in fnames:
             os.remove(fn)
 
-        return core, sfp
+        return core, sfp, evst
 
     def test_construct(self):
         """Actually construct some reactor systems.
@@ -113,12 +133,14 @@ class TestReactorBlueprints(unittest.TestCase):
             :id: T_ARMI_BP_CORE
             :tests: R_ARMI_BP_CORE
         """
-        core, sfp = self._setupReactor()
+        core, sfp, evst = self._setupReactor()
         self.assertEqual(len(core), 2)
         self.assertEqual(len(sfp), 4)
+        self.assertEqual(len(evst), 4)
 
         self.assertIsInstance(core, Core)
         self.assertIsInstance(sfp, SpentFuelPool)
+        self.assertIsInstance(evst, ExcoreStructure)
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
@@ -127,7 +149,7 @@ class TestReactorBlueprints(unittest.TestCase):
             ("HT9", "ARMI", False),
             ("UZr", "ARMI", False),
         ]
-        core, _sfp = self._setupReactor()
+        core, _sfp, _evst = self._setupReactor()
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
             self.assertEqual(actual, expected)

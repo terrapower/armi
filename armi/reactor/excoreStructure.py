@@ -34,11 +34,25 @@ class ExcoreStructure(Composite):
         # TODO: JOHN This is a nonsense placeholder.
         self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
 
-    @property
-    def r(self):
-        from armi.reactor import reactors
-
-        return self.getAncestor(fn=lambda x: isinstance(x, reactors.Reactor))
-
     def __repr__(self):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
+
+    @property
+    def r(self):
+        return self.getAncestor(fn=lambda x: x.__class__.__name__ == "Reactor")
+
+    def add(self, obj, loc):
+        """TODO: JOHN: Add one new child."""
+        if loc.grid is not self.spatialGrid:
+            raise ValueError(
+                f"An Composite cannot be added to {self} using a spatial locator from another grid."
+            )
+
+        # If an assembly is added and it has a negative ID, that is a placeholder, fix it.
+        if "assemNum" in obj.p and obj.p.assemNum < 0:
+            # update the assembly count in the Reactor
+            newNum = self.r.incrementAssemNum()
+            obj.renumber(newNum)
+
+        obj.spatialLocator = loc
+        super().add(obj)
