@@ -232,7 +232,7 @@ class TestDatabaseInterface(unittest.TestCase):
     def test_noSyncDbAfterWrite(self):
         """
         Test to ensure that the fast-path database is NOT copied to working
-        directory at every time node when ``syncDbAfterWrite`` is ``True``.
+        directory at every time node when ``syncDbAfterWrite`` is ``False``.
         """
         self.o.cs["syncDbAfterWrite"] = False
 
