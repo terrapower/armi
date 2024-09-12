@@ -19,12 +19,12 @@ import unittest
 from armi import settings
 from armi.reactor import blueprints
 from armi.reactor import reactors
-from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.blueprints import gridBlueprint
 from armi.reactor.blueprints import reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
 from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core
+from armi.reactor.spentFuelPool import SpentFuelPool
 
 CORE_BLUEPRINT = """
 core:

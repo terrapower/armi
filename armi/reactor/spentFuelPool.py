@@ -52,7 +52,7 @@ class SpentFuelPool(ExcoreStructure):
             the Core, which would try to use the same indices, but move the locator to the Core's
             grid. With a locator, the associated ``AutoFiller`` will be used.
         """
-        if loc.grid is not self.spatialGrid:
+        if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
                 f"An assembly cannot be added to {self} using a spatial locator from another grid."
             )

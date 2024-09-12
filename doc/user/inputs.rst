@@ -1424,12 +1424,13 @@ their locations. ::
 
 dischargeSwap
 ^^^^^^^^^^^^^
-A discharge swap is a simple operation that puts a new assembly into the reactor while discharging an
-outgoing one. ::
+A discharge swap is a simple operation that puts a new assembly into the reactor while discharging
+an outgoing one. ::
 
     self.dischargeSwap(newIncoming,oldOutgoing)
 
-This operation keeps track of the outgoing assembly in a AssemblyList object that the Reactor object has access to so you can see how much of what you discharged.
+This operation keeps track of the outgoing assembly in a SpentFuelPool object that the Reactor
+object has access to so you can see how much of what you discharged.
 
 swapCascade
 ^^^^^^^^^^^
