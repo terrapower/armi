@@ -11,6 +11,9 @@ New Features
 #. ARMI now supports Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
+#. Provide utilities for determining location of a rotated object in a hexagonal lattice:
+   :func:`armi.utils.hexagon.getIndexOfRotatedCell`
+   (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. TBD
 
@@ -20,6 +23,9 @@ API Changes
 #. Removing deprecated method ``prepSearch``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing unused function ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Allow for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
+#. ``Assembly.rotatePins`` and ``Block.rotatePins`` have been removed. Prefer to use
+   :meth:`armi.reactor.assemblies.Assembly.rotate` and meth:`armi.reactor.block.Block.rotate`
+   (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. TBD
 
 Bug Fixes
