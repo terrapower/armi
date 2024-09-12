@@ -224,6 +224,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     if cs[CONF_GEOM_FILE]:
         blueprints.migrate(bp, cs)
 
+    # TODO: JOHN, is this necessary? Maybe not all reactors need SFPs?
     if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
         bp.addDefaultSFP()
 
@@ -238,7 +239,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             bpGeom = geom if structure.name.lower() == "core" else None
             structure.construct(cs, bp, r, geom=bpGeom)
 
-    runLog.debug("Reactor: {}".format(r))
+    runLog.debug(f"Reactor: {r}")
 
     # return a Reactor object
     if cs[CONF_SORT_REACTOR]:
