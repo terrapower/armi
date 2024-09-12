@@ -224,7 +224,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     if cs[CONF_GEOM_FILE]:
         blueprints.migrate(bp, cs)
 
-    # TODO: JOHN, is this necessary? Maybe not all reactors need SFPs?
+    # For now, ARMI will create a default Spent Fuel Pool and add it to every reactor.
     if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
         bp.addDefaultSFP()
 
@@ -246,9 +246,9 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
         r.sort()
     else:
         runLog.warning(
-            "DeprecationWarning: This Reactor is not being sorted on blueprint read. "
-            f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
-            "But this feature is temporary and will be removed by 2024."
+            "DeprecationWarning: This Reactor is not being sorted on blueprint read. Due to the "
+            f"setting {CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is temporary "
+            "and will be removed by 2024."
         )
 
     return r
@@ -1901,7 +1901,7 @@ class Core(composites.Composite):
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
         data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
-        # NOTE: moveList is actually a moveDict (misnomer)
+        # TODO: moveList is actually a moveDict (needs to be renamed) JOHN TICKET
         if self.moveList.get(cycle) is None:
             self.moveList[cycle] = []
         if data in self.moveList[cycle]:

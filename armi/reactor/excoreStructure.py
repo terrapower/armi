@@ -13,7 +13,6 @@
 # limitations under the License.
 """TODO: JOHN."""
 
-from armi.reactor import grids
 from armi.reactor.composites import Composite
 
 
@@ -30,9 +29,7 @@ class ExcoreStructure(Composite):
     def __init__(self, name, parent=None):
         Composite.__init__(self, name)
         self.parent = parent
-
-        # TODO: JOHN This is a nonsense placeholder.
-        self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
+        self.spatialGrid = None
 
     def __repr__(self):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))

@@ -13,16 +13,10 @@
 # limitations under the License.
 
 """
-Module containing :py:class:`AssemblyList` and related classes.
+Spent Fuel Pools are core-like objects that store collections of Assemblies on a grid.
 
-Assembly Lists are core-like objects that store collections of Assemblies. They were
-originally developed to serve as things like spent-fuel pools and the like, where
-spatial location of Assemblies need not be quite as precise.
-
-Presently, the :py:class:`armi.reactor.reactors.Core` constructs a spent fuel pool
-`self.sfp`. We are in the process of removing these as instance attributes of the
-``Core``, and moving them into sibling systems on the root
-:py:class:`armi.reactor.reactors.Reactor` object.
+There are some utilties to make it easier to drop a spent assembly into the pool when it is removed
+from the reactor core.
 """
 import itertools
 
@@ -30,21 +24,15 @@ from armi.reactor import grids
 from armi.reactor.excoreStructure import ExcoreStructure
 
 
-class AssemblyList(ExcoreStructure):
-    """
-    A quasi-arbitrary collection of Assemblies.
-
-    The AssemblyList is similar to a Core, in that it is designed to store Assembly objects. Unlike
-    the Core, they have far fewer convenience functions, and permit looser control over where
-    assemblies actually live.
-    """
+class SpentFuelPool(ExcoreStructure):
+    """TODO: JOHN: A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
 
     def __init__(self, name, parent=None):
         ExcoreStructure.__init__(self, name)
         self.parent = parent
-        self._nMajor = 10  # TODO: JOHN Bad name and default
+        self.numColumns = 10  # TODO: JOHN Bad default
 
-        # TODO: JOHN: Where does this get reset?
+        # TODO: JOHN Can I remove this default? Make it None?
         # make a Cartesian assembly rack by default. Anything that really cares about the layout
         # should specify one manually or in Blueprints
         self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
@@ -64,10 +52,16 @@ class AssemblyList(ExcoreStructure):
             the Core, which would try to use the same indices, but move the locator to the Core's
             grid. With a locator, the associated ``AutoFiller`` will be used.
         """
-        if loc is not None and loc.grid is not self.spatialGrid:
+        if loc.grid is not self.spatialGrid:
             raise ValueError(
                 f"An assembly cannot be added to {self} using a spatial locator from another grid."
             )
+
+        # If the assembly added has a negative ID, that is a placeholder, fix it.
+        if assem.p.assemNum < 0:
+            # update the assembly count in the Reactor
+            newNum = self.r.incrementAssemNum()
+            assem.renumber(newNum)
 
         locProvided = loc is not None or (
             assem.spatialLocator is not None
@@ -94,9 +88,8 @@ class AssemblyList(ExcoreStructure):
 
         Control automatic insertion of Assemblies when a specific Composite location isn't requested.
 
-        This fills the :py:class:`armi.reactor.grids.Grid` of the associated
-        :py:class:`AssemblyList` by filling subsequent rows with ``nMajor`` assemblies before moving to
-        the next row.
+        This fills the :py:class:`armi.reactor.grids.Grid` by filling subsequent rows with
+        ``numColumns`` assemblies before moving to the next row.
 
         assumes rectangular grid
         """
@@ -104,40 +97,13 @@ class AssemblyList(ExcoreStructure):
         grid = self.spatialGrid
 
         for idx in itertools.count():
-            j = idx // self._nMajor  # TODO: JOHN - bad name - "_numColums"
-            i = idx % self._nMajor
+            j = idx // self.numColumns
+            i = idx % self.numColumns
             loc = grid[i, j, 0]
             if loc not in filledLocations:
                 return loc
 
         return None
-
-
-class SpentFuelPool(AssemblyList):
-    """A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
-
-    def add(self, assem, loc=None):
-        """
-        Add an Assembly to the list.
-
-        Parameters
-        ----------
-        assem : Assembly
-            The Assembly to add to the list
-        loc : LocationBase, optional
-            If provided, the assembly is inserted at that location. If it is not provided, the
-            locator on the Assembly object will be used. If the Assembly's locator belongs to
-            ``self.spatialGrid``, the Assembly's existing locator will not be used. This is unlike
-            the Core, which would try to use the same indices, but move the locator to the Core's
-            grid. With a locator, the associated ``AutoFiller`` will be used.
-        """
-        # If the assembly added has a negative ID, that is a placeholder, fix it.
-        if assem.p.assemNum < 0:
-            # update the assembly count in the Reactor
-            newNum = self.r.incrementAssemNum()
-            assem.renumber(newNum)
-
-        super().add(assem, loc)
 
     def normalizeNames(self, startIndex=0):
         """

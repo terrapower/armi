@@ -222,9 +222,6 @@ class SystemBlueprint(yamlize.Object):
             i, j = locationInfo
             loc = container.spatialGrid[i, j, 0]
             try:
-                print(f"TODO: newAssembly: {newAssembly}")
-                print(f"TODO: loc: {loc}")
-                print(f"TODO: container: {container}")
                 container.add(newAssembly, loc)
             except LookupError:
                 badLocations.add(loc)
