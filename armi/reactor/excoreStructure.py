@@ -41,4 +41,4 @@ class ExcoreStructure(Composite):
         return self.getAncestor(fn=lambda x: isinstance(x, reactors.Reactor))
 
     def __repr__(self):
-        return "<ExcoreStructure object: {0}>".format(self.name)
+        return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))

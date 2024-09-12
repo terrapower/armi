@@ -106,9 +106,6 @@ class AssemblyList(ExcoreStructure):
 
         self._filler = RowMajorAutoFiller(self, 10)
 
-    def __repr__(self):
-        return "<AssemblyList object: {0}>".format(self.name)
-
     def add(self, assem, loc=None):
         """
         Add an Assembly to the list.
