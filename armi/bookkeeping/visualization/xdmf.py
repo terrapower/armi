@@ -33,8 +33,7 @@ visualization tool that supports XDMF.
     wedges. To do that would require splitting the parameter data, which would defeat
     the main benefit of using XMDF in the first place (to be able to plot out of the
     original Database file). Cartesian and R-X-Theta geometries in VisIt seem to work
-    fine. Support for polyhedra is being tracked in `#1287
-    <https://github.com/visit-dav/visit/issues/1287>`_.
+    fine.
 """
 
 import io

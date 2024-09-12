@@ -91,7 +91,7 @@ functions, and methods and their signatures (the signature includes the paramete
 
 * Variables that you designate as unused should be prefaced with an underscore (``_``).
 * Do not use Python `reserved keywords <https://realpython.com/lessons/reserved-keywords/>`_ as variable names.
-* Try to use names that are pronounceable. (Well-established variable names from equations are exceptable.)
+* Try to use names that are pronounceable. (Well-established variable names from equations are acceptable.)
 * Keep names concise and expressive. (An exception is test method names, which may be longer and more
   descriptive.)
 * Avoid abbreviations and acronyms, unless they are well understood by subject-matter experts (e.g. DB for database,
@@ -195,7 +195,7 @@ Avoid repeating code
 ====================
 In other words, don't repeat yourself. (`D. R. Y. <https://en.wikipedia.org/wiki/Don't_repeat_yourself>`_).
 Repetitious code is harder to read, and harderd for others to update. If you ever find yourself copying and pasting
-code, consider pulling the repeated code out into it's own function, or using a loop.
+code, consider pulling the repeated code out into its own function, or using a loop.
 
 Public methods should have docstrings
 =====================================
@@ -298,8 +298,8 @@ Input files
 ARMI developers **shall** use one of the following well-defined, Python-supported, input file formats.
 
 .json
-    JSON files are used for a variety of data-object representations. There are some limitations of JSON, in that it
-    does not easily support comments. JSON is also very strict.
+    JSON files are used for a variety of data-object representations. There are some limitations of
+    JSON, in that it does not easily support comments. JSON is also very strict.
 
 .yaml
     YAML files are like JSON files but can have comments in them.
@@ -307,8 +307,14 @@ ARMI developers **shall** use one of the following well-defined, Python-supporte
 General do's and don'ts
 =======================
 
-do not use ``print``
+Do not use ``print``
     ARMI code should not use the ``print`` function; use one of the methods within ``armi.runLog``.
 
 Do not add new ``TODO`` statements in your commits and PRs.
-    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing ``TODO`` statements in the code, those are relic and need to be removed. Also, never mark the code with ``FIXME`` or ``XXX```; open a ticket.
+    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing
+    ``TODO`` statements in the code, those are relic and need to be removed. Similarly, never mark
+    the code with ``FIXME`` or ``XXX```; open a ticket.
+
+Do not link GitHub tickets or PRs in code.
+    The idea in ARMI is that either something is worth documenting well in a docstring, or the docs,
+    or it is not. And just linking a ticket or PR in a docstring is not helpful.

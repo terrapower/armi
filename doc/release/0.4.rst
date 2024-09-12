@@ -26,6 +26,7 @@ Bug Fixes
 ---------
 #. Fixed ``DerivedShape.getArea`` for ``cold=True``. (`PR#1831 <https://github.com/terrapower/armi/pull/1831>`_)
 #. Fixed error parsing command line integers in ``ReportsEntryPoint``. (`PR#1824 <https://github.com/terrapower/armi/pull/1824>`_)
+#. Fixed ``MpiDirectoryChanger``. (`PR#1853 <https://github.com/terrapower/armi/pull/1853>`_)
 #. Changed data type of ``thKernel`` setting from ``bool`` to ``str`` in ``ThermalHydraulicsPlugin``. (`PR#1855 <https://github.com/terrapower/armi/pull/1855>`_)
 #. TBD
 
