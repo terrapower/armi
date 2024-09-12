@@ -1901,7 +1901,7 @@ class Core(composites.Composite):
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
         data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
-        # TODO: moveList is actually a moveDict (needs to be renamed) JOHN TICKET
+        # NOTE: moveList is actually a moveDict (misnomer)
         if self.moveList.get(cycle) is None:
             self.moveList[cycle] = []
         if data in self.moveList[cycle]:
