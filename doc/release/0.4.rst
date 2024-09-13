@@ -26,7 +26,7 @@ API Changes
 #. ``Assembly.rotatePins`` and ``Block.rotatePins`` have been removed. Prefer to use
    :meth:`armi.reactor.assemblies.Assembly.rotate` and meth:`armi.reactor.block.Block.rotate`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
-#. Add ``numPins`` argument to HexBlock.rotatePins() (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
+#. Add ``getNumPins`` argument in HexBlock._rotatePins() (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. TBD
 
 Bug Fixes
