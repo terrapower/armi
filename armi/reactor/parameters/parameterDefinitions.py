@@ -418,7 +418,7 @@ class Parameter:
         else:
             self._backup, self.assigned = self._backup
 
-    def atLocation(self, loc):
+    def atLocation(self, loc: ParamLocation) -> bool:
         """True if parameter is defined at location."""
         return self.location and self.location & loc
 
@@ -443,7 +443,7 @@ class ParameterDefinitionCollection:
     __slots__ = ("_paramDefs", "_paramDefDict", "_representedTypes", "_locked")
 
     def __init__(self):
-        self._paramDefs = list()
+        self._paramDefs: list[Parameter] = list()
         self._paramDefDict = dict()
         self._representedTypes = set()
         self._locked = False
@@ -510,14 +510,14 @@ class ParameterDefinitionCollection:
         for pd in other:
             self.add(pd)
 
-    def inCategory(self, categoryName):
+    def inCategory(self, categoryName: str):
         """
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions that are in a
         specific category.
         """
         return self._filter(lambda pd: categoryName in pd.categories)
 
-    def atLocation(self, paramLoc):
+    def atLocation(self, paramLoc: ParamLocation):
         """
         Make a param definition collection with all defs defined at a specific location.
 
@@ -576,7 +576,7 @@ class ParameterDefinitionCollection:
         return self._paramDefDict[name, collectionType]
 
     @property
-    def categories(self):
+    def categories(self) -> set[str]:
         """Get the categories of all the :py:class:`~Parameter` instances within this collection."""
         categories = set()
         for paramDef in self:
@@ -584,14 +584,14 @@ class ParameterDefinitionCollection:
         return categories
 
     @property
-    def names(self):
+    def names(self) -> list[str]:
         return [pd.name for pd in self]
 
     def lock(self):
         self._locked = True
 
     @property
-    def locked(self):
+    def locked(self) -> bool:
         return self._locked
 
     def toWriteToDB(self, assignedMask: Optional[int] = None):
