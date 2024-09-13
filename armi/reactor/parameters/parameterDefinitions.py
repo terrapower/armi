@@ -55,42 +55,39 @@ NEVER = 32
 
 
 class Category:
-    """
-    A "namespace" for storing parameter categories.
-
-    Notes
-    -----
-    * ``cumulative`` parameters are accumulated over many time steps
-    * ``pinQuantities`` parameters are defined on the pin level within a block
-    * ``multiGroupQuantities`` parameters have group dependence (often a 1D numpy array)
-    * ``fluxQuantities`` parameters are related to neutron or gamma flux
-    * ``neutronics`` parameters are calculated in a neutronics global flux solve
-    * ``gamma`` parameters are calculated in a fixed-source gamma solve
-    * ``detailedAxialExpansion`` parameters are marked as such so that they are mapped from the
-       uniform mesh back to the non-uniform mesh
-    * ``reactivity coefficients`` parameters are related to reactivity coefficient or kinetics
-       parameters for kinetics solutions
-    * ``thermal hydraulics`` parameters come from a thermal hydraulics physics plugin (e.g., flow
-       rates, temperatures, etc.)
-    * ``rotatable`` parameters should be updated during calls to :meth:`armi.reactor.assemblies.Assembly.rotate`
-      and :meth:`armi.reactor.blocks.Block.rotate`. See :meth:`armi.reactors.blocks.HexBlock.rotate` for
-      instructions on how rotatable parameters should be structured.
-    """
+    """A "namespace" for storing parameter categories."""
 
     depletion = "depletion"
+    """Parameters used in or calculated by a depletion plugin."""
     cumulative = "cumulative"
+    """Parameters are accumulated over many time steps"""
     cumulativeOverCycle = "cumulative over cycle"
+    """Parameters that are reset at beginning of cycle and accumulated over each cycle."""
     assignInBlueprints = "assign in blueprints"
+    """Parameters that should be assigned in blueprints (e.g., control rod elevation)"""
     retainOnReplacement = "retain on replacement"
     pinQuantities = "pinQuantities"
+    """Parameters are defined on the pin level within a block"""
     fluxQuantities = "fluxQuantities"
+    """Parameters are related to neutron or gamma flux"""
     multiGroupQuantities = "multi-group quantities"
+    """Parameters have group dependence (often a 1D numpy array)"""
     neutronics = "neutronics"
+    """Parameters are calculated in a neutronics global flux solve"""
     gamma = "gamma"
+    """Parameters are calculated in a fixed-source gamma solve"""
     detailedAxialExpansion = "detailedAxialExpansion"
+    """Parameters that are mapped from the uniform mesh back to the non-uniform mesh"""
     reactivityCoefficients = "reactivity coefficients"
+    """Parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions"""
     thermalHydraulics = "thermal hydraulics"
+    """Parameters come from a thermal hydraulics physics plugin (e.g., flow rates, temperatures, etc.)"""
     rotatable = "rotatable"
+    """Parameters that should be rotated.
+
+    For parameters defined for and used on hexagonal reactors, see
+    :meth:`armi.reactors.blocks.HexBlock.rotate` for instructions on how rotatable
+    parmeters should be structured."""
 
 
 class ParamLocation(enum.Flag):
