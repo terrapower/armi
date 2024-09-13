@@ -2091,21 +2091,6 @@ class HexBlock(Block):
             object variable self.p.pinLocation.  Useful for figuring out which rotation is best
             to minimize burnup, etc.
 
-        numPins : int, optional
-            Option to provide the number of pins in the assembly to be rotated instead of
-            checking the multiplicity of the cladding component. This can be useful in at least
-            two scenarios:
-
-                1. The pins in the block to be rotated do not have a cladding
-                   (e.g., solid steel reflector slugs)
-                2. The pin lattice has missing locations (e.g., 6 corner pins
-                   removed) so the number of apparent pins does not make a full
-                   hex lattice (19, 37, 61, 91, etc.). The math for rotating the
-                   pin numbers only works on a regular hex lattice. If the block
-                   has a nonstandard number of pins, then the mapping from the
-                   regular lattice pin index to a nonstandard lattice pin index
-                   must be applied outside of this method.
-
         Returns
         -------
         rotateIndexLookup : dict of ints
