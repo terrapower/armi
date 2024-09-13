@@ -15,6 +15,8 @@ New Features
    :func:`armi.utils.hexagon.getIndexOfRotatedCell`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. :meth:`armi.reactor.blocks.HexBlock.rotate` only rotates parameters that are marked with
+   the ``rotatable`` :class:`~armi.reactor.parameters.parameterDefinitions.Category`
 #. TBD
 
 API Changes
