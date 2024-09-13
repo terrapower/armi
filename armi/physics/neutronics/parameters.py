@@ -331,7 +331,12 @@ def _getNeutronicsBlockParams():
             setter=isNumpyArray("pointsEdgeDpa"),
             units=units.DPA,
             description="displacements per atom at edges of the block",
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+            categories=[
+                "cumulative",
+                "detailedAxialExpansion",
+                "depletion",
+                parameters.Category.rotatable,
+            ],
         )
 
         pb.defParam(
@@ -368,7 +373,12 @@ def _getNeutronicsBlockParams():
             units=units.DPA,
             description="displacements per atom at corners of the block",
             location=ParamLocation.CORNERS,
-            categories=["cumulative", "detailedAxialExpansion", "depletion"],
+            categories=[
+                "cumulative",
+                "detailedAxialExpansion",
+                "depletion",
+                parameters.Category.rotatable,
+            ],
         )
 
         pb.defParam(
