@@ -36,7 +36,7 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
-from armi.utils import hexagon, units
+from armi.utils import hexagon, units, iterables
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
 NUM_PINS_IN_TEST_BLOCK = 217
@@ -1742,8 +1742,21 @@ class Block_TestCase(unittest.TestCase):
 class BlockRotateTests(unittest.TestCase):
     """Tests for the ability for a block to be rotated."""
 
+    BOUNDARY_PARAMS = [
+        "pointsCornerDpa",
+        "cornerFastFlux",
+        "pointsCornerFastFluxFr",
+        "pointsCornerDpaRate",
+        "pointsEdgeFastFluxFr",
+        "pointsEdgeDpa",
+        "pointsEdgeDpaRate",
+    ]
+    BOUNDARY_DATA = np.arange(6, dtype=float) * 10
+
     def setUp(self):
         self.block = loadTestBlock()
+        for name in self.BOUNDARY_PARAMS:
+            self.block.p[name] = self.BOUNDARY_DATA
 
     def test_rotatePins(self):
         """Test rotate pins updates pin locations."""
@@ -1776,6 +1789,25 @@ class BlockRotateTests(unittest.TestCase):
         self.assertRaises(ValueError, b._rotatePins, 10)
         self.assertRaises((ValueError, TypeError), b._rotatePins, None)
         self.assertRaises((ValueError, TypeError), b._rotatePins, "a")
+
+    def test_rotateBoundaryParameters(self):
+        """Test that boundary parameters are correctly rotated."""
+        # No rotation == no changes to data
+        self._rotateAndCompareBoundaryParams(0, self.BOUNDARY_DATA)
+        for rotNum in range(1, 6):
+            expected = iterables.pivot(self.BOUNDARY_DATA, -rotNum)
+            self._rotateAndCompareBoundaryParams(rotNum, expected)
+            # undo rotation to restore state for next test
+            self.block._rotateBoundaryParameters(6 - rotNum)
+        # Six rotations of 60 degrees puts us back to the original layout
+        self._rotateAndCompareBoundaryParams(6, self.BOUNDARY_DATA)
+
+    def _rotateAndCompareBoundaryParams(self, rotNum: int, expected: np.ndarray):
+        self.block._rotateBoundaryParameters(rotNum)
+        for name in self.BOUNDARY_PARAMS:
+            data = self.block.p[name]
+            msg = f"{name=} :: {rotNum=} :: {data=}"
+            np.testing.assert_array_equal(data, expected, err_msg=msg)
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
