@@ -72,6 +72,9 @@ class Category:
        parameters for kinetics solutions
     * ``thermal hydraulics`` parameters come from a thermal hydraulics physics plugin (e.g., flow
        rates, temperatures, etc.)
+    * ``rotatable`` parameters should be updated during calls to :meth:`armi.reactor.assemblies.Assembly.rotate`
+      and :meth:`armi.reactor.blocks.Block.rotate`. See :meth:`armi.reactors.blocks.HexBlock.rotate` for
+      instructions on how rotatable parameters should be structured.
     """
 
     depletion = "depletion"
@@ -87,6 +90,7 @@ class Category:
     detailedAxialExpansion = "detailedAxialExpansion"
     reactivityCoefficients = "reactivity coefficients"
     thermalHydraulics = "thermal hydraulics"
+    rotatable = "rotatable"
 
 
 class ParamLocation(enum.Flag):
