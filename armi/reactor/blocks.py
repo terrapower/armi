@@ -2148,14 +2148,13 @@ class HexBlock(Block):
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
 
-        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
-        # cladding count.
-        numPins = self.getNumComponents(Flags.CLAD)
+        numPins = self.getNumPins()
         hexRings = [3 * r * (r - 1) + 1 for r in range(1, 11)]
         for i in range(len(hexRings) - 1):
             if numPins > hexRings[i] and numPins < hexRings[i + 1]:
                 # round numPins up
                 numPins = hexRings[i + 1]
+        # Pin numbers start at 1.
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
         # Look up the current orientation and add this to it. The math below just rotates
