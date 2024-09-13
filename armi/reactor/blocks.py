@@ -43,7 +43,10 @@ from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools, hexagon, iterables, units
+from armi.utils import densityTools
+from armi.utils import hexagon
+from armi.utils import iterables
+from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
