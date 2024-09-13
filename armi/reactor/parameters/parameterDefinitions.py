@@ -60,17 +60,17 @@ class Category:
 
     Notes
     -----
-    * `cumulative` parameters are accumulated over many time steps
-    * `pinQuantities` parameters are defined on the pin level within a block
-    * `multiGroupQuantities` parameters have group dependence (often a 1D numpy array)
-    * `fluxQuantities` parameters are related to neutron or gamma flux
-    * `neutronics` parameters are calculated in a neutronics global flux solve
-    * `gamma` parameters are calculated in a fixed-source gamma solve
-    * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the
+    * ``cumulative`` parameters are accumulated over many time steps
+    * ``pinQuantities`` parameters are defined on the pin level within a block
+    * ``multiGroupQuantities`` parameters have group dependence (often a 1D numpy array)
+    * ``fluxQuantities`` parameters are related to neutron or gamma flux
+    * ``neutronics`` parameters are calculated in a neutronics global flux solve
+    * ``gamma`` parameters are calculated in a fixed-source gamma solve
+    * ``detailedAxialExpansion`` parameters are marked as such so that they are mapped from the
        uniform mesh back to the non-uniform mesh
-    * `reactivity coefficients` parameters are related to reactivity coefficient or kinetics
+    * ``reactivity coefficients`` parameters are related to reactivity coefficient or kinetics
        parameters for kinetics solutions
-    * `thermal hydraulics` parameters come from a thermal hydraulics physics plugin (e.g., flow
+    * ``thermal hydraulics`` parameters come from a thermal hydraulics physics plugin (e.g., flow
        rates, temperatures, etc.)
     """
 
