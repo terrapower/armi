@@ -18,7 +18,7 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
+from typing import Optional, Type, Tuple, ClassVar, Callable
 import collections
 import copy
 import math
@@ -42,7 +42,7 @@ from armi.reactor.components import basicShapes
 from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
-from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters import ParamLocation, Parameter, Category
 from armi.utils import densityTools
 from armi.utils import hexagon
 from armi.utils import iterables
@@ -2004,6 +2004,9 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
+    def _paramsWhere(self, f: Callable[[Parameter], bool]):
+        return filter(f, self.p.paramDefs)
+
     def rotate(self, rad):
         """
         Rotates a block's spatially varying parameters by a specified angle in the
@@ -2022,6 +2025,22 @@ class HexBlock(Block):
             in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
             and 2 * PI)
 
+        Notes
+        -----
+        Parameters marked with the ``rotatable``
+        :class:`~armi.reactor.parameters.parameterDefinitions.Category` will be rotated.
+        These parameters must adhere to one of the following rules to be rotated:
+
+        * triplets of float signifying rotation about the x, y, and z dimension like `Block.p.orientation`, or
+        * vectors of scalars with a number of dimensions equal to the number of edges in the bounding
+          surface of that ``Block`` e.g., ``Block.p.pointsCornerDpa`` should have six elements to be rotatable
+          on a :class:`armi.reactor.blocks.HexBlock`
+        * vectors or arrays with the outer dimension corresponding to a number of pins in a lattice of that
+          block. For example, ``Block.p.percentBuByPin`` is a vector of linear power for each pin in the block.
+          The center pin does not rotate so the first row of ``percentBuByPin`` will not be updated.
+          The first ring of pins has data in entries ``percentBuByPin[1:7]`` and will be shifted to correspond
+          to the new location. Similar for the second ring of pins in ``percentByPyBin[7:19]`` and so on.
+
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotatePins(rotNum)
@@ -2038,9 +2057,15 @@ class HexBlock(Block):
             rotations have taken place.
 
         """
-        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for name in names:
+        params = self._paramsWhere(
+            lambda pd: pd.hasCategory(Category.rotatable)
+            and (
+                pd.atLocation(ParamLocation.EDGES)
+                or pd.atLocation(ParamLocation.CORNERS)
+            )
+        )
+        for param in params:
+            name = param.name
             original = self.p[name]
             if isinstance(original, (list, np.ndarray)):
                 if len(original) == 6:
