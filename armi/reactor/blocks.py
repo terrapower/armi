@@ -25,11 +25,13 @@ from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases, runLog
+from armi import nuclideBases
+from armi import runLog
 from armi.bookkeeping import report
 from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON
 from armi.reactor import (
     blockParameters,
     components,
