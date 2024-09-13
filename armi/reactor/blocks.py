@@ -43,7 +43,7 @@ from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools, hexagon, units
+from armi.utils import densityTools, hexagon, iterables, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -1563,10 +1563,6 @@ class Block(composites.Composite):
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
             Component specified to be target component for axial expansion changer
-
-        See Also
-        --------
-        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
@@ -2014,8 +2010,7 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the pinLocation parameter, is also updated via
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
+        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
 
         Parameters
         ----------
@@ -2024,54 +2019,53 @@ class HexBlock(Block):
             in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
             and 2 * PI)
 
-        See Also
-        --------
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self.rotatePins(rotNum)
-        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for param in params:
-            if isinstance(self.p[param], list):
-                if len(self.p[param]) == 6:
-                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
-                elif self.p[param] == []:
-                    # List hasn't been defined yet, no warning needed.
-                    pass
-                else:
-                    msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
-                    )
-                    runLog.warning(msg)
-            elif isinstance(self.p[param], np.ndarray):
-                if len(self.p[param]) == 6:
-                    self.p[param] = np.concatenate(
-                        (self.p[param][-rotNum:], self.p[param][:-rotNum])
-                    )
-                elif len(self.p[param]) == 0:
+        self._rotatePins(rotNum)
+        self._rotateBoundaryParameters(rotNum)
+        self._rotateDisplacement(rad)
+
+    def _rotateBoundaryParameters(self, rotNum: int):
+        """Rotate any parameters defined on the corners or edge of bounding hexagon.
+
+        Parameters
+        ----------
+        rotNum : int
+            Rotation number between zero and five, inclusive, specifying how many
+            rotations have taken place.
+
+        """
+        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for name in names:
+            original = self.p[name]
+            if isinstance(original, (list, np.ndarray)):
+                if len(original) == 6:
+                    # Rotate by making the -rotNum item be first
+                    self.p[name] = iterables.pivot(original, -rotNum)
+                elif len(original) == 0:
                     # Hasn't been defined yet, no warning needed.
                     pass
                 else:
                     msg = (
                         "No rotation method defined for spatial parameters that aren't "
                         "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
+                        f"on {name}"
                     )
                     runLog.warning(msg)
-            elif isinstance(self.p[param], (int, float)):
+            elif isinstance(original, (int, float)):
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-            elif self.p[param] is None:
+            elif original is None:
                 # param is not set yet. no rotations as well.
                 pass
             else:
                 raise TypeError(
-                    f"b.rotate() method received unexpected data type for {param} on block {self}\n"
-                    + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
+                    f"b.rotate() method received unexpected data type for {name} on block {self}\n"
+                    + f"expected list, np.ndarray, int, or float. received {original}"
                 )
+
+    def _rotateDisplacement(self, rad: float):
         # This specifically uses the .get() functionality to avoid an error if this
         # parameter does not exist.
         dispx = self.p.get("displacementX")
@@ -2080,7 +2074,7 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def rotatePins(self, rotNum, justCompute=False, numPins=0):
+    def _rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
         not rotate all block quantities, just the pins.
@@ -2156,13 +2150,12 @@ class HexBlock(Block):
 
         # Pin numbers start at 1. Number of pins in the block is assumed to be based on
         # cladding count.
-        if numPins == 0:
-            numPins = self.getNumComponents(Flags.CLAD)
-            hexRings = [3 * r * (r - 1) + 1 for r in range(1, 11)]
-            for i in range(len(hexRings) - 1):
-                if numPins > hexRings[i] and numPins < hexRings[i + 1]:
-                    # round numPins up
-                    numPins = hexRings[i + 1]
+        numPins = self.getNumComponents(Flags.CLAD)
+        hexRings = [3 * r * (r - 1) + 1 for r in range(1, 11)]
+        for i in range(len(hexRings) - 1):
+            if numPins > hexRings[i] and numPins < hexRings[i + 1]:
+                # round numPins up
+                numPins = hexRings[i + 1]
         rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
 
         # Look up the current orientation and add this to it. The math below just rotates
@@ -2176,17 +2169,7 @@ class HexBlock(Block):
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring. Rotation does not change the pin ring!
-                ring = int(
-                    math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
-                )
-
-                # Rotate the pin position (within the ring, which does not change)
-                tot_pins = 1 + 3 * ring * (ring - 1)
-                newPinLocation = pinNum + (ring - 1) * rotNum
-                if newPinLocation > tot_pins:
-                    newPinLocation -= (ring - 1) * 6
-
+                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 

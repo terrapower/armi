@@ -62,7 +62,7 @@ assemblies:
     specifier: assembly1_1
     blocks:
       - name: block1_1_1
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -85,7 +85,7 @@ assemblies:
           inner_radius: 0.0
           mult: 0.0773080587387085
       - name: block1_1_2
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -97,7 +97,7 @@ assemblies:
           inner_radius: 0.0
           mult: 1.0
       - name: block1_1_3
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -109,7 +109,7 @@ assemblies:
           inner_radius: 0.0
           mult: 1.0
       - name: block1_1_4
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -121,7 +121,7 @@ assemblies:
           inner_radius: 0.0
           mult: 1.0
       - name: block1_1_5
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -180,7 +180,7 @@ assemblies:
     specifier: assembly2_1
     blocks:
       - name: block2_1_1
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -203,7 +203,7 @@ assemblies:
           inner_radius: 3.001
           mult: 0.4045467972755432
       - name: block2_1_2
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -215,7 +215,7 @@ assemblies:
           inner_radius: 3.001
           mult: 1.0
       - name: block2_1_3
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -227,7 +227,7 @@ assemblies:
           inner_radius: 3.001
           mult: 1.0
       - name: block2_1_4
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -239,7 +239,7 @@ assemblies:
           inner_radius: 3.001
           mult: 1.0
       - name: block2_1_5
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -298,7 +298,7 @@ assemblies:
     specifier: assembly3_1
     blocks:
       - name: block3_1_1
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -321,7 +321,7 @@ assemblies:
           inner_radius: 6.002
           mult: 0.9538451991975307
       - name: block3_1_2
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -344,7 +344,7 @@ assemblies:
           inner_radius: 6.002
           mult: 0.3964693546295166
       - name: block3_1_3
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -367,7 +367,7 @@ assemblies:
           inner_radius: 6.002
           mult: 0.12437152862548828
       - name: block3_1_4
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85
@@ -390,7 +390,7 @@ assemblies:
           inner_radius: 6.002
           mult: 0.4006919860839844
       - name: block3_1_5
-        Godiva:
+        godiva:
           shape: RadialSegment
           material: UZr
           Tinput: 26.85

@@ -18,6 +18,8 @@ import os
 import unittest
 from statistics import mean
 
+from numpy import array, linspace, zeros
+
 from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
@@ -28,14 +30,15 @@ from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
-    _determineLinked,
     getSolidComponents,
+)
+from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
+    _determineLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import units
-from numpy import array, linspace, zeros
 
 
 class AxialExpansionTestBase(unittest.TestCase):
