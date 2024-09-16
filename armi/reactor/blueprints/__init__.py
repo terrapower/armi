@@ -71,7 +71,6 @@ import typing
 
 from ruamel.yaml import CLoader, RoundTripLoader
 import ordered_set
-import tabulate
 import yamlize
 import yamlize.objects
 
@@ -102,6 +101,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
     CONF_GEOM_FILE,
 )
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils.customExceptions import InputError
 
@@ -326,7 +326,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                axialExpansionChanger.expandColdDimsToHot(
+                axialExpansionChanger.axialExpansionChanger.expandColdDimsToHot(
                     assemsToExpand,
                     cs[CONF_DETAILED_AXIAL_EXPANSION],
                 )
@@ -479,7 +479,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                             ),
                         ]
                     ],
-                    tablefmt="plain",
+                    tableFmt="plain",
                 ),
                 single=True,
             )

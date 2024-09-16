@@ -55,11 +55,7 @@ from typing import Dict, Callable, Union, TYPE_CHECKING
 
 from armi import plugins
 
-# Provide type checking but avoid circular imports
-# Not used during runtime so we could have a coverage drop here. Add the
-# pragma line to tell coverage.py to skip this
-# https://coverage.readthedocs.io/en/stable/excluding.html
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from armi.reactor.reactors import Core
     from armi.reactor.assemblyLists import SpentFuelPool
 

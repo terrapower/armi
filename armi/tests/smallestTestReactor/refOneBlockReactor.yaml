@@ -57,14 +57,13 @@ blocks:
             op: 16.8
 assemblies:
     heights: &standard_heights [25.0]
-    axial mesh points: &standard_axial_mesh_points [ 1]
+    axial mesh points: &standard_axial_mesh_points [1]
     igniter fuel:
         specifier: IC
-        blocks: &igniter_fuel_blocks [ *block_fuel]
+        blocks: &igniter_fuel_blocks [*block_fuel]
         height: *standard_heights
         axial mesh points: *standard_axial_mesh_points
         material modifications:
-            U235_wt_frac: &igniter_fuel_u235_wt_frac [ 0.11]
+            U235_wt_frac: &igniter_fuel_u235_wt_frac [0.11]
             ZR_wt_frac: &igniter_fuel_zr_wt_frac [0.06]
         xs types: &igniter_fuel_xs_types [A]
-    

@@ -100,21 +100,21 @@ Examples
                          IC   IC   MC   PC   RR   SH
 
 """
-import copy
 from io import StringIO
-import itertools
 from typing import Tuple
+import copy
+import itertools
 
-import numpy
+import numpy as np
 import yamlize
 from ruamel.yaml import scalarstring
 
-from armi.utils.customExceptions import InputError
-from armi.utils import asciimaps
-from armi.utils.mathematics import isMonotonic
-from armi.reactor import geometry, grids
-from armi.reactor import blueprints
 from armi import runLog
+from armi.reactor import blueprints
+from armi.reactor import geometry, grids
+from armi.utils import asciimaps
+from armi.utils.customExceptions import InputError
+from armi.utils.mathematics import isMonotonic
 
 
 class Triplet(yamlize.Object):
@@ -296,8 +296,8 @@ class GridBlueprint(yamlize.Object):
                     )
 
             # convert to list, otherwise it is a CommentedSeq
-            theta = numpy.array(self.gridBounds["theta"])
-            radii = numpy.array(self.gridBounds["r"])
+            theta = np.array(self.gridBounds["theta"])
+            radii = np.array(self.gridBounds["r"])
             for lst, name in ((theta, "theta"), (radii, "radii")):
                 if not isMonotonic(lst, "<"):
                     raise InputError(

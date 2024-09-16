@@ -23,12 +23,13 @@ import collections
 import copy
 import math
 
-import numpy
+import numpy as np
 
 from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
 from armi.nucDirectory import elements
+from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
@@ -44,10 +45,10 @@ from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
 from armi.utils import hexagon
+from armi.utils import iterables
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
-from armi.nuclearDataIO import xsCollections
 
 PIN_COMPONENTS = [
     Flags.CONTROL,
@@ -93,7 +94,7 @@ class Block(composites.Composite):
         self.p.height = height
         self.p.heightBOL = height
 
-        self.p.orientation = numpy.array((0.0, 0.0, 0.0))
+        self.p.orientation = np.array((0.0, 0.0, 0.0))
 
         self.points = []
         self.macros = None
@@ -247,7 +248,7 @@ class Block(composites.Composite):
             )
 
         # Compute component areas
-        cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
+        cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
             math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
@@ -335,7 +336,7 @@ class Block(composites.Composite):
         flux = composites.ArmiObject.getMgFlux(
             self, adjoint=adjoint, average=False, volume=volume, gamma=gamma
         )
-        if average and numpy.any(self.p.lastMgFlux):
+        if average and np.any(self.p.lastMgFlux):
             volume = volume or self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
             flux = (flux + lastFlux) / 2.0
@@ -382,7 +383,7 @@ class Block(composites.Composite):
                 thisPinFlux.append(fluxes[g][pinLoc - 1])
             pinFluxes.append(thisPinFlux)
 
-        pinFluxes = numpy.array(pinFluxes)
+        pinFluxes = np.array(pinFluxes)
         if gamma:
             if adjoint:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
@@ -1361,9 +1362,9 @@ class Block(composites.Composite):
         lib = self.core.lib
         flux = self.getMgFlux(gamma=gamma)
         flux = [fi / max(flux) for fi in flux]
-        mfpNumerator = numpy.zeros(len(flux))
-        absMfpNumerator = numpy.zeros(len(flux))
-        transportNumerator = numpy.zeros(len(flux))
+        mfpNumerator = np.zeros(len(flux))
+        absMfpNumerator = np.zeros(len(flux))
+        transportNumerator = np.zeros(len(flux))
 
         numDensities = self.getNumberDensities()
 
@@ -1506,7 +1507,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        integratedFlux : numpy.array
+        integratedFlux : np.ndarray
             multigroup neutron tracklength in [n-cm/s]
         """
         if adjoint:
@@ -1518,7 +1519,7 @@ class Block(composites.Composite):
         else:
             integratedFlux = self.p.mgFlux
 
-        return numpy.array(integratedFlux)
+        return np.array(integratedFlux)
 
     def getLumpedFissionProductCollection(self):
         """
@@ -1565,10 +1566,6 @@ class Block(composites.Composite):
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
             Component specified to be target component for axial expansion changer
-
-        See Also
-        --------
-        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
@@ -1606,7 +1603,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        totalEnergyGenConstant: numpy.array
+        totalEnergyGenConstant: np.ndarray
             Total (fission + capture) energy generation group constants (Joules/cm)
         """
         return (
@@ -1623,7 +1620,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        fissionEnergyGenConstant: numpy.array
+        fissionEnergyGenConstant: np.ndarray
             Energy generation group constants (Joules/cm)
 
         Raises
@@ -1650,7 +1647,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        fissionEnergyGenConstant: numpy.array
+        fissionEnergyGenConstant: np.ndarray
             Energy generation group constants (Joules/cm)
 
         Raises
@@ -1674,7 +1671,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        energyDepConstants: numpy.array
+        energyDepConstants: np.ndarray
             Neutron energy generation group constants (in Joules/cm)
 
         Raises
@@ -1698,7 +1695,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        energyDepConstants: numpy.array
+        energyDepConstants: np.ndarray
             Energy generation group constants (in Joules/cm)
 
         Raises
@@ -1979,7 +1976,7 @@ class HexBlock(Block):
             )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
-        self.p[powerKey] = numpy.zeros(numPins)
+        self.p[powerKey] = np.zeros(numPins)
 
         # Loop through rings. The *pinLocation* parameter is only accessed for fueled
         # blocks; it is assumed that non-fueled blocks do not use a rotation map.
@@ -2016,8 +2013,7 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the pinLocation parameter, is also updated via
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
+        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
 
         Parameters
         ----------
@@ -2026,54 +2022,53 @@ class HexBlock(Block):
             in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
             and 2 * PI)
 
-        See Also
-        --------
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self.rotatePins(rotNum)
-        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for param in params:
-            if isinstance(self.p[param], list):
-                if len(self.p[param]) == 6:
-                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
-                elif self.p[param] == []:
-                    # List hasn't been defined yet, no warning needed.
-                    pass
-                else:
-                    msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
-                    )
-                    runLog.warning(msg)
-            elif isinstance(self.p[param], numpy.ndarray):
-                if len(self.p[param]) == 6:
-                    self.p[param] = numpy.concatenate(
-                        (self.p[param][-rotNum:], self.p[param][:-rotNum])
-                    )
-                elif len(self.p[param]) == 0:
+        self._rotatePins(rotNum)
+        self._rotateBoundaryParameters(rotNum)
+        self._rotateDisplacement(rad)
+
+    def _rotateBoundaryParameters(self, rotNum: int):
+        """Rotate any parameters defined on the corners or edge of bounding hexagon.
+
+        Parameters
+        ----------
+        rotNum : int
+            Rotation number between zero and five, inclusive, specifying how many
+            rotations have taken place.
+
+        """
+        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for name in names:
+            original = self.p[name]
+            if isinstance(original, (list, np.ndarray)):
+                if len(original) == 6:
+                    # Rotate by making the -rotNum item be first
+                    self.p[name] = iterables.pivot(original, -rotNum)
+                elif len(original) == 0:
                     # Hasn't been defined yet, no warning needed.
                     pass
                 else:
                     msg = (
                         "No rotation method defined for spatial parameters that aren't "
                         "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
+                        f"on {name}"
                     )
                     runLog.warning(msg)
-            elif isinstance(self.p[param], (int, float)):
+            elif isinstance(original, (int, float)):
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-            elif self.p[param] is None:
+            elif original is None:
                 # param is not set yet. no rotations as well.
                 pass
             else:
                 raise TypeError(
-                    f"b.rotate() method received unexpected data type for {param} on block {self}\n"
-                    + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
+                    f"b.rotate() method received unexpected data type for {name} on block {self}\n"
+                    + f"expected list, np.ndarray, int, or float. received {original}"
                 )
+
+    def _rotateDisplacement(self, rad: float):
         # This specifically uses the .get() functionality to avoid an error if this
         # parameter does not exist.
         dispx = self.p.get("displacementX")
@@ -2082,7 +2077,7 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def rotatePins(self, rotNum, justCompute=False):
+    def _rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
         not rotate all block quantities, just the pins.
@@ -2157,17 +2152,7 @@ class HexBlock(Block):
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring. Rotation does not change the pin ring!
-                ring = int(
-                    math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
-                )
-
-                # Rotate the pin position (within the ring, which does not change)
-                tot_pins = 1 + 3 * ring * (ring - 1)
-                newPinLocation = pinNum + (ring - 1) * rotNum
-                if newPinLocation > tot_pins:
-                    newPinLocation -= (ring - 1) * 6
-
+                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
@@ -2289,7 +2274,7 @@ class HexBlock(Block):
     def getRotationNum(self):
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
         return (
-            numpy.rint(self.p.orientation[2] / 360.0 * 6) % 6
+            np.rint(self.p.orientation[2] / 360.0 * 6) % 6
         )  # assume rotation only in Z
 
     def setRotationNum(self, rotNum):
@@ -2549,7 +2534,7 @@ class HexBlock(Block):
             correctionFactor = 1.0
             if isinstance(c, Helix):
                 # account for the helical wire wrap
-                correctionFactor = numpy.hypot(
+                correctionFactor = np.hypot(
                     1.0,
                     math.pi
                     * c.getDimension("helixDiameter")

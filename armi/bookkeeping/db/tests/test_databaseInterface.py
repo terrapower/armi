@@ -17,7 +17,7 @@ import types
 import unittest
 
 import h5py
-import numpy
+import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
 from armi import __version__ as version
@@ -77,6 +77,31 @@ class MockInterface(interfaces.Interface):
         self.action(cycle, node)
 
 
+class TestDatabaseInterfaceBOL(unittest.TestCase):
+    """Test the DatabaseInterface class at the BOL."""
+
+    def test_interactBOL(self):
+        """This test is in its own class, because of temporary directory issues."""
+        with directoryChangers.TemporaryDirectoryChanger():
+            self.o, self.r = loadTestReactor(
+                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            )
+            self.dbi = DatabaseInterface(self.r, self.o.cs)
+
+            dbName = f"{self._testMethodName}.h5"
+            self.dbi.initDB(fName=dbName)
+            self.db: Database3 = self.dbi.database
+            self.stateRetainer = self.r.retainState().__enter__()
+            self.assertIsNotNone(self.dbi._db)
+            self.dbi.interactBOL()
+            self.dbi.closeDB()
+            self.dbi._db = None
+            self.assertIsNone(self.dbi._db)
+
+            if os.path.exists(dbName):
+                os.remove(dbName)
+
+
 class TestDatabaseInterface(unittest.TestCase):
     """Tests for the DatabaseInterface class."""
 
@@ -104,15 +129,6 @@ class TestDatabaseInterface(unittest.TestCase):
         for dirt in bolDirt:
             if os.path.exists(dirt):
                 os.remove(dirt)
-
-    def test_interactBOL(self):
-        self.assertIsNotNone(self.dbi._db)
-        self.dbi.interactBOL()
-
-        self.dbi._db = None
-        self.assertIsNone(self.dbi._db)
-        self.dbi.interactBOL()
-        self.assertIsNotNone(self.dbi._db)
 
     def test_distributable(self):
         self.assertEqual(self.dbi.distributable(), 4)
@@ -177,6 +193,55 @@ class TestDatabaseInterface(unittest.TestCase):
         self.assertFalse(self.dbi._db.hasTimeStep(0, 0))
         self.o._timeNodeLoop(0, 0)
         self.assertTrue(self.dbi._db.hasTimeStep(0, 0))
+
+    def test_syncDbAfterWrite(self):
+        """
+        Test to ensure that the fast-path database is copied to working
+        directory at every time node when ``syncDbAfterWrite`` is ``True``.
+        """
+        r = self.r
+
+        self.o.cs["syncDbAfterWrite"] = True
+        self.o.cs["burnSteps"] = 2  # make test insensitive to burn steps
+
+        self.dbi.interactBOL()
+        self.assertFalse(os.path.exists(self.dbi.database.fileName))
+
+        # Go through a few time nodes to ensure appending is working
+        for timeNode in range(self.o.cs["burnSteps"]):
+            r.p.cycle = 0
+            r.p.timeNode = timeNode
+            self.dbi.interactEveryNode(r.p.cycle, r.p.timeNode)
+
+            # The file should have been copied to working directory
+            self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
+            # The copied file should have the newest time node
+            with Database3(self.dbi.database.fileName, "r") as db:
+                for tn in range(timeNode + 1):
+                    self.assertTrue(db.hasTimeStep(r.p.cycle, tn))
+
+            # The in-memory database should have been reloaded properly
+            for tn in range(timeNode + 1):
+                self.assertTrue(self.dbi.database.hasTimeStep(r.p.cycle, tn))
+
+        # Make sure EOL runs smoothly
+        self.dbi.interactEOL()
+        self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
+    def test_noSyncDbAfterWrite(self):
+        """
+        Test to ensure that the fast-path database is NOT copied to working
+        directory at every time node when ``syncDbAfterWrite`` is ``False``.
+        """
+        self.o.cs["syncDbAfterWrite"] = False
+
+        self.dbi.interactBOL()
+        self.assertFalse(os.path.exists(self.dbi.database.fileName))
+        self.dbi.interactEveryNode(0, 0)
+        self.assertFalse(os.path.exists(self.dbi.database.fileName))
+        self.dbi.interactEOL()
+        self.assertTrue(os.path.exists(self.dbi.database.fileName))
 
 
 class TestDatabaseWriter(unittest.TestCase):
@@ -365,7 +430,7 @@ class TestDatabaseReading(unittest.TestCase):
         def writeFlux(cycle, node):
             for bi, b in enumerate(o.r.core.getBlocks()):
                 b.p.flux = 1e6 * bi + cycle * 100 + node
-                b.p.mgFlux = numpy.repeat(b.p.flux / 33, 33)
+                b.p.mgFlux = np.repeat(b.p.flux / 33, 33)
 
         o.interfaces.insert(0, MockInterface(o.r, o.cs, writeFlux))
         with o:
@@ -453,8 +518,8 @@ class TestDatabaseReading(unittest.TestCase):
                     self.assertEqual(c1.name, c2.name)
                     if isinstance(c1.spatialLocator, grids.MultiIndexLocation):
                         assert_equal(
-                            numpy.array(c1.spatialLocator.indices),
-                            numpy.array(c2.spatialLocator.indices),
+                            np.array(c1.spatialLocator.indices),
+                            np.array(c2.spatialLocator.indices),
                         )
                     else:
                         assert_equal(
@@ -491,8 +556,8 @@ class TestDatabaseReading(unittest.TestCase):
         b1 = self.r.core.getFirstBlock(Flags.FUEL)
         b2 = r2.core.getFirstBlock(Flags.FUEL)
 
-        self.assertIsInstance(b1.p.mgFlux, numpy.ndarray)
-        self.assertIsInstance(b2.p.mgFlux, numpy.ndarray)
+        self.assertIsInstance(b1.p.mgFlux, np.ndarray)
+        self.assertIsInstance(b2.p.mgFlux, np.ndarray)
         assert_allclose(b1, b2)
 
         c1 = b1.getComponent(Flags.FUEL)

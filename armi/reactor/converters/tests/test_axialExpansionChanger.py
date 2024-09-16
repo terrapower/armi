@@ -30,8 +30,10 @@ from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
-    _determineLinked,
     getSolidComponents,
+)
+from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
+    _determineLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -456,7 +458,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
         assembly.spatialGrid.armiObject = assembly
         assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
@@ -595,7 +597,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     def test_isTopDummyBlockPresent(self):
         # build test assembly without dummy
         assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
         assembly.spatialGrid.armiObject = assembly
         assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.calculateZCoords()
@@ -1162,7 +1164,7 @@ def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
         height = 10.0 + 0.02 * (250.0 - 25.0)
 
     assembly = HexAssembly("testAssemblyType")
-    assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+    assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
     assembly.spatialGrid.armiObject = assembly
     assembly.add(_buildTestBlock("shield", name, hotTemp, height))
     assembly.add(_buildTestBlock("fuel", name, hotTemp, height))

@@ -201,7 +201,6 @@ class SpentFuelPool(AssemblyList):
         ----------
         assem : Assembly
             The Assembly to add to the list
-
         loc : LocationBase, optional
             If provided, the assembly is inserted at that location. If it is not
             provided, the locator on the Assembly object will be used. If the
