@@ -13,32 +13,31 @@
 # limitations under the License.
 """Tests blocks.py."""
 import copy
+import io
 import math
 import os
 import unittest
 from unittest.mock import MagicMock, patch
-import io
 
-import numpy
+import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
-from armi.reactor import blueprints
-from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
+from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
-from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import blocks, components, geometry, grids
+from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.nuclearDataIO import xsCollections
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -324,11 +323,11 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         block = self.r.core[0][0]
         # get nuclides in first component in block
         adjList = block[0].getNuclides()
-        block.p.detailedNDens = numpy.array([1.0])
+        block.p.detailedNDens = np.array([1.0])
         block.p.pdensDecay = 1.0
         block._updateDetailedNdens(frac=0.5, adjustList=adjList)
         self.assertEqual(block.p.pdensDecay, 0.5)
-        self.assertEqual(block.p.detailedNDens, numpy.array([0.5]))
+        self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
 class Block_TestCase(unittest.TestCase):
@@ -804,7 +803,7 @@ class Block_TestCase(unittest.TestCase):
         cur = self.block.getWettedPerimeter()
 
         wire = self.block.getComponent(Flags.WIRE)
-        correctionFactor = numpy.hypot(
+        correctionFactor = np.hypot(
             1.0,
             math.pi
             * wire.getDimension("helixDiameter")
@@ -1353,7 +1352,7 @@ class Block_TestCase(unittest.TestCase):
 
         # Test with no powerKeySuffix
         self.block.setPinPowers(neutronPower)
-        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[totalPowerKey], np.array(neutronPower))
         self.assertIsNone(self.block.p[neutronPowerKey])
         self.assertIsNone(self.block.p[gammaPowerKey])
 
@@ -1362,8 +1361,8 @@ class Block_TestCase(unittest.TestCase):
             neutronPower,
             powerKeySuffix=NEUTRON,
         )
-        assert_allclose(self.block.p[totalPowerKey], numpy.array(neutronPower))
-        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
+        assert_allclose(self.block.p[totalPowerKey], np.array(neutronPower))
+        assert_allclose(self.block.p[neutronPowerKey], np.array(neutronPower))
         self.assertIsNone(self.block.p[gammaPowerKey])
 
         # Test with gamma powers
@@ -1371,9 +1370,9 @@ class Block_TestCase(unittest.TestCase):
             gammaPower,
             powerKeySuffix=GAMMA,
         )
-        assert_allclose(self.block.p[totalPowerKey], numpy.array(totalPower))
-        assert_allclose(self.block.p[neutronPowerKey], numpy.array(neutronPower))
-        assert_allclose(self.block.p[gammaPowerKey], numpy.array(gammaPower))
+        assert_allclose(self.block.p[totalPowerKey], np.array(totalPower))
+        assert_allclose(self.block.p[neutronPowerKey], np.array(neutronPower))
+        assert_allclose(self.block.p[gammaPowerKey], np.array(gammaPower))
 
     def test_getComponentAreaFrac(self):
         def calcFracManually(names):
@@ -1455,33 +1454,33 @@ class Block_TestCase(unittest.TestCase):
     def test_rotatePins(self):
         b = self.block
         b.setRotationNum(0)
-        index = b.rotatePins(0, justCompute=True)
+        index = b._rotatePins(0, justCompute=True)
         self.assertEqual(b.getRotationNum(), 0)
         self.assertEqual(index[5], 5)
         self.assertEqual(index[2], 2)  # pin 1 is center and never rotates.
 
-        index = b.rotatePins(1)
+        index = b._rotatePins(1)
         self.assertEqual(b.getRotationNum(), 1)
         self.assertEqual(index[2], 3)
         self.assertEqual(b.p.pinLocation[1], 3)
 
-        index = b.rotatePins(1)
+        index = b._rotatePins(1)
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(b.p.pinLocation[1], 4)
 
-        index = b.rotatePins(2)
-        index = b.rotatePins(4)  # over-rotate to check modulus
+        index = b._rotatePins(2)
+        index = b._rotatePins(4)  # over-rotate to check modulus
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(index[6], 2)
         self.assertEqual(b.p.pinLocation[1], 4)
         self.assertEqual(b.p.pinLocation[5], 2)
 
-        self.assertRaises(ValueError, b.rotatePins, -1)
-        self.assertRaises(ValueError, b.rotatePins, 10)
-        self.assertRaises((ValueError, TypeError), b.rotatePins, None)
-        self.assertRaises((ValueError, TypeError), b.rotatePins, "a")
+        self.assertRaises(ValueError, b._rotatePins, -1)
+        self.assertRaises(ValueError, b._rotatePins, 10)
+        self.assertRaises((ValueError, TypeError), b._rotatePins, None)
+        self.assertRaises((ValueError, TypeError), b._rotatePins, "a")
 
     def test_expandElementalToIsotopics(self):
         r"""Tests the expand to elementals capability."""
@@ -1677,8 +1676,8 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(totalHexArea, self.block.getArea())
         self.assertAlmostEqual(ref, self.block.getComponent(Flags.COOLANT).getArea())
 
-        self.assertTrue(numpy.allclose(numFE56, self.block.getNumberOfAtoms("FE56")))
-        self.assertTrue(numpy.allclose(numU235, self.block.getNumberOfAtoms("U235")))
+        self.assertTrue(np.allclose(numFE56, self.block.getNumberOfAtoms("FE56")))
+        self.assertTrue(np.allclose(numU235, self.block.getNumberOfAtoms("U235")))
 
     def _testDimensionsAreLinked(self):
         prevC = None
@@ -1705,7 +1704,7 @@ class Block_TestCase(unittest.TestCase):
 
         .. warning:: This will likely be pushed to the component level.
         """
-        fluxes = numpy.ones((33, 10))
+        fluxes = np.ones((33, 10))
         self.block.setPinMgFluxes(fluxes)
         self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
         self.block.setPinMgFluxes(fluxes * 3, gamma=True)
@@ -2628,3 +2627,23 @@ class MassConservationTests(unittest.TestCase):
             10,
             "Sum of component mass {0} != total block mass {1}. ".format(tMass, bMass),
         )
+
+
+class EmptyBlockRotateTest(unittest.TestCase):
+    """Rotation tests on an empty hexagonal block.
+
+    Useful for enforcing rotation works on blocks without pins.
+
+    """
+
+    def setUp(self):
+        self.block = blocks.HexBlock("empty")
+
+    def test_orientation(self):
+        """Test the orientation parameter is updated on a rotated empty block."""
+        rotDegrees = 60
+        preRotateOrientation = self.block.p.orientation[2]
+        self.block.rotate(math.radians(rotDegrees))
+        postRotationOrientation = self.block.p.orientation[2]
+        self.assertNotEqual(preRotateOrientation, postRotationOrientation)
+        self.assertEqual(postRotationOrientation, rotDegrees)

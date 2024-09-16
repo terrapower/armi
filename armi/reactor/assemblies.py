@@ -22,7 +22,7 @@ import math
 import pickle
 from random import randint
 
-import numpy
+import numpy as np
 from scipy import interpolate
 
 from armi import runLog
@@ -315,11 +315,6 @@ class Assembly(composites.Composite):
 
         return sum(plenumTemps) / len(plenumTemps)
 
-    def rotatePins(self, *args, **kwargs):
-        """Rotate an assembly, which means rotating the indexing of pins."""
-        for b in self:
-            b.rotatePins(*args, **kwargs)
-
     def doubleResolution(self):
         """
         Turns each block into two half-size blocks.
@@ -473,7 +468,7 @@ class Assembly(composites.Composite):
 
         # length of this is numBlocks + 1
         bounds = list(self.spatialGrid._bounds)
-        bounds[2] = numpy.array(mesh)
+        bounds[2] = np.array(mesh)
         self.spatialGrid._bounds = tuple(bounds)
 
     def getTotalHeight(self, typeSpec=None):
@@ -645,7 +640,7 @@ class Assembly(composites.Composite):
         for b in self:
             top = z + b.getHeight()
             try:
-                b.p.topIndex = numpy.where(numpy.isclose(refMesh, top))[0].tolist()[0]
+                b.p.topIndex = np.where(np.isclose(refMesh, top))[0].tolist()[0]
             except IndexError:
                 runLog.error(
                     "Height {0} in this assembly ({1} in {4}) is not in the reactor mesh "
@@ -806,7 +801,7 @@ class Assembly(composites.Composite):
 
     def setBlockHeights(self, blockHeights):
         """Set the block heights of all blocks in the assembly."""
-        mesh = numpy.cumsum(blockHeights)
+        mesh = np.cumsum(blockHeights)
         self.setBlockMesh(mesh)
 
     def dump(self, fName=None):
@@ -1027,7 +1022,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=numpy.NaN
+        self, param, elevations, interpType="linear", fillValue=np.NaN
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -1072,7 +1067,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         interpolator = self.getParamOfZFunction(
@@ -1080,7 +1075,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=numpy.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.NaN):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
@@ -1119,7 +1114,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         paramDef = self[0].p.paramDefs[param]
@@ -1143,7 +1138,7 @@ class Assembly(composites.Composite):
             z.insert(0, 0.0)
             z.pop(-1)
 
-        z = numpy.asarray(z)
+        z = np.asarray(z)
 
         values = self.getChildParamValues(param).transpose()
 
@@ -1248,8 +1243,7 @@ class Assembly(composites.Composite):
 
             This method loops through every ``Block`` in this ``Assembly`` and rotates
             it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction, and must be divisible by increments of PI/6
-            (60 degrees). To actually perform the ``Block`` rotation, the
+            counter-clockwise direction. To perform the ``Block`` rotation, the
             :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
         Parameters
@@ -1257,11 +1251,8 @@ class Assembly(composites.Composite):
         rad: float
             number (in radians) specifying the angle of counter clockwise rotation
 
-        Warning
-        -------
-        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
         """
-        for b in self.getBlocks():
+        for b in self:
             b.rotate(rad)
 
     def isOnWhichSymmetryLine(self):
@@ -1272,7 +1263,26 @@ class Assembly(composites.Composite):
 class HexAssembly(Assembly):
     """Placeholder, so users can explicitly define a hex-based Assembly."""
 
-    pass
+    def rotate(self, rad: float):
+        """Rotate an assembly and its children.
+
+        Parameters
+        ----------
+        rad : float
+            Counter clockwise rotation in radians. **MUST** be in increments of
+            60 degrees (PI / 3)
+
+        Raises
+        ------
+        ValueError
+            If rotation is not divisible by pi / 3.
+        """
+        if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
+            return super().rotate(rad)
+        raise ValueError(
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} "
+            f"degrees ({rad} radians)"
+        )
 
 
 class CartesianAssembly(Assembly):

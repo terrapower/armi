@@ -3,7 +3,7 @@ metadata:
 settings:
   branchVerbosity: info
   burnSteps: 0
-  comment: 'Revised benchmark  '
+  comment: "Revised benchmark  "
   db: false
   economics: false
   genXS: Neutron

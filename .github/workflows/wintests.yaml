@@ -1,5 +1,8 @@
 name: ARMI Windows tests
 
+permissions:
+  contents: read
+
 on:
   push:
     paths-ignore:
