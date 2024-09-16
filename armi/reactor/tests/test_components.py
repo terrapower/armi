@@ -517,9 +517,7 @@ class TestComponentList(unittest.TestCase):
     def setUp(self):
         self.componentList = []
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 2.6, "ip": 2.0, "mult": 1.0}
-        pinComp = Circle(
-            "pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0
-        )
+        pinComp = Circle("pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0)
         gapComp = Circle(
             "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
         )
@@ -1664,7 +1662,7 @@ class TestRadialSegment(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         self.assertEqual(
-            self.component.getBoundingCircleOuterDiameter(cold=True), 170.0
+            self.component.getBoundingCircleOuterDiameter(cold=True), 340.0
         )
 
 
@@ -1711,7 +1709,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_getBoundingCircleOuterDiameter(self):
-        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 170)
+        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 340)
 
 
 class TestMaterialAdjustments(unittest.TestCase):
