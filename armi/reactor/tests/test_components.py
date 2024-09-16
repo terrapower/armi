@@ -540,7 +540,7 @@ class TestComponentList(unittest.TestCase):
         ]
 
     def test_sorting(self):
-        """Test that components are sorted as expected"""
+        """Test that components are sorted as expected."""
         sortedComps = sorted(self.componentList)
         currentMaxOd = 0.0
         for c in sortedComps:
