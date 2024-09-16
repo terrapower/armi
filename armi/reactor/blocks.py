@@ -21,7 +21,7 @@ Assemblies are made of blocks. Blocks are made of components.
 import collections
 import copy
 import math
-from typing import ClassVar, Optional, Tuple, Type
+from typing import Optional, Type, Tuple, ClassVar
 
 import numpy as np
 
@@ -32,16 +32,14 @@ from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
-from armi.reactor import (
-    blockParameters,
-    components,
-    composites,
-    geometry,
-    grids,
-    parameters,
-)
+from armi.reactor import blockParameters
+from armi.reactor import components
+from armi.reactor import composites
+from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import parameters
 from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Circle, Hexagon
+from armi.reactor.components.basicShapes import Hexagon, Circle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
