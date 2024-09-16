@@ -36,13 +36,14 @@ from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupMa
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
-from armi.reactor import assemblies, blocks, grids
-from armi.reactor.components.basicShapes import Circle, Hexagon
+from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
-from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
+from armi.tests import ArmiTestHelper
+from armi.tests import mockRunLogs
+from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
 
@@ -85,10 +86,10 @@ class FuelHandlerTestHelper(ArmiTestHelper):
         nPins = 271
 
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 1.0, "id": 0.0, "mult": nPins}
-        fuel = Circle("fuel", "UZr", **fuelDims)
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
 
         cladDims = {"Tinput": 273.0, "Thot": 273.0, "od": 1.1, "id": 1.0, "mult": nPins}
-        clad = Circle("clad", "HT9", **cladDims)
+        clad = components.Circle("clad", "HT9", **cladDims)
 
         interDims = {
             "Tinput": 273.0,
@@ -97,7 +98,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
             "ip": 16.0,
             "mult": 1.0,
         }
-        interSodium = Hexagon("interCoolant", "Sodium", **interDims)
+        interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
         # generate a block
         self.block = blocks.HexBlock("TestHexBlock")

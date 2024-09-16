@@ -621,10 +621,10 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                 blockCollection._checkComponentConsistency(refBlock, b)
 
     def _makeComponents(self, multiplicity, densities):
-        from armi.reactor.components.basicShapes import Circle
+        from armi.reactor import components
 
         baseComponents = self.r.core.getFirstBlock(Flags.CONTROL).getComponents()
-        controlComponent = Circle(
+        controlComponent = components.Circle(
             "control",
             baseComponents[0].material,
             20.0,
@@ -633,7 +633,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             od=0.6,
             mult=multiplicity,
         )
-        cladComponent = Circle(
+        cladComponent = components.Circle(
             "clad",
             baseComponents[2].material,
             20.0,
@@ -642,7 +642,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             od=0.7,
             mult=multiplicity,
         )
-        coolantComponent = Circle(
+        coolantComponent = components.Circle(
             "coolant",
             baseComponents[4].material,
             20.0,
