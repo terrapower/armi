@@ -32,16 +32,7 @@ from armi.physics.neutronics.settings import (
     CONF_XS_KERNEL,
 )
 from armi.reactor import blocks, blueprints, components, geometry, grids
-from armi.reactor.components.basicShapes import (
-    Circle,
-    Hexagon,
-    Rectangle,
-)
-from armi.reactor.components.complexShapes import (
-    HoledRectangle,
-    HoledSquare,
-)
-from armi.reactor.components.volumetricShapes import DifferentialRadialSegment
+from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
@@ -67,11 +58,11 @@ def buildSimpleFuelBlock():
     }
     coolDims = {"Tinput": 25.0, "Thot": 400}
 
-    fuel = Circle("fuel", "UZr", **fuelDims)
-    clad = Circle("clad", "HT9", **cladDims)
-    duct = Hexagon("duct", "HT9", **ductDims)
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
 
     b.add(fuel)
     b.add(clad)
@@ -111,7 +102,7 @@ def loadTestBlock(cold=True):
         "id": 0.6,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    fuel = Circle("fuel", "UZr", **fuelDims)
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
 
     bondDims = {
         "Tinput": coldTemp,
@@ -121,7 +112,7 @@ def loadTestBlock(cold=True):
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     bondDims["components"] = {"fuel": fuel}
-    bond = Circle("bond", "Sodium", **bondDims)
+    bond = components.Circle("bond", "Sodium", **bondDims)
 
     annularVoidDims = {
         "Tinput": hotTempStructure,
@@ -131,7 +122,7 @@ def loadTestBlock(cold=True):
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     annularVoidDims["components"] = {"bond": bond}
-    annularVoid = Circle("annular void", "Void", **annularVoidDims)
+    annularVoid = components.Circle("annular void", "Void", **annularVoidDims)
 
     innerLinerDims = {
         "Tinput": coldTemp,
@@ -140,7 +131,7 @@ def loadTestBlock(cold=True):
         "id": 0.85,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    innerLiner = Circle("inner liner", "Graphite", **innerLinerDims)
+    innerLiner = components.Circle("inner liner", "Graphite", **innerLinerDims)
 
     fuelLinerGapDims = {
         "Tinput": hotTempStructure,
@@ -150,7 +141,7 @@ def loadTestBlock(cold=True):
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     fuelLinerGapDims["components"] = {"inner liner": innerLiner, "fuel": fuel}
-    fuelLinerGap = Circle("gap1", "Void", **fuelLinerGapDims)
+    fuelLinerGap = components.Circle("gap1", "Void", **fuelLinerGapDims)
 
     outerLinerDims = {
         "Tinput": coldTemp,
@@ -159,7 +150,7 @@ def loadTestBlock(cold=True):
         "id": 0.90,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    outerLiner = Circle("outer liner", "HT9", **outerLinerDims)
+    outerLiner = components.Circle("outer liner", "HT9", **outerLinerDims)
 
     linerLinerGapDims = {
         "Tinput": hotTempStructure,
@@ -172,7 +163,7 @@ def loadTestBlock(cold=True):
         "outer liner": outerLiner,
         "inner liner": innerLiner,
     }
-    linerLinerGap = Circle("gap2", "Void", **linerLinerGapDims)
+    linerLinerGap = components.Circle("gap2", "Void", **linerLinerGapDims)
 
     claddingDims = {
         "Tinput": coldTemp,
@@ -181,7 +172,7 @@ def loadTestBlock(cold=True):
         "id": 0.95,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    cladding = Circle("clad", "HT9", **claddingDims)
+    cladding = components.Circle("clad", "HT9", **claddingDims)
 
     linerCladGapDims = {
         "Tinput": hotTempStructure,
@@ -191,7 +182,7 @@ def loadTestBlock(cold=True):
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     linerCladGapDims["components"] = {"clad": cladding, "outer liner": outerLiner}
-    linerCladGap = Circle("gap3", "Void", **linerCladGapDims)
+    linerCladGap = components.Circle("gap3", "Void", **linerCladGapDims)
 
     wireDims = {
         "Tinput": coldTemp,
@@ -202,7 +193,7 @@ def loadTestBlock(cold=True):
         "helixDiameter": 1.1,
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
-    wire = Helix("wire", "HT9", **wireDims)
+    wire = components.Helix("wire", "HT9", **wireDims)
 
     coolantDims = {"Tinput": hotTempCoolant, "Thot": hotTempCoolant}
     coolant = components.DerivedShape("coolant", "Sodium", **coolantDims)
@@ -214,7 +205,7 @@ def loadTestBlock(cold=True):
         "op": 17.3,
         "mult": 1.0,
     }
-    duct = Hexagon("duct", "HT9", **ductDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
 
     interDims = {
         "Tinput": hotTempCoolant,
@@ -224,7 +215,7 @@ def loadTestBlock(cold=True):
         "mult": 1.0,
     }
     interDims["components"] = {"duct": duct}
-    interSodium = Hexagon("interCoolant", "Sodium", **interDims)
+    interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
     block.add(annularVoid)
     block.add(bond)
@@ -376,7 +367,7 @@ class Block_TestCase(unittest.TestCase):
             "id": 0.2,
             "mult": 271.0,
         }
-        self.fuelComponent = Circle("fuel", "UZr", **fuelDims)
+        self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
 
         ref = (
             self.block.getDim(Flags.FUEL, "od") ** 2
@@ -491,8 +482,8 @@ class Block_TestCase(unittest.TestCase):
         """
         args = [False, True]  # pinSpatialLocator argument
         expectedShapes = [
-            [Hexagon],
-            [Hexagon, Circle],
+            [basicShapes.Hexagon],
+            [basicShapes.Hexagon, basicShapes.Circle],
         ]
 
         for arg, shapes in zip(args, expectedShapes):
@@ -961,7 +952,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
-        self.fuelComponent = Circle("fuel", "UZr", **fuelDims)
+        self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         self.block.add(self.fuelComponent)
         self.block.setHeight(100.0)
 
@@ -1127,7 +1118,7 @@ class Block_TestCase(unittest.TestCase):
 
         fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
 
-        newComp = Circle("fuel", "UZr", **fuelDims)
+        newComp = components.Circle("fuel", "UZr", **fuelDims)
         self.block.add(newComp)
         self.assertEqual(numComps + 1, len(self.block.getComponents()))
 
@@ -1211,7 +1202,7 @@ class Block_TestCase(unittest.TestCase):
             "gap3",
             "clad",
         ]
-        cur = [c.name for c in self.block.getComponentsOfShape(Circle)]
+        cur = [c.name for c in self.block.getComponentsOfShape(components.Circle)]
         self.assertEqual(sorted(ref), sorted(cur))
 
     def test_getComponentsOfMaterial(self):
@@ -1319,19 +1310,19 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        holedRectangle = HoledRectangle(
+        holedRectangle = complexShapes.HoledRectangle(
             "holedRectangle", "HT9", 1, 1, 0.5, 1.0, 1.0
         )
         holedRectangle.setType("component", flags=Flags.CONTROL)
         emptyBlock.add(holedRectangle)
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        hexagon = Hexagon("hexagon", "HT9", 1, 1, 1)
+        hexagon = basicShapes.Hexagon("hexagon", "HT9", 1, 1, 1)
         hexagon.setType("component", flags=Flags.SHIELD)
         emptyBlock.add(hexagon)
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        pins = Circle("circle", "HT9", 1, 1, 1, 0, 8)
+        pins = basicShapes.Circle("circle", "HT9", 1, 1, 1, 0, 8)
         pins.setType("component", flags=Flags.PLENUM)
         emptyBlock.add(pins)
         self.assertEqual(emptyBlock.getNumPins(), 8)
@@ -1690,7 +1681,7 @@ class Block_TestCase(unittest.TestCase):
 
     def _testDimensionsAreLinked(self):
         prevC = None
-        for c in self.block.getComponentsOfShape(Circle):
+        for c in self.block.getComponentsOfShape(components.Circle):
             if prevC:
                 self.assertAlmostEqual(prevC.getDimension("od"), c.getDimension("id"))
             prevC = c
@@ -1755,7 +1746,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getReactionRates(self):
         block = blocks.HexBlock("HexBlock")
         block.setType("defaultType")
-        comp = Hexagon("hexagon", "MOX", 1, 1, 1)
+        comp = basicShapes.Hexagon("hexagon", "MOX", 1, 1, 1)
         block.add(comp)
         block.setHeight(1)
         block.p.xsType = "A"
@@ -1864,7 +1855,7 @@ class TestNegativeVolume(unittest.TestCase):
             "id": 0.6,
             "mult": 1000.0,  # pack in too many fuels
         }
-        fuel = Circle("fuel", "UZr", **fuelDims)
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
 
         coolantDims = {"Tinput": hotTemp, "Thot": hotTemp}
         coolant = components.DerivedShape("coolant", "Sodium", **coolantDims)
@@ -1876,7 +1867,7 @@ class TestNegativeVolume(unittest.TestCase):
             "ip": 17.3,
             "mult": 1.0,
         }
-        interSodium = Hexagon("interCoolant", "Sodium", **interDims)
+        interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
 
         block.add(fuel)
         block.add(coolant)
@@ -1891,15 +1882,15 @@ class HexBlock_TestCase(unittest.TestCase):
         _ = settings.Settings()
         self.HexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
-        self.hexComponent = Hexagon("duct", "UZr", **hexDims)
+        self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
         self.HexBlock.add(self.hexComponent)
         self.HexBlock.add(
-            Circle(
+            components.Circle(
                 "clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0
             )
         )
         self.HexBlock.add(
-            Circle(
+            components.Circle(
                 "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0
             )
         )
@@ -1932,7 +1923,7 @@ class HexBlock_TestCase(unittest.TestCase):
                     "ip": ip,
                     "mult": 1.0,
                 }
-                hComponent = Hexagon("duct", "UZr", **hexDims)
+                hComponent = components.Hexagon("duct", "UZr", **hexDims)
                 hBlock.add(hComponent)
 
                 # verify the area of the hexagon (with a hex hole) is correct
@@ -2096,7 +2087,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
         hexArgs = {"op": desiredPitch, "ip": ipNeededForCorrectArea, "mult": 1.0}
         hexArgs.update(compArgs)
-        pitchDefiningComponent = Hexagon(
+        pitchDefiningComponent = components.Hexagon(
             "pitchComp", materials[0], **hexArgs
         )
         hexBlock.add(pitchDefiningComponent)
@@ -2126,7 +2117,7 @@ class HexBlock_TestCase(unittest.TestCase):
             hexBlock.add(comp)
 
         # We haven't set a pitch defining component this time so set it now with 0 area.
-        pitchDefiningComponent = Hexagon(
+        pitchDefiningComponent = components.Hexagon(
             "pitchComp", "Void", op=desiredPitch, ip=desiredPitch, mult=1, **compArgs
         )
         hexBlock.add(pitchDefiningComponent)
@@ -2194,10 +2185,10 @@ class HexBlock_TestCase(unittest.TestCase):
             "helixDiameter": 0.9,
             "mult": 168.0,
         }
-        wire = Helix("wire", "HT9", **wireDims)
-        fuel = Circle("fuel", "UZr", **fuelDims)
-        clad = Circle("clad", "HT9", **cladDims)
-        duct = Hexagon("duct", "HT9", **ductDims)
+        wire = components.Helix("wire", "HT9", **wireDims)
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        clad = components.Circle("clad", "HT9", **cladDims)
+        duct = components.Hexagon("duct", "HT9", **ductDims)
         b.add(fuel)
         b.add(clad)
         b.add(duct)
@@ -2217,7 +2208,7 @@ class HexBlock_TestCase(unittest.TestCase):
             "mult": 21.0,
         }
         # add a wire only some places in the block, so grid should not be created.
-        wire = Helix("wire", "HT9", **wireDims)
+        wire = components.Helix("wire", "HT9", **wireDims)
         self.HexBlock.add(wire)
         self.HexBlock.spatialGrid = None  # clear existing
         with self.assertRaises(ValueError):
@@ -2231,7 +2222,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
         _ = settings.Settings()
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
         self.ThRZBlock.add(
-            DifferentialRadialSegment(
+            components.DifferentialRadialSegment(
                 "fuel",
                 "UZr",
                 Tinput=273.0,
@@ -2246,7 +2237,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
             )
         )
         self.ThRZBlock.add(
-            DifferentialRadialSegment(
+            components.DifferentialRadialSegment(
                 "coolant",
                 "Sodium",
                 Tinput=273.0,
@@ -2261,7 +2252,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
             )
         )
         self.ThRZBlock.add(
-            DifferentialRadialSegment(
+            components.DifferentialRadialSegment(
                 "clad",
                 "HT9",
                 Tinput=273.0,
@@ -2276,7 +2267,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
             )
         )
         self.ThRZBlock.add(
-            DifferentialRadialSegment(
+            components.DifferentialRadialSegment(
                 "wire",
                 "HT9",
                 Tinput=273.0,
@@ -2292,7 +2283,7 @@ class ThRZBlock_TestCase(unittest.TestCase):
         )
         # random 1/4 chunk taken out to exercise Theta-RZ block capabilities
         self.ThRZBlock.add(
-            DifferentialRadialSegment(
+            components.DifferentialRadialSegment(
                 "chunk",
                 "Sodium",
                 Tinput=273.0,
@@ -2356,7 +2347,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
         caseSetting = settings.Settings()
         self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
 
-        self.cartesianComponent = HoledSquare(
+        self.cartesianComponent = components.HoledSquare(
             "duct",
             "UZr",
             Tinput=273.0,
@@ -2367,7 +2358,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
         )
         self.cartesianBlock.add(self.cartesianComponent)
         self.cartesianBlock.add(
-            Circle(
+            components.Circle(
                 "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
             )
         )
@@ -2419,7 +2410,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
             "mult": 1.0,
         }
         rectArgs.update(compArgs)
-        pitchDefiningComponent = Rectangle(
+        pitchDefiningComponent = components.Rectangle(
             "pitchComp", materials[0], **rectArgs
         )
         cartBlock.add(pitchDefiningComponent)

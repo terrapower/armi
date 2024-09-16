@@ -17,38 +17,32 @@ import copy
 import math
 import unittest
 
-from armi import materials
 from armi.materials import air, alloy200
 from armi.materials.material import Material
 from armi.reactor import components, flags
 from armi.reactor.components import (
+    Circle,
     Component,
     ComponentType,
+    Cube,
     DerivedShape,
-    NullComponent,
-    UnshapedComponent,
-    UnshapedVolumetricComponent,
-)
-from armi.reactor.components.basicShapes import (
-    Circle,
-    Hexagon,
-    Rectangle,
-    SolidRectangle,
-    Square,
-    Triangle,
-)
-from armi.reactor.components.complexShapes import (
+    DifferentialRadialSegment,
     Helix,
+    Hexagon,
     HexHoledCircle,
     HoledHexagon,
     HoledRectangle,
     HoledSquare,
-)
-from armi.reactor.components.volumetricShapes import (
-    Cube,
-    DifferentialRadialSegment,
+    NullComponent,
     RadialSegment,
+    Rectangle,
+    SolidRectangle,
     Sphere,
+    Square,
+    Triangle,
+    UnshapedComponent,
+    UnshapedVolumetricComponent,
+    materials,
 )
 from armi.reactor.tests.test_reactors import loadTestReactor
 
@@ -91,9 +85,9 @@ class TestComponentFactory(unittest.TestCase):
         voidComp = components.factory(voidAttrs.pop("shape"), [], voidAttrs)
         fuelAttrs = self.getCircleFuelDict()
         fuelComp = components.factory(fuelAttrs.pop("shape"), [], fuelAttrs)
-        self.assertIsInstance(voidComp, Circle)
+        self.assertIsInstance(voidComp, components.Circle)
         self.assertIsInstance(voidComp.material, materials.Void)
-        self.assertIsInstance(fuelComp, Circle)
+        self.assertIsInstance(fuelComp, components.Circle)
         self.assertIsInstance(fuelComp.material, materials.UZr)
 
     def test_componentInitializationAndDuplication(self):
@@ -353,7 +347,7 @@ class TestUnshapedComponent(TestGeneralComponents):
         self.assertFalse(sameComponent < self.component)
 
     def test_fromComponent(self):
-        circle = Circle("testCircle", "HT9", 25, 500, 1.0)
+        circle = components.Circle("testCircle", "HT9", 25, 500, 1.0)
         unshaped = components.UnshapedComponent.fromComponent(circle)
         self.assertEqual(circle.getComponentArea(), unshaped.getComponentArea())
 
@@ -517,15 +511,17 @@ class TestComponentList(unittest.TestCase):
     def setUp(self):
         self.componentList = []
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 2.6, "ip": 2.0, "mult": 1.0}
-        pinComp = Circle("pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0)
-        gapComp = Circle(
+        pinComp = components.Circle(
+            "pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0
+        )
+        gapComp = components.Circle(
             "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
         )
-        ductComp = Hexagon("duct", "HT9", **hexDims)
-        cladComp = Circle(
+        ductComp = components.Hexagon("duct", "HT9", **hexDims)
+        cladComp = components.Circle(
             "clad", "HT9", Tinput=273.0, Thot=273.0, id=0.08, od=0.1, mult=169.0
         )
-        wireComp = Helix(
+        wireComp = components.Helix(
             "wire",
             "HT9",
             Tinput=273.0,

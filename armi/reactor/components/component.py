@@ -282,9 +282,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         except (NotImplementedError, Exception) as e:
             if isinstance(e, NotImplementedError):
                 raise NotImplementedError(
-                    "getCircleInnerDiameter not implemented for at least one of {}, {}".format(
-                        self, other
-                    )
+                    "getCircleInnerDiameter not implemented for at least one of {}, {}".format(self, other)
                 )
             else:
                 raise ValueError(
