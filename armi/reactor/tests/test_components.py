@@ -545,7 +545,6 @@ class TestComponentSort(unittest.TestCase):
         sortedComps = sorted(self.components)
         currentMaxOd = 0.0
         for c in sortedComps:
-            # if not isinstance(c, DerivedShape):
             self.assertGreaterEqual(
                 c.getBoundingCircleOuterDiameter(cold=True), currentMaxOd
             )
