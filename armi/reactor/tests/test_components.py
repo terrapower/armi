@@ -507,7 +507,7 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         self.assertAlmostEqual(totalAreaCold, totalAreaHot, delta=1e-10)
 
 
-class TestComponentList(unittest.TestCase):
+class TestComponentSort(unittest.TestCase):
     def setUp(self):
         self.components = []
         pinComp = components.Circle(
