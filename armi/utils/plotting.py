@@ -29,25 +29,25 @@ import math
 import os
 import re
 
-from matplotlib.collections import PatchCollection
-from matplotlib.widgets import Slider
-from mpl_toolkits import axes_grid1
-from ordered_set import OrderedSet
 import matplotlib.colors as mcolors
 import matplotlib.patches
 import matplotlib.pyplot as plt
 import matplotlib.text as mpl_text
 import numpy as np
+from matplotlib.collections import PatchCollection
+from matplotlib.widgets import Slider
+from mpl_toolkits import axes_grid1
+from ordered_set import OrderedSet
 
 from armi import runLog
 from armi.bookkeeping import report
 from armi.materials import custom
 from armi.reactor import grids
-from armi.reactor.components import Helix, Circle, DerivedShape
-from armi.reactor.components.basicShapes import Hexagon, Rectangle, Square
+from armi.reactor.components import DerivedShape
+from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle, Square
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.utils import hexagon
-
 
 LUMINANCE_WEIGHTS = np.array([0.3, 0.59, 0.11, 0.0])
 

@@ -32,10 +32,7 @@ import math
 import numpy as np
 
 from armi import runLog
-from armi.reactor.components.component import *  # noqa: F403
-from armi.reactor.components.basicShapes import *  # noqa: F403
-from armi.reactor.components.complexShapes import *  # noqa: F403
-from armi.reactor.components.volumetricShapes import *  # noqa: F403
+from armi.reactor.components.component import Component, ComponentType
 
 
 def factory(shape, bcomps, kwargs):
@@ -185,6 +182,23 @@ class UnshapedComponent(Component):
         Tc is not used in this method for this particular component.
         """
         return 2 * math.sqrt(self.getComponentArea(cold=cold) / math.pi)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        Approximate the component as circular; i.e., inner diameter is zero.
+
+        Parameters
+        ----------
+        Tc : float
+            Ignored for this component
+        cold : bool, optional
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
+
+        Notes
+        -----
+        Tc is not used in this method for this particular component.
+        """
+        return 0.0
 
     @staticmethod
     def fromComponent(otherComponent):

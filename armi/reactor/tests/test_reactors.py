@@ -22,26 +22,18 @@ from unittest.mock import patch
 from numpy.testing import assert_allclose, assert_equal
 from six.moves import cPickle
 
-from armi import operators
-from armi import runLog
-from armi import settings
-from armi import tests
+from armi import operators, runLog, settings, tests
 from armi.materials import uZr
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
+from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.assemblyLists import SpentFuelPool
-from armi.reactor.components import Hexagon, Rectangle
+from armi.reactor.components.basicShapes import Hexagon, Rectangle
 from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
-from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
+from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP, CONF_SORT_REACTOR
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
 THIS_DIR = os.path.dirname(__file__)
