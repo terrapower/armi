@@ -19,32 +19,31 @@ import unittest
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
-from armi.reactor import components
-from armi.reactor import flags
+from armi.reactor import components, flags
 from armi.reactor.components import (
-    Component,
-    UnshapedComponent,
-    NullComponent,
     Circle,
+    Component,
+    ComponentType,
+    Cube,
+    DerivedShape,
+    DifferentialRadialSegment,
+    Helix,
     Hexagon,
-    HoledHexagon,
     HexHoledCircle,
+    HoledHexagon,
     HoledRectangle,
     HoledSquare,
-    Helix,
-    Sphere,
-    Cube,
+    NullComponent,
+    RadialSegment,
     Rectangle,
     SolidRectangle,
+    Sphere,
     Square,
     Triangle,
-    RadialSegment,
-    DifferentialRadialSegment,
-    DerivedShape,
+    UnshapedComponent,
     UnshapedVolumetricComponent,
-    ComponentType,
+    materials,
 )
-from armi.reactor.components import materials
 from armi.reactor.tests.test_reactors import loadTestReactor
 
 
@@ -506,6 +505,52 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         totalAreaCold = sum([c.getArea(cold=True) for c in b])
         totalAreaHot = sum([c.getArea(cold=False) for c in b])
         self.assertAlmostEqual(totalAreaCold, totalAreaHot, delta=1e-10)
+
+
+class TestComponentList(unittest.TestCase):
+    def setUp(self):
+        self.componentList = []
+        hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 2.6, "ip": 2.0, "mult": 1.0}
+        pinComp = components.Circle(
+            "pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0
+        )
+        gapComp = components.Circle(
+            "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
+        )
+        ductComp = components.Hexagon("duct", "HT9", **hexDims)
+        cladComp = components.Circle(
+            "clad", "HT9", Tinput=273.0, Thot=273.0, id=0.08, od=0.1, mult=169.0
+        )
+        wireComp = components.Helix(
+            "wire",
+            "HT9",
+            Tinput=273.0,
+            Thot=273.0,
+            axialPitch=10.0,
+            helixDiameter=0.11,
+            od=0.01,
+            mult=169.0,
+        )
+        self.componentList = [
+            wireComp,
+            cladComp,
+            ductComp,
+            pinComp,
+            gapComp,
+        ]
+
+    def test_sorting(self):
+        """Test that components are sorted as expected"""
+        sortedComps = sorted(self.componentList)
+        currentMaxOd = 0.0
+        for c in sortedComps:
+            # if not isinstance(c, DerivedShape):
+            self.assertGreaterEqual(
+                c.getBoundingCircleOuterDiameter(cold=True), currentMaxOd
+            )
+            currentMaxOd = c.getBoundingCircleOuterDiameter(cold=True)
+        self.assertEqual(sortedComps[1].name, "gap")
+        self.assertEqual(sortedComps[2].name, "clad")
 
 
 class TestCircle(TestShapedComponent):
