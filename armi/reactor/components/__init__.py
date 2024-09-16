@@ -192,10 +192,10 @@ class UnshapedComponent(Component):
 
         Parameters
         ----------
-        Tc : float
+        Tc : float, optional
             Ignored for this component
         cold : bool, optional
-            If True, compute the area with as-input dimensions, instead of thermally-expanded.
+            Ignored for this component
 
         Notes
         -----
