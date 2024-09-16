@@ -1839,7 +1839,7 @@ class HexBlock(Block):
         b._lumpedFissionProducts = self._lumpedFissionProducts
         b.p.buGroup = self.p.buGroup
 
-        hexComponent = Hexagon(
+        hexComponent = components.Hexagon(
             "homogenizedHex",
             "_Mixture",
             self.getAverageTempInC(),
@@ -1856,7 +1856,7 @@ class HexBlock(Block):
             if self.hasComponents(Flags.CLAD):
                 cladComponents = self.getComponents(Flags.CLAD)
                 for i, clad in enumerate(cladComponents):
-                    pinComponent = Circle(
+                    pinComponent = components.Circle(
                         f"voidPin{i}",
                         "Void",
                         self.getAverageTempInC(),
@@ -2527,7 +2527,7 @@ class HexBlock(Block):
         wettedPinPerimeter = 0.0
         for c in wettedPinComponents:
             correctionFactor = 1.0
-            if isinstance(c, Helix):
+            if isinstance(c, components.Helix):
                 # account for the helical wire wrap
                 correctionFactor = np.hypot(
                     1.0,
