@@ -15,6 +15,8 @@ New Features
    :func:`armi.utils.hexagon.getIndexOfRotatedCell`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Provide :meth:`armi.reactor.parameters.Parameter.hasCategory`
+   (`PR#1886 <https://github.com/terrapower/armi/pull/1886>`_)
 #. TBD
 
 API Changes
