@@ -38,7 +38,6 @@ from armi.reactor import composites
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import parameters
-from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
@@ -1063,15 +1062,7 @@ class Block(composites.Composite):
         nPins = [
             sum(
                 [
-<<<<<<< HEAD
-                    (int(c.getDimension("mult")) if isinstance(c, Circle) else 0)
-=======
-                    (
-                        int(c.getDimension("mult"))
-                        if isinstance(c, basicShapes.Circle)
-                        else 0
-                    )
->>>>>>> parent of 0fd16327 (Remove all of the circular imports in components.)
+                    (int(c.getDimension("mult")) if isinstance(c, components.Circle) else 0)
                     for c in self.iterComponents(compType)
                 ]
             )
