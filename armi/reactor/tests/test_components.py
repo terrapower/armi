@@ -19,31 +19,32 @@ import unittest
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
-from armi.reactor import components, flags
+from armi.reactor import components
+from armi.reactor import flags
 from armi.reactor.components import (
-    Circle,
     Component,
-    ComponentType,
-    Cube,
-    DerivedShape,
-    DifferentialRadialSegment,
-    Helix,
+    UnshapedComponent,
+    NullComponent,
+    Circle,
     Hexagon,
-    HexHoledCircle,
     HoledHexagon,
+    HexHoledCircle,
     HoledRectangle,
     HoledSquare,
-    NullComponent,
-    RadialSegment,
+    Helix,
+    Sphere,
+    Cube,
     Rectangle,
     SolidRectangle,
-    Sphere,
     Square,
     Triangle,
-    UnshapedComponent,
+    RadialSegment,
+    DifferentialRadialSegment,
+    DerivedShape,
     UnshapedVolumetricComponent,
-    materials,
+    ComponentType,
 )
+from armi.reactor import materials
 from armi.reactor.tests.test_reactors import loadTestReactor
 
 
