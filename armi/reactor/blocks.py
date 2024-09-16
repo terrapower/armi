@@ -18,30 +18,35 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
+from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import math
-from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases, runLog
+from armi import nuclideBases
+from armi import runLog
 from armi.bookkeeping import report
 from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA, NEUTRON
-from armi.reactor import (
-    blockParameters,
-    components,
-    composites,
-    geometry,
-    grids,
-    parameters,
-)
+from armi.physics.neutronics import GAMMA
+from armi.physics.neutronics import NEUTRON
+from armi.reactor import blockParameters
+from armi.reactor import components
+from armi.reactor import composites
+from armi.reactor import geometry
+from armi.reactor import grids
+from armi.reactor import parameters
 from armi.reactor.components import basicShapes
+from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools, hexagon, iterables, units
+from armi.utils import densityTools
+from armi.utils import hexagon
+from armi.utils import iterables
+from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -1839,7 +1844,7 @@ class HexBlock(Block):
         b._lumpedFissionProducts = self._lumpedFissionProducts
         b.p.buGroup = self.p.buGroup
 
-        hexComponent = components.Hexagon(
+        hexComponent = Hexagon(
             "homogenizedHex",
             "_Mixture",
             self.getAverageTempInC(),
@@ -1856,7 +1861,7 @@ class HexBlock(Block):
             if self.hasComponents(Flags.CLAD):
                 cladComponents = self.getComponents(Flags.CLAD)
                 for i, clad in enumerate(cladComponents):
-                    pinComponent = components.Circle(
+                    pinComponent = Circle(
                         f"voidPin{i}",
                         "Void",
                         self.getAverageTempInC(),
@@ -2527,7 +2532,7 @@ class HexBlock(Block):
         wettedPinPerimeter = 0.0
         for c in wettedPinComponents:
             correctionFactor = 1.0
-            if isinstance(c, components.Helix):
+            if isinstance(c, Helix):
                 # account for the helical wire wrap
                 correctionFactor = np.hypot(
                     1.0,
