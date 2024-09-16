@@ -79,8 +79,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from armi.reactor.blocks import CartesianBlock, HexBlock, ThRZBlock
-        from armi.reactor.assemblies import CartesianAssembly, HexAssembly, ThRZAssembly
+        from armi.reactor.blocks import HexBlock, CartesianBlock, ThRZBlock
+        from armi.reactor.assemblies import HexAssembly, CartesianAssembly, ThRZAssembly
 
         return [
             (HexBlock, HexAssembly),
