@@ -18,6 +18,7 @@ API Changes
 
 Bug Fixes
 ---------
+#. Rotate hexaonal assembly patches correctly on facemap plots (`PR#1883 <https://github.com/terrapower/armi/pull/1883>`_)
 #. TBD
 
 Quality Work
