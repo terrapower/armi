@@ -18,8 +18,8 @@ import os
 import unittest
 
 from armi import settings
-from armi.reactor import reactors
 from armi.tests import TEST_ROOT
+from armi.reactor import reactors
 
 
 class TestRZTReactor(unittest.TestCase):

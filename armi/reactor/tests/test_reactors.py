@@ -28,15 +28,11 @@ from armi.physics.neutronics.settings import CONF_XS_KERNEL
 from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.components.basicShapes import Hexagon, Rectangle
-from armi.reactor.components.volumetricShapes import RadialSegment
 from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.settings.fwSettings.globalSettings import (
-    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
-    CONF_SORT_REACTOR,
-)
+from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP, CONF_SORT_REACTOR
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 

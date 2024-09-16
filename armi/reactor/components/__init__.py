@@ -38,7 +38,6 @@ from armi.reactor.components.component import (
     componentParameters,
 )
 
-
 def factory(shape, bcomps, kwargs):
     """
     Build a new component object.

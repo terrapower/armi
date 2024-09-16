@@ -111,7 +111,7 @@ class _DimensionLink(tuple):
 
 class ComponentType(composites.CompositeModelType):
     """
-    ComponentType is a metaclass for storing and initializing Component subclass types.
+    ComponetType is a metaclass for storing and initializing Component subclass types.
 
     The construction of Component subclasses is being done through factories for ease of
     user input.  As a consequence, the ``__init__`` methods' arguments need to be known

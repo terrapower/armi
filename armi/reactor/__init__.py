@@ -51,7 +51,7 @@ The key classes of the reactor package are shown below:
 See :doc:`/developer/index`.
 """
 
-from typing import TYPE_CHECKING, Callable, Dict, Union
+from typing import Dict, Callable, Union, TYPE_CHECKING
 
 from armi import plugins
 
@@ -66,11 +66,9 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineBlockTypes():
+        from armi.reactor.components.basicShapes import Rectangle, Hexagon
+        from armi.reactor.components.volumetricShapes import RadialSegment
         from armi.reactor import blocks
-        from armi.reactor.components.basicShapes import Hexagon, Rectangle
-        from armi.reactor.components.volumetricShapes import (
-            RadialSegment,
-        )
 
         return [
             (Rectangle, blocks.CartesianBlock),
