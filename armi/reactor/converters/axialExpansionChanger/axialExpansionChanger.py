@@ -19,8 +19,8 @@ from armi import runLog
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
-from armi.reactor.converters.axialExpansionChanger.expansionData import ExpansionData
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
+    ExpansionData,
     getSolidComponents,
 )
 from armi.reactor.flags import Flags
@@ -359,8 +359,8 @@ class AxialExpansionChanger:
 
             _checkBlockHeight(b)
             # Call Component.clearCache to update the Component volume, and therefore the masses,
-            # of all solid components.
-            for c in getSolidComponents(b):
+            # of all components.
+            for c in b:
                 c.clearCache()
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
