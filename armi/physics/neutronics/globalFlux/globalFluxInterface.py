@@ -21,14 +21,19 @@ from typing import Dict, Optional
 import numpy as np
 import scipy.integrate
 
-from armi import interfaces, runLog
-from armi.physics import constants, executers, neutronics
-from armi.reactor import geometry, reactors
+from armi import interfaces
+from armi import runLog
+from armi.physics import constants
+from armi.physics import executers
+from armi.physics import neutronics
+from armi.reactor import geometry
+from armi.reactor import reactors
 from armi.reactor.blocks import Block
-from armi.reactor.converters import geometryConverters, uniformMesh
+from armi.reactor.converters import geometryConverters
+from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import codeTiming, getBurnSteps, getMaxBurnSteps, units
+from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -494,9 +499,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
             CONF_XS_KERNEL,
         )
         from armi.settings.fwSettings.globalSettings import (
-            CONF_DETAILED_AXIAL_EXPANSION,
             CONF_NON_UNIFORM_ASSEM_FLAGS,
             CONF_PHYSICS_FILES,
+            CONF_DETAILED_AXIAL_EXPANSION,
         )
 
         self.kernelName = cs[CONF_NEUTRONICS_KERNEL]

@@ -19,7 +19,8 @@ from unittest.mock import patch
 
 import numpy as np
 
-from armi import runLog, settings
+from armi import runLog
+from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.globalFlux import globalFluxInterface
 from armi.physics.neutronics.settings import (
@@ -29,8 +30,10 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks, test_reactors
-from armi.tests import ISOAA_PATH, mockRunLogs
+from armi.reactor.tests import test_blocks
+from armi.reactor.tests import test_reactors
+from armi.tests import ISOAA_PATH
+from armi.tests import mockRunLogs
 
 
 class MockReactorParams:

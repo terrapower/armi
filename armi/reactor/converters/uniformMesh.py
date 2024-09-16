@@ -52,23 +52,26 @@ The mesh mapping happens as described in the figure:
 .. figure:: /.static/axial_homogenization.png
 
 """
-import collections
 import copy
 import glob
 import re
+import collections
 from timeit import default_timer as timer
 
 import numpy as np
 
 import armi
 from armi import runLog
-from armi.reactor import grids, parameters
-from armi.reactor.converters.geometryConverters import GeometryConverter
-from armi.reactor.flags import Flags
-from armi.reactor.reactors import Core, Reactor
-from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.utils import iterables, plotting
 from armi.utils.mathematics import average1DWithinTolerance
+from armi.utils import iterables
+from armi.utils import plotting
+from armi.reactor import grids
+from armi.reactor.reactors import Core
+from armi.reactor.flags import Flags
+from armi.reactor.converters.geometryConverters import GeometryConverter
+from armi.reactor import parameters
+from armi.reactor.reactors import Reactor
+from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
