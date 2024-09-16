@@ -425,7 +425,7 @@ def close(fig=None):
 
 
 def _makeAssemPatches(core):
-    """Return a list of assembly shaped patch for each assembly."""
+    """Return a list of assembly shaped patches for each assembly."""
     patches = []
 
     if isinstance(core.spatialGrid, grids.HexGrid):
@@ -441,8 +441,12 @@ def _makeAssemPatches(core):
     for a in core:
         x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
+            if core.spatialGrid.cornersUp:
+                orientation = 0
+            else:
+                orientation = math.pi / 2.0
             assemPatch = matplotlib.patches.RegularPolygon(
-                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=math.pi / 2.0
+                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=orientation
             )
         elif nSides == 4:
             # for rectangle x, y is defined as sides instead of center
