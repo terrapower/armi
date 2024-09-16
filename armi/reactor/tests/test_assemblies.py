@@ -1093,6 +1093,9 @@ class Assembly_TestCase(unittest.TestCase):
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
 
+        with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
+            a.rotate(math.radians(40))
+
     def test_assem_block_types(self):
         """Test that all children of an assembly are blocks, ordered from top to bottom.
 

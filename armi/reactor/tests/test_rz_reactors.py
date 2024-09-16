@@ -48,12 +48,11 @@ class TestRZTReactorModern(unittest.TestCase):
         """
         The Godiva benchmark model is a HEU sphere with a radius of 8.74 cm.
 
-        This unit tests loading and verifies the reactor is loaded correctly by
-        comparing volumes against expected volumes for full core (including
-        void boundary conditions) and just the fuel.
+        This tests loading and verifies the reactor is loaded correctly by comparing volumes against
+        expected volumes for full core (including void boundary conditions) and just the fuel.
         """
         cs = settings.Settings(
-            fName=os.path.join(TEST_ROOT, "Godiva.armi.unittest.yaml")
+            fName=os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml")
         )
         r = reactors.loadFromCs(cs)
 
@@ -69,7 +68,7 @@ class TestRZTReactorModern(unittest.TestCase):
         for b in r.core.getBlocks():
             reactorVolumes.append(b.getVolume())
             for c in b:
-                if "Godiva" in c.name:
+                if "godiva" in c.name:
                     fuelVolumes.append(c.getVolume())
         # verify the total reactor volume is as expected
         tolerance = 1e-3

@@ -1462,33 +1462,33 @@ class Block_TestCase(unittest.TestCase):
     def test_rotatePins(self):
         b = self.block
         b.setRotationNum(0)
-        index = b.rotatePins(0, justCompute=True)
+        index = b._rotatePins(0, justCompute=True)
         self.assertEqual(b.getRotationNum(), 0)
         self.assertEqual(index[5], 5)
         self.assertEqual(index[2], 2)  # pin 1 is center and never rotates.
 
-        index = b.rotatePins(1)
+        index = b._rotatePins(1)
         self.assertEqual(b.getRotationNum(), 1)
         self.assertEqual(index[2], 3)
         self.assertEqual(b.p.pinLocation[1], 3)
 
-        index = b.rotatePins(1)
+        index = b._rotatePins(1)
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(b.p.pinLocation[1], 4)
 
-        index = b.rotatePins(2)
-        index = b.rotatePins(4)  # over-rotate to check modulus
+        index = b._rotatePins(2)
+        index = b._rotatePins(4)  # over-rotate to check modulus
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(index[6], 2)
         self.assertEqual(b.p.pinLocation[1], 4)
         self.assertEqual(b.p.pinLocation[5], 2)
 
-        self.assertRaises(ValueError, b.rotatePins, -1)
-        self.assertRaises(ValueError, b.rotatePins, 10)
-        self.assertRaises((ValueError, TypeError), b.rotatePins, None)
-        self.assertRaises((ValueError, TypeError), b.rotatePins, "a")
+        self.assertRaises(ValueError, b._rotatePins, -1)
+        self.assertRaises(ValueError, b._rotatePins, 10)
+        self.assertRaises((ValueError, TypeError), b._rotatePins, None)
+        self.assertRaises((ValueError, TypeError), b._rotatePins, "a")
 
     def test_expandElementalToIsotopics(self):
         r"""Tests the expand to elementals capability."""
@@ -2625,3 +2625,23 @@ class MassConservationTests(unittest.TestCase):
             10,
             "Sum of component mass {0} != total block mass {1}. ".format(tMass, bMass),
         )
+
+
+class EmptyBlockRotateTest(unittest.TestCase):
+    """Rotation tests on an empty hexagonal block.
+
+    Useful for enforcing rotation works on blocks without pins.
+
+    """
+
+    def setUp(self):
+        self.block = blocks.HexBlock("empty")
+
+    def test_orientation(self):
+        """Test the orientation parameter is updated on a rotated empty block."""
+        rotDegrees = 60
+        preRotateOrientation = self.block.p.orientation[2]
+        self.block.rotate(math.radians(rotDegrees))
+        postRotationOrientation = self.block.p.orientation[2]
+        self.assertNotEqual(preRotateOrientation, postRotationOrientation)
+        self.assertEqual(postRotationOrientation, rotDegrees)

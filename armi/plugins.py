@@ -125,10 +125,7 @@ import pluggy
 from armi import pluginManager
 from armi.utils import flags
 
-# Not used during runtime so we could have a coverage drop here. Add the
-# pragma line to tell coverage.py to skip this
-# https://coverage.readthedocs.io/en/stable/excluding.html
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from armi.reactor.composites import Composite
 
 

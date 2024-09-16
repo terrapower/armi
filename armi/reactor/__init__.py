@@ -55,13 +55,9 @@ from typing import TYPE_CHECKING, Callable, Dict, Union
 
 from armi import plugins
 
-# Provide type checking but avoid circular imports
-# Not used during runtime so we could have a coverage drop here. Add the
-# pragma line to tell coverage.py to skip this
-# https://coverage.readthedocs.io/en/stable/excluding.html
-if TYPE_CHECKING:  # pragma: no cover
-    from armi.reactor.assemblyLists import SpentFuelPool
+if TYPE_CHECKING:
     from armi.reactor.reactors import Core
+    from armi.reactor.assemblyLists import SpentFuelPool
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
@@ -85,8 +81,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from armi.reactor.assemblies import CartesianAssembly, HexAssembly, ThRZAssembly
         from armi.reactor.blocks import CartesianBlock, HexBlock, ThRZBlock
+        from armi.reactor.assemblies import CartesianAssembly, HexAssembly, ThRZAssembly
 
         return [
             (HexBlock, HexAssembly),
@@ -99,8 +95,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     def defineSystemBuilders() -> Dict[
         str, Callable[[str], Union["Core", "SpentFuelPool"]]
     ]:
-        from armi.reactor.assemblyLists import SpentFuelPool
         from armi.reactor.reactors import Core
+        from armi.reactor.assemblyLists import SpentFuelPool
 
         return {
             "core": Core,

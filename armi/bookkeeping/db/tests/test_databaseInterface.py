@@ -194,6 +194,55 @@ class TestDatabaseInterface(unittest.TestCase):
         self.o._timeNodeLoop(0, 0)
         self.assertTrue(self.dbi._db.hasTimeStep(0, 0))
 
+    def test_syncDbAfterWrite(self):
+        """
+        Test to ensure that the fast-path database is copied to working
+        directory at every time node when ``syncDbAfterWrite`` is ``True``.
+        """
+        r = self.r
+
+        self.o.cs["syncDbAfterWrite"] = True
+        self.o.cs["burnSteps"] = 2  # make test insensitive to burn steps
+
+        self.dbi.interactBOL()
+        self.assertFalse(os.path.exists(self.dbi.database.fileName))
+
+        # Go through a few time nodes to ensure appending is working
+        for timeNode in range(self.o.cs["burnSteps"]):
+            r.p.cycle = 0
+            r.p.timeNode = timeNode
+            self.dbi.interactEveryNode(r.p.cycle, r.p.timeNode)
+
+            # The file should have been copied to working directory
+            self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
+            # The copied file should have the newest time node
+            with Database3(self.dbi.database.fileName, "r") as db:
+                for tn in range(timeNode + 1):
+                    self.assertTrue(db.hasTimeStep(r.p.cycle, tn))
+
+            # The in-memory database should have been reloaded properly
+            for tn in range(timeNode + 1):
+                self.assertTrue(self.dbi.database.hasTimeStep(r.p.cycle, tn))
+
+        # Make sure EOL runs smoothly
+        self.dbi.interactEOL()
+        self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
+    def test_noSyncDbAfterWrite(self):
+        """
+        Test to ensure that the fast-path database is NOT copied to working
+        directory at every time node when ``syncDbAfterWrite`` is ``False``.
+        """
+        self.o.cs["syncDbAfterWrite"] = False
+
+        self.dbi.interactBOL()
+        self.assertFalse(os.path.exists(self.dbi.database.fileName))
+        self.dbi.interactEveryNode(0, 0)
+        self.assertFalse(os.path.exists(self.dbi.database.fileName))
+        self.dbi.interactEOL()
+        self.assertTrue(os.path.exists(self.dbi.database.fileName))
+
 
 class TestDatabaseWriter(unittest.TestCase):
     def setUp(self):
