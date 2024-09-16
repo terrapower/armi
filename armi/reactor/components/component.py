@@ -279,13 +279,18 @@ class Component(composites.Composite, metaclass=ComponentType):
                 return thisID < thatID
             else:
                 return thisOD < thatOD
-        except Exception:
-            raise ValueError(
-                "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
-                "bounding circle outer diameters are not comparable.".format(
-                    self, thisOD, other, thatOD
+        except (NotImplementedError, Exception) as e:
+            if isinstance(e, NotImplementedError):
+                raise NotImplementedError(
+                    "getCircleInnerDiameter not implemented for at least one of {}, {}".format(self, other)
                 )
-            )
+            else:
+                raise ValueError(
+                    "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
+                    "bounding circle outer diameters are not comparable.".format(
+                        self, thisOD, other, thatOD
+                    )
+                )
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
