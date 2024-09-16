@@ -499,8 +499,8 @@ class GlobalFluxOptions(executers.ExecutionOptions):
             CONF_XS_KERNEL,
         )
         from armi.settings.fwSettings.globalSettings import (
-            CONF_NON_UNIFORM_ASSEM_FLAGS,
             CONF_PHYSICS_FILES,
+            CONF_NON_UNIFORM_ASSEM_FLAGS,
             CONF_DETAILED_AXIAL_EXPANSION,
         )
 
