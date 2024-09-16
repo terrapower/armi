@@ -20,8 +20,7 @@ are defined in this subpackage.
 """
 import math
 
-from armi.reactor.components import ShapedComponent
-from armi.reactor.components import componentParameters
+from armi.reactor.components.component import ShapedComponent, componentParameters
 
 
 class Circle(ShapedComponent):

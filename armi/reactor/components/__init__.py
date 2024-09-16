@@ -32,9 +32,9 @@ import math
 import numpy as np
 
 from armi import runLog
-from armi.reactor.components.component import *  # noqa: F403
 from armi.reactor.components.basicShapes import *  # noqa: F403
 from armi.reactor.components.complexShapes import *  # noqa: F403
+from armi.reactor.components.component import *  # noqa: F403
 from armi.reactor.components.volumetricShapes import *  # noqa: F403
 
 
