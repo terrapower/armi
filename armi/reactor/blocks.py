@@ -18,10 +18,10 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
+from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import math
-from typing import Optional, Type, Tuple, ClassVar
 
 import numpy as np
 
