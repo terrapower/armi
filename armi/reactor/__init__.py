@@ -51,7 +51,7 @@ The key classes of the reactor package are shown below:
 See :doc:`/developer/index`.
 """
 
-from typing import Dict, Callable, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Dict, Union
 
 from armi import plugins
 
@@ -60,8 +60,8 @@ from armi import plugins
 # pragma line to tell coverage.py to skip this
 # https://coverage.readthedocs.io/en/stable/excluding.html
 if TYPE_CHECKING:  # pragma: no cover
-    from armi.reactor.reactors import Core
     from armi.reactor.assemblyLists import SpentFuelPool
+    from armi.reactor.reactors import Core
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
@@ -70,9 +70,11 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineBlockTypes():
-        from armi.reactor.components.basicShapes import Rectangle, Hexagon
-        from armi.reactor.components.volumetricShapes import RadialSegment
         from armi.reactor import blocks
+        from armi.reactor.components.basicShapes import Hexagon, Rectangle
+        from armi.reactor.components.volumetricShapes import (
+            RadialSegment,
+        )
 
         return [
             (Rectangle, blocks.CartesianBlock),
@@ -83,8 +85,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from armi.reactor.blocks import HexBlock, CartesianBlock, ThRZBlock
-        from armi.reactor.assemblies import HexAssembly, CartesianAssembly, ThRZAssembly
+        from armi.reactor.assemblies import CartesianAssembly, HexAssembly, ThRZAssembly
+        from armi.reactor.blocks import CartesianBlock, HexBlock, ThRZBlock
 
         return [
             (HexBlock, HexAssembly),
@@ -97,8 +99,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     def defineSystemBuilders() -> Dict[
         str, Callable[[str], Union["Core", "SpentFuelPool"]]
     ]:
-        from armi.reactor.reactors import Core
         from armi.reactor.assemblyLists import SpentFuelPool
+        from armi.reactor.reactors import Core
 
         return {
             "core": Core,

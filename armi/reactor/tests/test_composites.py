@@ -13,31 +13,24 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-from copy import deepcopy
 import logging
 import unittest
+from copy import deepcopy
 
-from armi import nuclearDataIO
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import assemblies, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
+from armi.reactor.components.basicShapes import Circle
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
+from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:
@@ -569,7 +562,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getHMMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
-        self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
+        self.fuelComponent = Circle("fuel", "UZr", **fuelDims)
         self.block.add(self.fuelComponent)
 
         self.block.clearNumberDensities()
@@ -598,7 +591,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_getFPMass(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
-        self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
+        self.fuelComponent = Circle("fuel", "UZr", **fuelDims)
         self.fuelComponent.material.setMassFrac("LFP38", 0.25)
         self.block.add(self.fuelComponent)
 

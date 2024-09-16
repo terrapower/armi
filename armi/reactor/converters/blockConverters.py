@@ -24,6 +24,7 @@ from matplotlib.patches import Wedge
 
 from armi import runLog
 from armi.reactor import blocks, components, grids
+from armi.reactor.components.basicShapes import Circle
 from armi.reactor.flags import Flags
 
 SIN60 = math.sin(math.radians(60.0))
@@ -133,7 +134,7 @@ class BlockConverter:
             )
         if not (
             isinstance(solvent, components.DerivedShape)
-            or all(isinstance(c, components.Circle) for c in (solute, solvent))
+            or all(isinstance(c, Circle) for c in (solute, solvent))
         ):
             raise ValueError(
                 "Components are not of compatible shape to be merged "
@@ -187,11 +188,7 @@ class BlockConverter:
             c for c in self._sourceBlock if not isinstance(c, components.DerivedShape)
         )
         for c in sorted(validComponents):
-            if (
-                not isinstance(c, components.Circle)
-                or c is solvent
-                or c.containsVoidMaterial()
-            ):
+            if not isinstance(c, Circle) or c is solvent or c.containsVoidMaterial():
                 continue
             if c.isEncapsulatedBy(solvent):
                 raise ValueError(
@@ -407,7 +404,7 @@ class BlockAvgToCylConverter(BlockConverter):
             assert numFuelBlocksInRing is not None
             fuelBlockTotalArea = numFuelBlocksInRing * blockToAdd.getArea()
             driverOuterDiam = getOuterDiamFromIDAndArea(innerDiam, fuelBlockTotalArea)
-            driverRing = components.Circle(
+            driverRing = Circle(
                 blockName,
                 newCompProps,
                 tempInput,
@@ -713,7 +710,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
     @staticmethod
     def _addSolidMaterialRing(baseComponent, innerDiameter, outDiameter, name):
-        circle = components.Circle(
+        circle = Circle(
             name,
             baseComponent.material,
             baseComponent.temperatureInC,
@@ -729,7 +726,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     def _addCoolantRing(self, coolantOD, nameSuffix):
         innerDiam = self.convertedBlock[-1].getDimension("od")
         irc = self.interRingComponent
-        interRing = components.Circle(
+        interRing = Circle(
             irc.name + nameSuffix,
             irc.material,
             irc.temperatureInC,

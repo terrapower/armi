@@ -21,31 +21,34 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings
-from armi import tests
+from armi import settings, tests
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    components,
+    geometry,
+    parameters,
+    reactors,
+)
 from armi.reactor.assemblies import (
-    copy,
     Flags,
-    grids,
     HexAssembly,
+    copy,
+    grids,
     runLog,
+)
+from armi.reactor.components.basicShapes import (
+    Circle,
+    Hexagon,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-
+from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 
@@ -76,8 +79,8 @@ def buildTestAssemblies():
         "mult": nPins,
     }
 
-    fuelUZr = components.Circle("fuel", "UZr", **fuelDims)
-    fuelUTh = components.Circle("fuel UTh", "ThU", **fuelDims)
+    fuelUZr = Circle("fuel", "UZr", **fuelDims)
+    fuelUTh = Circle("fuel UTh", "ThU", **fuelDims)
 
     fuelDims2nPins = {
         "Tinput": temperature,
@@ -87,7 +90,7 @@ def buildTestAssemblies():
         "mult": 2 * nPins,
     }
 
-    fuelUThZr = components.Circle("fuel B", "UThZr", **fuelDims2nPins)
+    fuelUThZr = Circle("fuel B", "UThZr", **fuelDims2nPins)
 
     cladDims = {
         "Tinput": temperature,
@@ -97,7 +100,7 @@ def buildTestAssemblies():
         "mult": 2 * nPins,
     }
 
-    clad = components.Circle("clad", "HT9", **cladDims)
+    clad = Circle("clad", "HT9", **cladDims)
 
     interDims = {
         "Tinput": temperature,
@@ -107,7 +110,7 @@ def buildTestAssemblies():
         "mult": 1.0,
     }
 
-    interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
+    interSodium = Hexagon("interCoolant", "Sodium", **interDims)
 
     block = blocks.HexBlock("fuel")
     block2 = blocks.HexBlock("fuel")
@@ -257,7 +260,7 @@ class Assembly_TestCase(unittest.TestCase):
                 "ip": 0.0,
                 "mult": 1.0,
             }
-            h = components.Hexagon("fuel", "UZr", **self.hexDims)
+            h = Hexagon("fuel", "UZr", **self.hexDims)
 
             # non-flaggy name important for testing
             b.setType("igniter fuel unitst")
@@ -531,7 +534,7 @@ class Assembly_TestCase(unittest.TestCase):
                 "mult": 1.0,
             }
 
-            h = components.Hexagon("fuel", "UZr", **self.hexDims)
+            h = Hexagon("fuel", "UZr", **self.hexDims)
             b = blocks.HexBlock("fuel")
             b.setType("igniter fuel")
             b.add(h)
@@ -774,7 +777,7 @@ class Assembly_TestCase(unittest.TestCase):
                 "mult": 1.0,
             }
 
-            h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
+            h = Hexagon("intercoolant", "Sodium", **self.hexDims)
 
             b.add(h)
 
@@ -822,7 +825,7 @@ class Assembly_TestCase(unittest.TestCase):
                 "mult": 1.0,
             }
 
-            h = components.Hexagon("intercoolant", "Sodium", **self.hexDims)
+            h = Hexagon("intercoolant", "Sodium", **self.hexDims)
             b.add(h)
 
             self.assembly.add(b)

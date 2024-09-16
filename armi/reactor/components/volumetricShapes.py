@@ -63,6 +63,10 @@ class Sphere(ShapedComponent):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
         return self.getDimension("od")
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """Abstract bounding circle method that should be overwritten by each shape subclass."""
+        return self.getDimension("id")
+
     def getComponentArea(self, cold=False):
         """Compute an average area over the height."""
         from armi.reactor.blocks import Block  # avoid circular import
@@ -250,7 +254,11 @@ class RadialSegment(ShapedComponent):
         return vol
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        return self.getDimension("outer_radius", Tc, cold)
+        return 2.0 * self.getDimension("outer_radius", Tc, cold)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """Abstract bounding circle method that should be overwritten by each shape subclass."""
+        return 2.0 * self.getDimension("inner_radius")
 
 
 class DifferentialRadialSegment(RadialSegment):

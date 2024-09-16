@@ -38,6 +38,7 @@ from armi.reactor.components.basicShapes import (
     Rectangle,
 )
 from armi.reactor.components.complexShapes import (
+    Helix,
     HoledRectangle,
     HoledSquare,
 )
@@ -1319,9 +1320,7 @@ class Block_TestCase(unittest.TestCase):
         emptyBlock = blocks.HexBlock("empty")
         self.assertEqual(emptyBlock.getNumPins(), 0)
 
-        holedRectangle = HoledRectangle(
-            "holedRectangle", "HT9", 1, 1, 0.5, 1.0, 1.0
-        )
+        holedRectangle = HoledRectangle("holedRectangle", "HT9", 1, 1, 0.5, 1.0, 1.0)
         holedRectangle.setType("component", flags=Flags.CONTROL)
         emptyBlock.add(holedRectangle)
         self.assertEqual(emptyBlock.getNumPins(), 0)
@@ -1894,14 +1893,10 @@ class HexBlock_TestCase(unittest.TestCase):
         self.hexComponent = Hexagon("duct", "UZr", **hexDims)
         self.HexBlock.add(self.hexComponent)
         self.HexBlock.add(
-            Circle(
-                "clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0
-            )
+            Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0)
         )
         self.HexBlock.add(
-            Circle(
-                "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0
-            )
+            Circle("wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0)
         )
         self.HexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
@@ -2096,9 +2091,7 @@ class HexBlock_TestCase(unittest.TestCase):
 
         hexArgs = {"op": desiredPitch, "ip": ipNeededForCorrectArea, "mult": 1.0}
         hexArgs.update(compArgs)
-        pitchDefiningComponent = Hexagon(
-            "pitchComp", materials[0], **hexArgs
-        )
+        pitchDefiningComponent = Hexagon("pitchComp", materials[0], **hexArgs)
         hexBlock.add(pitchDefiningComponent)
 
         # hex component is added, now add the rest as unshaped.
@@ -2367,9 +2360,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
         )
         self.cartesianBlock.add(self.cartesianComponent)
         self.cartesianBlock.add(
-            Circle(
-                "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
-            )
+            Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0)
         )
 
     def test_getPitchSquare(self):
@@ -2419,9 +2410,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
             "mult": 1.0,
         }
         rectArgs.update(compArgs)
-        pitchDefiningComponent = Rectangle(
-            "pitchComp", materials[0], **rectArgs
-        )
+        pitchDefiningComponent = Rectangle("pitchComp", materials[0], **rectArgs)
         cartBlock.add(pitchDefiningComponent)
 
         # Rectangle component is added, now add the rest as unshaped.
