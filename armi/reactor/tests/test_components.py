@@ -517,7 +517,7 @@ class TestComponentSort(unittest.TestCase):
             "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
         )
         ductComp = components.Hexagon(
-            "duct", "HT9", "Tinput": 273.0, "Thot": 273.0, "op": 2.6, "ip": 2.0, "mult": 1.0
+            "duct", "HT9", Tinput=273.0, Thot=273.0, op=2.6, ip=2.0, mult=1.0
         )
         cladComp = components.Circle(
             "clad", "HT9", Tinput=273.0, Thot=273.0, id=0.08, od=0.1, mult=169.0
