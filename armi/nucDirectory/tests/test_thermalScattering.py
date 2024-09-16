@@ -16,8 +16,8 @@ import unittest
 
 from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as ts
-from armi.reactor import blocks
-from armi.reactor import components
+from armi.reactor import blocks, components
+from armi.reactor.components.basicShapes import Circle
 
 
 def buildBlockWithTSL():
@@ -28,8 +28,8 @@ def buildBlockWithTSL():
     cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
     coolDims = {"Tinput": 25.0, "Thot": 400}
 
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    clad = components.Circle("clad", "Graphite", **cladDims)
+    fuel = Circle("fuel", "UZr", **fuelDims)
+    clad = Circle("clad", "Graphite", **cladDims)
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
 
     b.add(fuel)
@@ -96,7 +96,7 @@ class TestThermalScattering(unittest.TestCase):
         """HT9 has carbon in it with no TSL, while graphite has C with TSL. This should crash."""
         b = buildBlockWithTSL()
         cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.79, "mult": 127.0}
-        clad2 = components.Circle("clad", "HT9", **cladDims)
+        clad2 = Circle("clad", "HT9", **cladDims)
         b.add(clad2)
         with self.assertRaises(RuntimeError):
             getNuclideThermalScatteringData(b)

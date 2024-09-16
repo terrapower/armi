@@ -22,6 +22,8 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
     isDepletable,
 )
 from armi.reactor import blocks, components, grids
+from armi.reactor.components.basicShapes import Circle, Hexagon
+from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
@@ -50,8 +52,8 @@ def buildSimpleFuelBlockNegativeArea():
     }
     coolDims = {"Tinput": 25.0, "Thot": 400}
 
-    fuel = components.Circle("fuel", "UZr", **fuelDims)
-    clad = components.Circle("clad", "HT9", **cladDims)
+    fuel = Circle("fuel", "UZr", **fuelDims)
+    clad = Circle("clad", "HT9", **cladDims)
     gapDims = {
         "Tinput": 25,
         "Thot": 600,
@@ -60,10 +62,10 @@ def buildSimpleFuelBlockNegativeArea():
         "mult": 127.0,
     }
     gapDims["components"] = {"fuel": fuel, "clad": clad}
-    gap = components.Circle("gap", "Void", **gapDims)
-    duct = components.Hexagon("duct", "HT9", **ductDims)
+    gap = Circle("gap", "Void", **gapDims)
+    duct = Hexagon("duct", "HT9", **ductDims)
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
 
     b.add(fuel)
     b.add(gap)
@@ -376,9 +378,7 @@ class TestBlockConverter(unittest.TestCase):
     def _checkCiclesAreInContact(self, convertedCircleBlock):
         numComponents = len(convertedCircleBlock)
         self.assertGreater(numComponents, 1)
-        self.assertTrue(
-            all(isinstance(c, components.Circle) for c in convertedCircleBlock)
-        )
+        self.assertTrue(all(isinstance(c, Circle) for c in convertedCircleBlock))
 
         lastCompOD = None
         lastComp = None
@@ -419,7 +419,7 @@ class TestToCircles(unittest.TestCase):
 
 def _buildJoyoFuel():
     """Build some JOYO components."""
-    fuel = components.Circle(
+    fuel = Circle(
         name="fuel",
         material="UO2",
         Tinput=20.0,
@@ -428,7 +428,7 @@ def _buildJoyoFuel():
         id=0.0,
         mult=91,
     )
-    clad = components.Circle(
+    clad = Circle(
         name="clad",
         material="HT9",
         Tinput=20.0,
@@ -475,16 +475,16 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     }
     coolDims = {"Tinput": 25.0, "Thot": 400}
 
-    control = components.Circle("control", "UZr", **controlDims)
-    clad = components.Circle("clad", "HT9", **cladDims)
+    control = Circle("control", "UZr", **controlDims)
+    clad = Circle("clad", "HT9", **cladDims)
     # This sets up the linking of the bond to the fuel and the clad components.
-    bond = components.Circle(
+    bond = Circle(
         "bond", "Sodium", components={"control": control, "clad": clad}, **bondDims
     )
-    wire = components.Helix("wire", "HT9", **wireDims)
-    duct = components.Hexagon("duct", "HT9", **ductDims)
+    wire = Helix("wire", "HT9", **wireDims)
+    duct = Hexagon("duct", "HT9", **ductDims)
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
 
     b.add(control)
     b.add(bond)

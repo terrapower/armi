@@ -20,11 +20,10 @@ from pyevtk.vtk import VtkTetra
 
 from armi import settings
 from armi.bookkeeping.db import Database3
-from armi.bookkeeping.visualization import utils
-from armi.bookkeeping.visualization import vtk
-from armi.bookkeeping.visualization import xdmf
+from armi.bookkeeping.visualization import utils, vtk, xdmf
 from armi.reactor import blocks
-from armi.reactor import components
+from armi.reactor.components.basicShapes import Circle
+from armi.reactor.components.complexShapes import HoledSquare
 from armi.reactor.tests import test_reactors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -74,7 +73,7 @@ class TestVisDump(unittest.TestCase):
         cls.hexBlock = cls.r.core.getBlocks()[0]
 
         cls.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
-        cartesianComponent = components.HoledSquare(
+        cartesianComponent = HoledSquare(
             "duct",
             "UZr",
             Tinput=273.0,
@@ -85,9 +84,7 @@ class TestVisDump(unittest.TestCase):
         )
         cls.cartesianBlock.add(cartesianComponent)
         cls.cartesianBlock.add(
-            components.Circle(
-                "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
-            )
+            Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0)
         )
 
     def test_dumpReactorVtk(self):
