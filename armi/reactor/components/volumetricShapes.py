@@ -16,8 +16,7 @@
 
 import math
 
-from armi.reactor.components import componentParameters
-from armi.reactor.components import ShapedComponent
+from armi.reactor.components import ShapedComponent, componentParameters
 
 
 class Sphere(ShapedComponent):
@@ -250,7 +249,10 @@ class RadialSegment(ShapedComponent):
         return vol
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        return self.getDimension("outer_radius", Tc, cold)
+        return 2.0 * self.getDimension("outer_radius", Tc, cold)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        return 2.0 * self.getDimension("inner_radius", Tc, cold)
 
 
 class DifferentialRadialSegment(RadialSegment):

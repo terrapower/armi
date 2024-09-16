@@ -1658,7 +1658,7 @@ class TestRadialSegment(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         self.assertEqual(
-            self.component.getBoundingCircleOuterDiameter(cold=True), 170.0
+            self.component.getBoundingCircleOuterDiameter(cold=True), 340.0
         )
 
 
@@ -1705,7 +1705,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_getBoundingCircleOuterDiameter(self):
-        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 170)
+        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 340)
 
 
 class TestMaterialAdjustments(unittest.TestCase):
