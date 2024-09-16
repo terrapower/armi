@@ -268,6 +268,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         True if a circle encompassing this object has a smaller diameter than one encompassing another component.
 
+        If the bounding circles for both components have identical size, then revert to checking the inner 
+        diameter of each component for sorting.
+
         This allows sorting because the Python sort functions only use this method.
         """
         thisOD = self.getBoundingCircleOuterDiameter(cold=True)
