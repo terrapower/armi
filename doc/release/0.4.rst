@@ -14,8 +14,8 @@ New Features
 #. Provide utilities for determining location of a rotated object in a hexagonal lattice:
    :func:`armi.utils.hexagon.getIndexOfRotatedCell`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
-#. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
-#. Use inner diameter for sorting components when outer diameter is identical (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
+#. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Use inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
 #. TBD
 
 API Changes
