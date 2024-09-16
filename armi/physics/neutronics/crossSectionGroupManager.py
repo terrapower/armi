@@ -56,7 +56,7 @@ import os
 import shutil
 import string
 
-import numpy
+import numpy as np
 
 from armi import context, interfaces, runLog
 from armi.physics.neutronics import LatticePhysicsFrequency
@@ -359,7 +359,7 @@ class AverageBlockCollection(BlockCollection):
         """
         nuclides = self.allNuclidesInProblem
         blocks = self.getCandidateBlocks()
-        weights = numpy.array([self.getWeight(b) for b in blocks])
+        weights = np.array([self.getWeight(b) for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         ndens = weights.dot([b.getNuclideNumberDensities(nuclides) for b in blocks])
         return dict(zip(nuclides, ndens))
@@ -372,8 +372,8 @@ class AverageBlockCollection(BlockCollection):
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
-        nvt = numpy.zeros(len(self.allNuclidesInProblem))
-        nv = numpy.zeros(len(self.allNuclidesInProblem))
+        nvt = np.zeros(len(self.allNuclidesInProblem))
+        nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():
             wt = self.getWeight(block)
             nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(
@@ -394,7 +394,7 @@ class AverageBlockCollection(BlockCollection):
         """
         nuclides = self.allNuclidesInProblem
         blocks = self.getCandidateBlocks()
-        weights = numpy.array([self.getWeight(b) for b in blocks])
+        weights = np.array([self.getWeight(b) for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
         ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
@@ -418,7 +418,7 @@ class AverageBlockCollection(BlockCollection):
             nucName, ndens data (atoms/bn-cm)
         """
         blocks = self.getCandidateBlocks()
-        weights = numpy.array([self.getWeight(b) / b.getHeight() for b in blocks])
+        weights = np.array([self.getWeight(b) / b.getHeight() for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
         weightedAvgComponentMass = sum(
@@ -426,11 +426,11 @@ class AverageBlockCollection(BlockCollection):
         )
         if weightedAvgComponentMass == 0.0:
             # if there is no component mass (e.g., gap), do a regular average
-            return numpy.mean(numpy.array([c.temperatureInC for c in components]))
+            return np.mean(np.array([c.temperatureInC for c in components]))
         else:
             return (
                 weights.dot(
-                    numpy.array([c.temperatureInC * c.getMass() for c in components])
+                    np.array([c.temperatureInC * c.getMass() for c in components])
                 )
                 / weightedAvgComponentMass
             )
@@ -494,14 +494,12 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())
     # D = CxN matrix of number densities
-    ndens = numpy.array(
-        [getNumberDensitiesWithTrace(c, allNucNames) for c in components]
-    )
-    temperatures = numpy.array(
+    ndens = np.array([getNumberDensitiesWithTrace(c, allNucNames) for c in components])
+    temperatures = np.array(
         [c.temperatureInC for c in components]
     )  # C-length temperature array
     nvBlock = (
-        ndens.T * numpy.array(volFracs) * vol
+        ndens.T * np.array(volFracs) * vol
     )  # multiply each component's values by volume frac, now NxC
     nvt = sum((nvBlock * temperatures).T)  # N-length array summing over components.
     nv = sum(nvBlock.T)  # N-length array
@@ -619,12 +617,12 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
     def _getAverageComponentNucs(self, components, bWeights):
         """Compute average nuclide densities by block weights and component area fractions."""
         allNucNames = self._getAllNucs(components)
-        densities = numpy.zeros(len(allNucNames))
+        densities = np.zeros(len(allNucNames))
         totalWeight = 0.0
         for c, bWeight in zip(components, bWeights):
             weight = bWeight * c.getArea()
             totalWeight += weight
-            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
+            densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
         return allNucNames, densities / totalWeight
 
     def _orderComponentsInGroup(self, repBlock):
@@ -638,8 +636,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
-        nvt = numpy.zeros(len(self.allNuclidesInProblem))
-        nv = numpy.zeros(len(self.allNuclidesInProblem))
+        nvt = np.zeros(len(self.allNuclidesInProblem))
+        nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():
             wt = self.getWeight(block)
             nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(
@@ -785,12 +783,12 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
     def _getAverageComponentNucs(self, components, bWeights):
         """Compute average nuclide densities by block weights and component area fractions."""
         allNucNames = self._getAllNucs(components)
-        densities = numpy.zeros(len(allNucNames))
+        densities = np.zeros(len(allNucNames))
         totalWeight = 0.0
         for c, bWeight in zip(components, bWeights):
             weight = bWeight * c.getArea()
             totalWeight += weight
-            densities += weight * numpy.array(c.getNuclideNumberDensities(allNucNames))
+            densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
         return allNucNames, densities / totalWeight
 
     def _orderComponentsInGroup(self, repBlock):

@@ -1,5 +1,8 @@
 name: ARMI MacOS Tests
 
+permissions:
+  contents: read
+
 on:
   push:
     paths-ignore:

@@ -18,6 +18,8 @@ import struct
 
 from six.moves import filterfalse, map, xrange, filter
 
+import numpy as np
+
 
 def flatten(lst):
     """Flattens an iterable of iterables by one level.
@@ -241,3 +243,27 @@ class Sequence:
     def __iadd__(self, other):
         self.extend(Sequence(other))
         return self
+
+
+def pivot(items, position: int):
+    """Pivot the items in an iterable to start at a given position.
+
+    Functionally just ``items[position:] + items[:position]`` with
+    some logic to handle numpy arrays (concatenation not summation)
+
+    Parameters
+    ----------
+    items : list or numpy.ndarray
+        Sequence to be re-ordered
+    position : int
+        Position that will be the first item in the sequence after the pivot
+
+    Returns
+    -------
+    list or numpy.ndarray
+    """
+    if isinstance(items, np.ndarray):
+        return np.concatenate((items[position:], items[:position]))
+    elif isinstance(items, list):
+        return items[position:] + items[:position]
+    raise TypeError(f"Pivoting {type(items)} not supported : {items}")

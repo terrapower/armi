@@ -65,7 +65,7 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
         cls.o.r.core = Core("testCore")
         # add an assembly with a single block
         cls.assembly = HexAssembly("testAssembly")
-        cls.assembly.spatialGrid = grids.axialUnitGrid(1)
+        cls.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         cls.assembly.spatialGrid.armiObject = cls.assembly
         cls.assembly.add(buildSimpleFuelBlock())
         # cls.o.r.core.add(assembly)
@@ -208,6 +208,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertIsNone(self.o.r.core.lib)
+
+    def test_getSuffix(self):
+        self.assertEqual(self.latticeInterface._getSuffix(7), "")
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):

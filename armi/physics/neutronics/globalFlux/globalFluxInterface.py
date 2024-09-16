@@ -18,7 +18,7 @@ and/or photon flux.
 import math
 from typing import Dict, Optional
 
-import numpy
+import numpy as np
 import scipy.integrate
 
 from armi import interfaces, runLog
@@ -725,7 +725,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         currentCorePower = 0.0
         for b in self.r.core.getBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
-            b.p.power = numpy.dot(
+            b.p.power = np.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
             )
             b.p.flux = sum(b.getMgFlux())
@@ -996,13 +996,13 @@ class DoseResultsMapper(GlobalFluxResultMapper):
             # if it is a non-hex block, this should be a no-op
             if b.p.pointsCornerDpaRate is not None:
                 if b.p.pointsCornerDpa is None:
-                    b.p.pointsCornerDpa = numpy.zeros((6,))
+                    b.p.pointsCornerDpa = np.zeros((6,))
                 b.p.pointsCornerDpa = (
                     b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
                 )
             if b.p.pointsEdgeDpaRate is not None:
                 if b.p.pointsEdgeDpa is None:
-                    b.p.pointsEdgeDpa = numpy.zeros((6,))
+                    b.p.pointsEdgeDpa = np.zeros((6,))
                 b.p.pointsEdgeDpa = (
                     b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
                 )
@@ -1201,7 +1201,7 @@ class DoseResultsMapper(GlobalFluxResultMapper):
         peakAvg = (0.0, None)
         loadPadTop = loadPadBottom + loadPadLength
 
-        zrange = numpy.linspace(loadPadBottom, loadPadTop, 100)
+        zrange = np.linspace(loadPadBottom, loadPadTop, 100)
         for a in self.r.core.getAssemblies(Flags.FUEL):
             # scan over the load pad to find the peak dpa
             # no caching.
@@ -1227,20 +1227,6 @@ class DoseResultsMapper(GlobalFluxResultMapper):
 def computeDpaRate(mgFlux, dpaXs):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
-
-    Parameters
-    ----------
-    mgFlux : list
-        multigroup neutron flux in #/cm^2/s
-
-    dpaXs : list
-        DPA cross section in barns to convolute with flux to determine DPA rate
-
-    Returns
-    -------
-    dpaPerSecond : float
-        The dpa/s in this material due to this flux
-
 
     .. impl:: Compute DPA rates.
         :id: I_ARMI_FLUX_DPA
@@ -1274,11 +1260,23 @@ def computeDpaRate(mgFlux, dpaXs):
         the number density of the structural material cancels out. It's in the macroscopic
         cross-section and in the original number of atoms.
 
+    Parameters
+    ----------
+    mgFlux : list
+        multigroup neutron flux in #/cm^2/s
+
+    dpaXs : list
+        DPA cross section in barns to convolute with flux to determine DPA rate
+
+    Returns
+    -------
+    dpaPerSecond : float
+        The dpa/s in this material due to this flux
+
     Raises
     ------
     RuntimeError
        Negative dpa rate.
-
     """
     displacements = 0.0
     if len(mgFlux) != len(dpaXs):
@@ -1390,20 +1388,6 @@ def calcReactionRates(obj, keff, lib):
     r"""
     Compute 1-group reaction rates for this object (usually a block).
 
-    Parameters
-    ----------
-    obj : Block
-        The object to compute reaction rates on. Notionally this could be upgraded to be
-        any kind of ArmiObject but with params defined as they are it currently is only
-        implemented for a block.
-
-    keff : float
-        The keff of the core. This is required to get the neutron production rate correct
-        via the neutron balance statement (since nuSigF has a 1/keff term).
-
-    lib : XSLibrary
-        Microscopic cross sections to use in computing the reaction rates.
-
     .. impl:: Return the reaction rates for a given ArmiObject
         :id: I_ARMI_FLUX_RX_RATES
         :implements: R_ARMI_FLUX_RX_RATES
@@ -1437,6 +1421,20 @@ def calcReactionRates(obj, keff, lib):
 
             \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
             dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+
+    Parameters
+    ----------
+    obj : Block
+        The object to compute reaction rates on. Notionally this could be upgraded to be
+        any kind of ArmiObject but with params defined as they are it currently is only
+        implemented for a block.
+
+    keff : float
+        The keff of the core. This is required to get the neutron production rate correct
+        via the neutron balance statement (since nuSigF has a 1/keff term).
+
+    lib : XSLibrary
+        Microscopic cross sections to use in computing the reaction rates.
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

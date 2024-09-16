@@ -16,14 +16,12 @@
 The History Tracker is a bookkeeping interface that accesses and reports time-dependent state
 information from the database.
 
-At the end of a run, these write text files to
-show the histories for various follow-on mechanical analysis,
-fuel performance analysis, etc.
+At the end of a run, these write text files to show the histories for various follow-on mechanical
+analysis, fuel performance analysis, etc.
 
-Other interfaces may find this useful as well, to get an assembly history
-for fuel performance analysis, etc. This is particularly useful in equilibrium runs,
-where the ``EqHistoryTrackerInterface`` will unravel the full history from a single
-equilibrium cycle.
+Other interfaces may find this useful as well, to get an assembly history for fuel performance
+analysis, etc. This is particularly useful in equilibrium runs, where the
+``EqHistoryTrackerInterface`` will unravel the full history from a single equilibrium cycle.
 
 Getting history information
 ---------------------------
@@ -37,20 +35,21 @@ You can pre-load information before gathering it to get much better performance:
 
     history.preloadBlockHistoryVals(blockNames, historyKeys, timeSteps)
 
-This is essential for performance when history information is going to be accessed
-in loops over assemblies or blocks. Reading each param directly from the database
-individually in loops is paralyzingly slow.
+This is essential for performance when history information is going to be accessed in loops over
+assemblies or blocks. Reading each param directly from the database individually in loops is
+paralyzingly slow.
 
 Specifying parameters to add to the EOL history report
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To add state parameters to the list of things that get their history reported, you need to define an interface
-method called `getHistoryParams`. It should return a list of block parameters that will become available. For example::
+To add state parameters to the list of things that get their history reported, you need to define an
+interface method called `getHistoryParams`. It should return a list of block parameters that will
+become available. For example::
 
     def getHistoryParams(self):
         return ['flux', 'percentBu']
 
-When you'd like to access history information, you need to grab the history interface. The history interfaces is
-present by default in your interface stack. To get it, just call::
+When you'd like to access history information, you need to grab the history interface. The history
+interfaces is present by default in your interface stack. To get it, just call::
 
     history = self.getInterface('history')
 
@@ -71,13 +70,12 @@ See :ref:`detail-assems`.
 from typing import Tuple
 import traceback
 
-import tabulate
-
 from armi import interfaces
 from armi import runLog
 from armi import operators
 from armi.reactor.flags import Flags
 from armi.reactor import grids
+from armi.utils import tabulate
 
 ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -129,11 +127,10 @@ class HistoryTrackerInterface(interfaces.Interface):
 
         Warning
         -------
-        If the current timestep history is requested and the database has not yet
-        been written this timestep, the current value of the requested parameter is
-        provided. It is possible that this is not the value that will be written to
-        the database during this time step since many interfaces that change
-        parameters  may interact between this call and the database write.
+        If the current timestep history is requested and the database has not yet been written this
+        timestep, the current value of the requested parameter is provided. It is possible that this
+        is not the value that will be written to the database during this time step since many
+        interfaces that change parameters may interact between this call and the database write.
         """
         interfaces.Interface.__init__(self, r, cs)
         self.detailAssemblyNames = []
@@ -296,10 +293,10 @@ class HistoryTrackerInterface(interfaces.Interface):
             headers = [str(ts).replace(" ", "") for ts in times.keys()]
             out.write(
                 tabulate.tabulate(
+                    data=(times.values(),),
                     headers=headers,
-                    tabular_data=(times.values(),),
-                    tablefmt="plain",
-                    floatfmt="11.5E",
+                    tableFmt="plain",
+                    floatFmt="11.5E",
                 )
             )
             out.write("\n")
@@ -318,7 +315,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 out.write("\n\nkey: {0}\n".format(param))
 
                 data = [blockHistories[b][param].values() for b in blocks]
-                out.write(tabulate.tabulate(data, tablefmt="plain", floatfmt="11.5E"))
+                out.write(tabulate.tabulate(data, tableFmt="plain", floatFmt="11.5E"))
                 out.write("\n")
 
             # loc is a tuple, remove the spaces from the string representation so it is easy to load
@@ -328,14 +325,14 @@ class HistoryTrackerInterface(interfaces.Interface):
                 for loc in dbi.getHistory(a, ["location"])["location"].values()
             ]
             out.write("\n\nkey: location\n")
-            out.write(tabulate.tabulate((location,), tablefmt="plain"))
+            out.write(tabulate.tabulate((location,), tableFmt="plain"))
             out.write("\n\n\n")
 
             headers = "EOL bottom top center".split()
             data = [("", b.p.zbottom, b.p.ztop, b.p.z) for b in blocks]
             out.write(
                 tabulate.tabulate(
-                    data, headers=headers, tablefmt="plain", floatfmt="10.3f"
+                    data, headers=headers, tableFmt="plain", floatFmt="10.3f"
                 )
             )
 

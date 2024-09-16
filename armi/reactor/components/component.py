@@ -20,7 +20,7 @@ This module contains the abstract definition of a Component.
 import copy
 import re
 
-import numpy
+import numpy as np
 
 from armi import materials
 from armi import runLog
@@ -30,8 +30,8 @@ from armi.materials import material
 from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
-from armi.reactor import parameters
 from armi.reactor import flags
+from armi.reactor import parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -553,7 +553,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Overlapping is allowed to maintain conservation of atoms while sticking close to the
         as-built geometry. Modules that need true geometries will have to handle this themselves.
         """
-        if numpy.isnan(area):
+        if np.isnan(area):
             return
 
         if area < 0.0:
@@ -576,7 +576,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         self._checkNegativeArea
         """
-        if numpy.isnan(volume):
+        if np.isnan(volume):
             return
 
         if volume < 0.0 and self.containsSolidMaterial():
@@ -1241,7 +1241,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.p.pinNum is None:
             # no pin-level flux is available
             if not self.parent:
-                return numpy.zeros(1)
+                return np.zeros(1)
 
             volumeFraction = self.getVolume() / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)

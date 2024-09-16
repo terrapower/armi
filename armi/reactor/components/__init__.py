@@ -29,7 +29,7 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 # ruff: noqa: F405
 import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.reactor.components.component import *  # noqa: F403
@@ -132,7 +132,7 @@ class UnshapedComponent(Component):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=np.NaN,
         modArea=None,
         isotopics=None,
         mergeWith=None,
@@ -158,7 +158,7 @@ class UnshapedComponent(Component):
         Parameters
         ----------
         cold : bool, optional
-            Ignored for this component
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
         """
         coldArea = self.p.area
         if cold:
@@ -172,6 +172,13 @@ class UnshapedComponent(Component):
 
         This is the smallest it can possibly be. Since this is used to determine
         the outer component, it will never be allowed to be the outer one.
+
+        Parameters
+        ----------
+        Tc : float
+            Ignored for this component
+        cold : bool, optional
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
 
         Notes
         -----
@@ -217,12 +224,12 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         material,
         Tinput,
         Thot,
-        area=numpy.NaN,
+        area=np.NaN,
         op=None,
         isotopics=None,
         mergeWith=None,
         components=None,
-        volume=numpy.NaN,
+        volume=np.NaN,
     ):
         Component.__init__(
             self,
@@ -451,8 +458,17 @@ class DerivedShape(UnshapedComponent):
         Parameters
         ----------
         cold : bool, optional
-            Ignored for this component
+            If True, compute the area with as-input dimensions, instead of thermally-expanded.
         """
+        if cold:
+            # At cold temp, the DerivedShape has the area of the parent minus the other siblings
+            parentArea = self.parent.getArea()
+            # NOTE: the assumption is there is only one DerivedShape in each Component
+            siblings = sum(
+                [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
+            )
+            return parentArea - siblings
+
         if self.parent.derivedMustUpdate:
             self.computeVolume()
 

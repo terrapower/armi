@@ -14,7 +14,7 @@
 import math
 from typing import TYPE_CHECKING, Optional, NoReturn
 
-import numpy
+import numpy as np
 
 from armi.reactor.grids.locations import IJType, IJKType
 from armi.reactor.grids.structuredGrid import StructuredGrid
@@ -75,8 +75,8 @@ class ThetaRZGrid(StructuredGrid):
             radii.add(rad2)
             thetas.add(theta1)
             thetas.add(theta2)
-        radii = numpy.array(sorted(radii), dtype=numpy.float64)
-        thetaRadians = numpy.array(sorted(thetas), dtype=numpy.float64)
+        radii = np.array(sorted(radii), dtype=np.float64)
+        thetaRadians = np.array(sorted(thetas), dtype=np.float64)
 
         return ThetaRZGrid(
             bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject
@@ -89,7 +89,7 @@ class ThetaRZGrid(StructuredGrid):
     def getIndicesFromRingAndPos(ring: int, pos: int) -> IJType:
         return (pos - 1, ring - 1)
 
-    def getCoordinates(self, indices, nativeCoords=False) -> numpy.ndarray:
+    def getCoordinates(self, indices, nativeCoords=False) -> np.ndarray:
         meshCoords = theta, r, z = super().getCoordinates(
             indices, nativeCoords=nativeCoords
         )
@@ -100,7 +100,7 @@ class ThetaRZGrid(StructuredGrid):
             return meshCoords
         else:
             # return x, y ,z
-            return numpy.array((r * math.cos(theta), r * math.sin(theta), z))
+            return np.array((r * math.cos(theta), r * math.sin(theta), z))
 
     def indicesOfBounds(
         self,
@@ -131,8 +131,8 @@ class ThetaRZGrid(StructuredGrid):
         -------
         tuple : i, j, k of given bounds
         """
-        i = int(numpy.abs(self._bounds[0] - theta0).argmin())
-        j = int(numpy.abs(self._bounds[1] - rad0).argmin())
+        i = int(np.abs(self._bounds[0] - theta0).argmin())
+        j = int(np.abs(self._bounds[1] - rad0).argmin())
 
         return (i, j, 0)
 
