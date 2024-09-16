@@ -1065,11 +1065,7 @@ class Block(composites.Composite):
         nPins = [
             sum(
                 [
-                    (
-                        int(c.getDimension("mult"))
-                        if isinstance(c, Circle)
-                        else 0
-                    )
+                    (int(c.getDimension("mult")) if isinstance(c, Circle) else 0)
                     for c in self.iterComponents(compType)
                 ]
             )
