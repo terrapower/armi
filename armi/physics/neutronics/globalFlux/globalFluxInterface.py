@@ -1343,7 +1343,7 @@ def calcReactionRatesBlockList(objList, keff, xsNucDict):
 
         numberDensities = obj.getNumberDensities()
         try:
-            mgFlux = numpy.array(obj.getMgFlux())
+            mgFlux = np.array(obj.getMgFlux())
         except TypeError:
             continue
 
