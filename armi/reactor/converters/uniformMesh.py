@@ -52,8 +52,8 @@ The mesh mapping happens as described in the figure:
 .. figure:: /.static/axial_homogenization.png
 
 """
-import glob
 import re
+import glob
 import copy
 import collections
 from timeit import default_timer as timer
