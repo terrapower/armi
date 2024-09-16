@@ -27,7 +27,7 @@ license = {file = "LICENSE.md"}
 requires-python = ">3.8"
 readme = "README.rst"
 authors = [
-    { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
+     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
