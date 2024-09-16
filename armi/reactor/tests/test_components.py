@@ -44,7 +44,7 @@ from armi.reactor.components import (
     UnshapedVolumetricComponent,
     ComponentType,
 )
-from armi.reactor import materials
+from armi import materials
 from armi.reactor.tests.test_reactors import loadTestReactor
 
 
