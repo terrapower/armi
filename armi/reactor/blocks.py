@@ -18,34 +18,31 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import math
+from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases
-from armi import runLog
+from armi import nuclideBases, runLog
 from armi.bookkeeping import report
 from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA
-from armi.physics.neutronics import NEUTRON
-from armi.reactor import blockParameters
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Hexagon, Circle
-from armi.reactor.components.complexShapes import Helix
+from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.reactor import (
+    blockParameters,
+    components,
+    composites,
+    geometry,
+    grids,
+    parameters,
+)
+from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
+from armi.reactor.components.complexShapes import Helix, HoledHexagon
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools
-from armi.utils import hexagon
-from armi.utils import units
+from armi.utils import densityTools, hexagon, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -231,7 +228,7 @@ class Block(composites.Composite):
         if not fuels:
             return 0.0  # Smear density is not computed for non-fuel blocks
 
-        circles = self.getComponentsOfShape(components.Circle)
+        circles = self.getComponentsOfShape(Circle)
         if not circles:
             raise ValueError(
                 "Cannot get smear density of {}. There are no circular components.".format(
@@ -1067,7 +1064,7 @@ class Block(composites.Composite):
                 [
                     (
                         int(c.getDimension("mult"))
-                        if isinstance(c, basicShapes.Circle)
+                        if isinstance(c, Circle)
                         else 0
                     )
                     for c in self.iterComponents(compType)
@@ -1759,7 +1756,7 @@ class HexBlock(Block):
         pitch, pin linear power densities, hydraulic diameter, and retrieving inner and outer pitch.
     """
 
-    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
+    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (Hexagon,)
 
     def __init__(self, name, height=1.0):
         Block.__init__(self, name, height)
@@ -2261,11 +2258,11 @@ class HexBlock(Block):
         duct = None
         if any(ducts):
             duct = ducts[0]
-            if not isinstance(duct, components.Hexagon):
+            if not isinstance(duct, Hexagon):
                 # getPinCenterFlatToFlat only works for hexes
                 # inner most duct might be circle or some other shape
                 duct = None
-            elif isinstance(duct, components.HoledHexagon):
+            elif isinstance(duct, HoledHexagon):
                 # has no ip and is circular on inside so following
                 # code will not work
                 duct = None
@@ -2611,7 +2608,7 @@ class HexBlock(Block):
 
 class CartesianBlock(Block):
     PITCH_DIMENSION = "widthOuter"
-    PITCH_COMPONENT_TYPE = components.Rectangle
+    PITCH_COMPONENT_TYPE = Rectangle
 
     def getMaxArea(self):
         """Get area of this block if it were totally full."""

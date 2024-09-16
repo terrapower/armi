@@ -20,13 +20,12 @@ Special logic is required for handling component links.
 """
 import yamlize
 
-from armi import runLog
-from armi import materials
-from armi.reactor import components
-from armi.reactor import composites
+from armi import materials, runLog
+from armi.nucDirectory import nuclideBases
+from armi.reactor import components, composites
+from armi.reactor.components import component
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
-from armi.nucDirectory import nuclideBases
 
 COMPONENT_GROUP_SHAPE = "group"
 
@@ -42,7 +41,7 @@ class ComponentDimension(yamlize.Object):
         # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
         self.value = value
         if isinstance(value, str):
-            if not components.COMPONENT_LINK_REGEX.search(value):
+            if not component.COMPONENT_LINK_REGEX.search(value):
                 raise ValueError(
                     "Bad component link `{}`, must be in form `name.dimension`".format(
                         value
