@@ -509,15 +509,16 @@ class TestDerivedShapeGetArea(unittest.TestCase):
 
 class TestComponentList(unittest.TestCase):
     def setUp(self):
-        self.componentList = []
-        hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 2.6, "ip": 2.0, "mult": 1.0}
+        self.components = []
         pinComp = components.Circle(
             "pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0
         )
         gapComp = components.Circle(
             "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
         )
-        ductComp = components.Hexagon("duct", "HT9", **hexDims)
+        ductComp = components.Hexagon(
+            "duct", "HT9", "Tinput": 273.0, "Thot": 273.0, "op": 2.6, "ip": 2.0, "mult": 1.0
+        )
         cladComp = components.Circle(
             "clad", "HT9", Tinput=273.0, Thot=273.0, id=0.08, od=0.1, mult=169.0
         )
@@ -531,7 +532,7 @@ class TestComponentList(unittest.TestCase):
             od=0.01,
             mult=169.0,
         )
-        self.componentList = [
+        self.components = [
             wireComp,
             cladComp,
             ductComp,
@@ -541,7 +542,7 @@ class TestComponentList(unittest.TestCase):
 
     def test_sorting(self):
         """Test that components are sorted as expected."""
-        sortedComps = sorted(self.componentList)
+        sortedComps = sorted(self.components)
         currentMaxOd = 0.0
         for c in sortedComps:
             # if not isinstance(c, DerivedShape):
