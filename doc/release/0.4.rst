@@ -15,6 +15,7 @@ New Features
    :func:`armi.utils.hexagon.getIndexOfRotatedCell`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Use ``Block.getNumPins()`` in HexBlock._rotatePins() (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. TBD
 
 API Changes
@@ -26,7 +27,6 @@ API Changes
 #. ``Assembly.rotatePins`` and ``Block.rotatePins`` have been removed. Prefer to use
    :meth:`armi.reactor.assemblies.Assembly.rotate` and meth:`armi.reactor.block.Block.rotate`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
-#. Add ``getNumPins`` argument in HexBlock._rotatePins() (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. TBD
 
 Bug Fixes
