@@ -40,6 +40,9 @@ from armi.reactor import (
 )
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix, HoledHexagon
+
+# this unused import is required so that the RadialSegment component type is registered
+from armi.reactor.components.volumetricShapes import RadialSegment
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools, hexagon, units

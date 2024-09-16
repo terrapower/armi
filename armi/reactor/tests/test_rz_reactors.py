@@ -19,9 +19,6 @@ import unittest
 
 from armi import settings
 from armi.reactor import reactors
-from armi.reactor.components.volumetricShapes import (
-    RadialSegment,
-)
 from armi.tests import TEST_ROOT
 
 
