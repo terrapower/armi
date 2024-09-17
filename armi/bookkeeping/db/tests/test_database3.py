@@ -315,7 +315,6 @@ class TestDatabase3Smaller(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.db.genAuxiliaryData((-1, -1))
 
-    # TODO: This should be expanded.
     def test_replaceNones(self):
         """Super basic test that we handle Nones correctly in database read/writes."""
         data3 = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
