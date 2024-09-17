@@ -50,8 +50,6 @@ def parentAwareDensityRedirect(f):
                 "undesirable and can introduce subtle differences. Prefer "
                 "directly calling the parent component's density method. "
                 f"Found on {self=} attached to {self.parent=}",
-                single=True,
-                label="Calling Material.density when attached to a Component",
             )
         return f(self, *args, **kwargs)
 
