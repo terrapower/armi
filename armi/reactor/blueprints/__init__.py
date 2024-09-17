@@ -326,7 +326,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                chngrT = getPluginManager().hook.getAxialExpansionChanger()
+                chngrT = getPluginManagerOrFail().hook.getAxialExpansionChanger()
                 chngrT.expandColdDimsToHot(
                     assemsToExpand,
                     cs[CONF_DETAILED_AXIAL_EXPANSION],
