@@ -22,6 +22,7 @@ from armi.reactor import reactors
 from armi.reactor.blueprints import gridBlueprint
 from armi.reactor.blueprints import reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
+from armi.reactor.composites import Composite
 from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -92,7 +93,7 @@ class TestReactorBlueprints(unittest.TestCase):
         self.systemDesigns = reactorBlueprint.Systems.load(CORE_BLUEPRINT)
         self.gridDesigns = gridBlueprint.Grids.load(GRIDS)
 
-    def test_simple_read(self):
+    def test_simpleRead(self):
         self.assertAlmostEqual(self.systemDesigns["core"].origin.y, 10.1)
         self.assertAlmostEqual(self.systemDesigns["sfp"].origin.y, 12.1)
         self.assertAlmostEqual(self.systemDesigns["evst"].origin.y, 100)
@@ -153,3 +154,29 @@ class TestReactorBlueprints(unittest.TestCase):
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
             self.assertEqual(actual, expected)
+
+    def test_excoreStructure(self):
+        _core, _sfp, evst = self._setupReactor()
+        self.assertIsInstance(evst, ExcoreStructure)
+        self.assertEqual(evst.parent.__class__.__name__, "Reactor")
+        self.assertEqual(evst.spatialGrid.__class__.__name__, "CartesianGrid")
+
+        # add one composite object and validate
+        comp1 = Composite("thing1")
+        loc = evst.spatialGrid[(0, 0, 0)]
+
+        self.assertEqual(len(evst.getChildren()), 4)
+        evst.add(comp1, loc)
+        self.assertEqual(len(evst.getChildren()), 5)
+
+    def test_spentFuelPool(self):
+        _core, sfp, evst = self._setupReactor()
+        self.assertIsInstance(sfp, SpentFuelPool)
+        self.assertEqual(sfp.parent.__class__.__name__, "Reactor")
+        self.assertEqual(sfp.spatialGrid.__class__.__name__, "CartesianGrid")
+        self.assertEqual(sfp.numColumns, 2)
+
+        # add one assembly and validate
+        self.assertEqual(len(sfp.getChildren()), 4)
+        sfp.add(evst.getChildren()[0])
+        self.assertEqual(len(sfp.getChildren()), 5)
