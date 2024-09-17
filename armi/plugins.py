@@ -678,9 +678,7 @@ class ArmiPlugin:
         The first object returned that is not ``None`` will be used.
         Plugins are encouraged to add the ``tryfirst=True`` arguments to their
         ``HOOKIMPL`` invocations to make sure their specific are earlier in the
-        hook call sequence. The default reactor plugin
-        :class:`armi.reactor.ReactorPlugin` is marked ``trylast=True`` to help
-        put other implementations earlier in the sequence.
+        hook call sequence.
 
         Returns
         -------
