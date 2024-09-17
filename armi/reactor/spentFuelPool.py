@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2024 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+"""A nuclear reactor frequently has storage pools (or 'ponds') for spent fuel.
 
-"""
-Spent Fuel Pools are core-like objects that store collections of Assemblies on a grid.
-
-There are some utilties to make it easier to drop a spent assembly into the pool when it is removed
-from the reactor core.
+This file implements a simple/default representation of such as an ARMI "system". ARMI systems, like
+the core are grids filled with ArmiObjects. This module also includes some helper tools to aid
+transfering spent fuel assemblies from the core to the SFP.
 """
 import itertools
 
@@ -25,12 +24,15 @@ from armi.reactor.excoreStructure import ExcoreStructure
 
 
 class SpentFuelPool(ExcoreStructure):
-    """TODO: JOHN: A place to put assemblies when they've been discharged. Can tell you inventory stats, etc."""
+    """A place to put assemblies when they've been discharged.
+
+    This class is a core-like system object, so it has a spatial grid that Assemblies can fit in.
+    """
 
     def __init__(self, name, parent=None):
         ExcoreStructure.__init__(self, name)
         self.parent = parent
-        self.numColumns = 10  # TODO: JOHN Bad default
+        self.numColumns = 10  # TODO: JOHN Bad default. Can this come from the grid?
 
         # TODO: JOHN Can I remove this default? Make it None?
         # make a Cartesian assembly rack by default. Anything that really cares about the layout
@@ -46,11 +48,9 @@ class SpentFuelPool(ExcoreStructure):
         assem : Assembly
             The Assembly to add to the list
         loc : LocationBase, optional
-            If provided, the assembly is inserted at that location. If it is not provided, the
-            locator on the Assembly object will be used. If the Assembly's locator belongs to
-            ``self.spatialGrid``, the Assembly's existing locator will not be used. This is unlike
-            the Core, which would try to use the same indices, but move the locator to the Core's
-            grid. With a locator, the associated ``AutoFiller`` will be used.
+            If provided, the assembly is inserted at this location.
+            If it is not provided, the locator on the Assembly object will be used.
+            If the Assembly's loc belongs to ``self.spatialGrid``, it will not be used.
         """
         if loc is not None and loc.grid is not self.spatialGrid:
             raise ValueError(
@@ -84,14 +84,11 @@ class SpentFuelPool(ExcoreStructure):
         return None
 
     def getNextLocation(self):
-        """TODO: JOHN.
+        """Helper method to allow each discharged assembly to be easily dropped into the SFP.
 
-        Control automatic insertion of Assemblies when a specific Composite location isn't requested.
-
-        This fills the :py:class:`armi.reactor.grids.Grid` by filling subsequent rows with
-        ``numColumns`` assemblies before moving to the next row.
-
-        assumes rectangular grid
+        The logic here is that we assume that the SFP is a rectangular-ish grid, with a set number
+        of columns per row. So when you add an Assembly here, if you don't provide a location, the
+        grid is filled in a col/row order with whatever grid cell is found open first.
         """
         filledLocations = {a.spatialLocator for a in self}
         grid = self.spatialGrid
