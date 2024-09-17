@@ -315,11 +315,6 @@ class Assembly(composites.Composite):
 
         return sum(plenumTemps) / len(plenumTemps)
 
-    def rotatePins(self, *args, **kwargs):
-        """Rotate an assembly, which means rotating the indexing of pins."""
-        for b in self:
-            b.rotatePins(*args, **kwargs)
-
     def doubleResolution(self):
         """
         Turns each block into two half-size blocks.
@@ -1248,8 +1243,7 @@ class Assembly(composites.Composite):
 
             This method loops through every ``Block`` in this ``Assembly`` and rotates
             it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction, and must be divisible by increments of PI/6
-            (60 degrees). To actually perform the ``Block`` rotation, the
+            counter-clockwise direction. To perform the ``Block`` rotation, the
             :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
         Parameters
@@ -1257,11 +1251,8 @@ class Assembly(composites.Composite):
         rad: float
             number (in radians) specifying the angle of counter clockwise rotation
 
-        Warning
-        -------
-        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
         """
-        for b in self.getBlocks():
+        for b in self:
             b.rotate(rad)
 
     def isOnWhichSymmetryLine(self):
@@ -1272,7 +1263,26 @@ class Assembly(composites.Composite):
 class HexAssembly(Assembly):
     """Placeholder, so users can explicitly define a hex-based Assembly."""
 
-    pass
+    def rotate(self, rad: float):
+        """Rotate an assembly and its children.
+
+        Parameters
+        ----------
+        rad : float
+            Counter clockwise rotation in radians. **MUST** be in increments of
+            60 degrees (PI / 3)
+
+        Raises
+        ------
+        ValueError
+            If rotation is not divisible by pi / 3.
+        """
+        if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
+            return super().rotate(rad)
+        raise ValueError(
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} "
+            f"degrees ({rad} radians)"
+        )
 
 
 class CartesianAssembly(Assembly):
