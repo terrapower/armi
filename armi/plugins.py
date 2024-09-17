@@ -669,12 +669,11 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC(firstresult=True)
     def getAxialExpansionChanger() -> type["AxialExpansionChanger"]:
-        """Produce the class responsible for performing thermal axial expansion.
+        """Produce the class responsible for performing axial expansion.
 
-        Plugins can provide this hook to override or negate axial thermal expansion.
+        Plugins can provide this hook to override or negate axial expansion.
         Will be used during initial construction of the core and assemblies, and
-        can be a standard class for performing all the thermally driven axial
-        expansion.
+        can be a class to perform custom axial expansion routines.
 
         The first object returned that is not ``None`` will be used.
         Plugins are encouraged to add the ``tryfirst=True`` arguments to their
