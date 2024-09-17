@@ -504,7 +504,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         other : ArmiObject
             The object to copy params from
-
         """
         self.p = other.p.__class__()
         for p, val in other.p.items():
