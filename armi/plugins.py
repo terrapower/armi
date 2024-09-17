@@ -692,6 +692,10 @@ class ArmiPlugin:
         This hook **should not** provide an instance of the class. The construction
         of the changer will be handled by applications and plugins that need it.
 
+        This hook should only be provided by one additional plugin in your application. Otherwise
+        the `order of hook execution <https://pluggy.readthedocs.io/en/stable/index.html#call-time-order>`_
+        may not provide the behavior you expect.
+
         Examples
         --------
         >>> class MyPlugin(ArmiPlugin):
