@@ -15,7 +15,7 @@ New Features
    :func:`armi.utils.hexagon.getIndexOfRotatedCell`
    (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
-#. Use ``Block.getNumPins()`` in HexBlock._rotatePins() (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
+#. Use ``Block.getNumPins()`` in ``HexBlock._rotatePins()``. (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. TBD
 
 API Changes
