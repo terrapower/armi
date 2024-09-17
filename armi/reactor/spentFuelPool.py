@@ -32,7 +32,7 @@ class SpentFuelPool(ExcoreStructure):
         ExcoreStructure.__init__(self, name)
         self.parent = parent
         self.spatialGrid = None
-        self.numColumns = 10  # TODO: JOHN Bad default. Can this come from the grid?
+        self.numColumns = None
 
     def add(self, assem, loc=None):
         """
@@ -52,33 +52,40 @@ class SpentFuelPool(ExcoreStructure):
                 f"An assembly cannot be added to {self} using a spatial locator from another grid."
             )
 
+        if self.numColumns is None:
+            self._updateNumberOfColumns()
+
         # If the assembly added has a negative ID, that is a placeholder, fix it.
         if assem.p.assemNum < 0:
-            # update the assembly count in the Reactor
             newNum = self.r.incrementAssemNum()
             assem.renumber(newNum)
 
+        # Make sure the location of the new assembly is valid
         locProvided = loc is not None or (
             assem.spatialLocator is not None
             and assem.spatialLocator.grid is self.spatialGrid
         )
-
         if locProvided:
             loc = loc or assem.spatialLocator
         else:
-            loc = self.getNextLocation()
+            loc = self._getNextLocation()
 
         super().add(assem, loc)
 
     def getAssembly(self, name):
-        """Get a specific Assembly by name."""
+        """Get a specific assembly by name."""
         for a in self.getChildren():
             if a.getName() == name:
                 return a
 
         return None
 
-    def getNextLocation(self):
+    def _updateNumberOfColumns(self):
+        """Determine the number of columns in the spatial grid."""
+        _locs = self.spatialGrid.items()
+        self.numColumns = len(set([ll[0][0] for ll in _locs]))
+
+    def _getNextLocation(self):
         """Helper method to allow each discharged assembly to be easily dropped into the SFP.
 
         The logic here is that we assume that the SFP is a rectangular-ish grid, with a set number
