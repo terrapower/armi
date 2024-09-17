@@ -17,8 +17,6 @@ outside the reactor core.
 The idea here is that all ex-core objects will be represented first as a spatial grid, and then
 arbitrary ArmiObjects can be added to that grid.
 """
-
-from armi.reactor import grids
 from armi.reactor.composites import Composite
 
 
@@ -35,9 +33,7 @@ class ExcoreStructure(Composite):
     def __init__(self, name, parent=None):
         Composite.__init__(self, name)
         self.parent = parent
-
-        # TODO: JOHN UGH
-        self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
+        self.spatialGrid = None
 
     def __repr__(self):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
