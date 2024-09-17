@@ -44,10 +44,12 @@ class PluginFlags1(plugins.ArmiPlugin):
 
 
 class SillyAxialExpansionChanger(AxialExpansionChanger):
-    pass
+    """Fake, test-specific axial expansion changer that a plugin will register."""
 
 
 class SillyAxialPlugin(plugins.ArmiPlugin):
+    """Trivial plugin that implements the axial expansion hook."""
+
     @staticmethod
     @plugins.HOOKIMPL
     def getAxialExpansionChanger() -> type[SillyAxialExpansionChanger]:
@@ -109,9 +111,12 @@ class TestPluginRegistration(unittest.TestCase):
         """Test that plugins can override the axial expansion of assemblies via a hook."""
         pm = self.app.pluginManager
         first = pm.hook.getAxialExpansionChanger()
+        # By default, make sure we get the armi-shipped expansion class
         self.assertIs(first, AxialExpansionChanger)
         pm.register(SillyAxialPlugin)
         second = pm.hook.getAxialExpansionChanger()
+        # Registering a plugin that implements the hook means we get
+        # that plugin's axial expander
         self.assertIs(second, SillyAxialExpansionChanger)
 
 
