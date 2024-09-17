@@ -53,8 +53,8 @@ DLAYXS_MCC3 = os.path.join(FIXTURE_DIR_CCCC, "mc2v3.dlayxs")
 UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
 
 
-class TempFileMixin(unittest.TestCase):
-    """really a test case."""
+class TempFileMixin:
+    """Not a test; just helpful test tooling."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -71,7 +71,7 @@ class TempFileMixin(unittest.TestCase):
         )
 
 
-class TestXSLibrary(TempFileMixin):
+class TestXSLibrary(TempFileMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.isotxsAA = isotxs.readBinary(ISOTXS_AA)
@@ -228,7 +228,7 @@ class TestXSLibrary(TempFileMixin):
     def _canWritefromCombined(self, writer, refFile):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
-            raise Exception("see stdout for stack trace")
+            raise Exception("See stdout for stack trace")
         # check to make sure they labels overlap... or are actually the same
         writer.writeBinary(self.xsLib, self.testFileName)
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
@@ -293,13 +293,13 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
 
     Notes
     -----
-    This is just a base class, so it isn't run directly.
+    This is just a base class, it isn't run directly.
     """
 
     def setUp(self):
         TempFileMixin.setUp(self)
-        # load a library that is in the ARMI tree. This should
-        # be a small library with LFPs, Actinides, structure, and coolant
+        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
+        # Actinides, structure, and coolant
         self.libAA = self.getReadFunc()(self.getLibAAPath())
         self.libAB = self.getReadFunc()(self.getLibABPath())
         self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
@@ -392,7 +392,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
-class Pmatrx_merge_Tests(AbstractTestXSlibraryMerging):
+class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         return OSError
 
@@ -426,7 +426,7 @@ class Pmatrx_merge_Tests(AbstractTestXSlibraryMerging):
             dummyXsLib.merge(self.libCombined)
 
 
-class Isotxs_merge_Tests(AbstractTestXSlibraryMerging):
+class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         return OSError
 
@@ -449,7 +449,7 @@ class Isotxs_merge_Tests(AbstractTestXSlibraryMerging):
         return ISOTXS_LUMPED
 
 
-class Gamiso_merge_Tests(AbstractTestXSlibraryMerging):
+class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         return OSError
 
@@ -472,10 +472,10 @@ class Gamiso_merge_Tests(AbstractTestXSlibraryMerging):
         return GAMISO_LUMPED
 
 
-class Combined_merge_Tests(unittest.TestCase):
+class Combined_Merge_Tests(unittest.TestCase):
     def setUp(self):
-        # load a library that is in the ARMI tree. This should
-        # be a small library with LFPs, Actinides, structure, and coolant
+        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
+        # Actinides, structure, and coolant
         self.isotxsAA = isotxs.readBinary(ISOTXS_AA)
         self.gamisoAA = gamiso.readBinary(GAMISO_AA)
         self.pmatrxAA = pmatrx.readBinary(PMATRX_AA)
@@ -490,7 +490,3 @@ class Combined_merge_Tests(unittest.TestCase):
             lib, xsLibrarySuffix="", mergeGammaLibs=True, alternateDirectory=FIXTURE_DIR
         )
         self.assertEqual(set(lib.nuclideLabels), set(self.libCombined.nuclideLabels))
-
-
-# Remove the abstract class, so that it does not run (all tests would fail)
-del AbstractTestXSlibraryMerging
