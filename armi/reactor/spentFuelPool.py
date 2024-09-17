@@ -19,7 +19,6 @@ transfering spent fuel assemblies from the core to the SFP.
 """
 import itertools
 
-from armi.reactor import grids
 from armi.reactor.excoreStructure import ExcoreStructure
 
 
@@ -32,12 +31,8 @@ class SpentFuelPool(ExcoreStructure):
     def __init__(self, name, parent=None):
         ExcoreStructure.__init__(self, name)
         self.parent = parent
+        self.spatialGrid = None
         self.numColumns = 10  # TODO: JOHN Bad default. Can this come from the grid?
-
-        # TODO: JOHN Can I remove this default? Make it None?
-        # make a Cartesian assembly rack by default. Anything that really cares about the layout
-        # should specify one manually or in Blueprints
-        self.spatialGrid = grids.CartesianGrid.fromRectangle(50.0, 50.0)
 
     def add(self, assem, loc=None):
         """
