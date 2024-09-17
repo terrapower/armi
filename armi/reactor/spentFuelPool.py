@@ -129,4 +129,4 @@ class SpentFuelPool(ExcoreStructure):
 
             ind += 1
 
-        return int
+        return ind
