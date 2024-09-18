@@ -17,7 +17,6 @@ import os
 import unittest
 
 from armi import context
-from armi import operators
 from armi import settings
 from armi.operators import settingsValidation
 from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
@@ -30,9 +29,7 @@ class TestInspector(unittest.TestCase):
         self.td.__enter__()
         self.init_mode = context.CURRENT_MODE
         self.cs = settings.Settings()
-        self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(
-            self.cs
-        )
+        self.inspector = settingsValidation.Inspector(self.cs)
         self.inspector.queries = []  # clear out the auto-generated ones
         self.filepathYaml = os.path.join(
             os.getcwd(), self._testMethodName + "_test_setting_io.yaml"

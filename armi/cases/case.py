@@ -49,6 +49,7 @@ from armi import settings
 from armi.bookkeeping.db import compareDatabases
 from armi.cli import reportsEntryPoint
 from armi.nucDirectory import nuclideBases
+from armi.operators.settingsValidation import Inspector
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import blueprints
 from armi.reactor import reactors
@@ -581,8 +582,7 @@ class Case:
         """
         runLog.header("=========== Settings Validation Checks ===========")
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
-            operatorClass = operators.getOperatorClassFromSettings(self.cs)
-            inspector = operatorClass.inspector(self.cs)
+            inspector = Inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
 
             # Write out the settings validation issues that will be prompted for

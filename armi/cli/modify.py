@@ -17,10 +17,10 @@ Search through a directory tree and modify ARMI settings in existing input
 file(s). All valid settings may be used as keyword arguments.
 """
 
-from armi import operators
 from armi import runLog
 from armi import settings
 from armi.cli.entryPoint import EntryPoint
+from armi.operators.settingsValidation import Inspector
 
 
 class ModifyCaseSettingsCommand(EntryPoint):
@@ -105,7 +105,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
 
             # if we are only listing setting files, don't write them; it is OK that we modified them in memory
             if not self.args.skip_inspection:
-                inspector = operators.getOperatorClassFromSettings(cs).inspector(cs)
+                inspector = Inspector(cs)
                 inspector.run()
 
             if not self.args.list_setting_files:

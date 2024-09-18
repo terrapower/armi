@@ -34,7 +34,6 @@ from armi import interfaces
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
-from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
@@ -139,8 +138,6 @@ class Operator:
     interfaces : list
         The Interface objects that will operate upon the reactor
     """
-
-    inspector = settingsValidation.Inspector
 
     def __init__(self, cs):
         """
