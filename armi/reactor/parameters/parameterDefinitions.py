@@ -81,13 +81,6 @@ class Category:
     reactivityCoefficients = "reactivity coefficients"
     """Parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions"""
     thermalHydraulics = "thermal hydraulics"
-    """Parameters come from a thermal hydraulics physics plugin (e.g., flow rates, temperatures, etc.)"""
-    rotatable = "rotatable"
-    """Parameters that should be rotated.
-
-    For parameters defined for and used on hexagonal reactors, see
-    :meth:`armi.reactors.blocks.HexBlock.rotate` for instructions on how rotatable
-    parmeters should be structured."""
 
 
 class ParamLocation(enum.Flag):
