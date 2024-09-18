@@ -27,6 +27,7 @@ from armi.reactor import composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
 from armi.nucDirectory import nuclideBases
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 COMPONENT_GROUP_SHAPE = "group"
 
@@ -186,7 +187,7 @@ class ComponentBlueprint(yamlize.Object):
     mergeWith = yamlize.Attribute(type=str, default=None)
     area = yamlize.Attribute(type=float, default=None)
 
-    def construct(self, blueprint, matMods):
+    def construct(self, cs, blueprint, matMods):
         """Construct a component or group.
 
         .. impl:: User-defined on material alterations are applied here.
@@ -205,6 +206,17 @@ class ComponentBlueprint(yamlize.Object):
             The ``applyInputParams()`` method of that material class is then called,
             passing in the associated material modifications data, which the material
             class can then use to modify the isotopics as necessary.
+            
+        Parameters
+        ----------
+        cs : Settings
+            Settings object for the appropriate simulation.
+            
+        blueprint : Blueprints
+            Blueprints object containing various detailed information, such as nuclides to model
+            
+        matMods : dict
+            Material modifications to apply to the component.
         """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
@@ -225,13 +237,13 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
-
-        # set the custom density for non-custom material components after construction
-        self.setCustomDensity(constructedObject, blueprint, matMods)
+        
+        self._setComponentCustomDensity(constructedObject, blueprint, matMods, 
+                                        blockHeightsConsideredHot=cs[CONF_INPUT_HEIGHTS_HOT])
 
         return constructedObject
-
-    def setCustomDensity(self, constructedComponent, blueprint, matMods):
+    
+    def _setComponentCustomDensity(self, comp, blueprint, matMods, blockHeightsConsideredHot):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
         if self.isotopics is None:
             # No custom isotopics specified
@@ -247,7 +259,7 @@ class ComponentBlueprint(yamlize.Object):
                 "A zero or negative density was specified in a custom isotopics input. "
                 "This is not permitted, if a 0 density material is needed, use 'Void'. "
                 "The component is {} and the isotopics entry is {}.".format(
-                    constructedComponent, self.isotopics
+                    comp, self.isotopics
                 )
             )
             raise ValueError(
@@ -275,13 +287,33 @@ class ComponentBlueprint(yamlize.Object):
                     "Cannot apply custom densities to materials without density."
                 )
 
-            densityRatio = density / constructedComponent.density()
-            constructedComponent.changeNDensByFactor(densityRatio)
-
+            # Apply a density scaling to account for the temperature change between the input
+            # temperature `Tinput` and the hot temperature `Thot`. There may be a better place to
+            # in the initialization to determine if the block height will be interpreted as hot dimensions
+            # already. 
+            #
+            # - Apply additional density scaling when the component is added to a block? 
+            # - Apply here? Not great since this requires a case settings to be applied or some pre-knowledge
+            #   of where the component is going to live?
+            dLL = comp.material.linearExpansionFactor(Tc=comp.temperatureInC, T0=comp.inputTemperatureInC)
+            if blockHeightsConsideredHot:
+                f = 1.0 / (1 + dLL) ** 2
+            else:
+                f = 1.0 / (1 + dLL) ** 3
+            
+            print(comp.density())
+            print(f)
+            print(comp.inputTemperatureInC)
+            print(comp.temperatureInC)
+            scaledDensity = comp.density() / f
+            densityRatio = density / scaledDensity
+            comp.changeNDensByFactor(densityRatio)
+            print(comp.density())
+                
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
                 "material {}. The component density has been altered to "
-                "{}.".format(mat, constructedComponent.density()),
+                "{} at temperature {} C".format(mat, scaledDensity, comp.temperatureInC),
                 single=True,
             )
 

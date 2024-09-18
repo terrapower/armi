@@ -145,7 +145,7 @@ class BlockBlueprint(yamlize.KeyedList):
             filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
-            c = componentDesign.construct(blueprint, filteredMaterialInput)
+            c = componentDesign.construct(cs, blueprint, filteredMaterialInput)
             components[c.name] = c
 
             # check that the mat mods for this component are valid options
