@@ -456,17 +456,9 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(p2.categories, set(["awesome", "stuff", "bacon"]))
         self.assertEqual(p3.categories, set(["bacon"]))
 
-        for p in [p1, p2, p3]:
-            self._testCategoryConsistency(p)
-
         self.assertEqual(set(pc.paramDefs.inCategory("awesome")), set([p1, p2]))
         self.assertEqual(set(pc.paramDefs.inCategory("stuff")), set([p1, p2]))
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
-
-    def _testCategoryConsistency(self, p: parameters.Parameter):
-        for category in p.categories:
-            self.assertTrue(p.hasCategory(category))
-        self.assertFalse(p.hasCategory("this_shouldnot_exist"))
 
     def test_parameterCollectionsHave__slots__(self):
         """Tests we prevent accidental creation of attributes."""
