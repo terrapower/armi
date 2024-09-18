@@ -2027,6 +2027,7 @@ class HexBlock(Block):
         self._rotatePins(rotNum)
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
+        self._rotatePinParameters(rotNum)
 
     def _getParamsWhere(self, f: Callable[[parameters.Parameter], bool]):
         """Produce an iterator of parameters that match a condition."""
@@ -2173,6 +2174,23 @@ class HexBlock(Block):
             ]
 
         return rotateIndexLookup
+
+    def _rotatePinParameters(self, rotNum: int):
+        nPins = self.getNumPins()
+        params = self._getParamsWhere(
+            lambda pd: pd.atLocation(ParamLocation.CHILDREN)
+        )
+        for param in params:
+            name = param.name
+            original = self.p[name]
+            if isinstance(original, (list, np.ndarray)):
+                pass
+            elif isinstance(original, (int, float)):
+                pass
+            elif original is None:
+                pass
+            else:
+                raise TypeError(f"{name=} :: {original=}")
 
     def verifyBlockDims(self):
         """Perform some checks on this type of block before it is assembled."""
