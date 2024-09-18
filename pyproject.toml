@@ -249,6 +249,9 @@ exclude_also = [
     "def __repr__",
     "if self\\.debug",
 
+    # Don't complain about missing type checking-only code:
+    "if TYPE_CHECKING",
+
     # Don't complain if tests don't hit defensive assertion code:
     "raise AssertionError",
     "raise KeyboardInterrupt",
