@@ -946,10 +946,6 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
     bList2 :
         a separate list of blocks that will also be plotted on a separate axis on the same plot.
         This is useful for comparing flux in some blocks with flux in some other blocks.
-
-    Notes
-    -----
-    This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
     """
 
     class BlockListFlux:
