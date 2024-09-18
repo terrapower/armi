@@ -132,9 +132,7 @@ class TestPlotting(unittest.TestCase):
 
 
 class TestPatches(unittest.TestCase):
-    """
-    Test the ability to correctly make patches.
-    """
+    """Test the ability to correctly make patches."""
 
     def test_makeAssemPatches(self):
         # this one is flats-up with many assemblies in the core
