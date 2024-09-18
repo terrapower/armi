@@ -2004,7 +2004,7 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, rad):
+    def rotate(self, rad: float):
         """
         Rotates a block's spatially varying parameters by a specified angle in the
         counter-clockwise direction.
