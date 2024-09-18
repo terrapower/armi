@@ -1753,10 +1753,35 @@ class BlockRotateTests(unittest.TestCase):
     ]
     BOUNDARY_DATA = np.arange(6, dtype=float) * 10
 
+    PIN_PARAMS = [
+        "percentBuByPin",
+    ]
+    PIN_DATA = np.arange(NUM_PINS_IN_TEST_BLOCK, dtype=float)
+    """Scalar data for each pin.
+
+    Data at index ``i`` corresponds to pin number ``i`` in the ARMI
+    numbering scheme.
+
+    *. ``0`` is center pin, (ring, pos) = (1, 1)
+    *. ``1`` (ring, pos) = (2, 1)
+    *. ``2`` (ring, pos) = (2, 2)
+    *. ...
+    *. ``7`` (ring, pos) = (2, 6)
+    *. ``8`` (ring, pos) = (3, 1)
+    *. ...
+
+    When we rotate a block a single 60 degree rotation counter clock wise,
+    the data that was originally at (r, p) = (2, 1) is now at (r, p) = (2, 2)
+    and should be at index ``2`` in the post-rotated array.
+
+    """
+
     def setUp(self):
         self.block = loadTestBlock()
         for name in self.BOUNDARY_PARAMS:
             self.block.p[name] = self.BOUNDARY_DATA
+        for name in self.PIN_PARAMS:
+            self.block.p[name] = self.PIN_DATA
 
     def test_rotatePins(self):
         """Test rotate pins updates pin locations."""
@@ -1808,6 +1833,27 @@ class BlockRotateTests(unittest.TestCase):
             data = self.block.p[name]
             msg = f"{name=} :: {rotNum=} :: {data=}"
             np.testing.assert_array_equal(data, expected, err_msg=msg)
+
+    def test_rotatedPinParameters(self):
+        """Test that block parameters that reflect pin data are rotated.
+
+        Pre-rotate pin layout -> Post-rotate layout
+
+              2  1      1  6
+            3  0  6 -> 2  0  5
+              4  5      3  4
+
+        - Pre-rotate data: ``[0, 1, 2, 3, 4, 5, 6, ...]``
+        - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
+
+        """
+        self.block.rotate(math.radians(60))
+        preRotate = self.PIN_DATA
+        postRotate = self.block.p["percentBuByPin"]
+        # Center location should be the same
+        self.assertEqual(postRotate[0], preRotate[0])
+        # First ring should be shifted one index
+        self.assertEqual(postRotate[1], preRotate[6])
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
