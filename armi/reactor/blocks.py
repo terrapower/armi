@@ -18,7 +18,7 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
+from typing import Optional, Type, Tuple, ClassVar, Callable
 import collections
 import copy
 import math
@@ -2028,6 +2028,10 @@ class HexBlock(Block):
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
 
+    def _getParamsWhere(self, f: Callable[[parameters.Parameter], bool]):
+        """Produce an iterator of parameters that match a condition."""
+        return filter(f, self.pDefs)
+
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.
 
@@ -2038,9 +2042,12 @@ class HexBlock(Block):
             rotations have taken place.
 
         """
-        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for name in names:
+        params = self._getParamsWhere(
+            lambda p: p.atLocation(ParamLocation.CORNERS)
+            or p.atLocation(ParamLocation.EDGES)
+        )
+        for param in params:
+            name = param.name
             original = self.p[name]
             if isinstance(original, (list, np.ndarray)):
                 if len(original) == 6:
