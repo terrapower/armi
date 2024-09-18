@@ -16,6 +16,8 @@
 import os
 import unittest
 
+import numpy as np
+
 from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
@@ -127,3 +129,59 @@ class TestPlotting(unittest.TestCase):
 
     def _checkExists(self, fName):
         self.assertTrue(os.path.exists(fName))
+
+
+class TestPatches(unittest.TestCase):
+    """
+    Test the ability to correctly make patches.
+    """
+
+    def test_makeAssemPatches(self):
+        # this one is flats-up with many assemblies in the core
+        _, rHexFlatsUp = test_reactors.loadTestReactor()
+
+        nAssems = len(rHexFlatsUp.core)
+        self.assertGreater(nAssems, 1)
+        patches = plotting._makeAssemPatches(rHexFlatsUp.core)
+        self.assertEqual(len(patches), nAssems)
+
+        # find the patch corresponding to the center assembly
+        for patch in patches:
+            if np.allclose(patch.xy, (0, 0)):
+                break
+
+        vertices = patch.get_verts()
+        # there should be 1 more than the number of points in the shape
+        self.assertEqual(len(vertices), 7)
+        # for flats-up, the first vertex should have a y position of ~zero
+        self.assertAlmostEqual(vertices[0][1], 0)
+
+        # this one is corners-up, with only a single assembly
+        _, rHexCornersUp = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+
+        nAssems = len(rHexCornersUp.core)
+        self.assertEqual(nAssems, 1)
+        patches = plotting._makeAssemPatches(rHexCornersUp.core)
+        self.assertEqual(len(patches), 1)
+
+        vertices = patches[0].get_verts()
+        self.assertEqual(len(vertices), 7)
+        # for corners-up, the first vertex should have an x position of ~zero
+        self.assertAlmostEqual(vertices[0][0], 0)
+
+        # this one is cartestian, with many assemblies in the core
+        _, rCartesian = test_reactors.loadTestReactor(
+            inputFileName="refTestCartesian.yaml"
+        )
+
+        nAssems = len(rCartesian.core)
+        self.assertGreater(nAssems, 1)
+        patches = plotting._makeAssemPatches(rCartesian.core)
+        self.assertEqual(nAssems, len(patches))
+
+        # just pick a given patch and ensure that it is square-like. orientation
+        # is not important here.
+        vertices = patches[0].get_verts()
+        self.assertEqual(len(vertices), 5)
