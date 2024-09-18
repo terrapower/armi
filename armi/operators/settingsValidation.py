@@ -16,7 +16,11 @@
 Notes
 -----
 The actual `settingsValidation.py` module has been move to `armi/settings/`. For now, this file will
-provide backwards compatability. But, eventually, this file will disappear.
+provide backwards compatibility.
+
+Warning
+-------
+DeprecationWarning: This file will disappear in early 2025.
 """
 # ruff: noqa: F401
 
