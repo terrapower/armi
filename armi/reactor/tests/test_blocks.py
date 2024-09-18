@@ -1742,20 +1742,20 @@ class Block_TestCase(unittest.TestCase):
 class BlockRotateTests(unittest.TestCase):
     """Tests for the ability for a block to be rotated."""
 
-    ROTATABLE_BOUNDARY_PARAMS = ["pointsEdgeDpa", "pointsCornerDpa"]
-
-    STATIC_BOUNDARY_PARAMS = [
+    BOUNDARY_PARAMS = [
+        "pointsCornerDpa",
         "cornerFastFlux",
         "pointsCornerFastFluxFr",
         "pointsCornerDpaRate",
         "pointsEdgeFastFluxFr",
+        "pointsEdgeDpa",
         "pointsEdgeDpaRate",
     ]
     BOUNDARY_DATA = np.arange(6, dtype=float) * 10
 
     def setUp(self):
         self.block = loadTestBlock()
-        for name in self.STATIC_BOUNDARY_PARAMS + self.ROTATABLE_BOUNDARY_PARAMS:
+        for name in self.BOUNDARY_PARAMS:
             self.block.p[name] = self.BOUNDARY_DATA
 
     def test_rotatePins(self):
@@ -1804,14 +1804,10 @@ class BlockRotateTests(unittest.TestCase):
 
     def _rotateAndCompareBoundaryParams(self, rotNum: int, expected: np.ndarray):
         self.block._rotateBoundaryParameters(rotNum)
-        for name in self.ROTATABLE_BOUNDARY_PARAMS:
+        for name in self.BOUNDARY_PARAMS:
             data = self.block.p[name]
             msg = f"{name=} :: {rotNum=} :: {data=}"
             np.testing.assert_array_equal(data, expected, err_msg=msg)
-        for name in self.STATIC_BOUNDARY_PARAMS:
-            data = self.block.p[name]
-            msg = f"{name=} :: {data=}"
-            np.testing.assert_array_equal(data, self.BOUNDARY_DATA, err_msg=msg)
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
