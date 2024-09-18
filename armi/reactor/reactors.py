@@ -308,7 +308,7 @@ class Core(composites.Composite):
         self.timeOfStart = time.time()
         self.zones = zones.Zones()  # initialize with empty Zones object
         # initialize the list that holds all shuffles
-        self.moveList = {}
+        self.moves = {}
         self.scalarVals = {}
         self._nuclideCategories = {}
         self.typeList = []  # list of block types to convert name - to -number.
@@ -1901,13 +1901,12 @@ class Core(composites.Composite):
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
         data = (oldLoc, newLoc, enrichList, assemblyType, assemName)
-        # NOTE: moveList is actually a moveDict (misnomer)
-        if self.moveList.get(cycle) is None:
-            self.moveList[cycle] = []
-        if data in self.moveList[cycle]:
+        if self.moves.get(cycle) is None:
+            self.moves[cycle] = []
+        if data in self.moves[cycle]:
             # remove the old version and throw the new on at the end.
-            self.moveList[cycle].remove(data)
-        self.moveList[cycle].append(data)
+            self.moves[cycle].remove(data)
+        self.moves[cycle].append(data)
 
     def createFreshFeed(self, cs=None):
         """
