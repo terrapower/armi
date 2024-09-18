@@ -83,7 +83,7 @@ class TestPluginRegistration(unittest.TestCase):
             :id: T_ARMI_PLUGIN_REGISTER
             :tests: R_ARMI_PLUGIN
         """
-        app = self.app
+        app = getApp()
 
         # show the new plugin isn't loaded yet
         pluginNames = [p[0] for p in app.pluginManager.list_name_plugin()]
