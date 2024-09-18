@@ -246,11 +246,11 @@ class HexReactorTests(ReactorTests):
             :tests: R_ARMI_R
         """
         self.assertTrue(isinstance(self.r.core, reactors.Core))
-        self.assertTrue(isinstance(self.r.sfp, SpentFuelPool))
+        self.assertTrue(isinstance(self.r.excore["sfp"], SpentFuelPool))
 
         self.assertTrue(isinstance(self.r, Composite))
         self.assertTrue(isinstance(self.r.core, Composite))
-        self.assertTrue(isinstance(self.r.sfp, Composite))
+        self.assertTrue(isinstance(self.r.excore["sfp"], Composite))
 
     def test_factorySortSetting(self):
         """
@@ -985,7 +985,7 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
-        self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
+        self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
         # confirm only attached to removed assem
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
@@ -1002,7 +1002,8 @@ class HexReactorTests(ReactorTests):
             a = self.r.core[-1]  # last assembly
             aLoc = a.spatialLocator
             self.assertIsNotNone(aLoc.grid)
-            self.r.sfp = None
+            self.r.excore["sfp"] = None
+            del self.r.excore["sfp"]
             self.r.core.removeAssembly(a)
 
             self.assertIn("No Spent Fuel Pool", mock.getStdout())
@@ -1020,7 +1021,7 @@ class HexReactorTests(ReactorTests):
         self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
+            self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         """Tests retrieving ring numbers and removing a ring.

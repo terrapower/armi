@@ -184,8 +184,9 @@ class Reactor(composites.Composite):
         ind = self.core.normalizeNames(self.p.maxAssemNum)
         self.p.maxAssemNum = ind
 
-        ind = self.sfp.normalizeNames(self.p.maxAssemNum)
-        self.p.maxAssemNum = ind
+        if self.excore["sfp"] is not None:
+            ind = self.excore["sfp"].normalizeNames(self.p.maxAssemNum)
+            self.p.maxAssemNum = ind
 
         return ind
 
@@ -590,8 +591,8 @@ class Core(composites.Composite):
         self.remove(a1)
 
         if discharge and self._trackAssems:
-            if self.parent.sfp is not None:
-                self.parent.sfp.add(a1)
+            if self.parent.excore.get("sfp") is not None:
+                self.parent.excore["sfp"].add(a1)
             else:
                 runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
         else:
@@ -654,8 +655,8 @@ class Core(composites.Composite):
         assems = set(self)
         for a in assems:
             self.removeAssembly(a, discharge)
-        if hasattr(self.parent, "sfp"):
-            self.parent.sfp.removeAll()
+        if hasattr(self.parent, "excore") and self.parent.excore.get("sfp"):
+            self.parent.excore["sfp"].removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
         self.parent.p.maxAssemNum = 0
@@ -1260,8 +1261,12 @@ class Core(composites.Composite):
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if includeSFP and self.parent is not None and self.parent.sfp is not None:
-            assems.extend(self.parent.sfp.getChildren())
+        if (
+            includeSFP
+            and self.parent is not None
+            and self.parent.excore.get("sfp") is not None
+        ):
+            assems.extend(self.parent.excore["sfp"].getChildren())
 
         if typeSpec:
             assems = [a for a in assems if a.hasFlags(typeSpec, exact=exact)]

@@ -172,9 +172,9 @@ class ReportInterface(interfaces.Interface):
     def writeRunSummary(self):
         """Make a summary of the run."""
         # spent fuel pool report
-        if self.r.sfp is not None:
-            self.reportSFP(self.r.sfp)
-            self.countAssembliesSFP(self.r.sfp)
+        if self.r.excore.get("sfp") is not None:
+            self.reportSFP(self.r.excore["sfp"])
+            self.countAssembliesSFP(self.r.excore["sfp"])
 
     @staticmethod
     def reportSFP(sfp):
