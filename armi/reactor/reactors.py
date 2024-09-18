@@ -120,16 +120,6 @@ class Reactor(composites.Composite):
     def __repr__(self):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
 
-    @property
-    def sfp(self):
-        """TODO: For backwards compatibility, give the reactor an sfp property."""
-        return self.excore.get("sfp", None)
-
-    @sfp.setter
-    def sfp(self, newSfp):
-        """TODO: For backwards compatibility, give the reactor an sfp property."""
-        self.excore["sfp"] = newSfp
-
     def add(self, container):
         composites.Composite.add(self, container)
         cores = [c for c in self.getChildren(deep=True) if isinstance(c, Core)]
