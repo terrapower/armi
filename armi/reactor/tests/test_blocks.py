@@ -1770,10 +1770,9 @@ class BlockRotateTests(unittest.TestCase):
     *. ``8`` (ring, pos) = (3, 1)
     *. ...
 
-    When we rotate a block a single 60 degree rotation counter clock wise,
+    When we rotate a HexBlock a single 60 degree rotation counter clock wise,
     the data that was originally at (r, p) = (2, 1) is now at (r, p) = (2, 2)
     and should be at index ``2`` in the post-rotated array.
-
     """
 
     def setUp(self):
