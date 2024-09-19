@@ -333,5 +333,5 @@ class AssemblyKeyedList(yamlize.KeyedList):
 
     @property
     def bySpecifier(self):
-        """Used by the reactor to ``_loadAssembliesIntoCore`` later, specifiers are two character strings."""
+        """Used by the reactor to ``_loadComposites`` later, specifiers are two character strings."""
         return {aDesign.specifier: aDesign for aDesign in self}

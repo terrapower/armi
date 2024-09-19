@@ -116,19 +116,19 @@ class SystemBlueprint(yamlize.Object):
             "system of type `{}`. Supported types are {}.".format(typ, sorted(seen))
         )
 
-    def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
+    def construct(self, cs, bp, reactor, geom=None, loadComps=True):
         """Build a core or ex-core grid and fill it with children.
 
         Parameters
         ----------
-        cs : :py:class:`Settings <armi.settings.Settings>` object.
+        cs : :py:class:`Settings <armi.settings.Settings>`
             armi settings to apply
-        bp : :py:class:`Reactor <armi.reactor.blueprints.Blueprints>` object.
+        bp : :py:class:`Reactor <armi.reactor.blueprints.Blueprints>`
             armi blueprints to apply
-        reactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+        reactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>`
             reactor to fill
         geom : optional
-        loadAssems : bool, optional
+        loadComps : bool, optional
             whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
             within the initNewReactor() method.
@@ -143,7 +143,7 @@ class SystemBlueprint(yamlize.Object):
         ValueError
             input error, no grid design provided
         ValueError
-            for 1/3 core maps, assemblies are defined outside the expected 1/3 core region
+            objects were added to non-existant grid locations
         """
         runLog.info("Constructing the `{}`".format(self.name))
 
@@ -164,24 +164,21 @@ class SystemBlueprint(yamlize.Object):
             system.spatialGrid = spatialGrid
             system.spatialGrid.armiObject = system
 
-        reactor.add(system)  # need parent before loading assemblies
+        reactor.add(system)  # ensure the reactor is the parent
         spatialLocator = grids.CoordinateLocation(
             self.origin.x, self.origin.y, self.origin.z, None
         )
         system.spatialLocator = spatialLocator
         if context.MPI_RANK != 0:
-            # Non-primary nodes get the assemblies via DistributeState.
+            # Non-primary nodes get the reactor via DistributeState.
             return None
 
-        system = self._constructAssemblies(cs, bp, loadAssems, system, gridDesign)
-
-        # TODO: We should allow for non-Assembly objects/geometries to be loaded into the grid. For
-        #       instance, an ex-core grid may define ducts, not just Assemblies.
+        system = self._constructComposites(cs, bp, loadComps, system, gridDesign)
 
         return system
 
-    def _constructAssemblies(self, cs, bp, loadAssems, system, gridDesign):
-        """Fill a grid with assemblies, if there are any to fill.
+    def _constructComposites(self, cs, bp, loadComps, system, gridDesign):
+        """Fill a grid with composities, if there are any to fill.
 
         Parameters
         ----------
@@ -189,8 +186,8 @@ class SystemBlueprint(yamlize.Object):
             armi settings to apply
         bp : Blueprints object.
             armi blueprints to apply
-        loadAssems : bool
-            whether to fill reactor with assemblies, as defined in blueprints, or not
+        loadComps : bool
+            whether to fill reactor with composities, as defined in blueprints, or not
         system : Composite
             The composite we are building.
         gridDesign : GridBlueprint
@@ -203,8 +200,8 @@ class SystemBlueprint(yamlize.Object):
         """
         from armi.reactor.reactors import Core  # avoid circular import
 
-        if loadAssems and gridDesign is not None:
-            self._loadAssemblies(cs, system, gridDesign.gridContents, bp)
+        if loadComps and gridDesign is not None:
+            self._loadComposites(cs, system, gridDesign.gridContents, bp)
 
             if isinstance(system, Core):
                 summarizeMaterialData(system)
@@ -213,10 +210,13 @@ class SystemBlueprint(yamlize.Object):
 
         return system
 
-    def _loadAssemblies(self, cs, container, gridContents, bp):
-        runLog.header(f"=========== Adding Assemblies to {container} ===========")
+    def _loadComposites(self, cs, container, gridContents, bp):
+        runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
+
+            # TODO: We should allow for non-Assembly objects/geometries to be loaded into the grid.
+            #       For instance, an ex-core grid may define ducts, not just Assemblies.
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
 
             i, j = locationInfo
@@ -228,9 +228,7 @@ class SystemBlueprint(yamlize.Object):
 
         if badLocations:
             raise ValueError(
-                "Geometry core map xml had assemblies outside the first third, but had third core "
-                "symmetry.\nPlease update symmetry to be `full core` or remove assemblies outside "
-                f"the first third.\nThe locations outside the first third are {badLocations}"
+                f"Attempted to add objects to non-existant locations on the grid: {badLocations}."
             )
 
     def _modifyGeometry(self, container, gridDesign):
