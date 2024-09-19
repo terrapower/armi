@@ -18,6 +18,7 @@ Base Material classes.
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
 import functools
+import traceback
 import warnings
 
 from scipy.optimize import fsolve
@@ -45,11 +46,15 @@ def parentAwareDensityRedirect(f):
     @functools.wraps(f)
     def inner(self: "Material", *args, **kwargs) -> float:
         if self.parent is not None:
+            stack = traceback.extract_stack()
+            # last entry is here, second to last is what called this
+            caller = stack[-2]
+            label = f"Found call to Material.density in {caller.filename} at line {caller.lineno}"
             runLog.warning(
-                "Calling Material.density when attached to a Component is "
-                "undesirable and can introduce subtle differences. Prefer "
-                "directly calling the parent component's density method. "
-                f"Found on {self=} attached to {self.parent=}",
+                f"{label}. Calls to Material.density when attached to a component have the potential to induce "
+                "subtle differences as Component.density and Material.density can diverge.",
+                single=True,
+                label=label,
             )
         return f(self, *args, **kwargs)
 
