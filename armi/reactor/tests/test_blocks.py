@@ -1837,7 +1837,7 @@ class BlockRotateTests(unittest.TestCase):
     def test_rotatedPinParameters(self):
         """Test that block parameters that reflect pin data are rotated.
 
-        Pre-rotate pin layout -> Post-rotate layout
+        Pre-rotate pin layout -> Post-rotate layout::
 
               2  1      1  6
             3  0  6 -> 2  0  5
@@ -1845,7 +1845,6 @@ class BlockRotateTests(unittest.TestCase):
 
         - Pre-rotate data: ``[0, 1, 2, 3, 4, 5, 6, ...]``
         - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
-
         """
         self.block.rotate(math.radians(60))
         preRotate = self.PIN_DATA
