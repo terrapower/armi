@@ -311,7 +311,6 @@ armi = [
     "physics/neutronics/tests/ISOXA",
     "physics/neutronics/tests/rzmflxYA",
     "resources/*",
-    "resources/**/*",
     "tests/1DslabXSByCompTest.yaml",
     "tests/armiRun-SHUFFLES.txt",
     "tests/armiRun.yaml",
