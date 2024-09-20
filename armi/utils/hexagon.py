@@ -210,10 +210,12 @@ def rotateHexCellData(
     ringPosStart = 1
     for ring in range(2, nRings + 1):
         pinsPerRing = numPositionsInRing(ring)
+        pinsPerEdge = pinsPerRing // 6
         ringPosEnd = ringPosStart + pinsPerRing
         window = slice(ringPosStart, ringPosEnd)
         ringData = data[window]
-        buffer[window] = iterables.pivot(ringData, -nRotations)
+        rotatedRingData = iterables.pivot(ringData, -(nRotations * pinsPerEdge))
+        buffer[window] = rotatedRingData
         ringPosStart = ringPosEnd
     if isinstance(data, np.ndarray):
         return buffer
