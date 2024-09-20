@@ -374,7 +374,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
 
         return True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
+        """Iterate over names of assigned parameters define on this collection."""
         return (
             pd.name
             for pd in self.paramDefs
