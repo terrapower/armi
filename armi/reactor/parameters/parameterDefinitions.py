@@ -95,7 +95,8 @@ class ParamLocation(enum.Flag):
     CORNERS = 32
     EDGES = 64
     VOLUME_INTEGRATED = 128
-    CHILDREN = 256  # on some child of a composite, like a pin
+    CHILDREN = 256
+    """Parameter defined on some child of a composite, like a pin."""
 
 
 class NoDefault:
