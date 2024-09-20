@@ -286,3 +286,13 @@ class TestHexCellRotate(unittest.TestCase):
         dataMissingCenter = np.arange(1, 7)
         with self.assertRaisesRegex(ValueError, ".*missing cells"):
             hexagon.rotateHexCellData(dataMissingCenter, 2)
+
+    def test_emptyRotate(self):
+        """Test that empty arrays are gracefully handled."""
+        empty = []
+        post = hexagon.rotateHexCellData(empty, 3)
+        self.assertIs(post, empty)
+        # Now try arrays
+        empty = np.array(empty)
+        post = hexagon.rotateHexCellData(empty, 2)
+        self.assertIs(post, empty)

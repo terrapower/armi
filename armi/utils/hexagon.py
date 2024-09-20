@@ -240,6 +240,9 @@ def rotateHexCellData(
     if not isinstance(data, (list, np.ndarray)):
         raise TypeError(f"{data=}")
     cells = np.size(data, axis=0)
+    if cells == 0:
+        # Nothing to rotate
+        return data
     nRings = numRingsToHoldNumCells(cells)
     nCellsInFullRings = totalPositionsUpToRing(nRings)
     if cells != nCellsInFullRings:
