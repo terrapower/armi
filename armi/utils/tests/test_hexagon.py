@@ -154,6 +154,14 @@ class TestHexCellRotate(unittest.TestCase):
     - Pre:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
     - Post: ``[0, 6, 1, 2, 3, 4, 5, ...]``
 
+    For three rings::
+
+            9   8   7             7   18  17
+          10  2   1   18        8   1   6   16
+        11  3   0   6   17 -> 9   2   0   5   15
+          12  4   5   10        10  3   4   14
+            13  14  15            11  12  13
+
     """
 
     def test_rotateTwoRingsOfScalars(self):
@@ -199,3 +207,30 @@ class TestHexCellRotate(unittest.TestCase):
                 i -= 6
             msg = f"post rotate [{i=}] != pre rotate [{j=}] with {shiftedBy=}"
             np.testing.assert_array_equal(actual[i], expected[j], msg)
+
+    def test_threeRings(self):
+        """Test data up to the third ring can be rotated.
+
+        For three rings::
+
+                9   8   7             7   18  17
+              10  2   1   18        8   1   6   16
+            11  3   0   6   17 -> 9   2   0   5   15
+              12  4   5   10        10  3   4   14
+                13  14  15            11  12  13
+
+        Ring three data before after one rotation:
+
+        - ``[7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18]``
+        - ``[17, 18, 7, 8,  9,  10, 11, 12, 13, 14, 15, 16]``
+
+        """
+        nCells = 19
+        data = np.arange(nCells, dtype=float)
+        singleRot = hexagon.rotateHexCellData(data, nCells, nRotations=1)
+        self._testTwoRotatedRings(singleRot, data, shiftedBy=1)
+        postRing3 = singleRot[7:]
+        expectedRing3 = np.array(
+            [17, 18, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], dtype=float
+        )
+        np.testing.assert_array_equal(postRing3, expectedRing3)
