@@ -226,3 +226,42 @@ class TestHexCellRotate(unittest.TestCase):
             [17, 18, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], dtype=float
         )
         np.testing.assert_array_equal(postRing3, expectedRing3)
+
+    def test_multiRingRotation(self):
+        """Test that larger hex data arrays can be correctly rotated.
+
+        Involves three types of checks:
+
+        1. Rotation of the first two rings is exactly correct.
+        2. Rotated data beyond the first cell differs from the original.
+        3. If we rotate back to the original orientation, we get the original data.
+
+        """
+        nRings = 9
+        nCells = hexagon.totalPositionsUpToRing(nRings)
+        data = np.arange(nCells, dtype=float)
+        for rotation in range(7):
+            self._testRotateAndRestore(nCells, data, rotation)
+
+    def _testRotateAndRestore(self, nCells: int, data: np.ndarray, firstRotation: int):
+        rotated = hexagon.rotateHexCellData(data, nCells, firstRotation)
+        self._testTwoRotatedRings(rotated, data, firstRotation)
+        # If we actually rotated, make sure data that should be different is different
+        if firstRotation % 6:
+            diff = data[1:] == rotated[1:]
+            self.assertFalse(
+                diff.any(),
+                msg="Rotated data beyond first cell should differ and don't.",
+            )
+        else:
+            np.testing.assert_array_equal(
+                rotated,
+                data,
+                err_msg="Data rotated a full 360 degrees or not rotated should not differ but does.",
+            )
+        # Rotate to the original configuration
+        secondRotation = 6 - firstRotation
+        restored = hexagon.rotateHexCellData(rotated, nCells, secondRotation)
+        np.testing.assert_array_equal(
+            restored, data, err_msg=f"{firstRotation=} and {secondRotation=}"
+        )
