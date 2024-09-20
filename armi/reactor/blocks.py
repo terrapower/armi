@@ -2181,8 +2181,13 @@ class HexBlock(Block):
             name = param.name
             original = self.p[name]
             if isinstance(original, (list, np.ndarray)):
-                newData = hexagon.rotateHexCellData(original, rotNum)
-                self.p[name] = newData
+                try:
+                    newData = hexagon.rotateHexCellData(original, rotNum)
+                    self.p[name] = newData
+                except Exception as ee:
+                    raise RuntimeError(
+                        f"Failed to rotate parameter {name=} with data={original}"
+                    ) from ee
             # Doesn't make sense to rotate scalar data nor data that isn't defined
             elif isinstance(original, (int, float)) or original is None:
                 pass
