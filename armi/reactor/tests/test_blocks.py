@@ -1852,6 +1852,11 @@ class BlockRotateTests(unittest.TestCase):
         self.assertEqual(postRotate[0], preRotate[0])
         # First ring should be shifted one index
         self.assertEqual(postRotate[1], preRotate[6])
+        self.assertEqual(postRotate[2], preRotate[1])
+        self.assertEqual(postRotate[3], preRotate[2])
+        self.assertEqual(postRotate[4], preRotate[3])
+        self.assertEqual(postRotate[5], preRotate[4])
+        self.assertEqual(postRotate[6], preRotate[5])
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
