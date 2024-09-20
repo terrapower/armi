@@ -2186,9 +2186,8 @@ class HexBlock(Block):
             if isinstance(original, (list, np.ndarray)):
                 newData = hexagon.rotateHexCellData(original, nPins, rotNum)
                 self.p[name] = newData
-            elif isinstance(original, (int, float)):
-                pass
-            elif original is None:
+            # Doesn't make sense to rotate scalar data nor data that isn't defined
+            elif isinstance(original, (int, float)) or original is None:
                 pass
             else:
                 raise TypeError(f"{name=} :: {original=}")
