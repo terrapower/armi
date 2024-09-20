@@ -156,13 +156,11 @@ class TestHexCellRotate(unittest.TestCase):
         """
         data = np.arange(7, dtype=float)
         new = hexagon.rotateHexCellData(data, data.size, 1)
-        self.assertEqual(new[0], data[0])
-        self.assertEqual(new[1], data[6])
-        self.assertEqual(new[2], data[1])
-        self.assertEqual(new[3], data[2])
-        self.assertEqual(new[4], data[3])
-        self.assertEqual(new[5], data[4])
-        self.assertEqual(new[6], data[5])
+        self._testTwoRotatedRings(
+            new,
+            data,
+            shiftedBy=1,
+        )
 
     def test_rotateTwoRingsOfVector(self):
         """Test we can rotate vector data provided in a two ringed hexagon.
@@ -179,10 +177,25 @@ class TestHexCellRotate(unittest.TestCase):
         """
         data = np.arange(14, dtype=float).reshape((7, 2))
         new = hexagon.rotateHexCellData(data, data.size, 2)
-        np.testing.assert_array_equal(new[0], data[0])
-        np.testing.assert_array_equal(new[1], data[5])
-        np.testing.assert_array_equal(new[2], data[6])
-        np.testing.assert_array_equal(new[3], data[1])
-        np.testing.assert_array_equal(new[4], data[2])
-        np.testing.assert_array_equal(new[5], data[3])
-        np.testing.assert_array_equal(new[6], data[4])
+        self._testTwoRotatedRings(
+            new,
+            data,
+            shiftedBy=2,
+        )
+
+    @staticmethod
+    def _testTwoRotatedRings(
+        actual: np.array,
+        expected: np.array,
+        shiftedBy: int,
+    ):
+        np.testing.assert_array_equal(
+            actual[0], expected[0], "Center location [0] differs when it should not"
+        )
+        for j in range(1, 7):
+            i = j + shiftedBy
+            # Wrap to start of counter
+            if i > 6:
+                i -= 6
+            msg = f"post rotate [{i=}] != pre rotate [{j=}] with {shiftedBy=}"
+            np.testing.assert_array_equal(actual[i], expected[j], msg)
