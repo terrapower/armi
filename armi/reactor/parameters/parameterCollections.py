@@ -359,7 +359,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         else:
             return name in self._hist
 
-    def __eq__(self, other):
+    def __eq__(self, other: "ParameterCollection"):
         if not isinstance(other, self.__class__):
             return False
 
