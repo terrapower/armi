@@ -81,6 +81,7 @@ class Category:
     reactivityCoefficients = "reactivity coefficients"
     """Parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions"""
     thermalHydraulics = "thermal hydraulics"
+    """Parameters related to thermal hydraulics"""
 
 
 class ParamLocation(enum.Flag):
