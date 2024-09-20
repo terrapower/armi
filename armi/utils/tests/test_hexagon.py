@@ -296,3 +296,16 @@ class TestHexCellRotate(unittest.TestCase):
         empty = np.array(empty)
         post = hexagon.rotateHexCellData(empty, 2)
         self.assertIs(post, empty)
+
+    def test_invalidTypes(self):
+        """Test we can only rotate lists and arrays."""
+        invalidData = [
+            set(),
+            2,
+            False,
+            {1: True},
+            (0, 1, 2, 3, 4, 5, 6, 7),
+        ]
+        for data in invalidData:
+            with self.assertRaises(TypeError, msg=f"{invalidData=}"):
+                hexagon.rotateHexCellData(data, 5)
