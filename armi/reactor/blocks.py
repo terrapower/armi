@@ -2184,7 +2184,8 @@ class HexBlock(Block):
             name = param.name
             original = self.p[name]
             if isinstance(original, (list, np.ndarray)):
-                pass
+                newData = hexagon.rotateHexCellData(original, nPins, rotNum)
+                self.p[name] = newData
             elif isinstance(original, (int, float)):
                 pass
             elif original is None:
