@@ -139,37 +139,30 @@ class TestHexagon(unittest.TestCase):
 
 
 class TestHexCellRotate(unittest.TestCase):
-    """Test the ability to rotate data defined on a hexagonal lattice."""
+    """Test the ability to rotate data defined on a hexagonal lattice.
 
-    def test_rotateTwoRingsOfScalars(self):
-        """Test we can rotate scalar data on a two ringed hexagon.
-
-        Pre-rotate pin layout -> Post-rotate layout::
+    For a single 60 degree rotation, the pre- and post-rotation pin
+    layouts are::
 
               2  1      1  6
             3  0  6 -> 2  0  5
               4  5      3  4
 
-        - Pre-rotate data:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
-        - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
+    If the data were originally assigned with ``np.arange()``,
+    the pre- and post-rotation vectors would be
 
-        """
+    - Pre:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
+    - Post: ``[0, 6, 1, 2, 3, 4, 5, ...]``
+
+    """
+
+    def test_rotateTwoRingsOfScalars(self):
+        """Test we can rotate scalar data on a two ringed hexagon."""
         data = np.arange(7, dtype=float)
         self._checkAcrossAllRotations(data)
 
     def test_rotateTwoRingsOfVector(self):
-        """Test we can rotate vector data provided in a two ringed hexagon.
-
-        Pre-rotate pin layout -> Post-rotate layout with two rotations::
-
-              2  1      6  5
-            3  0  6 -> 1  0  4
-              4  5      2  3
-
-        - Pre-rotate data:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
-        - Post-rotate data: ``[0, 5, 6, 1, 2, 3, 4, ...]``
-
-        """
+        """Test we can rotate vector data provided in a two ringed hexagon."""
         data = np.arange(14, dtype=float).reshape((7, 2))
         self._checkAcrossAllRotations(data)
 
