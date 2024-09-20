@@ -514,6 +514,8 @@ class ParameterTests(unittest.TestCase):
 
 
 class ParamCollectionWhere(unittest.TestCase):
+    """Tests for ParameterCollection.where."""
+
     class ScopeParamCollection(parameters.ParameterCollection):
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder() as pb:
@@ -556,6 +558,7 @@ class ParamCollectionWhere(unittest.TestCase):
         cls.pc = cls.ScopeParamCollection()
 
     def test_onCategory(self):
+        """Test the use of Parameter.hasCategory on filtering."""
         names = {"keff", "cornerFlux"}
         for p in self.pc.where(
             lambda pd: pd.hasCategory(parameters.Category.neutronics)
@@ -565,6 +568,7 @@ class ParamCollectionWhere(unittest.TestCase):
         self.assertFalse(names, msg=f"{names=} should be empty!")
 
     def test_onLocation(self):
+        """Test the use of Parameter.atLocation in filtering."""
         names = {
             "edgeTemperature",
         }
@@ -576,6 +580,7 @@ class ParamCollectionWhere(unittest.TestCase):
         self.assertFalse(names, msg=f"{names=} should be empty!")
 
     def test_complicated(self):
+        """Test a multi-condition filter."""
         names = {
             "cornerFlux",
         }
