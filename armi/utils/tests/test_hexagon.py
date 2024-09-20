@@ -155,12 +155,7 @@ class TestHexCellRotate(unittest.TestCase):
 
         """
         data = np.arange(7, dtype=float)
-        new = hexagon.rotateHexCellData(data, data.size, 1)
-        self._testTwoRotatedRings(
-            new,
-            data,
-            shiftedBy=1,
-        )
+        self._checkAcrossAllRotations(data)
 
     def test_rotateTwoRingsOfVector(self):
         """Test we can rotate vector data provided in a two ringed hexagon.
@@ -176,12 +171,16 @@ class TestHexCellRotate(unittest.TestCase):
 
         """
         data = np.arange(14, dtype=float).reshape((7, 2))
-        new = hexagon.rotateHexCellData(data, data.size, 2)
-        self._testTwoRotatedRings(
-            new,
-            data,
-            shiftedBy=2,
-        )
+        self._checkAcrossAllRotations(data)
+
+    def _checkAcrossAllRotations(self, data: np.ndarray):
+        for rotations in range(0, 7):
+            new = hexagon.rotateHexCellData(data, data.size, rotations)
+            self._testTwoRotatedRings(
+                new,
+                data,
+                shiftedBy=rotations,
+            )
 
     @staticmethod
     def _testTwoRotatedRings(
