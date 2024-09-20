@@ -22,8 +22,11 @@ Hexagons are fundamental to advanced reactors.
 """
 
 import math
+import typing
 
 import numpy as np
+
+from armi.utils import iterables
 
 SQRT3 = math.sqrt(3.0)
 
@@ -191,3 +194,27 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
     elif initialCellIndex == 1:
         return initialCellIndex
     raise ValueError(f"Cell number must be positive, got {initialCellIndex}")
+
+
+def rotateHexCellData(
+    data: typing.Union[list, np.ndarray], cells: int, nRotations: int
+) -> typing.Union[list, np.ndarray]:
+    if not isinstance(data, (list, np.ndarray)):
+        raise TypeError(f"{data=}")
+    if np.size(data) != cells:
+        raise ValueError(f"{len(data)=} != {cells}")
+    buffer = np.empty_like(data)
+    buffer[0] = data[0]
+    nRings = numRingsToHoldNumCells(cells)
+
+    ringPosStart = 1
+    for ring in range(2, nRings + 1):
+        pinsPerRing = numPositionsInRing(ring)
+        ringPosEnd = ringPosStart + pinsPerRing
+        window = slice(ringPosStart, ringPosEnd)
+        ringData = data[window]
+        buffer[window] = iterables.pivot(ringData, -nRotations)
+        ringPosStart = ringPosEnd
+    if isinstance(data, np.ndarray):
+        return buffer
+    return buffer.tolist()

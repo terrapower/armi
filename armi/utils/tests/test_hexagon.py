@@ -16,6 +16,8 @@ import math
 import random
 import unittest
 
+import numpy as np
+
 from armi.utils import hexagon
 
 
@@ -134,3 +136,30 @@ class TestHexagon(unittest.TestCase):
             ix = random.randint(1, 300)
             postRotation = hexagon.getIndexOfRotatedCell(ix, orientationNumber=0)
             self.assertEqual(postRotation, ix)
+
+
+class TestHexCellRotate(unittest.TestCase):
+    """Test the ability to rotate data defined on a hexagonal lattice.
+
+    Pre-rotate pin layout -> Post-rotate layout::
+
+          2  1      1  6
+        3  0  6 -> 2  0  5
+          4  5      3  4
+
+    - Pre-rotate data: ``[0, 1, 2, 3, 4, 5, 6, ...]``
+    - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
+
+    """
+
+    def test_rotateTwoRingsOfScalars(self):
+        """Test we can rotate scalar data on a two ringed hexagon."""
+        data = np.arange(7, dtype=float)
+        new = hexagon.rotateHexCellData(data, data.size, 1)
+        self.assertEqual(new[0], data[0])
+        self.assertEqual(new[1], data[6])
+        self.assertEqual(new[2], data[1])
+        self.assertEqual(new[3], data[2])
+        self.assertEqual(new[4], data[3])
+        self.assertEqual(new[5], data[4])
+        self.assertEqual(new[6], data[5])
