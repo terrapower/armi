@@ -175,6 +175,14 @@ class TestHexCellRotate(unittest.TestCase):
                 shiftedBy=rotations,
             )
 
+    def test_rotateTwoRingsOfHighDimensionalData(self):
+        """Test data dimensioned beyond vectors at a cell are rotated properly."""
+        nCells = 7
+        # Could be neutron, gamma, and total multi-group flux per cell
+        shape = (nCells, 3, 20)
+        data = np.random.random_sample(shape)
+        self._checkAcrossAllRotations(data)
+
     @staticmethod
     def _testTwoRotatedRings(
         actual: np.array,
