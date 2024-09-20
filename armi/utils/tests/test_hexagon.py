@@ -265,3 +265,19 @@ class TestHexCellRotate(unittest.TestCase):
         np.testing.assert_array_equal(
             restored, data, err_msg=f"{firstRotation=} and {secondRotation=}"
         )
+
+    def test_rotateLists(self):
+        """Test we can rotate list data identically as we would rotate array data."""
+        shapes = (
+            (7,),
+            (7, 2),
+            (hexagon.totalPositionsUpToRing(3), 2, 3),
+            (hexagon.totalPositionsUpToRing(9),),
+        )
+        for shape in shapes:
+            cells = shape[0]
+            arrayData = np.random.random_sample(shape)
+            rotatedList = hexagon.rotateHexCellData(arrayData.tolist(), cells, 2)
+            self.assertIsInstance(rotatedList, list)
+            rotatedArray = hexagon.rotateHexCellData(arrayData, cells, 2)
+            np.testing.assert_array_equal(rotatedList, rotatedArray)
