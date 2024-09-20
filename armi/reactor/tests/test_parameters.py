@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests of the Parameters class."""
 import copy
+import typing
 import unittest
 
 from armi.reactor import parameters
@@ -502,3 +503,75 @@ class ParameterTests(unittest.TestCase):
         pcc = MockPCChild()
         with self.assertRaises(AssertionError):
             pcc.whatever = 33
+
+
+class ParamCollectionWhere(unittest.TestCase):
+    class ScopeParamCollection(parameters.ParameterCollection):
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam(
+                name="empty",
+                description="Bare",
+                location=None,
+                categories=None,
+                units="",
+            )
+            pb.defParam(
+                name="keff",
+                description="keff",
+                location=parameters.ParamLocation.VOLUME_INTEGRATED,
+                categories=[parameters.Category.neutronics],
+                units="",
+            )
+            pb.defParam(
+                name="cornerFlux",
+                description="corner flux",
+                location=parameters.ParamLocation.CORNERS,
+                categories=[
+                    parameters.Category.neutronics,
+                ],
+                units="",
+            )
+            pb.defParam(
+                name="edgeTemperature",
+                description="edge temperature",
+                location=parameters.ParamLocation.EDGES,
+                categories=[parameters.Category.thermalHydraulics],
+                units="",
+            )
+
+    pc: typing.ClassVar[parameters.ParameterCollection]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Define a couple useful parameters with categories, locations, etc."""
+        cls.pc = cls.ScopeParamCollection()
+
+    def test_onCategory(self):
+        names = {"keff", "cornerFlux"}
+        for p in self.pc.where(
+            lambda pd: parameters.Category.neutronics in pd.categories
+        ):
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty!")
+
+    def test_onLocation(self):
+        names = {
+            "edgeTemperature",
+        }
+        for p in self.pc.where(
+            lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)
+        ):
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty!")
+
+    def test_complicated(self):
+        names = {
+            "cornerFlux",
+        }
+        for p in self.pc.where(
+            lambda pd: pd.atLocation(parameters.ParamLocation.CORNERS)
+            and parameters.Category.neutronics in pd.categories
+        ):
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty")
