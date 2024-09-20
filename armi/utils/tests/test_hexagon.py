@@ -154,27 +154,19 @@ class TestHexCellRotate(unittest.TestCase):
     - Pre:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
     - Post: ``[0, 6, 1, 2, 3, 4, 5, ...]``
 
-    For three rings::
-
-            9   8   7             7   18  17
-          10  2   1   18        8   1   6   16
-        11  3   0   6   17 -> 9   2   0   5   15
-          12  4   5   10        10  3   4   14
-            13  14  15            11  12  13
-
     """
 
     def test_rotateTwoRingsOfScalars(self):
         """Test we can rotate scalar data on a two ringed hexagon."""
         data = np.arange(7, dtype=float)
-        self._checkAcrossAllRotations(data)
+        self._check2RingsAllRotations(data)
 
     def test_rotateTwoRingsOfVector(self):
         """Test we can rotate vector data provided in a two ringed hexagon."""
         data = np.arange(14, dtype=float).reshape((7, 2))
-        self._checkAcrossAllRotations(data)
+        self._check2RingsAllRotations(data)
 
-    def _checkAcrossAllRotations(self, data: np.ndarray):
+    def _check2RingsAllRotations(self, data: np.ndarray):
         for rotations in range(0, 7):
             new = hexagon.rotateHexCellData(data, data.size, rotations)
             self._testTwoRotatedRings(
@@ -189,7 +181,7 @@ class TestHexCellRotate(unittest.TestCase):
         # Could be neutron, gamma, and total multi-group flux per cell
         shape = (nCells, 3, 20)
         data = np.random.random_sample(shape)
-        self._checkAcrossAllRotations(data)
+        self._check2RingsAllRotations(data)
 
     @staticmethod
     def _testTwoRotatedRings(
