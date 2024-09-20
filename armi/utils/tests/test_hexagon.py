@@ -139,21 +139,21 @@ class TestHexagon(unittest.TestCase):
 
 
 class TestHexCellRotate(unittest.TestCase):
-    """Test the ability to rotate data defined on a hexagonal lattice.
-
-    Pre-rotate pin layout -> Post-rotate layout::
-
-          2  1      1  6
-        3  0  6 -> 2  0  5
-          4  5      3  4
-
-    - Pre-rotate data: ``[0, 1, 2, 3, 4, 5, 6, ...]``
-    - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
-
-    """
+    """Test the ability to rotate data defined on a hexagonal lattice."""
 
     def test_rotateTwoRingsOfScalars(self):
-        """Test we can rotate scalar data on a two ringed hexagon."""
+        """Test we can rotate scalar data on a two ringed hexagon.
+
+        Pre-rotate pin layout -> Post-rotate layout::
+
+              2  1      1  6
+            3  0  6 -> 2  0  5
+              4  5      3  4
+
+        - Pre-rotate data:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
+        - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
+
+        """
         data = np.arange(7, dtype=float)
         new = hexagon.rotateHexCellData(data, data.size, 1)
         self.assertEqual(new[0], data[0])
@@ -163,3 +163,26 @@ class TestHexCellRotate(unittest.TestCase):
         self.assertEqual(new[4], data[3])
         self.assertEqual(new[5], data[4])
         self.assertEqual(new[6], data[5])
+
+    def test_rotateTwoRingsOfVector(self):
+        """Test we can rotate vector data provided in a two ringed hexagon.
+
+        Pre-rotate pin layout -> Post-rotate layout with two rotations::
+
+              2  1      6  5
+            3  0  6 -> 1  0  4
+              4  5      2  3
+
+        - Pre-rotate data:  ``[0, 1, 2, 3, 4, 5, 6, ...]``
+        - Post-rotate data: ``[0, 5, 6, 1, 2, 3, 4, ...]``
+
+        """
+        data = np.arange(14, dtype=float).reshape((7, 2))
+        new = hexagon.rotateHexCellData(data, data.size, 2)
+        np.testing.assert_array_equal(new[0], data[0])
+        np.testing.assert_array_equal(new[1], data[5])
+        np.testing.assert_array_equal(new[2], data[6])
+        np.testing.assert_array_equal(new[3], data[1])
+        np.testing.assert_array_equal(new[4], data[2])
+        np.testing.assert_array_equal(new[5], data[3])
+        np.testing.assert_array_equal(new[6], data[4])
