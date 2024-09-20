@@ -201,7 +201,7 @@ def rotateHexCellData(
 ) -> typing.Union[list, np.ndarray]:
     if not isinstance(data, (list, np.ndarray)):
         raise TypeError(f"{data=}")
-    if np.size(data) != cells:
+    if np.size(data, axis=0) != cells:
         raise ValueError(f"{len(data)=} != {cells}")
     buffer = np.empty_like(data)
     buffer[0] = data[0]
