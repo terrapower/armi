@@ -558,7 +558,7 @@ class ParamCollectionWhere(unittest.TestCase):
     def test_onCategory(self):
         names = {"keff", "cornerFlux"}
         for p in self.pc.where(
-            lambda pd: parameters.Category.neutronics in pd.categories
+            lambda pd: pd.hasCategory(parameters.Category.neutronics)
         ):
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty!")
@@ -579,7 +579,7 @@ class ParamCollectionWhere(unittest.TestCase):
         }
         for p in self.pc.where(
             lambda pd: pd.atLocation(parameters.ParamLocation.CORNERS)
-            and parameters.Category.neutronics in pd.categories
+            and pd.hasCategory(parameters.Category.neutronics)
         ):
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty")
