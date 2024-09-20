@@ -2176,15 +2176,12 @@ class HexBlock(Block):
         return rotateIndexLookup
 
     def _rotatePinParameters(self, rotNum: int):
-        nPins = self.getNumPins()
-        params = self._getParamsWhere(
-            lambda pd: pd.atLocation(ParamLocation.CHILDREN)
-        )
+        params = self._getParamsWhere(lambda pd: pd.atLocation(ParamLocation.CHILDREN))
         for param in params:
             name = param.name
             original = self.p[name]
             if isinstance(original, (list, np.ndarray)):
-                newData = hexagon.rotateHexCellData(original, nPins, rotNum)
+                newData = hexagon.rotateHexCellData(original, rotNum)
                 self.p[name] = newData
             # Doesn't make sense to rotate scalar data nor data that isn't defined
             elif isinstance(original, (int, float)) or original is None:

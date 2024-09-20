@@ -168,7 +168,7 @@ class TestHexCellRotate(unittest.TestCase):
 
     def _check2RingsAllRotations(self, data: np.ndarray):
         for rotations in range(0, 7):
-            new = hexagon.rotateHexCellData(data, data.size, rotations)
+            new = hexagon.rotateHexCellData(data, rotations)
             self._testTwoRotatedRings(
                 new,
                 data,
@@ -219,7 +219,7 @@ class TestHexCellRotate(unittest.TestCase):
         """
         nCells = 19
         data = np.arange(nCells, dtype=float)
-        singleRot = hexagon.rotateHexCellData(data, nCells, nRotations=1)
+        singleRot = hexagon.rotateHexCellData(data, nRotations=1)
         self._testTwoRotatedRings(singleRot, data, shiftedBy=1)
         postRing3 = singleRot[7:]
         expectedRing3 = np.array(
@@ -241,10 +241,10 @@ class TestHexCellRotate(unittest.TestCase):
         nCells = hexagon.totalPositionsUpToRing(nRings)
         data = np.arange(nCells, dtype=float)
         for rotation in range(7):
-            self._testRotateAndRestore(nCells, data, rotation)
+            self._testRotateAndRestore(data, rotation)
 
-    def _testRotateAndRestore(self, nCells: int, data: np.ndarray, firstRotation: int):
-        rotated = hexagon.rotateHexCellData(data, nCells, firstRotation)
+    def _testRotateAndRestore(self, data: np.ndarray, firstRotation: int):
+        rotated = hexagon.rotateHexCellData(data, firstRotation)
         self._testTwoRotatedRings(rotated, data, firstRotation)
         # If we actually rotated, make sure data that should be different is different
         if firstRotation % 6:
@@ -261,7 +261,7 @@ class TestHexCellRotate(unittest.TestCase):
             )
         # Rotate to the original configuration
         secondRotation = 6 - firstRotation
-        restored = hexagon.rotateHexCellData(rotated, nCells, secondRotation)
+        restored = hexagon.rotateHexCellData(rotated, secondRotation)
         np.testing.assert_array_equal(
             restored, data, err_msg=f"{firstRotation=} and {secondRotation=}"
         )
@@ -275,9 +275,14 @@ class TestHexCellRotate(unittest.TestCase):
             (hexagon.totalPositionsUpToRing(9),),
         )
         for shape in shapes:
-            cells = shape[0]
             arrayData = np.random.random_sample(shape)
-            rotatedList = hexagon.rotateHexCellData(arrayData.tolist(), cells, 2)
+            rotatedList = hexagon.rotateHexCellData(arrayData.tolist(), 2)
             self.assertIsInstance(rotatedList, list)
-            rotatedArray = hexagon.rotateHexCellData(arrayData, cells, 2)
+            rotatedArray = hexagon.rotateHexCellData(arrayData, 2)
             np.testing.assert_array_equal(rotatedList, rotatedArray)
+
+    def test_invalidNumCells(self):
+        """Test that data must fully fill a hexagon."""
+        dataMissingCenter = np.arange(1, 7)
+        with self.assertRaisesRegex(ValueError, ".*missing cells"):
+            hexagon.rotateHexCellData(dataMissingCenter, 2)

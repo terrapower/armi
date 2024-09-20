@@ -197,7 +197,7 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
 
 
 def rotateHexCellData(
-    data: typing.Union[list, np.ndarray], cells: int, nRotations: int
+    data: typing.Union[list, np.ndarray], nRotations: int
 ) -> typing.Union[list, np.ndarray]:
     """Rotate data defined on a hexagonal lattice.
 
@@ -219,10 +219,6 @@ def rotateHexCellData(
         ``data[1]`` is for ring 2, position 1, ``data[2]`` matches ring 2, position 2,
         and generally ``data[i]`` corresponds to the ``i``-th cell in the ARMI spiraling
         indexing scheme.
-    cells : int
-        Number of cells that should exist. This should match the number of cells
-        in a full hexagon and should also equal the number of elements in the first
-        dimension of ``data``, e.g., ``cells == np.shape(data)[0]``.
     nRotations : int
         Number of 60 degree counter clockwise rotations.
 
@@ -232,18 +228,28 @@ def rotateHexCellData(
         Data rotated accordingly. Matches the type of the initial ``data`` object so if a ``list``
         was provided, a ``list`` will be returned.
 
-    Notes
-    -----
-    This assumes you have a full hexagon of data. No empty cells.
+    Raises
+    ------
+    ValueError
+        If ``data`` does not have enough cells to exactly fill a hexagon with some number
+        of rings. For example, if your base hexagon has two rings (7 sites) but you do not
+        have data for the center location, passing an array with six entries is forbidden.
+        Place fake data like :attr:`math.nan` at that site.
 
     """
     if not isinstance(data, (list, np.ndarray)):
         raise TypeError(f"{data=}")
-    if np.size(data, axis=0) != cells:
-        raise ValueError(f"{len(data)=} != {cells}")
+    cells = np.size(data, axis=0)
+    nRings = numRingsToHoldNumCells(cells)
+    nCellsInFullRings = totalPositionsUpToRing(nRings)
+    if cells != nCellsInFullRings:
+        raise ValueError(
+            f"Rotation of hex data with missing cells is not supported. Provided data with {cells=} "
+            f"which would occupy {nRings=} of space. However, {nRings=} would contain "
+            f"{nCellsInFullRings} locations."
+        )
     buffer = np.empty_like(data)
     buffer[0] = data[0]
-    nRings = numRingsToHoldNumCells(cells)
 
     ringPosStart = 1
     for ring in range(2, nRings + 1):
