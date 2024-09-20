@@ -560,6 +560,7 @@ class ParamCollectionWhere(unittest.TestCase):
         for p in self.pc.where(
             lambda pd: pd.hasCategory(parameters.Category.neutronics)
         ):
+            self.assertTrue(p.hasCategory(parameters.Category.neutronics), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty!")
 
@@ -570,6 +571,7 @@ class ParamCollectionWhere(unittest.TestCase):
         for p in self.pc.where(
             lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)
         ):
+            self.assertTrue(p.atLocation(parameters.ParamLocation.EDGES), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty!")
 
@@ -577,9 +579,13 @@ class ParamCollectionWhere(unittest.TestCase):
         names = {
             "cornerFlux",
         }
-        for p in self.pc.where(
-            lambda pd: pd.atLocation(parameters.ParamLocation.CORNERS)
-            and pd.hasCategory(parameters.Category.neutronics)
-        ):
+
+        def check(p: parameters.Parameter) -> bool:
+            return p.atLocation(parameters.ParamLocation.CORNERS) and p.hasCategory(
+                parameters.Category.neutronics
+            )
+
+        for p in self.pc.where(check):
+            self.assertTrue(check(p), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty")
