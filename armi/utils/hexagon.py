@@ -199,6 +199,44 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
 def rotateHexCellData(
     data: typing.Union[list, np.ndarray], cells: int, nRotations: int
 ) -> typing.Union[list, np.ndarray]:
+    """Rotate data defined on a hexagonal lattice.
+
+    Consider a hexagon with three rings of cells. Each cell has a corresponding data, say a scalar
+    for its unique pin number. That hexagon is rotated 60 degrees counter clockwise. We need to update
+    these data so that the pin number for the pin originally in ring 2, position 1 travels
+    to where the pin ends up. The before and after pin numbers would look like::
+
+            9   8   7             7   18  17
+          10  2   1   18        8   1   6   16
+        11  3   0   6   17 -> 9   2   0   5   15
+          12  4   5   10        10  3   4   14
+            13  14  15            11  12  13
+
+    Parameters
+    ----------
+    data : list or numpy.ndarray
+        Data such that ``data[0]`` reflects data at the center of the hexagon,
+        ``data[1]`` is for ring 2, position 1, ``data[2]`` matches ring 2, position 2,
+        and generally ``data[i]`` corresponds to the ``i``-th cell in the ARMI spiraling
+        indexing scheme.
+    cells : int
+        Number of cells that should exist. This should match the number of cells
+        in a full hexagon and should also equal the number of elements in the first
+        dimension of ``data``, e.g., ``cells == np.shape(data)[0]``.
+    nRotations : int
+        Number of 60 degree counter clockwise rotations.
+
+    Returns
+    -------
+    list or numpy.ndarray
+        Data rotated accordingly. Matches the type of the initial ``data`` object so if a ``list``
+        was provided, a ``list`` will be returned.
+
+    Notes
+    -----
+    This assumes you have a full hexagon of data. No empty cells.
+
+    """
     if not isinstance(data, (list, np.ndarray)):
         raise TypeError(f"{data=}")
     if np.size(data, axis=0) != cells:
