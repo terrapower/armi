@@ -11,9 +11,7 @@ New Features
 #. ARMI now supports Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
-#. Provide utilities for determining location of a rotated object in a hexagonal lattice:
-   :func:`armi.utils.hexagon.getIndexOfRotatedCell`
-   (`PR#1846 <https://github.com/terrapower/armi/1846`)
+#. Provide utilities for determining location of a rotated object in a hexagonal lattice: ``getIndexOfRotatedCell``. (`PR#1846 <https://github.com/terrapower/armi/1846`_)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. ``HexBlock.rotate`` will rotate additionally rotate ``HexBlock`` parameters with ``ParamLocation.CHILDREN``.
   (`PR#1877 <https://github.com/terrapower/armi/pull/1877>`_)

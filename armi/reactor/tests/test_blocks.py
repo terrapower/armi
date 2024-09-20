@@ -1739,13 +1739,13 @@ class BlockRotateTests(unittest.TestCase):
     """Tests for the ability for a block to be rotated."""
 
     BOUNDARY_PARAMS = [
-        "pointsCornerDpa",
         "cornerFastFlux",
-        "pointsCornerFastFluxFr",
+        "pointsCornerDpa",
         "pointsCornerDpaRate",
-        "pointsEdgeFastFluxFr",
+        "pointsCornerFastFluxFr",
         "pointsEdgeDpa",
         "pointsEdgeDpaRate",
+        "pointsEdgeFastFluxFr",
     ]
     BOUNDARY_DATA = np.arange(6, dtype=float) * 10
 
