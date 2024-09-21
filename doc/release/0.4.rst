@@ -13,6 +13,10 @@ New Features
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
 #. Provide utilities for determining location of a rotated object in a hexagonal lattice (``getIndexOfRotatedCell``). (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Provide ``Parameter.hasCategory`` for quickly checking if a parameter is defined with a given category.
+   (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
+#. Provide ``ParameterCollection.where`` for efficient iteration over parameters who's definition
+   matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
 #. TBD
 
 API Changes
