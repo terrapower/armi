@@ -497,7 +497,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     def where(
         self, f: Callable[[parameterDefinitions.Parameter], bool]
     ) -> Iterator[parameterDefinitions.Parameter]:
-        """Produce an iterator over parameters that meet some criteria
+        """Produce an iterator over parameters that meet some criteria.
 
         Parameters
         ----------
