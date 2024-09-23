@@ -34,6 +34,7 @@ from armi.reactor.converters.axialExpansionChanger import (
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     areAxiallyLinked,
+    AxialLink,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -1266,3 +1267,46 @@ class FakeMatException(materials.ht9.HT9):
         """A fake linear expansion percent."""
         Tc = units.getTc(Tc, Tk)
         return 0.08 * Tc
+
+
+class TestAxialLinkHelper(unittest.TestCase):
+    """Tests for the AxialLink dataclass / namedtuple like class."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.LOWER_BLOCK = _buildDummySodium(20, 10)
+        cls.UPPER_BLOCK = _buildDummySodium(300, 50)
+
+    def setUp(self):
+        self.link = AxialLink(self.LOWER_BLOCK, self.UPPER_BLOCK)
+
+    def test_positionGet(self):
+        """Test the getitem accessor."""
+        self.assertIs(self.link[0], self.link.lower)
+        self.assertIs(self.link[1], self.link.upper)
+        with self.assertRaises(AttributeError):
+            self.link[3]
+
+    def test_positionSet(self):
+        """Test the setitem setter."""
+        self.link[0] = None
+        self.assertIsNone(self.link.lower)
+        self.link[0] = self.LOWER_BLOCK
+        self.assertIs(self.link.lower, self.LOWER_BLOCK)
+        self.link[1] = None
+        self.assertIsNone(self.link.upper)
+        self.link[1] = self.UPPER_BLOCK
+        self.assertIs(self.link.upper, self.UPPER_BLOCK)
+        with self.assertRaises(AttributeError):
+            self.link[-1] = None
+
+    def test_iteration(self):
+        """Test the ability to iterate over the items in the link."""
+        genItems = iter(self.link)
+        first = next(genItems)
+        self.assertIs(first, self.link.lower)
+        second = next(genItems)
+        self.assertIs(second, self.link.upper)
+        # No items left
+        with self.assertRaises(StopIteration):
+            next(genItems)

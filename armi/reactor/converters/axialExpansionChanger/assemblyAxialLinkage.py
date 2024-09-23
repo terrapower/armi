@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import typing
+import dataclasses
+
 from armi import runLog
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component, UnshapedComponent
@@ -78,25 +81,110 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     return False
 
 
+# Make a generic type so we can "template" the axial link class based on what could be above/below a thing
+Comp = typing.TypeVar("Comp", Block, Component)
+
+
+@dataclasses.dataclass
+class AxialLink(typing.Generic[Comp]):
+    """Small class for named references to objects above and below a specific object.
+
+    Axial expansion in ARMI works by identifying what objects occupy the same space axially.
+    For components, what components in the blocks above and below axially align? This is used
+    to determine what, if any, mass needs to be re-assigned across blocks during expansion.
+    For blocks, the linking determines what blocks need to move as a result of a specific block's
+    axial expansion.
+
+    Attributes
+    ----------
+    lower : Composite or None
+        Object below, if any.
+    upper : Composite or None
+        Object above, if any.
+
+    Notes
+    -----
+    This class is "templated" by the type of composite that could be assigned and fetched. A
+    block-to-block linkage could be type-hinted via ``AxialLink[Block]`` or ``AxialLink[Component]``
+    for component-to-component link.
+
+    See Also
+    --------
+    * :attr:`AxialAssemblyLinkage.linkedBlocks`
+    * :attr:`AxialAssemblyLinkage.linkedComponents`
+    """
+
+    lower: typing.Optional[Comp] = dataclasses.field(default=None)
+    upper: typing.Optional[Comp] = dataclasses.field(default=None)
+
+    def __getitem__(self, index: int) -> typing.Optional[Comp]:
+        """Get by position.
+
+        Discouraged since ``linkage.lower`` is more explicit and readable than ``linkage[0]``.
+
+        Parameters
+        ----------
+        index : int
+            ``0`` for :attr:`lower`, ``1`` for :attr:`upper`
+
+        Raises
+        ------
+        AttributeError
+            If ``index`` is not ``0`` nor ``1``
+        """
+        if index == 0:
+            return self.lower
+        if index == 1:
+            return self.upper
+        raise AttributeError(f"{index=}")
+
+    def __setitem__(self, index: int, o: Comp):
+        """Set by position.
+
+        Discouraged since ``linkage.upper = x`` is more explicit and readable than ``linkage[1] = x``.
+        """
+        if index == 0:
+            self.lower = o
+        elif index == 1:
+            self.upper = o
+        else:
+            raise AttributeError(f"{index=}")
+
+    def __iter__(self):
+        return iter([self.lower, self.upper])
+
+
+if typing.TYPE_CHECKING:
+    from armi.reactor.assemblies import Assembly
+
+
 class AssemblyAxialLinkage:
     """Determines and stores the block- and component-wise axial linkage for an assembly.
+
+    Parameters
+    ----------
+    assem : armi.reactor.assemblies.Assembly
+        Assembly to be linked
 
     Attributes
     ----------
     a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
         reference to original assembly; is directly modified/changed during expansion.
     linkedBlocks : dict
-        - keys = :py:class:`Block <armi.reactor.blocks.Block>`
-        - values = list of axially linked blocks; index 0 = lower linked block; index 1: upper
-          linked block.
+        Keys are blocks in the assembly. Their values are :class:`AxialLink` with
+        ``upper`` and ``lower`` attributes for the blocks potentially above and
+        below this block.
     linkedComponents : dict
-        - keys = :py:class:`Component <armi.reactor.components.component.Component>`
-        - values = list of axially linked components; index 0 = lower linked component;
-          index 1: upper linked component.
+        Keys are solid components in the assembly. Their values are :class:`AxialLink` with
+        ``upper`` and ``lower`` attributes for the solid components potentially above and
+        below this block.
     """
 
-    def __init__(self, StdAssem):
-        self.a = StdAssem
+    linkedBlocks: typing.Dict[Block, AxialLink[Block]]
+    linkedComponents: typing.Dict[Component, AxialLink[Component]]
+
+    def __init__(self, assem: "Assembly"):
+        self.a = assem
         self.linkedBlocks = {}
         self.linkedComponents = {}
         self._determineAxialLinkage()
@@ -133,15 +221,14 @@ class AssemblyAxialLinkage:
         """
         lowerLinkedBlock = None
         upperLinkedBlock = None
-        block_list = self.a.getChildren()
-        for otherBlk in block_list:
+        for otherBlk in self.a:
             if b.name != otherBlk.name:
                 if b.p.zbottom == otherBlk.p.ztop:
                     lowerLinkedBlock = otherBlk
                 elif b.p.ztop == otherBlk.p.zbottom:
                     upperLinkedBlock = otherBlk
 
-        self.linkedBlocks[b] = [lowerLinkedBlock, upperLinkedBlock]
+        self.linkedBlocks[b] = AxialLink(lowerLinkedBlock, upperLinkedBlock)
 
         if lowerLinkedBlock is None:
             runLog.debug(
@@ -179,7 +266,7 @@ class AssemblyAxialLinkage:
         RuntimeError
             multiple candidate components are found to be axially linked to a component
         """
-        lstLinkedC = [None, None]
+        lstLinkedC = AxialLink(None, None)
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
