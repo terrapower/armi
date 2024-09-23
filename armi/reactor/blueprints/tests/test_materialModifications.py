@@ -54,13 +54,41 @@ assemblies:
         xs types: [A]
 """
 
-    boronInput = uZrInput.replace("UZr", "B")
+    b4cInput = r"""
+nuclide flags:
+    B: {burn: false, xs: true}
+    C: {burn: false, xs: true}
+blocks:
+    poison: &block_poison
+        poison:
+            shape: Hexagon
+            material: B4C
+            Tinput: 600.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1
+            op: 10.0
+assemblies:
+    assem a: &assembly_a
+        specifier: IC
+        blocks: [*block_poison]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
+"""
 
     def loadUZrAssembly(self, materialModifications):
-        yamlString = self.uZrInput + "\n" + materialModifications
+        return self._loadAssembly(self.uZrInput, materialModifications, "fuel a")
+
+    @staticmethod
+    def _loadAssembly(bpBase: str, materialModifications: str, assem: str):
+        yamlString = bpBase + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
         design._prepConstruction(settings.Settings())
-        return design.assemblies["fuel a"]
+        return design.assemblies[assem]
+
+    def loadB4CAssembly(self, materialModifications: str):
+        return self._loadAssembly(self.b4cInput, materialModifications, "assem a")
 
     def test_noMaterialModifications(self):
         a = self.loadUZrAssembly("")
@@ -306,3 +334,15 @@ custom isotopics:
         U: 1
 """
             )
+
+    def test_theoreticalDensity(self):
+        """Test the theoretical density can be loaded from material modifications."""
+        mods = """
+        material modifications:
+            TD_frac: [0.5]
+        """
+        a = self.loadB4CAssembly(mods)
+        comp = a[0][0]
+        mat = comp.material
+        self.assertEqual(mat.getTD(), 0.5)
+        self.assertEqual(comp.p.theoreticalDensityFrac, 0.5)

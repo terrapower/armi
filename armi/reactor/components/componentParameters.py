@@ -120,6 +120,24 @@ def getComponentParameterDefinitions():
             description="Pin number of this component in some mesh. Starts at 1.",
             default=None,
         )
+
+        def _assignTDFrac(self, val):
+            if val > 1 or val < 0:
+                raise ValueError(
+                    f"Theoretical density fraction must be in range [0,1], got {val}"
+                )
+            self._p_theoreticalDensityFrac = val
+
+        pb.defParam(
+            "theoreticalDensityFrac",
+            description=(
+                "Fractional value between zero and one, inclusive, for the theoretical density "
+                "of the material stored on this component."
+            ),
+            units=units.UNITLESS,
+            default=1,
+            setter=_assignTDFrac,
+        )
     return pDefs
 
 
