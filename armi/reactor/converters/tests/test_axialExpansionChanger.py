@@ -33,7 +33,7 @@ from armi.reactor.converters.axialExpansionChanger import (
     getSolidComponents,
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
-    _determineLinked,
+    areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -697,7 +697,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         compDims = {"Tinput": 25.0, "Thot": 25.0}
         compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
         compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(_determineLinked(compA, compB))
+        self.assertFalse(areAxiallyLinked(compA, compB))
 
     def test_getLinkedComponents(self):
         """Test for multiple component axial linkage."""
@@ -1027,26 +1027,26 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             typeB = method(*common, **dims[1])
             if assertionBool:
                 self.assertTrue(
-                    _determineLinked(typeA, typeB),
+                    areAxiallyLinked(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertTrue(
-                    _determineLinked(typeB, typeA),
+                    areAxiallyLinked(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
             else:
                 self.assertFalse(
-                    _determineLinked(typeA, typeB),
+                    areAxiallyLinked(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertFalse(
-                    _determineLinked(typeB, typeA),
+                    areAxiallyLinked(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
@@ -1145,7 +1145,7 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
     def test_unshapedComponentAndCircle(self):
         comp1 = Circle(*self.common, od=1.0, id=0.0)
         comp2 = UnshapedComponent(*self.common, area=1.0)
-        self.assertFalse(_determineLinked(comp1, comp2))
+        self.assertFalse(areAxiallyLinked(comp1, comp2))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):

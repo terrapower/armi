@@ -13,14 +13,23 @@
 # limitations under the License.
 
 from armi import runLog
-from armi.reactor.components import UnshapedComponent
+from armi.reactor.blocks import Block
+from armi.reactor.components import Component, UnshapedComponent
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     getSolidComponents,
 )
 
 
-def _determineLinked(componentA, componentB):
+def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     """Determine axial component linkage for two components.
+
+    Components are considered linked if the following are found to be true:
+
+    1. Both contain solid materials.
+    2. They have compatible types (e.g., ``Circle`` and ``Circle``).
+    3. Their multiplicities are the same.
+    4. The smallest inner bounding diameter of the two is less than the largest outer
+       bounding diameter of the two.
 
     Parameters
     ----------
@@ -33,8 +42,6 @@ def _determineLinked(componentA, componentB):
     -----
     - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter
       defined
-    - For axial linkage to be True, components MUST be solids, the same Component Class,
-      multiplicity, and meet inner and outer diameter requirements.
     - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
       at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
       slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
@@ -57,29 +64,18 @@ def _determineLinked(componentA, componentB):
                 "they are going to be assumed to not be linked.",
                 single=True,
             )
-            linked = False
-        else:
-            idA, odA = (
-                componentA.getCircleInnerDiameter(cold=True),
-                componentA.getBoundingCircleOuterDiameter(cold=True),
-            )
-            idB, odB = (
-                componentB.getCircleInnerDiameter(cold=True),
-                componentB.getBoundingCircleOuterDiameter(cold=True),
-            )
-
-            biggerID = max(idA, idB)
-            smallerOD = min(odA, odB)
-            if biggerID >= smallerOD:
-                # one object fits inside the other
-                linked = False
-            else:
-                linked = True
-
-    else:
-        linked = False
-
-    return linked
+            return False
+        # Check if one component could fit within the other
+        idA = componentA.getCircleInnerDiameter(cold=True)
+        odA = componentA.getBoundingCircleOuterDiameter(cold=True)
+        idB = componentB.getCircleInnerDiameter(cold=True)
+        odB = componentB.getBoundingCircleOuterDiameter(cold=True)
+        biggerID = max(idA, idB)
+        smallerOD = min(odA, odB)
+        if biggerID >= smallerOD:
+            return False
+        return True
+    return False
 
 
 class AssemblyAxialLinkage:
@@ -112,7 +108,7 @@ class AssemblyAxialLinkage:
             for c in getSolidComponents(b):
                 self._getLinkedComponents(b, c)
 
-    def _getLinkedBlocks(self, b):
+    def _getLinkedBlocks(self, b: Block):
         """Retrieve the axial linkage for block b.
 
         Parameters
@@ -168,7 +164,7 @@ class AssemblyAxialLinkage:
                 single=True,
             )
 
-    def _getLinkedComponents(self, b, c):
+    def _getLinkedComponents(self, b: Block, c: Component):
         """Retrieve the axial linkage for component c.
 
         Parameters
@@ -187,7 +183,7 @@ class AssemblyAxialLinkage:
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in getSolidComponents(linkdBlk.getChildren()):
-                    if _determineLinked(c, otherC):
+                    if areAxiallyLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
                                 "Multiple component axial linkages have been found for "
