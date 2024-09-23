@@ -34,6 +34,8 @@ Bug Fixes
 #. Changed data type of ``thKernel`` setting from ``bool`` to ``str`` in ``ThermalHydraulicsPlugin``. (`PR#1855 <https://github.com/terrapower/armi/pull/1855>`_)
 #. Rotate hexagonal assembly patches correctly on facemap plots. (`PR#1883 <https://github.com/terrapower/armi/pull/1883>`_)
 #. Update height of fluid components after axial expansion (`PR#1828 <https://github.com/terrapower/armi/pull/1828>`_)
+#. Material theoretical density is serialized to and read from database.
+   (`PR#1852 <https://github.com/terrapower/armi/pull/1852>`_)
 #. TBD
 
 Quality Work
