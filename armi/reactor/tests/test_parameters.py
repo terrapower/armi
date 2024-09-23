@@ -13,7 +13,6 @@
 # limitations under the License.
 """Tests of the Parameters class."""
 import copy
-import typing
 import unittest
 
 from armi.reactor import parameters
