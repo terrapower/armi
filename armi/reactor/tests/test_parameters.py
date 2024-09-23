@@ -550,8 +550,6 @@ class ParamCollectionWhere(unittest.TestCase):
                 units="",
             )
 
-    pc: typing.ClassVar[parameters.ParameterCollection]
-
     @classmethod
     def setUpClass(cls) -> None:
         """Define a couple useful parameters with categories, locations, etc."""
