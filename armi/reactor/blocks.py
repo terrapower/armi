@@ -2009,11 +2009,37 @@ class HexBlock(Block):
         Rotates a block's spatially varying parameters by a specified angle in the
         counter-clockwise direction.
 
-        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
-        Python list of length 6 in order to be eligible for rotation; all parameters that
-        do not meet these two criteria are not rotated.
+        Several cases need to be handled here and will be discussed below.
 
-        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
+        Parameters like ``orientation``, ``displacementX``, and ``displacementY`` have
+        special, few-off rotation mechanics and are handled directly here. Similarly
+        for ``pinLocation``.
+
+        Otherwise, for a parameter to be rotated, the following logic is applied:
+
+        1. The data is not ``None`` nor scalar (``int``, ``float``.), and
+        2. The parameter is defined with **either** with :attr:`armi.reactor.parameters.ParamLocation.CORNERS`
+           or :attr:`armi.reactor.parameters.ParamLocation.EDGES` location field, or
+        3. The parameter is defined with the :attr:`armi.reactor.parameters.ParamLocation.CHILDREN` location.
+
+        The use of ``CORNERS`` and ``EDGES`` signifies the data exists some hexagonal surface, e.g., the duct
+        of the block, and non-scalar data must have six elements to be rotatable.
+
+        The use of the ``CHILDREN`` location signifies the data reflects values stored on child objects on a
+        hexagonal lattice within the block. Non-scalar data must have a number of elements that would
+        completely fill a hexagonal lattice (e.g., 1, 7, 19, ..., 217, ...).
+
+        For the cases of ``CORNERS``, ``EDGES``, and ``CHILDREN`` parameters, data can be a scalar per site
+        (e.g., one temperature per hex vertex) or array (e.g., multi-group flux on each pin). But the first
+        dimension **must** align with the previously stated restrictions. For example,
+
+        1. Okay: ``[0, 1, 2, 3, 4, 5]`` defined on ``EDGES``
+        2. Okay: ``np.random(6, 3)`` defined on ``CORNERS``
+        3. Not okay: ``np.random(3, 6)`` defined on ``CORNERS``.
+        4. Okay for three ringed hex: ``np.arange(19)`` defined on ``CHILDREN``
+        5. Okay for three ringed hex: ``np.random(19, 3, 33)`` defined on ``CHILDREN``.
+        6. Not okay for three ringed hex: ``np.arange(6)`` for data on the second ring of the hexagonal
+           lattice to emulate not-defined data on the central pin location.
 
         Parameters
         ----------
