@@ -211,7 +211,7 @@ class TestHexCellRotate(unittest.TestCase):
               12  4   5   10        10  3   4   14
                 13  14  15            11  12  13
 
-        Ring three data before after one rotation:
+        Ring three data before and after one rotation:
 
         - ``[7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18]``
         - ``[17, 18, 7, 8,  9,  10, 11, 12, 13, 14, 15, 16]``
