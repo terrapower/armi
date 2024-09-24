@@ -751,7 +751,7 @@ grids:
         with open("refSmallestReactor.yaml", "w") as f:
             f.write(self.SMALL_YAML)
 
-        _o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
+        self.o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
         self.db: database3.Database3 = self.dbi.database
