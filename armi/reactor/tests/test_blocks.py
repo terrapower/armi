@@ -1753,6 +1753,7 @@ class BlockRotateTests(unittest.TestCase):
 
     PIN_PARAMS = [
         "percentBuByPin",
+        "linPowByPin",
     ]
     PIN_DATA = np.arange(NUM_PINS_IN_TEST_BLOCK, dtype=float)
     """Scalar data for each pin.
@@ -1775,10 +1776,18 @@ class BlockRotateTests(unittest.TestCase):
 
     def setUp(self):
         self.block = loadTestBlock()
-        for name in self.BOUNDARY_PARAMS:
-            self.block.p[name] = self.BOUNDARY_DATA
-        for name in self.PIN_PARAMS:
-            self.block.p[name] = self.PIN_DATA
+        self._assignParamData(self.BOUNDARY_PARAMS, self.BOUNDARY_DATA)
+        self._assignParamData(self.PIN_PARAMS, self.PIN_DATA)
+
+    def _assignParamData(self, names: list[str], referenceData: np.ndarray):
+        """Assign initial rotatable pararameter data.
+
+        Make some arrays, some lists to make sure we have good coverage of usage.
+        """
+        # Yes we're putting the variable type in the name but that's why this method exists
+        listData = referenceData.tolist()
+        for ix, name in enumerate(names):
+            self.block.p[name] = referenceData if (ix % 2) else listData
 
     def test_rotatePins(self):
         """Test rotate pins updates pin locations."""
@@ -1844,17 +1853,21 @@ class BlockRotateTests(unittest.TestCase):
         - Post-rotate data: ``[0, 6, 1, 2, 3, 4, 5, ...]``
         """
         self.block.rotate(math.radians(60))
+        for name in self.PIN_PARAMS:
+            self._checkSingleRotationPinData(name)
+
+    def _checkSingleRotationPinData(self, name: str):
         preRotate = self.PIN_DATA
-        postRotate = self.block.p["percentBuByPin"]
-        # Center location should be the same
-        self.assertEqual(postRotate[0], preRotate[0])
+        postRotate = self.block.p[name]
+        # Center block does not change
+        self.assertEqual(postRotate[0], preRotate[0], msg=name)
         # First ring should be shifted one index
-        self.assertEqual(postRotate[1], preRotate[6])
+        self.assertEqual(postRotate[1], preRotate[6], msg=name)
         self.assertEqual(postRotate[2], preRotate[1])
-        self.assertEqual(postRotate[3], preRotate[2])
-        self.assertEqual(postRotate[4], preRotate[3])
-        self.assertEqual(postRotate[5], preRotate[4])
-        self.assertEqual(postRotate[6], preRotate[5])
+        self.assertEqual(postRotate[3], preRotate[2], msg=name)
+        self.assertEqual(postRotate[4], preRotate[3], msg=name)
+        self.assertEqual(postRotate[5], preRotate[4], msg=name)
+        self.assertEqual(postRotate[6], preRotate[5], msg=name)
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
