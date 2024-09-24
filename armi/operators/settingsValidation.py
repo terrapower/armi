@@ -15,7 +15,7 @@
 
 Notes
 -----
-The actual `settingsValidation.py` module has been move to `armi/settings/`. For now, this file will
+The actual ``settingsValidation.py`` module has been move to ``armi/settings/``. For now, this file will
 provide backwards compatibility.
 
 Warning
