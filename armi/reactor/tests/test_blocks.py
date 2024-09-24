@@ -1746,6 +1746,8 @@ class BlockRotateTests(unittest.TestCase):
         "pointsEdgeDpa",
         "pointsEdgeDpaRate",
         "pointsEdgeFastFluxFr",
+        "THedgeTemp",
+        "THcornTemp",
     ]
     BOUNDARY_DATA = np.arange(6, dtype=float) * 10
 
