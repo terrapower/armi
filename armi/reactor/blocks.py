@@ -2202,6 +2202,7 @@ class HexBlock(Block):
         return rotateIndexLookup
 
     def _rotatePinParameters(self, rotNum: int):
+        """Rotate parameters assigned on pins."""
         params = self._getParamsWhere(lambda pd: pd.atLocation(ParamLocation.CHILDREN))
         for param in params:
             name = param.name
