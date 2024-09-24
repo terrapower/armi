@@ -16,7 +16,7 @@ from unittest import TestCase
 
 from armi.reactor import grids
 from armi.reactor.composites import Composite
-from armi.reactor.excoreStructure import ExcoreStructure
+from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 
@@ -136,3 +136,23 @@ class TestSpentFuelPool(TestCase):
         self.sfp.add(a0)
         self.assertEqual(self.sfp.normalizeNames(), 1)
         self.assertEqual(self.sfp.normalizeNames(17), 18)
+
+
+class TestExcoreCollection(TestCase):
+    def test_addLikeDict(self):
+        sfp = SpentFuelPool("sfp")
+
+        excore = ExcoreCollection()
+        excore["sfp"] = sfp
+
+        self.assertTrue(isinstance(excore["sfp"], SpentFuelPool))
+        self.assertTrue(isinstance(excore.sfp, SpentFuelPool))
+
+    def test_addLikeAttribute(self):
+        ivs = ExcoreStructure("ivs")
+
+        excore = ExcoreCollection()
+        excore.ivs = ivs
+
+        self.assertTrue(isinstance(excore["ivs"], ExcoreStructure))
+        self.assertTrue(isinstance(excore.ivs, ExcoreStructure))

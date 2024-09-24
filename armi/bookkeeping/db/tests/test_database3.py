@@ -26,6 +26,10 @@ from armi.bookkeeping.db import database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
+from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.reactors import Core
+from armi.reactor.reactors import Reactor
+from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import TEST_ROOT
@@ -797,6 +801,13 @@ grids:
             self.assertEqual(r0.p.timeNode, 0)
             self.assertEqual(r0.core.p.keff, 0.99)
 
+            # check the types of the data model objects
+            self.assertTrue(isinstance(r0, Reactor))
+            self.assertTrue(isinstance(r0.core, Core))
+            self.assertTrue(isinstance(r0.excore, ExcoreCollection))
+            self.assertTrue(isinstance(r0.excore.evst, ExcoreStructure))
+            self.assertTrue(isinstance(r0.excore.sfp, SpentFuelPool))
+
             # Prove our one special block is in the core
             self.assertEqual(len(r0.core.getChildren()), 1)
             b0 = r0.core.getFirstBlock()
@@ -804,9 +815,7 @@ grids:
 
             # the ex-core structures should be empty
             self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)
-            self.assertEqual(len(r0.excore.sfp.getChildren()), 0)
             self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
-            self.assertEqual(len(r0.excore.evst.getChildren()), 0)
 
         # open the DB and verify, the second timenode
         with database3.Database3(self._testMethodName + ".h5", "r") as db:
@@ -814,6 +823,13 @@ grids:
             self.assertEqual(r1.p.cycle, 0)
             self.assertEqual(r1.p.timeNode, 1)
             self.assertEqual(r1.core.p.keff, 1.01)
+
+            # check the types of the data model objects
+            self.assertTrue(isinstance(r1, Reactor))
+            self.assertTrue(isinstance(r1.core, Core))
+            self.assertTrue(isinstance(r1.excore, ExcoreCollection))
+            self.assertTrue(isinstance(r1.excore.evst, ExcoreStructure))
+            self.assertTrue(isinstance(r1.excore.sfp, SpentFuelPool))
 
             # Prove our one special block is NOT in the core, or the SFP
             self.assertEqual(len(r1.core.getChildren()), 0)
