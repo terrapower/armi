@@ -17,6 +17,8 @@ outside the reactor core.
 The idea here is that all ex-core objects will be represented first as a spatial grid, and then
 arbitrary ArmiObjects can be added to that grid.
 """
+import copy
+
 from armi.reactor.composites import Composite
 
 
@@ -69,3 +71,77 @@ class ExcoreStructure(Composite):
 
         obj.spatialLocator = loc
         super().add(obj)
+
+
+class ExcoreCollection(dict):
+    """
+    A collection that allows ex-core structures to be accessed like a dict, or class attributes.
+
+    Examples
+    --------
+    Build some sample data::
+
+        >>> sfp = ExcoreStructure("sfp")
+        >>> ivs = ExcoreStructure("ivs")
+
+    Build THIS collection::
+
+        >>> excore = ExcoreCollection()
+
+    Now you can add data to this collection like it were a dictionary, and access freely::
+
+        >>> excore["sfp"] = sfp
+        >>> excore["sfp"]
+        <ExcoreStructure: sfp id:2311582653024>
+        >>> excore.sfp
+        <ExcoreStructure: sfp id:2311582653024>
+
+    Or you can add data as if it were a class attribute, and still have dual access::
+
+        >>> excore.ivs = ivs
+        >>> excore.ivs
+        <ExcoreStructure: ivs id:2311590971136>
+        >>> excore["ivs"]
+        <ExcoreStructure: ivs id:2311590971136>
+    """
+
+    def __getattr__(self, key):
+        """Override the class attribute getter.
+
+        First check if the class attribute exists. If not, check if the key is in the dictionary.
+        """
+        try:
+            # try to get a real class attribute
+            return self.__dict__[key]
+        except KeyError:
+            try:
+                # if it's not a class attribute, maybe it is a dictionary key?
+                return self.__getitem__(key)
+            except Exception:
+                pass
+            # it is neither, just raise the usual error
+            raise
+
+    def __setattr__(self, key, value):
+        """Override the class attribute setting.
+
+        If the value has an ExcoreStructure type, assume we want to store this in the dictionary.
+        """
+        if type(value) is ExcoreStructure:
+            self.__setitem__(key, value)
+        else:
+            self.__dict__[key] = value
+
+    def __getstate__(self):
+        """Needed to support pickling and unpickling the Reactor."""
+        return self.__dict__.copy()
+
+    def __setstate__(self, state):
+        """Needed to support pickling and unpickling the Reactor."""
+        self.__dict__.update(state)
+
+    def __deepcopy__(self, memo):
+        """Needed to support pickling and unpickling the Reactor."""
+        memo[id(self)] = newE = self.__class__.__new__(self.__class__)
+        newE.__setstate__(copy.deepcopy(self.__getstate__(), memo))
+        return newE

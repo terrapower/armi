@@ -781,9 +781,9 @@ grids:
 
         # move the assembly from the core to the EVST
         a = self.r.core.getFirstAssembly()
-        loc = self.r.excore["evst"].spatialGrid[(0, 0, 0)]
+        loc = self.r.excore.evst.spatialGrid[(0, 0, 0)]
         self.r.core.remove(a)
-        self.r.excore["evst"].add(a, loc)
+        self.r.excore.evst.add(a, loc)
 
         self.db.writeToDB(self.r)
 
@@ -804,7 +804,9 @@ grids:
 
             # the ex-core structures should be empty
             self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)
+            self.assertEqual(len(r0.excore.sfp.getChildren()), 0)
             self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
+            self.assertEqual(len(r0.excore.evst.getChildren()), 0)
 
         # open the DB and verify, the second timenode
         with database3.Database3(self._testMethodName + ".h5", "r") as db:
@@ -816,6 +818,7 @@ grids:
             # Prove our one special block is NOT in the core, or the SFP
             self.assertEqual(len(r1.core.getChildren()), 0)
             self.assertEqual(len(r1.excore["sfp"].getChildren()), 0)
+            self.assertEqual(len(r1.excore.sfp.getChildren()), 0)
 
             # Prove our one special block is in the EVST
             evst = r1.excore["evst"]

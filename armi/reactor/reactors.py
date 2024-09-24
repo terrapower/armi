@@ -38,6 +38,7 @@ from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
+from armi.reactor.excoreStructure import ExcoreCollection
 from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
@@ -99,7 +100,7 @@ class Reactor(composites.Composite):
         self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.core = None
-        self.excore = {}
+        self.excore = ExcoreCollection()
         self.blueprints = blueprints
 
     def __getstate__(self):
@@ -174,8 +175,8 @@ class Reactor(composites.Composite):
         ind = self.core.normalizeNames(self.p.maxAssemNum)
         self.p.maxAssemNum = ind
 
-        if self.excore["sfp"] is not None:
-            ind = self.excore["sfp"].normalizeNames(self.p.maxAssemNum)
+        if self.excore.sfp is not None:
+            ind = self.excore.sfp.normalizeNames(self.p.maxAssemNum)
             self.p.maxAssemNum = ind
 
         return ind
@@ -582,7 +583,7 @@ class Core(composites.Composite):
 
         if discharge and self._trackAssems:
             if self.parent.excore.get("sfp") is not None:
-                self.parent.excore["sfp"].add(a1)
+                self.parent.excore.sfp.add(a1)
             else:
                 runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
         else:
@@ -646,7 +647,7 @@ class Core(composites.Composite):
         for a in assems:
             self.removeAssembly(a, discharge)
         if hasattr(self.parent, "excore") and self.parent.excore.get("sfp"):
-            self.parent.excore["sfp"].removeAll()
+            self.parent.excore.sfp.removeAll()
         self.blocksByName = {}
         self.assembliesByName = {}
         self.parent.p.maxAssemNum = 0
@@ -1256,7 +1257,7 @@ class Core(composites.Composite):
             and self.parent is not None
             and self.parent.excore.get("sfp") is not None
         ):
-            assems.extend(self.parent.excore["sfp"].getChildren())
+            assems.extend(self.parent.excore.sfp.getChildren())
 
         if typeSpec:
             assems = [a for a in assems if a.hasFlags(typeSpec, exact=exact)]
