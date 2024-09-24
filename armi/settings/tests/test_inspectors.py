@@ -19,8 +19,8 @@ import unittest
 from armi import context
 from armi import operators
 from armi import settings
-from armi.operators import settingsValidation
-from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
+from armi.settings import settingsValidation
+from armi.settings.settingsValidation import createQueryRevertBadPathToDefault
 from armi.utils import directoryChangers
 
 

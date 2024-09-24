@@ -16,11 +16,11 @@
 import os
 
 from armi import runLog
-from armi.operators import settingsValidation
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import NEUTRON
 from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
-from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.settings import setting
+from armi.settings import settingsValidation
 from armi.utils import directoryChangers
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,

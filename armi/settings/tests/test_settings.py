@@ -26,7 +26,6 @@ from armi import getApp
 from armi import getPluginManagerOrFail
 from armi import plugins
 from armi import settings
-from armi.operators.settingsValidation import Inspector, validateVersion
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
@@ -34,6 +33,7 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
+from armi.settings.settingsValidation import Inspector, validateVersion
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
