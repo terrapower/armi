@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database3 class."""
+from glob import glob
+import os
 import shutil
 import subprocess
 import unittest
@@ -21,8 +23,8 @@ import numpy as np
 
 from armi.bookkeeping.db import _getH5File
 from armi.bookkeeping.db import database3
-from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
@@ -694,3 +696,129 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.assertEqual(
             database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
+
+
+class TestWriteReadDatabase(unittest.TestCase):
+    """Round-trip tests that we can write/read data to and from a Database."""
+
+    SMALL_YAML = """!include refOneBlockReactor.yaml
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+    sfp:
+        type: sfp
+        grid name: sfp
+        origin:
+            x: 1000.0
+            y: 1000.0
+            z: 1000.0
+    evst:
+        type: excore
+        grid name: evst
+        origin:
+            x: 2000.0
+            y: 2000.0
+            z: 2000.0
+grids:
+    core:
+      geom: hex_corners_up
+      lattice map: |
+        IC
+      symmetry: full
+    evst:
+      lattice pitch:
+          x: 32.0
+          y: 32.0
+      geom: hex
+      symmetry: full
+"""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+        # copy these test files over, so we can edit them
+        thisDir = self.td.destination
+        yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+        for yam in yamls:
+            shutil.copy(os.path.join(TEST_ROOT, "smallestTestReactor", yam), thisDir)
+
+        # Add an EVST to this reactor
+        with open("refSmallestReactor.yaml", "w") as f:
+            f.write(self.SMALL_YAML)
+
+        _o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
+        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.db: database3.Database3 = self.dbi.database
+
+    def tearDown(self):
+        self.db.close()
+        self.td.__exit__(None, None, None)
+
+    def test_readWriteRoundTrip(self):
+        """Test DB some round tripping, writing some data to a DB, then reading from it.
+
+        In particular, we test some parameters on the reactor, core, and blocks. And we move an
+        assembly from the core to an EVST between timenodes, and test that worked.
+        """
+        # put some data in the DB, for timenode 0
+        self.r.p.cycle = 0
+        self.r.p.timeNode = 0
+        self.r.core.p.keff = 0.99
+        b = self.r.core.getFirstBlock()
+        b.p.power = 12345.6
+
+        self.db.writeToDB(self.r)
+
+        # put some data in the DB, for timenode 1
+        self.r.p.timeNode = 1
+        self.r.core.p.keff = 1.01
+
+        # move the assembly from the core to the EVST
+        a = self.r.core.getFirstAssembly()
+        loc = self.r.excore["evst"].spatialGrid[(0, 0, 0)]
+        self.r.core.remove(a)
+        self.r.excore["evst"].add(a, loc)
+
+        self.db.writeToDB(self.r)
+
+        # close the DB
+        self.db.close()
+
+        # open the DB and verify, the first timenode
+        with database3.Database3(self._testMethodName + ".h5", "r") as db:
+            r0 = db.load(0, 0, allowMissing=True)
+            self.assertEqual(r0.p.cycle, 0)
+            self.assertEqual(r0.p.timeNode, 0)
+            self.assertEqual(r0.core.p.keff, 0.99)
+
+            # Prove our one special block is in the core
+            self.assertEqual(len(r0.core.getChildren()), 1)
+            b0 = r0.core.getFirstBlock()
+            self.assertEqual(b0.p.power, 12345.6)
+
+            # the ex-core structures should be empty
+            self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)
+            self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
+
+        # open the DB and verify, the second timenode
+        with database3.Database3(self._testMethodName + ".h5", "r") as db:
+            r1 = db.load(0, 1, allowMissing=True)
+            self.assertEqual(r1.p.cycle, 0)
+            self.assertEqual(r1.p.timeNode, 1)
+            self.assertEqual(r1.core.p.keff, 1.01)
+
+            # Prove our one special block is NOT in the core, or the SFP
+            self.assertEqual(len(r1.core.getChildren()), 0)
+            self.assertEqual(len(r1.excore["sfp"].getChildren()), 0)
+
+            # Prove our one special block is in the EVST
+            evst = r1.excore["evst"]
+            self.assertEqual(len(evst.getChildren()), 1)
+            b1 = evst.getChildren()[0].getChildren()[0]
+            self.assertEqual(b1.p.power, 12345.6)

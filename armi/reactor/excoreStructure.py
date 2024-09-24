@@ -42,16 +42,20 @@ class ExcoreStructure(Composite):
     def r(self):
         return self.getAncestor(fn=lambda x: x.__class__.__name__ == "Reactor")
 
-    def add(self, obj, loc):
+    def add(self, obj, loc=None):
         """Add an ArmiObject to a particular grid location, in this structure.
 
         Parameters
         ----------
         assem : ArmiObject
             Any generic ArmiObject to add to the structure.
-        loc : LocationBase
-            The location on this structure's grid.
+        loc : LocationBase, optional
+            The location on this structure's grid. If ommited, will come from the object.
         """
+        # if a location is not provided, we demand the object has one
+        if loc is None:
+            loc = obj.spatialLocator
+
         if loc.grid is not self.spatialGrid:
             raise ValueError(
                 f"An Composite cannot be added to {self} using a spatial locator from another grid."
