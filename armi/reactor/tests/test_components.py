@@ -708,6 +708,22 @@ class TestCircle(TestShapedComponent):
         self.component.p.flags = flags.Flags.MODERATOR
         self.assertEqual(self.component.getFuelMass(), 0.0)
 
+    def test_theoreticalDensitySetter(self):
+        """Ensure only fraction theoretical densities are supported."""
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 1)
+        with self.assertRaises(ValueError):
+            self.component.p.theoreticalDensityFrac = 2.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 1)
+        self.component.p.theoreticalDensityFrac = 0.2
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 0.2)
+        with self.assertRaises(ValueError):
+            self.component.p.theoreticalDensityFrac = -1.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 0.2)
+        self.component.p.theoreticalDensityFrac = 1.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 1)
+        self.component.p.theoreticalDensityFrac = 0.0
+        self.assertEqual(self.component.p.theoreticalDensityFrac, 0)
+
 
 class TestComponentExpansion(unittest.TestCase):
     tCold = 20
@@ -1788,3 +1804,11 @@ class TestMaterialAdjustments(unittest.TestCase):
     def test_getEnrichment(self):
         self.fuel.adjustMassEnrichment(0.3)
         self.assertAlmostEqual(self.fuel.getEnrichment(), 0.3)
+
+    def test_finalizeLoadDBAdjustsTD(self):
+        """Ensure component is fully loaded through finalize methods."""
+        tdFrac = 0.54321
+        comp = self.fuel
+        comp.p.theoreticalDensityFrac = tdFrac
+        comp.finalizeLoadingFromDB()
+        self.assertEqual(comp.material.getTD(), tdFrac)

@@ -17,6 +17,8 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
+import functools
+import traceback
 import warnings
 
 from scipy.optimize import fsolve
@@ -30,6 +32,33 @@ from armi.utils.units import getTk, getTc
 
 # globals
 FAIL_ON_RANGE = False
+
+
+def parentAwareDensityRedirect(f):
+    """Wrap Material.density to warn people about potential problems.
+
+    If a Material is linked to a Component, ``Material.density`` may produce
+    different results from ``Component.density``. The component's density
+    is considered the source of truth because it incorporates changes in volume,
+    composition, and temperature in concert with the state of the reactor.
+    """
+
+    @functools.wraps(f)
+    def inner(self: "Material", *args, **kwargs) -> float:
+        if self.parent is not None:
+            stack = traceback.extract_stack()
+            # last entry is here, second to last is what called this
+            caller = stack[-2]
+            label = f"Found call to Material.density in {caller.filename} at line {caller.lineno}"
+            runLog.warning(
+                f"{label}. Calls to Material.density when attached to a component have the potential to induce "
+                "subtle differences as Component.density and Material.density can diverge.",
+                single=True,
+                label=label,
+            )
+        return f(self, *args, **kwargs)
+
+    return inner
 
 
 class Material:
@@ -74,6 +103,11 @@ class Material:
     Specific material classes may have many more attributes specific to the implementation
     for that material.
     """
+
+    def __init_subclass__(cls) -> None:
+        # Apply the density decorator to every subclass
+        if not hasattr(cls.density, "__wrapped__"):
+            cls.density = parentAwareDensityRedirect(cls.density)
 
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
