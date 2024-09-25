@@ -8,6 +8,9 @@ settings:
   epsBurnTime: 0.001
   epsFSAvg: 1e-06
   epsFSPoint: 1e-06
+  eqRingSchedule:
+    - 13
+    - 1
   freshFeedType: igniter fuel
   jumpRingNum: 9
   loadingFile: refSmallCartesian.yaml
