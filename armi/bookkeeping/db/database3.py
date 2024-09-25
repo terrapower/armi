@@ -74,6 +74,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor.parameters import parameterCollections
+from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import getNodesPerCycle
@@ -705,13 +706,11 @@ class Database3:
         statePointName=None,
         allowMissing=False,
     ):
-        """Load a new reactor from (cycle, node).
+        """Load a new reactor from a DB at (cycle, node).
 
-        Case settings and blueprints can be provided by the client, or read from the
-        database itself. Providing these from the client could be useful when
-        performing snapshot runs or where it is expected to use results from a run
-        using different settings and continue with new settings (or if blueprints are
-        not on the database). Geometry is read from the database itself.
+        Case settings and blueprints can be provided, or read from the database. Providing these
+        can be useful for snapshot runs or when you want to change settings mid-simulation. Geometry
+        is read from the database.
 
         .. impl:: Users can load a reactor from a DB.
             :id: I_ARMI_DB_R_LOAD
@@ -731,13 +730,12 @@ class Database3:
         cycle : int
             Cycle number
         node : int
-            Time node. If value is negative, will be indexed from EOC backwards
-            like a list.
-        cs : armi.settings.Settings (optional)
+            Time node. If value is negative, will be indexed from EOC backwards like a list.
+        cs : armi.settings.Settings, optional
             If not provided one is read from the database
-        bp : armi.reactor.Blueprints (optional)
+        bp : armi.reactor.Blueprints, optional
             If not provided one is read from the database
-        statePointName : str
+        statePointName : str, optional
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
@@ -795,24 +793,7 @@ class Database3:
 
         return root
 
-    @staticmethod
-    def makeParametersReadOnly(r):
-        """TODO: JOHN BOOP."""
-        for pdef0 in r.p.paramDefs:
-            pdef0.readOnly = True
-            for system in r.getChildren():
-                for pdef1 in system.p.paramDefs:
-                    pdef1.readOnly = True
-                for a in system.getChildren():
-                    for pdef2 in a.p.paramDefs:
-                        pdef2.readOnly = True
-                    for b in a.getChildren():
-                        for pdef3 in b.p.paramDefs:
-                            pdef3.readOnly = True
-                        for c in b.getChildren():
-                            for pdef4 in c.p.paramDefs:
-                                pdef4.readOnly = True
-
+    # TODO: JOHN - Needs testing!
     def loadReadOnly(
         self,
         cycle,
@@ -821,37 +802,32 @@ class Database3:
         bp=None,
         statePointName=None,
     ):
-        """Load a new reactor from (cycle, node).
+        """Load a new reactor, in read-only mode from a DB at (cycle, node).
 
-        TODO: JOHN Explain why this exists.
-
-        Case settings and blueprints can be provided by the client, or read from the
-        database itself. Providing these from the client could be useful when
-        performing snapshot runs or where it is expected to use results from a run
-        using different settings and continue with new settings (or if blueprints are
-        not on the database). Geometry is read from the database itself.
+        Case settings and blueprints can be provided, or read from the database. Providing these
+        can be useful for snapshot runs or when you want to change settings mid-simulation. Geometry
+        is read from the database.
 
         Parameters
         ----------
         cycle : int
             Cycle number
         node : int
-            Time node. If value is negative, will be indexed from EOC backwards
-            like a list.
-        cs : armi.settings.Settings (optional)
+            Time node. If value is negative, will be indexed from EOC backwards like a list.
+        cs : armi.settings.Settings, optional
             If not provided one is read from the database
-        bp : armi.reactor.Blueprints (optional)
+        bp : armi.reactor.Blueprints, optional
             If not provided one is read from the database
-        statePointName : str
+        statePointName : str, optional
             Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
 
         Returns
         -------
-        root : Reactor
+        Reactor
             The top-level object stored in the database; a Reactor.
         """
         r = self.load(cycle, node, cs, bp, statePointName, allowMissing=True)
-        Database3.makeParametersReadOnly(r)
+        makeParametersReadOnly(r)
         return r
 
     @staticmethod
