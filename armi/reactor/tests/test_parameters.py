@@ -566,9 +566,7 @@ class ParamCollectionWhere(unittest.TestCase):
 
     def test_onLocation(self):
         """Test the use of Parameter.atLocation in filtering."""
-        names = {
-            "edgeTemperature",
-        }
+        names = {"edgeTemperature"}
         for p in self.pc.where(
             lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)
         ):
@@ -578,9 +576,7 @@ class ParamCollectionWhere(unittest.TestCase):
 
     def test_complicated(self):
         """Test a multi-condition filter."""
-        names = {
-            "cornerFlux",
-        }
+        names = {"cornerFlux"}
 
         def check(p: parameters.Parameter) -> bool:
             return p.atLocation(parameters.ParamLocation.CORNERS) and p.hasCategory(
