@@ -31,7 +31,7 @@ authors = [
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
-    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
+    "h5py>=3.11,<3.12 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
     "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
