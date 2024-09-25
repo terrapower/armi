@@ -14,8 +14,8 @@
 
 """Settings related to fuel performance."""
 
-from armi.operators.settingsValidation import Query
 from armi.settings import setting
+from armi.settings.settingsValidation import Query
 
 
 CONF_AXIAL_EXPANSION = "axialExpansion"
