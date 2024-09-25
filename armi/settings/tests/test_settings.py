@@ -151,7 +151,7 @@ class TestAddingOptions(unittest.TestCase):
         # modify the default/text settings YAML file to include neutronicsKernel
         fin = os.path.join(TEST_ROOT, "armiRun.yaml")
         txt = open(fin, "r").read()
-        txt = txt.replace("\n  nodeGroup:", "\n  neutronicsKernel: MCNP\n  nodeGroup:")
+        txt = txt.replace("\n  nCycles:", "\n  neutronicsKernel: MCNP\n  nCycles:")
         fout = "test_addingOptions.yaml"
         open(fout, "w").write(txt)
 
