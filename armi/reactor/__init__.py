@@ -90,9 +90,9 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL(trylast=True)
-    def defineSystemBuilders() -> Dict[
-        str, Callable[[str], Union["Core", "SpentFuelPool"]]
-    ]:
+    def defineSystemBuilders() -> (
+        Dict[str, Callable[[str], Union["Core", "SpentFuelPool"]]]
+    ):
         from armi.reactor.reactors import Core
         from armi.reactor.assemblyLists import SpentFuelPool
 
@@ -100,3 +100,10 @@ class ReactorPlugin(plugins.ArmiPlugin):
             "core": Core,
             "sfp": SpentFuelPool,
         }
+
+    @staticmethod
+    @plugins.HOOKIMPL(trylast=True)
+    def getAxialExpansionChanger():
+        from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+
+        return AxialExpansionChanger

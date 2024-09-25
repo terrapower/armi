@@ -119,8 +119,16 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     )
     _allFields: List[str] = []
 
-    # The ArmiObject class that this ParameterCollection belongs to
     _ArmiObject = None
+    """The ArmiObject class that this ParameterCollection belongs to.
+
+    Crucially **not** the instance that owns this collection. For any
+    ``ArmiObject``, the following are true::
+
+        >>> self.p._ArmiObject is not self
+        >>> isinstance(self, self.p._ArmiObject)
+
+    """
 
     # A set of all instance attributes that are settable on an instance. This prevents inadvertent
     # setting of values that aren't proper parameters. Named _slots, as it is used to emulate some
