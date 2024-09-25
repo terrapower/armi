@@ -89,6 +89,9 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL(trylast=True)
+    def defineSystemBuilders() -> Dict[
+        str, Callable[[str], Union["Core", "ExcoreStructure", "SpentFuelPool"]]
+    ]:
         from armi.reactor.spentFuelPool import SpentFuelPool
         from armi.reactor.excoreStructure import ExcoreStructure
         from armi.reactor.reactors import Core
