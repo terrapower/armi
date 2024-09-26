@@ -145,3 +145,6 @@ class ExcoreCollection(dict):
         memo[id(self)] = newE = self.__class__.__new__(self.__class__)
         newE.__setstate__(copy.deepcopy(self.__getstate__(), memo))
         return newE
+
+    def __repr__(self):
+        return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
