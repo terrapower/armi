@@ -472,6 +472,7 @@ class XSModelingOptions:
         xsMaxAtomNumber=None,
         averageByComponent=False,
         minDriverDensity=0.0,
+        partiallyHeterogeneous=False,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -494,6 +495,7 @@ class XSModelingOptions:
         self.xsMaxAtomNumber = xsMaxAtomNumber
         self.minDriverDensity = minDriverDensity
         self.averageByComponent = averageByComponent
+        self.partiallyHeterogeneous = partiallyHeterogeneous
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
