@@ -16,6 +16,7 @@
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 
 
 def getComponentParameterDefinitions():
