@@ -196,6 +196,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
+        vol.Optional(CONF_PARTIALLY_HETEROGENEOUS): bool,
     }
 )
 
