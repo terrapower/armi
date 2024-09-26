@@ -14,6 +14,10 @@ New Features
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. Provide utilities for determining location of a rotated object in a hexagonal lattice (``getIndexOfRotatedCell``). (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Provide ``Parameter.hasCategory`` for quickly checking if a parameter is defined with a given category.
+   (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
+#. Provide ``ParameterCollection.where`` for efficient iteration over parameters who's definition.
+   matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
 #. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion.
    (`PR#1870 <https://github.com/terrapower/armi/pull/1870`_)
 #. TBD
