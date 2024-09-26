@@ -2055,10 +2055,6 @@ class HexBlock(Block):
         self._rotateDisplacement(rad)
         self._rotatePinParameters(rotNum)
 
-    def _getParamsWhere(self, f: Callable[[parameters.Parameter], bool]):
-        """Produce an iterator of parameters that match a condition."""
-        return filter(f, self.pDefs)
-
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.
 
@@ -2069,7 +2065,7 @@ class HexBlock(Block):
             rotations have taken place.
 
         """
-        params = self._getParamsWhere(
+        params = self.p.where(
             lambda p: p.atLocation(ParamLocation.CORNERS)
             or p.atLocation(ParamLocation.EDGES)
         )
@@ -2203,7 +2199,7 @@ class HexBlock(Block):
 
     def _rotatePinParameters(self, rotNum: int):
         """Rotate parameters assigned on pins."""
-        params = self._getParamsWhere(lambda pd: pd.atLocation(ParamLocation.CHILDREN))
+        params = self.p.where(lambda pd: pd.atLocation(ParamLocation.CHILDREN))
         for param in params:
             name = param.name
             original = self.p[name]
