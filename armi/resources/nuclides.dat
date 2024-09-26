@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------
 # NUCLIDE DATA
 # ---------------------------------------------------------------------
-# This file contains a set of 4614 nuclides and their associated metadata
+# This file contains a set of 4624 nuclides and their associated metadata
 # of atomic number (Z), number of neutrons (N), mass number (A), stability
 # state number (S), Mass (amu), natural abundance (fractional), half-life (sec), 
 # and the spontaneous fission neutron yield (nu-bar).
