@@ -588,10 +588,10 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         numRings = self._sourceBlock.spatialGrid.getMinimumRings(
             self._sourceBlock.getNumPins()
         )
+        pinComponents, nonPins = self._classifyComponents()
         if self.partiallyHeterogeneous:
             self._buildInsideDuct()
         else:
-            pinComponents, nonPins = self._classifyComponents()
             self._buildFirstRing(pinComponents)
             for ring in range(2, numRings + 1):
                 self._buildNthRing(pinComponents, ring)
@@ -660,17 +660,26 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         blockName = f"Homogenized {blockType}"
         newBlock = copy.deepcopy(self._sourceBlock)
 
-        removeComponents = False
-        for c in sorted(newBlock.getComponents()):
+        compFlags = newBlock.geFirstComponent().p.flags
+        for c in sorted(newBlock.getComponents(), reverse=True):
+            newBlock.remove(c, recomputeAreaFractions=False)
             if c.hasFlags(Flags.DUCT):
-                removeComponents = True
-            if removeComponents:
-                newBlock.remove(c)
-            else:
-                compFlags = compFlags | c.p.flags
+                ductIP = c.getDimension("ip")
+                break
+
+        # add pitch defining component
+        newBlock.add(
+            components.Hexagon(
+                "pitchComponent",
+                "Void",
+                self._sourceBlock.getAverageTempInC(),
+                self._sourceBlock.getAverageTempInC(),
+                ip=ductIP,
+                op=ductIP,
+            )
+        )
 
         outerDiam = getOuterDiamFromIDAndArea(0.0, newBlock.getArea())
-
         circle = components.Circle(
             blockName,
             "_Mixture",
@@ -682,6 +691,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         )
         circle.setNumberDensities(newBlock.getNumberDensities())
         circle.p.flags = compFlags
+        self.convertedBlock.add(circle)
 
     def _buildFirstRing(self, pinComponents):
         """Add first ring of components to new block."""
@@ -738,8 +748,10 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 coolInnerDiam, self._remainingCoolantFillArea
             )
             self._addCoolantRing(coolantOD, " outer")
+            innerDiameter = coolantOD
+        else:
+            innerDiameter = self.convertedBlock[-1].getDimension("od")
 
-        innerDiameter = coolantOD
         for i, hexagon in enumerate(sorted(nonPins)):
             outerDiam = getOuterDiamFromIDAndArea(
                 innerDiameter, hexagon.getArea()
