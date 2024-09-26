@@ -170,7 +170,7 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertEqual(len(evst.getChildren()), 5)
 
     def test_spentFuelPool(self):
-        _core, sfp, evst = self._setupReactor()
+        _core, sfp, _evst = self._setupReactor()
         self.assertIsInstance(sfp, SpentFuelPool)
         self.assertEqual(sfp.parent.__class__.__name__, "Reactor")
         self.assertEqual(sfp.spatialGrid.__class__.__name__, "CartesianGrid")
