@@ -33,7 +33,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
+from armi.utils import units, codeTiming, getMaxBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -114,19 +114,19 @@ class GlobalFluxInterface(interfaces.Interface):
         if self.r.p.timeNode == 0:
             # track boc uncontrolled keff for rxSwing param.
             self._bocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+            self.r.core.p.rxSwing = 0.0
+        else:
+            if self._bocKeff is not None:
+                currentKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+                swing = (currentKeff - self._bocKeff) / (currentKeff * self._bocKeff)
+                self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
 
-        # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
-        lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
-        if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
-
-            eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
-            swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
-            self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
-            runLog.info(
-                f"BOC Uncontrolled keff: {self._bocKeff},  "
-                f"EOC Uncontrolled keff: {self.r.core.p.keffUnc}, "
-                f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
-            )
+    def interactEOC(self):
+        runLog.info(
+            f"BOC Uncontrolled keff: {self._bocKeff},  "
+            f"EOC Uncontrolled keff: {self.r.core.p.keffUnc}, "
+            f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
+        )
 
     def checkEnergyBalance(self):
         """Check that there is energy balance between the power generated and the specified power.
