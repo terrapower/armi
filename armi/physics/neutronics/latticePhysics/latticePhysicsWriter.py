@@ -113,6 +113,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
+        self.partiallyHeterogeneous = self.xsSettings.partiallyHeterogeneous
 
         self.executeExclusive = self.xsSettings.xsExecuteExclusive
         self.priority = self.xsSettings.xsPriority

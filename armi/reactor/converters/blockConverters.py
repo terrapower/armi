@@ -507,6 +507,11 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
     nonpins ...
 
+    The ``partiallyHeterogeneous`` option allows the user to treat everything inside the duct
+    as a single homogenized composition. This will significantly reduce the memory and runtime
+    required for MC2, and also provide an alternative approximation for the spatial self-shielding
+    effect on microscopic cross sections.
+
     This converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined and for
     the ``sourceBlock`` to have a spatial grid defined. Additionally, both the ``sourceBlock``
     and ``driverFuelBlock`` must be instances of HexBlocks.
@@ -518,6 +523,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         driverFuelBlock=None,
         numExternalRings=None,
         mergeIntoClad=None,
+        partiallyHeterogeneous=False,
     ):
         BlockAvgToCylConverter.__init__(
             self,
@@ -547,6 +553,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 )
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
+        self.partiallyHeterogeneous = partiallyHeterogeneous
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
         if not self.interRingComponent:
@@ -581,10 +588,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         numRings = self._sourceBlock.spatialGrid.getMinimumRings(
             self._sourceBlock.getNumPins()
         )
-        pinComponents, nonPins = self._classifyComponents()
-        self._buildFirstRing(pinComponents)
-        for ring in range(2, numRings + 1):
-            self._buildNthRing(pinComponents, ring)
+        if self.partiallyHeterogeneous:
+            self._buildInsideDuct()
+        else:
+            pinComponents, nonPins = self._classifyComponents()
+            self._buildFirstRing(pinComponents)
+            for ring in range(2, numRings + 1):
+                self._buildNthRing(pinComponents, ring)
         self._buildNonPinRings(nonPins)
         self._addDriverFuelRings()
 
@@ -644,6 +654,35 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
         return list(sorted(pinComponents)), nonPins
 
+    def _buildInsideDuct(self):
+        """Build a homogenized material of the components inside the duct."""
+        blockType = self._sourceBlock.getType()
+        blockName = f"Homogenized {blockType}"
+        newBlock = copy.deepcopy(self._sourceBlock)
+
+        removeComponents = False
+        for c in sorted(newBlock.getComponents()):
+            if c.hasFlags(Flags.DUCT):
+                removeComponents = True
+            if removeComponents:
+                newBlock.remove(c)
+            else:
+                compFlags = compFlags | c.p.flags
+
+        outerDiam = getOuterDiamFromIDAndArea(0.0, newBlock.getArea())
+
+        circle = components.Circle(
+            blockName,
+            "_Mixture",
+            newBlock.getAverageTempInC(),
+            newBlock.getAverageTempInC(),
+            id=0.0,
+            od=outerDiam,
+            mult=1,
+        )
+        circle.setNumberDensities(newBlock.getNumberDensities())
+        circle.p.flags = compFlags
+
     def _buildFirstRing(self, pinComponents):
         """Add first ring of components to new block."""
         for oldC in pinComponents:
@@ -692,12 +731,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         Also needs to add final coolant layer between the outer pins and the non-pins.
         Will crash if there are things that are not circles or hexes.
         """
-        # fill in the last ring of coolant using the rest
-        coolInnerDiam = self.convertedBlock[-1].getDimension("od")
-        coolantOD = getOuterDiamFromIDAndArea(
-            coolInnerDiam, self._remainingCoolantFillArea
-        )
-        self._addCoolantRing(coolantOD, " outer")
+        if not self.partiallyHeterogeneous:
+            # fill in the last ring of coolant using the rest
+            coolInnerDiam = self.convertedBlock[-1].getDimension("od")
+            coolantOD = getOuterDiamFromIDAndArea(
+                coolInnerDiam, self._remainingCoolantFillArea
+            )
+            self._addCoolantRing(coolantOD, " outer")
 
         innerDiameter = coolantOD
         for i, hexagon in enumerate(sorted(nonPins)):

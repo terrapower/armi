@@ -57,6 +57,7 @@ CONF_XS_PRIORITY = "xsPriority"
 CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
+CONF_PARTIALLY_HETEROGENEOUS = "partiallyHeterogeneous"
 
 
 class XSGeometryTypes(Enum):
@@ -149,6 +150,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_PARTIALLY_HETEROGENEOUS,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -433,6 +435,11 @@ class XSModelingOptions:
         The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
 
+    partiallyHeterogeneous : bool
+        This is a lattice physics configuration option used to enable a partially
+        heterogeneous approximation for a 1D cylindrical model. Everything inside of the
+        duct will be treated as homogeneous.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -674,6 +681,7 @@ class XSModelingOptions:
                 CONF_HOMOGBLOCK: False,
                 CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
+                CONF_PARTIALLY_HETEROGENEOUS: False,
             }
         elif self.geometry == XSGeometryTypes.getStr(
             XSGeometryTypes.TWO_DIMENSIONAL_HEX
