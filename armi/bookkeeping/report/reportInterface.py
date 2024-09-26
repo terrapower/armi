@@ -179,7 +179,7 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def reportSFP(sfp):
         """A high-level summary of the Spent Fuel Pool."""
-        title = "SpentFuellPool Report"
+        title = "SpentFuelPool Report"
         runLog.important("-" * len(title))
         runLog.important(title)
         runLog.important("-" * len(title))

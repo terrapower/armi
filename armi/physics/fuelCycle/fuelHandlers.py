@@ -1336,7 +1336,7 @@ class FuelHandler:
 
                 if not loadAssembly:
                     msg = (
-                        f"the required assembly {assemblyName} is not found in the SFP."
+                        f"The required assembly {assemblyName} is not found in the SFP."
                     )
                     runLog.error(msg)
                     raise RuntimeError(msg)
