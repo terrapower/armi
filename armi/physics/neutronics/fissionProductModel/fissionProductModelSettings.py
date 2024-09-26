@@ -93,7 +93,7 @@ def defineSettings():
 def getFissionProductModelSettingValidators(inspector):
     """The standard helper method, to provide validators to the fission product model."""
     # Import the Query class here to avoid circular imports.
-    from armi.operators.settingsValidation import Query
+    from armi.settings.settingsValidation import Query
 
     queries = []
 

@@ -1,12 +1,10 @@
 settings:
   availabilityFactor: 1
   beta: 0.003454
-  BOL: true
   branchVerbosity: debug
   buGroups:
     - 100
   burnSteps: 2
-  clusterExclusive: false
   comment: Simple test input.
   crossSectionControl:
     DA:
@@ -37,7 +35,6 @@ settings:
   db: false
   detailAssemLocationsBOL:
     - 002-001
-  economics: false
   epsBurnTime: 0.001
   epsFSAvg: 1e-06
   epsFSPoint: 1e-06
@@ -51,22 +48,16 @@ settings:
   startCycle: 1
   startNode: 2
   loadPadElevation: 200.0
-  max2SigmaCladIDT: 630.0
   genReports: false
-  maxFlowZones: 12
-  maxRegionDensityIterations: 5
   moduleVerbosity:
     armi.reactor.reactors: info
   nCycles: 6
-  nodeGroup: OnlineNodes,TP
   outputFileExtension: png
-  percentNaReduction: 10.0
   power: 100000000.0
   shuffleLogic: refSmallReactorShuffleLogic.py
   smallRun: true
   summarizeAssemDesign: false
   targetK: 1.002
-  transientForSensitivity: ""
   verbosity: extra
   versions:
     armi: uncontrolled

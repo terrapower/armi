@@ -417,6 +417,10 @@ class Parameter:
         """True if parameter is defined at location."""
         return self.location and self.location & loc
 
+    def hasCategory(self, category: str) -> bool:
+        """True if a parameter has a specific category."""
+        return category in self.categories
+
 
 class ParameterDefinitionCollection:
     """
