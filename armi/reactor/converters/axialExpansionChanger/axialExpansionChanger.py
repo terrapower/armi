@@ -154,7 +154,7 @@ class AxialExpansionChanger:
                 b.completeInitialLoading()
 
     def performPrescribedAxialExpansion(
-        self, a: Assembly, componentLst: list, percents: list, setFuel=True
+        self, a: Assembly, components: list, percents: list, setFuel=True
     ):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
 
@@ -173,10 +173,10 @@ class AxialExpansionChanger:
         ----------
         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             ARMI assembly to be changed
-        componentLst : list[:py:class:`Component <armi.reactor.components.component.Component>`]
+        components : list[:py:class:`Component <armi.reactor.components.component.Component>`]
             list of Components to be expanded
         percents : list[float]
-            list of expansion percentages for each component listed in componentList
+            list of expansion percentages for each component listed in components
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
@@ -186,7 +186,7 @@ class AxialExpansionChanger:
         - percents may be positive (expansion) or negative (contraction)
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.setExpansionFactors(componentLst, percents)
+        self.expansionData.setExpansionFactors(components, percents)
         self.axiallyExpandAssembly()
 
     def performThermalAxialExpansion(

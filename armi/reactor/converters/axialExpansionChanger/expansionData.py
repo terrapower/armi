@@ -99,15 +99,15 @@ class ExpansionData:
 
         Parameters
         ----------
-        componentLst : List[:py:class:`Component <armi.reactor.components.component.Component>`]
+        components : List[:py:class:`Component <armi.reactor.components.component.Component>`]
             list of Components to have their heights changed
         expFrac : List[float]
-            list of L1/L0 height changes that are to be applied to componentLst
+            list of L1/L0 height changes that are to be applied to components
 
         Raises
         ------
         RuntimeError
-            If componentLst and expFrac are different lengths
+            If components and expFrac are different lengths
         """
         if len(components) != len(expFrac):
             runLog.error(
