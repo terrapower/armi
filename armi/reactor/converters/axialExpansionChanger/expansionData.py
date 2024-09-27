@@ -57,26 +57,36 @@ def getSolidComponents(b: "Block") -> list["Component"]:
 
 
 class ExpansionData:
-    """Data container for axial expansion."""
+    r"""Data container for axial expansion.
+
+    The primary responsibility of this class is to determine the axial expansion factors
+    for each component in the assembly. Expansion factors can be compute from the component
+    temperatures in :meth:`computeThermalExpansionFactors` or provided directly to the class
+    via :meth:`setExpansionFactors`.
+
+    This class relies on the concept of a "target" expansion component for each block. While
+    components will expand at different rates, the final height of the block must be determined.
+    The target component, determined by :meth:`determineTargetComponents`\, will drive the total
+    height of the block post-expansion.
+
+    Parameters
+    ----------
+    a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+        Assembly to assign component-wise expansion data to
+    setFuel: bool
+        used to determine if fuel component should be set as
+        axial expansion target component during initialization.
+        see self._isFuelLocked
+    expandFromTinputToThot: bool
+        Determines if thermal expansion factors should be caculated from
+            - ``c.inputTemperatureInC`` to ``c.temperatureInC`` when ``True``, or
+            - some other reference temperature and ``c.temperatureInC`` when ``False``
+    """
 
     _expansionFactors: dict["Component", float]
     componentReferenceTemperature: dict["Component", float]
 
     def __init__(self, a: "Assembly", setFuel: bool, expandFromTinputToThot: bool):
-        """
-        Parameters
-        ----------
-        a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            Assembly to assign component-wise expansion data to
-        setFuel: bool
-            used to determine if fuel component should be set as
-            axial expansion target component during initialization.
-            see self._isFuelLocked
-        expandFromTinputToThot: bool
-            determines if thermal expansion factors should be calculated
-            from c.inputTemperatureInC to c.temperatureInC (True) or some other
-            reference temperature and c.temperatureInC (False)
-        """
         self._a = a
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
