@@ -21,7 +21,7 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
 )
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     ExpansionData,
-    getSolidComponents,
+    iterSolidComponents,
 )
 from armi.reactor.flags import Flags
 
@@ -325,7 +325,7 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in getSolidComponents(b):
+                for c in iterSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
                     c.height = growFrac * blockHeight

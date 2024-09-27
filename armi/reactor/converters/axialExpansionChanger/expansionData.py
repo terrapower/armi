@@ -14,7 +14,7 @@
 """Data container for axial expansion."""
 
 from statistics import mean
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Iterable
 
 from armi import runLog
 from armi.materials import material
@@ -34,6 +34,11 @@ if TYPE_CHECKING:
     from armi.reactor.assemblies import Assembly
 
 
+def iterSolidComponents(b: "Block") -> Iterable["Component"]:
+    """Iterate over all solid components in the block."""
+    return filter(lambda c: not isinstance(c.material, material.Fluid), b)
+
+
 def getSolidComponents(b: "Block") -> list["Component"]:
     """
     Return list of components in the block that have solid material.
@@ -42,8 +47,13 @@ def getSolidComponents(b: "Block") -> list["Component"]:
     -----
     Axial expansion only needs to be applied to solid materials. We should not update
     number densities on fluid materials to account for changes in block height.
+
+    See Also
+    --------
+    :func:`iterSolidComponents` produces an iterable rather than a list and may be better
+    suited if you simply want to iterate over solids in a block.
     """
-    return [c for c in b if not isinstance(c.material, material.Fluid)]
+    return list(iterSolidComponents(b))
 
 
 class ExpansionData:
@@ -179,7 +189,7 @@ class ExpansionData:
 
     def _setComponentThermalExpansionFactors(self, b: "Block"):
         """For each component in the block, set the thermal expansion factors."""
-        for c in getSolidComponents(b):
+        for c in iterSolidComponents(b):
             self._perComponentThermalExpansionFactors(c)
 
     def _perComponentThermalExpansionFactors(self, c: "Component"):

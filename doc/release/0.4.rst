@@ -20,6 +20,7 @@ New Features
    matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
 #. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion.
    (`PR#1870 <https://github.com/terrapower/armi/pull/1870`_)
+#. Provide ``axialExpansionChanger.iterSolidComponents`` for iterating over solid components in a block.
 #. TBD
 
 API Changes

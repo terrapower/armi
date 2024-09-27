@@ -31,6 +31,7 @@ from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
     getSolidComponents,
+    iterSolidComponents,
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     areAxiallyLinked,
@@ -88,7 +89,7 @@ class AxialExpansionTestBase(unittest.TestCase):
         for b in a:
             # store block ztop
             self.blockZtop[b].append(b.p.ztop)
-            for c in getSolidComponents(b):
+            for c in iterSolidComponents(b):
                 # store mass and density of component
                 self.componentMass[c].append(c.getMass())
                 self.componentDensity[c].append(
@@ -321,7 +322,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         for temp in tempAdjust:
             # adjust component temperatures by temp
             for b in a:
-                for c in getSolidComponents(b):
+                for c in iterSolidComponents(b):
                     axialExpChngr.expansionData.updateComponentTemp(
                         c, c.temperatureInC + temp
                     )
@@ -375,7 +376,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         axExpChngr = AxialExpansionChanger()
         origMesh = a.getAxialMesh()
         origMasses, origNDens = self._getComponentMassAndNDens(a)
-        componentLst = [c for b in a for c in getSolidComponents(b)]
+        componentLst = [c for b in a for c in iterSolidComponents(b)]
         expansionGrowthFrac = 1.01
         contractionGrowthFrac = 1.0 / expansionGrowthFrac
         for i in range(0, 10):
@@ -419,7 +420,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         masses = {}
         nDens = {}
         for b in a:
-            for c in getSolidComponents(b):
+            for c in iterSolidComponents(b):
                 masses[c] = c.getMass()
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
@@ -858,9 +859,18 @@ class TestGetSolidComponents(unittest.TestCase):
         self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
 
     def test_getSolidComponents(self):
+        """Show that getSolidComponents produces a list of solids, and is consistent with iterSolidComponents."""
         for b in self.a:
-            for c in getSolidComponents(b):
+            solids = getSolidComponents(b)
+            ids = set(map(id, solids))
+            for c in iterSolidComponents(b):
                 self.assertNotEqual(c.material.name, "Sodium")
+                self.assertIn(id(c), ids, msg=f"Found non-solid {c}")
+                ids.remove(id(c))
+            self.assertFalse(
+                ids,
+                msg="Inconsistency between getSolidComponents and iterSolidComponents",
+            )
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
@@ -929,7 +939,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     self.checkColdHeightBlockMass(bStd, bExp, Flags.CONTROL, "B10")
 
                 if not aStd.hasFlags(Flags.TEST) and not hasCustomMaterial:
-                    for cExp in getSolidComponents(bExp):
+                    for cExp in iterSolidComponents(bExp):
                         if cExp.zbottom == bExp.p.zbottom and cExp.ztop == bExp.p.ztop:
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
                             compDens = cExp.density()

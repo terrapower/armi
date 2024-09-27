@@ -19,7 +19,7 @@ from armi import runLog
 from armi.reactor.blocks import Block
 from armi.reactor.components import Component, UnshapedComponent
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
-    getSolidComponents,
+    iterSolidComponents,
 )
 
 
@@ -191,7 +191,7 @@ class AssemblyAxialLinkage:
         """Gets the block and component based linkage."""
         for b in self.a:
             self._getLinkedBlocks(b)
-            for c in getSolidComponents(b):
+            for c in iterSolidComponents(b):
                 self._getLinkedComponents(b, c)
 
     def _getLinkedBlocks(self, b: Block):
@@ -267,7 +267,7 @@ class AssemblyAxialLinkage:
         lstLinkedC = AxialLink(None, None)
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
-                for otherC in getSolidComponents(linkdBlk.getChildren()):
+                for otherC in iterSolidComponents(linkdBlk.getChildren()):
                     if areAxiallyLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
