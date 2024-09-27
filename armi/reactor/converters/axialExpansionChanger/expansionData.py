@@ -95,17 +95,10 @@ class ExpansionData:
                 f"        len(expFrac) = {len(expFrac)}"
             )
             raise RuntimeError
-        if 0.0 in expFrac:
-            msg = (
-                "An expansion fraction, L1/L0, equal to 0.0, is not physical. Expansion fractions "
-                "should be greater than 0.0."
-            )
-            runLog.error(msg)
-            raise RuntimeError(msg)
         for exp in expFrac:
-            if exp < 0.0:
+            if exp <= 0.0:
                 msg = (
-                    "A negative expansion fraction, L1/L0, is not physical. Expansion fractions "
+                    f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions "
                     "should be greater than 0.0."
                 )
                 runLog.error(msg)
