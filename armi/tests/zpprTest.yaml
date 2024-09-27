@@ -28,13 +28,10 @@ settings:
       numExternalRings: 1
       meshSubdivisionsPerCm: 10
   cycleLength: 365.25
-  economics: false
   epsEig: 1e-10
   genXS: Neutron
   geomFile: zpprTestGeom.xml
   loadingFile: 1DslabXSByCompTest.yaml
-  max2SigmaCladIDT: 630.0
-  maxFlowZones: 12
   mpiTasksPerNode: 6
   numProcessors: 12
   outputFileExtension: pdf

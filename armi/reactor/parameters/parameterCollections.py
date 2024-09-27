@@ -14,7 +14,7 @@
 
 import copy
 import pickle
-from typing import Any, Optional, List, Set
+from typing import Any, Optional, List, Set, Iterator, Callable
 import sys
 
 import numpy as np
@@ -119,8 +119,16 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     )
     _allFields: List[str] = []
 
-    # The ArmiObject class that this ParameterCollection belongs to
     _ArmiObject = None
+    """The ArmiObject class that this ParameterCollection belongs to.
+
+    Crucially **not** the instance that owns this collection. For any
+    ``ArmiObject``, the following are true::
+
+        >>> self.p._ArmiObject is not self
+        >>> isinstance(self, self.p._ArmiObject)
+
+    """
 
     # A set of all instance attributes that are settable on an instance. This prevents inadvertent
     # setting of values that aren't proper parameters. Named _slots, as it is used to emulate some
@@ -359,7 +367,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         else:
             return name in self._hist
 
-    def __eq__(self, other):
+    def __eq__(self, other: "ParameterCollection"):
         if not isinstance(other, self.__class__):
             return False
 
@@ -374,7 +382,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
 
         return True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
+        """Iterate over names of assigned parameters define on this collection."""
         return (
             pd.name
             for pd in self.paramDefs
@@ -492,6 +501,32 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
                 setattr(self, pd.fieldName, currentValue)
                 pd.assigned = SINCE_ANYTHING
                 self.assigned = SINCE_ANYTHING
+
+    def where(
+        self, f: Callable[[parameterDefinitions.Parameter], bool]
+    ) -> Iterator[parameterDefinitions.Parameter]:
+        """Produce an iterator over parameters that meet some criteria.
+
+        Parameters
+        ----------
+        f : callable function f(parameter) -> bool
+            Function to check if a parameter should be fetched during the iteration.
+
+        Returns
+        -------
+        iterator of :class:`armi.reactor.parameters.Parameter`
+            Iterator, **not** list or tuple, that produces each parameter that
+            meets ``f(parameter) == True``.
+
+        Examples
+        --------
+        >>> block = r.core[0][0]
+        >>> pdef = block.p.paramDefs
+        >>> for param in pdef.where(lambda pd: pd.atLocation(ParamLocation.EDGES)):
+        ...     print(param.name, block.p[param.name])
+
+        """
+        return filter(f, self.paramDefs)
 
 
 def collectPluginParameters(pm):

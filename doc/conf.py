@@ -394,9 +394,8 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # as long as this file @import's the theme's main css it won't break anything
 html_style = "css/theme_fixes.css"
 
-# The name of an image file (within the static path) to use as favicon of the
-# docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-# pixels large.
+# The name of an image file (within the static path) to use as favicon of the docs. This file should
+# be a Windows icon file (.ico) being 16x16 or 32x32 pixels large.
 html_favicon = os.path.join(".static", "armiicon_16x16.ico")
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -481,7 +480,7 @@ sphinx_gallery_conf = {
         ]
     ),
     "within_subsection_order": FileNameSortKey,
-    "default_thumb_file": os.path.join(context.RES, "images", "TerraPowerLogo.png"),
+    "default_thumb_file": os.path.join(".static", "TerraPowerLogo.png"),
 }
 
 suppress_warnings = ["autoapi.python_import_resolution"]
