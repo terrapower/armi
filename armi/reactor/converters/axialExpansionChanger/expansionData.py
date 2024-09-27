@@ -14,7 +14,7 @@
 """Data container for axial expansion."""
 
 from statistics import mean
-from typing import List
+from typing import TYPE_CHECKING, Optional
 
 from armi import runLog
 from armi.materials import material
@@ -28,8 +28,13 @@ TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.SLUG,
 ]
 
+if TYPE_CHECKING:
+    from armi.reactor.components import Component
+    from armi.reactor.blocks import Block
+    from armi.reactor.assemblies import Assembly
 
-def getSolidComponents(b):
+
+def getSolidComponents(b: "Block") -> list["Component"]:
     """
     Return list of components in the block that have solid material.
 
@@ -44,7 +49,7 @@ def getSolidComponents(b):
 class ExpansionData:
     """Data container for axial expansion."""
 
-    def __init__(self, a, setFuel: bool, expandFromTinputToThot: bool):
+    def __init__(self, a: "Assembly", setFuel: bool, expandFromTinputToThot: bool):
         """
         Parameters
         ----------
@@ -66,7 +71,9 @@ class ExpansionData:
         self._setTargetComponents(setFuel)
         self.expandFromTinputToThot = expandFromTinputToThot
 
-    def setExpansionFactors(self, componentLst: List, expFrac: List):
+    def setExpansionFactors(
+        self, components: list["Component"], expFrac: list[float]
+    ):
         """Sets user defined expansion fractions.
 
         Parameters
@@ -81,10 +88,10 @@ class ExpansionData:
         RuntimeError
             If componentLst and expFrac are different lengths
         """
-        if len(componentLst) != len(expFrac):
+        if len(components) != len(expFrac):
             runLog.error(
                 "Number of components and expansion fractions must be the same!\n"
-                f"    len(componentLst) = {len(componentLst)}\n"
+                f"     len(components) = {len(components)}\n"
                 f"        len(expFrac) = {len(expFrac)}"
             )
             raise RuntimeError
@@ -103,7 +110,7 @@ class ExpansionData:
                 )
                 runLog.error(msg)
                 raise RuntimeError(msg)
-        for c, p in zip(componentLst, expFrac):
+        for c, p in zip(components, expFrac):
             self._expansionFactors[c] = p
 
     def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
@@ -152,7 +159,7 @@ class ExpansionData:
             for c in b:
                 self.updateComponentTemp(c, blockAveTemp)
 
-    def updateComponentTemp(self, c, temp: float):
+    def updateComponentTemp(self, c: "Component", temp: float):
         """Update component temperatures with a provided temperature.
 
         Parameters
@@ -189,7 +196,7 @@ class ExpansionData:
                     # we'll assume that the expansion factor is 1.0.
                     self._expansionFactors[c] = 1.0
 
-    def getExpansionFactor(self, c):
+    def getExpansionFactor(self, c: "Component"):
         """Retrieves expansion factor for c.
 
         Parameters
@@ -200,7 +207,7 @@ class ExpansionData:
         value = self._expansionFactors.get(c, 1.0)
         return value
 
-    def _setTargetComponents(self, setFuel):
+    def _setTargetComponents(self, setFuel: bool):
         """Sets target component for each block.
 
         Parameters
@@ -223,7 +230,9 @@ class ExpansionData:
             else:
                 self.determineTargetComponent(b)
 
-    def determineTargetComponent(self, b, flagOfInterest=None):
+    def determineTargetComponent(
+        self, b: "Block", flagOfInterest: Optional[Flags] = None
+    ):
         """Determines target component, stores it on the block, and appends it to
         self._componentDeterminesBlockHeight.
 
@@ -275,7 +284,7 @@ class ExpansionData:
         self._componentDeterminesBlockHeight[componentWFlag[0]] = True
         b.p.axialExpTargetComponent = componentWFlag[0].name
 
-    def _isFuelLocked(self, b):
+    def _isFuelLocked(self, b: "Block"):
         """Physical/realistic implementation reserved for ARMI plugin.
 
         Parameters
@@ -299,7 +308,7 @@ class ExpansionData:
         self._componentDeterminesBlockHeight[c] = True
         b.p.axialExpTargetComponent = c.name
 
-    def isTargetComponent(self, c):
+    def isTargetComponent(self, c: "Component") -> bool:
         """Returns bool if c is a target component.
 
         Parameters
