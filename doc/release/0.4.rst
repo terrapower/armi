@@ -22,7 +22,7 @@ New Features
 API Changes
 -----------
 #. Removing flags ``CORE`` and ``REACTOR``. (`PR#1835 <https://github.com/terrapower/armi/pull/1835>`_)
-#. Alphabetizing ``Flags.toString()`` results. (`PR#1911 <https://github.com/terrapower/armi/pull/1911>`_)
+#. Alphabetizing ``Flags.toString()`` results. (`PR#1912 <https://github.com/terrapower/armi/pull/1912>`_)
 #. Moving ``settingsValidation`` from ``operators`` to ``settings``. (`PR#1895 <https://github.com/terrapower/armi/pull/1895>`_)
 #. Removing deprecated method ``prepSearch``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing unused function ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
