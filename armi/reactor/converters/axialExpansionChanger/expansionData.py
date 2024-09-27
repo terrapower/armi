@@ -49,6 +49,9 @@ def getSolidComponents(b: "Block") -> list["Component"]:
 class ExpansionData:
     """Data container for axial expansion."""
 
+    _expansionFactors: dict["Component", float]
+    componentReferenceTemperature: dict["Component", float]
+
     def __init__(self, a: "Assembly", setFuel: bool, expandFromTinputToThot: bool):
         """
         Parameters
@@ -71,9 +74,7 @@ class ExpansionData:
         self._setTargetComponents(setFuel)
         self.expandFromTinputToThot = expandFromTinputToThot
 
-    def setExpansionFactors(
-        self, components: list["Component"], expFrac: list[float]
-    ):
+    def setExpansionFactors(self, components: list["Component"], expFrac: list[float]):
         """Sets user defined expansion fractions.
 
         Parameters
@@ -174,20 +175,28 @@ class ExpansionData:
     def computeThermalExpansionFactors(self):
         """Computes expansion factors for all components via thermal expansion."""
         for b in self._a:
-            for c in getSolidComponents(b):
-                if self.expandFromTinputToThot:
-                    # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
-                    self._expansionFactors[c] = c.getThermalExpansionFactor()
-                elif c in self.componentReferenceTemperature:
-                    growFrac = c.getThermalExpansionFactor(
-                        T0=self.componentReferenceTemperature[c]
-                    )
-                    self._expansionFactors[c] = growFrac
-                else:
-                    # We want expansion factors relative to componentReferenceTemperature not
-                    # Tinput. But for this component there isn't a componentReferenceTemperature, so
-                    # we'll assume that the expansion factor is 1.0.
-                    self._expansionFactors[c] = 1.0
+            self._setComponentThermalExpansionFactors(b)
+
+    def _setComponentThermalExpansionFactors(self, b: "Block"):
+        """For each component in the block, set the thermal expansion factors."""
+        for c in getSolidComponents(b):
+            self._perComponentThermalExpansionFactors(c)
+
+    def _perComponentThermalExpansionFactors(self, c: "Component"):
+        """Set the thermal expansion factors for a single component."""
+        if self.expandFromTinputToThot:
+            # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
+            self._expansionFactors[c] = c.getThermalExpansionFactor()
+        elif c in self.componentReferenceTemperature:
+            growFrac = c.getThermalExpansionFactor(
+                T0=self.componentReferenceTemperature[c]
+            )
+            self._expansionFactors[c] = growFrac
+        else:
+            # We want expansion factors relative to componentReferenceTemperature not
+            # Tinput. But for this component there isn't a componentReferenceTemperature, so
+            # we'll assume that the expansion factor is 1.0.
+            self._expansionFactors[c] = 1.0
 
     def getExpansionFactor(self, c: "Component"):
         """Retrieves expansion factor for c.
