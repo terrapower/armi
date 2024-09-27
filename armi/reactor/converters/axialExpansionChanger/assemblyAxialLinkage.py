@@ -75,9 +75,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
         odB = componentB.getBoundingCircleOuterDiameter(cold=True)
         biggerID = max(idA, idB)
         smallerOD = min(odA, odB)
-        if biggerID >= smallerOD:
-            return False
-        return True
+        return biggerID < smallerOD
     return False
 
 
