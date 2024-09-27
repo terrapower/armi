@@ -24,7 +24,7 @@ from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components import DerivedShape, UnshapedComponent
+from armi.reactor.components import Component, DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
@@ -733,18 +733,22 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(clad)
         b.add(self.coolant)
-        # make sure that b.p.axialExpTargetComponent is empty initially
+        self._checkTarget(b, fuel)
+
+    def _checkTarget(self, b: HexBlock, expected: Component):
+        """Call determineTargetMethod and compare what we get with expected."""
+        # Value unset initially
         self.assertFalse(b.p.axialExpTargetComponent)
-        # call method, and check that target component is correct
-        self.expData.determineTargetComponent(b)
+        target = self.expData.determineTargetComponent(b)
+        self.assertIs(target, expected)
         self.assertTrue(
-            self.expData.isTargetComponent(fuel),
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
+            self.expData.isTargetComponent(target),
+            msg=f"determineTargetComponent failed to recognize intended component: {expected}",
         )
         self.assertEqual(
             b.p.axialExpTargetComponent,
-            fuel.name,
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
+            expected.name,
+            msg=f"determineTargetComponent failed to recognize intended component: {expected}",
         )
 
     def test_determineTargetComponentBlockWithMultipleFlags(self):
@@ -758,12 +762,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(poison)
         b.add(self.coolant)
-        # call method, and check that target component is correct
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(fuel),
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
-        )
+        self._checkTarget(b, fuel)
 
     def test_specifyTargetComponent_NotFound(self):
         """Ensure RuntimeError gets raised when no target component is found."""
@@ -788,11 +787,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(self.coolant)
         b.getVolumeFractions()
         b.setType("plenum")
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(duct),
-            msg=f"determineTargetComponent failed to recognize intended component: {duct}",
-        )
+        self._checkTarget(b, duct)
 
     def test_specifyTargetComponet_MultipleFound(self):
         """Ensure RuntimeError is hit when multiple target components are found.

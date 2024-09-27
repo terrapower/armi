@@ -254,7 +254,7 @@ class ExpansionData:
 
     def determineTargetComponent(
         self, b: "Block", flagOfInterest: Optional[Flags] = None
-    ):
+    ) -> "Component":
         """Determines target component, stores it on the block, and appends it to
         self._componentDeterminesBlockHeight.
 
@@ -264,6 +264,11 @@ class ExpansionData:
             block to specify target component for
         flagOfInterest : :py:class:`Flags <armi.reactor.flags.Flags>`
             the flag of interest to identify the target component
+
+        Returns
+        -------
+        Component
+            Component identified as target component, if found.
 
         Notes
         -----
@@ -281,30 +286,35 @@ class ExpansionData:
         if flagOfInterest is None:
             # Follow expansion of most neutronically important component, fuel then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
-                componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
-                if componentWFlag != []:
+                candidates = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
+                if candidates != []:
                     break
             # some blocks/components are not included in the above list but should still be found
-            if not componentWFlag:
-                componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
+            if not candidates:
+                candidates = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
-            componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
-        if len(componentWFlag) == 0:
+            candidates = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
+        if len(candidates) == 0:
             # if only 1 solid, be smart enought to snag it
             solidMaterials = list(
                 c for c in b if not isinstance(c.material, material.Fluid)
             )
             if len(solidMaterials) == 1:
-                componentWFlag = solidMaterials
-        if len(componentWFlag) == 0:
+                candidates = solidMaterials
+        if len(candidates) == 0:
             raise RuntimeError(f"No target component found!\n   Block {b}")
-        if len(componentWFlag) > 1:
+        if len(candidates) > 1:
             raise RuntimeError(
                 "Cannot have more than one component within a block that has the target flag!"
-                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
+                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {candidates}"
             )
-        self._componentDeterminesBlockHeight[componentWFlag[0]] = True
-        b.p.axialExpTargetComponent = componentWFlag[0].name
+        target = candidates[0]
+        self._setExpansionTarget(b, target)
+        return target
+
+    def _setExpansionTarget(self, b: "Block", target: "Component"):
+        self._componentDeterminesBlockHeight[target] = True
+        b.p.axialExpTargetComponent = target.name
 
     def _isFuelLocked(self, b: "Block"):
         """Physical/realistic implementation reserved for ARMI plugin.
