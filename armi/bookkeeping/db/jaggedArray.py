@@ -57,7 +57,8 @@ class JaggedArray:
         for i, arr in enumerate(jaggedData):
             if isinstance(arr, (np.ndarray, list, tuple)):
                 if len(arr) == 0:
-                    nones.append(i)
+                    offsets.append(offset)
+                    shapes.append((0,))
                 else:
                     offsets.append(offset)
                     try:
@@ -173,19 +174,22 @@ class JaggedArray:
             List of numpy arrays with varying dimensions (i.e., jagged arrays)
         """
         unpackedJaggedData: List[Optional[np.ndarray]] = []
-        shapeIndices = [i for i, x in enumerate(self.shapes) if sum(x) != 0]
-        numElements = len(shapeIndices) + len(self.nones)
+        emptyShapeIndices = set(i for i, x in enumerate(self.shapes) if sum(x) == 0)
+        # determine how many of the size-0 arrays are also marked as None
+        overlap = set(self.nones).intersection(emptyShapeIndices)
+        numElements = len(self.shapes) + len(self.nones) - len(overlap)
         j = 0  # non-None element counter
         for i in range(numElements):
             if i in self.nones:
                 unpackedJaggedData.append(None)
+                if i in emptyShapeIndices:
+                    j += 1
             else:
-                k = shapeIndices[j]
                 unpackedJaggedData.append(
                     np.ndarray(
-                        self.shapes[k],
+                        self.shapes[j],
                         dtype=self.dtype,
-                        buffer=self.flattenedArray[self.offsets[k] :],
+                        buffer=self.flattenedArray[self.offsets[j] :],
                     )
                 )
                 j += 1
