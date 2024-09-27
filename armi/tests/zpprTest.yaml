@@ -18,12 +18,7 @@ settings:
   sortReactor: false # zpprs dont sor the right way. need better component sorting for slab...
   verbosity: extra
 
-# neutronics
-  epsEig: 1e-10
-  genXS: Neutron
-  xsBlockRepresentation: ComponentAverage1DSlab
-
-# unknown
+# cross section
   crossSectionControl:
     AA:
       geometry: 1D slab
@@ -46,3 +41,8 @@ settings:
       numInternalRings: 1
       numExternalRings: 1
       meshSubdivisionsPerCm: 10
+
+# neutronics
+  epsEig: 1e-10
+  genXS: Neutron
+  xsBlockRepresentation: ComponentAverage1DSlab

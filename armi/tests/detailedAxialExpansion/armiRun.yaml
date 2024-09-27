@@ -23,6 +23,20 @@ settings:
   versions:
     armi: uncontrolled
 
+# cross section
+  crossSectionControl:
+    DA:
+      geometry: 0D
+      blockRepresentation: Median
+      criticalBuckling: true
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+    XA:
+      xsFileLocation:
+        - ISOXA
+
 # database
   db: false
 
@@ -41,17 +55,3 @@ settings:
 # report
   genReports: false
   summarizeAssemDesign: false
-
-# unknown
-  crossSectionControl:
-    DA:
-      geometry: 0D
-      blockRepresentation: Median
-      criticalBuckling: true
-      externalDriver: true
-      useHomogenizedBlockComposition: false
-      numInternalRings: 1
-      numExternalRings: 1
-    XA:
-      xsFileLocation:
-        - ISOXA

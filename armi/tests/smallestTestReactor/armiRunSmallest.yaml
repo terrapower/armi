@@ -29,23 +29,7 @@ settings:
   versions:
     armi: uncontrolled
 
-# database
-  db: false
-
-# fuel cycle
-  fuelHandlerName: EquilibriumShuffler
-  jumpRingNum: 9
-
-# neutronics
-  epsFSAvg: 1e-06
-  epsFSPoint: 1e-06
-  loadPadElevation: 200.0
-
-# report
-  genReports: false
-  summarizeAssemDesign: false
-
-# unknown
+# cross section
   crossSectionControl:
     DA:
       geometry: 0D
@@ -71,3 +55,19 @@ settings:
         - gap
       numInternalRings: 1
       numExternalRings: 1
+
+# database
+  db: false
+
+# fuel cycle
+  fuelHandlerName: EquilibriumShuffler
+  jumpRingNum: 9
+
+# neutronics
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
+  loadPadElevation: 200.0
+
+# report
+  genReports: false
+  summarizeAssemDesign: false
