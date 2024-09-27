@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
+import typing
 
 from numpy import array
 
 from armi import runLog
+from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
@@ -69,6 +71,9 @@ class AxialExpansionChanger:
       for any other assembly type.
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
+
+    linked: typing.Optional[AssemblyAxialLinkage]
+    expansionData: typing.Optional[ExpansionData]
 
     def __init__(self, detailedAxialExpansion: bool = False):
         """
@@ -149,7 +154,7 @@ class AxialExpansionChanger:
                 b.completeInitialLoading()
 
     def performPrescribedAxialExpansion(
-        self, a, componentLst: list, percents: list, setFuel=True
+        self, a: Assembly, componentLst: list, percents: list, setFuel=True
     ):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
 
@@ -186,7 +191,7 @@ class AxialExpansionChanger:
 
     def performThermalAxialExpansion(
         self,
-        a,
+        a: Assembly,
         tempGrid: list,
         tempField: list,
         setFuel: bool = True,
@@ -233,7 +238,7 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
-    def setAssembly(self, a, setFuel=True, expandFromTinputToThot=False):
+    def setAssembly(self, a: Assembly, setFuel=True, expandFromTinputToThot=False):
         """Set the armi assembly to be changed and init expansion data class for assembly.
 
         Parameters
