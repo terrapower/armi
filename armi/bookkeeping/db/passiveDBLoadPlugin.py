@@ -32,6 +32,7 @@ class PassThroughYamlize(yamlize.Object):
 
 
 class PassiveDBLoadPlugin(plugins.ArmiPlugin):
+    """TODO: JOHN."""
 
     SKIP_BP_SECTIONS = []
     SKIP_PARAMS = {}

@@ -772,7 +772,6 @@ def defineCoreParameters():
     return pDefs
 
 
-# TODO: JOHN - Needs testing!
 def makeParametersReadOnly(r):
     """Convert all the paramters in a Reactor to read-only.
 

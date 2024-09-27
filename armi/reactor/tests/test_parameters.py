@@ -11,11 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the Parameters class."""
+"""Tests for assorted Parameters tools."""
 import copy
 import unittest
 
 from armi.reactor import parameters
+from armi.reactor.reactorParameters import makeParametersReadOnly
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.tests import TEST_ROOT
 
 
 class MockComposite:
@@ -502,3 +505,25 @@ class ParameterTests(unittest.TestCase):
         pcc = MockPCChild()
         with self.assertRaises(AssertionError):
             pcc.whatever = 33
+
+
+class TestMakeParametersReadOnly(unittest.TestCase):
+    def test_makeParametersReadOnly(self):
+        # load some random test reactor
+        _o, r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+
+        # prove we can edit various params at will
+        r.core.p.keff = 1.01
+        b = r.core.getFirstBlock()
+        b.p.power = 123.4
+
+        makeParametersReadOnly(r)
+
+        # now show we can no longer edit those parameters
+        with self.assertRaises(RuntimeError):
+            r.core.p.keff = 0.99
+
+        with self.assertRaises(RuntimeError):
+            b.p.power = 432.1
