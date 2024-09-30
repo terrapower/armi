@@ -55,11 +55,6 @@ settings:
 # database
   db: false
 
-# equilibrium
-  eqRingSchedule:
-    - 13
-    - 1
-
 # fuel cycle
   fuelHandlerName: EquilibriumShuffler
   jumpRingNum: 9

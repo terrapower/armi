@@ -15,11 +15,6 @@ settings:
   versions:
     armi: uncontrolled
 
-# equilibrium
-  eqRingSchedule:
-    - 13
-    - 1
-
 # fuel cycle
   jumpRingNum: 9
 
