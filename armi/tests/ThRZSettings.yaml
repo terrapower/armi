@@ -5,7 +5,6 @@ settings:
   burnSteps: 0
   comment: "Revised benchmark  "
   db: false
-  economics: false
   genXS: Neutron
   geomFile: ThRZGeom.xml
   groupStructure: ARMI45

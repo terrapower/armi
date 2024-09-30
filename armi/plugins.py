@@ -127,6 +127,7 @@ from armi.utils import flags
 
 if TYPE_CHECKING:
     from armi.reactor.composites import Composite
+    from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 
 
 HOOKSPEC = pluggy.HookspecMarker("armi")
@@ -660,6 +661,45 @@ class ArmiPlugin:
         -----
         The default :class:`~armi.reactor.ReactorPlugin` defines a ``"core"`` lookup
         and a ``"sfp"`` lookup, triggered to run after all other hooks have been run.
+        """
+
+    @staticmethod
+    @HOOKSPEC(firstresult=True)
+    def getAxialExpansionChanger() -> type["AxialExpansionChanger"]:
+        """Produce the class responsible for performing axial expansion.
+
+        Plugins can provide this hook to override or negate axial expansion.
+        Will be used during initial construction of the core and assemblies, and
+        can be a class to perform custom axial expansion routines.
+
+        The first object returned that is not ``None`` will be used.
+        Plugins are encouraged to add the ``tryfirst=True`` arguments to their
+        ``HOOKIMPL`` invocations to make sure their specific are earlier in the
+        hook call sequence.
+
+        Returns
+        -------
+        type of :class:`armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
+
+        Notes
+        -----
+        This hook **should not** provide an instance of the class. The construction
+        of the changer will be handled by applications and plugins that need it.
+
+        This hook should only be provided by one additional plugin in your application. Otherwise
+        the `order of hook execution <https://pluggy.readthedocs.io/en/stable/index.html#call-time-order>`_
+        may not provide the behavior you expect.
+
+        Examples
+        --------
+        >>> class MyPlugin(ArmiPlugin):
+        ...     @staticmethod
+        ...     @HOOKIMPL(tryfirst=True)
+        ...     def getAxialExpansionChanger():
+        ...         from myproject.physics import BespokeAxialExpansion
+        ...
+        ...         return BespokeAxialExpansion
+
         """
 
 
