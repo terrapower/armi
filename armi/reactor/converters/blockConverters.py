@@ -660,12 +660,16 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         blockName = f"Homogenized {blockType}"
         newBlock = copy.deepcopy(self._sourceBlock)
 
-        compFlags = newBlock.getComponents()[0].p.flags
+        compFlags = newBlock.getComponent(Flags.COOLANT).p.flags
+        outsideDuct = True
         for c in sorted(newBlock.getComponents(), reverse=True):
-            newBlock.remove(c, recomputeAreaFractions=False)
-            if c.hasFlags(Flags.DUCT):
-                ductIP = c.getDimension("ip")
-                break
+            if outsideDuct:
+                newBlock.remove(c, recomputeAreaFractions=False)
+                if c.hasFlags(Flags.DUCT):
+                    ductIP = c.getDimension("ip")
+                    outsideDuct = False
+            else:
+                compFlags = compFlags | c.p.flags
 
         # add pitch defining component with no area
         newBlock.add(
