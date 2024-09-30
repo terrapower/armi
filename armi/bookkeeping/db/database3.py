@@ -736,7 +736,7 @@ class Database3:
         bp : armi.reactor.Blueprints, optional
             If not provided one is read from the database
         statePointName : str, optional
-            Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
+            Statepoint name (e.g., "special" for "c00n00-special/")
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
@@ -819,7 +819,7 @@ class Database3:
         bp : armi.reactor.Blueprints, optional
             If not provided one is read from the database
         statePointName : str, optional
-            Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
+            Statepoint name (e.g., "special" for "c00n00-special/")
 
         Returns
         -------
