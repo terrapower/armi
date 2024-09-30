@@ -268,7 +268,7 @@ class AssemblyAxialLinkage:
         for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
             if linkdBlk is not None:
                 for otherC in iterSolidComponents(linkdBlk.getChildren()):
-                    if areAxiallyLinked(c, otherC):
+                    if self.areAxiallyLinked(c, otherC):
                         if lstLinkedC[ib] is not None:
                             errMsg = (
                                 "Multiple component axial linkages have been found for "
@@ -292,3 +292,34 @@ class AssemblyAxialLinkage:
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
             )
+
+    @staticmethod
+    def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
+        """Check if two components are axially linked.
+
+        Components are considered linked if the following are found to be true:
+
+        1. Both contain solid materials.
+        2. They have compatible types (e.g., ``Circle`` and ``Circle``).
+        3. Their multiplicities are the same.
+        4. The smallest inner bounding diameter of the two is less than the largest outer
+        bounding diameter of the two.
+
+        Parameters
+        ----------
+        componentA : :py:class:`Component <armi.reactor.components.component.Component>`
+            component of interest
+        componentB : :py:class:`Component <armi.reactor.components.component.Component>`
+            component to compare and see if is linked to componentA
+
+        Returns
+        -------
+        bool
+            Status of linkage check
+
+        See Also
+        --------
+        :func:`areAxiallyLinked` for more details. This method is provided to allow
+        subclasses the ability to override the linkage check.
+        """
+        return areAxiallyLinked(componentA, componentB)
