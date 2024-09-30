@@ -18,6 +18,3 @@ settings:
 
 # report
   genReports: false
-
-# unknown
-  fakeBad: 123456
