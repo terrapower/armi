@@ -12,13 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for assorted Parameters tools."""
+from glob import glob
+from shutil import copyfile
 import copy
+import os
 import unittest
 
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class MockComposite:
@@ -594,21 +598,27 @@ class ParamCollectionWhere(unittest.TestCase):
 
 class TestMakeParametersReadOnly(unittest.TestCase):
     def test_makeParametersReadOnly(self):
-        # load some random test reactor
-        _o, r = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        with TemporaryDirectoryChanger():
+            # copy test reactor to local
+            yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+            for yamlFile in yamls:
+                copyfile(yamlFile, os.path.basename(yamlFile))
 
-        # prove we can edit various params at will
-        r.core.p.keff = 1.01
-        b = r.core.getFirstBlock()
-        b.p.power = 123.4
+            # load some random test reactor
+            _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
 
-        makeParametersReadOnly(r)
+            # prove we can edit various params at will
+            r.core.p.keff = 1.01
+            b = r.core.getFirstBlock()
+            b.p.power = 123.4
 
-        # now show we can no longer edit those parameters
-        with self.assertRaises(RuntimeError):
-            r.core.p.keff = 0.99
+            makeParametersReadOnly(r, readOnly=True)
 
-        with self.assertRaises(RuntimeError):
-            b.p.power = 432.1
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
+
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1
+
+            makeParametersReadOnly(r, readOnly=False)
