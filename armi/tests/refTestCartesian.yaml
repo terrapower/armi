@@ -25,6 +25,3 @@ settings:
 
 # report
   summarizeAssemDesign: false
-
-# unknown
-  epsBurnTime: 0.001

@@ -68,6 +68,3 @@ settings:
 # report
   genReports: false
   summarizeAssemDesign: false
-
-# unknown
-  epsBurnTime: 0.001
