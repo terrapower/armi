@@ -341,8 +341,7 @@ class ExpansionData:
         c = b.getComponent(Flags.FUEL)
         if c is None:
             raise RuntimeError(f"No fuel component within {b}!")
-        self._componentDeterminesBlockHeight[c] = True
-        b.p.axialExpTargetComponent = c.name
+        self._setExpansionTarget(b, c)
 
     def isTargetComponent(self, c: "Component") -> bool:
         """Returns bool if c is a target component.
