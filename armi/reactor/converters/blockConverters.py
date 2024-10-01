@@ -892,7 +892,7 @@ def stripComponents(block, compFlags):
     for i, c in sorted(indexedComponents, reverse=True):
         if outsideComp:
             block.remove(c, recomputeAreaFractions=False)
-            if i == innerMostCompt:
+            if i == innerMostComp:
                 ductIP = c.getDimension("ip")
                 outsideComp = False
         else:
