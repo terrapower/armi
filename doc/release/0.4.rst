@@ -20,7 +20,7 @@ New Features
    matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
 #. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion.
    (`PR#1870 <https://github.com/terrapower/armi/pull/1870`_)
-#. Provide ``axialExpansionChanger.iterSolidComponents`` for iterating over solid components in a block.
+#. Provide ``axialExpansionChanger.iterSolidComponents`` for iterating over solid components in a block. (`PR#1920 <https://github.com/terrapower/armi/pull/1920>`_)
 #. TBD
 
 API Changes
@@ -51,6 +51,7 @@ Quality Work
 ------------
 #. Removing deprecated code ``axialUnitGrid``. (`PR#1809 <https://github.com/terrapower/armi/pull/1809>`_)
 #. Refactoring ``axialExpansionChanger``. (`PR#1861 <https://github.com/terrapower/armi/pull/1861>`_)
+#. Changes to make axial expansion related classes more extensible. (`PR#1920 <https://github.com/terrapower/armi/pull/1920>`_)
 #. TBD
 
 Changes that Affect Requirements
