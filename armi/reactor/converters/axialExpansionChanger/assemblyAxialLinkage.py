@@ -14,6 +14,7 @@
 
 import typing
 import dataclasses
+import functools
 import itertools
 
 from armi import runLog
@@ -230,6 +231,28 @@ class AssemblyAxialLinkage:
             for c in iterSolidComponents(b):
                 self._getLinkedComponents(b, c)
 
+    def _findComponentLinkedTo(
+        self, c: Component, otherBlock: typing.Optional[Block]
+    ) -> typing.Optional[Component]:
+        if otherBlock is None:
+            return None
+        candidate = None
+        # Iterate over all solid components in the other block that are linked to this one
+        areLinked = functools.partial(self.areAxiallyLinked, c)
+        for otherComp in filter(areLinked, iterSolidComponents(otherBlock)):
+            if candidate is None:
+                candidate = otherComp
+            else:
+                errMsg = (
+                    "Multiple component axial linkages have been found for "
+                    f"Component {c} in Block {c.parent} in Assembly {c.parent.parent}. "
+                    "This is indicative of an error in the blueprints! Linked "
+                    f"components found are {candidate} and {otherComp} in {otherBlock}"
+                )
+                runLog.error(msg=errMsg)
+                raise RuntimeError(errMsg)
+        return candidate
+
     def _getLinkedComponents(self, b: Block, c: Component):
         """Retrieve the axial linkage for component c.
 
@@ -245,22 +268,10 @@ class AssemblyAxialLinkage:
         RuntimeError
             multiple candidate components are found to be axially linked to a component
         """
-        lstLinkedC = AxialLink(None, None)
-        for ib, linkdBlk in enumerate(self.linkedBlocks[b]):
-            if linkdBlk is not None:
-                for otherC in iterSolidComponents(linkdBlk.getChildren()):
-                    if self.areAxiallyLinked(c, otherC):
-                        if lstLinkedC[ib] is not None:
-                            errMsg = (
-                                "Multiple component axial linkages have been found for "
-                                f"Component {c}; Block {b}; Assembly {b.parent}."
-                                " This is indicative of an error in the blueprints! Linked "
-                                f"components found are {lstLinkedC[ib]} and {otherC}"
-                            )
-                            runLog.error(msg=errMsg)
-                            raise RuntimeError(errMsg)
-                        lstLinkedC[ib] = otherC
-
+        linkedBlocks = self.linkedBlocks[b]
+        lowerC = self._findComponentLinkedTo(c, linkedBlocks.lower)
+        upperC = self._findComponentLinkedTo(c, linkedBlocks.upper)
+        lstLinkedC = AxialLink(lowerC, upperC)
         self.linkedComponents[c] = lstLinkedC
 
         if self.linkedBlocks[b].lower is None and lstLinkedC.lower is None:
