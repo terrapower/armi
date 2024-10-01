@@ -178,8 +178,8 @@ class AssemblyAxialLinkage:
         below this block.
     """
 
-    linkedBlocks: typing.Dict[Block, AxialLink[Block]]
-    linkedComponents: typing.Dict[Component, AxialLink[Component]]
+    linkedBlocks: dict[Block, AxialLink[Block]]
+    linkedComponents: dict[Component, AxialLink[Component]]
 
     def __init__(self, assem: "Assembly"):
         self.a = assem
