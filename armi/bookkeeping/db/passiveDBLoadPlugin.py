@@ -12,7 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TODO: JOHN."""
+"""
+Provides the ability to ignore parameters sections of blueprint files.
+
+This plugin can allow you to more easily open a database, because you can ignore sections of the
+blueprint files, and ignore any parameters as you want.
+
+This was designed to allow loading an ARMI database without the application that created it.
+"""
 import yamlize
 
 from armi import plugins
@@ -31,8 +38,21 @@ class PassThroughYamlize(yamlize.Object):
         )
 
 
+# TODO: JOHN needs testing!
 class PassiveDBLoadPlugin(plugins.ArmiPlugin):
-    """TODO: JOHN."""
+    """Provides the ability to ignore parameters sections of blueprint files.
+
+    This plugin allows you to more easily open a database, because you can ignore sections of the
+    blueprint files and as many of the parameters as you want.
+
+    This was designed to allow loading an ARMI database without the application that created it.
+
+    Notes
+    -----
+    Obviously, if you are ignoring huge groups of parameters or whole sections of the blueprints,
+    you are losing information. There is no way to claim you could use this plugin and still claim
+    full fidelity of your understanding of the reactor. ARMI does not support any such claims.
+    """
 
     SKIP_BP_SECTIONS = []
     SKIP_PARAMS = {}

@@ -782,6 +782,14 @@ def makeParametersReadOnly(r, readOnly=True):
     ----------
     r : Reactor
         Full reactor object, to be modified.
+    readOnly : bool, optional
+        Make all the parameters read-only or not (writable).
+
+    Notes
+    -----
+    Once you make one Reactor read-only, it will lead to side effects in all Reactors you open in
+    ARMI. So if you run this function once with `readOnly=True`, and you want to move on to other
+    things, run this method on your reactor again with `readOnly=False` to unclock ARMI.
     """
     for pdef0 in r.p.paramDefs:
         pdef0.readOnly = readOnly
