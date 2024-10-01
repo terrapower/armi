@@ -883,15 +883,16 @@ def stripComponents(block, compFlags):
     heterogeneous representation of the remaining components.
     """
     newBlock = copy.deepcopy(block)
+    avgBlockTemp = block.getAverageTempInC()
     mixtureFlags = newBlock.getComponent(Flags.COOLANT).p.flags
     innerMostComp = next(
-        i for i, c in enumerate(block.getComponents()) if c.hasFlags(compFlags)
+        i for i, c in enumerate(newBlock.getComponents()) if c.hasFlags(compFlags)
     )
     outsideComp = True
-    indexedComponents = [(i, c) for i, c in enumerate(sorted(block.getComponents()))]
+    indexedComponents = [(i, c) for i, c in enumerate(sorted(newBlock.getComponents()))]
     for i, c in sorted(indexedComponents, reverse=True):
         if outsideComp:
-            block.remove(c, recomputeAreaFractions=False)
+            newBlock.remove(c, recomputeAreaFractions=False)
             if i == innerMostComp:
                 ductIP = c.getDimension("ip")
                 outsideComp = False
@@ -903,8 +904,8 @@ def stripComponents(block, compFlags):
         components.Hexagon(
             "pitchComponent",
             "Void",
-            self._sourceBlock.getAverageTempInC(),
-            self._sourceBlock.getAverageTempInC(),
+            avgBlockTemp,
+            avgBlockTemp,
             ip=ductIP,
             op=ductIP,
         )
