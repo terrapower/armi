@@ -29,6 +29,7 @@ from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
+    AssemblyAxialLinkage,
     ExpansionData,
     getSolidComponents,
     iterSolidComponents,
@@ -983,7 +984,7 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
+class TestComponentLinks(AxialExpansionTestBase, unittest.TestCase):
     """Test axial linkage between components."""
 
     def setUp(self):
@@ -1315,3 +1316,66 @@ class TestAxialLinkHelper(unittest.TestCase):
         # No items left
         with self.assertRaises(StopIteration):
             next(genItems)
+
+
+class TestBlockLink(unittest.TestCase):
+    """Test the ability to link blocks in an assembly."""
+
+    def test_singleBlock(self):
+        """Test an edge case where a single block exists."""
+        b = _buildDummySodium(300, 50)
+        links = AssemblyAxialLinkage.getLinkedBlocks([b])
+        self.assertEqual(len(links), 1)
+        self.assertIn(b, links)
+        linked = links.pop(b)
+        self.assertIsNone(linked.lower)
+        self.assertIsNone(linked.upper)
+
+    def test_multiBlock(self):
+        """Test links with multiple blocks."""
+        N_BLOCKS = 5
+        blocks = [_buildDummySodium(300, 50) for _ in range(N_BLOCKS)]
+        links = AssemblyAxialLinkage.getLinkedBlocks(blocks)
+        first = blocks[0]
+        lowLink = links[first]
+        self.assertIsNone(lowLink.lower)
+        self.assertIs(lowLink.upper, blocks[1])
+        for ix in range(1, N_BLOCKS - 1):
+            current = blocks[ix]
+            below = blocks[ix - 1]
+            above = blocks[ix + 1]
+            link = links[current]
+            self.assertIs(link.lower, below)
+            self.assertIs(link.upper, above)
+        top = blocks[-1]
+        lastLink = links[top]
+        self.assertIsNone(lastLink.upper)
+        self.assertIs(lastLink.lower, blocks[-2])
+
+    def test_emptyBlocks(self):
+        """Test even smaller edge case when no blocks are passed."""
+        with self.assertRaises(ValueError):
+            AssemblyAxialLinkage.getLinkedBlocks([])
+
+    def test_onAssembly(self):
+        """Test assembly behavior is the same as sequence of blocks."""
+        assembly = HexAssembly("test")
+        N_BLOCKS = 5
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=N_BLOCKS)
+        assembly.spatialGrid.armiObject = assembly
+
+        blocks = []
+        for _ in range(N_BLOCKS):
+            b = _buildDummySodium(300, 10)
+            assembly.add(b)
+            blocks.append(b)
+
+        fromBlocks = AssemblyAxialLinkage.getLinkedBlocks(blocks)
+        fromAssem = AssemblyAxialLinkage.getLinkedBlocks(assembly)
+
+        self.assertSetEqual(set(fromBlocks), set(fromAssem))
+
+        for b, bLink in fromBlocks.items():
+            aLink = fromAssem[b]
+            self.assertIs(aLink.lower, bLink.lower)
+            self.assertIs(aLink.upper, bLink.upper)

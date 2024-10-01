@@ -14,6 +14,7 @@
 
 import typing
 import dataclasses
+import itertools
 
 from armi import runLog
 from armi.reactor.blocks import Block
@@ -183,71 +184,51 @@ class AssemblyAxialLinkage:
 
     def __init__(self, assem: "Assembly"):
         self.a = assem
-        self.linkedBlocks = {}
+        self.linkedBlocks = self.getLinkedBlocks(assem)
         self.linkedComponents = {}
         self._determineAxialLinkage()
+
+    @classmethod
+    def getLinkedBlocks(
+        cls,
+        blocks: typing.Sequence[Block],
+    ) -> dict[Block, AxialLink[Block]]:
+        """Produce a mapping showing how blocks are linked.
+
+        Parameters
+        ----------
+        blocks : sequence of armi.reactor.blocks.Block
+            Ordered sequence of blocks from bottom to top. Could just as easily be an
+            :class:`armi.reactor.assemblies.Assembly`.
+
+        Returns
+        -------
+        dict of Block -> AxialLink
+            Dictionary where keys are individual blocks and their corresponding values point
+            to blocks above and below.
+        """
+        nBlocks = len(blocks)
+        if nBlocks:
+            return cls._getLinkedBlocks(blocks, nBlocks)
+        raise ValueError("No blocks passed. Cannot determine links")
+
+    @staticmethod
+    def _getLinkedBlocks(
+        blocks: typing.Sequence[Block], nBlocks: int
+    ) -> dict[Block, AxialLink[Block]]:
+        # Use islice to avoid making intermediate lists of subsequences of blocks
+        lower = itertools.chain((None,), itertools.islice(blocks, 0, nBlocks - 1))
+        upper = itertools.chain(itertools.islice(blocks, 1, None), (None,))
+        links = {}
+        for low, mid, high in zip(lower, blocks, upper):
+            links[mid] = AxialLink(lower=low, upper=high)
+        return links
 
     def _determineAxialLinkage(self):
         """Gets the block and component based linkage."""
         for b in self.a:
-            self._getLinkedBlocks(b)
             for c in iterSolidComponents(b):
                 self._getLinkedComponents(b, c)
-
-    def _getLinkedBlocks(self, b: Block):
-        """Retrieve the axial linkage for block b.
-
-        Parameters
-        ----------
-        b : :py:class:`Block <armi.reactor.blocks.Block>`
-            block to determine axial linkage for
-
-        Notes
-        -----
-        - block linkage is determined by matching ztop/zbottom (see below)
-        - block linkage is stored in self.linkedBlocks[b]
-         _ _
-        |   |
-        | 2 |  Block 2 is linked to block 1.
-        |_ _|
-        |   |
-        | 1 |  Block 1 is linked to both block 0 and 1.
-        |_ _|
-        |   |
-        | 0 |  Block 0 is linked to block 1.
-        |_ _|
-        """
-        lowerLinkedBlock = None
-        upperLinkedBlock = None
-        for otherBlk in self.a:
-            if b.name != otherBlk.name:
-                if b.p.zbottom == otherBlk.p.ztop:
-                    lowerLinkedBlock = otherBlk
-                elif b.p.ztop == otherBlk.p.zbottom:
-                    upperLinkedBlock = otherBlk
-
-        self.linkedBlocks[b] = AxialLink(lowerLinkedBlock, upperLinkedBlock)
-
-        if lowerLinkedBlock is None:
-            runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
-                "is not linked to a block below!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                ),
-                single=True,
-            )
-        if upperLinkedBlock is None:
-            runLog.debug(
-                "Assembly {0:22s} at location {1:22s}, Block {2:22s}"
-                "is not linked to a block above!".format(
-                    str(self.a.getName()),
-                    str(self.a.getLocation()),
-                    str(b.p.flags),
-                ),
-                single=True,
-            )
 
     def _getLinkedComponents(self, b: Block, c: Component):
         """Retrieve the axial linkage for component c.
