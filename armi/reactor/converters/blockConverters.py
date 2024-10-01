@@ -658,31 +658,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         """Build a homogenized material of the components inside the duct."""
         blockType = self._sourceBlock.getType()
         blockName = f"Homogenized {blockType}"
-        newBlock = copy.deepcopy(self._sourceBlock)
-
-        compFlags = newBlock.getComponent(Flags.COOLANT).p.flags
-        outsideDuct = True
-        for c in sorted(newBlock.getComponents(), reverse=True):
-            if outsideDuct:
-                newBlock.remove(c, recomputeAreaFractions=False)
-                if c.hasFlags(Flags.DUCT):
-                    ductIP = c.getDimension("ip")
-                    outsideDuct = False
-            else:
-                compFlags = compFlags | c.p.flags
-
-        # add pitch defining component with no area
-        newBlock.add(
-            components.Hexagon(
-                "pitchComponent",
-                "Void",
-                self._sourceBlock.getAverageTempInC(),
-                self._sourceBlock.getAverageTempInC(),
-                ip=ductIP,
-                op=ductIP,
-            )
-        )
-
+        newBlock, mixtureFlags = stripComponents(self._sourceBlock, Flags.DUCT)
         outerDiam = getOuterDiamFromIDAndArea(0.0, newBlock.getArea())
         circle = components.Circle(
             blockName,
@@ -694,7 +670,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             mult=1,
         )
         circle.setNumberDensities(newBlock.getNumberDensities())
-        circle.p.flags = compFlags
+        circle.p.flags = mixtureFlags
         self.convertedBlock.add(circle)
 
     def _buildFirstRing(self, pinComponents):
@@ -879,3 +855,58 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
         rLast, bigRLast = rodRadius, distFromCenterComp
 
     return sorted(radiiFromRodCenter)
+
+
+def stripComponents(block, compFlags):
+    """
+    Remove all components from a block outside of the first component that matches compFlags.
+
+    Parameters
+    ----------
+    block : armi.reactor.blocks.Block
+        Source block from which to produce a modified copy
+    compFlags : armi.reactor.flags.Flags
+        Component flags to indicate which components to strip from the
+        block. All components outside of the first one that matches
+        compFlags are stripped.
+
+    Returns
+    -------
+    newBlock : armi.reactor.blocks.Block
+        Copy of source block with specified components stripped off
+
+    Notes
+    -----
+    This is often used for creating a partially heterogeneous representation
+    of a block. For example, one might want to treat everything inside of a
+    specific component (such as the duct) as homogenized, while keeping a
+    heterogeneous representation of the remaining components.
+    """
+    newBlock = copy.deepcopy(block)
+    mixtureFlags = newBlock.getComponent(Flags.COOLANT).p.flags
+    innerMostComp = next(
+        i for i, c in enumerate(block.getComponents()) if c.hasFlags(compFlags)
+    )
+    outsideComp = True
+    indexedComponents = [(i, c) for i, c in enumerate(sorted(block.getComponents()))]
+    for i, c in sorted(indexedComponents, reverse=True):
+        if outsideComp:
+            block.remove(c, recomputeAreaFractions=False)
+            if i == innerMostComp:
+                ductIP = c.getDimension("ip")
+                outsideComp = False
+        else:
+            mixtureFlags = mixtureFlags | c.p.flags
+
+    # add pitch defining component with no area
+    newBlock.add(
+        components.Hexagon(
+            "pitchComponent",
+            "Void",
+            block.getAverageTempInC(),
+            block.getAverageTempInC(),
+            ip=ductIP,
+            op=ductIP,
+        )
+    )
+    return newBlock, mixtureFlags
