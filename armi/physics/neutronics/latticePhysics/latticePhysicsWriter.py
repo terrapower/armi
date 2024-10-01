@@ -267,8 +267,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
                 continue  # skip LFPs here but add individual FPs below.
 
             if isinstance(subjectObject, components.Component):
-                # Heterogeneous number densities and temperatures
-                nucTemperatureInC = subjectObject.temperatureInC
+                if self.partiallyHeterogeneous and "Homogenized" in subjectObject.name:
+                    # Nuclide temperatures representing heterogeneous model component temperatures
+                    nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
+                else:
+                    # Heterogeneous number densities and temperatures
+                    nucTemperatureInC = subjectObject.temperatureInC
             else:
                 # Homogeneous number densities and temperatures
                 nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
