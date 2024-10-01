@@ -648,7 +648,10 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             nv += nvBlock * wt
         return nvt, nv
 
-class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(CylindricalComponentsAverageBlockCollection):
+
+class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(
+    CylindricalComponentsAverageBlockCollection
+):
     """
     Creates a representative block for the purpose of cross section generation with a one-
     dimensional cylindrical model where all material inside the duct is homogenized.
@@ -665,13 +668,13 @@ class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(Cylindri
         Nuclide temperatures from a median block-average temperature are used and the average burnup
         is evaluated across all blocks in the block list.
 
-        The average nuclide temperatures are calculated only for the homogenized region inside of 
+        The average nuclide temperatures are calculated only for the homogenized region inside of
         the duct. For the non-homogenized regions, the MC2 writer uses the component temperatures.
 
     Notes
     -----
     The representative block for this collection is the same as the parent. The only difference between
-    the two collection types is that this collection calculates average nuclide temperatures based only 
+    the two collection types is that this collection calculates average nuclide temperatures based only
     on the components that are inside of the duct.
     """
 
@@ -681,7 +684,7 @@ class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(Cylindri
         nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():
             wt = self.getWeight(block)
-            # remove the duct and intercoolant from the block before 
+            # remove the duct and intercoolant from the block before
             # calculating average nuclide temps
             newBlock, _mixtureFlags = stripComponents(block, Flags.DUCT)
             nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(
@@ -1564,7 +1567,9 @@ AVERAGE_BLOCK_COLLECTION = "Average"
 FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION = "FluxWeightedAverage"
 SLAB_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DSlab"
 CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DCylinder"
-CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION = "ComponentAverage1DCylinderPartiallyHeterogeneous"
+CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION = (
+    "ComponentAverage1DCylinderPartiallyHeterogeneous"
+)
 
 # Mapping between block collection string constants and their
 # respective block collection classes.
@@ -1581,8 +1586,10 @@ BLOCK_COLLECTIONS = {
 def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     """Build a block collection based on user settings and input."""
     blockRepresentation = xsSettings.blockRepresentation
-    if (blockRepresentation == CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION) and xsSettings.partiallyHeterogeneous:
-        blockRepresentation = CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION 
+    if (
+        blockRepresentation == CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION
+    ) and xsSettings.partiallyHeterogeneous:
+        blockRepresentation = CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION
     validBlockTypes = xsSettings.validBlockTypes
     averageByComponent = xsSettings.averageByComponent
     return BLOCK_COLLECTIONS[blockRepresentation](
