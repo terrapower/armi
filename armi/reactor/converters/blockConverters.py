@@ -903,8 +903,8 @@ def stripComponents(block, compFlags):
         components.Hexagon(
             "pitchComponent",
             "Void",
-            self._sourceBlock.getAverageTempInC(),
-            self._sourceBlock.getAverageTempInC(),
+            block.getAverageTempInC(),
+            block.getAverageTempInC(),
             ip=ductIP,
             op=ductIP,
         )
