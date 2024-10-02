@@ -192,7 +192,7 @@ class ReportInterface(interfaces.Interface):
                     dTime=a.p.dischargeTime,
                     residence=(a.p.dischargeTime - a.p.chargeTime),
                     cycle=a.p.chargeCycle,
-                    fiss=a.getFissileMass() * a.p.multiplicity,
+                    fiss=a.getFissileMass(),
                     bu=a.getMaxParam("percentBu"),
                     mult=a.p.multiplicity,
                 )
@@ -200,7 +200,7 @@ class ReportInterface(interfaces.Interface):
             totFis += a.getFissileMass() * a.p.multiplicity / 1000  # convert to kg
 
         runLog.important(
-            "Total full-core fissile inventory of {0} is {1:.4E} MT".format(
+            "Total SFP fissile inventory of {0} is {1:.4E} MT".format(
                 sfp, totFis / 1000.0
             )
         )
