@@ -4,7 +4,8 @@
 Block Parameters
 ****************
 
-This document lists all of the Block Parameters that are provided by the ARMI Framework.
+This document lists all of the :py:mod:`Block Parameters <armi.reactor.blockParameters>` that are provided by the ARMI
+Framework. See :py:mod:`armi.reactor.parameters` for use.
 
 .. exec::
    from armi.reactor import blocks
