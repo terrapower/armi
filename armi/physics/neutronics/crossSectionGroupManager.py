@@ -678,6 +678,16 @@ class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(
     on the components that are inside of the duct.
     """
 
+    def _getNewBlock(self):
+        newBlock = copy.deepcopy(self._selectCandidateBlock())
+        newBlock.name = "1D_CYL_PART_HET_AVG_" + newBlock.getMicroSuffix()
+        return newBlock
+
+    def _makeRepresentativeBlock(self):
+        """Build a representative fuel block based on component number densities."""
+        self.calcAvgNuclideTemperatures()
+        return CylindricalComponentsAverageBlockCollection._makeRepresentativeBlock(self)
+
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
         nvt = np.zeros(len(self.allNuclidesInProblem))
