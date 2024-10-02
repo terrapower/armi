@@ -71,6 +71,17 @@ of any such types. The type within a given array should be homogeneous. Examples
     >>> b.p.fuelTemp = numpy.array(range(217), dtype=float)
     >>> b.p.fuelTemp[58] = 600
 
+The parameter attributes can be access via the ``paramDefs`` property. Perhaps a user is
+curious about the units of a block parameter:
+
+    >>> defs = b.p.paramDefs
+    >>> defs["heightBOL"]
+    <ParamDef name:heightBOL collectionType:BlockParameterCollection units:cm assigned:29>
+
+    # Or, more simply:
+    >>> defs["heightBOL"].units
+    'cm'
+
 .. note::
 
     There have been many discussions on what the specific name of this module/system

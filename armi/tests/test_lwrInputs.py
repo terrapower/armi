@@ -63,7 +63,6 @@ class C5G7ReactorTests(unittest.TestCase):
             streamVal = mock.getStdout()
             self.assertIn("UraniumOxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
-            self.assertIn("invalid settings: fakeBad", streamVal, msg=streamVal)
 
             # test that there are 100 of each high, medium, and low MOX pins
             fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)

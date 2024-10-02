@@ -185,7 +185,8 @@ def _toString(cls, typeSpec):
     -----
     This converts a flag from ``Flags.A|B`` to ``'A B'``
     """
-    return str(typeSpec).split("{}.".format(cls.__name__))[1].replace("|", " ")
+    strings = str(typeSpec).split("{}.".format(cls.__name__))[1]
+    return " ".join(sorted(strings.split("|")))
 
 
 class Flags(Flag):

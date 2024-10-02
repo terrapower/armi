@@ -1256,16 +1256,6 @@ class Operator:
         pathTools.copyOrWarn(
             "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder
         )
-        pathTools.copyOrWarn(
-            "Flow history for snapshot",
-            self.cs.caseTitle + ".flow_history.txt",
-            newFolder,
-        )
-        pathTools.copyOrWarn(
-            "Pressure history for snapshot",
-            self.cs.caseTitle + ".pressure_history.txt",
-            newFolder,
-        )
 
     @staticmethod
     def setStateToDefault(cs):

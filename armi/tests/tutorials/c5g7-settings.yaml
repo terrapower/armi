@@ -1,16 +1,20 @@
 settings:
+# global
   availabilityFactor: 0.9
-  fakeBad: 123456
-  power: 1000000000.0
+  buGroups:
+    - 100
+  burnSteps: 2
+  comment: C5G7 LWR Benchmark inputs
   cycleLength: 411.11
   loadingFile: c5g7-blueprints.yaml
   nCycles: 10
-  burnSteps: 2
-  buGroups:
-    - 100
-  comment: C5G7 LWR Benchmark inputs
-  genXS: Neutron
   numProcessors: 1
-  genReports: false
+  power: 1000000000.0
   versions:
     armi: uncontrolled
+
+# neutronics
+  genXS: Neutron
+
+# report
+  genReports: false

@@ -885,6 +885,11 @@ class FuelHandler:
         """
         Perform swaps on a list of assemblies.
 
+        Parameters
+        ----------
+        assemList: list
+            A list of assemblies to be shuffled.
+
         Notes
         -----
         [goingOut,inter1,inter2,goingIn]  will go to
@@ -899,16 +904,15 @@ class FuelHandler:
         # first check for duplicates
         for assem in assemList:
             if assemList.count(assem) != 1:
-                runLog.extra("Warning: %s is in the cascade more than once!" % assem)
+                runLog.warning(f"{assem} is in the cascade more than once.")
 
-        # now swap.
+        # now swap
         levels = len(assemList)
         for level in range(levels - 1):
             if not assemList[level + 1]:
-                # If None in the cascade, just skip it. this will lead to slightly unintended shuffling if
-                # the user wasn't careful enough. Their problem.
-                runLog.extra(
-                    "Skipping level %d in the cascade because it is none" % (level + 1)
+                runLog.info(
+                    f"Skipping level {level + 1} in the cascade because it is None. Be careful, "
+                    "this might cause an unexpected shuffling order."
                 )
                 continue
             self.swapAssemblies(assemList[0], assemList[level + 1])
