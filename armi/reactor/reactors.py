@@ -635,24 +635,6 @@ class Core(composites.Composite):
                     label="cannot dereference: lost block",
                 )
 
-    def removeAllAssemblies(self, discharge=True):
-        """
-        Clears the core.
-
-        Notes
-        -----
-        must clear auxiliary bookkeeping lists as well or else a regeneration step will
-        auto-add assemblies back in.
-        """
-        assems = set(self)
-        for a in assems:
-            self.removeAssembly(a, discharge)
-        if hasattr(self.parent, "excore") and self.parent.excore.get("sfp"):
-            self.parent.excore.sfp.removeAll()
-        self.blocksByName = {}
-        self.assembliesByName = {}
-        self.parent.p.maxAssemNum = 0
-
     def normalizeNames(self, startIndex=0):
         """
         Renumber and rename all the Assemblies and Blocks.

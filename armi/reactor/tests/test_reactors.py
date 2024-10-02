@@ -1149,15 +1149,6 @@ class HexReactorTests(ReactorTests):
         with self.assertRaises(ValueError):
             self.r.core.geomType
 
-    def test_removeAllAssemblies(self):
-        self.assertGreater(len(self.r.core.blocksByName), 100)
-        self.assertGreater(len(self.r.core.assembliesByName), 12)
-
-        self.r.core.removeAllAssemblies()
-
-        self.assertEqual(0, len(self.r.core.blocksByName))
-        self.assertEqual(0, len(self.r.core.assembliesByName))
-
     def test_pinCoordsAllBlocks(self):
         """Make sure all blocks can get pin coords."""
         for b in self.r.core.getBlocks():
