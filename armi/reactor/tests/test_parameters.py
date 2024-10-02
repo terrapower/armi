@@ -621,4 +621,5 @@ class TestMakeParametersReadOnly(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 b.p.power = 432.1
 
+            # needed so that futher tests can run
             makeParametersReadOnly(r, readOnly=False)

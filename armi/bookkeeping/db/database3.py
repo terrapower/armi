@@ -793,7 +793,6 @@ class Database3:
 
         return root
 
-    # TODO: JOHN - Needs testing!
     def loadReadOnly(
         self,
         cycle,
