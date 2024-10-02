@@ -38,6 +38,14 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(flags.Flags.toString(f), "FUEL")
         self.assertEqual(f, flags.Flags.fromString("FUEL"))
 
+    def test_toStringAlphabetical(self):
+        """Ensure that, for multiple flags, toString() returns them in alphabetical order."""
+        flagz = flags.Flags.AXIAL | flags.Flags.LOWER
+        self.assertEqual(flags.Flags.toString(flagz), "AXIAL LOWER")
+
+        flagz = flags.Flags.LOWER | flags.Flags.AXIAL
+        self.assertEqual(flags.Flags.toString(flagz), "AXIAL LOWER")
+
     def test_fromStringStrict(self):
         self._help_fromString(flags.Flags.fromString)
         with self.assertRaises(flags.InvalidFlagsError):
