@@ -38,7 +38,6 @@ class PassThroughYamlize(yamlize.Object):
         )
 
 
-# TODO: JOHN needs testing!
 class PassiveDBLoadPlugin(plugins.ArmiPlugin):
     """Provides the ability to ignore parameters sections of blueprint files.
 
@@ -61,8 +60,9 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineBlueprintsSections():
         """Ignore a pre-determined set of blueprint sections."""
+        skips = []
         for skippedBp in PassiveDBLoadPlugin.SKIP_BP_SECTIONS:
-            skips = [
+            skips.append(
                 (
                     skippedBp.replace(" ", ""),
                     yamlize.Attribute(
@@ -70,7 +70,7 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
                     ),
                     PassThroughYamlize,
                 )
-            ]
+            )
 
         return skips
 
