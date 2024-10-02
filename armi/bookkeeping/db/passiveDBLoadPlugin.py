@@ -49,8 +49,8 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
     Notes
     -----
     Obviously, if you are ignoring huge groups of parameters or whole sections of the blueprints,
-    you are losing information. There is no way to claim you could use this plugin and still claim
-    full fidelity of your understanding of the reactor. ARMI does not support any such claims.
+    you are losing information. There is no way to use this plugin and still claim full fidelity of
+    your understanding of the reactor. ARMI does not support any such claims.
     """
 
     SKIP_BP_SECTIONS = []
