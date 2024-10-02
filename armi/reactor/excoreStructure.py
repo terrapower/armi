@@ -52,7 +52,7 @@ class ExcoreStructure(Composite):
         assem : ArmiObject
             Any generic ArmiObject to add to the structure.
         loc : LocationBase, optional
-            The location on this structure's grid. If ommited, will come from the object.
+            The location on this structure's grid. If omitted, will come from the object.
         """
         # if a location is not provided, we demand the object has one
         if loc is None:
