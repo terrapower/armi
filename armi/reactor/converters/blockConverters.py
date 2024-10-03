@@ -886,7 +886,9 @@ def stripComponents(block, compFlags):
     avgBlockTemp = block.getAverageTempInC()
     mixtureFlags = newBlock.getComponent(Flags.COOLANT).p.flags
     innerMostComp = next(
-        i for i, c in enumerate(sorted(newBlock.getComponents())) if c.hasFlags(compFlags)
+        i
+        for i, c in enumerate(sorted(newBlock.getComponents()))
+        if c.hasFlags(compFlags)
     )
     outsideComp = True
     indexedComponents = [(i, c) for i, c in enumerate(sorted(newBlock.getComponents()))]

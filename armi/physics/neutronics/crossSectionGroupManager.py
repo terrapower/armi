@@ -686,7 +686,9 @@ class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(
     def _makeRepresentativeBlock(self):
         """Build a representative fuel block based on component number densities."""
         self.calcAvgNuclideTemperatures()
-        return CylindricalComponentsAverageBlockCollection._makeRepresentativeBlock(self)
+        return CylindricalComponentsAverageBlockCollection._makeRepresentativeBlock(
+            self
+        )
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
