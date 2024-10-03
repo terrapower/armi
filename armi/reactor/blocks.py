@@ -2137,13 +2137,9 @@ class HexBlock(Block):
             )
 
         numPins = self.getNumPins()
-        hexRings = [3 * r * (r - 1) + 1 for r in range(1, 11)]
-        for i in range(len(hexRings) - 1):
-            if numPins > hexRings[i] and numPins < hexRings[i + 1]:
-                # round numPins up
-                numPins = hexRings[i + 1]
-        # Pin numbers start at 1.
-        rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
+        hexRings = hexagon.numRingsToHoldNumCells(numPins)
+        fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
+        rotateIndexLookup = dict(zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1)))
 
         # Look up the current orientation and add this to it. The math below just rotates
         # from the reference point so we need a total rotation.
@@ -2151,7 +2147,7 @@ class HexBlock(Block):
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
-        for pinNum in range(2, numPins + 1):
+        for pinNum in range(2, fullNumPins + 1):
             if rotNum == 0:
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
@@ -2166,7 +2162,7 @@ class HexBlock(Block):
         if not justCompute:
             self.setRotationNum(rotNum)
             self.p["pinLocation"] = [
-                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+                rotateIndexLookup[pinNum] for pinNum in range(1, fullNumPins + 1)
             ]
 
         return rotateIndexLookup
