@@ -2139,7 +2139,9 @@ class HexBlock(Block):
         numPins = self.getNumPins()
         hexRings = hexagon.numRingsToHoldNumCells(numPins)
         fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
-        rotateIndexLookup = dict(zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1)))
+        rotateIndexLookup = dict(
+            zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1))
+        )
 
         # Look up the current orientation and add this to it. The math below just rotates
         # from the reference point so we need a total rotation.
