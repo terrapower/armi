@@ -144,7 +144,7 @@ class SystemBlueprint(yamlize.Object):
         """
         from armi.reactor import reactors  # avoid circular import
 
-        runLog.info("Constructing the `{}`".format(self.name))
+        runLog.info(f"Constructing the `{self.name}`")
 
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
@@ -196,9 +196,7 @@ class SystemBlueprint(yamlize.Object):
         return system
 
     def _loadAssemblies(self, cs, container, gridContents, bp):
-        runLog.header(
-            "=========== Adding Assemblies to {} ===========".format(container)
-        )
+        runLog.header(f"=========== Adding Assemblies to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
@@ -232,9 +230,7 @@ class SystemBlueprint(yamlize.Object):
         # (unless specified on input)
         if not gridDesign.latticeDimensions:
             runLog.info(
-                "Updating spatial grid pitch data for {} geometry".format(
-                    container.geomType
-                )
+                f"Updating spatial grid pitch data for {container.geomType} geometry"
             )
             if container.geomType == geometry.GeomType.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
@@ -258,26 +254,21 @@ def summarizeMaterialData(container):
         Any Core object with Blocks and Components defined.
     """
     runLog.header(
-        "=========== Summarizing Source of Material Data for {} ===========".format(
-            container
-        )
+        f"=========== Summarizing Source of Material Data for {container} ==========="
     )
     materialNames = set()
     materialData = []
     for c in container.iterComponents():
         if c.material.name in materialNames:
             continue
-        materialData.append((c.material.name, c.material.DATA_SOURCE, False))
+        materialData.append((c.material.name, c.material.DATA_SOURCE))
         materialNames.add(c.material.name)
+
     materialData = sorted(materialData)
     runLog.info(
         tabulate.tabulate(
             data=materialData,
-            headers=[
-                "Material Name",
-                "Source Location",
-                "Property Data was Modified\nfrom the Source?",
-            ],
+            headers=["Material Name", "Source Location"],
             tableFmt="armi",
         )
     )
