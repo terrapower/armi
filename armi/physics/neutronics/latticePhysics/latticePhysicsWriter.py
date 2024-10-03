@@ -110,6 +110,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.xsId = representativeBlock.getMicroSuffix()
         self.xsSettings = self.cs[CONF_CROSS_SECTION][self.xsId]
         self.mergeIntoClad = self.xsSettings.mergeIntoClad
+        self.mergeIntoFuel = self.xsSettings.mergeIntoFuel
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
