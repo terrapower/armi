@@ -892,16 +892,16 @@ def stripComponents(block, compFlags):
     avgBlockTemp = block.getAverageTempInC()
     mixtureFlags = newBlock.getComponent(Flags.COOLANT).p.flags
     innerMostComp = next(
-        i for i, c in enumerate(newBlock.getComponents()) if c.hasFlags(compFlags)
+        i for i, c in enumerate(sorted(newBlock.getComponents())) if c.hasFlags(compFlags)
     )
     outsideComp = True
     indexedComponents = [(i, c) for i, c in enumerate(sorted(newBlock.getComponents()))]
     for i, c in sorted(indexedComponents, reverse=True):
         if outsideComp:
-            newBlock.remove(c, recomputeAreaFractions=False)
             if i == innerMostComp:
                 ductIP = c.getDimension("ip")
                 outsideComp = False
+            newBlock.remove(c, recomputeAreaFractions=False)
         else:
             mixtureFlags = mixtureFlags | c.p.flags
 
