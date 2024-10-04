@@ -122,11 +122,7 @@ class TestReactorBlueprints(unittest.TestCase):
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
-        expectedMaterialData = [
-            ("Custom", "ARMI", False),
-            ("HT9", "ARMI", False),
-            ("UZr", "ARMI", False),
-        ]
+        expectedMaterialData = [("Custom", "ARMI"), ("HT9", "ARMI"), ("UZr", "ARMI")]
         core, _sfp = self._setupReactor()
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
