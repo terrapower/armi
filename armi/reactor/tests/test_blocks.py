@@ -1897,7 +1897,15 @@ class HexBlock_TestCase(unittest.TestCase):
         r.core.add(a, loc1)
 
     def test_cornersUp(self):
+        # check corners-up
         self.assertTrue(self.hexBlock.cornersUp())
+
+        # replace the spatialGrid with one to make it flats-up
+        grid0 = grids.HexGrid.fromPitch(
+            self.hexBlock.getPinPitch(cold=True), numRings=0, cornersUp=False
+        )
+        self.hexBlock.spatialGrid = grid0
+        self.assertFalse(self.hexBlock.cornersUp())
 
     def test_getArea(self):
         """Test that we can correctly calculate the area of a hexagonal block.
