@@ -2136,10 +2136,12 @@ class HexBlock(Block):
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
 
-        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
-        # cladding count.
-        numPins = self.getNumComponents(Flags.CLAD)
-        rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
+        numPins = self.getNumPins()
+        hexRings = hexagon.numRingsToHoldNumCells(numPins)
+        fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
+        rotateIndexLookup = dict(
+            zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1))
+        )
 
         # Look up the current orientation and add this to it. The math below just rotates
         # from the reference point so we need a total rotation.
@@ -2147,7 +2149,7 @@ class HexBlock(Block):
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
-        for pinNum in range(2, numPins + 1):
+        for pinNum in range(2, fullNumPins + 1):
             if rotNum == 0:
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
@@ -2162,7 +2164,7 @@ class HexBlock(Block):
         if not justCompute:
             self.setRotationNum(rotNum)
             self.p["pinLocation"] = [
-                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+                rotateIndexLookup[pinNum] for pinNum in range(1, fullNumPins + 1)
             ]
 
         return rotateIndexLookup
