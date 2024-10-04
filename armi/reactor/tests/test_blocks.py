@@ -1543,12 +1543,8 @@ class Block_TestCase(unittest.TestCase):
                 "It adds to {1}".format(initialM[elemental], newMass, elemental),
             )
 
-    def test_setPitch(self):
-        r"""
-        Checks consistency after adjusting pitch.
-
-        Needed to verify fix to Issue #165.
-        """
+    def test_setPitchDoesNotAffectBOL(self):
+        """Verify that changing a Blocks pitch doesn't alter physical parameters defined at BOL."""
         b = self.block
         moles1 = b.p.molesHmBOL
         b.setPitch(17.5)
