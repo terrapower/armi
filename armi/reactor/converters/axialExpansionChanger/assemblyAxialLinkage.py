@@ -89,8 +89,8 @@ Comp = typing.TypeVar("Comp", Block, Component)
 class AxialLink(typing.Generic[Comp]):
     """Small class for named references to objects above and below a specific object.
 
-    Axial expansion in ARMI works by identifying what objects occupy the same space axially.
-    For components, what components in the blocks above and below axially align? This is used
+    Axial expansion in ARMI works by identifying what objects occupy the same axial space.
+    For components in blocks, identify which above and below axially align. This is used
     to determine what, if any, mass needs to be re-assigned across blocks during expansion.
     For blocks, the linking determines what blocks need to move as a result of a specific block's
     axial expansion.
