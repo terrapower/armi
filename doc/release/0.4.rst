@@ -12,6 +12,7 @@ New Features
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Use ``Block.getNumPins()`` in ``HexBlock._rotatePins()``. (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. Provide utilities for determining location of a rotated object in a hexagonal lattice (``getIndexOfRotatedCell``). (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. Provide ``Parameter.hasCategory`` for quickly checking if a parameter is defined with a given category. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
