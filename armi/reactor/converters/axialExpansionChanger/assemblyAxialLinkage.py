@@ -25,6 +25,10 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
 )
 
 
+if typing.TYPE_CHECKING:
+    from armi.reactor.assemblies import Assembly
+
+
 def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     """Determine axial component linkage for two components.
 
@@ -152,10 +156,6 @@ class AxialLink(typing.Generic[Comp]):
 
     def __iter__(self):
         return iter([self.lower, self.upper])
-
-
-if typing.TYPE_CHECKING:
-    from armi.reactor.assemblies import Assembly
 
 
 class AssemblyAxialLinkage:
