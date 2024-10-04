@@ -25,10 +25,10 @@ import yamlize
 from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor import assemblies
-from armi.reactor.flags import Flags
+from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor.blueprints import blockBlueprint
-from armi.reactor import grids
+from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
@@ -247,8 +247,7 @@ class AssemblyBlueprint(yamlize.Object):
 
         Returns
         -------
-        bool
-            Result of the check
+        bool: Result of the check
         """
         return bool(value != "" and value is not None)
 
@@ -280,29 +279,35 @@ class AssemblyBlueprint(yamlize.Object):
         b.setB10VolParam(cs[CONF_INPUT_HEIGHTS_HOT])
         return b
 
-    def _checkParamConsistency(self):
+    def _checkParamConsistency(self) -> None:
         """Check that the number of block params specified is equal to the number of blocks specified."""
+        # general things to check
         paramsToCheck = {
             "mesh points": self.axialMeshPoints,
             "heights": self.height,
             "xs types": self.xsTypes,
         }
 
-        for mod in [self.materialModifications] + list(
-            self.materialModifications.byComponent.values()
-        ):
-            for modName, modList in mod.items():
-                paramName = "material modifications for {}".format(modName)
+        # check high-level mat mods
+        for modName, modList in self.materialModifications.items():
+            paramName = f"mat mod for {modName}"
+            paramsToCheck[paramName] = modList
+
+        # check by-component mat mods
+        for comp in self.materialModifications.byComponent.values():
+            for modName, modList in comp.items():
+                paramName = f"material modifications for {modName}"
                 paramsToCheck[paramName] = modList
 
+        # perform the check
         for paramName, blockVals in paramsToCheck.items():
             if len(self.blocks) != len(blockVals):
-                raise ValueError(
-                    "Assembly {} had {} blocks, but {} {}. These numbers should be equal. "
-                    "Check input for errors.".format(
-                        self.name, len(self.blocks), len(blockVals), paramName
-                    )
+                msg = (
+                    f"Assembly {self.name} had {len(self.blocks)} block(s), but {len(blockVals)} "
+                    f"'{paramName}'. These numbers should be equal. Check input for errors."
                 )
+                runLog.error(msg)
+                raise ValueError(msg)
 
 
 for paramDef in parameters.forType(assemblies.Assembly).inCategory(
