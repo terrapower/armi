@@ -1785,6 +1785,13 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
+    def cornersUp(self):
+        """Determine if the hex shape of is corners up or flats up, in relation to the Y axis."""
+        if self.spatialGrid is None:
+            return None
+
+        return self.spatialGrid._unitSteps[0][1] != 0.0
+
     def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.

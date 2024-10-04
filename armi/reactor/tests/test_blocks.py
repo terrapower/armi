@@ -1876,29 +1876,32 @@ class TestNegativeVolume(unittest.TestCase):
 class HexBlock_TestCase(unittest.TestCase):
     def setUp(self):
         _ = settings.Settings()
-        self.HexBlock = blocks.HexBlock("TestHexBlock")
+        self.hexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
-        self.HexBlock.add(self.hexComponent)
-        self.HexBlock.add(
+        self.hexBlock.add(self.hexComponent)
+        self.hexBlock.add(
             components.Circle(
                 "clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0
             )
         )
-        self.HexBlock.add(
+        self.hexBlock.add(
             components.Circle(
                 "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0
             )
         )
-        self.HexBlock.add(
+        self.hexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
-        self.HexBlock.autoCreateSpatialGrids()
+        self.hexBlock.autoCreateSpatialGrids()
         r = tests.getEmptyHexReactor()
         a = makeTestAssembly(1, 1)
-        a.add(self.HexBlock)
+        a.add(self.hexBlock)
         loc1 = r.core.spatialGrid[0, 1, 0]
         r.core.add(a, loc1)
+
+    def test_cornersUp(self):
+        self.assertTrue(self.hexBlock.cornersUp())
 
     def test_getArea(self):
         """Test that we can correctly calculate the area of a hexagonal block.
@@ -1936,7 +1939,7 @@ class HexBlock_TestCase(unittest.TestCase):
             :id: T_ARMI_BLOCK_HEX1
             :tests: R_ARMI_BLOCK_HEX
         """
-        pitch_comp_type = self.HexBlock.PITCH_COMPONENT_TYPE[0]
+        pitch_comp_type = self.hexBlock.PITCH_COMPONENT_TYPE[0]
         self.assertEqual(pitch_comp_type.__name__, "Hexagon")
 
     def test_coords(self):
@@ -1947,17 +1950,17 @@ class HexBlock_TestCase(unittest.TestCase):
             :id: T_ARMI_BLOCK_POSI1
             :tests: R_ARMI_BLOCK_POSI
         """
-        core = self.HexBlock.core
-        a = self.HexBlock.parent
+        core = self.hexBlock.core
+        a = self.hexBlock.parent
         loc1 = core.spatialGrid[0, 1, 0]
         a.spatialLocator = loc1
-        x0, y0 = self.HexBlock.coords()
+        x0, y0 = self.hexBlock.coords()
         a.spatialLocator = core.spatialGrid[0, -1, 0]  # symmetric
-        x2, y2 = self.HexBlock.coords()
+        x2, y2 = self.hexBlock.coords()
         a.spatialLocator = loc1
-        self.HexBlock.p.displacementX = 0.01
-        self.HexBlock.p.displacementY = 0.02
-        x1, y1 = self.HexBlock.coords()
+        self.hexBlock.p.displacementX = 0.01
+        self.hexBlock.p.displacementY = 0.02
+        x1, y1 = self.hexBlock.coords()
 
         # make sure displacements are working
         self.assertAlmostEqual(x1 - x0, 1.0)
@@ -1968,7 +1971,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(y0, -y2)
 
     def test_getNumPins(self):
-        self.assertEqual(self.HexBlock.getNumPins(), 169)
+        self.assertEqual(self.hexBlock.getNumPins(), 169)
 
     def test_block_dims(self):
         """
@@ -1978,58 +1981,58 @@ class HexBlock_TestCase(unittest.TestCase):
             :id: T_ARMI_BLOCK_DIMS
             :tests: R_ARMI_BLOCK_DIMS
         """
-        self.assertAlmostEqual(4316.582, self.HexBlock.getVolume(), 3)
-        self.assertAlmostEqual(70.6, self.HexBlock.getPitch(), 1)
-        self.assertAlmostEqual(4316.582, self.HexBlock.getMaxArea(), 3)
+        self.assertAlmostEqual(4316.582, self.hexBlock.getVolume(), 3)
+        self.assertAlmostEqual(70.6, self.hexBlock.getPitch(), 1)
+        self.assertAlmostEqual(4316.582, self.hexBlock.getMaxArea(), 3)
 
-        self.assertEqual(70, self.HexBlock.getDuctIP())
-        self.assertEqual(70.6, self.HexBlock.getDuctOP())
+        self.assertEqual(70, self.hexBlock.getDuctIP())
+        self.assertEqual(70.6, self.hexBlock.getDuctOP())
 
-        self.assertAlmostEqual(34.273, self.HexBlock.getPinToDuctGap(), 3)
-        self.assertEqual(0.11, self.HexBlock.getPinPitch())
-        self.assertAlmostEqual(300.889, self.HexBlock.getWettedPerimeter(), 3)
-        self.assertAlmostEqual(4242.184, self.HexBlock.getFlowArea(), 3)
-        self.assertAlmostEqual(56.395, self.HexBlock.getHydraulicDiameter(), 3)
+        self.assertAlmostEqual(34.273, self.hexBlock.getPinToDuctGap(), 3)
+        self.assertEqual(0.11, self.hexBlock.getPinPitch())
+        self.assertAlmostEqual(300.889, self.hexBlock.getWettedPerimeter(), 3)
+        self.assertAlmostEqual(4242.184, self.hexBlock.getFlowArea(), 3)
+        self.assertAlmostEqual(56.395, self.hexBlock.getHydraulicDiameter(), 3)
 
     def test_symmetryFactor(self):
         # full hex
-        self.HexBlock.spatialLocator = self.HexBlock.core.spatialGrid[2, 0, 0]
-        self.HexBlock.clearCache()
-        self.assertEqual(1.0, self.HexBlock.getSymmetryFactor())
-        a0 = self.HexBlock.getArea()
-        v0 = self.HexBlock.getVolume()
-        m0 = self.HexBlock.getMass()
+        self.hexBlock.spatialLocator = self.hexBlock.core.spatialGrid[2, 0, 0]
+        self.hexBlock.clearCache()
+        self.assertEqual(1.0, self.hexBlock.getSymmetryFactor())
+        a0 = self.hexBlock.getArea()
+        v0 = self.hexBlock.getVolume()
+        m0 = self.hexBlock.getMass()
 
         # 1/3 symmetric
-        self.HexBlock.spatialLocator = self.HexBlock.core.spatialGrid[0, 0, 0]
-        self.HexBlock.clearCache()
-        self.assertEqual(3.0, self.HexBlock.getSymmetryFactor())
-        self.assertEqual(a0 / 3.0, self.HexBlock.getArea())
-        self.assertEqual(v0 / 3.0, self.HexBlock.getVolume())
-        self.assertAlmostEqual(m0 / 3.0, self.HexBlock.getMass())
+        self.hexBlock.spatialLocator = self.hexBlock.core.spatialGrid[0, 0, 0]
+        self.hexBlock.clearCache()
+        self.assertEqual(3.0, self.hexBlock.getSymmetryFactor())
+        self.assertEqual(a0 / 3.0, self.hexBlock.getArea())
+        self.assertEqual(v0 / 3.0, self.hexBlock.getVolume())
+        self.assertAlmostEqual(m0 / 3.0, self.hexBlock.getMass())
 
     def test_retainState(self):
         """Ensure retainState restores params and spatialGrids."""
-        self.HexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
-        self.HexBlock.setType("intercoolant")
-        with self.HexBlock.retainState():
-            self.HexBlock.setType("fuel")
-            self.HexBlock.spatialGrid.changePitch(2.0)
-        self.assertAlmostEqual(self.HexBlock.spatialGrid.pitch, 1.0)
-        self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
+        self.hexBlock.spatialGrid = grids.HexGrid.fromPitch(1.0)
+        self.hexBlock.setType("intercoolant")
+        with self.hexBlock.retainState():
+            self.hexBlock.setType("fuel")
+            self.hexBlock.spatialGrid.changePitch(2.0)
+        self.assertAlmostEqual(self.hexBlock.spatialGrid.pitch, 1.0)
+        self.assertTrue(self.hexBlock.hasFlags(Flags.INTERCOOLANT))
 
     def test_getPinCoords(self):
-        blockPitch = self.HexBlock.getPitch()
-        pinPitch = self.HexBlock.getPinPitch()
-        nPins = self.HexBlock.getNumPins()
+        blockPitch = self.hexBlock.getPitch()
+        pinPitch = self.hexBlock.getPinPitch()
+        nPins = self.hexBlock.getNumPins()
         side = hexagon.side(blockPitch)
-        xyz = self.HexBlock.getPinCoordinates()
+        xyz = self.hexBlock.getPinCoordinates()
         x, y, _z = zip(*xyz)
         self.assertAlmostEqual(
             y[1], y[2]
         )  # first two pins should be side by side on top.
         self.assertNotAlmostEqual(x[1], x[2])
-        self.assertEqual(len(xyz), self.HexBlock.getNumPins())
+        self.assertEqual(len(xyz), self.hexBlock.getNumPins())
 
         # ensure all pins are within the proper bounds of a
         # flats-up oriented hex block
@@ -2122,17 +2125,17 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(c.getArea() for c in hexBlock), hexTotalArea)
 
     def test_getDuctPitch(self):
-        ductIP = self.HexBlock.getDuctIP()
+        ductIP = self.hexBlock.getDuctIP()
         self.assertAlmostEqual(70.0, ductIP)
-        ductOP = self.HexBlock.getDuctOP()
+        ductOP = self.hexBlock.getDuctOP()
         self.assertAlmostEqual(70.6, ductOP)
 
     def test_getPinCenterFlatToFlat(self):
-        nRings = hexagon.numRingsToHoldNumCells(self.HexBlock.getNumPins())
-        pinPitch = self.HexBlock.getPinPitch()
+        nRings = hexagon.numRingsToHoldNumCells(self.hexBlock.getNumPins())
+        pinPitch = self.hexBlock.getPinPitch()
         pinCenterCornerToCorner = 2 * (nRings - 1) * pinPitch
         pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
-        f2f = self.HexBlock.getPinCenterFlatToFlat()
+        f2f = self.hexBlock.getPinCenterFlatToFlat()
         self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
 
     def test_gridCreation(self):
@@ -2142,7 +2145,7 @@ class HexBlock_TestCase(unittest.TestCase):
             :id: T_ARMI_GRID_MULT
             :tests: R_ARMI_GRID_MULT
         """
-        b = self.HexBlock
+        b = self.hexBlock
         # The block should have a spatial grid at construction,
         # since it has mults = 1 or 169 from setup
         b.autoCreateSpatialGrids()
@@ -2205,12 +2208,12 @@ class HexBlock_TestCase(unittest.TestCase):
         }
         # add a wire only some places in the block, so grid should not be created.
         wire = components.Helix("wire", "HT9", **wireDims)
-        self.HexBlock.add(wire)
-        self.HexBlock.spatialGrid = None  # clear existing
+        self.hexBlock.add(wire)
+        self.hexBlock.spatialGrid = None  # clear existing
         with self.assertRaises(ValueError):
-            self.HexBlock.autoCreateSpatialGrids()
+            self.hexBlock.autoCreateSpatialGrids()
 
-        self.assertIsNone(self.HexBlock.spatialGrid)
+        self.assertIsNone(self.hexBlock.spatialGrid)
 
 
 class ThRZBlock_TestCase(unittest.TestCase):

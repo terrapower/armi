@@ -943,7 +943,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         a flag that will produce the peak as well as the average on the plot.
     adjoint : bool, optional
         plot the adjoint as well.
-    bList2 :
+    bList2 : list, optional
         a separate list of blocks that will also be plotted on a separate axis on the same plot.
         This is useful for comparing flux in some blocks with flux in some other blocks.
     """
@@ -1038,7 +1038,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         bf.makePlotHistograms()
 
     if fName:
-        # write a little flux text file.
+        # write a little flux text file
         txtFileName = os.path.splitext(fName)[0] + ".txt"
         with open(txtFileName, "w") as f:
             f.write(
@@ -1100,7 +1100,8 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
 
 def makeHistogram(x, y):
     """
-    Take a list of x and y values, and return a histogram-ified version
+    Take a list of x and y values, and return a histogram version.
+
     Good for plotting multigroup flux spectrum or cross sections.
     """
     if not len(x) == len(y):
@@ -1123,38 +1124,35 @@ def makeHistogram(x, y):
 
 
 def _makeBlockPinPatches(block, cold):
-    """Return lists of block component patches and corresponding data and names (which relates to material
-    of the component for later plot-coloring/legend) for a single block.
+    """Return lists of block component patches and corresponding data and names (which relates to
+    material of the component for later plot-coloring/legend) for a single block.
 
-
-    Takes in a block that must have a spatialGrid attached as well as a variable
-    which signifies whether the dimensions of the components are at hot or cold temps.
-    When cold is set to true, you would get the BOL cold temp dimensions.
+    Takes in a block that must have a spatialGrid attached as well as a variable which signifies
+    whether the dimensions of the components are at hot or cold temps. When cold is set to true, you
+    would get the BOL cold temp dimensions.
 
     Parameters
     ----------
     block : Block
-
-    cold : boolean
+    cold : bool
         true for cold temps, hot = false
 
     Return
     ------
     patches : list
         list of patches for block components
-
     data : list
         list of the materials these components are made of
-
     name : list
         list of the names of these components
     """
     patches = []
     data = []
     names = []
+    cornersUp = False
     if isinstance(block.spatialGrid, grids.HexGrid):
         largestPitch, comp = block.getPitch(returnComp=True)
-
+        cornersUp = block.cornersUp()
     elif isinstance(block.spatialGrid, grids.ThetaRZGrid):
         raise TypeError(
             "This plot function is not currently supported for ThetaRZGrid grids."
@@ -1193,12 +1191,13 @@ def _makeBlockPinPatches(block, cold):
             )
         else:
             raise TypeError(
-                "Shape of the pitch-defining element is not a Square or Hex it is "
-                f"{comp.shape}, cannot plot for this type of block."
+                f"Shape of the pitch-defining element is not a Square or Hex it is {comp.shape}, "
+                "cannot plot for this type of block."
             )
         patches.append(derivedPatch)
         data.append(material)
         names.append(cName)
+
     for component in sortedComps:
         locs = component.spatialLocator
         if not isinstance(locs, grids.MultiIndexLocation):
@@ -1209,7 +1208,7 @@ def _makeBlockPinPatches(block, cold):
 
             # goes through each location
             # want to place a patch at that location
-            blockPatches = _makeComponentPatch(component, (x, y), cold)
+            blockPatches = _makeComponentPatch(component, (x, y), cold, cornersUp)
             for element in blockPatches:
                 patches.append(element)
 
@@ -1224,27 +1223,27 @@ def _makeBlockPinPatches(block, cold):
     return patches, data, names
 
 
-def _makeComponentPatch(component, position, cold):
+def _makeComponentPatch(component, position, cold, cornersUp=False):
     """Makes a component shaped patch to later be used for making block diagrams.
 
     Parameters
     ----------
-        component: a component of a block
-
-        position: tuple
-            (x, y) position
-
-        cold: boolean
-            True if looking for dimension at cold temps
+    component: a component of a block
+    position: tuple
+        (x, y) position
+    cold: bool
+        True if looking for dimension at cold temps
+    cornersUp: bool, optional
+        If this is a HexBlock, is it corners-up or flats-up?
 
     Return
     ------
-        blockPatch: List
-            A list of Patch objects that together represent a component in the diagram.
+    blockPatch: list
+        A list of Patch objects that together represent a component in the diagram.
 
     Notes
     -----
-    Currently accepts components of shape DerivedShape, Helix, Circle, or Square
+    Currently accepts components of shape DerivedShape, Circle, Helix, Hexagon, or Square
     """
     x = position[0]
     y = position[1]
@@ -1268,7 +1267,6 @@ def _makeComponentPatch(component, position, cold):
             - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Circle):
-
         blockPatch = matplotlib.patches.Wedge(
             (x, y),
             component.getDimension("od", cold=cold) / 2,
@@ -1279,11 +1277,12 @@ def _makeComponentPatch(component, position, cold):
         )
     elif isinstance(component, Hexagon):
         if component.getDimension("ip", cold=cold) != 0:
+            angle = 0 if cornersUp else 30
             innerPoints = np.array(
-                hexagon.corners(30) * component.getDimension("ip", cold=cold)
+                hexagon.corners(angle) * component.getDimension("ip", cold=cold)
             )
             outerPoints = np.array(
-                hexagon.corners(30) * component.getDimension("op", cold=cold)
+                hexagon.corners(angle) * component.getDimension("op", cold=cold)
             )
             blockPatch = []
             for n in range(6):
@@ -1296,11 +1295,10 @@ def _makeComponentPatch(component, position, cold):
                 patch = matplotlib.patches.Polygon(corners, fill=True)
                 blockPatch.append(patch)
         else:
-            # Just make it a hexagon...
+            # Just make it a hexagon
             blockPatch = matplotlib.patches.RegularPolygon(
                 (x, y), 6, radius=component.getDimension("op", cold=cold) / math.sqrt(3)
             )
-
     elif isinstance(component, Rectangle):
         if component.getDimension("widthInner", cold=cold) != 0:
             innerPoints = np.array(
@@ -1355,7 +1353,7 @@ def _makeComponentPatch(component, position, cold):
                 patch = matplotlib.patches.Polygon(corners, fill=True)
                 blockPatch.append(patch)
         else:
-            # Just make it a rectangle...
+            # Just make it a rectangle
             blockPatch = matplotlib.patches.Rectangle(
                 (
                     x - component.getDimension("widthOuter", cold=cold) / 2,
@@ -1364,27 +1362,29 @@ def _makeComponentPatch(component, position, cold):
                 component.getDimension("widthOuter", cold=cold),
                 component.getDimension("lengthOuter", cold=cold),
             )
+
     if isinstance(blockPatch, list):
         return blockPatch
+
     return [blockPatch]
 
 
 def plotBlockDiagram(
     block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
 ):
-    """Given a Block with a spatial Grid, plot the diagram of
-    it with all of its components. (wire, duct, coolant, etc...).
+    """Given a Block with a spatial Grid, plot the diagram of it with all of its components (wire,
+    duct, coolant, etc).
 
     Parameters
     ----------
-    block : block object
-    fName : String
+    block : Block
+    fName : str
         Name of the file to save to
-    cold : boolean
+    cold : bool
         True is for cold temps, False is hot
-    cmapName : String
+    cmapName : str
         name of a colorMap to use for block colors
-    materialList : List
+    materialList : list
         A list of material names across all blocks to be plotted
         so that same material on all diagrams will have the same color
     fileFormat : str
@@ -1395,6 +1395,7 @@ def plotBlockDiagram(
     if block.spatialGrid is None:
         return None
 
+    # building a list of materials
     if materialList is None:
         materialList = []
         for component in block:
@@ -1406,34 +1407,27 @@ def plotBlockDiagram(
                 materialList.append(materialName)
 
     materialMap = {material: ai for ai, material in enumerate(np.unique(materialList))}
-    patches, data, _ = _makeBlockPinPatches(block, cold)
+    allColors = np.array(list(materialMap.values()))
 
+    # build the geometric shapes on the plot
+    patches, data, _ = _makeBlockPinPatches(block, cold)
     collection = PatchCollection(patches, cmap=cmapName, alpha=1.0)
 
-    allColors = np.array(list(materialMap.values()))
     ourColors = np.array([materialMap[materialName] for materialName in data])
-
     collection.set_array(ourColors)
     ax.add_collection(collection)
     collection.norm.autoscale(allColors)
 
+    # set up plot axis, labels and legends
     legendMap = [
-        (
-            materialMap[materialName],
-            "",
-            "{}".format(materialName),
-        )
+        (materialMap[materialName], "", "{}".format(materialName))
         for materialName in np.unique(data)
     ]
     legend = _createLegend(legendMap, collection, size=50, shape=Rectangle)
-    pltKwargs = {
-        "bbox_extra_artists": (legend,),
-        "bbox_inches": "tight",
-    }
+    pltKwargs = {"bbox_extra_artists": (legend,), "bbox_inches": "tight"}
 
     ax.set_xticks([])
     ax.set_yticks([])
-
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
     ax.spines["left"].set_visible(False)
@@ -1449,7 +1443,7 @@ def plotNucXs(
     isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None
 ):
     """
-    generates a XS plot for a nuclide on the ISOTXS library.
+    Generates a XS plot for a nuclide on the ISOTXS library.
 
     Parameters
     ----------
