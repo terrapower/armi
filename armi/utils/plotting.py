@@ -1243,7 +1243,7 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
 
     Notes
     -----
-    Currently accepts components of shape DerivedShape, Circle, Helix, Hexagon, or Square
+    Currently accepts components of shape Circle, Helix, Hexagon, or Square
     """
     x = position[0]
     y = position[1]
@@ -1276,15 +1276,17 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
             - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Hexagon):
+        angle = 0 if cornersUp else 30
+        outerPoints = np.array(
+            hexagon.corners(angle) * component.getDimension("op", cold=cold)
+        )
+        blockPatch = []
+
         if component.getDimension("ip", cold=cold) != 0:
-            angle = 0 if cornersUp else 30
+            # a hexagonal ring
             innerPoints = np.array(
                 hexagon.corners(angle) * component.getDimension("ip", cold=cold)
             )
-            outerPoints = np.array(
-                hexagon.corners(angle) * component.getDimension("op", cold=cold)
-            )
-            blockPatch = []
             for n in range(6):
                 corners = [
                     innerPoints[n],
@@ -1295,10 +1297,14 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
                 patch = matplotlib.patches.Polygon(corners, fill=True)
                 blockPatch.append(patch)
         else:
-            # Just make it a hexagon
-            blockPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, radius=component.getDimension("op", cold=cold) / math.sqrt(3)
-            )
+            # a simple hexagon
+            for n in range(6):
+                corners = [
+                    outerPoints[(n + 1) % 6],
+                    outerPoints[n],
+                ]
+                patch = matplotlib.patches.Polygon(corners, fill=True)
+                blockPatch.append(patch)
     elif isinstance(component, Rectangle):
         if component.getDimension("widthInner", cold=cold) != 0:
             innerPoints = np.array(

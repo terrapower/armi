@@ -1903,7 +1903,6 @@ class HexBlock(Block):
             This method first retrieves the pitch of the hexagonal Block
             (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
             area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
-
         """
         pitch = self.getPitch()
         if not pitch:
