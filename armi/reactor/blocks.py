@@ -1579,11 +1579,6 @@ class Block(composites.Composite):
         -------
         localCoordinates : list
             list of (x,y,z) pairs representing each pin in the order they are listed as children
-
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed. Only works if pins have clad.
         """
         coords = []
         for clad in self.getChildrenWithFlags(Flags.CLAD):
