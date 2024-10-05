@@ -288,7 +288,7 @@ class AssemblyBlueprint(yamlize.Object):
             "xs types": self.xsTypes,
         }
 
-        # check high-level mat mods
+        # check by-block mat mods
         for modName, modList in self.materialModifications.items():
             paramName = f"mat mod for {modName}"
             paramsToCheck[paramName] = modList
