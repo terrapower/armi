@@ -43,6 +43,7 @@ Bug Fixes
 #. Update height of fluid components after axial expansion (`PR#1828 <https://github.com/terrapower/armi/pull/1828>`_)
 #. Material theoretical density is serialized to and read from database. (`PR#1852 <https://github.com/terrapower/armi/pull/1852>`_)
 #. Removed broken and unused column in ``summarizeMaterialData``. (`PR#1925 <https://github.com/terrapower/armi/pull/1925>`_)
+#. Fixed edge case in ``assemblyBlueprint._checkParamConsistency()``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
 #. TBD
 
 Quality Work
