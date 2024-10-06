@@ -230,7 +230,11 @@ class Block(composites.Composite):
         """
         fuels = self.getComponents(Flags.FUEL)
         if not fuels:
-            return 0.0  # Smear density is not computed for non-fuel blocks
+            # Smear density is not computed for non-fuel blocks
+            return 0.0
+        elif not self.getNumPins():
+            # Smear density is only defined for pinned blocks
+            return 0.0
 
         circles = self.getComponentsOfShape(components.Circle)
         if not circles:
