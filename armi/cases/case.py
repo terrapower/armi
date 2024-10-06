@@ -936,6 +936,8 @@ def copyInterfaceInputs(
                 except NonexistentSetting(key):
                     runLog.debug(f"{key} is not a valid setting; continuing on anyway.")
                     label = key
+            else:
+                label = key.name
 
             newFiles = []
             for f in files:
