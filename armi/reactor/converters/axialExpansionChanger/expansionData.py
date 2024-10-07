@@ -240,9 +240,8 @@ class ExpansionData:
         """
         for b in self._a:
             if b.p.axialExpTargetComponent:
-                self._componentDeterminesBlockHeight[
-                    b.getComponentByName(b.p.axialExpTargetComponent)
-                ] = True
+                target = b.getComponentByName(b.p.axialExpTargetComponent)
+                self._setExpansionTarget(b, target)
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
