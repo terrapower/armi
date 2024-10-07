@@ -245,8 +245,7 @@ class ExpansionData:
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
-                # Dummy blocks are not real and not used. Therefore we don't need to assign anything
-                # special for them
+                # Dummy blocks are intended to contain only fluid and do not need a target component
                 pass
             elif setFuel and b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
