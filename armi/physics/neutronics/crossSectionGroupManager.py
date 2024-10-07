@@ -1036,6 +1036,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         Also ensures that their BU group is up to date with their burnup.
         """
         self._updateBurnupGroups(blockList)
+        if self.cs["tempGroupBoundaries"]:
+            # Avg temp will still just be average  temp in each group, but not exactly the midpoint of the boundaries 
+            # ["tempGroupBoundaries"]  = [300, 350, 400, 450, 500, 550, 600, 650]  # similar to mcnp
+            self._updateTempGroups(blockList)
         for b in blockList:
             xsID = b.getMicroSuffix()
             xsSettings = self._initializeXsID(xsID)

@@ -419,12 +419,18 @@ class Block(composites.Composite):
 
         xsType = self.p.xsType
         if len(xsType) == 1:
-            return xsType + bu
+            if not cs["tempGroupBoundaries"]:
+                return xsType + bu
+            else:
+                #do math for getting burnup group + temp group into 1 char
+                #probably actually done with xsgm
+                return xsType + tempBurnup
         elif len(xsType) == 2 and ord(bu) > ord("A"):
             raise ValueError(
                 "Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
         else:
+            # multi Char XS type to support ZPPR for EG
             return xsType
 
     def getHeight(self):
