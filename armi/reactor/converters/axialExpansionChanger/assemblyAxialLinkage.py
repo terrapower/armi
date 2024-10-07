@@ -37,7 +37,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     1. Both contain solid materials.
     2. They have compatible types (e.g., ``Circle`` and ``Circle``).
     3. Their multiplicities are the same.
-    4. The smallest inner bounding diameter of the two is less than the largest outer
+    4. The biggest inner bounding diameter of the two is less than the smallest outer
        bounding diameter of the two.
 
     Parameters
@@ -204,7 +204,7 @@ class AssemblyAxialLinkage:
 
         Returns
         -------
-        dict of Block -> AxialLink
+        dict[Block, AxialLink[Block]]
             Dictionary where keys are individual blocks and their corresponding values point
             to blocks above and below.
         """
