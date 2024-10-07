@@ -1355,6 +1355,15 @@ class CartesianReactorTests(ReactorTests):
         self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
 
+    def test_add(self):
+        a = self.r.core.getFirstAssembly()
+        numA = len(a)
+        a.add(blocks.CartesianBlock("test cart block"))
+        self.assertEqual(len(a), numA + 1)
+
+        with self.assertRaises(TypeError):
+            a.add(blocks.HexBlock("test hex block"))
+
     def test_getAssemblyPitch(self):
         # Cartesian pitch should have 2 dims since it could be a rectangle that is not square.
         assert_equal(self.r.core.getAssemblyPitch(), [10.0, 16.0])
