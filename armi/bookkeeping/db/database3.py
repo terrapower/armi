@@ -1066,25 +1066,26 @@ class Database3:
                 linkedDims = np.char.decode(attrs["linkedDims"])
 
             # iterating of np is not fast...
+            if len(comps) != len(data):
+                raise ValueError(
+                    "While unpacking special data for {}, encountered "
+                    "composites and parameter data with unmatched sizes.\n"
+                    "Length of composites = {}\n"
+                    "Length of data = {}\n"
+                    "This could indicate an error in data unpacking, which could "
+                    "resht in faulty data on the resulting reactor model.".format(
+                        paramName, len(comps), len(data)
+                    )
+                )
+
             for c, val, linkedDim in itertools.zip_longest(
                 comps, data.tolist(), linkedDims, fillvalue=""
             ):
                 try:
                     if linkedDim != "":
                         c.p[paramName] = linkedDim
-                    elif val != "":
-                        c.p[paramName] = val
                     else:
-                        raise ValueError(
-                            "While unpacking special data for {}, encountered "
-                            "composites and parameter data with unmatched sizes.\n"
-                            "Length of composites = {}\n"
-                            "Length of data = {}\n"
-                            "This could indicate an error in data unpacking, which could "
-                            "result in faulty data on the resulting reactor model.".format(
-                                paramName, len(comps), len(data)
-                            )
-                        )
+                        c.p[paramName] = val
                 except AssertionError as ae:
                     # happens when a param was deprecated but being loaded from old DB
                     runLog.warning(
