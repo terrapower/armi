@@ -1070,10 +1070,10 @@ class Database3:
                 raise ValueError(
                     "While unpacking special data for {}, encountered "
                     "composites and parameter data with unmatched sizes.\n"
-                    "Length of composites = {}\n"
+                    "Length of composites list = {}\n"
                     "Length of data = {}\n"
                     "This could indicate an error in data unpacking, which could "
-                    "resht in faulty data on the resulting reactor model.".format(
+                    "result in faulty data on the resulting reactor model.".format(
                         paramName, len(comps), len(data)
                     )
                 )
