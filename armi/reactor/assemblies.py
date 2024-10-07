@@ -1261,7 +1261,23 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-    """Placeholder, so users can explicitly define a hex-based Assembly."""
+    """An assembly that is hexagonal in cross-section."""
+
+    def add(self, obj: blocks.HexBlock):
+        if not isinstance(obj, blocks.HexBlock):
+            msg = f"Cannot add {obj} to this HexAssembly, it is not a HexBlock."
+            runLog.error(msg)
+            raise TypeError(msg)
+
+        return super(HexAssembly, self).add(obj)
+
+    def insert(self, index, obj):
+        if not isinstance(obj, blocks.HexBlock):
+            msg = f"Cannot insert {obj} to this HexAssembly, it is not a HexBlock."
+            runLog.error(msg)
+            raise TypeError(msg)
+
+        return super(HexAssembly, self).insert(index, obj)
 
     def rotate(self, rad: float):
         """Rotate an assembly and its children.
@@ -1286,7 +1302,23 @@ class HexAssembly(Assembly):
 
 
 class CartesianAssembly(Assembly):
-    pass
+    """An assembly that is rectangular in cross-section."""
+
+    def add(self, obj: blocks.CartesianBlock):
+        if not isinstance(obj, blocks.CartesianBlock):
+            msg = f"Cannot add {obj} to this CartesianAssembly, it is not a CartesianBlock."
+            runLog.error(msg)
+            raise TypeError(msg)
+
+        return super(CartesianAssembly, self).add(obj)
+
+    def insert(self, index, obj):
+        if not isinstance(obj, blocks.CartesianBlock):
+            msg = f"Cannot insert {obj} to this CartesianAssembly, it is not a CartesianBlock."
+            runLog.error(msg)
+            raise TypeError(msg)
+
+        return super(CartesianAssembly, self).insert(index, obj)
 
 
 class RZAssembly(Assembly):
