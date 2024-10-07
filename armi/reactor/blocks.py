@@ -205,9 +205,10 @@ class Block(composites.Composite):
         all the area is fuel, it has 100% smear density. Lower smear density allows more room for
         swelling.
 
-        .. warning:: This requires circular fuel and circular cladding. Designs that vary
-            from this will be wrong. It may make sense in the future to put this somewhere a
-            bit more design specific.
+        Warning
+        -------
+        This requires circular fuel and circular cladding. Designs that vary from this will be
+        wrong. It may make sense in the future to put this somewhere a bit more design specific.
 
         Notes
         -----
@@ -225,15 +226,15 @@ class Block(composites.Composite):
 
         Returns
         -------
-        smearDensity : float
-            The smear density as a fraction
+        float
+            The smear density as a fraction.
         """
         fuels = self.getComponents(Flags.FUEL)
         if not fuels:
-            # Smear density is not computed for non-fuel blocks
+            # smear density is not computed for non-fuel blocks
             return 0.0
         elif not self.getNumPins():
-            # Smear density is only defined for pinned blocks
+            # smear density is only defined for pinned blocks
             return 0.0
 
         circles = self.getComponentsOfShape(components.Circle)
