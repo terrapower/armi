@@ -19,108 +19,139 @@ Notes
 -----
 We are keeping these in ARMI even if they appear unused internally.
 """
+import typing
 import numpy as np
 
 from armi import runLog
 from armi.reactor.flags import Flags
-from armi.utils.hexagon import getIndexOfRotatedCell
 from armi.utils.mathematics import findClosest
 
+if typing.TYPE_CHECKING:
+    from armi.reactor.grids import IndexLocation
+    from armi.reactor.assemblies import HexAssembly
+    from armi.reactor.blocks import HexBlock
 
-def getOptimalAssemblyOrientation(a, aPrev):
+
+def _getFuelBlockWithMostBurnup(a: "HexAssembly") -> "HexBlock":
+    candidateBlock = max(a, key=lambda b: b.p.percentBuMax)
+    if not candidateBlock.hasFlags(Flags.FUEL):
+        raise ValueError(f"Assembly {a} does not have any fuel blocks.")
+    if candidateBlock.p.linPowByPin is None:
+        raise ValueError(
+            f"Highest burnup block {candidateBlock} in {a} has no pin powers."
+        )
+    if candidateBlock.spatialGrid is None:
+        raise ValueError(
+            f"No spatial grid on {candidateBlock}. Unable to find new locations"
+        )
+    return candidateBlock
+
+
+def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int:
     """
     Get optimal assembly orientation/rotation to minimize peak burnup.
-
-    Notes
-    -----
-    Works by placing the highest-BU pin in the location (of 6 possible locations) with lowest
-    expected pin power. We evaluated "expected pin power" based on the power distribution in
-    aPrev, which is the previous assembly located here. If aPrev has no pin detail, then we must use its
-    corner fast fluxes to make an estimate.
 
     Parameters
     ----------
     a : Assembly object
         The assembly that is being rotated.
-
     aPrev : Assembly object
         The assembly that previously occupied this location (before the last shuffle).
-
-        If the assembly "a" was not shuffled, then "aPrev" = "a".
-
-        If "aPrev" has pin detail, then we will determine the orientation of "a" based on
-        the pin powers of "aPrev" when it was located here.
-
-        If "aPrev" does NOT have pin detail, then we will determine the orientation of "a" based on
-        the corner fast fluxes in "aPrev" when it was located here.
+        If the assembly "a" was not shuffled, it's sufficient to pass ``a``.
 
     Returns
     -------
-    rot : int
-        An integer from 0 to 5 representing the "orientation" of the assembly.
-        This orientation is relative to the current assembly orientation.
-        rot = 0 corresponds to no rotation.
-        rot represents the number of pi/3 counterclockwise rotations for the default orientation.
+    int
+        An integer from 0 to 5 representing the number of pi/3 (60 degree) counterclockwise
+        rotations from where ``a`` is currently oriented to the "optimal" orientation
 
-    Examples
-    --------
-    >>> getOptimalAssemblyOrientation(a, aPrev)
-    4
+    Raises
+    ------
+    ValueError
+        If there is insufficient information to determine the rotation of ``a``. This could
+        be due to a lack of fuel blocks or parameters like ``linPowByPin``.
 
-    See Also
-    --------
-    rotateAssemblies : calls this to figure out how to rotate
+    Notes
+    -----
+    Works by placing the highest-burnup pin in the location (of 6 possible locations) with lowest
+    expected pin power. We evaluated "expected pin power" based on the power distribution in
+    ``aPrev``, the previous assembly located where ``a`` is going. The algorithm goes as follows.
+
+    1. Get all the pin powers and ``IndexLocation``s from the block at the
+    previous location
+    2. Obtain the ``IndexLocation`` of the pin with the highest burnup in the
+       current assembly.
+    3. For each possible rotation,
+        - Find the new location with ``HexGrid.rotateIndex``
+        - Find the index where that location occurs in previous locations
+        - Find the previous power at that location
+    4. Return the rotation with the lowest previous power
+
+    This algorithm assumes a few things.
+
+    1. ``len(HexBlock.getPinCoordinates()) == len(HexBlock.p.linPowByPin)`` and,
+       by extension, ``linPowByPin[i]`` is found at ``getPinCoordinates()[i]``.
+    2. Your assembly has at least 60 degree symmetry of fuel pins and
+       powers. This means if we find a fuel pin and rotate it 60 degrees, there should
+       be another fuel pin at that lattice site. This is mostly a safe assumption
+       since many hexagonal reactors have at least 60 degree symmetry of fuel pin layout.
+       This assumption holds if you have a full hexagonal lattice of fuel pins as well.
+    3. Fuel pins in ``a`` have similar locations in ``aPrev``. This is mostly a safe
+       assumption in that most fuel assemblies have similar layouts so it's plausible
+       that if ``a`` has a fuel pin at ``(1, 0, 0)``, so does ``aPrev``.
     """
-    # determine whether or not aPrev had pin details
-    fuelPrev = aPrev.getFirstBlock(Flags.FUEL)
-    if fuelPrev:
-        aPrevDetailFlag = fuelPrev.p.pinLocation[4] is not None
+    maxBuBlock = _getFuelBlockWithMostBurnup(a)
+    maxBuPinLocation = _maxBuPinLocation(maxBuBlock)
+    # No need to rotate if max burnup pin is the center
+    if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
+        return 0
+
+    if aPrev is not a:
+        blockAtPreviousLocation = aPrev[a.index(maxBuBlock)]
     else:
-        aPrevDetailFlag = False
+        blockAtPreviousLocation = maxBuBlock
 
-    rot = 0  # default: no rotation
-    # First get pin index of maximum BU in this assembly.
-    _maxBuAssem, maxBuBlock = a.getMaxParam("percentBuMax", returnObj=True)
-    if maxBuBlock is None:
-        # no max block. They're all probably zero
-        return rot
+    previousLocations = blockAtPreviousLocation.getPinLocations()
+    previousPowers = blockAtPreviousLocation.p.linPowByPin
+    _checkConsistentPinPowerAndLocations(
+        blockAtPreviousLocation, previousPowers, previousLocations
+    )
 
-    # start at 0 instead of 1
-    maxBuPinIndexAssem = int(maxBuBlock.p.percentBuMaxPinLocation - 1)
-    bIndexMaxBu = a.index(maxBuBlock)
+    currentGrid = maxBuBlock.spatialGrid
+    candidateRotation = 0
+    candidatePower = previousPowers[previousLocations.index(maxBuPinLocation)]
+    for rot in range(1, 6):
+        candidateLocation = currentGrid.rotateIndex(maxBuPinLocation, rot)
+        newLocationIndex = previousLocations.index(candidateLocation)
+        newPower = previousPowers[newLocationIndex]
+        if newPower < candidatePower:
+            candidateRotation = rot
+            candidatePower = newPower
+    return candidateRotation
 
-    if maxBuPinIndexAssem == 0:
-        # Don't bother rotating if the highest-BU pin is the central pin. End this method.
-        return rot
-    else:
-        # transfer percentBuMax rotated pin index to non-rotated pin index
-        if aPrevDetailFlag:
-            # aPrev has pin detail
-            # Determine which of 6 possible rotated pin indices had the lowest power when aPrev was here.
-            prevAssemPowHereMIN = float("inf")
 
-            for possibleRotation in range(6):
-                index = getIndexOfRotatedCell(maxBuPinIndexAssem, possibleRotation)
-                # get pin power at this index in the previously assembly located here
-                # power previously at rotated index
-                prevAssemPowHere = aPrev[bIndexMaxBu].p.linPowByPin[index - 1]
+def _maxBuPinLocation(maxBuBlock: "HexBlock") -> "IndexLocation":
+    """Find the grid position for the highest burnup pin.
 
-                if prevAssemPowHere is not None:
-                    runLog.debug(
-                        "Previous power in rotation {0} where pinLoc={1} is {2:.4E} W/cm"
-                        "".format(possibleRotation, index, prevAssemPowHere)
-                    )
-                    if prevAssemPowHere < prevAssemPowHereMIN:
-                        prevAssemPowHereMIN = prevAssemPowHere
-                        rot = possibleRotation
-        else:
-            raise ValueError(
-                "Cannot perform detailed rotation analysis without pin-level "
-                "flux information."
-            )
+    percentBuMaxPinLocation corresponds to the "pin number" which is one indexed
+    and can be found at ``maxBuBlock.getPinLocations()[pinNumber - 1]``
+    """
+    buMaxPinNumber = maxBuBlock.p.percentBuMaxPinLocation
+    pinPowers = maxBuBlock.p.linPowByPin
+    pinLocations = maxBuBlock.getPinLocations()
+    _checkConsistentPinPowerAndLocations(maxBuBlock, pinPowers, pinLocations)
+    maxBuPinLocation = pinLocations[buMaxPinNumber - 1]
+    return maxBuPinLocation
 
-        runLog.debug("Best relative rotation is {0}".format(rot))
-        return rot
+
+def _checkConsistentPinPowerAndLocations(
+    block: "HexBlock", pinPowers: list[float], pinLocations: list["IndexLocation"]
+):
+    if len(pinLocations) != len(pinPowers):
+        raise ValueError(
+            f"Inconsistent pin powers and number of pins in {block}. Found "
+            f"{len(pinLocations)} locations but {len(pinPowers)} powers."
+        )
 
 
 def buildRingSchedule(
