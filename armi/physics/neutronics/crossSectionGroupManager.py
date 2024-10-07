@@ -624,7 +624,11 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             weight = bWeight * c.getArea()
             totalWeight += weight
             densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
-        return allNucNames, densities / totalWeight
+        if totalWeight > 0.0:
+            weightedDensities = densities / totalWeight
+        else:
+            weightedDensities = np.zeros_like(densities)
+        return allNucNames, weightedDensities
 
     def _orderComponentsInGroup(self, repBlock):
         """Order the components based on dimension and material type within the representative
@@ -848,7 +852,11 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
             weight = bWeight * c.getArea()
             totalWeight += weight
             densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
-        return allNucNames, densities / totalWeight
+        if totalWeight > 0.0:
+            weightedDensities = densities / totalWeight
+        else:
+            weightedDensities = np.zeros_like(densities)
+        return allNucNames, weightedDensities
 
     def _orderComponentsInGroup(self, repBlock):
         """Order the components based on dimension and material type within the representative block."""

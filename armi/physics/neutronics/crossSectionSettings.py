@@ -49,6 +49,7 @@ CONF_GEOM = "geometry"
 CONF_HOMOGBLOCK = "useHomogenizedBlockComposition"
 CONF_INTERNAL_RINGS = "numInternalRings"
 CONF_MERGE_INTO_CLAD = "mergeIntoClad"
+CONF_MERGE_INTO_FUEL = "mergeIntoFuel"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
 CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_XSID = "xsID"
@@ -137,6 +138,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XSID,
         CONF_GEOM,
         CONF_MERGE_INTO_CLAD,
+        CONF_MERGE_INTO_FUEL,
         CONF_DRIVER,
         CONF_HOMOGBLOCK,
         CONF_INTERNAL_RINGS,
@@ -188,6 +190,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_INTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_EXTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_MERGE_INTO_CLAD): [str],
+        vol.Optional(CONF_MERGE_INTO_FUEL): [str],
         vol.Optional(CONF_XS_FILE_LOCATION): [str],
         vol.Optional(CONF_EXTERNAL_FLUX_FILE_LOCATION): str,
         vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
@@ -413,6 +416,12 @@ class XSModelingOptions:
         and is sometimes used to merge a "gap" or low-density region into
         a "clad" region to avoid numerical issues.
 
+    mergeIntoFuel : list of str
+        This is a lattice physics configuration option that is a list of component
+        names to merge into a "fuel" component. This is highly-design specific
+        and is sometimes used to merge a "gap" or low-density region into
+        a "fuel" region to avoid numerical issues.
+
     meshSubdivisionsPerCm : float
         This is a lattice physics configuration option that can be used to control
         subregion meshing of the representative block in 1D problems.
@@ -466,6 +475,7 @@ class XSModelingOptions:
         numInternalRings=None,
         numExternalRings=None,
         mergeIntoClad=None,
+        mergeIntoFuel=None,
         meshSubdivisionsPerCm=None,
         xsExecuteExclusive=None,
         xsPriority=None,
@@ -491,6 +501,7 @@ class XSModelingOptions:
         self.numInternalRings = numInternalRings
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
+        self.mergeIntoFuel = mergeIntoFuel
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
         self.xsMaxAtomNumber = xsMaxAtomNumber
         self.minDriverDensity = minDriverDensity
@@ -678,6 +689,7 @@ class XSModelingOptions:
                 CONF_GEOM: self.geometry,
                 CONF_DRIVER: "",
                 CONF_MERGE_INTO_CLAD: ["gap"],
+                CONF_MERGE_INTO_FUEL: [],
                 CONF_MESH_PER_CM: 1.0,
                 CONF_INTERNAL_RINGS: 0,
                 CONF_EXTERNAL_RINGS: 1,

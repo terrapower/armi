@@ -523,6 +523,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         driverFuelBlock=None,
         numExternalRings=None,
         mergeIntoClad=None,
+        mergeIntoFuel=None,
         partiallyHeterogeneous=False,
     ):
         BlockAvgToCylConverter.__init__(
@@ -553,6 +554,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 )
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
+        self.mergeIntoFuel = mergeIntoFuel or []
         self.partiallyHeterogeneous = partiallyHeterogeneous
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
@@ -618,6 +620,10 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         # do user-input merges
         for componentName in self.mergeIntoClad:
             self.dissolveComponentIntoComponent(componentName, "clad")
+
+        # do user-input merges
+        for componentName in self.mergeIntoFuel:
+            self.dissolveComponentIntoComponent(componentName, "fuel")
 
     def _classifyComponents(self):
         """
@@ -894,10 +900,10 @@ def stripComponents(block, compFlags):
     indexedComponents = [(i, c) for i, c in enumerate(sorted(newBlock.getComponents()))]
     for i, c in sorted(indexedComponents, reverse=True):
         if outsideComp:
-            newBlock.remove(c, recomputeAreaFractions=False)
             if i == innerMostComp:
                 ductIP = c.getDimension("ip")
                 outsideComp = False
+            newBlock.remove(c, recomputeAreaFractions=False)
         else:
             mixtureFlags = mixtureFlags | c.p.flags
 
