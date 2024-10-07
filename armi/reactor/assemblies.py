@@ -1261,7 +1261,7 @@ class HexAssembly(Assembly):
             :id: I_ARMI_ROTATE_HEX
             :implements: R_ARMI_ROTATE_HEX
 
-            This method loops through every ``Block`` in this ``Assembly`` and rotates
+            This method loops through every ``Block`` in this ``HexAssembly`` and rotates
             it by a given angle (in radians). The rotation angle is positive in the
             counter-clockwise direction. To perform the ``Block`` rotation, the
             :meth:`armi.reactor.blocks.HexBlock.rotate` method is called.
