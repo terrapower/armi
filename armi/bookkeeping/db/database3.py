@@ -1072,8 +1072,19 @@ class Database3:
                 try:
                     if linkedDim != "":
                         c.p[paramName] = linkedDim
-                    else:
+                    elif val != "":
                         c.p[paramName] = val
+                    else:
+                        raise ValueError(
+                            "While unpacking special data for {}, encountered "
+                            "composites and parameter data with unmatched sizes.\n"
+                            "Length of composites = {}\n"
+                            "Length of data = {}\n"
+                            "This could indicate an error in data unpacking, which could "
+                            "result in faulty data on the resulting reactor model.".format(
+                                paramName, len(comps), len(data)
+                            )
+                        )
                 except AssertionError as ae:
                     # happens when a param was deprecated but being loaded from old DB
                     runLog.warning(
