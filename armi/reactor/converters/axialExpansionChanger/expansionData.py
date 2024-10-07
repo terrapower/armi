@@ -255,7 +255,7 @@ class ExpansionData:
     def determineTargetComponent(
         self, b: "Block", flagOfInterest: Optional[Flags] = None
     ) -> "Component":
-        """Determines target component, or the component who's expansion will determine block height.
+        """Determines the component who's expansion will determine block height.
 
         This information is also stored on the block at ``Block.p.axialExpTargetComponent`` for faster
         retrieval later.
