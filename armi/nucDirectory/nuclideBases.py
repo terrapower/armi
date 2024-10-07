@@ -96,7 +96,7 @@ Retrieve U-235 by the AAAZZZS ID:
 import os
 
 from ruamel.yaml import YAML
-import numpy
+import numpy as np
 
 from armi import context
 from armi import runLog
@@ -317,8 +317,9 @@ class INuclide(NuclideInterface):
         """
         Create an instance of an INuclide.
 
-        .. warning::
-            Do not call this constructor directly; use the factory instead.
+        Warning
+        -------
+        Do not call this constructor directly; use the factory instead.
         """
         if element not in elements.byName.values():
             raise ValueError(
@@ -326,7 +327,8 @@ class INuclide(NuclideInterface):
             )
         if state < 0:
             raise ValueError(
-                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The state must be a positive integer."
+                f"Error in initializing nuclide {name}. An invalid state {state} is provided. The "
+                "state must be a positive integer."
             )
         if halflife < 0.0:
             raise ValueError(
@@ -726,7 +728,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
                 [nn.weight * nn.abundance for nn in element.getNaturalIsotopics()]
             ),
             abundance=0.0,
-            halflife=numpy.inf,
+            halflife=np.inf,
             name=name,
             label=name,
         )
@@ -825,7 +827,7 @@ class DummyNuclideBase(INuclide):
             state=0,
             weight=weight,
             abundance=0.0,
-            halflife=numpy.inf,
+            halflife=np.inf,
             name=name,
             label="DMP" + name[4],
         )
@@ -891,7 +893,7 @@ class LumpNuclideBase(INuclide):
             state=0,
             weight=weight,
             abundance=0.0,
-            halflife=numpy.inf,
+            halflife=np.inf,
             name=name,
             label=name[1:],
         )
@@ -1219,7 +1221,7 @@ def addNuclideBases():
             abun = float(lineData[6])
             halflife = lineData[7]
             if halflife == "inf":
-                halflife = numpy.inf
+                halflife = np.inf
             else:
                 halflife = float(halflife)
             nuSF = float(lineData[8])

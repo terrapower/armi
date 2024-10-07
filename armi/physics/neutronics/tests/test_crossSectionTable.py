@@ -20,7 +20,6 @@ from armi.physics.neutronics.isotopicDepletion import (
     isotopicDepletionInterface as idi,
 )
 from armi.physics.neutronics.latticePhysics import ORDER
-from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings import Settings
@@ -37,7 +36,7 @@ class TestCrossSectionTable(unittest.TestCase):
         """
         obj = loadTestBlock()
         obj.p.mgFlux = range(33)
-        core = obj.getAncestorWithFlags(Flags.CORE)
+        core = obj.parent.parent
         core.lib = isotxs.readBinary(ISOAA_PATH)
         table = crossSectionTable.makeReactionRateTable(obj)
 
@@ -60,7 +59,9 @@ class TestCrossSectionTable(unittest.TestCase):
             :id: T_ARMI_DEPL_ABC
             :tests: R_ARMI_DEPL_ABC
         """
-        _o, r = loadTestReactor()
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)

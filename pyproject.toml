@@ -21,26 +21,29 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.3.0"
+version = "0.4.0"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
-requires-python = ">3.6"
+requires-python = ">3.8"
 readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
-    "h5py>=3.0,<=3.9", # Needed because our database files are H5 format
+    "h5py>=3.9,<3.12 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
+    "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
     "htmltree>=0.7.6", # Our reports have HTML output
-    "matplotlib>=3.5.3", # Important plotting library
-    "numpy>=1.21,<=1.23.5", # Important math library
+    "matplotlib>=3.5.3,<3.8.0", # Important plotting library
+    "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml.clib<=0.2.7", # C-based core of ruamel below
-    "ruamel.yaml<=0.17.21", # Our foundational YAML library
+    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
     "tabulate>=0.8.9", # Used to pretty-print tabular data
     "toml>0.9.5", # Needed to parse the pyproject.toml file
@@ -55,11 +58,10 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
@@ -82,7 +84,7 @@ test = [
     "pytest>=7.0.0", # Our primary test tooling
     "pytest-cov>=4.0.0", # coverage plugin
     "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
-    "ruff==0.0.272", # Linting and code formatting (version-pinned)
+    "ruff==0.5.1", # Linting and code formatting (version-pinned)
 ]
 docs = [
 #######################################################################
@@ -125,14 +127,42 @@ find = {}
 #######################################################################
 [tool.ruff]
 # This is the exact version of Ruff we use.
-required-version = "0.0.272"
+required-version = "0.5.1"
 
 # Assume Python 3.9
 target-version = "py39"
 
-# Setting line-length to 140 (though blacks default is 88)
-line-length = 140
+# Setting line-length to 120 (though blacks default is 88)
+line-length = 120
 
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pycache__",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "doc/tutorials/armi-example-app",
+    "node_modules",
+    "venv",
+]
+
+[tool.ruff.lint]
 # Enable pycodestyle (E) and Pyflakes (F) codes by default.
 # D - NumPy docstring rules
 # N801 - Class name should use CapWords convention
@@ -167,33 +197,7 @@ select = ["E", "F", "D", "N801", "SIM", "TID"]
 #
 ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
 
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".git-rewrite",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
-    ".venv",
-    "__pycache__",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-]
-
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 # D1XX - enforces writing docstrings
 # E741 - ambiguous variable name
 # N - We have our own naming conventions for unit tests.
@@ -201,10 +205,10 @@ exclude = [
 "*/tests/*" = ["D1", "E741", "N", "SLF001"]
 "doc/gallery-src/*" = ["D400"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
 
@@ -218,6 +222,48 @@ addopts = "--durations=30 --tb=native"
 filterwarnings = [
     "ignore: the matrix subclass is not the recommended way:PendingDeprecationWarning",
 ]
+
+[tool.coverage.run]
+exclude_also = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "armi/utils/tests/test_gridGui.py",
+    "venv/",
+    ]
+source = ["armi"]
+parallel = true
+# Change default .coverage file to something that doesn't have a dot
+# because some Windows services can't handle dots.
+data_file = "coverage_results.cov"
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+omit = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "*/tests/*",
+    ]
+
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain about missing type checking-only code:
+    "if TYPE_CHECKING",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "raise AssertionError",
+    "raise KeyboardInterrupt",
+    "raise NotImplementedError",
+    "except ImportError",
+    "pass",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+    ]
+
+ignore_errors = true
 
 
 #######################################################################
@@ -265,7 +311,6 @@ armi = [
     "physics/neutronics/tests/ISOXA",
     "physics/neutronics/tests/rzmflxYA",
     "resources/*",
-    "resources/**/*",
     "tests/1DslabXSByCompTest.yaml",
     "tests/armiRun-SHUFFLES.txt",
     "tests/armiRun.yaml",
@@ -277,14 +322,15 @@ armi = [
     "tests/geom.xml",
     "tests/geom1Assem.xml",
     "tests/ISOAA",
-    "tests/refOneBlockReactor.yaml",
     "tests/refSmallCartesian.yaml",
     "tests/refSmallCoreGrid.yaml",
     "tests/refSmallReactor.yaml",
     "tests/refSmallReactorBase.yaml",
     "tests/refSmallSfpGrid.yaml",
     "tests/refTestCartesian.yaml",
-    "tests/sfpGeom.yaml",
+    "tests/smallestTestReactor/armiRunSmallest.yaml",
+    "tests/smallestTestReactor/refOneBlockReactor.yaml",
+    "tests/smallestTestReactor/refSmallestReactor.yaml",
     "tests/ThRZGeom.xml",
     "tests/ThRZloading.yaml",
     "tests/ThRZSettings.yaml",

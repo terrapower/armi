@@ -170,9 +170,6 @@ class Link(Tag):
     tag = "link"
 
 
-# ---------------------------
-
-
 def encode64(file_path):
     """Return the embedded HTML src attribute for an image in base64."""
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
@@ -180,20 +177,19 @@ def encode64(file_path):
         from armi import runLog
 
         runLog.warning(
-            "'.pdf' images cannot be embedded into this HTML report. {} will not be inserted.".format(
-                file_path
+            (
+                f"'.pdf' images cannot be embedded into this HTML report. {file_path} will not be"
+                " inserted."
             )
         )
-        return "Faulty PDF image inclusion: {} attempted to be inserted but no support is currently offered for such.".format(
-            file_path
+        return (
+            f"Faulty PDF image inclusion: {file_path} attempted to be inserted but no support is "
+            "currently offered for such."
         )
     with open(file_path, "rb") as img_src:
         return r"data:image/{};base64,{}".format(
             xtn, base64.b64encode(img_src.read()).decode()
         )
-
-
-# ---------------------------
 
 
 def writeStandardReportTemplate(f, report, caseTitle=""):
@@ -220,17 +216,7 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
                         with Span(
                             f, attrs={"class": "navbar-text navbar-version pull-left"}
                         ):
-                            with Img(
-                                f,
-                                attrs={
-                                    "src": encode64(
-                                        os.path.join(
-                                            context.RES, "images", "armiicon.ico"
-                                        )
-                                    )
-                                },
-                            ):
-                                pass
+                            pass
 
                         with A(
                             f,

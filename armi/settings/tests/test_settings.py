@@ -26,7 +26,6 @@ from armi import getApp
 from armi import getPluginManagerOrFail
 from armi import plugins
 from armi import settings
-from armi.operators.settingsValidation import Inspector, validateVersion
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
@@ -34,6 +33,7 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
+from armi.settings.settingsValidation import Inspector, validateVersion
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
@@ -151,7 +151,7 @@ class TestAddingOptions(unittest.TestCase):
         # modify the default/text settings YAML file to include neutronicsKernel
         fin = os.path.join(TEST_ROOT, "armiRun.yaml")
         txt = open(fin, "r").read()
-        txt = txt.replace("\n  nodeGroup:", "\n  neutronicsKernel: MCNP\n  nodeGroup:")
+        txt = txt.replace("\n  nCycles:", "\n  neutronicsKernel: MCNP\n  nCycles:")
         fout = "test_addingOptions.yaml"
         open(fout, "w").write(txt)
 
@@ -312,7 +312,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
             :id: T_ARMI_SETTINGS_DEFAULTS
             :tests: R_ARMI_SETTINGS_DEFAULTS
         """
-        a = setting.Setting("testsetting", 0)
+        a = setting.Setting("testsetting", 0, description="whatever")
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
@@ -322,7 +322,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
         # This test is dependent on the current setup of armiRun.yaml, which includes
         # some default settings values
-        for sett in ["availabilityFactor", "economics"]:
+        for sett in ["availabilityFactor", "db"]:
             self.assertIn(sett, settingsList)
         self.assertNotIn("numProcessors", settingsList)
 
@@ -399,7 +399,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         removed by Setting.__getstate__, and that has been a problem in the past.
         """
         # get a baseline: show how the Setting object looks to start
-        s1 = setting.Setting("testCopy", 765)
+        s1 = setting.Setting("testCopy", 765, description="whatever")
         self.assertEqual(s1.name, "testCopy")
         self.assertEqual(s1._value, 765)
         self.assertTrue(hasattr(s1, "schema"))
@@ -417,7 +417,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         when the Setting value is set to a non-default value.
         """
         # get a baseline: show how the Setting object looks to start
-        s1 = setting.Setting("testCopy", 765)
+        s1 = setting.Setting("testCopy", 765, description="whatever")
         s1.value = 999
         self.assertEqual(s1.name, "testCopy")
         self.assertEqual(s1._value, 999)
@@ -487,7 +487,9 @@ class TestFlagListSetting(unittest.TestCase):
         flagsAsStringList = ["DUCT", "FUEL", "CLAD"]
         flagsAsFlagList = [Flags.DUCT, Flags.FUEL, Flags.CLAD]
 
-        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        fs = setting.FlagListSetting(
+            name="testFlagSetting", default=[], description="whatever"
+        )
         # Set the value as a list of strings first
         fs.value = flagsAsStringList
         self.assertEqual(fs.value, flagsAsFlagList)
@@ -500,7 +502,9 @@ class TestFlagListSetting(unittest.TestCase):
 
     def test_invalidFlagListTypeError(self):
         """Test raising a TypeError when a list is not provided."""
-        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        fs = setting.FlagListSetting(
+            name="testFlagSetting", default=[], description="whatever"
+        )
         with self.assertRaises(TypeError):
             fs.value = "DUCT"
 

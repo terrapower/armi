@@ -16,17 +16,15 @@
 import copy
 import math
 
-import numpy
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.patches import Wedge
+import numpy as np
 from matplotlib.collections import PatchCollection
+from matplotlib.patches import Wedge
 
-from armi.reactor import blocks
-from armi.reactor import grids
-from armi.reactor import components
-from armi.reactor.flags import Flags
 from armi import runLog
+from armi.reactor import blocks, components, grids
+from armi.reactor.flags import Flags
 
 SIN60 = math.sin(math.radians(60.0))
 
@@ -141,12 +139,15 @@ class BlockConverter:
                 "Components are not of compatible shape to be merged "
                 "solute: {}, solvent: {}".format(solute, solvent)
             )
-        if solute.getArea() <= 0 or solvent.getArea() <= 0:
+        if solute.getArea() < 0:
             raise ValueError(
-                "Cannot merge components if either have negative area. "
-                "{} area: {}, {} area : {}".format(
-                    solute, solvent, solute.getArea(), solvent.getArea()
-                )
+                "Cannot merge solute with negative area into a solvent. "
+                "{} area: {}".format(solute, solute.getArea())
+            )
+        if solvent.getArea() <= 0:
+            raise ValueError(
+                "Cannot merge into a solvent with negative or 0 area. "
+                "{} area: {}".format(solvent, solvent.getArea())
             )
 
     def restablishLinks(self, solute, solvent, soluteLinks):
@@ -311,7 +312,8 @@ class MultipleComponentMerger(BlockConverter):
                 soluteName, self.solventName, minID=self.specifiedMinID
             )
         solvent = self._sourceBlock.getComponentByName(self.solventName)
-        BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
+        if solvent.__class__ is not components.DerivedShape:
+            BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
         return self._sourceBlock
 
 
@@ -479,7 +481,7 @@ class BlockAvgToCylConverter(BlockConverter):
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
         p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.YlGn)
-        p.set_array(numpy.array(colors))
+        p.set_array(np.array(colors))
         ax.add_collection(p)
         ax.autoscale_view(True, True, True)
         ax.set_aspect("equal")
@@ -488,6 +490,7 @@ class BlockAvgToCylConverter(BlockConverter):
             plt.savefig(fName)
         else:
             plt.show()
+        plt.close()
         return fName
 
 

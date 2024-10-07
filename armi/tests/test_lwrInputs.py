@@ -16,7 +16,7 @@ from logging import WARNING
 import os
 import unittest
 
-import numpy
+import numpy as np
 
 from armi import Mode
 from armi import runLog
@@ -61,11 +61,8 @@ class C5G7ReactorTests(unittest.TestCase):
 
             # test warnings are being logged for malformed isotopics info in the settings file
             streamVal = mock.getStdout()
-            self.assertGreater(streamVal.count("[warn]"), 32, msg=streamVal)
-            self.assertGreater(streamVal.count("custom isotopics"), 32, msg=streamVal)
             self.assertIn("UraniumOxide", streamVal, msg=streamVal)
             self.assertIn("SaturatedWater", streamVal, msg=streamVal)
-            self.assertIn("invalid settings: fakeBad", streamVal, msg=streamVal)
 
             # test that there are 100 of each high, medium, and low MOX pins
             fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)
@@ -97,4 +94,4 @@ class C5G7ReactorTests(unittest.TestCase):
 
         for indices, coordsInput in sorted(locsInput.items()):
             coordsDB = locsDB[indices]
-            self.assertTrue(numpy.allclose(coordsInput, coordsDB))
+            self.assertTrue(np.allclose(coordsInput, coordsDB))

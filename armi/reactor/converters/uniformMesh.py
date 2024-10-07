@@ -32,9 +32,9 @@ Requirements
 
 
 .. warning::
-    This procedure can cause numerical diffusion in some cases. For example, 
+    This procedure can cause numerical diffusion in some cases. For example,
     if a control rod tip block has a large coolant block below it, things like peak
-    absorption rate can get lost into it. We recalculate some but not all 
+    absorption rate can get lost into it. We recalculate some but not all
     reaction rates in the re-mapping process based on a flux remapping. To avoid this,
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
@@ -58,7 +58,7 @@ import copy
 import collections
 from timeit import default_timer as timer
 
-import numpy
+import numpy as np
 
 import armi
 from armi import runLog
@@ -186,8 +186,8 @@ class UniformMeshGenerator:
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
 
-        averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
-        self._commonMesh = numpy.array(averageMesh)
+        averageMesh = average1DWithinTolerance(np.array(allMeshes))
+        self._commonMesh = np.array(averageMesh)
 
     def _decuspAxialMesh(self):
         """
@@ -254,7 +254,7 @@ class UniformMeshGenerator:
             preference="top",
         )
 
-        self._commonMesh = numpy.array(combinedMesh)
+        self._commonMesh = np.array(combinedMesh)
 
     def _filterMesh(
         self, meshList, minimumMeshSize, anchorPoints, preference="bottom", warn=False
@@ -369,15 +369,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
     Notes
     -----
     There are several staticmethods available on this class that allow for:
+
         - Creation of a new reactor without applying a new uniform axial mesh. See:
-        `<UniformMeshGeometryConverter.initNewReactor>`
+          `<UniformMeshGeometryConverter.initNewReactor>`
         - Creation of a new assembly with a new axial mesh applied. See:
-        `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+          `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
         - Resetting the parameter state of an assembly back to the defaults for the
-        provided block parameters. See:
-        `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+          provided block parameters. See:
+          `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
         - Mapping number densities and block parameters between one assembly to
-        another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+          another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
     This class is meant to be extended for specific physics calculations that require a
     uniform mesh. The child types of this class should define custom
@@ -390,9 +391,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
     is being applied to prevent the numerical diffusion problem.
 
     - "in" is used when mapping parameters into the uniform assembly
-    from the non-uniform assembly.
+      from the non-uniform assembly.
     - "out" is used when mapping parameters from the uniform assembly back
-    to the non-uniform assembly.
+      to the non-uniform assembly.
 
     .. warning::
         If a parameter is calculated by a physics solver while the reactor is in its
@@ -1027,7 +1028,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     @staticmethod
     def _createNewAssembly(sourceAssembly):
         a = sourceAssembly.__class__(sourceAssembly.getType())
-        a.spatialGrid = grids.axialUnitGrid(len(sourceAssembly))
+        a.spatialGrid = grids.AxialGrid.fromNCells(len(sourceAssembly))
         a.setName(sourceAssembly.getName())
         return a
 
@@ -1391,7 +1392,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, (tuple, list, numpy.ndarray)):
+            if isinstance(val, (tuple, list, np.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1402,12 +1403,12 @@ class ParamMapper:
         for paramName in paramNames:
             val = block.p[paramName]
             # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, list, numpy.ndarray)):
-                paramVals.append(numpy.array(val) if len(val) > 0 else None)
+            if isinstance(val, (tuple, list, np.ndarray)):
+                paramVals.append(np.array(val) if len(val) > 0 else None)
             else:
                 paramVals.append(val)
 
-        return numpy.array(paramVals, dtype=object)
+        return np.array(paramVals, dtype=object)
 
     @staticmethod
     def _scalarParamSetter(block, vals, paramNames):
@@ -1421,7 +1422,7 @@ class ParamMapper:
         for paramName, vals in zip(paramNames, arrayVals):
             if vals is None:
                 continue
-            block.p[paramName] = numpy.array(vals)
+            block.p[paramName] = np.array(vals)
 
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):

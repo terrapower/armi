@@ -22,9 +22,9 @@ from armi.utils.units import getTc
 class TZM(Material):
     propertyValidTemperature = {"linear expansion percent": ((21.11, 1382.22), "C")}
     references = {
-        "linear expansion percent": "Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced \
-                   in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, \
-                   Southern Research Institute"
+        "linear expansion percent": "Report on the Mechanical and Thermal Properties of Tungsten \
+            and TZM Sheet Produced in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau \
+            of Naval Weapons Contract No. N600(19)-59530, Southern Research Institute"
     }
 
     temperatureC = [
@@ -66,8 +66,8 @@ class TZM(Material):
         self.setMassFrac("MO", 0.996711222)
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
-        r"""
-        return linear expansion in %dL/L from interpolation of tabular data.
+        """
+        Return linear expansion in %dL/L from interpolation of tabular data.
 
         This function is used to expand a material from its reference temperature (21C)
         to a particular hot temperature.
@@ -79,9 +79,9 @@ class TZM(Material):
         Tc : float
             temperature in C
 
-        Source: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced \
-                in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons Contract No. N600(19)-59530, 1966 \
-                Southern Research Institute.
+        Source: Report on the Mechanical and Thermal Properties of Tungsten and TZM Sheet Produced
+                in the Refractory Metal Sheet Rolling Program, Part 1 to Bureau of Naval Weapons
+                Contract No. N600(19)-59530, 1966 Southern Research Institute.
 
         See Table viii-b, Appendix B, page 181.
         """

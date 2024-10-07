@@ -97,7 +97,9 @@ class TestCompareDB3(unittest.TestCase):
         """End-to-end test of compareDatabases() on a photocopy database."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
 
         # create two DBs, identical but for file names
@@ -128,10 +130,12 @@ class TestCompareDB3(unittest.TestCase):
         """End-to-end test of compareDatabases() on very simlar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
 
-        # create two DBs, identical but for file names
+        # create two DBs, identical but for file names and cycle lengths
         dbs = []
         for lenCycle in range(1, 3):
             # build some test data
@@ -177,7 +181,7 @@ class TestCompareDB3(unittest.TestCase):
             dbs[1]._fullPath,
             timestepCompare=[(0, 0), (0, 1)],
         )
-        self.assertEqual(len(diffs.diffs), 474)
+        self.assertEqual(len(diffs.diffs), 477)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 

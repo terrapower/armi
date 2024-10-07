@@ -15,7 +15,6 @@
 """Code that needs to be executed before most ARMI components are safe to import."""
 
 import sys
-import tabulate
 
 # This is a courtesy, to help people who accidently run ARMI with an old version of Python.
 if (
@@ -29,27 +28,7 @@ if (
     )
 
 
-def _addCustomTabulateTables():
-    """Create a custom ARMI tables within tabulate."""
-    tabulate._table_formats["armi"] = tabulate.TableFormat(
-        lineabove=tabulate.Line("", "-", "  ", ""),
-        linebelowheader=tabulate.Line("", "-", "  ", ""),
-        linebetweenrows=None,
-        linebelow=tabulate.Line("", "-", "  ", ""),
-        headerrow=tabulate.DataRow("", "  ", ""),
-        datarow=tabulate.DataRow("", "  ", ""),
-        padding=0,
-        with_header_hide=None,
-    )
-    tabulate.tabulate_formats = list(sorted(tabulate._table_formats.keys()))
-    tabulate.multiline_formats["armi"] = "armi"
-
-
-# runLog makes tables, so make sure this is setup before we initialize the runLog
-_addCustomTabulateTables()
-
-
-from armi.nucDirectory import nuclideBases  # noqa: module-import-not-at-top-of-file
+from armi.nucDirectory import nuclideBases  # noqa: E402
 
 # Nuclide bases get built explicitly here to have better determinism
 # about when they get instantiated. The burn chain is not applied

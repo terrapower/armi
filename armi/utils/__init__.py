@@ -29,8 +29,8 @@ import time
 
 from armi import runLog
 from armi.utils import iterables
-from armi.utils.flags import Flag  # noqa: unused-import
-from armi.utils.mathematics import *  # noqa: undefined-local-with-import-star
+from armi.utils.flags import Flag  # noqa: F401
+from armi.utils.mathematics import *  # noqa: F403
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
 _HASH_BUFFER_SIZE = 1024 * 1024
@@ -470,7 +470,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
                 print("Checking {0}...".format(name))
             try:
                 pickle.dumps(ob)  # dump as a string
-            except:  # noqa: bare-except
+            except Exception:
                 print(
                     "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
                 )
@@ -497,7 +497,7 @@ def doTestPickleOnAllContents2(obj, ignore=None):
         if name not in ignore:
             try:
                 pickle.dumps(ob)  # dump as a string
-            except:  # noqa: bare-except
+            except Exception:
                 unpickleable.append(name)
                 print("Cant pickle {0}".format(name))
                 # recursive call.
@@ -509,7 +509,7 @@ def doTestPickleOnAllContents2(obj, ignore=None):
 
 
 class MyPickler(pickle.Pickler):
-    r"""
+    """
     This will find your pickle errors if all else fails.
 
     Use with tryPickleOnAllContents3.
@@ -747,7 +747,7 @@ def plotMatrix(
     cmap.set_bad("w")
     try:
         matrix = matrix.todense()
-    except:  # noqa: bare-except
+    except Exception:
         pass
 
     if minV:
@@ -806,17 +806,39 @@ class MergeableDict(dict):
 
 def safeCopy(src: str, dst: str) -> None:
     """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
-    waitTime = 0.01  # 10 ms
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
-    shutil.copyfile(src, dst)
-    shutil.copymode(src, dst)
+    if "win" in sys.platform:
+        shutil.copyfile(src, dst)
+        shutil.copymode(src, dst)
+    elif "linux" in sys.platform:
+        cmd = f'cp "{src}" "{dst}"'
+        os.system(cmd)
+    else:
+        raise OSError(
+            "Cannot perform ``safeCopy`` on files because ARMI only supports "
+            + "Linux and Windows."
+        )
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 300  # 5 min
+    totalWaitTime = 0
     while True:
         dstSize = os.path.getsize(dst)
         if srcSize == dstSize:
             break
         time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File copy from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
+            )
+            break
+
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 

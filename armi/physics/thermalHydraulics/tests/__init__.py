@@ -1,4 +1,4 @@
-# Copyright 2019 TerraPower, LLC
+# Copyright 2024 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,13 +11,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-"""The depletion physics package contains utility/framework code related to the physics of transmutation and decay."""
-# ruff: noqa: F401
-import os
-
-from armi import RES
-from armi.nucDirectory import nuclideBases
-from armi import interfaces
-
-ORDER = interfaces.STACK_ORDER.DEPLETION

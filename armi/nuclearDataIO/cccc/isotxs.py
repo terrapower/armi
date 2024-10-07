@@ -40,7 +40,7 @@ Examples
 import traceback
 import itertools
 
-import numpy
+import numpy as np
 from scipy import sparse
 
 from armi import runLog
@@ -327,7 +327,7 @@ class IsotxsIO(cccc.Stream):
                     self._lib[nucLabel] = nuc
                 nuclideIO = self._getNuclideIO()(nuc, self, self._lib)
                 nuclideIO.rwNuclide()
-        except:  # noqa: bare-except
+        except Exception:
             raise OSError(
                 "Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc())
             )
@@ -370,8 +370,8 @@ class IsotxsIO(cccc.Stream):
 
         Notes
         -----
-        Contains isotope names, global chi distribution, energy group structure, and locations of each nuclide record
-        in the file
+        Contains isotope names, global chi distribution, energy group structure, and locations of
+        each nuclide record in the file
         """
         with self.createRecord() as record:
             # skip "merger   test..." string
@@ -691,7 +691,7 @@ class _IsotxsNuclideIO:
         if scatter is None:
             # we're reading.
             scatter = sparse.csr_matrix(
-                (numpy.array(dataVals), indices, indptr), shape=(ng, ng)
+                (np.array(dataVals), indices, indptr), shape=(ng, ng)
             )
             scatter.eliminate_zeros()
             self._setScatterMatrix(blockNumIndex, scatter)
@@ -714,7 +714,7 @@ class _IsotxsNuclideIO:
             A index of the scatter matrix.
         """
         try:
-            return numpy.where(self._metadata["scatFlag"] == scatterType)[0][0]
+            return np.where(self._metadata["scatFlag"] == scatterType)[0][0]
         except IndexError:
             return None
 

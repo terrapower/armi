@@ -1,0 +1,73 @@
+# This is a non-physical test reactor.
+# This is designed to speed up testing of code that only technically needs a full reactor object.
+# This is a single-hex-assembly reactor, with only one block.
+
+settings:
+# global
+  availabilityFactor: 1
+  beta: 0.003454
+  branchVerbosity: debug
+  buGroups:
+    - 100
+  burnSteps: 2
+  comment: Simple test input.
+  cycleLength: 2000.0
+  detailAssemLocationsBOL:
+    - 002-001
+  freshFeedType: igniter fuel
+  loadingFile: refSmallestReactor.yaml
+  moduleVerbosity:
+    armi.reactor.reactors: info
+  nCycles: 2
+  outputFileExtension: png
+  power: 1000000.0
+  smallRun: true
+  startCycle: 1
+  startNode: 2
+  targetK: 1.002
+  verbosity: extra
+  versions:
+    armi: uncontrolled
+
+# cross section
+  crossSectionControl:
+    DA:
+      geometry: 0D
+      blockRepresentation: Median
+      criticalBuckling: true
+      externalDriver: true
+      useHomogenizedBlockComposition: false
+      numInternalRings: 1
+      numExternalRings: 1
+    XA:
+      xsFileLocation:
+        - ISOXA
+    YA:
+      geometry: 0D
+      fluxFileLocation: rzmflxYA
+    ZA:
+      geometry: 1D cylinder
+      blockRepresentation: ComponentAverage1DCylinder
+      validBlockTypes:
+        - fuel
+      externalDriver: false
+      mergeIntoClad:
+        - gap
+      numInternalRings: 1
+      numExternalRings: 1
+
+# database
+  db: false
+
+# fuel cycle
+  fuelHandlerName: EquilibriumShuffler
+  jumpRingNum: 9
+
+# neutronics
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
+  loadPadElevation: 200.0
+
+# report
+  genReports: false
+  summarizeAssemDesign: false

@@ -71,7 +71,6 @@ import typing
 
 from ruamel.yaml import CLoader, RoundTripLoader
 import ordered_set
-import tabulate
 import yamlize
 import yamlize.objects
 
@@ -102,6 +101,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
     CONF_GEOM_FILE,
 )
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils.customExceptions import InputError
 
@@ -151,7 +151,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
         else:
             pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
-                for (attrName, section, resolver) in plug:
+                for attrName, section, resolver in plug:
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
@@ -326,10 +326,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                axialExpansionChanger.expandColdDimsToHot(
-                    assemsToExpand,
-                    cs[CONF_DETAILED_AXIAL_EXPANSION],
-                )
+                axialExpander = getPluginManagerOrFail().hook.getAxialExpansionChanger()
+                if axialExpander is not None:
+                    axialExpander.expandColdDimsToHot(
+                        assemsToExpand,
+                        cs[CONF_DETAILED_AXIAL_EXPANSION],
+                    )
 
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs
@@ -479,7 +481,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                             ),
                         ]
                     ],
-                    tablefmt="plain",
+                    tableFmt="plain",
                 ),
                 single=True,
             )

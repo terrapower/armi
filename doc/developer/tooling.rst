@@ -113,10 +113,11 @@ here is to help track all the important changes that happened in ARMI, so ARMI c
 has changed during the next `release <https://github.com/terrapower/armi/releases>`_. To that end,
 minor PRs won't require a release note.
 
-In particular, in the release notes, you will find four sections in the releasee notes:
+In particular, in the release notes, you will find four sections in the release notes:
 
 1. **New Features** - A new feature (or major addition to a current feature) was added to the code.
-2. **API Changes** - ANY change to the public-facing API of ARMI.
+2. **API Changes** - ANY breaking change to the public-facing API of ARMI. (A breaking change is
+   when you change the existing API, not when you add something new to the API.)
 3. **Bug Fixes** - ANY bug fix in the code (not the documentation), no matter how minor.
 4. **Changes that Affect Requirements** - If you touch the code (``impl``) or test (``test``) for
    anything that currently has a requirement crumb. (This must be a non-trivial change.)
@@ -147,7 +148,7 @@ like unit testing or building documentation.
 Third-Party Licensing
 ---------------------
 Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
-to include anything with a license that superceeds our Apache license. For instance,
+to include anything with a license that supercedes our Apache license. For instance,
 any third-party Python library included in ARMI with a GPL license will make the whole
 project fall under the GPL license. But a lot of potential users of ARMI will want to
 keep some of their work private, so we can't allow any GPL tools.
@@ -164,7 +165,7 @@ might look like ``0.1.7``, ``1.0.0``, or ``12.3.123``. Each number has a specifi
 * ``minor`` - Revved when we decide the code or our API has reached a stable point.
 * ``bump`` - Revved every time we modify the API, and any other time we want.
 
-**NOTE**: Changes to documenation or testing probably do not deserve a version bump.
+**NOTE**: Changes to documentation or testing probably do not deserve a version bump.
 
 **Any change to a major or minor version is considered a release.**
 
@@ -180,28 +181,108 @@ Every release should follow this process:
 3. Add release notes to the documentation:
    `here <https://github.com/terrapower/armi/tree/main/doc/release>`__.
 4. Tag the commit after it goes into the repo:
-  - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``
-  - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
-  - Pushing to the repo: ``git push origin 1.0.0``
-  - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
+
+    - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``
+    - Or from another commit: ``git tag <commit-hash> 1.0.0 -m "Release v1.0.0"``
+    - Pushing to the repo: ``git push origin 1.0.0``
+    - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
 
 5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
 6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to
    archive the new documentation.
 7. Tell everyone!
 
-Module-Level Logging
-====================
-In most of the modules in ``armi``, you will see logging using the ``runLog`` module.
-This is a custom, global logging object provided by the import:
+Logging with runLog
+===================
+ARMI provides a logging tool, ``runLog``, to be used in place of ``print`` for all logging during a
+simulation. It is very easy to use:
 
 .. code-block:: python
 
     from armi import runLog
 
-If you want a logger specific to a single module, say to provide debug logging for only
-one module, that functionality is provided by what might look like a bare Python logging
-import, but is actually calling the same underlying ``armi`` logging tooling:
+    runLog.debug("This will only be seen if you run in debug mode.")
+    runLog.info("Default log level.")
+    runLog.error("The run will die, or the results are invalid.")
+
+.. note::
+    Calling ``runLog.error()`` is not the same as calling Python's ``raise error``; a log statement
+    does not kill a run, or raise an error, it just puts some text in the log.
+
+When an ARMI simulation is run, it will be run at a particular log level. All log messages that are
+at or above that log level will be seen during the simulation and in the final log files. To control
+the log level of an ARMI run, you use the setting ``verbosity`` in your settings file. You will
+probably be running ARMI in a parallel mode, and if you want the child processes to have a different
+log level than the main process, you can set ``branchVerbosity`` to the desired verbosity of all the
+child processes.
+
+For reference, here are the log levels that ARMI supports:
+
+.. list-table::
+    :widths: 20 20 60
+    :header-rows: 1
+
+    * - Level
+      - Value
+      - When to Use
+    * - debug
+      - 10
+      - This will only be seen if the simulation is run in debug mode.
+    * - extra
+      - 15
+      - More detailed than will normally be seen in a usual simulation.
+    * - info
+      - 20
+      - Use only for things that important enough to be visible during every normal simulation.
+    * - important
+      - 25
+      - More important than the default log level, but not a problem or issue.
+    * - prompt
+      - 27
+      - RESERVED for the ARMI CLI.
+    * - warning
+      - 30
+      - Use ONLY for issues that may or may not invalidate the simulation results.
+    * - error
+      - 40
+      - Use ONLY for problems that halt the program or invalidate the simulation results.
+    * - header
+      - 100
+      - Use ONLY to define major sections in the log files.
+
+
+Blocking Duplicate Logs
+-----------------------
+Sometimes you want to add a log message, but based on program logic it might pop up in the final log
+file multiple times, even thousands of times. And probably you do not want that. Happily, the
+``runLog`` tool provides a simple argument that will stop a single log line from being logged more
+than once.
+
+Here is a (silly) example of a heavily duplicate log message:
+
+.. code-block:: python
+
+    for _i in range(1000):
+        runLog.warning("Something wicked this way comes.")
+
+That log message gets printed 1,000 times, but we can ensure it is only printed once:
+
+.. code-block:: python
+
+    for _i in range(1000):
+        runLog.warning("Something wicked this way comes.", single=True)
+
+Obviously, this will not be useful in every scenario. But it is a handy tool to clean up your log
+files.
+
+
+Module-Level Logging
+--------------------
+The ``runLog`` tool also allows for you to log one module differently from the rest of the code
+base. For instance, you could set the log level to "debug" in just one Python file, to help testing
+during development.
+
+That functionality is provided by what might look like a bare Python logging import, but is actually calling the same underlying ``armi`` logging tooling:
 
 .. code-block:: python
 
@@ -212,10 +293,10 @@ In either case, you can then log using the same, easy interface:
 
 .. code-block:: python
 
-    runLog.info('information here')
-    runLog.error('extra error info here')
+    runLog.info('Normal stuff.')
+    runLog.error('Oh no!')
 
-Finally, you can change the logging level in either above scenario by doing:
+Finally, you can change the logging level in the above scenario by doing:
 
 .. code-block:: python
 

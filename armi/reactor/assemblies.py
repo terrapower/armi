@@ -22,7 +22,7 @@ import math
 import pickle
 from random import randint
 
-import numpy
+import numpy as np
 from scipy import interpolate
 
 from armi import runLog
@@ -32,6 +32,7 @@ from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
+from armi.materials.material import Fluid
 from armi.reactor.parameters import ParamLocation
 
 
@@ -39,15 +40,6 @@ class Assembly(composites.Composite):
     """
     A single assembly in a reactor made up of blocks built from the bottom up.
     Append blocks to add them up. Index blocks with 0 being the bottom.
-
-    Attributes
-    ----------
-    pinNum : int
-        The number of pins in this assembly.
-
-    pinPeakingFactors : list of floats
-        The assembly-averaged pin power peaking factors. This is the ratio of pin
-        power to AVERAGE pin power in an assembly.
     """
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
@@ -74,14 +66,13 @@ class Assembly(composites.Composite):
         """
         # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
-            assemNum = randint(-9e12, -1)
+            assemNum = randint(-9000000000000, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
         self.setType(typ)
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
-        self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
         self.lastLocationLabel = self.LOAD_QUEUE
 
     def __repr__(self):
@@ -166,7 +157,7 @@ class Assembly(composites.Composite):
         otherwise have been the same object.
         """
         # Default to a random negative assembly number (unique enough)
-        self.p.assemNum = randint(-9e12, -1)
+        self.p.assemNum = randint(-9000000000000, -1)
         self.renumber(self.p.assemNum)
 
     def add(self, obj: blocks.Block):
@@ -191,15 +182,10 @@ class Assembly(composites.Composite):
         """
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to the right value.
-        if len(self.spatialGrid._bounds[2]) < len(self):
-            self.spatialGrid._bounds[2][len(self)] = (
-                self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
-            )
-        else:
-            # more work is needed, make a new mesh
-            self.reestablishBlockOrder()
-            self.calculateZCoords()
+
+        # more work is needed, make a new mesh
+        self.reestablishBlockOrder()
+        self.calculateZCoords()
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
@@ -322,18 +308,12 @@ class Assembly(composites.Composite):
         plenumBlocks = self.getBlocks(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
-        if (
-            not plenumTemps
-        ):  # no plenum blocks, use the top block of the assembly for plenum temperature
+        # no plenum blocks, use the top block of the assembly for plenum temperature
+        if not plenumTemps:
             runLog.warning("No plenum blocks exist. Using outlet coolant temperature.")
             plenumTemps = [self[-1].p.THcoolantOutletT]
 
         return sum(plenumTemps) / len(plenumTemps)
-
-    def rotatePins(self, *args, **kwargs):
-        """Rotate an assembly, which means rotating the indexing of pins."""
-        for b in self:
-            b.rotatePins(*args, **kwargs)
 
     def doubleResolution(self):
         """
@@ -362,7 +342,7 @@ class Assembly(composites.Composite):
                 bx.clearCache()
 
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -416,7 +396,7 @@ class Assembly(composites.Composite):
                 )
 
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -488,7 +468,7 @@ class Assembly(composites.Composite):
 
         # length of this is numBlocks + 1
         bounds = list(self.spatialGrid._bounds)
-        bounds[2] = numpy.array(mesh)
+        bounds[2] = np.array(mesh)
         self.spatialGrid._bounds = tuple(bounds)
 
     def getTotalHeight(self, typeSpec=None):
@@ -660,7 +640,7 @@ class Assembly(composites.Composite):
         for b in self:
             top = z + b.getHeight()
             try:
-                b.p.topIndex = numpy.where(numpy.isclose(refMesh, top))[0].tolist()[0]
+                b.p.topIndex = np.where(np.isclose(refMesh, top))[0].tolist()[0]
             except IndexError:
                 runLog.error(
                     "Height {0} in this assembly ({1} in {4}) is not in the reactor mesh "
@@ -673,7 +653,7 @@ class Assembly(composites.Composite):
 
     def _shouldMassBeConserved(self, belowFuelColumn, b):
         """
-        Determine from a rule set if the mass of a block should be conserved during axial expansion.
+        Determine from a rule set if the mass of a block component should be conserved during axial expansion.
 
         Parameters
         ----------
@@ -689,8 +669,8 @@ class Assembly(composites.Composite):
         conserveMass : boolean
             Should the mass be conserved in this block
 
-        adjustList : list of nuclides
-            What nuclides should have their mass conserved (if any)
+        conserveComponents : list of components
+            What components should have their mass conserved (if any)
 
         belowFuelColumn : boolean
             Update whether the block is above or below a fuel column
@@ -703,32 +683,31 @@ class Assembly(composites.Composite):
         if b.hasFlags(Flags.FUEL):
             # fuel block
             conserveMass = True
-            adjustList = b.getComponent(Flags.FUEL).getNuclides()
+            conserveComponents = b.getComponents(Flags.FUEL)
         elif self.hasFlags(Flags.FUEL):
             # non-fuel block of a fuel assembly.
             if belowFuelColumn:
                 # conserve mass of everything below the fuel so as to not invalidate
                 # grid-plate dose calcs.
                 conserveMass = True
-                adjustList = b.getNuclides()
-                # conserve mass of everything except coolant.
-                coolant = b.getComponent(Flags.COOLANT)
-                coolantList = coolant.getNuclides() if coolant else []
-                for nuc in coolantList:
-                    if nuc in adjustList:
-                        adjustList.remove(nuc)
+                # conserve mass of everything except fluids.
+                conserveComponents = [
+                    comp
+                    for comp in b.getComponents()
+                    if not isinstance(comp.material, Fluid)
+                ]
             else:
                 # plenum or above block in fuel assembly. don't conserve mass.
                 conserveMass = False
-                adjustList = None
+                conserveComponents = []
         else:
             # non fuel block in non-fuel assem. Don't conserve mass.
             conserveMass = False
-            adjustList = None
+            conserveComponents = []
 
-        return conserveMass, adjustList
+        return conserveMass, conserveComponents
 
-    def setBlockMesh(self, blockMesh, conserveMassFlag=False, adjustList=None):
+    def setBlockMesh(self, blockMesh, conserveMassFlag=False):
         """
         Snaps the axial mesh points of this assembly to correspond with the reference mesh.
 
@@ -756,7 +735,14 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         blockMesh : iterable
-            a list of floats describing the upper mesh points of each block in cm.
+            A list of floats describing the upper mesh points of each block in cm.
+
+        conserveMassFlag : bool or str
+            Option for how to treat mass conservation when the block mesh changes.
+            Conservation of mass for fuel components is enabled by
+            conserveMassFlag="auto". If not auto, a boolean value should be
+            passed. The default is False, which does not conserve any masses.
+            True conserves mass for all components.
 
         See Also
         --------
@@ -796,22 +782,26 @@ class Assembly(composites.Composite):
                 return
 
             if conserveMassFlag == "auto":
-                conserveMass, adjustList = self._shouldMassBeConserved(
+                conserveMass, conserveComponents = self._shouldMassBeConserved(
                     belowFuelColumn, b
                 )
             else:
                 conserveMass = conserveMassFlag
+                conserveComponents = b.getComponents()
 
-            b.setHeight(
-                newTop - zBottom, conserveMass=conserveMass, adjustList=adjustList
-            )
+            oldBlockHeight = b.getHeight()
+            b.setHeight(newTop - zBottom)
+            if conserveMass:
+                heightRatio = oldBlockHeight / b.getHeight()
+                for c in conserveComponents:
+                    c.changeNDensByFactor(heightRatio)
             zBottom = newTop
 
         self.calculateZCoords()
 
     def setBlockHeights(self, blockHeights):
         """Set the block heights of all blocks in the assembly."""
-        mesh = numpy.cumsum(blockHeights)
+        mesh = np.cumsum(blockHeights)
         self.setBlockMesh(mesh)
 
     def dump(self, fName=None):
@@ -1032,7 +1022,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=numpy.NaN
+        self, param, elevations, interpType="linear", fillValue=np.NaN
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -1077,7 +1067,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         interpolator = self.getParamOfZFunction(
@@ -1085,7 +1075,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=numpy.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.NaN):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
@@ -1124,7 +1114,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         paramDef = self[0].p.paramDefs[param]
@@ -1148,7 +1138,7 @@ class Assembly(composites.Composite):
             z.insert(0, 0.0)
             z.pop(-1)
 
-        z = numpy.asarray(z)
+        z = np.asarray(z)
 
         values = self.getChildParamValues(param).transpose()
 
@@ -1184,7 +1174,7 @@ class Assembly(composites.Composite):
             reordering.
         """
         # replace grid with one that has the right number of locations
-        self.spatialGrid = grids.axialUnitGrid(len(self))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(self))
         self.spatialGrid.armiObject = self
         for zi, b in enumerate(self):
             b.spatialLocator = self.spatialGrid[0, 0, zi]
@@ -1253,8 +1243,7 @@ class Assembly(composites.Composite):
 
             This method loops through every ``Block`` in this ``Assembly`` and rotates
             it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction, and must be divisible by increments of PI/6
-            (60 degrees). To actually perform the ``Block`` rotation, the
+            counter-clockwise direction. To perform the ``Block`` rotation, the
             :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
 
         Parameters
@@ -1262,18 +1251,38 @@ class Assembly(composites.Composite):
         rad: float
             number (in radians) specifying the angle of counter clockwise rotation
 
-        Warning
-        -------
-        rad must be in 60-degree increments! (i.e., PI/6, PI/3, PI, 2 * PI/3, etc)
         """
-        for b in self.getBlocks():
+        for b in self:
             b.rotate(rad)
+
+    def isOnWhichSymmetryLine(self):
+        grid = self.parent.spatialGrid
+        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
 
 
 class HexAssembly(Assembly):
     """Placeholder, so users can explicitly define a hex-based Assembly."""
 
-    pass
+    def rotate(self, rad: float):
+        """Rotate an assembly and its children.
+
+        Parameters
+        ----------
+        rad : float
+            Counter clockwise rotation in radians. **MUST** be in increments of
+            60 degrees (PI / 3)
+
+        Raises
+        ------
+        ValueError
+            If rotation is not divisible by pi / 3.
+        """
+        if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
+            return super().rotate(rad)
+        raise ValueError(
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} "
+            f"degrees ({rad} radians)"
+        )
 
 
 class CartesianAssembly(Assembly):

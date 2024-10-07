@@ -46,7 +46,7 @@ class _Material_Test:
         )
 
     def test_density(self):
-        """Test that all materials produce a zero density from density."""
+        """Test that all materials produce a non-zero density from density."""
         self.assertNotEqual(self.mat.density(500), 0)
 
     def test_TD(self):
@@ -94,6 +94,10 @@ class _Material_Test:
         dens = self.mat.pseudoDensity(500)
         densKgM3 = self.mat.pseudoDensityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
+
+    def test_wrappedDensity(self):
+        """Test that the density decorator is applied."""
+        self.assertTrue(hasattr(self.mat.density, "__wrapped__"))
 
 
 class MaterialConstructionTests(unittest.TestCase):
@@ -1354,8 +1358,9 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 600 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
+            errorMsg = (
+                "\n\nIncorrect Inconel 600 linearExpansionPercent(Tk=None,Tc=None)\n"
+                "Received:{}\nExpected:{}\n".format(cur, ref)
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1375,8 +1380,9 @@ class Inconel600_TestCase(_Material_Test, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansion(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 600 linearExpansion(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
+            errorMsg = (
+                "\n\nIncorrect Inconel 600 linearExpansion(Tk=None,Tc=None)\nReceived:"
+                "{}\nExpected:{}\n".format(cur, ref)
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1494,8 +1500,9 @@ class Inconel625_TestCase(_Material_Test, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel 625 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
+            errorMsg = (
+                "\n\nIncorrect Inconel 625 linearExpansionPercent(Tk=None,Tc=None)\n"
+                "Received:{}\nExpected:{}\n".format(cur, ref)
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 
@@ -1632,8 +1639,9 @@ class InconelX750_TestCase(_Material_Test, unittest.TestCase):
         for Tc, val in zip(TcList, refList):
             cur = self.mat.linearExpansionPercent(Tc=Tc)
             ref = val
-            errorMsg = "\n\nIncorrect Inconel X750 linearExpansionPercent(Tk=None,Tc=None)\nReceived:{}\nExpected:{}\n".format(
-                cur, ref
+            errorMsg = (
+                "\n\nIncorrect Inconel X750 linearExpansionPercent(Tk=None,Tc=None)\n"
+                "Received:{}\nExpected:{}\n".format(cur, ref)
             )
             self.assertAlmostEqual(cur, ref, delta=10e-7, msg=errorMsg)
 

@@ -34,14 +34,14 @@ from typing import (
     List,
 )
 
-import numpy
+import numpy as np
 
 from armi import runLog
+from armi.reactor import grids
+from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
-from armi.reactor import grids
 from armi.reactor.reactors import Core
-from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.reactors import Reactor
 
 # Here we store the Database3 version information.
@@ -66,29 +66,29 @@ LOCATION_TYPE_LABELS = {
 NONE_MAP = {float: float("nan"), str: "<!None!>"}
 NONE_MAP.update(
     {
-        intType: numpy.iinfo(intType).min + 2
+        intType: np.iinfo(intType).min + 2
         for intType in (
             int,
-            numpy.int8,
-            numpy.int16,
-            numpy.int32,
-            numpy.int64,
+            np.int8,
+            np.int16,
+            np.int32,
+            np.int64,
         )
     }
 )
 NONE_MAP.update(
     {
-        intType: numpy.iinfo(intType).max - 2
+        intType: np.iinfo(intType).max - 2
         for intType in (
-            numpy.uint,
-            numpy.uint8,
-            numpy.uint16,
-            numpy.uint32,
-            numpy.uint64,
+            np.uint,
+            np.uint8,
+            np.uint16,
+            np.uint32,
+            np.uint64,
         )
     }
 )
-NONE_MAP.update({floatType: floatType("nan") for floatType in (float, numpy.float64)})
+NONE_MAP.update({floatType: floatType("nan") for floatType in (float, np.float64)})
 
 
 class Layout:
@@ -231,7 +231,7 @@ class Layout:
         try:
             self.temperatures.append((comp.inputTemperatureInC, comp.temperatureInC))
             self.material.append(comp.material.__class__.__name__)
-        except:  # noqa: bare-except
+        except Exception:
             self.temperatures.append((-900, -900))  # an impossible temperature
             self.material.append("")
 
@@ -262,18 +262,18 @@ class Layout:
             # location is either an index, or a point
             # iter over list is faster
             locations = h5group["layout/location"][:].tolist()
-            self.locationType = numpy.char.decode(
+            self.locationType = np.char.decode(
                 h5group["layout/locationType"][:]
             ).tolist()
             self.location = _unpackLocations(
                 self.locationType, locations, self.version[1]
             )
-            self.type = numpy.char.decode(h5group["layout/type"][:])
-            self.name = numpy.char.decode(h5group["layout/name"][:])
+            self.type = np.char.decode(h5group["layout/type"][:])
+            self.name = np.char.decode(h5group["layout/name"][:])
             self.serialNum = h5group["layout/serialNum"][:]
             self.indexInData = h5group["layout/indexInData"][:]
             self.numChildren = h5group["layout/numChildren"][:]
-            self.material = numpy.char.decode(h5group["layout/material"][:])
+            self.material = np.char.decode(h5group["layout/material"][:])
             self.temperatures = h5group["layout/temperatures"][:]
             self.gridIndex = replaceNonsenseWithNones(
                 h5group["layout/gridIndex"][:], "layout/gridIndex"
@@ -403,12 +403,12 @@ class Layout:
         try:
             h5group.create_dataset(
                 "layout/type",
-                data=numpy.array(self.type).astype("S"),
+                data=np.array(self.type).astype("S"),
                 compression="gzip",
             )
             h5group.create_dataset(
                 "layout/name",
-                data=numpy.array(self.name).astype("S"),
+                data=np.array(self.name).astype("S"),
                 compression="gzip",
             )
             h5group.create_dataset(
@@ -418,58 +418,79 @@ class Layout:
                 "layout/indexInData", data=self.indexInData, compression="gzip"
             )
             h5group.create_dataset(
-                "layout/numChildren", data=self.numChildren, compression="gzip"
+                "layout/numChildren",
+                data=self.numChildren,
+                compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
-                "layout/location", data=self.location, compression="gzip"
+                "layout/location",
+                data=self.location,
+                compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
                 "layout/locationType",
-                data=numpy.array(self.locationType).astype("S"),
+                data=np.array(self.locationType).astype("S"),
                 compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
                 "layout/material",
-                data=numpy.array(self.material).astype("S"),
+                data=np.array(self.material).astype("S"),
                 compression="gzip",
+                track_order=True,
             )
             h5group.create_dataset(
-                "layout/temperatures", data=self.temperatures, compression="gzip"
+                "layout/temperatures",
+                data=self.temperatures,
+                compression="gzip",
+                track_order=True,
             )
 
             h5group.create_dataset(
                 "layout/gridIndex",
                 data=replaceNonesWithNonsense(
-                    numpy.array(self.gridIndex), "layout/gridIndex"
+                    np.array(self.gridIndex), "layout/gridIndex"
                 ),
                 compression="gzip",
             )
 
-            gridsGroup = h5group.create_group("layout/grids")
+            gridsGroup = h5group.create_group("layout/grids", track_order=True)
             gridsGroup.attrs["nGrids"] = len(self.gridParams)
             gridsGroup.create_dataset(
-                "type", data=numpy.array([gp[0] for gp in self.gridParams]).astype("S")
+                "type",
+                data=np.array([gp[0] for gp in self.gridParams]).astype("S"),
+                track_order=True,
             )
 
             for igrid, gridParams in enumerate(gp[1] for gp in self.gridParams):
-                thisGroup = gridsGroup.create_group(str(igrid))
-                thisGroup.create_dataset("unitSteps", data=gridParams.unitSteps)
+                thisGroup = gridsGroup.create_group(str(igrid), track_order=True)
+                thisGroup.create_dataset(
+                    "unitSteps", data=gridParams.unitSteps, track_order=True
+                )
 
                 for ibound, bound in enumerate(gridParams.bounds):
                     if bound is not None:
-                        bound = numpy.array(bound)
-                        thisGroup.create_dataset("bounds_{}".format(ibound), data=bound)
+                        bound = np.array(bound)
+                        thisGroup.create_dataset(
+                            "bounds_{}".format(ibound), data=bound, track_order=True
+                        )
 
                 thisGroup.create_dataset(
-                    "unitStepLimits", data=gridParams.unitStepLimits
+                    "unitStepLimits", data=gridParams.unitStepLimits, track_order=True
                 )
 
                 offset = gridParams.offset
                 thisGroup.attrs["offset"] = offset is not None
                 if offset is not None:
-                    thisGroup.create_dataset("offset", data=offset)
-                thisGroup.create_dataset("geomType", data=gridParams.geomType)
-                thisGroup.create_dataset("symmetry", data=gridParams.symmetry)
+                    thisGroup.create_dataset("offset", data=offset, track_order=True)
+                thisGroup.create_dataset(
+                    "geomType", data=gridParams.geomType, track_order=True
+                )
+                thisGroup.create_dataset(
+                    "symmetry", data=gridParams.symmetry, track_order=True
+                )
         except RuntimeError:
             runLog.error("Failed to create datasets in: {}".format(h5group))
             raise
@@ -719,8 +740,8 @@ def _unpackLocationsV2(locationTypes, locData):
 
 
 def replaceNonesWithNonsense(
-    data: numpy.ndarray, paramName: str, nones: numpy.ndarray = None
-) -> numpy.ndarray:
+    data: np.ndarray, paramName: str, nones: np.ndarray = None
+) -> np.ndarray:
     """
     Replace instances of ``None`` with nonsense values that can be detected/recovered
     when reading.
@@ -760,7 +781,7 @@ def replaceNonesWithNonsense(
         Reverses this operation.
     """
     if nones is None:
-        nones = numpy.where([d is None for d in data])[0]
+        nones = np.where([d is None for d in data])[0]
 
     try:
         # loop to find what the default value should be. This is the first non-None
@@ -770,7 +791,7 @@ def replaceNonesWithNonsense(
         val = None
 
         for val in data:
-            if isinstance(val, numpy.ndarray):
+            if isinstance(val, np.ndarray):
                 # if multi-dimensional, val[0] could still be an array, val.flat is
                 # a flattened iterator, so next(val.flat) gives the first value in
                 # an n-dimensional array
@@ -779,8 +800,8 @@ def replaceNonesWithNonsense(
                 if realType is type(None):
                     continue
 
-                defaultValue = numpy.reshape(
-                    numpy.repeat(NONE_MAP[realType], val.size), val.shape
+                defaultValue = np.reshape(
+                    np.repeat(NONE_MAP[realType], val.size), val.shape
                 )
                 break
             else:
@@ -797,8 +818,8 @@ def replaceNonesWithNonsense(
             realType = float
             defaultValue = NONE_MAP[realType]
 
-        if isinstance(val, numpy.ndarray):
-            data = numpy.array([d if d is not None else defaultValue for d in data])
+        if isinstance(val, np.ndarray):
+            data = np.array([d if d is not None else defaultValue for d in data])
         else:
             data[nones] = defaultValue
 
@@ -816,7 +837,7 @@ def replaceNonesWithNonsense(
 
     try:
         data = data.astype(realType)
-    except:  # noqa: bare-except
+    except Exception:
         raise ValueError(
             "Could not coerce data for {} to {}, data:\n{}".format(
                 paramName, realType, data
@@ -833,7 +854,7 @@ def replaceNonesWithNonsense(
     return data
 
 
-def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarray:
+def replaceNonsenseWithNones(data: np.ndarray, paramName: str) -> np.ndarray:
     """
     Replace special nonsense values with ``None``.
 
@@ -853,11 +874,11 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
     replaceNonesWithNonsense
     """
     # NOTE: This is closely-related to the NONE_MAP.
-    if numpy.issubdtype(data.dtype, numpy.floating):
-        isNone = numpy.isnan(data)
-    elif numpy.issubdtype(data.dtype, numpy.integer):
-        isNone = data == numpy.iinfo(data.dtype).min + 2
-    elif numpy.issubdtype(data.dtype, numpy.str_):
+    if np.issubdtype(data.dtype, np.floating):
+        isNone = np.isnan(data)
+    elif np.issubdtype(data.dtype, np.integer):
+        isNone = data == np.iinfo(data.dtype).min + 2
+    elif np.issubdtype(data.dtype, np.str_):
         isNone = data == "<!None!>"
     else:
         raise TypeError(
@@ -865,18 +886,18 @@ def replaceNonsenseWithNones(data: numpy.ndarray, paramName: str) -> numpy.ndarr
         )
 
     if data.ndim > 1:
-        result = numpy.ndarray(data.shape[0], dtype=numpy.dtype("O"))
+        result = np.ndarray(data.shape[0], dtype=np.dtype("O"))
         for i in range(data.shape[0]):
             if isNone[i].all():
                 result[i] = None
             elif isNone[i].any():
                 # This is the meat of the logic to replace "nonsense" with None.
-                result[i] = numpy.array(data[i], dtype=numpy.dtype("O"))
+                result[i] = np.array(data[i], dtype=np.dtype("O"))
                 result[i][isNone[i]] = None
             else:
                 result[i] = data[i]
     else:
-        result = numpy.ndarray(data.shape, dtype=numpy.dtype("O"))
+        result = np.ndarray(data.shape, dtype=np.dtype("O"))
         result[:] = data
         result[isNone] = None
 

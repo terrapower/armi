@@ -20,7 +20,7 @@ This enables photon transport problems. [CCCC-IV]_
 """
 import collections
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nuclearDataIO import cccc
@@ -28,7 +28,7 @@ from armi.nuclearDataIO import cccc
 
 def readBinary(fileName):
     """Read a binary FIXSRC file."""
-    with FIXSRC(fileName, "rb", numpy.zeros((0, 0, 0, 0))) as fs:
+    with FIXSRC(fileName, "rb", np.zeros((0, 0, 0, 0))) as fs:
         fs.readWrite()
     return fs.fixSrc
 
@@ -40,13 +40,16 @@ def writeBinary(fileName, fixSrcArray):
 
 
 class FIXSRC(cccc.Stream):
-    r"""Read or write a binary FIXSRC file from DIF3D fixed source input."""
+    """Read or write a binary FIXSRC file from DIF3D fixed source input."""
 
     def __init__(self, fileName, fileMode, fixSrc):
-        r"""
-        Initialize a gamma FIXSRC class for reading or writing a binary FIXSRC file for DIF3D gamma fixed source input.
-        If the intent is to write a gamma FIXSRC file, the variable FIXSRC.fixSrc, which contains to-be-written
-        core-wide multigroup gamma fixed source data, is constructed from an existing neutron RTFLUX file.
+        """
+        Initialize a gamma FIXSRC class for reading or writing a binary FIXSRC file for DIF3D gamma
+        fixed source input.
+
+        If the intent is to write a gamma FIXSRC file, the variable FIXSRC.fixSrc, which contains
+        to-be-written core-wide multigroup gamma fixed source data, is constructed from an existing
+        neutron RTFLUX file.
 
         Parameters
         ----------
@@ -57,20 +60,17 @@ class FIXSRC(cccc.Stream):
             If 'wb', this class writes a FIXSRC binary file.
             If 'rb', this class reads a preexisting FIXSRC binary file.
 
-        o : Operator object, optional
-            If fileMode='wb', an ARMI operator must be specified in order to construct gamma fixed source data
-            from a neutron RTFLUX file (requires reactor geometry and settings).
-
+        fixSrc : np.ndarray
+            Core-wide multigroup gamma fixed-source data.
         """
         cccc.Stream.__init__(self, fileName, fileMode)
 
         # copied from a sample FIXSRC output from "type 19" DIF3D input
         self.label = "FIXSRC                  "
         self.fileId = 1
-
         self.fixSrc = fixSrc
-        ni, nj, nz, ng = self.fixSrc.shape
 
+        ni, nj, nz, ng = self.fixSrc.shape
         self.fc = collections.OrderedDict(
             [
                 ("itype", 0),
@@ -90,7 +90,7 @@ class FIXSRC(cccc.Stream):
         )
 
     def readWrite(self):
-        r"""Read or write a binary FIXSRC file for DIF3D fixed source input."""
+        """Read or write a binary FIXSRC file for DIF3D fixed source input."""
         runLog.info(
             "{} gamma fixed source file {}".format(
                 "Reading" if "r" in self._fileMode else "Writing", self
@@ -107,19 +107,19 @@ class FIXSRC(cccc.Stream):
                 self._rw3DRecord(g, z)
 
     def _rwFileID(self):
-        r"""Read file identification information."""
+        """Read file identification information."""
         with self.createRecord() as fileIdRecord:
             self.label = fileIdRecord.rwString(self.label, 24)
             self.fileId = fileIdRecord.rwInt(self.fileId)
 
     def _rw1DRecord(self):
-        r"""Read/write parameters from/to the FIXSRC 1D block (file control)."""
+        """Read/write parameters from/to the FIXSRC 1D block (file control)."""
         with self.createRecord() as record:
             for var in self.fc.keys():
                 self.fc[var] = record.rwInt(self.fc[var])
 
     def _rw3DRecord(self, g, z):
-        r"""
+        """
         Read/write fixed source data from 3D block records.
 
         Parameters
@@ -129,10 +129,8 @@ class FIXSRC(cccc.Stream):
 
         z : int
             The DIF3D axial node index.
-
         """
         with self.createRecord() as record:
-
             ni = self.fc["ninti"]
             nj = self.fc["nintj"]
 

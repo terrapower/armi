@@ -186,7 +186,7 @@ class AssemblyList(composites.Composite):
                 )
                 lastTime = thisTime
                 thisTimeCount = 0
-            totCount += 1
+            totCount += 1  # noqa: SIM113
             thisTimeCount += 1
 
 
@@ -201,7 +201,6 @@ class SpentFuelPool(AssemblyList):
         ----------
         assem : Assembly
             The Assembly to add to the list
-
         loc : LocationBase, optional
             If provided, the assembly is inserted at that location. If it is not
             provided, the locator on the Assembly object will be used. If the

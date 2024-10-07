@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Inconel625."""
-import numpy
+import numpy as np
 
 from armi.materials.material import Material
 from armi.utils.units import getTc
@@ -78,7 +78,7 @@ class Inconel625(Material):
         """
         Tc = [21.0, 38.0, 93.0, 204.0, 316.0, 427.0, 538.0, 649.0, 760.0, 871.0, 982.0]
         k = [9.8, 10.1, 10.8, 12.5, 14.1, 15.7, 17.5, 19.0, 20.8, 22.8, 25.2]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(k), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(k), power).tolist()
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
@@ -142,7 +142,7 @@ class Inconel625(Material):
             645.0,
             670.0,
         ]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(cp), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(cp), power).tolist()
 
     def heatCapacity(self, Tk=None, Tc=None):
         """
@@ -203,9 +203,7 @@ class Inconel625(Material):
 
         Tc.insert(0, refTempC)
 
-        return numpy.polyfit(
-            numpy.array(Tc), numpy.array(linExpPercent), power
-        ).tolist()
+        return np.polyfit(np.array(Tc), np.array(linExpPercent), power).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
@@ -231,11 +229,12 @@ class Inconel625(Material):
         r"""
         From http://www.specialmetals.com/assets/documents/alloys/inconel/inconel-alloy-625.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
-        from percent strain to strain, then differentiated with respect to temperature to find the correlation
-        for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
+        to convert from percent strain to strain, then differentiated with respect to temperature to
+        find the correlation for instantaneous linear expansion.
 
-        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion correlation is 2*a/100*Tc + b/100
+        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
+        correlation is 2*a/100*Tc + b/100
 
         2*(5.083e-7/100.0)*Tc + 1.125e-3/100.0
 

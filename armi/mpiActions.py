@@ -59,7 +59,6 @@ import math
 import timeit
 
 from six.moves import cPickle
-import tabulate
 
 from armi import context
 from armi import interfaces
@@ -69,6 +68,7 @@ from armi import utils
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.utils import iterables
+from armi.utils import tabulate
 
 
 class MpiAction:
@@ -138,7 +138,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except (cPickle.PicklingError) as error:
+        except cPickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise
@@ -553,8 +553,8 @@ class DistributeStateAction(MpiAction):
             self.r.core.regenAssemblyLists()
 
         # check to make sure that everything has been properly reattached
-        if self.r.core.getFirstBlock().r is not self.r:
-            raise RuntimeError("Block.r is not self.r. Reattach the blocks!")
+        if self.r.core.getFirstBlock().core.r is not self.r:
+            raise RuntimeError("Block.core.r is not self.r. Reattach the blocks!")
 
         beforeCollection = timeit.default_timer()
 

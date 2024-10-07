@@ -22,19 +22,6 @@ from armi.utils import units
 def defineReactorParameters():
     pDefs = parameters.ParameterDefinitionCollection()
 
-    pDefs.add(
-        parameters.Parameter(
-            "rdIterNum",
-            units=units.UNITLESS,
-            description="Integer number of region-density equilibrium iterations",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=parameters.NoDefault,
-            setter=parameters.NoDefault,
-            categories=set(),
-        )
-    )
-
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
         pb.defParam(
             "cycle",
@@ -122,31 +109,29 @@ def defineCoreParameters():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "detailedNucKeys",
             setter=isNumpyArray("detailedNucKeys"),
             units=units.UNITLESS,
-            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and a.p.detailedNDens.
-            ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable states.""",
+            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and 
+            a.p.detailedNDens.ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable
+            states.""",
             saveToDB=True,
             default=None,
         )
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units=units.DEGREES,
             description=(
-                "Triple representing rotations counterclockwise around each spatial axis. For example, "
-                "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
+                "Triple representing rotations counterclockwise around each spatial axis. For "
+                "example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
             ),
             default=None,
         )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
-
         pb.defParam(
             "maxAssemNum",
             units=units.UNITLESS,
@@ -157,7 +142,6 @@ def defineCoreParameters():
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves", default=0)
 
     with pDefs.createBuilder(location="N/A", categories=["control rods"]) as pb:
-
         pb.defParam(
             "crMostValuablePrimaryRodLocation",
             default="",
@@ -181,14 +165,20 @@ def defineCoreParameters():
             default=0.0,
             units=units.PCM,
             saveToDB=True,
-            description="Worth requirement for the primary control rods in the reactor core to achieve safe shutdown.",
+            description=(
+                "Worth requirement for the primary control rods in the reactor core to "
+                "achieve safe shutdown."
+            ),
         )
         pb.defParam(
             "crWorthRequiredSecondary",
             default=0.0,
             units=units.PCM,
             saveToDB=True,
-            description="Worth requirement for the secondary control rods in the reactor core to achieve safe shutdown.",
+            description=(
+                "Worth requirement for the secondary control rods in the reactor core to "
+                "achieve safe shutdown."
+            ),
         )
         pb.defParam(
             "crTransientOverpowerWorth",
@@ -196,13 +186,12 @@ def defineCoreParameters():
             units=units.PCM,
             saveToDB=True,
             description=(
-                "Reactivity worth introduced by removal of the highest worth primary "
-                "control rod from the core, starting from its critical position"
+                "Reactivity worth introduced by removal of the highest worth primary control rod "
+                "from the core, starting from its critical position"
             ),
         )
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "axialMesh",
             units=units.CM,
@@ -212,11 +201,13 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(default=0.0, location="N/A") as pb:
-
         pb.defParam(
             "referenceBlockAxialMesh",
             units=units.CM,
-            description="The axial block boundaries that assemblies should conform to in a uniform mesh case.",
+            description=(
+                "The axial block boundaries that assemblies should conform to in a "
+                "uniform mesh case."
+            ),
             default=None,
         )
 
@@ -229,8 +220,8 @@ def defineCoreParameters():
         pb.defParam(
             "doublingTime",
             units=units.YEARS,
-            description="""The time it takes to produce enough spent fuel to fuel a daughter reactor,
-            in effective number of years at full power.""",
+            description="""The time it takes to produce enough spent fuel to fuel a daughter 
+            reactor, in effective number of years at full power.""",
         )
 
         pb.defParam(
@@ -272,8 +263,9 @@ def defineCoreParameters():
         pb.defParam(
             "maxcladFCCI",
             units=units.MICRONS,
-            description="The core wide maximum amount of cladding wastage due to fuel chemical clad interaction calculated "
-            + "at the 0-sigma TH HCF temperatures and using the conservative FCCI model",
+            description="The core wide maximum amount of cladding wastage due to fuel chemical "
+            + "clad interaction calculated at the 0-sigma TH HCF temperatures and using the "
+            + "conservative FCCI model",
             default=0.0,
         )
 
@@ -304,18 +296,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "outsideFuelRing",
-            units=units.UNITLESS,
-            description="The ring (integer) with the fraction of flux that best meets the target",
-        )
-
-        pb.defParam(
-            "outsideFuelRingFluxFr",
-            units=units.UNITLESS,
-            description="Ratio of the flux in a ring to the total reactor fuel flux",
-        )
-
-        pb.defParam(
             "peakGridDpaAt60Years",
             units=units.DPA,
             description="Grid plate peak dpa after 60 years irradiation",
@@ -340,7 +320,8 @@ def defineCoreParameters():
         pb.defParam(
             "THmaxDeltaPPump",
             units=units.PASCALS,
-            description="The maximum pumping pressure rise required to pump the given mass flow rate through the rod bundle",
+            description="The maximum pumping pressure rise required to pump the given mass flow "
+            + "rate through the rod bundle",
         )
 
         pb.defParam(
@@ -516,8 +497,8 @@ def defineCoreParameters():
             "jumpRing",
             units=units.UNITLESS,
             description=(
-                "Radial ring number where bred-up fuel assemblies shuffle jump from the low power to the "
-                "high power region."
+                "Radial ring number where bred-up fuel assemblies shuffle jump from the low power "
+                "to the high power region."
             ),
         )
 

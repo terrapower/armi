@@ -30,10 +30,8 @@ import cProfile
 import glob
 import os
 import pathlib
-import platform
 import pstats
 import re
-import shutil
 import sys
 import textwrap
 import time
@@ -41,7 +39,6 @@ import trace
 
 import coverage
 import six
-import tabulate
 
 from armi import context
 from armi import getPluginManager
@@ -57,13 +54,14 @@ from armi.reactor import blueprints
 from armi.reactor import reactors
 from armi.reactor import systemLayoutInput
 from armi.utils import pathTools
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import DirectoryChanger
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
 
-# change from default .coverage to help with Windows dotfile issues.
-# Must correspond with data_file entry in `coveragerc`!
+# Change from default .coverage to help with Windows dotfile issues.
+# Must correspond with data_file entry in `pyproject.toml`!
 COVERAGE_RESULTS_FILE = "coverage_results.cov"
 
 
@@ -263,11 +261,10 @@ class Case:
         def caseMatches(case):
             if os.path.normcase(case.title) != os.path.normcase(title):
                 return False
-            if os.path.normcase(os.path.abspath(case.directory)) != os.path.normcase(
-                os.path.abspath(dirName)
-            ):
-                return False
-            return True
+
+            return os.path.normcase(
+                os.path.abspath(case.directory)
+            ) == os.path.normcase(os.path.abspath(dirName))
 
         return {case for case in self._caseSuite if caseMatches(case)}
 
@@ -444,6 +441,10 @@ class Case:
         """Helper to provide the coverage configuration file according to the OS. A
         user-supplied file will take precedence, and is not checked for a dot-filename.
 
+        Notes
+        -----
+        ARMI replaced the ".coveragerc" file has been replaced by "pyproject.toml".
+
         Parameters
         ----------
         userCovFile : str
@@ -455,21 +456,14 @@ class Case:
         Returns
         -------
         covFile : str
-            path of coveragerc file
+            path of pyprojec.toml file
         """
         # User-defined file takes precedence.
         if userCovFile:
             return os.path.abspath(userCovFile)
 
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
-        covFile = os.path.join(covRcDir, ".coveragerc")
-        if platform.system() == "Windows":
-            covFileWin = os.path.join(covRcDir, "coveragerc")
-            if makeCopy is True:
-                # Make a copy of the file without the dot in the name
-                shutil.copy(covFile, covFileWin)
-            return covFileWin
-        return covFile
+        return os.path.join(covRcDir, "pyproject.toml")
 
     def _startProfiling(self):
         """Helper to the Case.run(): start the Python profiling,
@@ -611,7 +605,7 @@ class Case:
                     tabulate.tabulate(
                         queryData,
                         headers=["Number", "Statement", "Question"],
-                        tablefmt="armi",
+                        tableFmt="armi",
                     )
                 )
             if context.CURRENT_MODE == context.Mode.INTERACTIVE:
@@ -623,32 +617,6 @@ class Case:
     def summarizeDesign(self):
         """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
         _ = reportsEntryPoint.createReportFromSettings(self.cs)
-
-    def buildCommand(self, python="python"):
-        """
-        Build an execution command for running or submitting a job.
-
-        Parameters
-        ----------
-        python : str, optional
-            The path to the python executable to use for executing the case. By default
-            this will be whatever "python" resolves to in the target environment.
-            However when running in more exotic environments (e.g. HPC cluster), it is
-            usually desireable to provide a specific python executable.
-        """
-        command = ""
-        if self.cs["numProcessors"] > 1:
-            command += "mpiexec -n {} ".format(self.cs["numProcessors"])
-            if self.cs["mpiTasksPerNode"] > 0:
-                command += "-c {} ".format(self.cs["mpiTasksPerNode"])
-
-        command += "{} -u ".format(python)
-        if not __debug__:
-            command += " -O "
-
-        command += ' -m {} run "{}.yaml"'.format(context.APP_NAME, self.cs.caseTitle)
-
-        return command
 
     def clone(
         self,

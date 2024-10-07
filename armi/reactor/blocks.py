@@ -13,23 +13,23 @@
 # limitations under the License.
 
 """
-Defines blocks, which are axial chunks of assemblies. They contain
-most of the state variables, including power, flux, and homogenized number densities.
+Defines blocks, which are axial chunks of assemblies. They contain most of the state variables,
+including power, flux, and homogenized number densities.
 
-Assemblies are made of blocks.
-
-Blocks are made of components.
+Assemblies are made of blocks. Blocks are made of components.
 """
 from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import math
 
-import numpy
+import numpy as np
 
 from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
+from armi.nucDirectory import elements
+from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
 from armi.reactor import blockParameters
@@ -45,6 +45,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
 from armi.utils import hexagon
+from armi.utils import iterables
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -87,14 +88,13 @@ class Block(composites.Composite):
             The name of this block
 
         height : float, optional
-            The height of the block in cm. Defaults to 1.0 so that
-            `getVolume` assumes unit height.
+            The height of the block in cm. Defaults to 1.0 so that ``getVolume`` assumes unit height.
         """
         composites.Composite.__init__(self, name)
         self.p.height = height
         self.p.heightBOL = height
 
-        self.p.orientation = numpy.array((0.0, 0.0, 0.0))
+        self.p.orientation = np.array((0.0, 0.0, 0.0))
 
         self.points = []
         self.macros = None
@@ -163,12 +163,11 @@ class Block(composites.Composite):
 
         Notes
         -----
-        Used to implement a copy function for specific block types that can
-        be much faster than a deepcopy by glossing over details that may be
-        unnecessary in certain contexts.
+        Used to implement a copy function for specific block types that can be much faster than a
+        deepcopy by glossing over details that may be unnecessary in certain contexts.
 
-        This base class implementation is just a deepcopy of the block, in full detail
-        (not homogenized).
+        This base class implementation is just a deepcopy of the block, in full detail (not
+        homogenized).
         """
         return copy.deepcopy(self)
 
@@ -179,52 +178,15 @@ class Block(composites.Composite):
         c = self.getAncestor(lambda c: isinstance(c, Core))
         return c
 
-    @property
-    def r(self):
-        """
-        Look through the ancestors of the Block to find a Reactor, and return it.
-
-        Notes
-        -----
-        Typical hierarchy: Reactor <- Core <- Assembly <- Block
-        A block should only have a reactor through a parent assembly.
-        It may make sense to try to factor out usage of ``b.r``.
-
-        Returns
-        -------
-        core.parent : armi.reactor.reactors.Reactor
-            ARMI reactor object that is an ancestor of the block.
-
-        Raises
-        ------
-        ValueError
-            If the parent of the block's ``core`` is not an ``armi.reactor.reactors.Reactor``.
-        """
-        from armi.reactor.reactors import Reactor
-
-        core = self.core
-        if core is None:
-            return self.getAncestor(lambda o: isinstance(o, Reactor))
-
-        if not isinstance(core.parent, Reactor):
-            raise TypeError(
-                "Parent of Block ({}) core is not a Reactor. Got {} instead".format(
-                    core.parent, type(core.parent)
-                )
-            )
-
-        return core.parent
-
     def makeName(self, assemNum, axialIndex):
         """
         Generate a standard block from assembly number.
 
         This also sets the block-level assembly-num param.
 
-        Once, we used a axial-character suffix to represent the axial
-        index, but this is inherently limited so we switched to a numerical
-        name. The axial suffix needs can be brought in in plugins that require
-        them.
+        Once, we used a axial-character suffix to represent the axial index, but this is inherently
+        limited so we switched to a numerical name. The axial suffix needs can be brought in to
+        plugins that require them.
 
         Examples
         --------
@@ -238,10 +200,10 @@ class Block(composites.Composite):
         """
         Compute the smear density of pins in this block.
 
-        Smear density is the area of the fuel divided by the area of the space available
-        for fuel inside the cladding. Other space filled with solid materials is not
-        considered available. If all the area is fuel, it has 100% smear density. Lower
-        smear density allows more room for swelling.
+        Smear density is the area of the fuel divided by the area of the space available for fuel
+        inside the cladding. Other space filled with solid materials is not considered available. If
+        all the area is fuel, it has 100% smear density. Lower smear density allows more room for
+        swelling.
 
         .. warning:: This requires circular fuel and circular cladding. Designs that vary
             from this will be wrong. It may make sense in the future to put this somewhere a
@@ -249,13 +211,12 @@ class Block(composites.Composite):
 
         Notes
         -----
-        This only considers circular objects. If you have a cladding that is not a circle,
-        it will be ignored.
+        This only considers circular objects. If you have a cladding that is not a circle, it will
+        be ignored.
 
-        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap
-        represents overlap area between two solid components. To account for this
-        additional space within the pin cladding the abs(negativeArea) is added to the
-        inner cladding area.
+        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap represents
+        overlap area between two solid components. To account for this additional space within the
+        pin cladding the abs(negativeArea) is added to the inner cladding area.
 
         Parameters
         ----------
@@ -287,7 +248,7 @@ class Block(composites.Composite):
             )
 
         # Compute component areas
-        cladID = numpy.mean([clad.getDimension("id", cold=cold) for clad in clads])
+        cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = (
             math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         )
@@ -299,7 +260,8 @@ class Block(composites.Composite):
             if c.isFuel():
                 fuelComponentArea += componentArea
             elif c.hasFlags(Flags.SLUG):
-                # this flag designates that this clad/slug combination isn't fuel and shouldn't be counted in the average
+                # this flag designates that this clad/slug combination isn't fuel and shouldn't be
+                # counted in the average
                 pass
             else:
                 if c.containsSolidMaterial():
@@ -337,9 +299,8 @@ class Block(composites.Composite):
         Raises
         ------
         ValueError
-            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
-
-
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
+            to more positions than necessary.
         """
         raise NotImplementedError()
 
@@ -363,7 +324,7 @@ class Block(composites.Composite):
 
         volume: float, optional
             If average=True, the volume-integrated flux is divided by volume before being returned.
-            The user may specify a volume here, or the function will obtain the block volume directly.
+            The user may specify a volume, or the function will obtain the block volume directly.
 
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
@@ -375,7 +336,7 @@ class Block(composites.Composite):
         flux = composites.ArmiObject.getMgFlux(
             self, adjoint=adjoint, average=False, volume=volume, gamma=gamma
         )
-        if average and numpy.any(self.p.lastMgFlux):
+        if average and np.any(self.p.lastMgFlux):
             volume = volume or self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
             flux = (flux + lastFlux) / 2.0
@@ -391,8 +352,8 @@ class Block(composites.Composite):
         Parameters
         ----------
         fluxes : 2-D list of floats
-            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for pin i.
-            Flux units are the standard n/cm^2/s.
+            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for
+            pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         adjoint : bool, optional
             Whether to set real or adjoint data.
@@ -402,8 +363,8 @@ class Block(composites.Composite):
         Outputs
         -------
         self.p.pinMgFluxes : 2-D array of floats
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.
-            Flux units are the standard n/cm^2/s.
+            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g
+            for pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
         pinFluxes = []
@@ -422,7 +383,7 @@ class Block(composites.Composite):
                 thisPinFlux.append(fluxes[g][pinLoc - 1])
             pinFluxes.append(thisPinFlux)
 
-        pinFluxes = numpy.array(pinFluxes)
+        pinFluxes = np.array(pinFluxes)
         if gamma:
             if adjoint:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
@@ -634,17 +595,6 @@ class Block(composites.Composite):
     def getMaxArea(self):
         raise NotImplementedError
 
-    def getMaxVolume(self):
-        """
-        The maximum volume of this object if it were totally full.
-
-        Returns
-        -------
-        vol : float
-            volume in cm^3.
-        """
-        return self.getMaxArea() * self.getHeight()
-
     def getArea(self, cold=False):
         """
         Return the area of a block for a full core or a 1/3 core model.
@@ -733,11 +683,6 @@ class Block(composites.Composite):
         """
         return 1.0
 
-    def isOnWhichSymmetryLine(self):
-        """Block symmetry lines are determined by the reactor, not the parent."""
-        grid = self.core.spatialGrid
-        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
-
     def adjustDensity(self, frac, adjustList, returnMass=False):
         """
         adjusts the total density of each nuclide in adjustList by frac.
@@ -769,7 +714,6 @@ class Block(composites.Composite):
         numDensities = self.getNuclideNumberDensities(adjustList)
 
         for nuclideName, dens in zip(adjustList, numDensities):
-
             if not dens:
                 # don't modify zeros.
                 continue
@@ -794,7 +738,7 @@ class Block(composites.Composite):
             # BOL assems get expanded to a reference so the first check is needed so it
             # won't call .blueprints on None since BOL assems don't have a core/r
             return
-        if any(nuc in self.r.blueprints.activeNuclides for nuc in adjustList):
+        if any(nuc in self.core.r.blueprints.activeNuclides for nuc in adjustList):
             self.p.detailedNDens *= frac
             # Other power densities do not need to be updated as they are calculated in
             # the global flux interface, which occurs after axial expansion from crucible
@@ -1122,9 +1066,11 @@ class Block(composites.Composite):
         nPins = [
             sum(
                 [
-                    int(c.getDimension("mult"))
-                    if isinstance(c, basicShapes.Circle)
-                    else 0
+                    (
+                        int(c.getDimension("mult"))
+                        if isinstance(c, basicShapes.Circle)
+                        else 0
+                    )
                     for c in self.iterComponents(compType)
                 ]
             )
@@ -1263,9 +1209,7 @@ class Block(composites.Composite):
             and c.hasFlags(Flags.GAP)
             and c.getDimension("id") == 0
         )
-        if self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap:
-            return True
-        return False
+        return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
     def getPitch(self, returnComp=False):
         """
@@ -1290,6 +1234,7 @@ class Block(composites.Composite):
         ----------
         returnComp : bool, optional
             If true, will return the component that has the maximum pitch as well
+
         Returns
         -------
         pitch : float or None
@@ -1417,9 +1362,9 @@ class Block(composites.Composite):
         lib = self.core.lib
         flux = self.getMgFlux(gamma=gamma)
         flux = [fi / max(flux) for fi in flux]
-        mfpNumerator = numpy.zeros(len(flux))
-        absMfpNumerator = numpy.zeros(len(flux))
-        transportNumerator = numpy.zeros(len(flux))
+        mfpNumerator = np.zeros(len(flux))
+        absMfpNumerator = np.zeros(len(flux))
+        transportNumerator = np.zeros(len(flux))
 
         numDensities = self.getNumberDensities()
 
@@ -1562,7 +1507,7 @@ class Block(composites.Composite):
 
         Returns
         -------
-        integratedFlux : numpy.array
+        integratedFlux : np.ndarray
             multigroup neutron tracklength in [n-cm/s]
         """
         if adjoint:
@@ -1574,7 +1519,7 @@ class Block(composites.Composite):
         else:
             integratedFlux = self.p.mgFlux
 
-        return numpy.array(integratedFlux)
+        return np.array(integratedFlux)
 
     def getLumpedFissionProductCollection(self):
         """
@@ -1608,22 +1553,19 @@ class Block(composites.Composite):
             :id: I_ARMI_MANUAL_TARG_COMP
             :implements: R_ARMI_MANUAL_TARG_COMP
 
-            Sets the ``axialExpTargetComponent`` parameter on the block to the name
-            of the Component which is passed in. This is then used by the
+            Sets the ``axialExpTargetComponent`` parameter on the block to the name of the Component
+            which is passed in. This is then used by the
             :py:class:`~armi.reactor.converters.axialExpansionChanger.AxialExpansionChanger`
             class during axial expansion.
 
-            This method is typically called from within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`
-            during the process of building a Block from the blueprints.
+            This method is typically called from within
+            :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct` during the
+            process of building a Block from the blueprints.
 
         Parameter
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
-            component specified to be target component for axial expansion changer
-
-        See Also
-        --------
-        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
+            Component specified to be target component for axial expansion changer
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
@@ -1653,6 +1595,153 @@ class Block(composites.Composite):
                 coords.append(clad.spatialLocator.getLocalCoordinates())
         return coords
 
+    def getTotalEnergyGenerationConstants(self):
+        """
+        Get the total energy generation group constants for a block.
+
+        Gives the total energy generation rates when multiplied by the multigroup flux.
+
+        Returns
+        -------
+        totalEnergyGenConstant: np.ndarray
+            Total (fission + capture) energy generation group constants (Joules/cm)
+        """
+        return (
+            self.getFissionEnergyGenerationConstants()
+            + self.getCaptureEnergyGenerationConstants()
+        )
+
+    def getFissionEnergyGenerationConstants(self):
+        """
+        Get the fission energy generation group constants for a block.
+
+        Gives the fission energy generation rates when multiplied by the multigroup
+        flux.
+
+        Returns
+        -------
+        fissionEnergyGenConstant: np.ndarray
+            Energy generation group constants (Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot compute energy generation group constants without a library"
+                ". Please ensure a library exists."
+            )
+
+        return xsCollections.computeFissionEnergyGenerationConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getCaptureEnergyGenerationConstants(self):
+        """
+        Get the capture energy generation group constants for a block.
+
+        Gives the capture energy generation rates when multiplied by the multigroup
+        flux.
+
+        Returns
+        -------
+        fissionEnergyGenConstant: np.ndarray
+            Energy generation group constants (Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot compute energy generation group constants without a library"
+                ". Please ensure a library exists."
+            )
+
+        return xsCollections.computeCaptureEnergyGenerationConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getNeutronEnergyDepositionConstants(self):
+        """
+        Get the neutron energy deposition group constants for a block.
+
+        Returns
+        -------
+        energyDepConstants: np.ndarray
+            Neutron energy generation group constants (in Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot get neutron energy deposition group constants without "
+                "a library. Please ensure a library exists."
+            )
+
+        return xsCollections.computeNeutronEnergyDepositionConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getGammaEnergyDepositionConstants(self):
+        """
+        Get the gamma energy deposition group constants for a block.
+
+        Returns
+        -------
+        energyDepConstants: np.ndarray
+            Energy generation group constants (in Joules/cm)
+
+        Raises
+        ------
+        RuntimeError:
+            Reports if a cross section library is not assigned to a reactor.
+        """
+        if not self.core.lib:
+            raise RuntimeError(
+                "Cannot get gamma energy deposition group constants without "
+                "a library. Please ensure a library exists."
+            )
+
+        return xsCollections.computeGammaEnergyDepositionConstants(
+            self.getNumberDensities(), self.core.lib, self.getMicroSuffix()
+        )
+
+    def getBoronMassEnrich(self):
+        """Return B-10 mass fraction."""
+        b10 = self.getMass("B10")
+        b11 = self.getMass("B11")
+        total = b11 + b10
+        if total == 0.0:
+            return 0.0
+        return b10 / total
+
+    def getPuMoles(self):
+        """Returns total number of moles of Pu isotopes."""
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        puN = sum(self.getNuclideNumberDensities(nucNames))
+
+        return (
+            puN
+            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+            * self.getVolume()
+            * self.getSymmetryFactor()
+        )
+
+    def getUraniumMassEnrich(self):
+        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
+        u5 = self.getMass("U235")
+        if u5 < 1e-10:
+            return 0.0
+        u8 = self.getMass("U238")
+        return u5 / (u8 + u5)
+
 
 class HexBlock(Block):
     """
@@ -1662,10 +1751,9 @@ class HexBlock(Block):
         :id: I_ARMI_BLOCK_HEX
         :implements: R_ARMI_BLOCK_HEX
 
-        This class defines hexagonal-shaped Blocks. It inherits functionality from the parent
-        class, Block, and defines hexagonal-specific methods including, but not limited to,
-        querying pin pitch, pin linear power densities, hydraulic diameter, and retrieving
-        inner and outer pitch.
+        This class defines hexagonal-shaped Blocks. It inherits functionality from the parent class,
+        Block, and defines hexagonal-specific methods including, but not limited to, querying pin
+        pitch, pin linear power densities, hydraulic diameter, and retrieving inner and outer pitch.
     """
 
     PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (components.Hexagon,)
@@ -1730,13 +1818,13 @@ class HexBlock(Block):
         by omitting this detailed data and only providing the necessary level of detail for
         the uniform mesh reactor: number densities on each block.
 
-        .. note: Individual components within a block can have different temperatures, and this
+        Individual components within a block can have different temperatures, and this
         can affect cross sections. This temperature variation is captured by the lattice physics
         module. As long as temperature distribution is correctly captured during cross section
         generation, it doesn't need to be transferred to the neutronics solver directly through
         this copy operation.
 
-        .. note: If you make a new block, you must add it to an assembly and a reactor.
+        If you make a new block, you must add it to an assembly and a reactor.
 
         Returns
         -------
@@ -1888,7 +1976,7 @@ class HexBlock(Block):
             )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
-        self.p[powerKey] = numpy.zeros(numPins)
+        self.p[powerKey] = np.zeros(numPins)
 
         # Loop through rings. The *pinLocation* parameter is only accessed for fueled
         # blocks; it is assumed that non-fueled blocks do not use a rotation map.
@@ -1925,8 +2013,7 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the pinLocation parameter, is also updated via
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
+        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
 
         Parameters
         ----------
@@ -1935,54 +2022,53 @@ class HexBlock(Block):
             in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
             and 2 * PI)
 
-        See Also
-        --------
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self.rotatePins(rotNum)
-        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for param in params:
-            if isinstance(self.p[param], list):
-                if len(self.p[param]) == 6:
-                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
-                elif self.p[param] == []:
-                    # List hasn't been defined yet, no warning needed.
-                    pass
-                else:
-                    msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
-                    )
-                    runLog.warning(msg)
-            elif isinstance(self.p[param], numpy.ndarray):
-                if len(self.p[param]) == 6:
-                    self.p[param] = numpy.concatenate(
-                        (self.p[param][-rotNum:], self.p[param][:-rotNum])
-                    )
-                elif len(self.p[param]) == 0:
+        self._rotatePins(rotNum)
+        self._rotateBoundaryParameters(rotNum)
+        self._rotateDisplacement(rad)
+
+    def _rotateBoundaryParameters(self, rotNum: int):
+        """Rotate any parameters defined on the corners or edge of bounding hexagon.
+
+        Parameters
+        ----------
+        rotNum : int
+            Rotation number between zero and five, inclusive, specifying how many
+            rotations have taken place.
+
+        """
+        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for name in names:
+            original = self.p[name]
+            if isinstance(original, (list, np.ndarray)):
+                if len(original) == 6:
+                    # Rotate by making the -rotNum item be first
+                    self.p[name] = iterables.pivot(original, -rotNum)
+                elif len(original) == 0:
                     # Hasn't been defined yet, no warning needed.
                     pass
                 else:
                     msg = (
                         "No rotation method defined for spatial parameters that aren't "
                         "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
+                        f"on {name}"
                     )
                     runLog.warning(msg)
-            elif isinstance(self.p[param], (int, float)):
+            elif isinstance(original, (int, float)):
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-            elif self.p[param] is None:
+            elif original is None:
                 # param is not set yet. no rotations as well.
                 pass
             else:
                 raise TypeError(
-                    f"b.rotate() method received unexpected data type for {param} on block {self}\n"
-                    + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
+                    f"b.rotate() method received unexpected data type for {name} on block {self}\n"
+                    + f"expected list, np.ndarray, int, or float. received {original}"
                 )
+
+    def _rotateDisplacement(self, rad: float):
         # This specifically uses the .get() functionality to avoid an error if this
         # parameter does not exist.
         dispx = self.p.get("displacementX")
@@ -1991,7 +2077,7 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def rotatePins(self, rotNum, justCompute=False):
+    def _rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
         not rotate all block quantities, just the pins.
@@ -2050,10 +2136,12 @@ class HexBlock(Block):
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
 
-        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
-        # cladding count.
-        numPins = self.getNumComponents(Flags.CLAD)
-        rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
+        numPins = self.getNumPins()
+        hexRings = hexagon.numRingsToHoldNumCells(numPins)
+        fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
+        rotateIndexLookup = dict(
+            zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1))
+        )
 
         # Look up the current orientation and add this to it. The math below just rotates
         # from the reference point so we need a total rotation.
@@ -2061,22 +2149,12 @@ class HexBlock(Block):
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
-        for pinNum in range(2, numPins + 1):
+        for pinNum in range(2, fullNumPins + 1):
             if rotNum == 0:
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring. Rotation does not change the pin ring!
-                ring = int(
-                    math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
-                )
-
-                # Rotate the pin position (within the ring, which does not change)
-                tot_pins = 1 + 3 * ring * (ring - 1)
-                newPinLocation = pinNum + (ring - 1) * rotNum
-                if newPinLocation > tot_pins:
-                    newPinLocation -= (ring - 1) * 6
-
+                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
@@ -2086,7 +2164,7 @@ class HexBlock(Block):
         if not justCompute:
             self.setRotationNum(rotNum)
             self.p["pinLocation"] = [
-                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+                rotateIndexLookup[pinNum] for pinNum in range(1, fullNumPins + 1)
             ]
 
         return rotateIndexLookup
@@ -2198,7 +2276,7 @@ class HexBlock(Block):
     def getRotationNum(self):
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
         return (
-            numpy.rint(self.p.orientation[2] / 360.0 * 6) % 6
+            np.rint(self.p.orientation[2] / 360.0 * 6) % 6
         )  # assume rotation only in Z
 
     def setRotationNum(self, rotNum):
@@ -2225,7 +2303,7 @@ class HexBlock(Block):
         """
         try:
             symmetry = self.parent.spatialLocator.grid.symmetry
-        except:  # noqa: bare-except
+        except Exception:
             return 1.0
         if (
             symmetry.domain == geometry.DomainType.THIRD_CORE
@@ -2251,25 +2329,25 @@ class HexBlock(Block):
 
     def autoCreateSpatialGrids(self):
         """
-        Given a block without a spatialGrid, create a spatialGrid and give its children
-        the corresponding spatialLocators (if it is a simple block).
+        Given a block without a spatialGrid, create a spatialGrid and give its children the
+        corresponding spatialLocators (if it is a simple block).
 
-        In this case, a simple block would be one that has either multiplicity of
-        components equal to 1 or N but no other multiplicities. Also, this should only
-        happen when N fits exactly into a given number of hex rings.  Otherwise, do not
-        create a grid for this block.
+        In this case, a simple block would be one that has either multiplicity of components equal
+        to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
+        into a given number of hex rings.  Otherwise, do not create a grid for this block.
 
         Notes
         -----
-        If the block meets all the conditions, we gather all components to either be a multiIndexLocation containing all
-        of the pin positions, otherwise, locator is the center (0,0).
+        If the Block meets all the conditions, we gather all components to either be a
+        multiIndexLocation containing all of the pin positions, or the locator is the center (0,0).
 
         Also, this only works on blocks that have 'flat side up'.
 
         Raises
         ------
         ValueError
-            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads to more positions than necessary.
+            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
+            to more positions than necessary.
         """
         # Check multiplicities...
         mults = {c.getDimension("mult") for c in self.iterComponents()}
@@ -2331,8 +2409,8 @@ class HexBlock(Block):
         """
         Get the pin pitch in cm.
 
-        Assumes that the pin pitch is defined entirely by contacting cladding tubes
-        and wire wraps. Grid spacers not yet supported.
+        Assumes that the pin pitch is defined entirely by contacting cladding tubes and wire wraps.
+        Grid spacers not yet supported.
 
         .. impl:: Pin pitch within block is retrievable.
             :id: I_ARMI_BLOCK_DIMS6
@@ -2458,7 +2536,7 @@ class HexBlock(Block):
             correctionFactor = 1.0
             if isinstance(c, Helix):
                 # account for the helical wire wrap
-                correctionFactor = numpy.hypot(
+                correctionFactor = np.hypot(
                     1.0,
                     math.pi
                     * c.getDimension("helixDiameter")
@@ -2519,7 +2597,6 @@ class HexBlock(Block):
 
 
 class CartesianBlock(Block):
-
     PITCH_DIMENSION = "widthOuter"
     PITCH_COMPONENT_TYPE = components.Rectangle
 

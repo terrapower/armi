@@ -18,6 +18,8 @@ import os
 import unittest
 from statistics import mean
 
+from numpy import array, linspace, zeros
+
 from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
@@ -28,14 +30,15 @@ from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
-    _determineLinked,
     getSolidComponents,
+)
+from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
+    _determineLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import units
-from numpy import array, linspace, zeros
 
 
 class AxialExpansionTestBase(unittest.TestCase):
@@ -448,10 +451,14 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         .. test:: Ensure the ACLP does not move during fuel-only expansion.
             :id: T_ARMI_AXIAL_EXP_PRESC1
             :tests: R_ARMI_AXIAL_EXP_PRESC
+
+        .. test:: Ensure the component volumes are correctly updated during prescribed expansion.
+            :id: T_ARMI_AXIAL_EXP_PRESC2
+            :tests: R_ARMI_AXIAL_EXP_PRESC
         """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
         assembly.spatialGrid.armiObject = assembly
         assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
@@ -470,6 +477,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
+        # get total assembly fluid mass pre-expansion
+        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
+
         # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
@@ -477,6 +487,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         pList = zeros(len(cList)) + 1.01
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
+
+        # get total assembly fluid mass post-expansion
+        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
 
         # do assertion
         self.assertEqual(
@@ -489,6 +502,26 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             aclp.p.ztop,
             msg="ACLP ztop has changed. It should not with fuel component only expansion!",
         )
+
+        # verify that the component volumes are correctly updated
+        for b in assembly:
+            for c in b:
+                self.assertAlmostEqual(
+                    c.getArea() * b.getHeight(),
+                    c.getVolume(),
+                    places=12,
+                )
+        # verify that the total assembly fluid mass is preserved through expansion
+        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
+
+    @staticmethod
+    def _getTotalAssemblyFluidMass(assembly) -> float:
+        totalAssemblyFluidMass = 0.0
+        for b in assembly:
+            for c in b:
+                if isinstance(c.material, materials.material.Fluid):
+                    totalAssemblyFluidMass += c.getMass()
+        return totalAssemblyFluidMass
 
     def test_reset(self):
         self.obj.setAssembly(self.a)
@@ -564,7 +597,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
     def test_isTopDummyBlockPresent(self):
         # build test assembly without dummy
         assembly = HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
         assembly.spatialGrid.armiObject = assembly
         assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.calculateZCoords()
@@ -864,7 +897,8 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         Notes
         -----
         For R_ARMI_INP_COLD_HEIGHT, the action of axial expansion occurs in setUp() during core
-        construction, specifically in :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
+        construction, specifically in
+        :py:meth:`constructAssem <armi.reactor.blueprints.Blueprints.constructAssem>`
 
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
@@ -913,14 +947,15 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
     def checkColdHeightBlockMass(
         self, bStd: HexBlock, bExp: HexBlock, flagType: Flags, nuclide: str
     ):
-        """Checks that nuclide masses for blocks with input cold heights and "inputHeightsConsideredHot": True are underpredicted.
+        """Checks that nuclide masses for blocks with input cold heights and
+        "inputHeightsConsideredHot": True are underpredicted.
 
         Notes
         -----
-        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs, then
-        the nuclide densities are thermally expanded but the block height is not. This ultimately results in
-        nuclide masses being underpredicted relative to the case where both nuclide densities and block heights
-        are thermally expanded.
+        If blueprints have cold blocks heights with "inputHeightsConsideredHot": True in the inputs,
+        then the nuclide densities are thermally expanded but the block height is not. This
+        ultimately results in nuclide masses being underpredicted relative to the case where both
+        nuclide densities and block heights are thermally expanded.
         """
         # custom materials don't expand
         if not isinstance(bStd.getComponent(flagType).material, custom.Custom):
@@ -976,7 +1011,8 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
         Notes
         -----
         - components "typeA" and "typeB" are assumed to be vertically stacked
-        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component to "typeB"
+        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component
+          to "typeB"
         - the different assertions are particularly useful for comparing two annuli
         - to add Component class types to a test:
             Add dictionary entry with following:
@@ -1128,7 +1164,7 @@ def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
         height = 10.0 + 0.02 * (250.0 - 25.0)
 
     assembly = HexAssembly("testAssemblyType")
-    assembly.spatialGrid = grids.axialUnitGrid(numCells=1)
+    assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=1)
     assembly.spatialGrid.armiObject = assembly
     assembly.add(_buildTestBlock("shield", name, hotTemp, height))
     assembly.add(_buildTestBlock("fuel", name, hotTemp, height))

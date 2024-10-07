@@ -63,5 +63,5 @@ Create a ``burnStep`` sensitivity study from some base CS::
     
 Then submit the inputs to your HPC cluster.
 """
-from armi.cases.case import Case  # noqa: unused-import
-from armi.cases.suite import CaseSuite  # noqa: unused-import
+from armi.cases.case import Case  # noqa: F401
+from armi.cases.suite import CaseSuite  # noqa: F401

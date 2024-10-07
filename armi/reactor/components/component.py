@@ -20,7 +20,7 @@ This module contains the abstract definition of a Component.
 import copy
 import re
 
-import numpy
+import numpy as np
 
 from armi import materials
 from armi import runLog
@@ -30,8 +30,8 @@ from armi.materials import material
 from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
-from armi.reactor import parameters
 from armi.reactor import flags
+from armi.reactor import parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -123,10 +123,11 @@ class ComponentType(composites.CompositeModelType):
     in order to conform them to the correct format. Additionally, the constructors
     arguments can be used to determine the Component subclasses dimensions.
 
-    .. warning:: The import-time metaclass-based component subclass registration was a
-        good idea, but in practice has caused significant confusion and trouble. We will
-        replace this soon with an explicit plugin-based component subclass registration
-        system.
+    Warning
+    -------
+    The import-time metaclass-based component subclass registration was a good idea, but in practice
+    has caused significant confusion and trouble. We will replace this soon with an explicit
+    plugin-based component subclass registration system.
     """
 
     TYPES = dict()  #: :meta hide-value:
@@ -225,6 +226,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     pDefs = componentParameters.getComponentParameterDefinitions()
 
+    material: materials.Material
+
     def __init__(
         self,
         name,
@@ -278,7 +281,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
         try:
             return thisOD < thatOD
-        except:  # noqa: bare-except
+        except Exception:
             raise ValueError(
                 "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
                 "bounding circle outer diameters are not comparable.".format(
@@ -325,7 +328,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                     comp = components[name]
                     linkedKey = match.group(2)
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
-                except:  # noqa: bare-except
+                except Exception:
                     if value.count(".") > 1:
                         raise ValueError(
                             "Component names should not have periods in them: `{}`".format(
@@ -549,11 +552,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         which may be placed between components that will overlap during thermal expansion
         (such as liners and cladding and annular fuel).
 
-        Overlapping is allowed to maintain conservation of atoms while sticking close
-        to the as-built geometry. Modules that need true geometries will have to
-        handle this themselves.
+        Overlapping is allowed to maintain conservation of atoms while sticking close to the
+        as-built geometry. Modules that need true geometries will have to handle this themselves.
         """
-        if numpy.isnan(area):
+        if np.isnan(area):
             return
 
         if area < 0.0:
@@ -576,7 +578,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         self._checkNegativeArea
         """
-        if numpy.isnan(volume):
+        if np.isnan(volume):
             return
 
         if volume < 0.0 and self.containsSolidMaterial():
@@ -1097,7 +1099,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Set another component's number densities to reflect this one merged into it.
 
-        You must also modify the geometry of the other component and remove this component to conserve atoms.
+        You must also modify the geometry of the other component and remove this component to
+        conserve atoms.
         """
         # record pre-merged number densities and areas
         aMe = self.getArea()
@@ -1133,11 +1136,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         self._restoreLinkedDims(linkedDims)
 
     def restoreBackup(self, paramsToApply):
-        r"""
+        """
         Restore the parameters from perviously created backup.
 
-        This needed to be overridden due to linked components which actually have a parameter value of another
-        ARMI component.
+        This needed to be overridden due to linked components which actually have a parameter value
+        of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
         composites.Composite.restoreBackup(self, paramsToApply)
@@ -1147,12 +1150,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         linkedDims = []
 
         for dimName in self.DIMENSION_NAMES:
-            # backUp and restore are called in tight loops, getting the value and
-            # checking here is faster than calling self.dimensionIsLinked because that
-            # requires and extra p.__getitem__
+            # backUp and restore are called in tight loops, getting the value and checking here is
+            # faster than calling self.dimensionIsLinked because that requires and extra
+            # p.__getitem__
             try:
                 val = self.p[dimName]
-            except:  # noqa: bare-except
+            except Exception:
                 raise RuntimeError(
                     "Could not find parameter {} defined for {}. Is the desired "
                     "Component class?".format(dimName, self)
@@ -1223,14 +1226,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Return the multigroup neutron tracklength in [n-cm/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
 
         Parameters
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -1241,7 +1243,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.p.pinNum is None:
             # no pin-level flux is available
             if not self.parent:
-                return numpy.zeros(1)
+                return np.zeros(1)
+
             volumeFraction = self.getVolume() / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
@@ -1256,15 +1259,20 @@ class Component(composites.Composite, metaclass=ComponentType):
                 pinFluxes = self.parent.p.pinMgFluxesAdj
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
+
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
-    def density(self):
+    def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
-        if not density:
-            # possible that there are no nuclides in this component yet. In that case, defer to Material.
-            density = self.material.density(Tc=self.temperatureInC)
+        if not density and not isinstance(self.material, void.Void):
+            # possible that there are no nuclides in this component yet. In that case,
+            # defer to Material. Material.density is wrapped to warn if it's attached
+            # to a parent. Avoid that by calling the inner function directly
+            density = self.material.density.__wrapped__(
+                self.material, Tc=self.temperatureInC
+            )
 
         return density
 
@@ -1295,9 +1303,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        This pitch data should only be used if this is the pitch defining component in
-        a block. The block is responsible for determining which component in it is the
-        pitch defining component.
+        This pitch data should only be used if this is the pitch defining component in a block. The
+        block is responsible for determining which component in it is the pitch defining component.
         """
         raise NotImplementedError(
             f"Method not implemented on component {self}. "
@@ -1307,6 +1314,21 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getFuelMass(self) -> float:
         """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
+
+    def finalizeLoadingFromDB(self):
+        """Apply any final actions after creating the component from database.
+
+        This should **only** be called internally by the database loader. Otherwise
+        some properties could be doubly applied.
+
+        This exists because the theoretical density is initially defined as a material
+        modification, and then stored as a Material attribute. When reading from blueprints,
+        the blueprint loader sets the theoretical density parameter from the Material
+        attribute. Component parameters are also set when reading from the database.
+        But, we need to set the Material attribute so routines that fetch a material's
+        density property account for the theoretical density.
+        """
+        self.material.adjustTD(self.p.theoreticalDensityFrac)
 
 
 class ShapedComponent(Component):

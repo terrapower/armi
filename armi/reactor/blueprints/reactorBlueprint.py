@@ -15,18 +15,17 @@
 """
 Definitions of top-level reactor arrangements like the Core (default), SFP, etc.
 
-See documentation of blueprints in :doc:`/user/inputs/blueprints` for more context. See
-example in :py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
+See documentation of blueprints in :doc:`/user/inputs/blueprints` for more context. See example in
+:py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
 
-This was built to replace the old system that loaded the core geometry from the
-cs['geometry'] setting. Until the geom file-based input is completely removed, this
-system will attempt to migrate the core layout from geom files. When geom files are
-used, explicitly specifying a ``core`` system will result in an error.
+This was built to replace the old system that loaded the core geometry from the ``cs['geometry']``
+setting. Until the geom file-based input is completely removed, this system will attempt to migrate
+the core layout from geom files. When geom files are used, explicitly specifying a ``core`` system
+will result in an error.
 
-System Blueprints are a big step in the right direction to generalize user input, but
-was still mostly adapted from the old Core layout input. As such, they still only really
-support Core-like systems. Future work should generalize the concept of "system" to more
-varied scenarios.
+System Blueprints are a big step in the right direction to generalize user input, but was still
+mostly adapted from the old Core layout input. As such, they still only really support Core-like
+systems. Future work should generalize the concept of "system" to more varied scenarios.
 
 See Also
 --------
@@ -34,7 +33,6 @@ armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layo
 armi.reactor.systemLayoutInput.SystemLayoutInput : Deprecated method for reading the individual
 face-map xml files.
 """
-import tabulate
 import yamlize
 
 from armi import context
@@ -43,6 +41,7 @@ from armi import runLog
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
+from armi.utils import tabulate
 
 
 class SystemBlueprint(yamlize.Object):
@@ -61,17 +60,20 @@ class SystemBlueprint(yamlize.Object):
         which is in turn included into the overall blueprints within
         :py:class:`~armi.reactor.blueprints.Blueprints`.
 
-        This class includes a :py:meth:`~armi.reactor.blueprints.reactorBlueprint.SystemBlueprint.construct`
-        method, which is typically called from within :py:func:`~armi.reactor.reactors.factory`
-        during the initialization of the reactor object to instantiate the core
-        and/or spent fuel pool objects. During that process, a spatial grid is
-        constructed based on the grid blueprints specified in the "grids" section
-        of the blueprints (see :need:`I_ARMI_BP_GRID`) and the assemblies needed
-        to fill the lattice are built from blueprints using :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+        This class includes a
+        :py:meth:`~armi.reactor.blueprints.reactorBlueprint.SystemBlueprint.construct` method, which
+        is typically called from within :py:func:`~armi.reactor.reactors.factory` during the
+        initialization of the reactor object to instantiate the core and/or spent fuel pool objects.
+        During that process, a spatial grid is constructed based on the grid blueprints specified in
+        the "grids" section of the blueprints (see :need:`I_ARMI_BP_GRID`) and the assemblies needed
+        to fill the lattice are built from blueprints using
+        :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
 
-    .. note:: We use string keys to link grids to objects that use them. This differs
-        from how blocks/assembies are specified, which use YAML anchors. YAML anchors
-        have proven to be problematic and difficult to work with
+    Notes
+    -----
+    We use string keys to link grids to objects that use them. This differs from how blocks/
+    assembies are specified, which use YAML anchors. YAML anchors have proven to be problematic and
+    difficult to work with.
     """
 
     name = yamlize.Attribute(key="name", type=str)
@@ -94,11 +96,10 @@ class SystemBlueprint(yamlize.Object):
 
     @staticmethod
     def _resolveSystemType(typ: str):
-        # Loop over all plugins that could be attached and determine if any
-        # tell us how to build a specific systems attribute. Sub-optimial
-        # as this check is called for each system (e.g., core, spent fuel pool).
-        # It is assumed that the number of systems is currently low enough to justify
-        # this structure.
+        # Loop over all plugins that could be attached and determine if any tell us how to build a
+        # specific systems attribute. Sub-optimial as this check is called for each system (e.g.,
+        # core, spent fuel pool). It is assumed that the number of systems is currently low enough
+        # to justify this structure.
 
         manager = getPluginManagerOrFail()
 
@@ -106,9 +107,8 @@ class SystemBlueprint(yamlize.Object):
         seen = set()
         for options in manager.hook.defineSystemBuilders():
             for key, builder in options.items():
-                # Take the first match we find. This would allow other plugins to
-                # define a new core builder before finding those defined by the
-                # ReactorPlugin
+                # Take the first match we find. This would allow other plugins to define a new core
+                # builder before finding those defined by the ReactorPlugin
                 if key == typ:
                     return builder
                 seen.add(key)
@@ -144,7 +144,7 @@ class SystemBlueprint(yamlize.Object):
         """
         from armi.reactor import reactors  # avoid circular import
 
-        runLog.info("Constructing the `{}`".format(self.name))
+        runLog.info(f"Constructing the `{self.name}`")
 
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
@@ -196,9 +196,7 @@ class SystemBlueprint(yamlize.Object):
         return system
 
     def _loadAssemblies(self, cs, container, gridContents, bp):
-        runLog.header(
-            "=========== Adding Assemblies to {} ===========".format(container)
-        )
+        runLog.header(f"=========== Adding Assemblies to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
@@ -232,9 +230,7 @@ class SystemBlueprint(yamlize.Object):
         # (unless specified on input)
         if not gridDesign.latticeDimensions:
             runLog.info(
-                "Updating spatial grid pitch data for {} geometry".format(
-                    container.geomType
-                )
+                f"Updating spatial grid pitch data for {container.geomType} geometry"
             )
             if container.geomType == geometry.GeomType.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
@@ -258,27 +254,22 @@ def summarizeMaterialData(container):
         Any Core object with Blocks and Components defined.
     """
     runLog.header(
-        "=========== Summarizing Source of Material Data for {} ===========".format(
-            container
-        )
+        f"=========== Summarizing Source of Material Data for {container} ==========="
     )
     materialNames = set()
     materialData = []
     for c in container.iterComponents():
         if c.material.name in materialNames:
             continue
-        materialData.append((c.material.name, c.material.DATA_SOURCE, False))
+        materialData.append((c.material.name, c.material.DATA_SOURCE))
         materialNames.add(c.material.name)
+
     materialData = sorted(materialData)
     runLog.info(
         tabulate.tabulate(
-            tabular_data=materialData,
-            headers=[
-                "Material Name",
-                "Source Location",
-                "Property Data was Modified\nfrom the Source?",
-            ],
-            tablefmt="armi",
+            data=materialData,
+            headers=["Material Name", "Source Location"],
+            tableFmt="armi",
         )
     )
     return materialData

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Settings for generic fuel cycle code."""
-from armi.operators import settingsValidation
 from armi.settings import setting
+from armi.settings import settingsValidation
 
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
 CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
@@ -101,13 +101,19 @@ def getFuelCycleSettings():
             label="Plot shuffle arrows",
         ),
         setting.Setting(
-            CONF_JUMP_RING_NUM, default=8, label="Jump Ring Number", description="None"
+            CONF_JUMP_RING_NUM,
+            default=8,
+            label="Jump Ring Number",
+            description="The number of hex rings jumped when distributing the feed assemblies in "
+            "the alternating concentric rings or checkerboard shuffle patterns (convergent / "
+            "divergent shuffling).",
         ),
         setting.Setting(
             CONF_LEVELS_PER_CASCADE,
             default=14,
             label="Move per cascade",
-            description="None",
+            description="The number of moves made per cascade when performing convergent or "
+            "divergent shuffle patterns.",
         ),
     ]
     return settings

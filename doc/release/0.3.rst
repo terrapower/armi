@@ -2,39 +2,10 @@
 ARMI v0.3 Release Notes
 ***********************
 
-ARMI v0.3.1
-===========
-Release Date: TBD
-
-New Features
-------------
-#. TBD
-
-API Changes
------------
-#. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
-#. Removing unused argument from ``Block.coords()``. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
-#. Removing unused method ``HexGrid.allPositionsInThird()``. (`PR#1655 <https://github.com/terrapower/armi/pull/1655>`_)
-#. Removed unused methods: ``Reactor.getAllNuclidesIn()``, ``plotTriangleFlux()``. (`PR#1656 <https://github.com/terrapower/armi/pull/1656>`_)
-#. Removed ``armi.utils.dochelpers``; not relevant to nuclear modeling. (`PR#1662 <https://github.com/terrapower/armi/pull/1662>`_)
-#. Removing old tools created to help people convert to the current database format: ``armi.bookkeeping.db.convertDatabase()`` and ``ConvertDB``. (`PR#1658 <https://github.com/terrapower/armi/pull/1658>`_)
-#. TBD
-
-Bug Fixes
----------
-#. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
-#. TBD
-
-Changes that Affect Requirements
---------------------------------
-#. Very minor change to ``Block.coords()``, removing unused argument. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
-#. Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
-#. TBD
-
 
 ARMI v0.3.0
 ===========
-Release Date: 2024-01-26
+Release Date: 2024-02-02
 
 What's new in ARMI?
 -------------------
