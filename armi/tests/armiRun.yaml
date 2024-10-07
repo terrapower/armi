@@ -1,4 +1,5 @@
 settings:
+# global
   availabilityFactor: 1
   beta: 0.003454
   branchVerbosity: debug
@@ -6,6 +7,25 @@ settings:
     - 100
   burnSteps: 2
   comment: Simple test input.
+  cycleLength: 2000.0
+  detailAssemLocationsBOL:
+    - 002-001
+  freshFeedType: igniter fuel
+  loadingFile: refSmallReactor.yaml
+  moduleVerbosity:
+    armi.reactor.reactors: info
+  nCycles: 6
+  outputFileExtension: png
+  power: 100000000.0
+  smallRun: true
+  startCycle: 1
+  startNode: 2
+  targetK: 1.002
+  verbosity: extra
+  versions:
+    armi: uncontrolled
+
+# cross section
   crossSectionControl:
     DA:
       geometry: 0D
@@ -31,33 +51,20 @@ settings:
         - gap
       numInternalRings: 1
       numExternalRings: 1
-  cycleLength: 2000.0
+
+# database
   db: false
-  detailAssemLocationsBOL:
-    - 002-001
-  epsBurnTime: 0.001
-  epsFSAvg: 1e-06
-  epsFSPoint: 1e-06
-  eqRingSchedule:
-    - 13
-    - 1
-  freshFeedType: igniter fuel
+
+# fuel cycle
   fuelHandlerName: EquilibriumShuffler
   jumpRingNum: 9
-  loadingFile: refSmallReactor.yaml
-  startCycle: 1
-  startNode: 2
-  loadPadElevation: 200.0
-  genReports: false
-  moduleVerbosity:
-    armi.reactor.reactors: info
-  nCycles: 6
-  outputFileExtension: png
-  power: 100000000.0
   shuffleLogic: refSmallReactorShuffleLogic.py
-  smallRun: true
+
+# neutronics
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
+  loadPadElevation: 200.0
+
+# report
+  genReports: false
   summarizeAssemDesign: false
-  targetK: 1.002
-  verbosity: extra
-  versions:
-    armi: uncontrolled

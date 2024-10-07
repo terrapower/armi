@@ -12,19 +12,18 @@ New Features
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
 #. Allow merging a component with zero area into another component (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
+#. Use ``Block.getNumPins()`` in ``HexBlock._rotatePins()``. (`PR#1859 <https://github.com/terrapower/armi/pull/1859>`_)
 #. Provide utilities for determining location of a rotated object in a hexagonal lattice (``getIndexOfRotatedCell``). (`PR#1846 <https://github.com/terrapower/armi/1846`)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
-#. Provide ``Parameter.hasCategory`` for quickly checking if a parameter is defined with a given category.
-   (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
-#. Provide ``ParameterCollection.where`` for efficient iteration over parameters who's definition.
-   matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
-#. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion.
-   (`PR#1870 <https://github.com/terrapower/armi/pull/1870`_)
+#. Provide ``Parameter.hasCategory`` for quickly checking if a parameter is defined with a given category. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
+#. Provide ``ParameterCollection.where`` for efficient iteration over parameters who's definition matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
+#. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion. (`PR#1870 <https://github.com/terrapower/armi/pull/1870`_)
 #. TBD
 
 API Changes
 -----------
 #. Removing flags ``CORE`` and ``REACTOR``. (`PR#1835 <https://github.com/terrapower/armi/pull/1835>`_)
+#. Alphabetizing ``Flags.toString()`` results. (`PR#1912 <https://github.com/terrapower/armi/pull/1912>`_)
 #. Moving ``settingsValidation`` from ``operators`` to ``settings``. (`PR#1895 <https://github.com/terrapower/armi/pull/1895>`_)
 #. Removing deprecated method ``prepSearch``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing unused function ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
@@ -42,8 +41,9 @@ Bug Fixes
 #. Changed data type of ``thKernel`` setting from ``bool`` to ``str`` in ``ThermalHydraulicsPlugin``. (`PR#1855 <https://github.com/terrapower/armi/pull/1855>`_)
 #. Rotate hexagonal assembly patches correctly on facemap plots. (`PR#1883 <https://github.com/terrapower/armi/pull/1883>`_)
 #. Update height of fluid components after axial expansion (`PR#1828 <https://github.com/terrapower/armi/pull/1828>`_)
-#. Material theoretical density is serialized to and read from database.
-   (`PR#1852 <https://github.com/terrapower/armi/pull/1852>`_)
+#. Material theoretical density is serialized to and read from database. (`PR#1852 <https://github.com/terrapower/armi/pull/1852>`_)
+#. Removed broken and unused column in ``summarizeMaterialData``. (`PR#1925 <https://github.com/terrapower/armi/pull/1925>`_)
+#. Fixed edge case in ``assemblyBlueprint._checkParamConsistency()``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
 #. TBD
 
 Quality Work
