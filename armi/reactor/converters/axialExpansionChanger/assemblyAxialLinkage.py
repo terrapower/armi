@@ -35,7 +35,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     Components are considered linked if the following are found to be true:
 
     1. Both contain solid materials.
-    2. They have compatible types (e.g., ``Circle`` and ``Circle``).
+    2. They have identical types (e.g., ``Circle``).
     3. Their multiplicities are the same.
     4. The biggest inner bounding diameter of the two is less than the smallest outer
        bounding diameter of the two.
@@ -62,7 +62,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     """
     if (
         (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
-        and isinstance(componentA, type(componentB))
+        and type(componentA) is type(componentB)
         and (componentA.getDimension("mult") == componentB.getDimension("mult"))
     ):
         if isinstance(componentA, UnshapedComponent):
