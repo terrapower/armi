@@ -135,7 +135,7 @@ class TestCompareDB3(unittest.TestCase):
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
 
-        # create two DBs, identical but for file names
+        # create two DBs, identical but for file names and cycle lengths
         dbs = []
         for lenCycle in range(1, 3):
             # build some test data
@@ -181,7 +181,7 @@ class TestCompareDB3(unittest.TestCase):
             dbs[1]._fullPath,
             timestepCompare=[(0, 0), (0, 1)],
         )
-        self.assertEqual(len(diffs.diffs), 465)
+        self.assertEqual(len(diffs.diffs), 477)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 

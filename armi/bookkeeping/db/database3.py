@@ -867,6 +867,8 @@ class Database3:
             comp.processLoading(cs, dbLoad=True)
         elif isinstance(comp, Assembly):
             comp.calculateZCoords()
+        elif isinstance(comp, Component):
+            comp.finalizeLoadingFromDB()
 
         return comp
 
