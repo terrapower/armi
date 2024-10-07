@@ -106,9 +106,9 @@ class FuelHandlerInterface(interfaces.Interface):
             self.manageFuel(cycle)
 
     def interactEOC(self, cycle=None):
-        if self.r.sfp is not None:
+        if self.r.excore.get("sfp") is not None:
             runLog.extra(
-                f"There are {len(self.r.sfp)} assemblies in the Spent Fuel Pool"
+                f"There are {len(self.r.excore['sfp'])} assemblies in the Spent Fuel Pool"
             )
 
     def interactEOL(self):
