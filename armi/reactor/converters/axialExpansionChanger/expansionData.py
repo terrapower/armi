@@ -60,13 +60,13 @@ class ExpansionData:
     r"""Data container for axial expansion.
 
     The primary responsibility of this class is to determine the axial expansion factors
-    for each component in the assembly. Expansion factors can be compute from the component
+    for each solid component in the assembly. Expansion factors can be computed from the component
     temperatures in :meth:`computeThermalExpansionFactors` or provided directly to the class
     via :meth:`setExpansionFactors`.
 
     This class relies on the concept of a "target" expansion component for each block. While
     components will expand at different rates, the final height of the block must be determined.
-    The target component, determined by :meth:`determineTargetComponents`\, will drive the total
+    The target component, determined by :meth:`determineTargetComponents`, will drive the total
     height of the block post-expansion.
 
     Parameters
@@ -291,7 +291,7 @@ class ExpansionData:
             # Follow expansion of most neutronically important component, fuel then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
                 candidates = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
-                if candidates != []:
+                if candidates:
                     break
             # some blocks/components are not included in the above list but should still be found
             if not candidates:
