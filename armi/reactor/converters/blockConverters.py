@@ -509,9 +509,9 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     nonpins ...
 
     The ``partiallyHeterogeneous`` option allows the user to treat everything inside the duct
-    as a single homogenized composition. This will significantly reduce the memory and runtime
-    required for MC2, and also provide an alternative approximation for the spatial self-shielding
-    effect on microscopic cross sections.
+    as a single homogenized composition. This could significantly reduce the memory and runtime
+    required for the lattice physics solver, and also provide an alternative approximation for 
+    the spatial self-shielding effect on microscopic cross sections.
 
     This converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined and for
     the ``sourceBlock`` to have a spatial grid defined. Additionally, both the ``sourceBlock``
@@ -618,11 +618,11 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         )
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
 
-        # do user-input merges
+        # do user-input merges into cladding
         for componentName in self.mergeIntoClad:
             self.dissolveComponentIntoComponent(componentName, "clad")
 
-        # do user-input merges
+        # do user-input merges into fuel
         for componentName in self.mergeIntoFuel:
             self.dissolveComponentIntoComponent(componentName, "fuel")
 
