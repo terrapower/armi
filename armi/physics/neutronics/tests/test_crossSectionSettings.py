@@ -192,6 +192,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
         self.assertEqual(xsModel["DA"].partiallyHeterogeneous, True)
+        self.assertEqual(xsModel["DA"].mergeIntoFuel, [])
 
     def test_badCrossSections(self):
         with self.assertRaises(TypeError):
