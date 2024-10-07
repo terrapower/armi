@@ -653,7 +653,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         return nvt, nv
 
 
-class CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection(
+class CylindricalComponentsPartHetAverageBlockCollection(
     CylindricalComponentsAverageBlockCollection
 ):
     """
@@ -1599,7 +1599,7 @@ BLOCK_COLLECTIONS = {
     FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION: FluxWeightedAverageBlockCollection,
     SLAB_COMPONENTS_BLOCK_COLLECTION: SlabComponentsAverageBlockCollection,
     CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION: CylindricalComponentsAverageBlockCollection,
-    CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION: CylindricalComponentsPartiallyHeterogeneousAverageBlockCollection,
+    CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION: CylindricalComponentsPartHetAverageBlockCollection,
 }
 
 
