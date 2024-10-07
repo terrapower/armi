@@ -327,7 +327,7 @@ class AxialExpansionChanger:
             # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
-                b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 for c in iterSolidComponents(b):
@@ -338,14 +338,14 @@ class AxialExpansionChanger:
                     if ib == 0:
                         c.zbottom = 0.0
                     else:
-                        if self.linked.linkedComponents[c][0] is not None:
+                        if self.linked.linkedComponents[c].lower is not None:
                             # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c][0].ztop
+                            c.zbottom = self.linked.linkedComponents[c].lower.ztop
                         else:
                             # otherwise there aren't any linked components
                             # so just set the bottom of the component to
                             # the top of the block below it
-                            c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                            c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                     c.ztop = c.zbottom + c.height
                     # update component number densities
                     newNumberDensities = {
