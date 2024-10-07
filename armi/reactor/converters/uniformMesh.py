@@ -72,9 +72,6 @@ from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.physics.neutronics.globalFlux.globalFluxInterface import (
-    calcReactionRatesBlockList,
-)
 
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
@@ -1125,6 +1122,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
         """
+        from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+            calcReactionRatesBlockList,
+        )
+
         xsTypeGroups = collections.defaultdict(list)
         for b in core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
