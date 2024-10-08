@@ -2187,13 +2187,13 @@ class HexBlock(Block):
 
         return pinToDuctGap
 
-    def getRotationNum(self):
+    def getRotationNum(self) -> int:
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
         return (
             np.rint(self.p.orientation[2] / 360.0 * 6) % 6
         )  # assume rotation only in Z
 
-    def setRotationNum(self, rotNum):
+    def setRotationNum(self, rotNum: int):
         """
         Set orientation based on a number 0 through 5 indicating number of rotations
         counterclockwise around the z-axis.
