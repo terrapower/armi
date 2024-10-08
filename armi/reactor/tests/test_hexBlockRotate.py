@@ -45,11 +45,13 @@ class HexBlockRotateTests(unittest.TestCase):
         "linPowByPin",
     ]
 
-    def setUp(self):
-        self.block = loadTestBlock()
-        self._assignParamData(self.BOUNDARY_PARAMS, self.BOUNDARY_DATA)
+    @classmethod
+    def setUpClass(cls):
+        cls.BASE_BLOCK = loadTestBlock()
+        cls._assignParamData(cls.BOUNDARY_PARAMS, cls.BOUNDARY_DATA)
 
-    def _assignParamData(self, names: list[str], referenceData: np.ndarray):
+    @classmethod
+    def _assignParamData(cls, names: list[str], referenceData: np.ndarray):
         """Assign initial rotatable pararameter data.
 
         Make some arrays, some lists to make sure we have good coverage of usage.
@@ -57,7 +59,7 @@ class HexBlockRotateTests(unittest.TestCase):
         # Yes we're putting the variable type in the name but that's why this method exists
         listData = referenceData.tolist()
         for ix, name in enumerate(names):
-            self.block.p[name] = referenceData if (ix % 2) else listData
+            cls.BASE_BLOCK.p[name] = referenceData if (ix % 2) else listData
 
     def test_orientationVector(self):
         """Test the z-value in the orientation vector matches rotation.
@@ -72,7 +74,7 @@ class HexBlockRotateTests(unittest.TestCase):
         """
         for nRotations in range(-10, 10):
             rotationAmount = 60 * nRotations
-            fresh = copy.deepcopy(self.block)
+            fresh = copy.deepcopy(self.BASE_BLOCK)
             self.assertEqual(fresh.p.orientation[2], 0.0, msg=nRotations)
             fresh.rotate(math.radians(rotationAmount))
             # Ensure rotation is bounded [0, 360)
@@ -101,7 +103,7 @@ class HexBlockRotateTests(unittest.TestCase):
         self._rotateAndCompareBoundaryParams(360, self.BOUNDARY_DATA)
 
     def _rotateAndCompareBoundaryParams(self, degrees: float, expected: np.ndarray):
-        fresh = copy.deepcopy(self.block)
+        fresh = copy.deepcopy(self.BASE_BLOCK)
         fresh.rotate(math.radians(degrees))
         for name in self.BOUNDARY_PARAMS:
             data = fresh.p[name]
