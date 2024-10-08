@@ -89,7 +89,7 @@ class C5G7ReactorTests(unittest.TestCase):
         loadLocs(o, locsInput)
         with directoryChangers.TemporaryDirectoryChanger():
             o.operate()
-            o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)
+            o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0, allowMissing=True)
         loadLocs(o2, locsDB)
 
         for indices, coordsInput in sorted(locsInput.items()):
