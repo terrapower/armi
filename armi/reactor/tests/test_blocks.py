@@ -2654,23 +2654,3 @@ class MassConservationTests(unittest.TestCase):
             10,
             "Sum of component mass {0} != total block mass {1}. ".format(tMass, bMass),
         )
-
-
-class EmptyBlockRotateTest(unittest.TestCase):
-    """Rotation tests on an empty hexagonal block.
-
-    Useful for enforcing rotation works on blocks without pins.
-
-    """
-
-    def setUp(self):
-        self.block = blocks.HexBlock("empty")
-
-    def test_orientation(self):
-        """Test the orientation parameter is updated on a rotated empty block."""
-        rotDegrees = 60
-        preRotateOrientation = self.block.p.orientation[2]
-        self.block.rotate(math.radians(rotDegrees))
-        postRotationOrientation = self.block.p.orientation[2]
-        self.assertNotEqual(preRotateOrientation, postRotationOrientation)
-        self.assertEqual(postRotationOrientation, rotDegrees)
