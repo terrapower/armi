@@ -121,42 +121,6 @@ class AxialLink(typing.Generic[Comp]):
     lower: typing.Optional[Comp] = dataclasses.field(default=None)
     upper: typing.Optional[Comp] = dataclasses.field(default=None)
 
-    def __getitem__(self, index: int) -> typing.Optional[Comp]:
-        """Get by position.
-
-        Discouraged since ``linkage.lower`` is more explicit and readable than ``linkage[0]``.
-
-        Parameters
-        ----------
-        index : int
-            ``0`` for :attr:`lower`, ``1`` for :attr:`upper`
-
-        Raises
-        ------
-        AttributeError
-            If ``index`` is not ``0`` nor ``1``
-        """
-        if index == 0:
-            return self.lower
-        if index == 1:
-            return self.upper
-        raise AttributeError(f"{index=}")
-
-    def __setitem__(self, index: int, o: Comp):
-        """Set by position.
-
-        Discouraged since ``linkage.upper = x`` is more explicit and readable than ``linkage[1] = x``.
-        """
-        if index == 0:
-            self.lower = o
-        elif index == 1:
-            self.upper = o
-        else:
-            raise AttributeError(f"{index=}")
-
-    def __iter__(self):
-        return iter([self.lower, self.upper])
-
 
 class AssemblyAxialLinkage:
     """Determines and stores the block- and component-wise axial linkage for an assembly.
