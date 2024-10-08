@@ -2373,7 +2373,7 @@ class HexBlock(Block):
             grid = self.spatialGrid
         else:
             grid = grids.HexGrid.fromPitch(
-                self.getPinPitch(cold=True), numRings=0, cornersUp=True
+                self.getPinPitch(cold=True), numRings=ringNumber, cornersUp=True
             )
         spatialLocators = grids.MultiIndexLocation(grid=grid)
         numLocations = 0
