@@ -98,10 +98,6 @@ class JaggedArray:
         self.dtype = self.flattenedArray.dtype
         self.paramName = paramName
 
-    def __len__(self):
-        shapeIndices = [i for i, x in enumerate(self.shapes) if sum(x) != 0]
-        return len(shapeIndices) + len(self.nones)
-
     def __iter__(self):
         """Iterate over the unpacked list."""
         return iter(self.unpack())
