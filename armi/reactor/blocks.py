@@ -367,7 +367,7 @@ class Block(composites.Composite):
         if self.hasFlags(Flags.FUEL):
             pinFluxes = fluxes[(np.array(self.p.pinLocation) - 1)]
         else:
-            pinFluxes = fluxes
+            pinFluxes = fluxes[:]
 
         if gamma:
             if adjoint:
