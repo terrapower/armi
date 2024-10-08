@@ -8,6 +8,7 @@ Release Date: TBD
 
 New Features
 ------------
+#. Adding data models for ex-core structures in ARMI. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
 #. ARMI now supports Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
@@ -27,9 +28,9 @@ API Changes
 #. Moving ``settingsValidation`` from ``operators`` to ``settings``. (`PR#1895 <https://github.com/terrapower/armi/pull/1895>`_)
 #. Removing deprecated method ``prepSearch``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing unused function ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
-#. Allow for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
-#. ``Assembly.rotatePins`` and ``Block.rotatePins`` have been removed. Prefer to use ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846`)
-#. Renaming ``Reactor.moveList`` to ``Reactor.moves``. (`PR#1881 <https://github.com/terrapower/armi/pull/1881>`_)
+#. Allowing for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
+#. Removing ``assemblyLists.py`` and the ``AssemblyList`` class. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
+#. Removing ``Assembly.rotatePins`` and ``Block.rotatePins``. Prefer ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846`_)
 #. TBD
 
 Bug Fixes
@@ -39,8 +40,8 @@ Bug Fixes
 #. Fixed ``PermissionError`` when using ``syncDbAfterWrite``. (`PR#1857 <https://github.com/terrapower/armi/pull/1857>`_)
 #. Fixed ``MpiDirectoryChanger``. (`PR#1853 <https://github.com/terrapower/armi/pull/1853>`_)
 #. Changed data type of ``thKernel`` setting from ``bool`` to ``str`` in ``ThermalHydraulicsPlugin``. (`PR#1855 <https://github.com/terrapower/armi/pull/1855>`_)
+#. Update height of fluid components after axial expansion. (`PR#1828 <https://github.com/terrapower/armi/pull/1828>`_)
 #. Rotate hexagonal assembly patches correctly on facemap plots. (`PR#1883 <https://github.com/terrapower/armi/pull/1883>`_)
-#. Update height of fluid components after axial expansion (`PR#1828 <https://github.com/terrapower/armi/pull/1828>`_)
 #. Material theoretical density is serialized to and read from database. (`PR#1852 <https://github.com/terrapower/armi/pull/1852>`_)
 #. Removed broken and unused column in ``summarizeMaterialData``. (`PR#1925 <https://github.com/terrapower/armi/pull/1925>`_)
 #. Fixed edge case in ``assemblyBlueprint._checkParamConsistency()``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
