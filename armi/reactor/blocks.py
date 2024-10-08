@@ -1994,7 +1994,7 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, rad):
+    def rotate(self, rad: float):
         """
         Rotates a block's spatially varying parameters by a specified angle in the
         counter-clockwise direction.
@@ -2004,6 +2004,14 @@ class HexBlock(Block):
         do not meet these two criteria are not rotated.
 
         The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
+
+        .. impl:: A hexagonal block shall be rotatable by 60 degree increments.
+            :id: I_ARMI_ROTATE_HEX
+            :implements: R_ARMI_ROTATE_HEX
+
+        .. impl:: Rotating a hex block updates the orientation parameter.
+            :id: I_ARMI_ROTATE_HEX_ORIENTATION
+            :implements: R_ARMI_ROTATE_HEX_PARAMS
 
         Parameters
         ----------
