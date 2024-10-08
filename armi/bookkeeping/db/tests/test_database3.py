@@ -841,3 +841,23 @@ grids:
             self.assertEqual(len(evst.getChildren()), 1)
             b1 = evst.getChildren()[0].getChildren()[0]
             self.assertEqual(b1.p.power, 12345.6)
+
+    def test_badData(self):
+        # put some data in the DB, for timenode 1
+        self.r.p.timeNode = 1
+        self.r.core.p.keff = 1.01
+        self.db.writeToDB(self.r)
+        # close the DB
+        self.db.close()
+
+        # modify the HDF5 file to corrupt a dataset
+        with h5py.File(self.db.fileName, "r+") as hf:
+            circleGroup = hf["c00n01"]["Circle"]
+            circleMass = np.array(circleGroup["massHmBOL"][()])
+            badData = circleMass[:-1]
+            del circleGroup["massHmBOL"]
+            circleGroup.create_dataset("massHmBOL", data=badData)
+
+        with self.assertRaises(ValueError):
+            with database3.Database3(self._testMethodName + ".h5", "r") as db:
+                _r = db.load(0, 1, allowMissing=True)
