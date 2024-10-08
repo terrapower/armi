@@ -431,7 +431,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         Get the :py:class:`ParameterDefinitionCollection` associated with this instance.
 
         This serves as both an alias for the pDefs class attribute, and as a read-only
-        accessor for them. Most non-paramter-system related interactions with an
+        accessor for them. Most non-parameter-system related interactions with an
         object's ``ParameterCollection`` should go through this. In the future, it
         probably makes sense to make the ``pDefs`` that the ``applyDefinitions`` and
         ``ResolveParametersMeta`` things are sensitive to more hidden from outside the

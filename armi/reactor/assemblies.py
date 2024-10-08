@@ -26,7 +26,7 @@ import numpy as np
 from scipy import interpolate
 
 from armi import runLog
-from armi.reactor import assemblyLists
+from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
@@ -224,7 +224,7 @@ class Assembly(composites.Composite):
         # just use ring and position, not axial (which is 0)
         if not self.parent:
             return self.LOAD_QUEUE
-        elif isinstance(self.parent, assemblyLists.SpentFuelPool):
+        elif isinstance(self.parent, SpentFuelPool):
             return self.SPENT_FUEL_POOL
         return self.parent.spatialGrid.getLabel(
             self.spatialLocator.getCompleteIndices()[:2]
