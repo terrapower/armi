@@ -201,7 +201,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "ip": 16.6,
         "op": 17.3,
-        "mult": 1.0,
+        "mult": 1,
     }
     duct = components.Hexagon("duct", "HT9", **ductDims)
 
@@ -210,7 +210,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempCoolant,
         "op": 17.8,
         "ip": "duct.op",
-        "mult": 1.0,
+        "mult": 1,
     }
     interDims["components"] = {"duct": duct}
     interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
