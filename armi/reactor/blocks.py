@@ -2392,10 +2392,14 @@ class HexBlock(Block):
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:
-                if c.getDimension("mult") > 1:
+                if c.getDimension("mult") == nPins:
                     c.spatialLocator = spatialLocators
                 elif c.getDimension("mult") == 1:
                     c.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, grid)
+                else:
+                    raise ValueError(
+                        f"Component {c} on {self} has a mult not equal to the number of pins"
+                    )
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
