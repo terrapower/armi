@@ -224,6 +224,10 @@ class TestGrid(unittest.TestCase):
         i = [ii.tolist() for ii in i]
         self.assertEqual(i, [[0, 0, 0], [1, 0, 0], [0, 1, 0]])
 
+        multiCoords = multiLoc.getLocalCoordinates()
+        expected = [l.getLocalCoordinates() for l in multiLoc]
+        np.testing.assert_array_equal(multiCoords, expected)
+
     def test_ringPosFromIndicesIncorrect(self):
         """Test the getRingPos fails if there is no armiObect or parent."""
         grid = MockStructuredGrid(

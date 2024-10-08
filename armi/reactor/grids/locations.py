@@ -444,6 +444,13 @@ class MultiIndexLocation(IndexLocation):
         """
         return [loc.indices for loc in self._locations]
 
+    def getLocalCoordinates(self, nativeCoords=False) -> np.ndarray:
+        """Return the local coordinates for every included location."""
+        locs = [
+            location.getLocalCoordinates(nativeCoords=nativeCoords) for location in self
+        ]
+        return np.array(locs)
+
 
 class CoordinateLocation(IndexLocation):
     """
