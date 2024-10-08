@@ -2384,7 +2384,6 @@ class HexBlock(Block):
                 f"not equal to {nPins=}"
             )
 
-        i = 0
         for ring in range(nRings):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
