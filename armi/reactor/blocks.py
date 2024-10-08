@@ -2365,7 +2365,8 @@ class HexBlock(Block):
                 )
             )
 
-        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
+        nPins = self.getNumPins()
+        nRings = hexagon.numRingsToHoldNumCells(nPins)
         # For the below to work, there must not be multiple wire or multiple clad types.
         # note that it's the pointed end of the cell hexes that are up (but the
         # macro shape of the pins forms a hex with a flat top fitting in the assembly)
@@ -2373,21 +2374,18 @@ class HexBlock(Block):
             grid = self.spatialGrid
         else:
             grid = grids.HexGrid.fromPitch(
-                self.getPinPitch(cold=True), numRings=ringNumber, cornersUp=True
+                self.getPinPitch(cold=True), numRings=nRings, cornersUp=True
             )
         spatialLocators = grids.MultiIndexLocation(grid=grid)
-        numLocations = 0
-        for ring in range(ringNumber):
-            numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
-        if numLocations != self.getNumPins():
+        numLocations = hexagon.totalPositionsUpToRing(nRings)
+        if numLocations != nPins:
             raise ValueError(
-                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
-                    numLocations, self.getNumPins()
-                )
+                f"Cannot create spatialGrid, number of locations in rings {nRings} "
+                f"not equal to {nPins=}"
             )
 
         i = 0
-        for ring in range(ringNumber):
+        for ring in range(nRings):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 spatialLocators.append(grid[i, j, 0])
