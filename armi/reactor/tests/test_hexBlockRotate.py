@@ -19,6 +19,7 @@ import unittest
 
 import numpy as np
 
+from armi.reactor.components import Component
 from armi.reactor.blocks import HexBlock
 from armi.utils import iterables
 from armi.reactor.tests.test_blocks import loadTestBlock
@@ -109,6 +110,76 @@ class HexBlockRotateTests(unittest.TestCase):
             data = fresh.p[name]
             msg = f"{name=} :: {degrees=} :: {data=}"
             np.testing.assert_array_equal(data, expected, err_msg=msg)
+
+    @staticmethod
+    def getComponentCoordinates(b: HexBlock) -> dict[Component, np.ndarray]:
+        locations = {}
+        for c in b:
+            if c.spatialLocator is not None:
+                coords = c.spatialLocator.getLocalCoordinates()
+                # IndexLocator return array([x, y, z])
+                # MultiIndexLocator return array([[x0, y0, z0], [x1, y1, z1]])
+                # Reshape so we always have a shape of [nItems, 3] even if nItems == 1
+                if coords.ndim == 1:
+                    coords = coords.reshape((1, 3))
+                locations[c] = coords
+        return locations
+
+    def test_childRotation(self):
+        """Test that child coordinates are updated through rotation.
+
+        .. test:: Rotating a hex block updates the spatial coordinates on contained objects.
+            :id: T_ARMI_ROTATE_HEX_CHILD_LOCS
+            :tests: R_ARMI_ROTATE_HEX
+        """
+        fresh = copy.deepcopy(self.BASE_BLOCK)
+        originalCoords = self.getComponentCoordinates(fresh)
+        for i in range(-10, 10):
+            rotation = 60 * i
+            self._rotateAndCheckComponentLocations(fresh, originalCoords, rotation)
+
+    def _rotateAndCheckComponentLocations(
+        self, b: HexBlock, originalCoords: dict[Component, np.ndarray], degrees: float
+    ):
+        rads = math.radians(degrees)
+        b.rotate(rads)
+        cosTheta = math.cos(rads)
+        sinTheta = math.sin(rads)
+        newCoords = self.getComponentCoordinates(b)
+        for comp, coords in originalCoords.items():
+            new = newCoords[comp]
+            self._compareLocations(
+                cosTheta, sinTheta, coords, new, msg=f"{comp=} :: {degrees=}"
+            )
+
+    def _compareLocations(
+        self,
+        cosTheta: float,
+        sinTheta: float,
+        previousCoords: np.ndarray,
+        updatedCoords: np.ndarray,
+        msg: str,
+    ):
+        oz = previousCoords[:, 2]
+        nz = updatedCoords[:, 2]
+        np.testing.assert_array_equal(nz, oz)
+        ox = previousCoords[:, 0]
+        oy = previousCoords[:, 1]
+        nx = updatedCoords[:, 0]
+        ny = updatedCoords[:, 1]
+        expectedX = ox * cosTheta - oy * sinTheta
+        np.testing.assert_array_equal(nx, expectedX, err_msg=msg)
+        expectedY = ox * sinTheta + oy * cosTheta
+        np.testing.assert_array_equal(ny, expectedY, err_msg=msg)
+
+    def test_pinRotation(self):
+        """Test that pin coordinates are updated through rotation.
+
+        .. test:: HexBlock.getPinCoordinates is consistent with rotation.
+            :id: T_ARMI_ROTATE_HEX_PIN_COORDS
+            :tests: R_ARMI_ROTATE_HEX
+
+        """
 
 
 class EmptyBlockRotateTest(unittest.TestCase):

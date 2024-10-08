@@ -2017,6 +2017,10 @@ class HexBlock(Block):
             :id: I_ARMI_ROTATE_HEX_BOUNDARY
             :tests: R_ARMI_ROTATE_HEX_PARAMS
 
+        .. impl:: Rotating a hex block updates the spatial coordinates on contained objects.
+            :id: I_ARMI_ROTATE_HEX_PIN
+            :tests: R_ARMI_ROTATE_HEX
+
         Parameters
         ----------
         rad: float, required
