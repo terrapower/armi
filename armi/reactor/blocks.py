@@ -1795,7 +1795,7 @@ class HexBlock(Block):
         if self.spatialGrid is None:
             return None
 
-        return self.spatialGrid._unitSteps[0][1] != 0.0
+        return self.spatialGrid.cornersUp
 
     def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
