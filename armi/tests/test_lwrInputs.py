@@ -33,7 +33,6 @@ TEST_INPUT_TITLE = "c5g7-settings"
 class C5G7ReactorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-
         cls.directoryChanger = directoryChangers.DirectoryChanger(
             os.path.join(TEST_ROOT, "tutorials")
         )
@@ -84,11 +83,39 @@ class C5G7ReactorTests(unittest.TestCase):
                 indices = b.spatialLocator.getCompleteIndices()
                 locs[indices] = b.spatialLocator.getGlobalCoordinates()
 
+        Mode.setMode(Mode.BATCH)
         o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
         locsInput, locsDB = {}, {}
         loadLocs(o, locsInput)
         with directoryChangers.TemporaryDirectoryChanger():
             o.operate()
+            o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0)
+        loadLocs(o2, locsDB)
+
+        for indices, coordsInput in sorted(locsInput.items()):
+            coordsDB = locsDB[indices]
+            self.assertTrue(np.allclose(coordsInput, coordsDB))
+
+    def test_runAndLoadC5G7FirstTimeStep(self):
+        """
+        Run C5G7 in basic no-op app and load from the result from DB.
+
+        This ensures that these kinds of cases can be read from DB.
+        """
+
+        def loadLocs(o, locs):
+            for b in o.r.core.getBlocks():
+                indices = b.spatialLocator.getCompleteIndices()
+                locs[indices] = b.spatialLocator.getGlobalCoordinates()
+
+        o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
+        locsInput, locsDB = {}, {}
+        loadLocs(o, locsInput)
+        with directoryChangers.TemporaryDirectoryChanger():
+            o.interactAllBOL()
+            db0 = o.getInterface("database").database
+            db0.writeToDB(o.r)
+            db0.close()
             o2 = db.loadOperator(TEST_INPUT_TITLE + ".h5", 0, 0, allowMissing=True)
         loadLocs(o2, locsDB)
 

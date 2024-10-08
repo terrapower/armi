@@ -223,6 +223,9 @@ class Database3:
         self.h5db.attrs["pluginPaths"] = ps
         self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
 
+    def isOpen(self):
+        return self.h5db is not None
+
     @staticmethod
     def writeSystemAttributes(h5db):
         """Write system attributes to the database.
