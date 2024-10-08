@@ -1065,9 +1065,24 @@ class Database3:
             if "linkedDims" in attrs:
                 linkedDims = np.char.decode(attrs["linkedDims"])
 
+            unpackedData = data.tolist()
+            if len(comps) != len(unpackedData):
+                msg = (
+                    "While unpacking special data for {}, encountered "
+                    "composites and parameter data with unmatched sizes.\n"
+                    "Length of composites list = {}\n"
+                    "Length of data list = {}\n"
+                    "This could indicate an error in data unpacking, which could "
+                    "result in faulty data on the resulting reactor model.".format(
+                        paramName, len(comps), len(unpackedData)
+                    )
+                )
+                runLog.error(msg)
+                raise ValueError(msg)
+
             # iterating of np is not fast...
             for c, val, linkedDim in itertools.zip_longest(
-                comps, data.tolist(), linkedDims, fillvalue=""
+                comps, unpackedData, linkedDims, fillvalue=""
             ):
                 try:
                     if linkedDim != "":

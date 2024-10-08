@@ -51,6 +51,7 @@ Quality Work
 ------------
 #. Removing deprecated code ``axialUnitGrid``. (`PR#1809 <https://github.com/terrapower/armi/pull/1809>`_)
 #. Refactoring ``axialExpansionChanger``. (`PR#1861 <https://github.com/terrapower/armi/pull/1861>`_)
+#. Raise a ValueError when database load fails. (`PR#1940 <https://github.com/terrapower/armi/pull/1940>`_)
 #. TBD
 
 Changes that Affect Requirements
