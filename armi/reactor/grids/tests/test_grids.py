@@ -15,6 +15,7 @@
 """Tests for grids."""
 from io import BytesIO
 import math
+from random import randint
 import unittest
 import pickle
 
@@ -595,6 +596,41 @@ class TestHexGrid(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _ = grids.HexGrid._indicesAndEdgeFromRingAndPos(1, 3)
+
+    def test_rotatedIndices(self):
+        """Test that a hex grid can produce a rotated cell location."""
+        g = grids.HexGrid.fromPitch(1.0, numRings=3)
+        center: grids.IndexLocation = g[(0, 0, 0)]
+        notRotated = g.rotateLocation(center, 0)
+        self.assertEqual(notRotated, center)
+
+        # One rotation for a trivial check
+        northEast: grids.IndexLocation = g[(1, 0, 0)]
+        dueNorth: grids.IndexLocation = g[(0, 1, 0)]
+        northWest: grids.IndexLocation = g[(-1, 1, 0)]
+        actual = g.rotateLocation(northEast, 1)
+        self.assertEqual(actual, dueNorth)
+
+        actual = g.rotateLocation(dueNorth, 1)
+        self.assertEqual(actual, northWest)
+
+        # Two rotations from the "first" object in the first full ring
+        actual = g.rotateLocation(northEast, 2)
+        self.assertEqual(actual, northWest)
+
+        # Fuzzy rotation: if we rotate an location, and then rotate it back, we get the same location
+        for _ in range(10):
+            startI = randint(-10, 10)
+            startJ = randint(-10, 10)
+            start = g[(startI, startJ, 0)]
+            rotations = randint(-10, 10)
+            postRotate = g.rotateLocation(start, rotations)
+            if rotations % 6:
+                self.assertNotEqual(postRotate, start)
+            else:
+                self.assertEqual(postRotate, start)
+            reversed = g.rotateLocation(postRotate, -rotations)
+            self.assertEqual(reversed, start)
 
 
 class TestBoundsDefinedGrid(unittest.TestCase):

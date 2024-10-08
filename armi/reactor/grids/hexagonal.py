@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from collections import deque
 from math import sqrt
 from typing import Tuple, List, Optional
 
@@ -23,7 +24,7 @@ from armi.reactor.grids.constants import (
     BOUNDARY_60_DEGREES,
     BOUNDARY_CENTER,
 )
-from armi.reactor.grids.locations import IJKType, IJType
+from armi.reactor.grids.locations import IJKType, IJType, IndexLocation
 from armi.reactor.grids.structuredGrid import StructuredGrid
 from armi.utils import hexagon
 
@@ -574,3 +575,45 @@ class HexGrid(StructuredGrid):
         )
 
         return locList[:nLocs]
+
+    def rotateLocation(self, loc: IndexLocation, rotations: int) -> IndexLocation:
+        """Find the new location of an index after some number of CCW rotations.
+
+        Parameters
+        ----------
+        loc : IndexLocation
+            Starting index
+        rotations : int
+            Number of counter clockwise rotations
+
+        Returns
+        -------
+        IndexLocation
+            Index in the grid after rotation
+
+        Notes
+        -----
+        Rotation uses a three-dimensional index in what can be known elsewhere
+        by the confusing name of "cubic" coordinate system for a hexagon. Cubic stems
+        from the notion of using three dimensions, ``(q, r, s)`` to describe a point
+        in the hexagonal grid. The conversion from ARMI's indexing follows::
+
+            q = i
+            r = j
+            # s = - q - r = - (q + r)
+            s = -(i + j)
+
+        The motivation for the cubic notation is rotation is far simpler: a clockwise
+        rotation by 60 degrees results in a shifting and negating of the coordinates. So
+        the first rotation of ``(q, r, s)`` would produce a new coordinate
+        ``(-r, -s, -q)``. Another rotation would produce ``(s, q, r)``, and so on.
+        """
+        i, j = loc[:2]
+        buffer = deque((i, j, -(i + j)))
+        buffer.rotate(-rotations)
+        newI = buffer[0]
+        newJ = buffer[1]
+        if rotations % 2:
+            newI *= -1
+            newJ *= -1
+        return self[(newI, newJ, loc.k)]
