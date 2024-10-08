@@ -2013,6 +2013,10 @@ class HexBlock(Block):
             :id: I_ARMI_ROTATE_HEX_ORIENTATION
             :implements: R_ARMI_ROTATE_HEX_PARAMS
 
+        .. imp:: Rotating a hex block updates parameters on the boundary of the hexagon.
+            :id: I_ARMI_ROTATE_HEX_BOUNDARY
+            :tests: R_ARMI_ROTATE_HEX_PARAMS
+
         Parameters
         ----------
         rad: float, required
