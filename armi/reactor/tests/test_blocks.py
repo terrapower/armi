@@ -1462,37 +1462,6 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 
-    def test_rotatePins(self):
-        b = self.block
-        b.setRotationNum(0)
-        index = b._rotatePins(0, justCompute=True)
-        self.assertEqual(b.getRotationNum(), 0)
-        self.assertEqual(index[5], 5)
-        self.assertEqual(index[2], 2)  # pin 1 is center and never rotates.
-
-        index = b._rotatePins(1)
-        self.assertEqual(b.getRotationNum(), 1)
-        self.assertEqual(index[2], 3)
-        self.assertEqual(b.p.pinLocation[1], 3)
-
-        index = b._rotatePins(1)
-        self.assertEqual(b.getRotationNum(), 2)
-        self.assertEqual(index[2], 4)
-        self.assertEqual(b.p.pinLocation[1], 4)
-
-        index = b._rotatePins(2)
-        index = b._rotatePins(4)  # over-rotate to check modulus
-        self.assertEqual(b.getRotationNum(), 2)
-        self.assertEqual(index[2], 4)
-        self.assertEqual(index[6], 2)
-        self.assertEqual(b.p.pinLocation[1], 4)
-        self.assertEqual(b.p.pinLocation[5], 2)
-
-        self.assertRaises(ValueError, b._rotatePins, -1)
-        self.assertRaises(ValueError, b._rotatePins, 10)
-        self.assertRaises((ValueError, TypeError), b._rotatePins, None)
-        self.assertRaises((ValueError, TypeError), b._rotatePins, "a")
-
     def test_expandElementalToIsotopics(self):
         r"""Tests the expand to elementals capability."""
         initialN = {}
