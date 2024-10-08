@@ -302,8 +302,10 @@ class Case:
         return self.title == that.title and self.directory == that.directory
 
     def __hash__(self):
-        # computes the hash of a Case object. This is required in Python3 when __eq__ has been
-        # defined.  take the hash of the tuple of the "primary key"
+        """Computes the hash of a Case object.
+
+        This is required when __eq__ is been defined. Take the hash of the tuple of the "primary key".
+        """
         return hash((self.title, self.directory))
 
     def setUpTaskDependence(self):
@@ -311,15 +313,10 @@ class Case:
         Set the task dependence based on the :code:`dependencies`.
 
         This accounts for whether or not the dependency is enabled.
-
-        TODO
-        ----
-        This is a leftover from before the release of the ARMI framework. The API of the
-        proprietary cluster communication library is being used here. This should either
-        be moved out into the cluster plugin, or the library should be made available.
         """
         if not self.enabled:
             return
+
         for dependency in self.dependencies:
             if dependency.enabled:
                 self._tasks[0].add_parent(dependency._tasks[-1])
@@ -327,7 +324,6 @@ class Case:
     def run(self):
         """
         Run an ARMI case.
-
 
         .. impl:: The case class allows for a generic ARMI simulation.
             :id: I_ARMI_CASE
@@ -344,11 +340,11 @@ class Case:
 
         Notes
         -----
-        Room for improvement: The coverage, profiling, etc. stuff can probably be moved
-        out of here to a more elegant place (like a context manager?).
+        Room for improvement: The coverage, profiling, etc. stuff can probably be moved out of here
+        to a more elegant place (like a context manager?).
         """
-        # Start the log here so that the verbosities for the head and workers
-        # can be configured based on the user settings for the rest of the run
+        # Start the log here so that the verbosities for the head and workers can be configured
+        # based on the user settings for the rest of the run.
         runLog.LOG.startLog(self.cs.caseTitle)
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self.cs["verbosity"])
