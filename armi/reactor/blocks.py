@@ -2369,10 +2369,13 @@ class HexBlock(Block):
         # For the below to work, there must not be multiple wire or multiple clad types.
         # note that it's the pointed end of the cell hexes that are up (but the
         # macro shape of the pins forms a hex with a flat top fitting in the assembly)
-        grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=True
-        )
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+        if self.spatialGrid is not None:
+            grid = self.spatialGrid
+        else:
+            grid = grids.HexGrid.fromPitch(
+                self.getPinPitch(cold=True), numRings=0, cornersUp=True
+            )
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
