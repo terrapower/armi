@@ -442,8 +442,8 @@ def _buildJoyoFuel():
 
 def buildControlBlockWithLinkedNegativeAreaComponent():
     """
-    Return a block that contains a bond component that resolves to a negative area
-    once the fuel and clad thermal expansion have occurred.
+    Return a block that contains a bond component that resolves to a negative area once the fuel and
+    clad thermal expansion have occurred.
     """
     b = blocks.HexBlock("control", height=10.0)
 
@@ -493,7 +493,5 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     b.add(duct)
     b.add(coolant)
     b.add(intercoolant)
-
-    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b

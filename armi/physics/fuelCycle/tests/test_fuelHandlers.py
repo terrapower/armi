@@ -79,7 +79,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
                 b.p.percentBu = 30.0 * bi / len(blockList)
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
-        self.nSfp = len(self.r.sfp)
+        self.nSfp = len(self.r.excore["sfp"])
 
         # generate a reactor with assemblies
         # generate components with materials
@@ -447,7 +447,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
-            for a in self.r.sfp.getChildren():
+            for a in self.r.excore["sfp"].getChildren():
                 self.assertEqual(a.getLocation(), "SFP")
             for b in self.r.core.getBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
@@ -477,7 +477,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         ensure repeatability.
         """
         # check labels before shuffling:
-        for a in self.r.sfp.getChildren():
+        for a in self.r.excore["sfp"].getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles
@@ -511,7 +511,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # make sure the shuffle was repeated perfectly.
         for a in self.r.core.getAssemblies():
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
-        for a in self.r.sfp.getChildren():
+        for a in self.r.excore["sfp"].getChildren():
             self.assertEqual(a.getLocation(), "SFP")
 
         # Do some cleanup, since the fuelHandler Interface has code that gets
@@ -790,7 +790,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
@@ -838,7 +838,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
 
         # change a block in assembly 1 to be flagged as a stationary block
         for block in a1:
@@ -857,7 +857,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # re-initialize assemblies
         self.setUp()
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.sfp.getChildren(Flags.FUEL)[0]
+        a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
 
         # move location of a stationary flag in assembly 1
         for block in a1:

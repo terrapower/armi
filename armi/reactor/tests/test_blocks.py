@@ -395,6 +395,21 @@ class Block_TestCase(unittest.TestCase):
         ) / self.block.getDim(Flags.INNER | Flags.LINER, "id") ** 2
         self.assertAlmostEqual(cur, ref, places=10)
 
+    def test_getSmearDensityEdgeCases(self):
+        # show smear density is not computed for non-fuel blocks
+        b0 = blocks.Block("DummyReflectorBlock")
+        self.assertEqual(b0.getSmearDensity(), 0.0)
+
+        # show smear density is only defined for pinned fuel blocks
+        b1 = blocks.HexBlock("TestFuelHexBlock")
+        b1.setType("fuel")
+        b1.p.nPins = 0
+        fuel = components.Circle(
+            "fuel", "UZr", Tinput=25.0, Thot=25.0, od=0.84, id=0.6, mult=0
+        )
+        b1.add(fuel)
+        self.assertEqual(b1.getSmearDensity(), 0.0)
+
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1
         self.assertEqual(0.1, self.block.p[("buRate", 3)])

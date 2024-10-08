@@ -180,7 +180,20 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.50, u235 / u)
 
-    def test_invalid_component_modification(self):
+    def test_materialModificationLength(self):
+        """If the wrong number of material modifications are defined, there is an error."""
+        with self.assertRaises(ValueError):
+            _a = self.loadUZrAssembly(
+                """
+        material modifications:
+            by component:
+                fuel1:
+                    U235_wt_frac: [0.2]
+            U235_wt_frac: [0.11, 0.22, 0.33, 0.44]
+            """
+            )
+
+    def test_invalidComponentModification(self):
         with self.assertRaises(ValueError):
             _a = self.loadUZrAssembly(
                 """
@@ -188,10 +201,10 @@ assemblies:
             by component:
                 invalid component:
                     U235_wt_frac: [0.2]
-        """
+            """
             )
 
-    def test_zr_wt_frac_modification(self):
+    def test_zrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -203,7 +216,7 @@ assemblies:
         zr = fuelComponent.getMass("ZR")
         assert_allclose(0.077, zr / totalMass)
 
-    def test_both_u235_zr_wt_frac_modification(self):
+    def test_bothU235ZrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:

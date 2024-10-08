@@ -38,9 +38,9 @@ import numpy as np
 
 from armi import runLog
 from armi.reactor import grids
-from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
+from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core
 from armi.reactor.reactors import Reactor
 
@@ -356,7 +356,7 @@ class Layout:
                 comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
                 comp = Klass(name)
-            elif issubclass(Klass, AssemblyList):
+            elif issubclass(Klass, ExcoreStructure):
                 comp = Klass(name)
             elif issubclass(Klass, Component):
                 # init all dimensions to 0, they will be loaded and assigned after load
