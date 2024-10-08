@@ -221,7 +221,8 @@ class HexGrid(StructuredGrid):
         positionBase = 1 + edge * (ring - 1)
         return ring, positionBase + offset
 
-    def getMinimumRings(self, n: int) -> int:
+    @staticmethod
+    def getMinimumRings(n: int) -> int:
         """
         Return the minimum number of rings needed to fit ``n`` objects.
 
@@ -232,7 +233,8 @@ class HexGrid(StructuredGrid):
         """
         return hexagon.numRingsToHoldNumCells(n)
 
-    def getPositionsInRing(self, ring: int) -> int:
+    @staticmethod
+    def getPositionsInRing(ring: int) -> int:
         """Return the number of positions within a ring."""
         return hexagon.numPositionsInRing(ring)
 
