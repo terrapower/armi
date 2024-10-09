@@ -1029,8 +1029,8 @@ class Assembly_TestCase(unittest.TestCase):
         """Test rotation of an assembly spatial objects.
 
         .. test:: An assembly can be rotated about its z-axis.
-            :id: T_ARMI_SHUFFLE_ROTATE
-            :tests: R_ARMI_SHUFFLE_ROTATE
+            :id: T_ARMI_ROTATE_HEX
+            :tests: R_ARMI_ROTATE_HEX
         """
         a = makeTestAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")

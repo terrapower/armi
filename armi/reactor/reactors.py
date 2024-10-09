@@ -38,22 +38,23 @@ from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor import reactorParameters
 from armi.reactor import zones
-from armi.reactor.assemblyLists import SpentFuelPool
+from armi.reactor.excoreStructure import ExcoreCollection
+from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.flags import Flags
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
-    CONF_MATERIAL_NAMESPACE_ORDER,
-    CONF_FRESH_FEED_TYPE,
-    CONF_SORT_REACTOR,
-    CONF_GEOM_FILE,
-    CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_STATIONARY_BLOCK_FLAGS,
-    CONF_ZONE_DEFINITIONS,
-    CONF_TRACK_ASSEMS,
-    CONF_CIRCULAR_RING_PITCH,
     CONF_AUTOMATIC_VARIABLE_MESH,
-    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_CIRCULAR_RING_PITCH,
     CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_FRESH_FEED_TYPE,
+    CONF_GEOM_FILE,
+    CONF_MATERIAL_NAMESPACE_ORDER,
+    CONF_MIN_MESH_SIZE_RATIO,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+    CONF_SORT_REACTOR,
+    CONF_STATIONARY_BLOCK_FLAGS,
+    CONF_TRACK_ASSEMS,
+    CONF_ZONE_DEFINITIONS,
 )
 from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import directoryChangers
@@ -99,7 +100,7 @@ class Reactor(composites.Composite):
         self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.core = None
-        self.sfp = None
+        self.excore = ExcoreCollection()
         self.blueprints = blueprints
 
     def __getstate__(self):
@@ -127,12 +128,17 @@ class Reactor(composites.Composite):
             if len(cores) != 1:
                 raise ValueError(
                     "Only 1 core may be specified at this time. Please adjust input. "
-                    "Cores found: {}".format(cores)
+                    f"{len(cores)} cores found."
                 )
             self.core = cores[0]
 
-        if isinstance(container, SpentFuelPool):
-            self.sfp = container
+        if isinstance(container, ExcoreStructure):
+            nomen = container.name.replace(" ", "").lower()
+            if nomen == "spentfuelpool":
+                runLog.warning("Changing the name of the Spent Fuel Pool to 'sfp'.")
+                # special case
+                nomen = "sfp"
+            self.excore[nomen] = container
 
     def incrementAssemNum(self):
         """
@@ -170,8 +176,9 @@ class Reactor(composites.Composite):
         ind = self.core.normalizeNames(self.p.maxAssemNum)
         self.p.maxAssemNum = ind
 
-        ind = self.sfp.normalizeNames(self.p.maxAssemNum)
-        self.p.maxAssemNum = ind
+        if self.excore.sfp is not None:
+            ind = self.excore.sfp.normalizeNames(self.p.maxAssemNum)
+            self.p.maxAssemNum = ind
 
         return ind
 
@@ -210,6 +217,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     if cs[CONF_GEOM_FILE]:
         blueprints.migrate(bp, cs)
 
+    # For now, ARMI will create a default Spent Fuel Pool and add it to every reactor.
     if not any(structure.typ == "sfp" for structure in bp.systemDesigns.values()):
         bp.addDefaultSFP()
 
@@ -224,16 +232,16 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             bpGeom = geom if structure.name.lower() == "core" else None
             structure.construct(cs, bp, r, geom=bpGeom)
 
-    runLog.debug("Reactor: {}".format(r))
+    runLog.debug(f"Reactor: {r}")
 
     # return a Reactor object
     if cs[CONF_SORT_REACTOR]:
         r.sort()
     else:
         runLog.warning(
-            "DeprecationWarning: This Reactor is not being sorted on blueprint read. "
-            f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
-            "But this feature is temporary and will be removed by 2024."
+            "DeprecationWarning: This Reactor is not being sorted on blueprint read. Due to the "
+            f"setting {CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is temporary "
+            "and will be removed by 2024."
         )
 
     return r
@@ -575,8 +583,8 @@ class Core(composites.Composite):
         self.remove(a1)
 
         if discharge and self._trackAssems:
-            if self.parent.sfp is not None:
-                self.parent.sfp.add(a1)
+            if self.parent.excore.get("sfp") is not None:
+                self.parent.excore.sfp.add(a1)
             else:
                 runLog.info("No Spent Fuel Pool is found, can't track assemblies.")
         else:
@@ -626,24 +634,6 @@ class Core(composites.Composite):
                     single=True,
                     label="cannot dereference: lost block",
                 )
-
-    def removeAllAssemblies(self, discharge=True):
-        """
-        Clears the core.
-
-        Notes
-        -----
-        must clear auxiliary bookkeeping lists as well or else a regeneration step will
-        auto-add assemblies back in.
-        """
-        assems = set(self)
-        for a in assems:
-            self.removeAssembly(a, discharge)
-        if hasattr(self.parent, "sfp"):
-            self.parent.sfp.removeAll()
-        self.blocksByName = {}
-        self.assembliesByName = {}
-        self.parent.p.maxAssemNum = 0
 
     def normalizeNames(self, startIndex=0):
         """
@@ -1245,8 +1235,12 @@ class Core(composites.Composite):
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if includeSFP and self.parent is not None and self.parent.sfp is not None:
-            assems.extend(self.parent.sfp.getChildren())
+        if (
+            includeSFP
+            and self.parent is not None
+            and self.parent.excore.get("sfp") is not None
+        ):
+            assems.extend(self.parent.excore.sfp.getChildren())
 
         if typeSpec:
             assems = [a for a in assems if a.hasFlags(typeSpec, exact=exact)]

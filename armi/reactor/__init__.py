@@ -21,17 +21,14 @@ The key classes of the reactor package are shown below:
 .. _reactor-class-diagram:
 
 .. pyreverse:: armi.reactor -A -k --ignore=
-               assemblyLists.py,
                assemblyParameters.py,
                basicShapes.py,
-               batch.py,
-               batchParameters.py,
                blockParameters.py,
                blueprints,
                complexShapes.py,
                componentParameters.py,
                converters,
-               dodecaShapes.py,
+               excoreStructure.py,
                flags.py,
                geometry.py,
                grids.py,
@@ -39,6 +36,7 @@ The key classes of the reactor package are shown below:
                plugins.py,
                reactorParameters.py,
                shapes.py,
+               spentFuelPool.py,
                tests,
                volumetricShapes.py,
                zones.py
@@ -57,7 +55,8 @@ from armi import plugins
 
 if TYPE_CHECKING:
     from armi.reactor.reactors import Core
-    from armi.reactor.assemblyLists import SpentFuelPool
+    from armi.reactor.excoreStructure import ExcoreStructure
+    from armi.reactor.spentFuelPool import SpentFuelPool
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
@@ -90,14 +89,16 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL(trylast=True)
-    def defineSystemBuilders() -> (
-        Dict[str, Callable[[str], Union["Core", "SpentFuelPool"]]]
-    ):
+    def defineSystemBuilders() -> Dict[
+        str, Callable[[str], Union["Core", "ExcoreStructure", "SpentFuelPool"]]
+    ]:
+        from armi.reactor.spentFuelPool import SpentFuelPool
+        from armi.reactor.excoreStructure import ExcoreStructure
         from armi.reactor.reactors import Core
-        from armi.reactor.assemblyLists import SpentFuelPool
 
         return {
             "core": Core,
+            "excore": ExcoreStructure,
             "sfp": SpentFuelPool,
         }
 
