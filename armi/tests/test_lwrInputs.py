@@ -16,31 +16,23 @@ from logging import WARNING
 import os
 import unittest
 
-import numpy as np
-
-from armi import Mode
 from armi import runLog
-from armi import init as armi_init
-from armi.bookkeeping import db
 from armi.reactor.flags import Flags
 from armi.tests import mockRunLogs
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
+from armi.reactor.tests import test_reactors
 
-TEST_INPUT_TITLE = "c5g7-settings"
+TEST_INPUT_TITLE = "c5g7-settings.yaml"
 
 
 class C5G7ReactorTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.directoryChanger = directoryChangers.DirectoryChanger(
-            os.path.join(TEST_ROOT, "tutorials")
-        )
-        cls.directoryChanger.open()
+    def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.directoryChanger.close()
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
 
     def test_loadC5G7(self):
         """
@@ -53,17 +45,19 @@ class C5G7ReactorTests(unittest.TestCase):
             runLog.LOG.startLog("test_loadC5G7")
             runLog.LOG.setVerbosity(WARNING)
 
-            # ingest the settings file
-            Mode.setMode(Mode.BATCH)
-            o = armi_init(fName=TEST_INPUT_TITLE + ".yaml")
-            b = o.r.core.getFirstBlock(Flags.MOX)
+            # load the reactor
+            _o, r = test_reactors.loadTestReactor(
+                os.path.join(TEST_ROOT, "tutorials"),
+                inputFileName=TEST_INPUT_TITLE,
+            )
 
             # test warnings are being logged for malformed isotopics info in the settings file
             streamVal = mock.getStdout()
-            self.assertIn("UraniumOxide", streamVal, msg=streamVal)
-            self.assertIn("SaturatedWater", streamVal, msg=streamVal)
+            self.assertIn("Case Information", streamVal, msg=streamVal)
+            self.assertIn("Input File", streamVal, msg=streamVal)
 
             # test that there are 100 of each high, medium, and low MOX pins
+            b = r.core.getFirstBlock(Flags.MOX)
             fuelPinsHigh = b.getComponent(Flags.HIGH | Flags.MOX)
             self.assertEqual(fuelPinsHigh.getDimension("mult"), 100)
 
