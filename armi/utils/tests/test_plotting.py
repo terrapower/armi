@@ -18,7 +18,10 @@ import unittest
 
 import numpy as np
 
+from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
+from armi.reactor import blueprints
+from armi.reactor import reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH, TEST_ROOT
@@ -106,14 +109,10 @@ class TestPlotting(unittest.TestCase):
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
             first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
-            first_fuel_block.autoCreateSpatialGrids()
             plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
             self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
     def test_plotCartesianBlock(self):
-        from armi import settings
-        from armi.reactor import blueprints, reactors
-
         with TemporaryDirectoryChanger():
             cs = settings.Settings(
                 os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")

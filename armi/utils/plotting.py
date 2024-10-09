@@ -1180,8 +1180,9 @@ def _makeBlockPinPatches(block, cold):
             location = location[0]
         x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
+            orient = math.pi / 6 if cornersUp else 0
             derivedPatch = matplotlib.patches.RegularPolygon(
-                (x, y), 6, radius=largestPitch / math.sqrt(3)
+                (x, y), 6, radius=largestPitch / math.sqrt(3), orientation=orient
             )
         elif isinstance(comp, Square):
             derivedPatch = matplotlib.patches.Rectangle(
@@ -1206,8 +1207,7 @@ def _makeBlockPinPatches(block, cold):
         for loc in locs:
             x, y, _ = loc.getLocalCoordinates()
 
-            # goes through each location
-            # want to place a patch at that location
+            # goes through each location in stack order
             blockPatches = _makeComponentPatch(component, (x, y), cold, cornersUp)
             for element in blockPatches:
                 patches.append(element)
@@ -1375,9 +1375,7 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
     return [blockPatch]
 
 
-def plotBlockDiagram(
-    block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
-):
+def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"):
     """Given a Block with a spatial Grid, plot the diagram of it with all of its components (wire,
     duct, coolant, etc).
 
