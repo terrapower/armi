@@ -351,13 +351,10 @@ class Block(composites.Composite):
         """
         Store the pin-detailed multi-group neutron flux.
 
-        The [g][i] indexing is transposed to be a list of lists, one for each pin. This makes it
-        simple to do depletion for each pin, etc.
-
         Parameters
         ----------
-        fluxes : 2-D list of floats
-            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for
+        fluxes : np.ndarray
+            The block-level pin multigroup fluxes. fluxes[i, g] represents the flux in group g for
             pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         adjoint : bool, optional
@@ -367,28 +364,16 @@ class Block(composites.Composite):
 
         Outputs
         -------
-        self.p.pinMgFluxes : 2-D array of floats
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g
+        self.p.pinMgFluxes : np.ndarray
+            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
             for pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
-        pinFluxes = []
+        if self.hasFlags(Flags.FUEL):
+            pinFluxes = fluxes[(np.array(self.p.pinLocation) - 1)]
+        else:
+            pinFluxes = fluxes[:]
 
-        G, nPins = fluxes.shape
-
-        for pinNum in range(1, nPins + 1):
-            thisPinFlux = []
-
-            if self.hasFlags(Flags.FUEL):
-                pinLoc = self.p.pinLocation[pinNum - 1]
-            else:
-                pinLoc = pinNum
-
-            for g in range(G):
-                thisPinFlux.append(fluxes[g][pinLoc - 1])
-            pinFluxes.append(thisPinFlux)
-
-        pinFluxes = np.array(pinFluxes)
         if gamma:
             if adjoint:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")

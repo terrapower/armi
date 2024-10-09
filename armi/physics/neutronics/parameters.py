@@ -163,7 +163,7 @@ def _getNeutronicsBlockParams():
             "pinMgFluxes",
             units=f"n/{units.CM}^2/{units.SECONDS}",
             description="""
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g
+            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
             for pin i. Flux units are the standard n/cm^2/s. The "ARMI pin ordering" is used, which
             is counter-clockwise from 3 o'clock.
             """,
@@ -175,7 +175,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "pinMgFluxesAdj",
             units=units.UNITLESS,
-            description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
             categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
@@ -184,7 +184,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "pinMgFluxesGamma",
             units=f"#/{units.CM}^2/{units.SECONDS}",
-            description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
             categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
             saveToDB=False,
             default=None,
