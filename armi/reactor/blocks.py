@@ -21,6 +21,7 @@ Assemblies are made of blocks. Blocks are made of components.
 from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
+import functools
 import math
 
 import numpy as np
@@ -2030,9 +2031,24 @@ class HexBlock(Block):
 
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
+        self._rotateChildLocations(rotNum)
         self.p.orientation[2] += rotNum * 60
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
+
+    def _rotateChildLocations(self, rotNum: int):
+        if self.spatialGrid is None:
+            return
+        locationRotator = functools.partial(
+            self.spatialGrid.rotateLocation, rotations=rotNum
+        )
+        for c in self:
+            if isinstance(c.spatialLocator, grids.MultiIndexLocation):
+                newLocations = list(map(locationRotator, c.spatialLocator))
+                c.spatialLocator = grids.MultiIndexLocation(self.spatialGrid)
+                c.spatialLocator.extend(newLocations)
+            else:
+                c.spatialLocator = locationRotator(c.spatialLocator)
 
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.

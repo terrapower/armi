@@ -168,9 +168,9 @@ class HexBlockRotateTests(unittest.TestCase):
         nx = updatedCoords[:, 0]
         ny = updatedCoords[:, 1]
         expectedX = ox * cosTheta - oy * sinTheta
-        np.testing.assert_array_equal(nx, expectedX, err_msg=msg)
+        np.testing.assert_array_almost_equal(nx, expectedX, err_msg=msg)
         expectedY = ox * sinTheta + oy * cosTheta
-        np.testing.assert_array_equal(ny, expectedY, err_msg=msg)
+        np.testing.assert_array_almost_equal(ny, expectedY, err_msg=msg)
 
     def test_pinRotation(self):
         """Test that pin coordinates are updated through rotation.
