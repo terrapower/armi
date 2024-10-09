@@ -1375,7 +1375,9 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
     return [blockPatch]
 
 
-def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"):
+def plotBlockDiagram(
+    block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
+):
     """Given a Block with a spatial Grid, plot the diagram of it with all of its components (wire,
     duct, coolant, etc).
 
