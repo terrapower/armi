@@ -43,6 +43,7 @@ class Assembly(composites.Composite):
     """
 
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
+    blockType = None
 
     LOAD_QUEUE = "LoadQueue"
     SPENT_FUEL_POOL = "SFP"
@@ -58,7 +59,6 @@ class Assembly(composites.Composite):
         ----------
         typ : str
             Name of assembly design (e.g. the name from the blueprints input file).
-
         assemNum : int, optional
             The unique ID number of this assembly. If None is provided, we generate a
             random int. This makes it clear that it is a placeholder. When an assembly with
@@ -180,6 +180,11 @@ class Assembly(composites.Composite):
             are updated. The axial mesh and other Block geometry parameters are
             updated in ``calculateZCoords``.
         """
+        if self.blockType is not None and not isinstance(obj, self.blockType):
+            msg = f"Cannot add {obj} to this Assembly, it is not a {self.blockType}."
+            runLog.error(msg)
+            raise TypeError(msg)
+
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
 
@@ -199,6 +204,11 @@ class Assembly(composites.Composite):
 
     def insert(self, index, obj):
         """Insert an object at a given index position with the assembly."""
+        if self.blockType is not None and not isinstance(obj, self.blockType):
+            msg = f"Cannot insert {obj} to this Assembly, it is not a {self.blockType}."
+            runLog.error(msg)
+            raise TypeError(msg)
+
         composites.Composite.insert(self, index, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, index]
 
@@ -1254,21 +1264,7 @@ class Assembly(composites.Composite):
 class HexAssembly(Assembly):
     """An assembly that is hexagonal in cross-section."""
 
-    def add(self, obj: blocks.HexBlock):
-        if not isinstance(obj, blocks.HexBlock):
-            msg = f"Cannot add {obj} to this HexAssembly, it is not a HexBlock."
-            runLog.error(msg)
-            raise TypeError(msg)
-
-        return super(HexAssembly, self).add(obj)
-
-    def insert(self, index, obj):
-        if not isinstance(obj, blocks.HexBlock):
-            msg = f"Cannot insert {obj} to this HexAssembly, it is not a HexBlock."
-            runLog.error(msg)
-            raise TypeError(msg)
-
-        return super(HexAssembly, self).insert(index, obj)
+    blockType = blocks.HexBlock
 
     def rotate(self, rad: float):
         """Rotate an assembly and its children.
@@ -1295,43 +1291,31 @@ class HexAssembly(Assembly):
         """
         if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
             return super().rotate(rad)
-        raise ValueError(
-            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} "
-            f"degrees ({rad} radians)"
+
+        msg = (
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees "
+            f"({rad} radians)."
         )
+        runLog.error(msg)
+        raise ValueError(msg)
 
 
 class CartesianAssembly(Assembly):
     """An assembly that is rectangular in cross-section."""
 
-    def add(self, obj: blocks.CartesianBlock):
-        if not isinstance(obj, blocks.CartesianBlock):
-            msg = f"Cannot add {obj} to this CartesianAssembly, it is not a CartesianBlock."
-            runLog.error(msg)
-            raise TypeError(msg)
-
-        return super(CartesianAssembly, self).add(obj)
-
-    def insert(self, index, obj):
-        if not isinstance(obj, blocks.CartesianBlock):
-            msg = f"Cannot insert {obj} to this CartesianAssembly, it is not a CartesianBlock."
-            runLog.error(msg)
-            raise TypeError(msg)
-
-        return super(CartesianAssembly, self).insert(index, obj)
+    blockType = blocks.CartesianBlock
 
 
 class RZAssembly(Assembly):
     """
-    RZAssembly are assemblies in RZ geometry; they need to be different objects than
-    HexAssembly because they use different locations and need to have Radial Meshes in
-    their setting.
+    RZAssembly are assemblies in RZ geometry; they need to be different objects than HexAssembly
+    because they use different locations and need to have Radial Meshes in their setting.
 
     Notes
     -----
-    ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
-    they should have a common place to put information about subdividing the global mesh
-    for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
+    ThRZAssemblies should be a subclass of Assemblies because they should have a common place to put
+    information about subdividing the global mesh for transport. This is similar to how blocks have
+    'AxialMesh' in their blocks.
     """
 
     def __init__(self, name, assemNum=None):
@@ -1339,43 +1323,19 @@ class RZAssembly(Assembly):
         self.p.RadMesh = 1
 
     def radialOuter(self):
-        """
-        Returns the outer radial boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.radialOuter
-        """
+        """Returns the outer radial boundary of this assembly."""
         return self[0].radialOuter()
 
     def radialInner(self):
-        """
-        Returns the inner radial boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.radialInner
-        """
+        """Returns the inner radial boundary of this assembly."""
         return self[0].radialInner()
 
     def thetaOuter(self):
-        """
-        Returns the outer azimuthal boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.thetaOuter
-        """
+        """Returns the outer azimuthal boundary of this assembly."""
         return self[0].thetaOuter()
 
     def thetaInner(self):
-        """
-        Returns the outer azimuthal boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.thetaInner
-        """
+        """Returns the outer azimuthal boundary of this assembly."""
         return self[0].thetaInner()
 
 
@@ -1384,11 +1344,6 @@ class ThRZAssembly(RZAssembly):
     ThRZAssembly are assemblies in ThetaRZ geometry, they need to be different objects
     than HexAssembly because they use different locations and need to have Radial Meshes
     in their setting.
-
-    Notes
-    -----
-    This is a subclass of RZAssemblies, which is itself a subclass of the generic
-    Assembly class.
     """
 
     def __init__(self, assemType, assemNum=None):
