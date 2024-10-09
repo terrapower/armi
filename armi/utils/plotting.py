@@ -1180,7 +1180,7 @@ def _makeBlockPinPatches(block, cold):
             location = location[0]
         x, y, _ = location.getLocalCoordinates()
         if isinstance(comp, Hexagon):
-            orient = math.pi / 6 if cornersUp else 0
+            orient = 0 if cornersUp else math.pi / 6
             derivedPatch = matplotlib.patches.RegularPolygon(
                 (x, y), 6, radius=largestPitch / math.sqrt(3), orientation=orient
             )
@@ -1276,7 +1276,7 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
             - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Hexagon):
-        angle = 0 if cornersUp else 30
+        angle = 30 if cornersUp else 0
         outerPoints = np.array(
             hexagon.corners(angle) * component.getDimension("op", cold=cold)
         )
