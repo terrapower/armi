@@ -601,21 +601,21 @@ class TestHexGrid(unittest.TestCase):
         """Test that a hex grid can produce a rotated cell location."""
         g = grids.HexGrid.fromPitch(1.0, numRings=3)
         center: grids.IndexLocation = g[(0, 0, 0)]
-        notRotated = g.rotateLocation(center, 0)
+        notRotated = self._rotateAndCheckAngle(g, center, 0)
         self.assertEqual(notRotated, center)
 
         # One rotation for a trivial check
         northEast: grids.IndexLocation = g[(1, 0, 0)]
         dueNorth: grids.IndexLocation = g[(0, 1, 0)]
         northWest: grids.IndexLocation = g[(-1, 1, 0)]
-        actual = g.rotateLocation(northEast, 1)
+        actual = self._rotateAndCheckAngle(g, northEast, 1)
         self.assertEqual(actual, dueNorth)
 
-        actual = g.rotateLocation(dueNorth, 1)
+        actual = self._rotateAndCheckAngle(g, dueNorth, 1)
         self.assertEqual(actual, northWest)
 
         # Two rotations from the "first" object in the first full ring
-        actual = g.rotateLocation(northEast, 2)
+        actual = self._rotateAndCheckAngle(g, northEast, 2)
         self.assertEqual(actual, northWest)
 
         # Fuzzy rotation: if we rotate an location, and then rotate it back, we get the same location
@@ -624,13 +624,35 @@ class TestHexGrid(unittest.TestCase):
             startJ = randint(-10, 10)
             start = g[(startI, startJ, 0)]
             rotations = randint(-10, 10)
-            postRotate = g.rotateLocation(start, rotations)
+            postRotate = self._rotateAndCheckAngle(g, start, rotations)
             if rotations % 6:
                 self.assertNotEqual(postRotate, start)
             else:
                 self.assertEqual(postRotate, start)
-            reversed = g.rotateLocation(postRotate, -rotations)
+            reversed = self._rotateAndCheckAngle(g, postRotate, -rotations)
             self.assertEqual(reversed, start)
+
+    def _rotateAndCheckAngle(
+        self, g: grids.HexGrid, start: grids.IndexLocation, rotations: int
+    ) -> grids.IndexLocation:
+        finish = g.rotateLocation(start, rotations)
+        self._checkAngle(start, finish, rotations)
+        return finish
+
+    def _checkAngle(
+        self, start: grids.IndexLocation, finish: grids.IndexLocation, rotations: int
+    ):
+        startXY = start.getLocalCoordinates()[:2]
+        theta = math.pi / 3 * rotations
+        translationMatrix = np.array(
+            [
+                [math.cos(theta), -math.sin(theta)],
+                [math.sin(theta), math.cos(theta)],
+            ]
+        )
+        expected = translationMatrix.dot(startXY)
+        finishXY = finish.getLocalCoordinates()[:2]
+        np.testing.assert_allclose(finishXY, expected, atol=1e-8)
 
 
 class TestBoundsDefinedGrid(unittest.TestCase):
