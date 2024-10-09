@@ -510,7 +510,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
     The ``partiallyHeterogeneous`` option allows the user to treat everything inside the duct
     as a single homogenized composition. This could significantly reduce the memory and runtime
-    required for the lattice physics solver, and also provide an alternative approximation for 
+    required for the lattice physics solver, and also provide an alternative approximation for
     the spatial self-shielding effect on microscopic cross sections.
 
     This converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined and for
@@ -902,7 +902,7 @@ def stripComponents(block, compFlags):
     for i, c in sorted(indexedComponents, reverse=True):
         if outsideComp:
             if i == innerMostComp:
-                ductIP = c.getDimension("ip")
+                compIP = c.getDimension("ip")
                 outsideComp = False
             newBlock.remove(c, recomputeAreaFractions=False)
         else:
@@ -915,8 +915,8 @@ def stripComponents(block, compFlags):
             "Void",
             avgBlockTemp,
             avgBlockTemp,
-            ip=ductIP,
-            op=ductIP,
+            ip=compIP,
+            op=compIP,
         )
     )
     return newBlock, mixtureFlags
