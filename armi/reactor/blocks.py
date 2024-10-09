@@ -1560,7 +1560,31 @@ class Block(composites.Composite):
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
-    def getPinCoordinates(self):
+    def getPinLocations(self) -> list[grids.IndexLocation]:
+        """Produce all the index locations for pins in the block.
+
+        Returns
+        -------
+        list[grids.IndexLocation]
+            Integer locations where pins can be found in the block.
+
+        Notes
+        -----
+        Only components with ``Flags.CLAD`` are considered to define a pin's location.
+
+        See Also
+        --------
+        :meth:`getPinCoordinates` - companion for this method.
+        """
+        items = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                items.extend(clad.spatialLocator)
+            else:
+                items.append(clad.spatialLocator)
+        return items
+
+    def getPinCoordinates(self) -> np.ndarray:
         """
         Compute the local centroid coordinates of any pins in this block.
 
@@ -1568,23 +1592,22 @@ class Block(composites.Composite):
 
         Returns
         -------
-        localCoordinates : list
-            list of (x,y,z) pairs representing each pin in the order they are listed as children
+        localCoords : numpy.ndarray
+            ``(N, 3)`` array of coordinates for pins locations. ``localCoords[i]`` contains a triplet of
+            the x, y, z location for pin ``i``. Ordered according to how they are listed as children
 
         Notes
         -----
         This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
         options are needed. Only works if pins have clad.
+
+        See Also
+        --------
+        :meth:`getPinLocations` - companion for this method
         """
-        coords = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                coords.extend(
-                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
-                )
-            else:
-                coords.append(clad.spatialLocator.getLocalCoordinates())
-        return coords
+        indices = self.getPinLocations()
+        coords = [location.getLocalCoordinates() for location in indices]
+        return np.array(coords)
 
     def getTotalEnergyGenerationConstants(self):
         """

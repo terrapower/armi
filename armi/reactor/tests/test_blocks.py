@@ -2018,6 +2018,34 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(self.HexBlock.spatialGrid.pitch, 1.0)
         self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
 
+    def test_getPinLocations(self):
+        """Test pin locations can be obtained."""
+        locs = set(self.HexBlock.getPinLocations())
+        nPins = self.HexBlock.getNumPins()
+        self.assertEqual(len(locs), nPins)
+        for l in locs:
+            self.assertIs(l.grid, self.HexBlock.spatialGrid)
+        # Check all clad components are represented
+        for c in self.HexBlock.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(c.spatialLocator, grids.MultiIndexLocation):
+                for l in c.spatialLocator:
+                    locs.remove(l)
+            else:
+                locs.remove(c.spatialLocator)
+        self.assertFalse(
+            locs,
+            msg="Some clad locations were not found but returned by getPinLocations",
+        )
+
+    def test_getPinCoordsAndLocsAgree(self):
+        """Ensure consistency in ordering of pin locations and coordinates."""
+        locs = self.HexBlock.getPinLocations()
+        coords = self.HexBlock.getPinCoordinates()
+        self.assertEqual(len(locs), len(coords))
+        for loc, coord in zip(locs, coords):
+            convertedCoords = loc.getLocalCoordinates()
+            np.testing.assert_array_equal(coord, convertedCoords, err_msg=f"{loc=}")
+
     def test_getPinCoords(self):
         blockPitch = self.HexBlock.getPitch()
         pinPitch = self.HexBlock.getPinPitch()
