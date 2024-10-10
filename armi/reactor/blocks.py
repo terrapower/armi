@@ -2390,10 +2390,8 @@ class HexBlock(Block):
         spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
-                i, j = grid.getIndicesFromRingAndPos(
-                    ring + 1, pos + 1
-                )  # TODO: JOHN: Not here
-                spatialLocators.append(grid[i, j, 0])  # TODO: John. Maybe here
+                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
+                spatialLocators.append(grid[i, j, 0])
 
         # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:

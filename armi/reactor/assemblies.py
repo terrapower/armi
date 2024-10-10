@@ -1239,7 +1239,7 @@ class Assembly(composites.Composite):
 
         Parameters
         ----------
-        float
+        rad : float
             number (in radians) specifying the angle of counter clockwise rotation
         """
         for b in self:
@@ -1250,9 +1250,8 @@ class Assembly(composites.Composite):
         return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
 
     def orientBlocks(self, cornersUp):
-        """TODO: JOHN."""
+        """Add special grids to the blocks inside this Assembly, respecting their orientation."""
         for b in self:
-            # TODO: JOHN     and cs[globalSettings.CONF_BLOCK_AUTO_GRID]:
             if b.spatialGrid is None:
                 try:
                     b.autoCreateSpatialGrids(cornersUp)
