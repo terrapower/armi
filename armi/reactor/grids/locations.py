@@ -51,10 +51,6 @@ class LocationBase(ABC):
         self._k = k
         self._grid = grid
 
-        #if grid is not None:
-        #    print(grid)
-        #    assert grid.cornersUp
-
     def __repr__(self) -> str:
         return "<{} @ ({},{:},{})>".format(
             self.__class__.__name__, self.i, self.j, self.k
@@ -292,7 +288,9 @@ class IndexLocation(LocationBase):
     def getLocalCoordinates(self, nativeCoords=False):
         """Return the coordinates of the center of the mesh cell here in cm."""
         if self.grid is None:
-            raise ValueError(f"Cannot get local coordinates of {self} because grid is None.")
+            raise ValueError(
+                f"Cannot get local coordinates of {self} because grid is None."
+            )
         return self.grid.getCoordinates(self.indices, nativeCoords=nativeCoords)
 
     def getGlobalCoordinates(self, nativeCoords=False):
@@ -308,7 +306,9 @@ class IndexLocation(LocationBase):
         """Return the cell base (i.e. "bottom left"), in global coordinate system."""
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         if parentLocation:
-            return parentLocation.getGlobalCellBase() + self.grid.getCellBase(self.indices)
+            return parentLocation.getGlobalCellBase() + self.grid.getCellBase(
+                self.indices
+            )
         return self.grid.getCellBase(self.indices)
 
     def getGlobalCellTop(self):
@@ -376,8 +376,6 @@ class MultiIndexLocation(IndexLocation):
     def __init__(self, grid: "Grid"):
         IndexLocation.__init__(self, 0, 0, 0, grid)
         self._locations = []
-        print(f"type(grid): {type(grid)}")
-        print(f"corners up? in multi index loc: {grid.cornersUp}")
 
     def __getstate__(self) -> List[IndexLocation]:
         """Used in pickling and deepcopy, this detaches the grid."""

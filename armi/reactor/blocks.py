@@ -2373,7 +2373,6 @@ class HexBlock(Block):
         grid = grids.HexGrid.fromPitch(
             self.getPinPitch(cold=True), numRings=0, cornersUp=cornersUp
         )
-        assert grid.cornersUp
 
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
@@ -2387,36 +2386,14 @@ class HexBlock(Block):
                 )
             )
 
-        x = []
-
-        #for pos0 in range(grid.getPositionsInRing(2)):
-        #    print(pos0)
-        #    i0, j0 = grid.getIndicesFromRingAndPos(2, pos0 + 1)
-        #    print(i0, j0)
-
         # set the spatial position of the sub-block components
         spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
-                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)  # TODO: JOHN: Not here
-
-                locX = grid[i, j, 0]
-                if not isinstance(locX, grids.MultiIndexLocation):
-                    locX = [locX]
-                for locx0 in locX:
-                    try:
-                        x.append(locx0.getLocalCoordinates())  # TODO: John. Maybe here
-                    except Exception as e:
-                        print(e)
-                        raise e
-
-                #print(grid[i, j, 0].grid.cornersUp)
+                i, j = grid.getIndicesFromRingAndPos(
+                    ring + 1, pos + 1
+                )  # TODO: JOHN: Not here
                 spatialLocators.append(grid[i, j, 0])  # TODO: John. Maybe here
-
-        print(f"min x: {min([v[0] for v in x])}")
-        print(f"max x: {max([v[0] for v in x])}")
-        print(f"min y: {min([v[1] for v in x])}")
-        print(f"max y: {max([v[1] for v in x])}")
 
         # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
