@@ -929,9 +929,11 @@ def copyInterfaceInputs(
                 try:
                     key = cs.getSetting(key)
                     label = key.name
+                    isSetting = True
                 except NonexistentSetting(key):
                     runLog.debug(f"{key} is not a valid setting; continuing on anyway.")
                     label = key
+                    isSetting = False
             else:
                 label = key.name
 
@@ -984,9 +986,10 @@ def copyInterfaceInputs(
 
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects
-            if len(files) == 1 and not WILDCARD:
-                newSettings[label] = newFiles[0]
-            else:
-                newSettings[label] = newFiles
+            if isSetting:
+                if len(files) == 1 and not WILDCARD:
+                    newSettings[label] = newFiles[0]
+                else:
+                    newSettings[label] = newFiles
 
     return newSettings
