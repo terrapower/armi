@@ -2052,7 +2052,9 @@ class HexBlock_TestCase(unittest.TestCase):
         nPins = self.HexBlock.getNumPins()
         side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
-        x, y, _z = zip(*xyz)
+        x = xyz[:, 0]
+        y = xyz[:, 1]
+        z = xyz[:, 2]
         self.assertAlmostEqual(
             y[1], y[2]
         )  # first two pins should be side by side on top.
@@ -2067,15 +2069,20 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertGreater(min(x), -side)
 
         # center pin should be at 0
-        mags = [(xi**2 + yi**2, (xi, yi)) for xi, yi, zi in xyz]
-        _centerMag, (cx, cy) = min(mags)
+        mags = x * x + y * y
+        minIndex = mags.argmin()
+        cx = x[minIndex]
+        cy = y[minIndex]
         self.assertAlmostEqual(cx, 0.0)
         self.assertAlmostEqual(cy, 0.0)
 
         # extreme pin should be at proper radius
-        cornerMag, (cx, cy) = max(mags)
+        cornerMag = mags.max()
         nRings = hexagon.numRingsToHoldNumCells(nPins) - 1
         self.assertAlmostEqual(math.sqrt(cornerMag), nRings * pinPitch)
+
+        # all z coords equal to zero
+        np.testing.assert_equal(z, 0)
 
     def test_getPitchHomogeneousBlock(self):
         """
