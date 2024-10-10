@@ -22,6 +22,7 @@ import pickle
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
+from armi.utils import hexagon
 from armi.reactor import geometry
 from armi.reactor import grids
 
@@ -610,9 +611,13 @@ class TestHexGrid(unittest.TestCase):
         northWest: grids.IndexLocation = g[(-1, 1, 0)]
         actual = self._rotateAndCheckAngle(g, northEast, 1)
         self.assertEqual(actual, dueNorth)
+        np.testing.assert_allclose(dueNorth.getLocalCoordinates(), [0.0, 1.0, 0.0])
 
         actual = self._rotateAndCheckAngle(g, dueNorth, 1)
         self.assertEqual(actual, northWest)
+        np.testing.assert_allclose(
+            northWest.getLocalCoordinates(), [-hexagon.SQRT3 / 2, 0.5, 0]
+        )
 
         # Two rotations from the "first" object in the first full ring
         actual = self._rotateAndCheckAngle(g, northEast, 2)
