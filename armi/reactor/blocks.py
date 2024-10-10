@@ -292,7 +292,7 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, cornersUp=True):
         """
         Creates a spatialGrid for a Block.
 
@@ -2332,7 +2332,7 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, cornersUp=True):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
@@ -2340,6 +2340,11 @@ class HexBlock(Block):
         In this case, a simple block would be one that has either multiplicity of components equal
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
         into a given number of hex rings.  Otherwise, do not create a grid for this block.
+
+        Parameters
+        ----------
+        cornersUp: bool
+            Should the hexagons of this grid be corners up (as opposed to flats-up)?
 
         Notes
         -----
@@ -2354,7 +2359,7 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        # Check multiplicities...
+        # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
@@ -2364,17 +2369,17 @@ class HexBlock(Block):
                 )
             )
 
-        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
-        # For the below to work, there must not be multiple wire or multiple clad types.
-        # note that it's the pointed end of the cell hexes that are up (but the
-        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
+        # build the grid, from pitch and orientation
         grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=True
+            self.getPinPitch(cold=True), numRings=0, cornersUp=cornersUp
         )
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+        assert grid.cornersUp
+
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+
         if numLocations != self.getNumPins():
             raise ValueError(
                 "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
@@ -2382,11 +2387,38 @@ class HexBlock(Block):
                 )
             )
 
-        i = 0
+        x = []
+
+        #for pos0 in range(grid.getPositionsInRing(2)):
+        #    print(pos0)
+        #    i0, j0 = grid.getIndicesFromRingAndPos(2, pos0 + 1)
+        #    print(i0, j0)
+
+        # set the spatial position of the sub-block components
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
-                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
-                spatialLocators.append(grid[i, j, 0])
+                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)  # TODO: JOHN: Not here
+
+                locX = grid[i, j, 0]
+                if not isinstance(locX, grids.MultiIndexLocation):
+                    locX = [locX]
+                for locx0 in locX:
+                    try:
+                        x.append(locx0.getLocalCoordinates())  # TODO: John. Maybe here
+                    except Exception as e:
+                        print(e)
+                        raise e
+
+                #print(grid[i, j, 0].grid.cornersUp)
+                spatialLocators.append(grid[i, j, 0])  # TODO: John. Maybe here
+
+        print(f"min x: {min([v[0] for v in x])}")
+        print(f"max x: {max([v[0] for v in x])}")
+        print(f"min y: {min([v[1] for v in x])}")
+        print(f"max y: {max([v[1] for v in x])}")
+
+        # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:

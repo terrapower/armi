@@ -35,8 +35,10 @@ from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
+from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
 NUM_PINS_IN_TEST_BLOCK = 217
@@ -2226,6 +2228,84 @@ class HexBlock_TestCase(unittest.TestCase):
             self.HexBlock.autoCreateSpatialGrids()
 
         self.assertIsNone(self.HexBlock.spatialGrid)
+
+
+class TestHexBlockOrientation(unittest.TestCase):
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    def test_validateCornersUp(self):
+        # load a corners up reactor
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml"
+        )
+
+        # grab a pinned fuel block, and verify it is corners up
+        b = r.core.getFirstBlock(Flags.FUEL)
+        self.assertTrue(b.spatialGrid.cornersUp)
+
+        # if a hex shape is corners up, the pins should stretch more in Y than in X
+        maxX = -111
+        minX = 999
+        maxY = -111
+        minY = 999
+        print(len(b))
+        for comp in b:
+            locs = comp.spatialLocator
+            if not isinstance(locs, grids.MultiIndexLocation):
+                print(comp, 1)
+                locs = [locs]
+            else:
+                print(comp, len(locs))
+            for loc in locs:
+                x, y, _ = loc.getLocalCoordinates()
+                if x > maxX:
+                    maxX = x
+                elif x < minX:
+                    minX = x
+
+                if y > maxY:
+                    maxY = y
+                elif y < minY:
+                    minY = y
+
+        self.assertGreater(maxY - minY, maxX - minX)
+
+    def test_validateFlatsUp(self):
+        # load a flats up reactor
+        _o, r = loadTestReactor(TEST_ROOT, inputFileName="armiRun.yaml")
+
+        # grab a pinned fuel block, and verify it is flats up
+        b = r.core.getFirstBlock(Flags.FUEL)
+        self.assertFalse(b.spatialGrid.cornersUp)
+
+        # if a hex shape is flats up, the pins should stretch more in X than in Y
+        maxX = -111
+        minX = 999
+        maxY = -111
+        minY = 999
+        for comp in b:
+            locs = comp.spatialLocator
+            if not isinstance(locs, grids.MultiIndexLocation):
+                locs = [locs]
+            for loc in locs:
+                x, y, _ = loc.getLocalCoordinates()
+                if x > maxX:
+                    maxX = x
+                elif x < minX:
+                    minX = x
+
+                if y > maxY:
+                    maxY = y
+                elif y < minY:
+                    minY = y
+
+        self.assertGreater(maxX - minX, maxY - minY)
 
 
 class ThRZBlock_TestCase(unittest.TestCase):

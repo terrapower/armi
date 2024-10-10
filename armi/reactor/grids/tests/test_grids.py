@@ -238,8 +238,8 @@ class TestGrid(unittest.TestCase):
 class TestHexGrid(unittest.TestCase):
     """A set of tests for the Hexagonal Grid."""
 
-    def test_positions(self):
-        grid = grids.HexGrid.fromPitch(1.0)
+    def test_getCoordinatesFlatsUp(self):
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
         self.assertAlmostEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
@@ -260,6 +260,82 @@ class TestHexGrid(unittest.TestCase):
             )
         assert_allclose(grid.getCoordinates((1, 0, 0)), iDirection)
         assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
+
+    def test_getCoordinatesCornersUp(self):
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        self.assertAlmostEqual(grid.pitch, 1.0)
+        side = 1.0 / math.sqrt(3)
+        assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
+        assert_allclose(grid.getCoordinates((1, 0, 0)), (0.5, 1.5 * side, 0.0))
+        assert_allclose(grid.getCoordinates((-1, 0, 0)), (-0.5, -1.5 * side, 0.0))
+        assert_allclose(grid.getCoordinates((0, 1, 0)), (-0.5, 1.5 * side, 0.0))
+        assert_allclose(grid.getCoordinates((1, -1, 0)), (1, 0.0, 0.0))
+
+        unitSteps = grid.reduce()[0]
+        iDirection = tuple(direction[0] for direction in unitSteps)
+        jDirection = tuple(direction[1] for direction in unitSteps)
+        for directionVector in (iDirection, jDirection):
+            self.assertAlmostEqual(
+                (sum(val**2 for val in directionVector)) ** 0.5,
+                1.0,
+                msg=f"Direction vector {directionVector} should have "
+                "magnitude 1 for pitch 1.",
+            )
+        assert_allclose(grid.getCoordinates((1, 0, 0)), iDirection)
+        assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
+
+    def test_getLocalCoordinates(self):
+        grid0 = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        grid1 = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        for i in range(3):
+            for j in range(3):
+                if i == 0 and j == 0:
+                    continue
+                coords0 = grid0[i, j, 0].getLocalCoordinates()
+                coords1 = grid1[i, j, 0].getLocalCoordinates()
+                self.assertNotEqual(coords0[0], coords1[0], msg=f"X @ ({i}, {j})")
+                self.assertNotEqual(coords0[1], coords1[1], msg=f"Y @ ({i}, {j})")
+                self.assertEqual(coords0[2], coords1[2], msg=f"Z @ ({i}, {j})")
+
+    def test_getLocalCoordinatesCornersUp(self):
+        # validate the first ring of a corners-up hex gric
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        vals = []
+        for pos in range(grid.getPositionsInRing(2)):
+            i, j = grid.getIndicesFromRingAndPos(2, pos + 1)
+            vals.append(grid[i, j, 0].getLocalCoordinates())
+
+        # short in Y
+        maxY = max(v[1] for v in vals)
+        minY = min(v[1] for v in vals)
+        self.assertLess(maxY, 1)
+        self.assertGreater(minY, -1)
+
+        # long in X
+        maxX = max(v[0] for v in vals)
+        minX = min(v[0] for v in vals)
+        self.assertAlmostEqual(maxX, 1)
+        self.assertAlmostEqual(minX, -1)
+
+    def test_getLocalCoordinatesFlatsUp(self):
+        # validate the first ring of a flats-up hex gric
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        vals = []
+        for pos in range(grid.getPositionsInRing(2)):
+            i, j = grid.getIndicesFromRingAndPos(2, pos + 1)
+            vals.append(grid[i, j, 0].getLocalCoordinates())
+
+        # long in Y
+        maxY = max(v[1] for v in vals)
+        minY = min(v[1] for v in vals)
+        self.assertAlmostEqual(maxY, 1)
+        self.assertAlmostEqual(minY, -1)
+
+        # short in X
+        maxX = max(v[0] for v in vals)
+        minX = min(v[0] for v in vals)
+        self.assertLess(maxX, 1)
+        self.assertGreater(minX, -1)
 
     def test_neighbors(self):
         grid = grids.HexGrid.fromPitch(1.0)
@@ -837,8 +913,3 @@ class TestAxialGrid(unittest.TestCase):
             self.assertEqual(x, 0.0)
             self.assertEqual(y, 0.0)
             self.assertEqual(z, count + 0.5)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
-    unittest.main()
