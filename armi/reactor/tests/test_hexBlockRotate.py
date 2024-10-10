@@ -21,7 +21,7 @@ import numpy as np
 
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
-from armi.reactor.grids import MultiIndexLocation, IndexLocation
+from armi.reactor.grids import MultiIndexLocation, CoordinateLocation
 from armi.utils import iterables
 from armi.reactor.tests.test_blocks import loadTestBlock
 
@@ -172,23 +172,38 @@ class HexBlockRotateTests(unittest.TestCase):
         rads = math.radians(degrees)
         fresh.rotate(rads)
         for originalC, newC in zip(self.BASE_BLOCK, fresh):
-            self._compareComponentLocationsAfterRotation(originalC, newC, nRotations)
+            self._compareComponentLocationsAfterRotation(
+                originalC, newC, nRotations, rads
+            )
 
     def _compareComponentLocationsAfterRotation(
-        self, original: Component, updated: Component, nRotations: int
+        self, original: Component, updated: Component, nRotations: int, radians: float
     ):
         if isinstance(original.spatialLocator, MultiIndexLocation):
-            for oloc, nloc in zip(original.spatialLocator, updated.spatialLocator):
-                self._compareRotatedIndex(oloc, nloc, nRotations)
-
-    def _compareRotatedIndex(
-        self, old: IndexLocation, new: IndexLocation, nRotations: int
-    ):
-        # Location comparison requires the locations to be identical, but also the
-        # grids to be the same object. Pass through new.grid to find the corresponding
-        # location in the new grid
-        expected = new.grid[old.grid.rotateIndex(old, nRotations)]
-        self.assertEqual(new, expected)
+            for originalLoc, newLoc in zip(
+                original.spatialLocator, updated.spatialLocator
+            ):
+                # Location comparison requires the locations to be identical, but also the
+                # grids to be the same object. Pass through new.grid to find the corresponding
+                # location in the new grid
+                expected = newLoc.grid[
+                    originalLoc.grid.rotateIndex(originalLoc, nRotations)
+                ]
+                self.assertEqual(newLoc, expected, msg=f"{original=} :: {nRotations=}")
+        elif isinstance(original.spatialLocator, CoordinateLocation):
+            ox, oy, oz = original.spatialLocator.getLocalCoordinates()
+            nx, ny, nz = updated.spatialLocator.getLocalCoordinates()
+            self.assertEqual(nz, oz, msg=f"{original=} :: {radians=}")
+            rotationMatrix = np.array(
+                [
+                    [math.cos(radians), -math.sin(radians)],
+                    [math.sin(radians), math.cos(radians)],
+                ]
+            )
+            expectedX, expectedY = rotationMatrix.dot((ox, oy))
+            np.testing.assert_allclose(
+                (nx, ny), (expectedX, expectedY), err_msg=f"{original=} :: {radians=}"
+            )
 
 
 class EmptyBlockRotateTest(unittest.TestCase):

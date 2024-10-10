@@ -2054,24 +2054,35 @@ class HexBlock(Block):
 
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self._rotateChildLocations(rotNum)
+        self._rotateChildLocations(rad, rotNum)
         self.p.orientation[2] += rotNum * 60
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
 
-    def _rotateChildLocations(self, rotNum: int):
+    def _rotateChildLocations(self, radians: float, rotNum: int):
         if self.spatialGrid is None:
             return
         locationRotator = functools.partial(
             self.spatialGrid.rotateIndex, rotations=rotNum
+        )
+        rotationMatrix = np.array(
+            [
+                [math.cos(radians), -math.sin(radians)],
+                [math.sin(radians), math.cos(radians)],
+            ]
         )
         for c in self:
             if isinstance(c.spatialLocator, grids.MultiIndexLocation):
                 newLocations = list(map(locationRotator, c.spatialLocator))
                 c.spatialLocator = grids.MultiIndexLocation(self.spatialGrid)
                 c.spatialLocator.extend(newLocations)
-            else:
-                c.spatialLocator = locationRotator(c.spatialLocator)
+            elif isinstance(c.spatialLocator, grids.CoordinateLocation):
+                oldCoords = c.spatialLocator.getLocalCoordinates()
+                newXY = rotationMatrix.dot(oldCoords[:2])
+                newLocation = grids.CoordinateLocation(
+                    newXY[0], newXY[1], oldCoords[2], self.spatialGrid
+                )
+                c.spatialLocator = newLocation
 
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.
