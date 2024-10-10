@@ -26,9 +26,10 @@ from armi import interfaces
 from armi import plugins
 from armi import settings
 from armi import utils
-from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+from armi.bookkeeping.db.passiveDBLoadPlugin import PassiveDBLoadPlugin
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 
@@ -115,9 +116,30 @@ class TestPluginRegistration(unittest.TestCase):
         self.assertIs(first, AxialExpansionChanger)
         pm.register(SillyAxialPlugin)
         second = pm.hook.getAxialExpansionChanger()
-        # Registering a plugin that implements the hook means we get
-        # that plugin's axial expander
+        # Registering a plugin that implements the hook means we get that plugin's axial expander
         self.assertIs(second, SillyAxialExpansionChanger)
+
+    def test_passiveDBLoadPlugin(self):
+        plug = PassiveDBLoadPlugin()
+
+        # default case
+        bpSections = plug.defineBlueprintsSections()
+        self.assertEqual(len(bpSections), 0)
+        params = plug.defineParameters()
+        self.assertEqual(len(params), 0)
+
+        # non-empty cases
+        PassiveDBLoadPlugin.SKIP_BP_SECTIONS = ["hi", "mom"]
+        PassiveDBLoadPlugin.SKIP_PARAMS = {Block: ["fake1", "fake2"]}
+        bpSections = plug.defineBlueprintsSections()
+        self.assertEqual(len(bpSections), 2)
+        self.assertTrue(type(bpSections[0]), tuple)
+        self.assertEqual(bpSections[0][0], "hi")
+        self.assertTrue(type(bpSections[1]), tuple)
+        self.assertEqual(bpSections[1][0], "mom")
+        params = plug.defineParameters()
+        self.assertEqual(len(params), 1)
+        self.assertIn(Block, params)
 
 
 class TestPluginBasics(unittest.TestCase):
