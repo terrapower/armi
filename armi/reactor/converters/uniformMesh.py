@@ -73,6 +73,7 @@ from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 
+
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
 
@@ -1100,12 +1101,44 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     aDest,
                     self.paramMapper,
                     mapNumberDensities,
-                    calcReactionRates=self.calcReactionRates,
+                    calcReactionRates=False,
+                )
+
+            # If requested, the reaction rates will be calculated based on the
+            # mapped neutron flux and the XS library.
+            if self.calcReactionRates:
+                self._calculateReactionRatesEfficient(
+                    destReactor.core, sourceReactor.core.p.keff
                 )
 
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
         self._cachedReactorCoreParamData = {}
+
+    @staticmethod
+    def _calculateReactionRatesEfficient(core, keff):
+        """
+        First, sort blocks into groups by XS type. Then, we just need to grab micros for each XS type once.
+
+        Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
+        """
+        from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+            calcReactionRatesBlockList,
+        )
+
+        xsTypeGroups = collections.defaultdict(list)
+        for b in core.getBlocks():
+            xsTypeGroups[b.getMicroSuffix()].append(b)
+
+        for xsID, blockList in xsTypeGroups.items():
+            nucSet = set()
+            for b in blockList:
+                nucSet.update(
+                    nuc for nuc, ndens in b.getNumberDensities().items() if ndens > 0.0
+                )
+            nucList = sorted(nucSet)
+            xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucList}
+            calcReactionRatesBlockList(blockList, keff, xsNucDict)
 
     @staticmethod
     def _calculateReactionRates(lib, keff, assem):
@@ -1147,10 +1180,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     self.convReactor.core.lib, self.convReactor.core.p.keff, assem
                 )
         else:
-            for assem in self.convReactor.core.getAssemblies():
-                self._calculateReactionRates(
-                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
-                )
+            self._calculateReactionRatesEfficient(
+                self.convReactor.core, self.convReactor.core.p.keff
+            )
 
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
