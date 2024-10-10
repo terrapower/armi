@@ -23,7 +23,7 @@ from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
 from armi.reactor.grids import MultiIndexLocation, CoordinateLocation
 from armi.utils import iterables
-from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.reactor.tests.test_blocks import loadTestBlock, NUM_PINS_IN_TEST_BLOCK
 
 
 class HexBlockRotateTests(unittest.TestCase):
@@ -47,10 +47,13 @@ class HexBlockRotateTests(unittest.TestCase):
         "linPowByPin",
     ]
 
+    PIN_DATA = np.arange(NUM_PINS_IN_TEST_BLOCK, dtype=float)
+
     @classmethod
     def setUpClass(cls):
         cls.BASE_BLOCK = loadTestBlock()
         cls._assignParamData(cls.BOUNDARY_PARAMS, cls.BOUNDARY_DATA)
+        cls._assignParamData(cls.PIN_PARAMS, cls.PIN_DATA)
 
     @classmethod
     def _assignParamData(cls, names: list[str], referenceData: np.ndarray):
@@ -208,6 +211,18 @@ class HexBlockRotateTests(unittest.TestCase):
             np.testing.assert_allclose(
                 (nx, ny), (expectedX, expectedY), err_msg=f"{original=} :: {radians=}"
             )
+
+    def test_pinParametersUnmodified(self):
+        """Test that pin data are not modified through rotation.
+
+        Reinforces the idea that data like ``linPowByPin[i]`` are assigned to
+        pin ``i``, wherever it may be. Locations are defined instead by ``getPinCoordinates()[i]``.
+        """
+        fresh = copy.deepcopy(self.BASE_BLOCK)
+        fresh.rotate(math.radians(60))
+        for paramName in self.PIN_PARAMS:
+            actual = fresh.p[paramName]
+            np.testing.assert_equal(actual, self.PIN_DATA, err_msg=paramName)
 
 
 class EmptyBlockRotateTest(unittest.TestCase):
