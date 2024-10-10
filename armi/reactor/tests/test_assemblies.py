@@ -333,6 +333,9 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual(b.parent, a)
             self.assertEqual(len(a), n + 1)
 
+        with self.assertRaises(TypeError):
+            a.add(blocks.CartesianBlock("Test Cart Block"))
+
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
         i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
