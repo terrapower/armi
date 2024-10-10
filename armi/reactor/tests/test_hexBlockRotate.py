@@ -127,7 +127,7 @@ class HexBlockRotateTests(unittest.TestCase):
         postRotation = fresh.getPinLocations()
         self.assertEqual(len(preRotation), len(postRotation))
         for pre, post in zip(preRotation, postRotation):
-            expected = g.rotateLocation(pre, -2)
+            expected = g.rotateIndex(pre, -2)
             self.assertEqual(post, expected, msg=f"{pre=}")
 
     def test_pinRotationCoordinates(self):
@@ -142,7 +142,7 @@ class HexBlockRotateTests(unittest.TestCase):
         degrees = -120
         rads = math.radians(degrees)
         fresh.rotate(rads)
-        translationMatrix = np.array(
+        rotationMatrix = np.array(
             [
                 [math.cos(rads), -math.sin(rads)],
                 [math.sin(rads), math.cos(rads)],
@@ -156,7 +156,7 @@ class HexBlockRotateTests(unittest.TestCase):
             if np.allclose(start, 0):
                 np.testing.assert_equal(start, finish)
                 continue
-            expected = translationMatrix.dot(start)
+            expected = rotationMatrix.dot(start)
             np.testing.assert_allclose(expected, finish, atol=1e-8)
 
     def test_updateChildLocations(self):
@@ -187,7 +187,7 @@ class HexBlockRotateTests(unittest.TestCase):
         # Location comparison requires the locations to be identical, but also the
         # grids to be the same object. Pass through new.grid to find the corresponding
         # location in the new grid
-        expected = new.grid[old.grid.rotateLocation(old, nRotations)]
+        expected = new.grid[old.grid.rotateIndex(old, nRotations)]
         self.assertEqual(new, expected)
 
 

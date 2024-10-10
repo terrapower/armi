@@ -635,7 +635,7 @@ class TestHexGrid(unittest.TestCase):
     def _rotateAndCheckAngle(
         self, g: grids.HexGrid, start: grids.IndexLocation, rotations: int
     ) -> grids.IndexLocation:
-        finish = g.rotateLocation(start, rotations)
+        finish = g.rotateIndex(start, rotations)
         self._checkAngle(start, finish, rotations)
         return finish
 
@@ -644,13 +644,13 @@ class TestHexGrid(unittest.TestCase):
     ):
         startXY = start.getLocalCoordinates()[:2]
         theta = math.pi / 3 * rotations
-        translationMatrix = np.array(
+        rotationMatrix = np.array(
             [
                 [math.cos(theta), -math.sin(theta)],
                 [math.sin(theta), math.cos(theta)],
             ]
         )
-        expected = translationMatrix.dot(startXY)
+        expected = rotationMatrix.dot(startXY)
         finishXY = finish.getLocalCoordinates()[:2]
         np.testing.assert_allclose(finishXY, expected, atol=1e-8)
 

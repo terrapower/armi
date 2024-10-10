@@ -2063,7 +2063,7 @@ class HexBlock(Block):
         if self.spatialGrid is None:
             return
         locationRotator = functools.partial(
-            self.spatialGrid.rotateLocation, rotations=rotNum
+            self.spatialGrid.rotateIndex, rotations=rotNum
         )
         for c in self:
             if isinstance(c.spatialLocator, grids.MultiIndexLocation):

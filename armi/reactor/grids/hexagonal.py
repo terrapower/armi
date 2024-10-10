@@ -576,7 +576,7 @@ class HexGrid(StructuredGrid):
 
         return locList[:nLocs]
 
-    def rotateLocation(self, loc: IndexLocation, rotations: int) -> IndexLocation:
+    def rotateIndex(self, loc: IndexLocation, rotations: int) -> IndexLocation:
         """Find the new location of an index after some number of CCW rotations.
 
         Parameters
