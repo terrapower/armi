@@ -625,10 +625,13 @@ class TestHexGrid(unittest.TestCase):
             start = g[(startI, startJ, 0)]
             rotations = randint(-10, 10)
             postRotate = self._rotateAndCheckAngle(g, start, rotations)
-            if rotations % 6:
-                self.assertNotEqual(postRotate, start)
-            else:
+            if startI == 0 and startJ == 0:
                 self.assertEqual(postRotate, start)
+                continue
+            if rotations % 6:
+                self.assertNotEqual(postRotate, start, msg=rotations)
+            else:
+                self.assertEqual(postRotate, start, msg=rotations)
             reversed = self._rotateAndCheckAngle(g, postRotate, -rotations)
             self.assertEqual(reversed, start)
 
