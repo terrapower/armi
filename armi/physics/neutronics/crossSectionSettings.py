@@ -59,6 +59,7 @@ CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 CONF_PARTIALLY_HETEROGENEOUS = "partiallyHeterogeneous"
+CONF_SPLIT_TRACE_ISOTOPES = "splitTraceIsotopes"
 
 
 class XSGeometryTypes(Enum):
@@ -450,6 +451,12 @@ class XSModelingOptions:
         heterogeneous approximation for a 1D cylindrical model. Everything inside of the
         duct will be treated as homogeneous.
 
+    splitTraceIsotopes : bool
+        This is a lattice physics configuration option used to enable a separate 0D fuel
+        cross section calculation for trace fission products when using a 1D cross section
+        model. This can significantly reduce the memory and run time required for the 1D
+        model.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -483,6 +490,7 @@ class XSModelingOptions:
         averageByComponent=False,
         minDriverDensity=0.0,
         partiallyHeterogeneous=False,
+        splitTraceIsotopes=False,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -507,6 +515,7 @@ class XSModelingOptions:
         self.minDriverDensity = minDriverDensity
         self.averageByComponent = averageByComponent
         self.partiallyHeterogeneous = partiallyHeterogeneous
+        self.splitTraceIsotopes = splitTraceIsotopes
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
@@ -697,6 +706,7 @@ class XSModelingOptions:
                 CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
                 CONF_PARTIALLY_HETEROGENEOUS: False,
+                CONF_SPLIT_TRACE_ISOTOPES: False,
             }
         elif self.geometry == XSGeometryTypes.getStr(
             XSGeometryTypes.TWO_DIMENSIONAL_HEX
