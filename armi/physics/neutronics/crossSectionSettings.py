@@ -154,6 +154,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
         CONF_PARTIALLY_HETEROGENEOUS,
+        CONF_SPLIT_TRACE_ISOTOPES,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -201,6 +202,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
         vol.Optional(CONF_PARTIALLY_HETEROGENEOUS): bool,
+        vol.Optional(CONF_SPLIT_TRACE_ISOTOPES): bool,
     }
 )
 
