@@ -20,6 +20,8 @@ import unittest
 import numpy as np
 
 from armi.reactor.blocks import HexBlock
+from armi.reactor.components import Component
+from armi.reactor.grids import MultiIndexLocation, IndexLocation
 from armi.utils import iterables
 from armi.reactor.tests.test_blocks import loadTestBlock
 
@@ -156,6 +158,37 @@ class HexBlockRotateTests(unittest.TestCase):
                 continue
             expected = translationMatrix.dot(start)
             np.testing.assert_allclose(expected, finish, atol=1e-8)
+
+    def test_updateChildLocations(self):
+        """Test that locations of all children are updated through rotation.
+
+        .. test:: Rotating a hex block updates the spatial coordinates on contained objects.
+            :id: T_ARMI_ROTATE_HEX_CHILD_LOCS
+            :tests: R_ARMI_ROTATE_HEX
+        """
+        fresh = copy.deepcopy(self.BASE_BLOCK)
+        nRotations = 2
+        degrees = 60 * nRotations
+        rads = math.radians(degrees)
+        fresh.rotate(rads)
+        for originalC, newC in zip(self.BASE_BLOCK, fresh):
+            self._compareComponentLocationsAfterRotation(originalC, newC, nRotations)
+
+    def _compareComponentLocationsAfterRotation(
+        self, original: Component, updated: Component, nRotations: int
+    ):
+        if isinstance(original.spatialLocator, MultiIndexLocation):
+            for oloc, nloc in zip(original.spatialLocator, updated.spatialLocator):
+                self._compareRotatedIndex(oloc, nloc, nRotations)
+
+    def _compareRotatedIndex(
+        self, old: IndexLocation, new: IndexLocation, nRotations: int
+    ):
+        # Location comparison requires the locations to be identical, but also the
+        # grids to be the same object. Pass through new.grid to find the corresponding
+        # location in the new grid
+        expected = new.grid[old.grid.rotateLocation(old, nRotations)]
+        self.assertEqual(new, expected)
 
 
 class EmptyBlockRotateTest(unittest.TestCase):
