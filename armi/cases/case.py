@@ -878,6 +878,7 @@ def copyInterfaceInputs(
     enables developers to add new inputs in a plugin-dependent/ modular way.
 
     This function should now be able to handle the updating of:
+
       - a single file (relative or absolute)
       - a list of files (relative or absolute), and
       - a file entry that has a wildcard processing into multiple files.
@@ -896,12 +897,12 @@ def copyInterfaceInputs(
         The source case settings to find input files
     destination : str
         The target directory to copy input files to
-    sourceDir : str (optional)
+    sourceDir : str, optional
         The directory from which to copy files. Defaults to cs.inputDirectory
 
     Returns
     -------
-    newSettings : dict
+    dict
         A new settings object that contains settings for the keys and values that are
         either an absolute file path, a list of absolute file paths, or the original
         file path if absolute paths could not be resolved
@@ -927,12 +928,15 @@ def copyInterfaceInputs(
             if not isinstance(key, settings.Setting):
                 try:
                     key = cs.getSetting(key)
+                    label = key.name
+                    isSetting = True
                 except NonexistentSetting(key):
-                    raise ValueError(
-                        f"{key} is not a valid setting. Ensure the relevant specifyInputs "
-                        "method uses a correct setting name."
-                    )
-            label = key.name
+                    runLog.debug(f"{key} is not a valid setting; continuing on anyway.")
+                    label = key
+                    isSetting = False
+            else:
+                isSetting = True
+                label = key.name
 
             newFiles = []
             for f in files:
@@ -977,15 +981,16 @@ def copyInterfaceInputs(
 
                 if destFilePath == f:
                     runLog.debug(
-                        f"No input files for `{label}` setting could be resolved with "
-                        f"the following path: `{sourceFullPath}`. Will not update `{label}`."
+                        f"No input files for `{label}` could be resolved with the "
+                        f"following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects
-            if len(files) == 1 and not WILDCARD:
-                newSettings[label] = newFiles[0]
-            else:
-                newSettings[label] = newFiles
+            if isSetting:
+                if len(files) == 1 and not WILDCARD:
+                    newSettings[label] = newFiles[0]
+                else:
+                    newSettings[label] = newFiles
 
     return newSettings
