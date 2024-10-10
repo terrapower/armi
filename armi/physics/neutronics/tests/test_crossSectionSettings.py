@@ -119,6 +119,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["YA"].geometry, "0D")
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
         self.assertEqual(xsModel["YA"].partiallyHeterogeneous, False)
+        self.assertEqual(xsModel["YA"].splitTraceIsotopes, False)
 
     def test_setDefaultSettingsByLowestBuGroupHomogeneous(self):
         # Initialize some micro suffix in the cross sections
@@ -183,6 +184,7 @@ class TestCrossSectionSettings(unittest.TestCase):
             geometry="1D cylinder",
             meshSubdivisionsPerCm=1.0,
             partiallyHeterogeneous=True,
+            splitTraceIsotopes=True,
         )
         xsModel["DA"] = da
         xsModel.setDefaults(
@@ -192,6 +194,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
         self.assertEqual(xsModel["DA"].partiallyHeterogeneous, True)
+        self.assertEqual(xsModel["DA"].splitTraceIsotopes, True)
         self.assertEqual(xsModel["DA"].mergeIntoFuel, [])
 
     def test_badCrossSections(self):
