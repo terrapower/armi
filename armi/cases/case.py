@@ -935,6 +935,7 @@ def copyInterfaceInputs(
                     label = key
                     isSetting = False
             else:
+                isSetting = True
                 label = key.name
 
             newFiles = []
