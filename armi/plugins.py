@@ -269,6 +269,15 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
+    def beforeReactorConstruction(cs) -> None:
+        """
+        Function to call before the reactor is constructed.
+
+        TODO fill out. Requirement for this?
+        """
+
+    @staticmethod
+    @HOOKSPEC
     def defineFlags() -> Dict[str, Union[int, flags.auto]]:
         """
         Add new flags to the reactor data model, and the simulation.

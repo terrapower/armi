@@ -19,7 +19,7 @@ to be modeled.
 from typing import Optional
 import copy
 
-from armi import materials
+from armi import getPluginManagerOrFail
 from armi import runLog
 from armi.reactor import composites
 from armi.reactor import reactorParameters
@@ -29,7 +29,6 @@ from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
     CONF_GEOM_FILE,
-    CONF_MATERIAL_NAMESPACE_ORDER,
     CONF_SORT_REACTOR,
 )
 from armi.utils import directoryChangers
@@ -180,10 +179,9 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
-    # just before reactor construction, update the material "registry" with user settings,
-    # if it is set. Often it is set by the application.
-    if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
-        materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
+
+    getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
+
     r = Reactor(cs.caseTitle, bp)
 
     if cs[CONF_GEOM_FILE]:
