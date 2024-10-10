@@ -26,7 +26,7 @@ import numpy as np
 from scipy import interpolate
 
 from armi import runLog
-from armi.reactor import assemblyLists
+from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
@@ -224,7 +224,7 @@ class Assembly(composites.Composite):
         # just use ring and position, not axial (which is 0)
         if not self.parent:
             return self.LOAD_QUEUE
-        elif isinstance(self.parent, assemblyLists.SpentFuelPool):
+        elif isinstance(self.parent, SpentFuelPool):
             return self.SPENT_FUEL_POOL
         return self.parent.spatialGrid.getLabel(
             self.spatialLocator.getCompleteIndices()[:2]
@@ -1237,15 +1237,6 @@ class Assembly(composites.Composite):
 
         Each Block on the Assembly is rotated in turn.
 
-        .. impl:: An assembly can be rotated about its z-axis.
-            :id: I_ARMI_SHUFFLE_ROTATE
-            :implements: R_ARMI_SHUFFLE_ROTATE
-
-            This method loops through every ``Block`` in this ``Assembly`` and rotates
-            it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction. To perform the ``Block`` rotation, the
-            :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
-
         Parameters
         ----------
         rad: float
@@ -1265,6 +1256,15 @@ class HexAssembly(Assembly):
 
     def rotate(self, rad: float):
         """Rotate an assembly and its children.
+
+        .. impl:: A hexagonal assembly shall support rotating around the z-axis in 60 degree increments.
+            :id: I_ARMI_ROTATE_HEX
+            :implements: R_ARMI_ROTATE_HEX
+
+            This method loops through every ``Block`` in this ``HexAssembly`` and rotates
+            it by a given angle (in radians). The rotation angle is positive in the
+            counter-clockwise direction. To perform the ``Block`` rotation, the
+            :meth:`armi.reactor.blocks.HexBlock.rotate` method is called.
 
         Parameters
         ----------

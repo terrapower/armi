@@ -654,7 +654,8 @@ class ArmiPlugin:
 
                 {
                     "core": armi.reactor.reactors.Core,
-                    "sfp": armi.reactor.assemblyLists.SpentFuelPool,
+                    "excore": armi.reactor.excoreStructure.ExcoreStructure,
+                    "sfp": armi.reactor.spentFuelPool.SpentFuelPool,
                 }
 
         Notes
