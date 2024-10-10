@@ -120,15 +120,17 @@ class HexBlockRotateTests(unittest.TestCase):
             :tests: R_ARMI_ROTATE_HEX
 
         """
-        fresh = copy.deepcopy(self.BASE_BLOCK)
-        g = fresh.spatialGrid
-        preRotation = fresh.getPinLocations()
-        fresh.rotate(math.radians(-120))
-        postRotation = fresh.getPinLocations()
-        self.assertEqual(len(preRotation), len(postRotation))
-        for pre, post in zip(preRotation, postRotation):
-            expected = g.rotateIndex(pre, -2)
-            self.assertEqual(post, expected, msg=f"{pre=}")
+        preRotation = self.BASE_BLOCK.getPinLocations()
+        for nRotations in range(-10, 10):
+            degrees = 60 * nRotations
+            fresh = copy.deepcopy(self.BASE_BLOCK)
+            g = fresh.spatialGrid
+            fresh.rotate(math.radians(degrees))
+            postRotation = fresh.getPinLocations()
+            self.assertEqual(len(preRotation), len(postRotation))
+            for pre, post in zip(preRotation, postRotation):
+                expected = g.rotateIndex(pre, nRotations)
+                self.assertEqual(post, expected, msg=f"{pre=}")
 
     def test_pinRotationCoordinates(self):
         """Test that pin coordinates are updated through rotation.
@@ -137,27 +139,29 @@ class HexBlockRotateTests(unittest.TestCase):
             :id: T_ARMI_ROTATE_HEX_PIN_COORDS
             :tests: R_ARMI_ROTATE_HEX
         """
-        fresh = copy.deepcopy(self.BASE_BLOCK)
-        preRotation = fresh.getPinCoordinates()
-        degrees = -120
-        rads = math.radians(degrees)
-        fresh.rotate(rads)
-        rotationMatrix = np.array(
-            [
-                [math.cos(rads), -math.sin(rads)],
-                [math.sin(rads), math.cos(rads)],
-            ]
-        )
-        postRotation = fresh.getPinCoordinates()
-        self.assertEqual(len(preRotation), len(postRotation))
-        for pre, post in zip(preRotation, postRotation):
-            start = pre[:2]
-            finish = post[:2]
-            if np.allclose(start, 0):
-                np.testing.assert_equal(start, finish)
-                continue
-            expected = rotationMatrix.dot(start)
-            np.testing.assert_allclose(expected, finish, atol=1e-8)
+        preRotation = self.BASE_BLOCK.getPinCoordinates()
+        # Over- and under-rotate to make sure we can handle clockwise and counter
+        # clockwise rotations, and cases that wrap around a full rotation
+        for degrees in range(-600, 600, 60):
+            fresh = copy.deepcopy(self.BASE_BLOCK)
+            rads = math.radians(degrees)
+            fresh.rotate(rads)
+            rotationMatrix = np.array(
+                [
+                    [math.cos(rads), -math.sin(rads)],
+                    [math.sin(rads), math.cos(rads)],
+                ]
+            )
+            postRotation = fresh.getPinCoordinates()
+            self.assertEqual(len(preRotation), len(postRotation))
+            for pre, post in zip(preRotation, postRotation):
+                start = pre[:2]
+                finish = post[:2]
+                if np.allclose(start, 0):
+                    np.testing.assert_equal(start, finish)
+                    continue
+                expected = rotationMatrix.dot(start)
+                np.testing.assert_allclose(expected, finish, atol=1e-8)
 
     def test_updateChildLocations(self):
         """Test that locations of all children are updated through rotation.
@@ -166,15 +170,15 @@ class HexBlockRotateTests(unittest.TestCase):
             :id: T_ARMI_ROTATE_HEX_CHILD_LOCS
             :tests: R_ARMI_ROTATE_HEX
         """
-        fresh = copy.deepcopy(self.BASE_BLOCK)
-        nRotations = 2
-        degrees = 60 * nRotations
-        rads = math.radians(degrees)
-        fresh.rotate(rads)
-        for originalC, newC in zip(self.BASE_BLOCK, fresh):
-            self._compareComponentLocationsAfterRotation(
-                originalC, newC, nRotations, rads
-            )
+        for nRotations in range(-10, 10):
+            fresh = copy.deepcopy(self.BASE_BLOCK)
+            degrees = 60 * nRotations
+            rads = math.radians(degrees)
+            fresh.rotate(rads)
+            for originalC, newC in zip(self.BASE_BLOCK, fresh):
+                self._compareComponentLocationsAfterRotation(
+                    originalC, newC, nRotations, rads
+                )
 
     def _compareComponentLocationsAfterRotation(
         self, original: Component, updated: Component, nRotations: int, radians: float
