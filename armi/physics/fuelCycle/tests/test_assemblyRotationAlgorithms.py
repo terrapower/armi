@@ -77,15 +77,14 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
         Use the second ring of the hexagon because it's easier to write out pin locations
         and check work.
         """
-        powers = np.ones(self.N_PINS)
-        upperRightPin = 2
-        lowerLeftPin = 5
-        powers[upperRightPin - 1] *= 2
-        powers[lowerLeftPin - 1] = 0
-        self.prepBlocks(percentBuMaxPinLocation=upperRightPin, pinPowers=powers)
-        rot = getOptimalAssemblyOrientation(self.assembly, self.assembly)
-        # 180 degrees is three 60 degree rotations
-        self.assertEqual(rot, 3)
+        for startPin, oppositePin in ((2, 5), (3, 6), (4, 7), (5, 2), (6, 3), (7, 4)):
+            powers = np.ones(self.N_PINS)
+            powers[startPin - 1] *= 2
+            powers[oppositePin - 1] = 0
+            self.prepBlocks(percentBuMaxPinLocation=startPin, pinPowers=powers)
+            rot = getOptimalAssemblyOrientation(self.assembly, self.assembly)
+            # 180 degrees is three 60 degree rotations
+            self.assertEqual(rot, 3, msg=f"{startPin=} :: {oppositePin=}")
 
 
 class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
