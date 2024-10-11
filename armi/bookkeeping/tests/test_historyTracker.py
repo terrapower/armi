@@ -55,13 +55,13 @@ class TestHistoryTracker(ArmiTestHelper):
     """History tracker tests that require a Reactor Model."""
 
     @classmethod
-    def setUpClass(cls):
-        # We need to be in the TUTORIAL_DIR so that for `filesToMove` to work right.
-        os.chdir(TUTORIAL_DIR)
-
         # Do this work in a temp dir, to avoid race conditions.
-        cls.dirChanger = TemporaryDirectoryChanger(filesToMove=TUTORIAL_FILES)
+        cls.dirChanger = TemporaryDirectoryChanger()
         cls.dirChanger.__enter__()
+
+        for filePath in TUTORIAL_FILES:
+            shuil.copyfile(filePath, )
+
         runTutorialNotebook()
 
     @classmethod

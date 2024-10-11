@@ -28,6 +28,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from armi.tests import TEST_ROOT
 
 TUTORIALS = os.path.join(TEST_ROOT, "tutorials")
+ANL_ACFI_177 = os.path.join(TEST_ROOT, "anl-afci-177")
 
 
 class NotebookTests(unittest.TestCase):
@@ -38,7 +39,7 @@ class NotebookTests(unittest.TestCase):
         runNotebook(os.path.join(TUTORIALS, "data_model.ipynb"))
         # Do some cleanup because some code run in the notebook doesn't honor the
         # TempDirectoryChanger
-        os.remove(os.path.join(TUTORIALS, "anl-afci-177.h5"))
+        os.remove(os.path.join(ANL_ACFI_177, "anl-afci-177.h5"))
 
 
 def runNotebook(filename):

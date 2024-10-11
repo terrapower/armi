@@ -64,7 +64,7 @@ disableFutureConfigures()
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 _TUTORIAL_FILES = [
-    pathlib.Path(SOURCE_DIR) / "tests" / "tutorials" / fName
+    fName
     for fName in bookkeepingTests.TUTORIAL_FILES
     if "ipynb" not in fName
 ]
