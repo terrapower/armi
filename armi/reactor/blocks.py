@@ -2356,7 +2356,10 @@ class HexBlock(Block):
 
         # build the grid, from pitch and orientation
         grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=cornersUp
+            self.getPinPitch(cold=True),
+            numRings=0,
+            armiObject=self,
+            cornersUp=cornersUp,
         )
 
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
