@@ -298,7 +298,7 @@ class TestHexGrid(unittest.TestCase):
                 self.assertEqual(coords0[2], coords1[2], msg=f"Z @ ({i}, {j})")
 
     def test_getLocalCoordinatesCornersUp(self):
-        # validate the first ring of a corners-up hex gric
+        # validate the first ring of a corners-up hex grid
         grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
         vals = []
         for pos in range(grid.getPositionsInRing(2)):
@@ -318,7 +318,7 @@ class TestHexGrid(unittest.TestCase):
         self.assertAlmostEqual(minX, -1)
 
     def test_getLocalCoordinatesFlatsUp(self):
-        # validate the first ring of a flats-up hex gric
+        # validate the first ring of a flats-up hex grid
         grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
         vals = []
         for pos in range(grid.getPositionsInRing(2)):
