@@ -87,6 +87,10 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
        that if ``a`` has a fuel pin at ``(1, 0, 0)``, so does ``aPrev``.
     """
     maxBuBlock = max(a, key=lambda b: b.p.percentBuMax)
+    if maxBuBlock.spatialGrid is None:
+        raise ValueError(
+            f"Block {maxBuBlock} in {a} does not have a spatial grid. Cannot rotate."
+        )
     maxBuPinLocation = _maxBuPinLocation(maxBuBlock)
     # No need to rotate if max burnup pin is the center
     if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
@@ -130,8 +134,6 @@ def _maxBuPinLocation(maxBuBlock: "HexBlock") -> "IndexLocation":
     """
     buMaxPinNumber = maxBuBlock.p.percentBuMaxPinLocation
     pinLocations = maxBuBlock.getPinLocations()
-    if not pinLocations:
-        raise ValueError(f"{maxBuBlock} does not have pin locations.")
     maxBuPinLocation = pinLocations[buMaxPinNumber - 1]
     return maxBuPinLocation
 
