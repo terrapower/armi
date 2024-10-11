@@ -1336,7 +1336,9 @@ class TestBlockLink(unittest.TestCase):
 
     def test_emptyBlocks(self):
         """Test even smaller edge case when no blocks are passed."""
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(
+            ValueError, "No blocks passed. Cannot determine links"
+        ):
             AssemblyAxialLinkage.getLinkedBlocks([])
 
     def test_onAssembly(self):
