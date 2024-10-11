@@ -13,6 +13,9 @@ settings:
   versions:
     armi: uncontrolled
 
+# database
+  db: true
+
 # neutronics
   genXS: Neutron
 

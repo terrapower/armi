@@ -973,20 +973,21 @@ The ``grid name`` inputs are string mappings to the grid definitions described b
 Plugin Behavior
 ^^^^^^^^^^^^^^^
 
-The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided
-by plugins to control how ARMI converts the ``systems`` section into ``Composite``\ s
-to be modeled. By default, the ``type`` field is used to determine what object is created.
-The default :class:`armi.reactor.ReactorPlugin` provides the following mapping:
+The :meth:`armi.plugins.ArmiPlugin.defineSystemBuilders` method can be provided by plugins to
+control how ARMI converts the ``systems`` section into ``Composite``\ s to be modeled. By default,
+the ``type`` field is used to determine what object is created. The default
+:class:`armi.reactor.ReactorPlugin` provides the following mapping:
 
-==================  ==================================================
+==================  ======================================================
 ``type`` Value      Builds
-==================  ==================================================
+==================  ======================================================
 ``core`` (default)  :class:`~armi.reactor.reactors.Core`
-``sfp``             :class:`~armi.reactor.assemblyLists.SpentFuelPool`
-==================  ==================================================
+``excore``          :class:`~armi.reactor.excoreStructure.ExcoreStructure`
+``sfp``             :class:`~armi.reactor.spentFuelPool.SpentFuelPool`
+==================  ======================================================
 
-Plugins are able to provide a superset (e.g., include ``core`` and ``sfp``)
-and new mappings of values to builders.
+Plugins are able to provide a superset (e.g., ``core``, ``excore``, and ``sfp``) and new mappings of
+values to builders.
 
 .. _grids:
 
@@ -1423,12 +1424,13 @@ their locations. ::
 
 dischargeSwap
 ^^^^^^^^^^^^^
-A discharge swap is a simple operation that puts a new assembly into the reactor while discharging an
-outgoing one. ::
+A discharge swap is a simple operation that puts a new assembly into the reactor while discharging
+an outgoing one. ::
 
     self.dischargeSwap(newIncoming,oldOutgoing)
 
-This operation keeps track of the outgoing assembly in a AssemblyList object that the Reactor object has access to so you can see how much of what you discharged.
+This operation keeps track of the outgoing assembly in a SpentFuelPool object that the Reactor
+object has access to so you can see how much of what you discharged.
 
 swapCascade
 ^^^^^^^^^^^
