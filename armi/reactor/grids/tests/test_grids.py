@@ -239,6 +239,7 @@ class TestHexGrid(unittest.TestCase):
     """A set of tests for the Hexagonal Grid."""
 
     def test_getCoordinatesFlatsUp(self):
+        """Test getCoordinates() for flats up hex grids."""
         grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
         self.assertAlmostEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
@@ -262,6 +263,7 @@ class TestHexGrid(unittest.TestCase):
         assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
 
     def test_getCoordinatesCornersUp(self):
+        """Test getCoordinates() for corners up hex grids."""
         grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
         self.assertAlmostEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
@@ -284,7 +286,8 @@ class TestHexGrid(unittest.TestCase):
         assert_allclose(grid.getCoordinates((1, 0, 0)), iDirection)
         assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
 
-    def test_getLocalCoordinates(self):
+    def test_getLocalCoordinatesHex(self):
+        """Test getLocalCoordinates() is different for corners up vs flats up hex grids."""
         grid0 = grids.HexGrid.fromPitch(1.0, cornersUp=True)
         grid1 = grids.HexGrid.fromPitch(1.0, cornersUp=False)
         for i in range(3):
@@ -298,6 +301,7 @@ class TestHexGrid(unittest.TestCase):
                 self.assertEqual(coords0[2], coords1[2], msg=f"Z @ ({i}, {j})")
 
     def test_getLocalCoordinatesCornersUp(self):
+        """Test getLocalCoordinates() for corners up hex grids."""
         # validate the first ring of a corners-up hex grid
         grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
         vals = []
@@ -318,6 +322,7 @@ class TestHexGrid(unittest.TestCase):
         self.assertAlmostEqual(minX, -1)
 
     def test_getLocalCoordinatesFlatsUp(self):
+        """Test getLocalCoordinates() for flats up hex grids."""
         # validate the first ring of a flats-up hex grid
         grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
         vals = []
