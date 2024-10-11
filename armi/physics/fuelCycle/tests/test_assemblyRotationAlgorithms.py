@@ -95,6 +95,21 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
             # 180 degrees is three 60 degree rotations
             self.assertEqual(rot, 3, msg=f"{startPin=} :: {oppositePin=}")
 
+    def test_noGridOnShuffledBlock(self):
+        """Require a spatial grid on the shuffled block."""
+        with self.assertRaisesRegex(ValueError, "spatial grid"):
+            getOptimalAssemblyOrientation(self.assembly, self.assembly)
+
+    def test_mismatchPinPowersAndLocations(self):
+        """Require pin powers and locations to be have the same length."""
+        powers = np.arange(self.N_PINS + 1)
+        self.prepShuffledAssembly(self.assembly, percentBuMaxPinLocation=4)
+        self.prepPreviousAssembly(self.assembly, powers)
+        with self.assertRaisesRegex(
+            ValueError, "Inconsistent pin powers and number of pins"
+        ):
+            getOptimalAssemblyOrientation(self.assembly, self.assembly)
+
 
 class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
     def test_buReducingAssemblyRotation(self):
