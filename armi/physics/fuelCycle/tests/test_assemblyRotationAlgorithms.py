@@ -127,9 +127,14 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
             b.p.linPowByPin = list(reversed(range(b.getNumPins())))
 
         addSomeDetailAssemblies(hist, [assem])
-        rotNum = b.getRotationNum()
-        rotAlgos.buReducingAssemblyRotation(fh)
-        self.assertNotEqual(b.getRotationNum(), rotNum)
+        # Show that we call the optimal assembly orientation function.
+        # This function is tested seperately and more extensively elsewhere.
+        with mock.patch(
+            "armi.physics.fuelCycle.assemblyRotationAlgorithms.getOptimalAssemblyOrientation",
+            return_value=0,
+        ) as p:
+            rotAlgos.buReducingAssemblyRotation(fh)
+        p.assert_called_once_with(assem, assem)
 
     def test_simpleAssemblyRotation(self):
         """Test rotating assemblies 120 degrees."""
