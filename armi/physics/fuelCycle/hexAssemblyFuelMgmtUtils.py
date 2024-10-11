@@ -103,9 +103,11 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
 
     previousLocations = blockAtPreviousLocation.getPinLocations()
     previousPowers = blockAtPreviousLocation.p.linPowByPin
-    _checkConsistentPinPowerAndLocations(
-        blockAtPreviousLocation, previousPowers, previousLocations
-    )
+    if len(previousLocations) != len(previousPowers):
+        raise ValueError(
+            f"Inconsistent pin powers and number of pins in {blockAtPreviousLocation}. "
+            f"Found {len(previousLocations)} locations but {len(previousPowers)} powers."
+        )
 
     targetGrid = blockAtPreviousLocation.spatialGrid
     candidateRotation = 0
@@ -136,16 +138,6 @@ def _maxBuPinLocation(maxBuBlock: "HexBlock") -> "IndexLocation":
     pinLocations = maxBuBlock.getPinLocations()
     maxBuPinLocation = pinLocations[buMaxPinNumber - 1]
     return maxBuPinLocation
-
-
-def _checkConsistentPinPowerAndLocations(
-    block: "HexBlock", pinPowers: list[float], pinLocations: list["IndexLocation"]
-):
-    if len(pinLocations) != len(pinPowers):
-        raise ValueError(
-            f"Inconsistent pin powers and number of pins in {block}. Found "
-            f"{len(pinLocations)} locations but {len(pinPowers)} powers."
-        )
 
 
 def buildRingSchedule(
