@@ -2254,7 +2254,34 @@ class TestHexBlockOrientation(unittest.TestCase):
     def tearDown(self):
         self.td.__exit__(None, None, None)
 
+    @staticmethod
+    def getLocalCoordinatesBlockBounds(b: blocks.HexBlock):
+        """Call getLocalCoordinates() for every Component in the Block and find the X/Y bounds."""
+        maxX = -111
+        minX = 999
+        maxY = -111
+        minY = 999
+        for comp in b:
+            locs = comp.spatialLocator
+            if not isinstance(locs, grids.MultiIndexLocation):
+                locs = [locs]
+
+            for loc in locs:
+                x, y, _ = loc.getLocalCoordinates()
+                if x > maxX:
+                    maxX = x
+                elif x < minX:
+                    minX = x
+
+                if y > maxY:
+                    maxY = y
+                elif y < minY:
+                    minY = y
+
+        return minX, maxX, minY, maxY
+
     def test_validateCornersUp(self):
+        """Validate the spatial grid for a corners up HexBlock and its children."""
         # load a corners up reactor
         _o, r = loadTestReactor(
             os.path.join(TEST_ROOT, "smallestTestReactor"),
@@ -2266,29 +2293,11 @@ class TestHexBlockOrientation(unittest.TestCase):
         self.assertTrue(b.spatialGrid.cornersUp)
 
         # for corners up, the hex centroids should stretch more in X than Y
-        maxX = -111
-        minX = 999
-        maxY = -111
-        minY = 999
-        for comp in b:
-            locs = comp.spatialLocator
-            if not isinstance(locs, grids.MultiIndexLocation):
-                locs = [locs]
-            for loc in locs:
-                x, y, _ = loc.getLocalCoordinates()
-                if x > maxX:
-                    maxX = x
-                elif x < minX:
-                    minX = x
-
-                if y > maxY:
-                    maxY = y
-                elif y < minY:
-                    minY = y
-
+        minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
         self.assertGreater(maxX - minX, maxY - minY)
 
     def test_validateFlatsUp(self):
+        """Validate the spatial grid for a flats up HexBlock and its children."""
         # load a flats up reactor
         _o, r = loadTestReactor(TEST_ROOT, inputFileName="armiRun.yaml")
 
@@ -2297,26 +2306,7 @@ class TestHexBlockOrientation(unittest.TestCase):
         self.assertFalse(b.spatialGrid.cornersUp)
 
         # for flats up, the hex centroids should stretch more in Y than X
-        maxX = -111
-        minX = 999
-        maxY = -111
-        minY = 999
-        for comp in b:
-            locs = comp.spatialLocator
-            if not isinstance(locs, grids.MultiIndexLocation):
-                locs = [locs]
-            for loc in locs:
-                x, y, _ = loc.getLocalCoordinates()
-                if x > maxX:
-                    maxX = x
-                elif x < minX:
-                    minX = x
-
-                if y > maxY:
-                    maxY = y
-                elif y < minY:
-                    minY = y
-
+        minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
         self.assertGreater(maxY - minY, maxX - minX)
 
 
