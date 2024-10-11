@@ -71,7 +71,7 @@ class SpentFuelPool(ExcoreStructure):
             loc = self._getNextLocation()
 
         # orient the blocks to match this grid
-        cornerUp = self.spatialGrid._unitSteps[0][1] == 0
+        cornerUp = self.spatialGrid.cornersUp
         assem.orientBlocks(cornerUp)
 
         super().add(assem, loc)
