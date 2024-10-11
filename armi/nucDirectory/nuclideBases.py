@@ -48,9 +48,9 @@ framework and applications.
     * ``byDBName`` (keyed by database name, e.g., ``nU235``)
     * ``byLabel`` (keyed by label, e.g., ``U235``)
     * ``byMcc2Id`` (keyed by MC\ :sup:`2`-2 ID, e.g., ``U-2355``)
+    * ``byMcc3Id`` (keyed by MC\ :sup:`2`-3 ID, e.g., ``U235_7``)
     * ``byMcc3IdEndfbVII0`` (keyed by MC\ :sup:`2`-3 ID, e.g., ``U235_7``)
     * ``byMcc3IdEndfbVII1`` (keyed by MC\ :sup:`2`-3 ID, e.g., ``U235_7``)
-    * ``byMcc3Id`` (keyed by MC\ :sup:`2`-3 ID, e.g., ``U235_7``)
     * ``byMcnpId`` (keyed by MCNP ID, e.g., ``92235``)
     * ``byAAAZZZSId`` (keyed by AAAZZZS, e.g., ``2350920``)
 
@@ -122,7 +122,7 @@ byName = {}
 byDBName = {}
 byLabel = {}
 byMcc2Id = {}
-byMcc3Id= {} # for backwards compatibility. Identical to byMcc3IdEndfbVII1
+byMcc3Id = {} # for backwards compatibility. Identical to byMcc3IdEndfbVII1
 byMcc3IdEndfbVII0 = {}
 byMcc3IdEndfbVII1 = {}
 byMcnpId = {}
@@ -1347,6 +1347,11 @@ def readMCCNuclideData():
         ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated with the nuclide bases 
         keyed by their corresponding ID for each code.
     """
+    global byMcc2Id
+    global byMcc3Id
+    global byMcc3IdEndfbVII0
+    global byMcc3IdEndfbVII1
+
     with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
         yaml = YAML(typ="rt")
         nuclides = yaml.load(f)
@@ -1361,10 +1366,10 @@ def readMCCNuclideData():
             byMcc2Id[nb.getMcc2Id()] = nb
         if mcc3idEndfbVII0 is not None:
             nb.mcc3idEndfbVII0 = mcc3idEndfbVII0
-            byMcc3IdVII0[nb.getMcc3IdEndfbVII0()] = nb
+            byMcc3IdEndfbVII0[nb.getMcc3IdEndfbVII0()] = nb
         if mcc3idEndfbVII1 is not None:
             nb.mcc3idEndfbVII1 = mcc3idEndfbVII1
-            byMcc3IdVII1[nb.getMcc3IdEndfbVII1()] = nb
+            byMcc3IdEndfbVII1[nb.getMcc3IdEndfbVII1()] = nb
 
     # Have the byMcc3Id dictionary be VII.1 IDs.
     byMcc3Id = byMcc3IdEndfbVII1
