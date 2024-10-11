@@ -1715,13 +1715,29 @@ class Block_TestCase(unittest.TestCase):
 
         .. warning:: This will likely be pushed to the component level.
         """
-        fluxes = np.ones((33, 10))
+        fluxes = np.random.rand(10, 33)
+        p, g = np.random.randint(low=0, high=[10, 33])
+
+        # Test without pinLocation
+        self.block.pinLocation = None
         self.block.setPinMgFluxes(fluxes)
         self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
         self.block.setPinMgFluxes(fluxes * 3, gamma=True)
-        self.assertEqual(self.block.p.pinMgFluxes[0][2], 1.0)
-        self.assertEqual(self.block.p.pinMgFluxesAdj[0][2], 2.0)
-        self.assertEqual(self.block.p.pinMgFluxesGamma[0][2], 3.0)
+        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[p, g])
+        self.assertEqual(self.block.p.pinMgFluxesAdj.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxesAdj[p, g], fluxes[p, g] * 2)
+        self.assertEqual(self.block.p.pinMgFluxesGamma.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxesGamma[p, g], fluxes[p, g] * 3)
+
+        # Test with pinLocation
+        self.block.setType(self.block.getType(), Flags.FUEL)
+        self.block.p.pinLocation = np.random.choice(10, size=10, replace=False) + 1
+        self.block.setPinMgFluxes(fluxes)
+        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
+        self.assertEqual(
+            self.block.p.pinMgFluxes[p, g], fluxes[self.block.p.pinLocation[p] - 1, g]
+        )
 
     def test_getComponentsInLinkedOrder(self):
         comps = self.block.getComponentsInLinkedOrder()
