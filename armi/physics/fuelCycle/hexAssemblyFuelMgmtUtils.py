@@ -37,6 +37,10 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     """
     Get optimal assembly orientation/rotation to minimize peak burnup.
 
+    .. impl:: Provide an algoritm for rotating hexagonal assemblies to equalize burnup
+        :id: I_ARMI_ROTATE_HEX_BURNUP
+        :implements: R_ARMI_ROTATE_HEX_BURNUP
+
     Parameters
     ----------
     a : Assembly object

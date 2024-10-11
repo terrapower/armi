@@ -82,6 +82,11 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
 
         Use the second ring of the hexagon because it's easier to write out pin locations
         and check work.
+
+        .. test:: Test the burnup equalizing rotation algorithm puts the highest burnup pin in the same sector as the lowest power producing pin.
+            :id: T_ARMI_ROTATE_HEX_BURNUP
+            :tests: R_ARMI_ROTATE_HEX_BURNUP
+            :acceptance_criteria: After rotating a hexagonal assembly, confirm the pin with the highest burnup is in the same sector as pin with the lowest power in the high burnup pin's ring.
         """
         shuffledAssembly = self.assembly
         previousAssembly = copy.deepcopy(shuffledAssembly)
