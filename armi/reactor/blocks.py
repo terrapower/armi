@@ -1596,11 +1596,6 @@ class Block(composites.Composite):
             ``(N, 3)`` array of coordinates for pins locations. ``localCoords[i]`` contains a triplet of
             the x, y, z location for pin ``i``. Ordered according to how they are listed as children
 
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed. Only works if pins have clad.
-
         See Also
         --------
         :meth:`getPinLocations` - companion for this method
