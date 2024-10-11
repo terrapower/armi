@@ -19,32 +19,18 @@ Notes
 -----
 We are keeping these in ARMI even if they appear unused internally.
 """
+import math
 import typing
+
 import numpy as np
 
 from armi import runLog
-from armi.reactor.flags import Flags
 from armi.utils.mathematics import findClosest
 
 if typing.TYPE_CHECKING:
     from armi.reactor.grids import IndexLocation
     from armi.reactor.assemblies import HexAssembly
     from armi.reactor.blocks import HexBlock
-
-
-def _getFuelBlockWithMostBurnup(a: "HexAssembly") -> "HexBlock":
-    candidateBlock = max(a, key=lambda b: b.p.percentBuMax)
-    if not candidateBlock.hasFlags(Flags.FUEL):
-        raise ValueError(f"Assembly {a} does not have any fuel blocks.")
-    if candidateBlock.p.linPowByPin is None:
-        raise ValueError(
-            f"Highest burnup block {candidateBlock} in {a} has no pin powers."
-        )
-    if candidateBlock.spatialGrid is None:
-        raise ValueError(
-            f"No spatial grid on {candidateBlock}. Unable to find new locations"
-        )
-    return candidateBlock
 
 
 def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int:
@@ -100,7 +86,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
        assumption in that most fuel assemblies have similar layouts so it's plausible
        that if ``a`` has a fuel pin at ``(1, 0, 0)``, so does ``aPrev``.
     """
-    maxBuBlock = _getFuelBlockWithMostBurnup(a)
+    maxBuBlock = max(a, key=lambda b: b.p.percentBuMax)
     maxBuPinLocation = _maxBuPinLocation(maxBuBlock)
     # No need to rotate if max burnup pin is the center
     if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
@@ -117,11 +103,17 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
         blockAtPreviousLocation, previousPowers, previousLocations
     )
 
-    currentGrid = maxBuBlock.spatialGrid
+    targetGrid = blockAtPreviousLocation.spatialGrid
     candidateRotation = 0
-    candidatePower = previousPowers[previousLocations.index(maxBuPinLocation)]
-    for rot in range(1, 6):
-        candidateLocation = currentGrid.rotateIndex(maxBuPinLocation, rot)
+    candidatePower = math.inf
+    for rot in range(6):
+        # We need to "rotate" even for rot=0 (location should be the same)
+        # because IndexLocation comparison requires the grids to be the same
+        # object, and the grid attribute on the location returned from
+        # grid.rotateIndex is grid. If we don't, even though location
+        # (i, j, k) exists in the previous location, if it isn't on literally
+        # the same grid, the index call fails.
+        candidateLocation = targetGrid.rotateIndex(maxBuPinLocation, rot)
         newLocationIndex = previousLocations.index(candidateLocation)
         newPower = previousPowers[newLocationIndex]
         if newPower < candidatePower:
@@ -137,9 +129,9 @@ def _maxBuPinLocation(maxBuBlock: "HexBlock") -> "IndexLocation":
     and can be found at ``maxBuBlock.getPinLocations()[pinNumber - 1]``
     """
     buMaxPinNumber = maxBuBlock.p.percentBuMaxPinLocation
-    pinPowers = maxBuBlock.p.linPowByPin
     pinLocations = maxBuBlock.getPinLocations()
-    _checkConsistentPinPowerAndLocations(maxBuBlock, pinPowers, pinLocations)
+    if not pinLocations:
+        raise ValueError(f"{maxBuBlock} does not have pin locations.")
     maxBuPinLocation = pinLocations[buMaxPinNumber - 1]
     return maxBuPinLocation
 

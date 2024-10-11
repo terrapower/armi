@@ -19,9 +19,12 @@ Notes
 These algorithms are defined in assemblyRotationAlgorithms.py, but they are used in:
 ``FuelHandler.outage()``.
 """
+import copy
 from unittest import mock
+
 import numpy as np
 
+from armi.reactor.assemblies import HexAssembly
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
@@ -36,30 +39,32 @@ from armi.reactor.flags import Flags
 class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
     N_PINS = 271
 
-    def prepBlocks(self, percentBuMaxPinLocation: int, pinPowers: list[float]):
-        """Assign basic information to the blocks so we can rotate them.
-
-        Parameters
-        ----------
-        percentBuMaxPinLocation : int
-            ARMI pin number, 1-indexed, for the pin with the highest burnup
-        pinPowers : list[float]
-            Powers in each pin
-        """
-        for b in self.assembly.getBlocks(Flags.FUEL):
+    @staticmethod
+    def prepShuffledAssembly(a: HexAssembly, percentBuMaxPinLocation: int):
+        """Prepare the assembly that will be shuffled and rotated."""
+        for b in a.getChildrenWithFlags(Flags.FUEL):
+            # Fake some maximum burnup
             b.p.percentBuMax = 5
-            # Fake enough behavior so we can make a spatial grid
+            # Fake enough information to build a spatial grid
             b.getPinPitch = mock.Mock(return_value=1.1)
             b.autoCreateSpatialGrids()
             b.p.percentBuMaxPinLocation = percentBuMaxPinLocation
-            b.p.linPowByPin = pinPowers
 
+    @staticmethod
+    def prepPreviousAssembly(a: HexAssembly, pinPowers: list[float]):
+        """Prep the assembly that existed at the site a shuffled assembly will occupy."""
+        for b in a.getChildrenWithFlags(Flags.FUEL):
+            # Fake enough information to build a spatial grid
+            b.getPinPitch = mock.Mock(return_value=1.1)
+            b.autoCreateSpatialGrids()
+            b.p.linPowByPin = pinPowers
 
     def test_flatPowerNoRotation(self):
         """If all pin powers are identical, no rotation is suggested."""
         powers = np.ones(self.N_PINS)
         # Identical powers but _some_ non-central "max" burnup pin
-        self.prepBlocks(percentBuMaxPinLocation=8, pinPowers=powers)
+        self.prepShuffledAssembly(self.assembly, percentBuMaxPinLocation=8)
+        self.prepPreviousAssembly(self.assembly, powers)
         rot = getOptimalAssemblyOrientation(self.assembly, self.assembly)
         self.assertEqual(rot, 0)
 
@@ -67,7 +72,8 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
         """If max burnup pin is at the center, no rotation is suggested."""
         # Fake a higher power towards the center
         powers = np.arange(self.N_PINS)[::-1]
-        self.prepBlocks(percentBuMaxPinLocation=1, pinPowers=powers)
+        self.prepShuffledAssembly(self.assembly, percentBuMaxPinLocation=1)
+        self.prepPreviousAssembly(self.assembly, powers)
         rot = getOptimalAssemblyOrientation(self.assembly, self.assembly)
         self.assertEqual(rot, 0)
 
@@ -77,12 +83,15 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
         Use the second ring of the hexagon because it's easier to write out pin locations
         and check work.
         """
+        shuffledAssembly = self.assembly
+        previousAssembly = copy.deepcopy(shuffledAssembly)
         for startPin, oppositePin in ((2, 5), (3, 6), (4, 7), (5, 2), (6, 3), (7, 4)):
             powers = np.ones(self.N_PINS)
             powers[startPin - 1] *= 2
             powers[oppositePin - 1] = 0
-            self.prepBlocks(percentBuMaxPinLocation=startPin, pinPowers=powers)
-            rot = getOptimalAssemblyOrientation(self.assembly, self.assembly)
+            self.prepShuffledAssembly(shuffledAssembly, startPin)
+            self.prepPreviousAssembly(previousAssembly, powers)
+            rot = getOptimalAssemblyOrientation(shuffledAssembly, previousAssembly)
             # 180 degrees is three 60 degree rotations
             self.assertEqual(rot, 3, msg=f"{startPin=} :: {oppositePin=}")
 
