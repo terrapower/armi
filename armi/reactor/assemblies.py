@@ -315,38 +315,6 @@ class Assembly(composites.Composite):
 
         return sum(plenumTemps) / len(plenumTemps)
 
-    def doubleResolution(self):
-        """
-        Turns each block into two half-size blocks.
-
-        Notes
-        -----
-        Used for mesh sensitivity studies.
-
-        Warning
-        -------
-        This is likely destined for a geometry converter rather than this instance method.
-        """
-        newBlockStack = []
-        topIndex = -1
-        for b in self:
-            b0 = b
-            b1 = copy.deepcopy(b)
-            for bx in [b0, b1]:
-                newHeight = bx.getHeight() / 2.0
-                bx.p.height = newHeight
-                bx.p.heightBOL = newHeight
-                topIndex += 1
-                bx.p.topIndex = topIndex
-                newBlockStack.append(bx)
-                bx.clearCache()
-
-        self.removeAll()
-        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
-        for b in newBlockStack:
-            self.add(b)
-        self.reestablishBlockOrder()
-
     def adjustResolution(self, refA):
         """Split the blocks in this assembly to have the same mesh structure as refA."""
         newBlockStack = []

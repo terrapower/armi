@@ -392,20 +392,6 @@ class Assembly_TestCase(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
-    def test_doubleResolution(self):
-        b = self.assembly[0]
-        initialHeight = b.p.heightBOL
-        self.assembly.doubleResolution()
-        cur = len(self.assembly.getBlocks())
-        ref = 2 * len(self.blockList)
-        self.assertEqual(cur, ref)
-
-        cur = self.assembly.getBlocks()[0].getHeight()
-        ref = self.height / 2.0
-        places = 6
-        self.assertNotEqual(initialHeight, b.p.heightBOL)
-        self.assertAlmostEqual(cur, ref, places=places)
-
     def test_adjustResolution(self):
         # Make a second assembly with 4 times the resolution
         assemNum2 = self.assemNum * 4
