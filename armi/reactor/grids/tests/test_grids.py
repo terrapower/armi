@@ -643,6 +643,7 @@ class TestHexGrid(unittest.TestCase):
     def _rotateAndCheckAngle(
         self, g: grids.HexGrid, start: grids.IndexLocation, rotations: int
     ) -> grids.IndexLocation:
+        """Rotate a location and verify it lands where we expected."""
         finish = g.rotateIndex(start, rotations)
         self._checkAngle(start, finish, rotations)
         return finish
@@ -650,6 +651,7 @@ class TestHexGrid(unittest.TestCase):
     def _checkAngle(
         self, start: grids.IndexLocation, finish: grids.IndexLocation, rotations: int
     ):
+        """Compare two locations that should be some number of 60 degree CCW rotations apart."""
         startXY = start.getLocalCoordinates()[:2]
         theta = math.pi / 3 * rotations
         rotationMatrix = np.array(
