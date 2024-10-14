@@ -69,13 +69,14 @@ class HexBlockRotateTests(unittest.TestCase):
     def test_orientationVector(self):
         """Test the z-value in the orientation vector matches rotation.
 
-        .. test:: Rotate a hex block in 60 degree increments.
+        .. test:: Demonstrate that a HexBlock can be rotated in 60 degree increments.
             :id: T_ARMI_ROTATE_HEX
             :tests: R_ARMI_ROTATE_HEX
 
-        .. test:: Update block orientation.
+        .. test:: After rotating a block, the orientation parameter reflects the current rotation.
             :id: T_ARMI_ROTATE_HEX_ORIENTATION
             :tests: R_ARMI_ROTATE_HEX_PARAMS
+            :acceptance_criteria: Through a unit test, compare the z-rotation entry against the rotation amount.
         """
         for nRotations in range(-10, 10):
             rotationAmount = 60 * nRotations
