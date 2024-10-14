@@ -15,25 +15,26 @@
 """
 Assemblies are collections of Blocks.
 
-Generally, blocks are stacked from bottom to top.
+Generally, Blocks are stacked from bottom to top.
 """
 import copy
 import math
 import pickle
 from random import randint
+from typing import ClassVar, Type
 
 import numpy as np
 from scipy import interpolate
 
 from armi import runLog
-from armi.reactor.spentFuelPool import SpentFuelPool
+from armi.materials.material import Fluid
 from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.materials.material import Fluid
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.spentFuelPool import SpentFuelPool
 
 
 class Assembly(composites.Composite):
@@ -42,15 +43,15 @@ class Assembly(composites.Composite):
     Append blocks to add them up. Index blocks with 0 being the bottom.
     """
 
+    _BLOCK_TYPE: ClassVar[Type[blocks.Block]] = None
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
-    blockType = None
 
-    LOAD_QUEUE = "LoadQueue"
-    SPENT_FUEL_POOL = "SFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
     # of fuel management stuff doesn't treat its re-placement into the core as a new move
     DATABASE = "database"
+    LOAD_QUEUE = "LoadQueue"
+    SPENT_FUEL_POOL = "SFP"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
     def __init__(self, typ, assemNum=None):
@@ -87,14 +88,12 @@ class Assembly(composites.Composite):
 
         Notes
         -----
-        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
-        are more permissive in the grid consistency checks to accomodate situations
-        where assemblies might be children of the same Core, but not in the same grid as
-        each other (as can be the case in the spent fuel pool). In these situations,
-        the operator returns ``False``.  This behavior may lead to some strange sorting
-        behavior when two or more Assemblies are being compared that do not live in the
-        same grid. It may be beneficial in the future to maintain the more strict behavior
-        of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
+        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies are more
+        permissive in the grid consistency checks to accomodate situations where assemblies might be
+        children of the same Core, but not in the same grid as each other (like in the spent fuel
+        pool). In these situations, the operator returns ``False``.  This behavior may lead to some
+        strange sorting behavior when two or more Assemblies are being compared that do not live in
+        the same grid.
 
         See Also
         --------
@@ -180,8 +179,8 @@ class Assembly(composites.Composite):
             are updated. The axial mesh and other Block geometry parameters are
             updated in ``calculateZCoords``.
         """
-        if self.blockType is not None and not isinstance(obj, self.blockType):
-            msg = f"Cannot add {obj} to this Assembly, it is not a {self.blockType}."
+        if self._BLOCK_TYPE is not None and not isinstance(obj, self._BLOCK_TYPE):
+            msg = f"Cannot add {obj} to this Assembly, it is not a {self._BLOCK_TYPE}."
             runLog.error(msg)
             raise TypeError(msg)
 
@@ -204,8 +203,10 @@ class Assembly(composites.Composite):
 
     def insert(self, index, obj):
         """Insert an object at a given index position with the assembly."""
-        if self.blockType is not None and not isinstance(obj, self.blockType):
-            msg = f"Cannot insert {obj} to this Assembly, it is not a {self.blockType}."
+        if self._BLOCK_TYPE is not None and not isinstance(obj, self._BLOCK_TYPE):
+            msg = (
+                f"Cannot insert {obj} to this Assembly, it is not a {self._BLOCK_TYPE}."
+            )
             runLog.error(msg)
             raise TypeError(msg)
 
@@ -1264,7 +1265,7 @@ class Assembly(composites.Composite):
 class HexAssembly(Assembly):
     """An assembly that is hexagonal in cross-section."""
 
-    blockType = blocks.HexBlock
+    _BLOCK_TYPE = blocks.HexBlock
 
     def rotate(self, rad: float):
         """Rotate an assembly and its children.
@@ -1303,7 +1304,7 @@ class HexAssembly(Assembly):
 class CartesianAssembly(Assembly):
     """An assembly that is rectangular in cross-section."""
 
-    blockType = blocks.CartesianBlock
+    _BLOCK_TYPE = blocks.CartesianBlock
 
 
 class RZAssembly(Assembly):
