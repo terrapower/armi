@@ -179,7 +179,6 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     from armi.reactor import blueprints
 
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
-
     getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
     r = Reactor(cs.caseTitle, bp)

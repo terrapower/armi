@@ -66,12 +66,13 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def beforeReactorConstruction(cs) -> None:
+        """Just before reactor construction, update the material "registry" with user settings,
+        if it is set. Often it is set by the application.
+        """
         from armi.settings.fwSettings.globalSettings import (
             CONF_MATERIAL_NAMESPACE_ORDER,
         )
 
-        # just before reactor construction, update the material "registry" with user settings,
-        # if it is set. Often it is set by the application.
         if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
             materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
 
