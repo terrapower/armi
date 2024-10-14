@@ -139,6 +139,9 @@ class HistoryTrackerInterface(interfaces.Interface):
         self.xsHistory = {}
         self._preloadedBlockHistory = None
 
+        msg = "The HistoryTrackerInterface is deprecated, and will be removed."
+        runLog.warning(msg)
+
     def interactBOL(self):
         self.addDetailAssembliesBOL()
 
