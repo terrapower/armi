@@ -159,7 +159,7 @@ class Assembly(composites.Composite):
         self.p.assemNum = randint(-9000000000000, -1)
         self.renumber(self.p.assemNum)
 
-    def _checkBlockType(self, obj: blocks.Block, action: str = "add"):
+    def _checkPotentialChild(self, obj: blocks.Block, action: str = "add"):
         """An internal helper method to ensure the Block type is valid for this Assembly."""
         if self._BLOCK_TYPE is None or isinstance(obj, self._BLOCK_TYPE):
             # this is the right Block, pass on
@@ -190,7 +190,7 @@ class Assembly(composites.Composite):
             are updated. The axial mesh and other Block geometry parameters are
             updated in ``calculateZCoords``.
         """
-        self._checkBlockType(obj, "add")
+        self._checkPotentialChild(obj, "add")
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
 
@@ -200,7 +200,7 @@ class Assembly(composites.Composite):
 
     def insert(self, index, obj):
         """Insert an object at a given index position with the assembly."""
-        self._checkBlockType(obj, "insert")
+        self._checkPotentialChild(obj, "insert")
         composites.Composite.insert(self, index, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, index]
 
