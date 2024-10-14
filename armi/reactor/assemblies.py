@@ -21,7 +21,7 @@ import copy
 import math
 import pickle
 from random import randint
-from typing import ClassVar, Type
+from typing import ClassVar, Optional, Type
 
 import numpy as np
 from scipy import interpolate
@@ -43,7 +43,7 @@ class Assembly(composites.Composite):
     Append blocks to add them up. Index blocks with 0 being the bottom.
     """
 
-    _BLOCK_TYPE: ClassVar[Type[blocks.Block]] = None
+    _BLOCK_TYPE: ClassVar[Optional[Type[blocks.Block]]] = None
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
 
     # For assemblies coming in from the database, waiting to be loaded to their old
