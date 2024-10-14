@@ -434,7 +434,7 @@ class XSModelingOptions:
         no others will allocate to it. This is useful for time balancing when you
         have one task that takes much longer than the others.
 
-    xsPriority:
+    xsPriority: int
         The priority of the mpi tasks that results from this xsID. Lower priority
         will execute first. starting longer jobs first is generally more efficient.
 
@@ -443,6 +443,15 @@ class XSModelingOptions:
         This is used to avoid modeling isotopes with a large atomic number
         (e.g., fission products) as a depletion product of an isotope with a much
         smaller atomic number.
+
+    averageByComponent: bool
+        Controls whether the representative block averaging is performed on a
+        component-by-component basis or on the block as a whole. If True, the
+        resulting representative block will have component compositions that
+        largely reflect those of the underlying blocks in the collection. If
+        False, the number densities of some nuclides in the individual
+        components may not be reflective of those of the underlying components
+        due to the block number density "dehomogenization".
 
     minDriverDensity: float
         The minimum number density for nuclides included in driver material for a 1D
