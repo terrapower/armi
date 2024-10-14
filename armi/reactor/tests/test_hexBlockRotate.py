@@ -22,8 +22,8 @@ import numpy as np
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
 from armi.reactor.grids import MultiIndexLocation, CoordinateLocation
-from armi.utils import iterables
 from armi.reactor.tests.test_blocks import loadTestBlock, NUM_PINS_IN_TEST_BLOCK
+from armi.utils import iterables
 
 
 class HexBlockRotateTests(unittest.TestCase):
@@ -121,7 +121,6 @@ class HexBlockRotateTests(unittest.TestCase):
         .. test:: HexBlock.getPinLocations is consistent with rotation.
             :id: T_ARMI_ROTATE_HEX_PIN_LOCS
             :tests: R_ARMI_ROTATE_HEX
-
         """
         preRotation = self.BASE_BLOCK.getPinLocations()
         for nRotations in range(-10, 10):
@@ -229,7 +228,6 @@ class EmptyBlockRotateTest(unittest.TestCase):
     """Rotation tests on an empty hexagonal block.
 
     Useful for enforcing rotation works on blocks without pins.
-
     """
 
     def setUp(self):

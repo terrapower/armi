@@ -2052,9 +2052,7 @@ class HexBlock_TestCase(unittest.TestCase):
         nPins = self.HexBlock.getNumPins()
         side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
-        x = xyz[:, 0]
-        y = xyz[:, 1]
-        z = xyz[:, 2]
+        x, y, z = xyz.T
         self.assertAlmostEqual(
             y[1], y[2]
         )  # first two pins should be side by side on top.
