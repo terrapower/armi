@@ -34,9 +34,9 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.tests.test_reactors import TEST_ROOT
 from armi.tests import ISOAA_PATH
 from armi.utils import hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -2092,10 +2092,11 @@ class HexBlock_TestCase(unittest.TestCase):
         side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
         x, y, _z = zip(*xyz)
-        self.assertAlmostEqual(
-            y[1], y[2]
-        )  # first two pins should be side by side on top.
-        self.assertNotAlmostEqual(x[1], x[2])
+
+        # these two pins should be side by side on top
+        self.assertTrue(self.HexBlock.spatialGrid.cornersUp)
+        self.assertAlmostEqual(y[1], y[3])
+        self.assertNotAlmostEqual(x[1], x[3])
         self.assertEqual(len(xyz), self.HexBlock.getNumPins())
 
         # ensure all pins are within the proper bounds of a
@@ -2326,9 +2327,9 @@ class TestHexBlockOrientation(unittest.TestCase):
         b = r.core.getFirstBlock(Flags.FUEL)
         self.assertTrue(b.spatialGrid.cornersUp)
 
-        # for corners up, the hex centroids should stretch more in X than Y
+        # for a flats up sub-grid, the hex centroids should stretch more in Y than X
         minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
-        self.assertGreater(maxX - minX, maxY - minY)
+        self.assertGreater(maxY - minY, maxX - minX)
 
     def test_validateFlatsUp(self):
         """Validate the spatial grid for a flats up HexBlock and its children."""
@@ -2339,9 +2340,9 @@ class TestHexBlockOrientation(unittest.TestCase):
         b = r.core.getFirstBlock(Flags.FUEL)
         self.assertFalse(b.spatialGrid.cornersUp)
 
-        # for flats up, the hex centroids should stretch more in Y than X
+        # for a corners up sub-grid, the hex centroids should stretch more in X than Y
         minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
-        self.assertGreater(maxY - minY, maxX - minX)
+        self.assertGreater(maxX - minX, maxY - minY)
 
 
 class ThRZBlock_TestCase(unittest.TestCase):
