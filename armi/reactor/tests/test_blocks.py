@@ -34,6 +34,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
 from armi.tests import ISOAA_PATH
@@ -1797,6 +1798,39 @@ class Block_TestCase(unittest.TestCase):
             block.getReactionRates("PU39"),
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
+
+
+class BlockInputHeightsTests(unittest.TestCase):
+    def test_foundReactor(self):
+        """Test the input height is pullable from blueprints."""
+        r = loadTestReactor()[1]
+        msg = "Input height from blueprints differs. Did a blueprint get updated and not this test?"
+
+        # Grab a block from an assembly, so long as we have the height
+        assem = r.core.getFirstAssembly(Flags.IGNITER | Flags.FUEL)
+        lowerB = assem[0]
+        self.assertEqual(
+            lowerB.getInputHeight(),
+            25,
+            msg=msg,
+        )
+        # Grab another block just for good measure
+        midBlock = assem[2]
+        self.assertEqual(
+            midBlock.getInputHeight(),
+            25,
+            msg=msg,
+        )
+        # Top block has a different height. Make sure we don't just
+        # return 25 all the time
+        topBlock = assem[4]
+        self.assertEqual(topBlock.getInputHeight(), 75, msg=msg)
+
+    def test_noBlueprints(self):
+        """Verify an error is raised if there are no blueprints."""
+        b = buildSimpleFuelBlock()
+        with self.assertRaisesRegex(AttributeError, "No ancestor.*blueprints"):
+            b.getInputHeight()
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
