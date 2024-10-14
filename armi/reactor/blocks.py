@@ -1748,11 +1748,10 @@ class Block(composites.Composite):
             lambda o: getattr(o, "blueprints", None) is not None
         )
         if ancestorWithBp is not None:
-            parent: composites.Composite = self.parent
             bp = ancestorWithBp.blueprints
-            assemDesign = bp.assemDesigns[parent.getType()]
+            assemDesign = bp.assemDesigns[self.parent.getType()]
             heights = assemDesign.height
-            myIndex = parent.index(self)
+            myIndex = self.parent.index(self)
             return heights[myIndex]
         raise AttributeError(f"No ancestor of {self} has blueprints")
 
