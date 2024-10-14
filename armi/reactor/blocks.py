@@ -2055,6 +2055,7 @@ class HexBlock(Block):
         self._rotateDisplacement(rad)
 
     def _rotateChildLocations(self, radians: float, rotNum: int):
+        """Update spatial locators for children."""
         if self.spatialGrid is None:
             return
         locationRotator = functools.partial(
