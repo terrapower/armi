@@ -32,6 +32,7 @@ API Changes
 #. ``copyInterfaceInputs`` no longer requires a valid setting object. (`PR#1934 <https://github.com/terrapower/armi/pull/1934>`_)
 #. Removing ``buildEqRingSchedule``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
 #. Allowing for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
+#. Removing ``Assembly.doubleResolution()``. (`PR#1951 <https://github.com/terrapower/armi/pull/1951>`_)
 #. Removing ``assemblyLists.py`` and the ``AssemblyList`` class. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
 #. Removing ``Assembly.rotatePins`` and ``Block.rotatePins``. Prefer ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846`_)
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`)
