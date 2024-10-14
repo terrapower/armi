@@ -2079,6 +2079,8 @@ class HexBlock(Block):
                     newXY[0], newXY[1], oldCoords[2], self.spatialGrid
                 )
                 c.spatialLocator = newLocation
+            elif isinstance(c.spatialLocator, grids.IndexLocation):
+                c.spatialLocator = locationRotator(c.spatialLocator)
             elif c.spatialLocator is not None:
                 msg = f"{c} on {self} has an invalid spatial locator for rotation: {c.spatialLocator}"
                 runLog.error(msg)
