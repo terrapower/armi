@@ -1799,19 +1799,13 @@ class Block_TestCase(unittest.TestCase):
 
 
 class BlockInputHeightsTests(unittest.TestCase):
-    @staticmethod
-    def _getAssemblyWithType(assems, nameInBP: str):
-        for assem in filter(lambda a: a.getType() == nameInBP, assems):
-            return assem
-        raise KeyError(nameInBP)
-
     def test_foundReactor(self):
         """Test the input height is pullable from blueprints."""
         r = loadTestReactor()[1]
         msg = "Input height from blueprints differs. Did a blueprint get updated and not this test?"
 
         # Grab a block from an assembly, so long as we have the height
-        assem = self._getAssemblyWithType(r.core, "igniter fuel")
+        assem = r.core.getFirstAssembly(Flags.IGNITER | Flags.FUEL)
         lowerB = assem[0]
         self.assertEqual(
             lowerB.getInputHeight(),
