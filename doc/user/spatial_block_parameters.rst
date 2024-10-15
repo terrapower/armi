@@ -4,7 +4,7 @@ Spatial block parameters
 
 Many parameters assigned on a ``Block`` are scalar quantities that are useful for visualization
 and simple queries (e.g., block with the maximum burnup in an assembly). Spatial parameters in
-the a block, such as power produced by each pin, is also of interest. Especially when communicating
+a block, such as power produced by each pin, is also of interest. Especially when communicating
 data to physics codes that support sub-block geometric modeling. This page will talk about
 how spatial information is assigned to components on a block, how spatial data can be assigned
 and accessed, and how those data may or may not be updated by the framework.
@@ -12,7 +12,7 @@ and accessed, and how those data may or may not be updated by the framework.
 Sub-block spatial grid
 ======================
 
-There are two ways to create the block grid: explicitly via blueprints, or via an automated builder. The former
+There are two ways to create the block grid: explicitly via blueprints or via an automated builder. The former
 is recommended, but the later can work in some specific circumstances.
 
 Blueprints
@@ -20,7 +20,7 @@ Blueprints
 
 In your blueprints file, you likely have a core grid that defines where assemblies reside in the reactor. Assemblies
 are assigned to locations on that grid according to their ``specifcier`` blueprint attribute. Below is an example
-of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetric.
+of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetry.
 
 .. code:: yaml
 
@@ -290,7 +290,7 @@ be consistent before and after rotation::
     >>> fuel.spatialLocator[1].getLocalCoordinates()
     array([-0.4444    ,  0.76972338,  0.        ])
 
-Because the sub-block on this grid is a corners up grid, to tightly fit inside the flats up hex block,
+Because this sub-block grid is a corners up hex grid, to tightly fit inside the flats up hex block,
 one rotation from the north east location, ``(1,0,0)``, reflects this pin across the y-axis.
 
 Pin parameters
