@@ -16,6 +16,7 @@
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 
 
 def getComponentParameterDefinitions():
@@ -138,6 +139,16 @@ def getComponentParameterDefinitions():
             default=1,
             setter=_assignTDFrac,
         )
+
+        pb.defParam(
+            "pinPercentBu",
+            setter=isNumpyArray("pinPercentBu"),
+            units=f"{units.PERCENT_FIMA}",
+            description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+        )
+
     return pDefs
 
 
