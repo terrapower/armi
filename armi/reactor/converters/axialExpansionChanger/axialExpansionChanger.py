@@ -351,7 +351,7 @@ class AxialExpansionChanger:
                         for nuc in c.getNuclides()
                     }
                     c.setNumberDensities(newNumberDensities)
-                    
+
                     if c.p.detailedNDens:
                         newDetailedNDens = c.p.detailedNDens * heightRatio
                         c.p.detailedNDens = newDetailedNDens
