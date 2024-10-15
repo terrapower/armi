@@ -595,8 +595,8 @@ class HexGrid(StructuredGrid):
         -----
         Rotation uses a three-dimensional index in what can be known elsewhere
         by the confusing name of "cubic" coordinate system for a hexagon. Cubic stems
-        from the notion of using three dimensions, ``(q, r, s)`` to describe a point
-        in the hexagonal grid. The conversion from ARMI's indexing follows::
+        from the notion of using three dimensions, ``(q, r, s)`` to describe a point in the
+        hexagonal grid. The conversion from the indexing used in the ARMI framework follows::
 
             q = i
             r = j
