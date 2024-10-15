@@ -2348,11 +2348,12 @@ class HexBlock(Block):
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
-            raise ValueError(
-                "Could not create a spatialGrid for block {}, multiplicities are not 1 or N they are {}".format(
-                    self.p.type, mults
-                )
+            msg = (
+                f"Could not create a spatialGrid for block {self.p.type}, "
+                f"multiplicities are not 1 or N they are {mults}"
             )
+            runLog.error(msg)
+            raise ValueError(msg)
 
         nPins = self.getNumPins()
         nRings = hexagon.numRingsToHoldNumCells(nPins)
@@ -2371,10 +2372,12 @@ class HexBlock(Block):
         spatialLocators = grids.MultiIndexLocation(grid=grid)
         numLocations = hexagon.totalPositionsUpToRing(nRings)
         if numLocations != nPins:
-            raise ValueError(
+            msg = (
                 f"Cannot create spatialGrid, number of locations in rings {nRings} "
                 f"not equal to {nPins=}"
             )
+            runLog.error(msg)
+            raise ValueError(msg)
 
         for ring in range(nRings):
             for pos in range(grid.getPositionsInRing(ring + 1)):
