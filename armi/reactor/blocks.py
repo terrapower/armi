@@ -2086,6 +2086,7 @@ class HexBlock(Block):
         """Update spatial locators for children."""
         if self.spatialGrid is None:
             return
+
         locationRotator = functools.partial(
             self.spatialGrid.rotateIndex, rotations=rotNum
         )
