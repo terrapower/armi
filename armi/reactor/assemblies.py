@@ -795,6 +795,9 @@ class Assembly(composites.Composite):
                 heightRatio = oldBlockHeight / b.getHeight()
                 for c in conserveComponents:
                     c.changeNDensByFactor(heightRatio)
+                    if c.p.detailedNDens:
+                        newDetailedNDens = c.p.detailedNDens * heightRatio
+                        c.p.detailedNDens = newDetailedNDens
             zBottom = newTop
 
         self.calculateZCoords()

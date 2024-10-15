@@ -280,6 +280,9 @@ class ComponentBlueprint(yamlize.Object):
 
             densityRatio = density / constructedComponent.density()
             constructedComponent.changeNDensByFactor(densityRatio)
+            if constructedComponent.p.detailedNDens:
+                newDetailedNDens = constructedComponent.p.detailedNDens * densityRatio
+                constructedComponent.p.detailedNDens = newDetailedNDens
 
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
