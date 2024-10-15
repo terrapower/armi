@@ -122,7 +122,7 @@ byName = {}
 byDBName = {}
 byLabel = {}
 byMcc2Id = {}
-byMcc3Id = {} # for backwards compatibility. Identical to byMcc3IdEndfbVII1
+byMcc3Id = {} # for backwards compatibility. Identical to byMcc3IdEndfbVII0
 byMcc3IdEndfbVII0 = {}
 byMcc3IdEndfbVII1 = {}
 byMcnpId = {}
@@ -172,7 +172,7 @@ class NuclideInterface:
         return NotImplementedError
 
     def getMcc3Id(self):
-        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
+        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
         return NotImplementedError
 
     def getMcc3IdEndfbVII0(self):
@@ -255,8 +255,8 @@ class NuclideWrapper(NuclideInterface):
         return self._base.getMcc2Id()
 
     def getMcc3Id(self):
-        """Return the MC2-3 nuclide based on the ENDF/B-VII.1 cross section library."""
-        return self.getMcc3IdEndfbVII1()
+        """Return the MC2-3 nuclide based on the ENDF/B-VII.0 cross section library."""
+        return self.getMcc3IdEndfbVII0()
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide based on the ENDF/B-VII.0 cross section library."""
@@ -626,7 +626,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
             instance.  This attribute is initially populated by reading from the
             mcc-nuclides.yaml file in the ARMI resources folder.
         """
-        return self.getMcc3IdEndfbVII1()
+        return self.getMcc3IdEndfbVII0()
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library.
@@ -833,8 +833,8 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
         return self.mcc2id
 
     def getMcc3Id(self):
-        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
-        return self.getMcc3IdEndfbVII1()
+        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
+        return self.getMcc3IdEndfbVII0()
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
@@ -930,7 +930,7 @@ class DummyNuclideBase(INuclide):
 
     def getMcc3Id(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
-        return self.getMcc3IdEndfbVII1()
+        return self.getMcc3IdEndfbVII0()
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
@@ -1371,8 +1371,8 @@ def readMCCNuclideData():
             nb.mcc3idEndfbVII1 = mcc3idEndfbVII1
             byMcc3IdEndfbVII1[nb.getMcc3IdEndfbVII1()] = nb
 
-    # Have the byMcc3Id dictionary be VII.1 IDs.
-    byMcc3Id = byMcc3IdEndfbVII1
+    # Have the byMcc3Id dictionary be VII.0 IDs.
+    byMcc3Id = byMcc3IdEndfbVII0
 
 def updateNuclideBasesForSpecialCases():
     """
