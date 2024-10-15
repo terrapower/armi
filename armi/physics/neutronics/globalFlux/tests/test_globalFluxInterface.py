@@ -12,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic global flux interface."""
-import logging
 import unittest
 from unittest.mock import patch
 
 import numpy as np
 
-from armi import runLog
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.globalFlux import globalFluxInterface
@@ -32,7 +30,6 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_blocks
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
 
 
 class MockReactorParams:
@@ -385,92 +382,9 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         block = r.core.getFirstBlock()
         self.assertGreater(block.p.detailedDpaRate, 0)
         self.assertEqual(block.p.detailedDpa, 0)
-        block.p.pointsEdgeDpa = np.array([0 for i in range(6)])
-        block.p.pointsCornerDpa = np.array([0 for i in range(6)])
-        block.p.pointsEdgeDpaRate = np.array([1.0e-5 for i in range(6)])
-        block.p.pointsCornerDpaRate = np.array([1.0e-5 for i in range(6)])
-
-        # Test DoseResultsMapper. Pass in full list of blocks to apply() in order
-        # to exercise blockList option (does not change behavior, since this is what
-        # apply() does anyway)
-        opts = globalFluxInterface.GlobalFluxOptions("test_mapper")
-        opts.fromUserSettings(o.cs)
-        dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        dosemapper.apply(r, blockList=r.core.getBlocks())
-        self.assertGreater(block.p.detailedDpa, 0)
-        self.assertGreater(np.min(block.p.pointsCornerDpa), 0)
-        self.assertGreater(np.min(block.p.pointsEdgeDpa), 0)
 
         mapper.clearFlux()
         self.assertEqual(len(block.p.mgFlux), 0)
-
-    @patch("armi.reactor.composites.ArmiObject.getMaxParam")
-    def test_updateCycleDoseParams(self, mockGetMaxParam):
-        # set up situation
-        mockGetMaxParam.return_value = 1.23
-        o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
-        applyDummyFlux(r)
-        r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        r.p.timeNode = 1
-        r.p.cycleLength = 365
-        opts = globalFluxInterface.GlobalFluxOptions("test_updateCycleDoseParams")
-        opts.fromUserSettings(o.cs)
-        opts.aclpDoseLimit = 100
-
-        # build the mapper
-        mapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        mapper.r = r
-
-        # test the starting position
-        self.assertEqual(mapper.r.core.p.elevationOfACLP3Cycles, 0)
-        self.assertEqual(mapper.r.core.p.elevationOfACLP7Cycles, 0)
-        self.assertEqual(mapper.r.core.p.dpaFullWidthHalfMax, 0)
-
-        # test the logs, as this case won't change the param values
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            runLog.LOG.startLog("test_updateCycleDoseParams")
-            runLog.LOG.setVerbosity(logging.INFO)
-            mapper.updateCycleDoseParams()
-            stdOut = mock.getStdout()
-            somethingStrange = "Something strange with detailedDpaThisCycle"
-            self.assertIn(somethingStrange, stdOut)
-            self.assertEqual(stdOut.count(somethingStrange), 3)
-
-        # test the ending position
-        self.assertEqual(mapper.r.core.p.elevationOfACLP3Cycles, 0)
-        self.assertEqual(mapper.r.core.p.elevationOfACLP7Cycles, 0)
-        self.assertEqual(mapper.r.core.p.dpaFullWidthHalfMax, 0)
-
-    def test_updateLoadpadDose(self):
-        # init test reactor
-        o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
-
-        # init options
-        opts = globalFluxInterface.GlobalFluxOptions("test_updateLoadpadDose")
-        opts.fromUserSettings(o.cs)
-        opts.aclpDoseLimit = 100
-        opts.loadPadElevation = 12
-        opts.loadPadLength = 24
-
-        # init mapper
-        mapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        mapper.r = r
-
-        # test logging from updateLoadpadDose
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            runLog.LOG.startLog("test_updateLoadpadDose")
-            runLog.LOG.setVerbosity(logging.INFO)
-
-            mapper.updateLoadpadDose()
-            self.assertIn("Above-core load", mock.getStdout())
-            self.assertIn("The peak ACLP dose", mock.getStdout())
-            self.assertIn("The max avg", mock.getStdout())
 
     def test_getDpaXs(self):
         cs = settings.Settings()

@@ -116,7 +116,7 @@ class TestPlotting(unittest.TestCase):
 
         with TemporaryDirectoryChanger():
             cs = settings.Settings(
-                os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
+                os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml")
             )
 
             blueprint = blueprints.loadFromCs(cs)
