@@ -63,7 +63,7 @@ We can similarly define a grid for the block with a similar entry in the ``grids
                           1 1 1 1 1 1 1 1 1 1 1
                            1 1 1 1 1 1 1 1 1 1
 
-This creates a ten-ring hexagonal lattice in a "corners up" or "tips up" orientation. While the resulting geometry
+This creates a ten-ring hexagonal lattice in a "corners up" orientation. While the resulting geometry
 may look like a flats up lattice, the individual hexagons that make up a lattice site are corners up.
 
 .. note::
@@ -173,7 +173,7 @@ component exists in space. If we grab the fuel component from the UO2 block in t
     >>> import armi
     >>> armi.configure()
     >>> from armi.reactor.flags import Flags
-    >>> r = armi.init(fName="c5g7-settings.yaml").r
+    >>> r = armi.init(fName="anl-afci-177.yaml").r
     >>> fuelAssem = r.core[5]
     >>> fuelBlock = fuelAssem[1]
     >>> fuelBlock.spatialGrid
@@ -205,16 +205,6 @@ sites. Each item in this locator is one location on the underlying grid where we
     >>> coordsFromFuel = fuel.spatialLocator.getLocalCoordinates()
     >>> coordsFromFuel.shape
     (271, 3)
-    >>> coordsFromFuel
-    array([[ 0.        ,  0.        ,  0.        ],
-           [ 0.4444    ,  0.76972338,  0.        ],
-           [-0.4444    ,  0.76972338,  0.        ],
-           [-0.8888    ,  0.        ,  0.        ],
-    ...
-           [ 5.7772    ,  3.84861689,  0.        ],
-           [ 5.3328    ,  4.61834027,  0.        ],
-           [ 4.8884    ,  5.38806365,  0.        ],
-           [ 4.444     ,  6.15778703,  0.        ]])
 
 We get a ``(271, 3)`` array because we have 271 of these fuel components in the block, and each row contains one
 (x, y, z) location for that component. We can do this for every component, though some may only exist at a single
