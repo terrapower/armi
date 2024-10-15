@@ -16,7 +16,9 @@ import copy
 import io
 import math
 import os
+import shutil
 import unittest
+from glob import glob
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -2333,8 +2335,22 @@ class TestHexBlockOrientation(unittest.TestCase):
 
     def test_validateFlatsUp(self):
         """Validate the spatial grid for a flats up HexBlock and its children."""
+        # copy the files over
+        inDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+        for filePath in glob(os.path.join(inDir, "*.yaml")):
+            outPath = os.path.join(self.td.destination, os.path.basename(filePath))
+            shutil.copyfile(filePath, outPath)
+
+        # modify the reactor to make it flats up
+        testFile = os.path.join(self.td.destination, "refSmallestReactor.yaml")
+        txt = open(testFile, "r").read()
+        txt = txt.replace("geom: hex_corners_up", "geom: hex")
+        open(testFile, "w").write(txt)
+
         # load a flats up reactor
-        _o, r = loadTestReactor(TEST_ROOT, inputFileName="armiRun.yaml")
+        _o, r = loadTestReactor(
+            self.td.destination, inputFileName="armiRunSmallest.yaml"
+        )
 
         # grab a pinned fuel block, and verify it is flats up
         b = r.core.getFirstBlock(Flags.FUEL)
