@@ -82,7 +82,7 @@ CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_N_CYCLES = "nCycles"
 CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
-CONF_NUM_PROCESSORS = "numProcessors"
+CONF_N_TASKS = "nTasks"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
@@ -153,11 +153,12 @@ def defineSettings() -> List[setting.Setting]:
     """
     settings = [
         setting.Setting(
-            CONF_NUM_PROCESSORS,
+            CONF_N_TASKS,
             default=1,
-            label="CPUs",
-            description="Number of CPUs to request on the cluster",
+            label="parallel tasks",
+            description="Number of parallel tasks to request on the cluster",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
+            oldNames=[("numProcessors", None)],
         ),
         setting.Setting(
             CONF_INITIALIZE_BURN_CHAIN,
