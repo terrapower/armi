@@ -34,6 +34,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
@@ -1715,13 +1716,29 @@ class Block_TestCase(unittest.TestCase):
 
         .. warning:: This will likely be pushed to the component level.
         """
-        fluxes = np.ones((33, 10))
+        fluxes = np.random.rand(10, 33)
+        p, g = np.random.randint(low=0, high=[10, 33])
+
+        # Test without pinLocation
+        self.block.pinLocation = None
         self.block.setPinMgFluxes(fluxes)
         self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
         self.block.setPinMgFluxes(fluxes * 3, gamma=True)
-        self.assertEqual(self.block.p.pinMgFluxes[0][2], 1.0)
-        self.assertEqual(self.block.p.pinMgFluxesAdj[0][2], 2.0)
-        self.assertEqual(self.block.p.pinMgFluxesGamma[0][2], 3.0)
+        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[p, g])
+        self.assertEqual(self.block.p.pinMgFluxesAdj.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxesAdj[p, g], fluxes[p, g] * 2)
+        self.assertEqual(self.block.p.pinMgFluxesGamma.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxesGamma[p, g], fluxes[p, g] * 3)
+
+        # Test with pinLocation
+        self.block.setType(self.block.getType(), Flags.FUEL)
+        self.block.p.pinLocation = np.random.choice(10, size=10, replace=False) + 1
+        self.block.setPinMgFluxes(fluxes)
+        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
+        self.assertEqual(
+            self.block.p.pinMgFluxes[p, g], fluxes[self.block.p.pinLocation[p] - 1, g]
+        )
 
     def test_getComponentsInLinkedOrder(self):
         comps = self.block.getComponentsInLinkedOrder()
@@ -1779,6 +1796,39 @@ class Block_TestCase(unittest.TestCase):
             block.getReactionRates("PU39"),
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
+
+
+class BlockInputHeightsTests(unittest.TestCase):
+    def test_foundReactor(self):
+        """Test the input height is pullable from blueprints."""
+        r = loadTestReactor()[1]
+        msg = "Input height from blueprints differs. Did a blueprint get updated and not this test?"
+
+        # Grab a block from an assembly, so long as we have the height
+        assem = r.core.getFirstAssembly(Flags.IGNITER | Flags.FUEL)
+        lowerB = assem[0]
+        self.assertEqual(
+            lowerB.getInputHeight(),
+            25,
+            msg=msg,
+        )
+        # Grab another block just for good measure
+        midBlock = assem[2]
+        self.assertEqual(
+            midBlock.getInputHeight(),
+            25,
+            msg=msg,
+        )
+        # Top block has a different height. Make sure we don't just
+        # return 25 all the time
+        topBlock = assem[4]
+        self.assertEqual(topBlock.getInputHeight(), 75, msg=msg)
+
+    def test_noBlueprints(self):
+        """Verify an error is raised if there are no blueprints."""
+        b = buildSimpleFuelBlock()
+        with self.assertRaisesRegex(AttributeError, "No ancestor.*blueprints"):
+            b.getInputHeight()
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
