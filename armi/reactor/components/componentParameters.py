@@ -145,8 +145,12 @@ def getComponentParameterDefinitions():
             setter=isNumpyArray("pinPercentBu"),
             units=f"{units.PERCENT_FIMA}",
             description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
+        )
+
+        pb.defParam(
+            "molesHmBOL",
+            units=f"{units.MOLES}",
+            description="Total number of moles of heavy metal at BOL.",
         )
 
     return pDefs
