@@ -791,17 +791,12 @@ def makeParametersReadOnly(r, readOnly=True):
     ARMI. So if you run this function once with `readOnly=True`, and you want to move on to other
     things, run this method on your reactor again with `readOnly=False` to unclock ARMI.
     """
-    for pdef0 in r.p.paramDefs:
-        pdef0.readOnly = readOnly
-        for system in r.getChildren():
-            for pdef1 in system.p.paramDefs:
-                pdef1.readOnly = readOnly
-            for a in system.getChildren():
-                for pdef2 in a.p.paramDefs:
-                    pdef2.readOnly = readOnly
-                for b in a.getChildren():
-                    for pdef3 in b.p.paramDefs:
-                        pdef3.readOnly = readOnly
-                    for c in b.getChildren():
-                        for pdef4 in c.p.paramDefs:
-                            pdef4.readOnly = readOnly
+    r.p.readOnly = readOnly
+    for system in r.getChildren():
+        system.p.readOnly = readOnly
+        for a in system.getChildren():
+            a.p.readOnly = readOnly
+            for b in a.getChildren():
+                b.p.readOnly = readOnly
+                for c in b.getChildren():
+                    c.p.readOnly = readOnly
