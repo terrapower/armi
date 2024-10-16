@@ -21,7 +21,6 @@ construction of apps.
 from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
 from armi.reactor import parameters
 from armi.reactor.blocks import Block
-from armi.reactor.components import Component
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.reactor.reactors import Core
@@ -30,11 +29,7 @@ from armi.utils import units
 
 def getNeutronicsParameterDefinitions():
     """Return ParameterDefinitionCollections for each appropriate ArmiObject."""
-    return {
-        Block: _getNeutronicsBlockParams(),
-        Component: _getNeutronicsComponentParams(),
-        Core: _getNeutronicsCoreParams(),
-    }
+    return {Block: _getNeutronicsBlockParams(), Core: _getNeutronicsCoreParams()}
 
 
 def _getNeutronicsBlockParams():
@@ -159,6 +154,39 @@ def _getNeutronicsBlockParams():
                 parameters.Category.fluxQuantities,
                 parameters.Category.multiGroupQuantities,
             ],
+            default=None,
+        )
+
+        # Not anointing the pin fluxes as a MG quantity, since it has an extra dimension, which
+        # could lead to issues, depending on how the multiGroupQuantities category gets used
+        pb.defParam(
+            "pinMgFluxes",
+            units=f"n/{units.CM}^2/{units.SECONDS}",
+            description="""
+            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
+            for pin i. Flux units are the standard n/cm^2/s. The "ARMI pin ordering" is used, which
+            is counter-clockwise from 3 o'clock.
+            """,
+            categories=[parameters.Category.pinQuantities],
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinMgFluxesAdj",
+            units=units.UNITLESS,
+            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities],
+            saveToDB=False,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinMgFluxesGamma",
+            units=f"#/{units.CM}^2/{units.SECONDS}",
+            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
+            categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
+            saveToDB=False,
             default=None,
         )
 
@@ -715,42 +743,6 @@ def _getNeutronicsBlockParams():
         )
 
     return pDefs
-
-
-def _getNeutronicsComponentParams():
-    pDefs = parameters.ParameterDefinitionCollection()
-    with pDefs.createBuilder() as pb:
-
-        pb.defParam(
-            "pinMgFluxes",
-            units=f"n/{units.CM}^2/{units.SECONDS}",
-            description="""
-            The component-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
-            for pin i. Flux units are the standard n/cm^2/s. The "ARMI pin ordering" is used, which
-            is counter-clockwise from 3 o'clock.
-            """,
-            categories=[parameters.Category.pinQuantities],
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "pinMgFluxesAdj",
-            units=units.UNITLESS,
-            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
-            categories=[parameters.Category.pinQuantities],
-            saveToDB=False,
-            default=None,
-        )
-
-        pb.defParam(
-            "pinMgFluxesGamma",
-            units=f"#/{units.CM}^2/{units.SECONDS}",
-            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
-            categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
-            saveToDB=False,
-            default=None,
-        )
 
 
 def _getNeutronicsCoreParams():
