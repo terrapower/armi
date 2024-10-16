@@ -45,7 +45,9 @@ def applyFuelDisplacement(block, displacementInCm):
     # reduce number density of fuel to conserve number of atoms (and mass)
     fuel.changeNDensByFactor(originalHotODInCm**2 / newHotODInCm**2)
     if fuel.p.detailedNDens:
-        newDetailedNDens = fuel.p.detailedNDens * (originalHotODInCm**2 / newHotODInCm**2)
+        newDetailedNDens = fuel.p.detailedNDens * (
+            originalHotODInCm**2 / newHotODInCm**2
+        )
         fuel.p.detailedNDens = newDetailedNDens
 
 

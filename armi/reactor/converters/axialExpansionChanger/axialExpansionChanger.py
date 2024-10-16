@@ -353,7 +353,7 @@ class AxialExpansionChanger:
                     c.setNumberDensities(newNumberDensities)
 
                     if c.p.detailedNDens:
-                        newDetailedNDens = c.p.detailedNDens * heightRatio
+                        newDetailedNDens = c.p.detailedNDens * growFrac
                         c.p.detailedNDens = newDetailedNDens
 
                     # redistribute block boundaries if on the target component
