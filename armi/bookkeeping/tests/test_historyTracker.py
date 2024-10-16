@@ -55,13 +55,22 @@ class TestHistoryTracker(ArmiTestHelper):
     """History tracker tests that require a Reactor Model."""
 
     @classmethod
+    def setUpClass(cls):
         # Do this work in a temp dir, to avoid race conditions.
         cls.dirChanger = TemporaryDirectoryChanger()
         cls.dirChanger.__enter__()
 
-        for filePath in TUTORIAL_FILES:
-            shuil.copyfile(filePath, )
+        os.mkdir("tutorials")
+        os.mkdir(CASE_TITLE)
 
+        for filePath in TUTORIAL_FILES:
+            dirName = CASE_TITLE if CASE_TITLE in filePath else "tutorials"
+            outFile = os.path.join(
+                cls.dirChanger.destination, dirName, os.path.basename(filePath)
+            )
+            shutil.copyfile(filePath, outFile)
+
+        os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
         runTutorialNotebook()
 
     @classmethod
@@ -69,7 +78,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(f"{CASE_TITLE}.yaml")
+        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 2
