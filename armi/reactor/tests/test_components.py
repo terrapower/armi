@@ -15,12 +15,15 @@
 """Tests functionalities of components within ARMI."""
 import copy
 import math
+import numpy as np
+from numpy.testing import assert_equal
 import unittest
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
 from armi.reactor import components
 from armi.reactor import flags
+from armi.reactor.blocks import Block
 from armi.reactor.components import (
     Component,
     UnshapedComponent,
@@ -1812,3 +1815,42 @@ class TestMaterialAdjustments(unittest.TestCase):
         comp.p.theoreticalDensityFrac = tdFrac
         comp.finalizeLoadingFromDB()
         self.assertEqual(comp.material.getTD(), tdFrac)
+
+
+class TestPinQuantities(unittest.TestCase):
+    """Test methods that involve retrieval of pin quantities."""
+
+    def setUp(self):
+        self.r = loadTestReactor()[1]
+
+    def test_getPinMgFluxes(self):
+        """Test proper retrieval of pin multigroup flux for fuel component."""
+        # Get a fuel block and its fuel component from the core
+        fuelBlock: Block = self.r.core.getFirstBlock(flags.Flags.FUEL)
+        fuelComponent: Component = fuelBlock.getComponent(flags.Flags.FUEL)
+        numPins = int(fuelComponent.p.mult)
+        self.assertGreater(numPins, 1)
+
+        # Set pin fluxes at block level
+        fuelBlock.initializePinLocations()
+        pinMgFluxes = np.random.rand(numPins, 33)
+        pinMgFluxesAdj = np.random.rand(numPins, 33)
+        pinMgFluxesGamma = np.random.rand(numPins, 33)
+        fuelBlock.setPinMgFluxes(pinMgFluxes)
+        fuelBlock.setPinMgFluxes(pinMgFluxesAdj, adjoint=True)
+        fuelBlock.setPinMgFluxes(pinMgFluxesGamma, gamma=True)
+
+        # Retrieve from component to ensure they match
+        simPinMgFluxes = fuelComponent.getPinMgFluxes()
+        simPinMgFluxesAdj = fuelComponent.getPinMgFluxes(adjoint=True)
+        simPinMgFluxesGamma = fuelComponent.getPinMgFluxes(gamma=True)
+        assert_equal(pinMgFluxes, simPinMgFluxes)
+        assert_equal(pinMgFluxesAdj, simPinMgFluxesAdj)
+        assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
+
+        # Get a coolant block and replace the spatialLocator in the component to test exception raised
+        coolantBlock: Block = self.r.core.getFirstBlock(flags.Flags.CONTROL)
+        coolantComponent: Component = coolantBlock.getComponent(flags.Flags.CONTROL)
+        coolantComponent.spatialLocator = fuelComponent.spatialLocator
+        with self.assertRaises(ValueError):
+            coolantComponent.getPinMgFluxes()

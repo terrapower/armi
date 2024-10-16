@@ -21,6 +21,7 @@ import copy
 import re
 
 import numpy as np
+from typing import Optional
 
 from armi import materials
 from armi import runLog
@@ -31,6 +32,7 @@ from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.reactor import flags
+from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
@@ -722,9 +724,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.p.numberDensities[nucName] = val
         self.p.assigned = parameters.SINCE_ANYTHING
         # necessary for syncMpiState
-        parameters.ALL_DEFINITIONS[
-            "numberDensities"
-        ].assigned = parameters.SINCE_ANYTHING
+        parameters.ALL_DEFINITIONS["numberDensities"].assigned = (
+            parameters.SINCE_ANYTHING
+        )
 
     def setNumberDensities(self, numberDensities):
         """
@@ -1261,6 +1263,74 @@ class Component(composites.Composite, metaclass=ComponentType):
                 pinFluxes = self.parent.p.pinMgFluxes
 
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
+
+    def getPinMgFluxes(
+        self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False
+    ) -> np.ndarray:
+        """Retrieves the pin multigroup fluxes for the component.
+
+        Parameters
+        ----------
+        adjoint : bool, optional
+            Return adjoint flux instead of real
+        gamma : bool, optional
+            Whether to return the neutron flux or the gamma flux.
+
+        Returns
+        -------
+        np.ndarray
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the
+            equivalent to the multiplicity of the component (``self.p.mult``)
+            and ``nGroup`` is the number of energy groups of the flux.
+
+        Raises
+        ------
+        ValueError
+            If the location(s) of the component are not aligned with pin indices
+            from the block. This would happen if this component is not actually
+            a pin.
+        """
+        # Get the (i, j, k) location of all pins from the parent block
+        # FIXME: This should be changed to just using Block.getPinLocations once Drew's PR is merged
+        indicesAll = []
+        for clad in self.parent.getChildrenWithFlags(flags.Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                indicesAll.extend(clad.spatialLocator.indices)
+            else:
+                indicesAll.append(clad.spatialLocator.indices)
+
+        # Retrieve the indices of this component
+        indices = self.spatialLocator.indices
+        if not isinstance(indices, list):
+            indices = [indices]
+
+        # Map this component's indices to block's pin indices
+        getIndex = lambda ind: next(
+            (i for i, indA in enumerate(indicesAll) if np.all(ind == indA)),
+            None,
+        )
+        indexMap = list(map(getIndex, indices))
+        print(len(indices))
+        print(len(indicesAll))
+        if None in indexMap:
+            msg = f"Failed to retrieve pin indices for component {self}."
+            runLog.error(msg)
+            raise ValueError(msg)
+
+        # Get the parameter name we are trying to retrieve
+        if gamma:
+            if adjoint:
+                raise ValueError("Adjoint gamma flux is currently unsupported.")
+            else:
+                param = "pinMgFluxesGamma"
+        else:
+            if adjoint:
+                param = "pinMgFluxesAdj"
+            else:
+                param = "pinMgFluxes"
+
+        # Return pin fluxes
+        return self.parent.p.get(param)[indexMap]
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
