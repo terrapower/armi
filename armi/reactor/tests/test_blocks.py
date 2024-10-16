@@ -2328,6 +2328,7 @@ class TestHexBlockOrientation(unittest.TestCase):
         # grab a pinned fuel block, and verify it is corners up
         b = r.core.getFirstBlock(Flags.FUEL)
         self.assertTrue(b.spatialGrid.cornersUp)
+        self.assertEqual(r.core.spatialGrid.cornersUp, b.spatialGrid.cornersUp)
 
         # for a flats up sub-grid, the hex centroids should stretch more in Y than X
         minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
@@ -2355,6 +2356,7 @@ class TestHexBlockOrientation(unittest.TestCase):
         # grab a pinned fuel block, and verify it is flats up
         b = r.core.getFirstBlock(Flags.FUEL)
         self.assertFalse(b.spatialGrid.cornersUp)
+        self.assertEqual(r.core.spatialGrid.cornersUp, b.spatialGrid.cornersUp)
 
         # for a corners up sub-grid, the hex centroids should stretch more in X than Y
         minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
