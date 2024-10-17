@@ -56,6 +56,15 @@ class SillyAxialPlugin(plugins.ArmiPlugin):
         return SillyAxialExpansionChanger
 
 
+class BeforeReactorPlugin(plugins.ArmiPlugin):
+    """Trivial plugin that implements the before reactor construction hook."""
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def beforeReactorConstruction(cs) -> None:
+        cs.beforeReactorConstructionFlag = True
+
+
 class TestPluginRegistration(unittest.TestCase):
     def setUp(self):
         """
@@ -118,6 +127,20 @@ class TestPluginRegistration(unittest.TestCase):
         # Registering a plugin that implements the hook means we get
         # that plugin's axial expander
         self.assertIs(second, SillyAxialExpansionChanger)
+
+    def test_beforeReactorConstructionHook(self):
+        """Test that plugin hook successfully injects code before reactor initialization.
+
+        .. test:: Capture code in the beforeReactorConstruction hook from reactor construction being carried out.
+            :id: T_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+            :tests: R_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+        """
+        pm = getPluginManagerOrFail()
+        pm.register(BeforeReactorPlugin)
+        o = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[0]
+        self.assertTrue(o.cs.beforeReactorConstructionFlag)
 
 
 class TestPluginBasics(unittest.TestCase):

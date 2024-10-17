@@ -549,8 +549,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Parameters
         ----------
-        sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-            original reactor to be copied
+        sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>`
+            original reactor object to be copied
         cs: Setting
             Complete settings object
         """
@@ -563,7 +563,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newReactor = Reactor(sourceReactor.name, bp)
         coreDesign = bp.systemDesigns["core"]
 
-        coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        coreDesign.construct(cs, bp, newReactor, loadComps=False)
         newReactor.p.cycle = sourceReactor.p.cycle
         newReactor.p.timeNode = sourceReactor.p.timeNode
         newReactor.p.maxAssemNum = sourceReactor.p.maxAssemNum

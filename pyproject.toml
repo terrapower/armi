@@ -45,7 +45,6 @@ dependencies = [
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
-    "tabulate>=0.8.9", # Used to pretty-print tabular data
     "toml>0.9.5", # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1", # Used to validate YAML data files
     "yamlize==0.7.1", # Custom YAML-to-object library
@@ -312,8 +311,15 @@ armi = [
     "physics/neutronics/tests/rzmflxYA",
     "resources/*",
     "tests/1DslabXSByCompTest.yaml",
+    "tests/anl-afci-177/anl-afci-177-blueprints.yaml",
+    "tests/anl-afci-177/anl-afci-177-coreMap.yaml",
+    "tests/anl-afci-177/anl-afci-177-fuelManagement.py",
+    "tests/anl-afci-177/anl-afci-177.yaml",
     "tests/armiRun-SHUFFLES.txt",
     "tests/armiRun.yaml",
+    "tests/c5g7",
+    "tests/c5g7/c5g7-blueprints.yaml",
+    "tests/c5g7/c5g7-settings.yaml",
     "tests/COMPXS.ascii",
     "tests/detailedAxialExpansion/armiRun.yaml",
     "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
@@ -336,10 +342,6 @@ armi = [
     "tests/ThRZSettings.yaml",
     "tests/trz_geom.xml",
     "tests/tutorials",
-    "tests/tutorials/anl-afci-177-blueprints.yaml",
-    "tests/tutorials/anl-afci-177-coreMap.yaml",
-    "tests/tutorials/anl-afci-177-fuelManagement.py",
-    "tests/tutorials/anl-afci-177.yaml",
     "tests/tutorials/data_model.ipynb",
     "tests/zpprTest.yaml",
     "tests/zpprTestGeom.xml",
