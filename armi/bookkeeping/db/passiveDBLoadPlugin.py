@@ -96,7 +96,7 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
     def buildParamColl(names):
         """Try replacing any missing parameters with unitless nonsense."""
         # build a collection of defaulted parameters to passively ignore
-        desc = "This is just a silly placeholder Parameter. It's meaning is unknown."
+        desc = "This is just a placeholder Parameter; it's meaning is unknown."
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
             for param in names:
