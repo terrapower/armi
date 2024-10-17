@@ -31,7 +31,6 @@ from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
@@ -465,12 +464,12 @@ class TestDatabaseReading(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 r.core.p.keff = 0.99
 
+            b = r.core.getFirstBlock()
             with self.assertRaises(RuntimeError):
-                b = r.core.getFirstBlock()
                 b.p.power = 432.1
 
-            # needed so that futher tests can run
-            makeParametersReadOnly(r, readOnly=False)
+            for c in b:
+                self.assertGreater(c.getVolume(), 0)
 
     def test_growToFullCore(self):
         with Database3(self.dbName, "r") as db:

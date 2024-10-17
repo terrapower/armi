@@ -796,19 +796,8 @@ class Database3:
 
         return root
 
-    def loadReadOnly(
-        self,
-        cycle,
-        node,
-        cs=None,
-        bp=None,
-        statePointName=None,
-    ):
+    def loadReadOnly(self, cycle, node, statePointName=None):
         """Load a new reactor, in read-only mode from a DB at (cycle, node).
-
-        Case settings and blueprints can be provided, or read from the database. Providing these
-        can be useful for snapshot runs or when you want to change settings mid-simulation. Geometry
-        is read from the database.
 
         Parameters
         ----------
@@ -816,10 +805,6 @@ class Database3:
             Cycle number
         node : int
             Time node. If value is negative, will be indexed from EOC backwards like a list.
-        cs : armi.settings.Settings, optional
-            If not provided one is read from the database
-        bp : armi.reactor.Blueprints, optional
-            If not provided one is read from the database
         statePointName : str, optional
             Statepoint name (e.g., "special" for "c00n00-special/")
 
@@ -828,7 +813,7 @@ class Database3:
         Reactor
             The top-level object stored in the database; a Reactor.
         """
-        r = self.load(cycle, node, cs, bp, statePointName, allowMissing=True)
+        r = self.load(cycle, node, statePointName=statePointName, allowMissing=True)
         self._setParamsBeforeFreezing(r)
         makeParametersReadOnly(r)
         return r
