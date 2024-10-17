@@ -146,6 +146,10 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             should come from a call to __getstate__(). This should only be used
             internally to this model.
         """
+        # add a hook to make this readOnly
+        self._slots.add("readOnly")
+        self.readOnly = False
+
         if self.pDefs is None or not self.pDefs.locked:
             type(self).applyParameters()
 
@@ -275,6 +279,14 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             "Trying to set undefined attribute `{}` on "
             "a ParameterCollection!".format(key)
         )
+
+        if getattr(self, "readOnly", False):
+            if key == "readOnly":
+                raise RuntimeError(
+                    "A read-only Parameter Collection cannot be made writeable."
+                )
+            else:
+                raise RuntimeError(f"Cannot set a read-only parameter {key}.")
 
         object.__setattr__(self, key, value)
 

@@ -770,3 +770,29 @@ def defineCoreParameters():
         )
 
     return pDefs
+
+
+def makeParametersReadOnly(r):
+    """Convert all the paramters in a Reactor to read-only.
+
+    This method is pretty simple. It goes through all the children of a Reactor object,
+    recursively, and converts the parameters to read-only mode.
+
+    Parameters
+    ----------
+    r : Reactor
+        Full reactor object, to be modified.
+
+    Notes
+    -----
+    Once you make one Reactor read-only, you cannot make it writeable again.
+    """
+    r.p.readOnly = True
+    for system in r.getChildren():
+        system.p.readOnly = True
+        for a in system.getChildren():
+            a.p.readOnly = True
+            for b in a.getChildren():
+                b.p.readOnly = True
+                for c in b.getChildren():
+                    c.p.readOnly = True
