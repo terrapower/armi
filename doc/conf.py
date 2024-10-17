@@ -240,8 +240,11 @@ def setup(app):
     # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but
     # the working directory for running the notebooks is the directory of the link
     # itself, so relative paths don't work.
+    testDir = pathlib.Path("user") / "anl-afci-177"
+    if not os.path.exists(testDir):
+        os.mkdir(testDir)
     for path in _TUTORIAL_FILES:
-        shutil.copy(path, pathlib.Path("user") / "anl-afci-177")
+        shutil.copy(path, testDir)
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
