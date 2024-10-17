@@ -624,7 +624,7 @@ class HexGrid(StructuredGrid):
             if rotations % 2:
                 newI *= -1
                 newJ *= -1
-            return IndexLocation(newI, newJ, k, self)
+            return IndexLocation(newI, newJ, k, loc.grid)
         raise TypeError(
             f"Refusing to rotate an index {loc} from a grid {loc.grid} that "
             f"is not consistent with {self}"

@@ -684,6 +684,16 @@ class TestHexGrid(unittest.TestCase):
         with self.assertRaises(TypeError):
             base.rotateIndex(fromAxial)
 
+    def test_rotatedIndexGridAssignment(self):
+        """Test that the grid of the rotated index is identical through rotation."""
+        base = grids.HexGrid.fromPitch(1)
+        other = grids.HexGrid.fromPitch(base.pitch, cornersUp=base.cornersUp)
+
+        for i, j in ((0, 0), (1, 1), (2, 1), (-1, 3)):
+            loc = grids.IndexLocation(i, j, k=0, grid=other)
+            postRotate = base.rotateIndex(loc, rotations=2)
+            self.assertIs(postRotate.grid, loc.grid)
+
 
 class TestBoundsDefinedGrid(unittest.TestCase):
     def test_positions(self):
