@@ -113,19 +113,16 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
             f"Found {len(previousLocations)} locations but {len(previousPowers)} powers."
         )
 
+    ringPowers = {
+        (loc.i, loc.j): p for loc, p in zip(previousLocations, previousPowers)
+    }
+
     targetGrid = blockAtPreviousLocation.spatialGrid
     candidateRotation = 0
-    candidatePower = math.inf
-    for rot in range(6):
-        # We need to "rotate" even for rot=0 (location should be the same)
-        # because IndexLocation comparison requires the grids to be the same
-        # object, and the grid attribute on the location returned from
-        # grid.rotateIndex is grid. If we don't, even though location
-        # (i, j, k) exists in the previous location, if it isn't on literally
-        # the same grid, the index call fails.
+    candidatePower = ringPowers.get((maxBuPinLocation.i, maxBuPinLocation.j), math.inf)
+    for rot in range(1, 6):
         candidateLocation = targetGrid.rotateIndex(maxBuPinLocation, rot)
-        newLocationIndex = previousLocations.index(candidateLocation)
-        newPower = previousPowers[newLocationIndex]
+        newPower = ringPowers.get((candidateLocation.i, candidateLocation.j), math.inf)
         if newPower < candidatePower:
             candidateRotation = rot
             candidatePower = newPower
