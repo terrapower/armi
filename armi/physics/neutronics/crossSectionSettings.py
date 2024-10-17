@@ -59,7 +59,7 @@ CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 CONF_PARTIALLY_HETEROGENEOUS = "partiallyHeterogeneous"
-CONF_SPLIT_TRACE_ISOTOPES = "splitTraceIsotopes"
+CONF_TRACE_ISOTOPE_THRESHOLD = "traceIsotopeThreshold"
 
 
 class XSGeometryTypes(Enum):
@@ -154,7 +154,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
         CONF_PARTIALLY_HETEROGENEOUS,
-        CONF_SPLIT_TRACE_ISOTOPES,
+        CONF_TRACE_ISOTOPE_THRESHOLD,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -202,7 +202,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
         vol.Optional(CONF_PARTIALLY_HETEROGENEOUS): bool,
-        vol.Optional(CONF_SPLIT_TRACE_ISOTOPES): bool,
+        vol.Optional(CONF_TRACE_ISOTOPE_THRESHOLD): vol.Coerce(float),
     }
 )
 
@@ -462,11 +462,12 @@ class XSModelingOptions:
         heterogeneous approximation for a 1D cylindrical model. Everything inside of the
         duct will be treated as homogeneous.
 
-    splitTraceIsotopes : bool
+    traceIsotopeThreshold : float
         This is a lattice physics configuration option used to enable a separate 0D fuel
         cross section calculation for trace fission products when using a 1D cross section
         model. This can significantly reduce the memory and run time required for the 1D
-        model.
+        model. The setting takes a float value that represents the number density cutoff
+        for isotopes to be considered "trace". If no value is provided, the default is 0.0.
 
     Notes
     -----
@@ -501,7 +502,7 @@ class XSModelingOptions:
         averageByComponent=False,
         minDriverDensity=0.0,
         partiallyHeterogeneous=False,
-        splitTraceIsotopes=False,
+        traceIsotopeThreshold=0.0,
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -526,7 +527,7 @@ class XSModelingOptions:
         self.minDriverDensity = minDriverDensity
         self.averageByComponent = averageByComponent
         self.partiallyHeterogeneous = partiallyHeterogeneous
-        self.splitTraceIsotopes = splitTraceIsotopes
+        self.traceIsotopeThreshold = traceIsotopeThreshold
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
@@ -717,7 +718,7 @@ class XSModelingOptions:
                 CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
                 CONF_PARTIALLY_HETEROGENEOUS: False,
-                CONF_SPLIT_TRACE_ISOTOPES: False,
+                CONF_TRACE_ISOTOPE_THRESHOLD: 0.0,
             }
         elif self.geometry == XSGeometryTypes.getStr(
             XSGeometryTypes.TWO_DIMENSIONAL_HEX

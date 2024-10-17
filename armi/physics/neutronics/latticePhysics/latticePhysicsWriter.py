@@ -115,7 +115,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
         self.partiallyHeterogeneous = self.xsSettings.partiallyHeterogeneous
-        self.splitTraceIsotopes = self.xsSettings.splitTraceIsotopes
+        self.traceIsotopeThreshold = self.xsSettings.traceIsotopeThreshold
 
         self.executeExclusive = self.xsSettings.xsExecuteExclusive
         self.priority = self.xsSettings.xsPriority
