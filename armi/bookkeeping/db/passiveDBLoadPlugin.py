@@ -95,11 +95,6 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
     @staticmethod
     def buildParamColl(names):
         """Try replacing any missing parameters with unitless nonsense."""
-        # handle the special cases
-        for nomen in ["flags", "serialNum"]:
-            if nomen in names:
-                names.remove(nomen)
-
         # build a collection of defaulted parameters to passively ignore
         desc = "This is just a silly placeholder Parameter. It's meaning is unknown."
         pDefs = parameters.ParameterDefinitionCollection()
