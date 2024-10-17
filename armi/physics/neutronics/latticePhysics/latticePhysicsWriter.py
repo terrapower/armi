@@ -114,7 +114,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
-        self.partiallyHeterogeneous = self.xsSettings.partiallyHeterogeneous
+        self.ductHeterogeneous = self.xsSettings.ductHeterogeneous
         self.traceIsotopeThreshold = self.xsSettings.traceIsotopeThreshold
 
         self.executeExclusive = self.xsSettings.xsExecuteExclusive
@@ -269,7 +269,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
                 continue  # skip LFPs here but add individual FPs below.
 
             if isinstance(subjectObject, components.Component):
-                if self.partiallyHeterogeneous and "Homogenized" in subjectObject.name:
+                if self.ductHeterogeneous and "Homogenized" in subjectObject.name:
                     # Nuclide temperatures representing heterogeneous model component temperatures
                     nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
                 else:

@@ -508,7 +508,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
     nonpins ...
 
-    The ``partiallyHeterogeneous`` option allows the user to treat everything inside the duct
+    The ``ductHeterogeneous`` option allows the user to treat everything inside the duct
     as a single homogenized composition. This could significantly reduce the memory and runtime
     required for the lattice physics solver, and also provide an alternative approximation for
     the spatial self-shielding effect on microscopic cross sections.
@@ -525,7 +525,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         numExternalRings=None,
         mergeIntoClad=None,
         mergeIntoFuel=None,
-        partiallyHeterogeneous=False,
+        ductHeterogeneous=False,
     ):
         BlockAvgToCylConverter.__init__(
             self,
@@ -556,7 +556,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
         self.mergeIntoFuel = mergeIntoFuel or []
-        self.partiallyHeterogeneous = partiallyHeterogeneous
+        self.ductHeterogeneous = ductHeterogeneous
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
         if not self.interRingComponent:
@@ -592,7 +592,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self._sourceBlock.getNumPins()
         )
         pinComponents, nonPins = self._classifyComponents()
-        if self.partiallyHeterogeneous:
+        if self.ductHeterogeneous:
             self._buildInsideDuct()
         else:
             self._buildFirstRing(pinComponents)
@@ -728,7 +728,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         Also needs to add final coolant layer between the outer pins and the non-pins.
         Will crash if there are things that are not circles or hexes.
         """
-        if not self.partiallyHeterogeneous:
+        if not self.ductHeterogeneous:
             # fill in the last ring of coolant using the rest
             coolInnerDiam = self.convertedBlock[-1].getDimension("od")
             coolantOD = getOuterDiamFromIDAndArea(

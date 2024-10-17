@@ -58,7 +58,7 @@ CONF_XS_PRIORITY = "xsPriority"
 CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
-CONF_PARTIALLY_HETEROGENEOUS = "partiallyHeterogeneous"
+CONF_DUCT_HETEROGENEOUS = "ductHeterogeneous"
 CONF_TRACE_ISOTOPE_THRESHOLD = "traceIsotopeThreshold"
 
 
@@ -153,7 +153,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
-        CONF_PARTIALLY_HETEROGENEOUS,
+        CONF_DUCT_HETEROGENEOUS,
         CONF_TRACE_ISOTOPE_THRESHOLD,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
@@ -201,7 +201,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
-        vol.Optional(CONF_PARTIALLY_HETEROGENEOUS): bool,
+        vol.Optional(CONF_DUCT_HETEROGENEOUS): bool,
         vol.Optional(CONF_TRACE_ISOTOPE_THRESHOLD): vol.Coerce(float),
     }
 )
@@ -457,7 +457,7 @@ class XSModelingOptions:
         The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
 
-    partiallyHeterogeneous : bool
+    ductHeterogeneous : bool
         This is a lattice physics configuration option used to enable a partially
         heterogeneous approximation for a 1D cylindrical model. Everything inside of the
         duct will be treated as homogeneous.
@@ -501,7 +501,7 @@ class XSModelingOptions:
         xsMaxAtomNumber=None,
         averageByComponent=False,
         minDriverDensity=0.0,
-        partiallyHeterogeneous=False,
+        ductHeterogeneous=False,
         traceIsotopeThreshold=0.0,
     ):
         self.xsID = xsID
@@ -526,7 +526,7 @@ class XSModelingOptions:
         self.xsMaxAtomNumber = xsMaxAtomNumber
         self.minDriverDensity = minDriverDensity
         self.averageByComponent = averageByComponent
-        self.partiallyHeterogeneous = partiallyHeterogeneous
+        self.ductHeterogeneous = ductHeterogeneous
         self.traceIsotopeThreshold = traceIsotopeThreshold
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
@@ -717,7 +717,7 @@ class XSModelingOptions:
                 CONF_HOMOGBLOCK: False,
                 CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
-                CONF_PARTIALLY_HETEROGENEOUS: False,
+                CONF_DUCT_HETEROGENEOUS: False,
                 CONF_TRACE_ISOTOPE_THRESHOLD: 0.0,
             }
         elif self.geometry == XSGeometryTypes.getStr(

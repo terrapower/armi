@@ -61,7 +61,7 @@ converter.plotConvertedBlock()
 
 # partially heterogeneous
 converter = blockConverters.HexComponentsToCylConverter(
-    sourceBlock=bFuel, partiallyHeterogeneous=True
+    sourceBlock=bFuel, ductHeterogeneous=True
 )
 converter.convert()
 converter.plotConvertedBlock()

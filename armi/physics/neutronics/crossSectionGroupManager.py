@@ -653,7 +653,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         return nvt, nv
 
 
-class CylindricalComponentsPartHetAverageBlockCollection(
+class CylindricalComponentsDuctHetAverageBlockCollection(
     CylindricalComponentsAverageBlockCollection
 ):
     """
@@ -684,7 +684,7 @@ class CylindricalComponentsPartHetAverageBlockCollection(
 
     def _getNewBlock(self):
         newBlock = copy.deepcopy(self._selectCandidateBlock())
-        newBlock.name = "1D_CYL_PART_HET_AVG_" + newBlock.getMicroSuffix()
+        newBlock.name = "1D_CYL_DUCT_HET_AVG_" + newBlock.getMicroSuffix()
         return newBlock
 
     def _makeRepresentativeBlock(self):
@@ -1587,8 +1587,8 @@ AVERAGE_BLOCK_COLLECTION = "Average"
 FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION = "FluxWeightedAverage"
 SLAB_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DSlab"
 CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DCylinder"
-CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION = (
-    "ComponentAverage1DCylinderPartiallyHeterogeneous"
+CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION = (
+    "ComponentAverage1DCylinderDuctHeterogeneous"
 )
 
 # Mapping between block collection string constants and their
@@ -1599,7 +1599,7 @@ BLOCK_COLLECTIONS = {
     FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION: FluxWeightedAverageBlockCollection,
     SLAB_COMPONENTS_BLOCK_COLLECTION: SlabComponentsAverageBlockCollection,
     CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION: CylindricalComponentsAverageBlockCollection,
-    CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION: CylindricalComponentsPartHetAverageBlockCollection,
+    CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION: CylindricalComponentsDuctHetAverageBlockCollection,
 }
 
 
@@ -1608,8 +1608,8 @@ def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     blockRepresentation = xsSettings.blockRepresentation
     if (
         blockRepresentation == CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION
-    ) and xsSettings.partiallyHeterogeneous:
-        blockRepresentation = CYLINDRICAL_COMPONENTS_PARTIALLY_HET_BLOCK_COLLECTION
+    ) and xsSettings.ductHeterogeneous:
+        blockRepresentation = CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION
     validBlockTypes = xsSettings.validBlockTypes
     averageByComponent = xsSettings.averageByComponent
     return BLOCK_COLLECTIONS[blockRepresentation](

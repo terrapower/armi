@@ -118,7 +118,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("YA", xsModel)
         self.assertEqual(xsModel["YA"].geometry, "0D")
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
-        self.assertEqual(xsModel["YA"].partiallyHeterogeneous, False)
+        self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
         self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
 
     def test_setDefaultSettingsByLowestBuGroupHomogeneous(self):
@@ -183,7 +183,7 @@ class TestCrossSectionSettings(unittest.TestCase):
             "DA",
             geometry="1D cylinder",
             meshSubdivisionsPerCm=1.0,
-            partiallyHeterogeneous=True,
+            ductHeterogeneous=True,
             traceIsotopeThreshold=1.0e-5,
         )
         xsModel["DA"] = da
@@ -193,7 +193,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         )
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
-        self.assertEqual(xsModel["DA"].partiallyHeterogeneous, True)
+        self.assertEqual(xsModel["DA"].ductHeterogeneous, True)
         self.assertEqual(xsModel["DA"].traceIsotopeThreshold, 1.0e-5)
         self.assertEqual(xsModel["DA"].mergeIntoFuel, [])
 
