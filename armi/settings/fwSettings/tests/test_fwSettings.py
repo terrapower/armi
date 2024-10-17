@@ -26,7 +26,7 @@ class TestSchema(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
         self.settings = {
-            "numProcessors": {
+            "nTasks": {
                 "valid": 1,
                 "invalid": -1,
                 "error": vol.error.MultipleInvalid,
