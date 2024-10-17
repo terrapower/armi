@@ -250,7 +250,6 @@ class Parameter:
         "categories",
         "assigned",
         "_backup",
-        "readOnly",
     )
 
     def __init__(
@@ -283,7 +282,6 @@ class Parameter:
         self.categories = categories
         self.assigned = NEVER
         self._backup = None
-        self.readOnly = False
 
         if self.default is not NoDefault:
 
@@ -331,9 +329,6 @@ class Parameter:
 
     def __set__(self, obj, val):
         """This is a property setter, see Python documentation for "descriptor"."""
-        if self.readOnly:
-            raise RuntimeError(f"Cannot set read-only parameter {self.name}.")
-
         self._setter(obj, val)
 
     def __get__(self, obj, cls=None):

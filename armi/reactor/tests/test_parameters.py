@@ -478,7 +478,16 @@ class ParameterTests(unittest.TestCase):
     def test_parameterCollectionsHave__slots__(self):
         """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
-            set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
+            set(
+                [
+                    "_hist",
+                    "_backup",
+                    "assigned",
+                    "_p_serialNum",
+                    "serialNum",
+                    "readOnly",
+                ]
+            ),
             set(parameters.ParameterCollection._slots),
         )
 
@@ -612,7 +621,7 @@ class TestMakeParametersReadOnly(unittest.TestCase):
             b = r.core.getFirstBlock()
             b.p.power = 123.4
 
-            makeParametersReadOnly(r, readOnly=True)
+            makeParametersReadOnly(r)
 
             # now show we can no longer edit those parameters
             with self.assertRaises(RuntimeError):
@@ -620,6 +629,3 @@ class TestMakeParametersReadOnly(unittest.TestCase):
 
             with self.assertRaises(RuntimeError):
                 b.p.power = 432.1
-
-            # needed so that futher tests can run
-            makeParametersReadOnly(r, readOnly=False)

@@ -772,7 +772,7 @@ def defineCoreParameters():
     return pDefs
 
 
-def makeParametersReadOnly(r, readOnly=True):
+def makeParametersReadOnly(r):
     """Convert all the paramters in a Reactor to read-only.
 
     This method is pretty simple. It goes through all the children of a Reactor object,
@@ -782,26 +782,17 @@ def makeParametersReadOnly(r, readOnly=True):
     ----------
     r : Reactor
         Full reactor object, to be modified.
-    readOnly : bool, optional
-        Make all the parameters read-only or not (writable).
 
     Notes
     -----
-    Once you make one Reactor read-only, it will lead to side effects in all Reactors you open in
-    ARMI. So if you run this function once with `readOnly=True`, and you want to move on to other
-    things, run this method on your reactor again with `readOnly=False` to unclock ARMI.
+    Once you make one Reactor read-only, you cannot make it writeable again.
     """
-    for pdef0 in r.p.paramDefs:
-        pdef0.readOnly = readOnly
-        for system in r.getChildren():
-            for pdef1 in system.p.paramDefs:
-                pdef1.readOnly = readOnly
-            for a in system.getChildren():
-                for pdef2 in a.p.paramDefs:
-                    pdef2.readOnly = readOnly
-                for b in a.getChildren():
-                    for pdef3 in b.p.paramDefs:
-                        pdef3.readOnly = readOnly
-                    for c in b.getChildren():
-                        for pdef4 in c.p.paramDefs:
-                            pdef4.readOnly = readOnly
+    r.p.readOnly = True
+    for system in r.getChildren():
+        system.p.readOnly = True
+        for a in system.getChildren():
+            a.p.readOnly = True
+            for b in a.getChildren():
+                b.p.readOnly = True
+                for c in b.getChildren():
+                    c.p.readOnly = True
