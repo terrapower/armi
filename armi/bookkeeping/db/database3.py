@@ -829,8 +829,18 @@ class Database3:
             The top-level object stored in the database; a Reactor.
         """
         r = self.load(cycle, node, cs, bp, statePointName, allowMissing=True)
+        self._setParamsBeforeFreezing(r)
         makeParametersReadOnly(r)
         return r
+
+    @staticmethod
+    def _setParamsBeforeFreezing(r):
+        """Set some special case parameters before they are made read-only."""
+        for a in r.core:
+            for b in a:
+                for c in b:
+                    # calling Component.getVolume() sets the volume parameter
+                    _vol = c.getVolume()
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):
