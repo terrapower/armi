@@ -664,6 +664,26 @@ class TestHexGrid(unittest.TestCase):
         finishXY = finish.getLocalCoordinates()[:2]
         np.testing.assert_allclose(finishXY, expected, atol=1e-8)
 
+    def test_inconsistentRotationGrids(self):
+        """Test that only locations in consistent grids are rotatable."""
+        base = grids.HexGrid.fromPitch(1, cornersUp=False)
+        larger = grids.HexGrid.fromPitch(base.pitch * 2, cornersUp=base.cornersUp)
+        fromLarger = larger[1, 0, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromLarger)
+
+        differentOrientation = grids.HexGrid.fromPitch(
+            base.pitch, cornersUp=not base.cornersUp
+        )
+        fromDiffOrientation = differentOrientation[0, 1, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromDiffOrientation)
+
+        axialGrid = grids.AxialGrid.fromNCells(5)
+        fromAxial = axialGrid[2, 0, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromAxial)
+
 
 class TestBoundsDefinedGrid(unittest.TestCase):
     def test_positions(self):

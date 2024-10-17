@@ -607,13 +607,38 @@ class HexGrid(StructuredGrid):
         rotation by 60 degrees results in a shifting and negating of the coordinates. So
         the first rotation of ``(q, r, s)`` would produce a new coordinate
         ``(-r, -s, -q)``. Another rotation would produce ``(s, q, r)``, and so on.
+
+        Raises
+        ------
+        TypeError
+            If ``loc.grid`` is populated and not consistent with this grid. For example,
+            it doesn't make sense to rotate an index from a Cartesian grid in a hexagonal coordinate
+            system, nor hexagonal grid with different orientation (flats up vs. corners up)
         """
-        i, j = loc[:2]
-        buffer = deque((i, j, -(i + j)))
-        buffer.rotate(-rotations)
-        newI = buffer[0]
-        newJ = buffer[1]
-        if rotations % 2:
-            newI *= -1
-            newJ *= -1
-        return self[(newI, newJ, loc.k)]
+        if self._roughlyEqual(loc.grid):
+            i, j, k = loc[:3]
+            buffer = deque((i, j, -(i + j)))
+            buffer.rotate(-rotations)
+            newI = buffer[0]
+            newJ = buffer[1]
+            if rotations % 2:
+                newI *= -1
+                newJ *= -1
+            return IndexLocation(newI, newJ, k, self)
+        raise TypeError(
+            f"Refusing to rotate an index {loc} from a grid {loc.grid} that "
+            f"is not consistent with {self}"
+        )
+
+    def _roughlyEqual(self, other) -> bool:
+        """Check that two hex grids are nearly identical.
+
+        Would the same ``(i, j, k)`` index in ``self`` be the same location in ``other``?
+        """
+        if other is self:
+            return True
+        return (
+            isinstance(other, HexGrid)
+            and other.pitch == self.pitch
+            and other.cornersUp == self.cornersUp
+        )

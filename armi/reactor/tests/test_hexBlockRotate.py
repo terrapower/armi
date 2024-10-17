@@ -21,7 +21,7 @@ import numpy as np
 
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
-from armi.reactor.grids import MultiIndexLocation, CoordinateLocation
+from armi.reactor.grids import MultiIndexLocation, CoordinateLocation, IndexLocation, HexGrid
 from armi.reactor.tests.test_blocks import loadTestBlock, NUM_PINS_IN_TEST_BLOCK
 from armi.utils import iterables
 
@@ -116,6 +116,25 @@ class HexBlockRotateTests(unittest.TestCase):
             msg = f"{name=} :: {degrees=} :: {data=}"
             np.testing.assert_array_equal(data, expected, err_msg=msg)
 
+    def assertIndexLocationEquivalent(self, actual: IndexLocation, expected: IndexLocation):
+        """More flexible equivalency check on index locations.
+
+        Specifically focused on locations on hex grids because this file
+        is testing things on hex blocks.
+
+        Checks that
+        1. ``i``, ``j``, and ``k`` are equal
+        2. Grids are both hex grid
+        3. Grids have same pitch and orientation.
+        """
+        self.assertEqual(actual.i, expected.i)
+        self.assertEqual(actual.j, expected.j)
+        self.assertEqual(actual.k, expected.k)
+        self.assertIsInstance(actual.grid, HexGrid)
+        self.assertIsInstance(expected.grid, HexGrid)
+        self.assertEqual(actual.grid.cornersUp, expected.grid.cornersUp)
+        self.assertEqual(actual.grid.pitch, expected.grid.pitch)
+
     def test_pinRotationLocations(self):
         """Test that pin locations are updated through rotation.
 
@@ -133,7 +152,7 @@ class HexBlockRotateTests(unittest.TestCase):
             self.assertEqual(len(preRotation), len(postRotation))
             for pre, post in zip(preRotation, postRotation):
                 expected = g.rotateIndex(pre, nRotations)
-                self.assertEqual(post, expected, msg=f"{pre=}")
+                self.assertIndexLocationEquivalent(post, expected)
 
     def test_pinRotationCoordinates(self):
         """Test that pin coordinates are updated through rotation.
@@ -190,13 +209,9 @@ class HexBlockRotateTests(unittest.TestCase):
             for originalLoc, newLoc in zip(
                 original.spatialLocator, updated.spatialLocator
             ):
-                # Location comparison requires the locations to be identical, but also the
-                # grids to be the same object. Pass through new.grid to find the corresponding
-                # location in the new grid
-                expected = newLoc.grid[
-                    originalLoc.grid.rotateIndex(originalLoc, nRotations)
-                ]
-                self.assertEqual(newLoc, expected, msg=f"{original=} :: {nRotations=}")
+
+                expected = originalLoc.grid.rotateIndex(originalLoc, nRotations)
+                self.assertIndexLocationEquivalent(newLoc, expected)
         elif isinstance(original.spatialLocator, CoordinateLocation):
             ox, oy, oz = original.spatialLocator.getLocalCoordinates()
             nx, ny, nz = updated.spatialLocator.getLocalCoordinates()
