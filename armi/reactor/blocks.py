@@ -2348,52 +2348,42 @@ class HexBlock(Block):
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
-            msg = (
-                f"Could not create a spatialGrid for block {self.p.type}, "
-                f"multiplicities are not 1 or N they are {mults}"
+            raise ValueError(
+                "Could not create a spatialGrid for block {}, multiplicities are not 1 or N they are {}".format(
+                    self.p.type, mults
+                )
             )
-            runLog.error(msg)
-            raise ValueError(msg)
 
-        nPins = self.getNumPins()
-        nRings = hexagon.numRingsToHoldNumCells(nPins)
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         # For the below to work, there must not be multiple wire or multiple clad types.
         # note that it's the pointed end of the cell hexes that are up (but the
         # macro shape of the pins forms a hex with a flat top fitting in the assembly)
-        if self.spatialGrid is not None:
-            grid = self.spatialGrid
-        else:
-            grid = grids.HexGrid.fromPitch(
-                self.getPinPitch(cold=True),
-                numRings=nRings,
-                cornersUp=True,
-                armiObject=self,
+        grid = grids.HexGrid.fromPitch(
+            self.getPinPitch(cold=True), numRings=0, cornersUp=True
+        )
+        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+        numLocations = 0
+        for ring in range(ringNumber):
+            numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+        if numLocations != self.getNumPins():
+            raise ValueError(
+                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                    numLocations, self.getNumPins()
+                )
             )
-        spatialLocators = grids.MultiIndexLocation(grid=grid)
-        numLocations = hexagon.totalPositionsUpToRing(nRings)
-        if numLocations != nPins:
-            msg = (
-                f"Cannot create spatialGrid, number of locations in rings {nRings} "
-                f"not equal to {nPins=}"
-            )
-            runLog.error(msg)
-            raise ValueError(msg)
 
-        for ring in range(nRings):
+        i = 0
+        for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 spatialLocators.append(grid[i, j, 0])
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:
-                if c.getDimension("mult") == nPins:
+                if c.getDimension("mult") > 1:
                     c.spatialLocator = spatialLocators
                 elif c.getDimension("mult") == 1:
                     c.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, grid)
-                else:
-                    raise ValueError(
-                        f"Component {c} on {self} has a mult not equal to the number of pins"
-                    )
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
