@@ -51,6 +51,7 @@ See :doc:`/developer/index`.
 
 from typing import Dict, Callable, Union, TYPE_CHECKING
 
+from armi import materials
 from armi import plugins
 
 if TYPE_CHECKING:
@@ -61,6 +62,19 @@ if TYPE_CHECKING:
 
 class ReactorPlugin(plugins.ArmiPlugin):
     """Plugin exposing built-in reactor components, blocks, assemblies, etc."""
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def beforeReactorConstruction(cs) -> None:
+        """Just before reactor construction, update the material "registry" with user settings,
+        if it is set. Often it is set by the application.
+        """
+        from armi.settings.fwSettings.globalSettings import (
+            CONF_MATERIAL_NAMESPACE_ORDER,
+        )
+
+        if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
+            materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
 
     @staticmethod
     @plugins.HOOKIMPL
