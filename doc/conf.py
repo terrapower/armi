@@ -212,6 +212,12 @@ class PyReverse(Directive):
             )
 
 
+class PassThrough(Directive):
+    has_content = True
+    def run(self):
+            return []
+
+
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     """Manually exclude certain methods/functions from docs."""
     # exclude special methods from unittest
@@ -234,6 +240,8 @@ def setup(app):
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+    app.add_directive("impl", PassThrough)
+    app.add_directive("test", PassThrough)
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / "anl-afci-177"
