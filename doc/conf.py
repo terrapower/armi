@@ -231,20 +231,27 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 def setup(app):
     """Method to make `make html` generate api documentation."""
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
-
     app.add_domain(PatchedPythonDomain, override=True)
-
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+
+    # making tutorial data dir
+    dataDir = pathlib.Path("user") / "anl-afci-177"
+    if not os.path.exists(dataDir):
+        os.mkdir(dataDir)
+
+    print("\n\n\nXXXXXXXXXXXXXXXXXXX TESTING XXXXXXXXXXXXXXXXXXX")
+    print(f"dataDir: {dataDir}")
+    print(f"os.getcwd(): {os.getcwd()}")
+    print(f"os.listdir('.'): {os.listdir('.')}")
+    print(f"os.listdir(dataDir): {os.listdir(dataDir)}")
+    print("xxxxxxxxxxxxxxxxxxx TESTING xxxxxxxxxxxxxxxxxxx\n\n\n")
 
     # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but
     # the working directory for running the notebooks is the directory of the link
     # itself, so relative paths don't work.
-    testDir = pathlib.Path("user") / "anl-afci-177"
-    if not os.path.exists(testDir):
-        os.mkdir(testDir)
     for path in _TUTORIAL_FILES:
-        shutil.copy(path, testDir)
+        shutil.copy(path, dataDir)
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
