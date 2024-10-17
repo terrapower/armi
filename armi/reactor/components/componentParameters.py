@@ -16,6 +16,7 @@
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 
 
 def getComponentParameterDefinitions():
@@ -61,6 +62,35 @@ def getComponentParameterDefinitions():
             "numberDensities",
             units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
+        )
+
+        pb.defParam(
+            "detailedNDens",
+            setter=isNumpyArray("detailedNDens"),
+            units=f"atoms/(bn*{units.CM})",
+            description=(
+                "High-fidelity number density vector with up to thousands of nuclides. "
+                "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
+                "This param keeps the hi-fi and low-fi depletion values from interfering. "
+                "See core.p.detailedNucKeys for keys. "
+                # Could be moved to external physics plugin
+            ),
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "powerDecay",
+            units=units.WATTS,
+            description="Decay power from decaying radionuclides",
+            default=0.0,
+        )
+
+        pb.defParam(
+            "pdensDecay",
+            units=f"{units.WATTS}/{units.CM}^3",
+            description="Decay power density from decaying radionuclides",
+            default=0.0,
         )
 
         pb.defParam(

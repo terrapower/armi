@@ -122,6 +122,9 @@ class BlockConverter:
             self._verifyExpansion(solute, solvent)
 
         solvent.changeNDensByFactor(oldArea / solvent.getArea())
+        if solvent.p.detailedNDens:
+            newDetailedNDens = solvent.p.detailedNDens * (oldArea / solvent.getArea())
+            solvent.p.detailedNDens = newDetailedNDens
         solute.mergeNuclidesInto(solvent)
 
     def _checkInputs(self, soluteName, solventName, solute, solvent):
