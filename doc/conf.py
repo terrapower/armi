@@ -234,24 +234,17 @@ def setup(app):
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
-    app.add_directive("impl", directives.admonitions.Admonition)
-    app.add_directive("test", directives.admonitions.Admonition)
+    app.add_directive("impl", directives.admonitions.Note)
+    app.add_directive("test", directives.admonitions.Note)
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
     if not os.path.exists(dataDir):
         os.mkdir(dataDir)
 
-    print("\n\n\nXXXXXXXXXXXXXXXXXXX TESTING XXXXXXXXXXXXXXXXXXX")
-    print(f"dataDir: {dataDir}")
-    print(f"os.getcwd(): {os.getcwd()}")
-    print(f"os.listdir('.'): {os.listdir('.')}")
-    print(f"os.listdir(dataDir): {os.listdir(dataDir)}")
-    print("xxxxxxxxxxxxxxxxxxx TESTING xxxxxxxxxxxxxxxxxxx\n\n\n")
-
-    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but
-    # the working directory for running the notebooks is the directory of the link
-    # itself, so relative paths don't work.
+    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but the working
+    # directory for running the notebooks is the directory of the link itself, so relative paths
+    # don't work.
     for path in _TUTORIAL_FILES:
         shutil.copy(path, dataDir)
 
@@ -263,36 +256,36 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- General configuration -----------------------------------------------------
 
-# Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# Add any Sphinx extension module names here, as strings. They can be extensions coming with Sphinx
+# (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
-    "sphinx.ext.todo",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.ifconfig",
-    "sphinx.ext.inheritance_diagram",
-    "sphinx.ext.extlinks",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.intersphinx",
-    "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",
-    "sphinxext.opengraph",
-    "sphinx_gallery.gen_gallery",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.ifconfig",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
-    "sphinxcontrib.plantuml",
+    "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_gallery.gen_gallery",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
+    "sphinxcontrib.apidoc",
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
+    "sphinxcontrib.plantuml",
+    "sphinxext.opengraph",
 ]
 
 # Our API should make sense without documenting private/special members.
 autodoc_default_options = {
     "members": True,
-    "undoc-members": True,
     "private-members": False,
+    "undoc-members": True,
 }
 autodoc_member_order = "bysource"
 # this line removes huge numbers of false and misleading, inherited docstrings
