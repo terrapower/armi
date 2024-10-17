@@ -241,7 +241,7 @@ def setup(app):
     # the working directory for running the notebooks is the directory of the link
     # itself, so relative paths don't work.
     for path in _TUTORIAL_FILES:
-        shutil.copy(path, pathlib.Path("user") / "tutorials")
+        shutil.copy(path, pathlib.Path("user") / "anl-afci-177")
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
