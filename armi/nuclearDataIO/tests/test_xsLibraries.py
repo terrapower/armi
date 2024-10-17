@@ -127,7 +127,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
             os.remove(dummyFileName)
 
         with TemporaryDirectoryChanger():
-            dummyFileName = "ISOtopics.txt"
+            dummyFileName = "ISO[]"
             with open(dummyFileName, "w") as file:
                 file.write(
                     "This is a file that starts with the letters 'ISO' but will"
