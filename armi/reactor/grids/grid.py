@@ -158,6 +158,10 @@ class Grid(ABC):
     def isAxialOnly(self) -> bool:
         """Indicate to parts of ARMI if this Grid handles only axial cells."""
 
+    @property
+    def cornersUp(self) -> bool:
+        return False
+
     @abstractmethod
     def __len__(self) -> int:
         """Number of items in the grid."""

@@ -563,11 +563,15 @@ class Core(composites.Composite):
                 "".format(aName, self.assembliesByName[aName], a, self.r.p.maxAssemNum)
             )
             raise RuntimeError("Core already contains an assembly with the same name.")
+
         self.assembliesByName[aName] = a
         for b in a:
             self.blocksByName[b.getName()] = b
 
         if self.geomType == geometry.GeomType.HEX:
+            cornerUp = self.spatialGrid.cornersUp
+            a.orientBlocks(cornersUp=cornerUp)
+
             ring, _loc = self.spatialGrid.getRingPos(
                 a.spatialLocator.getCompleteIndices()
             )

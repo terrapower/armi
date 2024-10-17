@@ -39,11 +39,13 @@ API Changes
 #. Removing ``assemblyLists.py`` and the ``AssemblyList`` class. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
 #. Removing ``Assembly.rotatePins`` and ``Block.rotatePins``. Prefer ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846>`_)
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`)
+#. Removed unused setting ``autoGenerateBlockGrids``. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`)
 #. TBD
 
 Bug Fixes
 ---------
+#. Fixed locations of pins in Blocks on flats-up grids. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Fixed ``DerivedShape.getArea`` for ``cold=True``. (`PR#1831 <https://github.com/terrapower/armi/pull/1831>`_)
 #. Fixed error parsing command line integers in ``ReportsEntryPoint``. (`PR#1824 <https://github.com/terrapower/armi/pull/1824>`_)
 #. Fixed ``PermissionError`` when using ``syncDbAfterWrite``. (`PR#1857 <https://github.com/terrapower/armi/pull/1857>`_)

@@ -16,7 +16,9 @@ import copy
 import io
 import math
 import os
+import shutil
 import unittest
+from glob import glob
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -34,10 +36,12 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.tests.test_reactors import TEST_ROOT
+from armi.tests import ISOAA_PATH
 from armi.utils import hexagon, units
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
 NUM_PINS_IN_TEST_BLOCK = 217
@@ -2090,10 +2094,11 @@ class HexBlock_TestCase(unittest.TestCase):
         side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
         x, y, _z = zip(*xyz)
-        self.assertAlmostEqual(
-            y[1], y[2]
-        )  # first two pins should be side by side on top.
-        self.assertNotAlmostEqual(x[1], x[2])
+
+        # these two pins should be side by side on top
+        self.assertTrue(self.HexBlock.spatialGrid.cornersUp)
+        self.assertAlmostEqual(y[1], y[3])
+        self.assertNotAlmostEqual(x[1], x[3])
         self.assertEqual(len(xyz), self.HexBlock.getNumPins())
 
         # ensure all pins are within the proper bounds of a
@@ -2276,6 +2281,86 @@ class HexBlock_TestCase(unittest.TestCase):
             self.HexBlock.autoCreateSpatialGrids()
 
         self.assertIsNone(self.HexBlock.spatialGrid)
+
+
+class TestHexBlockOrientation(unittest.TestCase):
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    @staticmethod
+    def getLocalCoordinatesBlockBounds(b: blocks.HexBlock):
+        """Call getLocalCoordinates() for every Component in the Block and find the X/Y bounds."""
+        maxX = -111
+        minX = 999
+        maxY = -111
+        minY = 999
+        for comp in b:
+            locs = comp.spatialLocator
+            if not isinstance(locs, grids.MultiIndexLocation):
+                locs = [locs]
+
+            for loc in locs:
+                x, y, _ = loc.getLocalCoordinates()
+                if x > maxX:
+                    maxX = x
+                elif x < minX:
+                    minX = x
+
+                if y > maxY:
+                    maxY = y
+                elif y < minY:
+                    minY = y
+
+        return minX, maxX, minY, maxY
+
+    def test_validateCornersUp(self):
+        """Validate the spatial grid for a corners up HexBlock and its children."""
+        # load a corners up reactor
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+
+        # grab a pinned fuel block, and verify it is corners up
+        b = r.core.getFirstBlock(Flags.FUEL)
+        self.assertTrue(b.spatialGrid.cornersUp)
+        self.assertEqual(r.core.spatialGrid.cornersUp, b.spatialGrid.cornersUp)
+
+        # for a flats up sub-grid, the hex centroids should stretch more in Y than X
+        minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
+        self.assertGreater(maxY - minY, maxX - minX)
+
+    def test_validateFlatsUp(self):
+        """Validate the spatial grid for a flats up HexBlock and its children."""
+        # copy the files over
+        inDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+        for filePath in glob(os.path.join(inDir, "*.yaml")):
+            outPath = os.path.join(self.td.destination, os.path.basename(filePath))
+            shutil.copyfile(filePath, outPath)
+
+        # modify the reactor to make it flats up
+        testFile = os.path.join(self.td.destination, "refSmallestReactor.yaml")
+        txt = open(testFile, "r").read()
+        txt = txt.replace("geom: hex_corners_up", "geom: hex")
+        open(testFile, "w").write(txt)
+
+        # load a flats up reactor
+        _o, r = loadTestReactor(
+            self.td.destination, inputFileName="armiRunSmallest.yaml"
+        )
+
+        # grab a pinned fuel block, and verify it is flats up
+        b = r.core.getFirstBlock(Flags.FUEL)
+        self.assertFalse(b.spatialGrid.cornersUp)
+        self.assertEqual(r.core.spatialGrid.cornersUp, b.spatialGrid.cornersUp)
+
+        # for a corners up sub-grid, the hex centroids should stretch more in X than Y
+        minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
+        self.assertGreater(maxX - minX, maxY - minY)
 
 
 class ThRZBlock_TestCase(unittest.TestCase):

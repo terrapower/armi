@@ -1219,9 +1219,8 @@ class Assembly(composites.Composite):
 
         Parameters
         ----------
-        rad: float
+        rad : float
             number (in radians) specifying the angle of counter clockwise rotation
-
         """
         for b in self:
             b.rotate(rad)
@@ -1229,6 +1228,15 @@ class Assembly(composites.Composite):
     def isOnWhichSymmetryLine(self):
         grid = self.parent.spatialGrid
         return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
+
+    def orientBlocks(self, cornersUp):
+        """Add special grids to the blocks inside this Assembly, respecting their orientation."""
+        for b in self:
+            if b.spatialGrid is None:
+                try:
+                    b.autoCreateSpatialGrids(cornersUp)
+                except (ValueError, NotImplementedError) as e:
+                    runLog.warning(str(e), single=True)
 
 
 class HexAssembly(Assembly):

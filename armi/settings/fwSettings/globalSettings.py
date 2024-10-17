@@ -38,7 +38,6 @@ CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_BETA = "beta"
-CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
@@ -827,15 +826,6 @@ def defineSettings() -> List[setting.Setting]:
                 "This allows users to specify to get materials out of a plugin rather "
                 "than from the framework."
             ),
-        ),
-        # It may make sense to remove this setting when MILs become more stable.
-        setting.Setting(
-            CONF_BLOCK_AUTO_GRID,
-            default=True,
-            label="Auto-generate Block grids",
-            description="Should block blueprints attempt to auto-generate a spatial "
-            "grid upon construction? This feature makes heavy use of multi-index "
-            "locations, which are not yet universally supported.",
         ),
         setting.Setting(
             CONF_CYCLES,
