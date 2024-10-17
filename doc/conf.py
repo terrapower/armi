@@ -244,7 +244,7 @@ def setup(app):
     app.add_directive("test", PassThrough)
 
     # making tutorial data dir
-    dataDir = pathlib.Path("user") / "anl-afci-177"
+    dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
     if not os.path.exists(dataDir):
         os.mkdir(dataDir)
 

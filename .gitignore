@@ -18,11 +18,11 @@ coverage_results.*
 dist-*/
 dist/
 doc/_build
+doc/anl-afci-177
 doc/gallery
 doc/gallery-src/framework/*.yaml
 doc/tutorials/anl-afci-177*
 doc/tutorials/case-suite
-doc/user/anl-afci-177
 doc/user/tutorials
 htmlcov/
 monkeytype.*
