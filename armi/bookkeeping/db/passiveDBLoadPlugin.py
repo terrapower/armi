@@ -47,6 +47,11 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
     1. Sections of blueprint files to ignore entirely.
     2. A collection of unknown parameters that will be loaded without units or underlying metadata.
 
+    To use this plugin, you need to set two class variables before instantiating the ARMI App:
+
+    1. Set ``SKIP_BP_SECTIONS`` to a list of BP section names (strings).
+    2. Set ``UNKNOWN_PARAMS`` to a mapping from param class to name: ``{Core: ["a", "b", "c"]}``
+
     Notes
     -----
     Obviously, if you are loading huge numbers of unknown parameters and ignoring whole sections of
@@ -100,6 +105,8 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
             for param in names:
-                pb.defParam(param, units=units.UNITLESS, description=desc)
+                pb.defParam(
+                    param, units=units.UNITLESS, description=desc, saveToDB=False
+                )
 
         return pDefs
