@@ -615,7 +615,7 @@ class HexGrid(StructuredGrid):
             it doesn't make sense to rotate an index from a Cartesian grid in a hexagonal coordinate
             system, nor hexagonal grid with different orientation (flats up vs. corners up)
         """
-        if self._roughlyEqual(loc.grid):
+        if self._roughlyEqual(loc.grid) or loc.grid is None:
             i, j, k = loc[:3]
             buffer = deque((i, j, -(i + j)))
             buffer.rotate(-rotations)
