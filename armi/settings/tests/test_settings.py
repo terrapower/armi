@@ -324,7 +324,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         # some default settings values
         for sett in ["availabilityFactor", "db"]:
             self.assertIn(sett, settingsList)
-        self.assertNotIn("numProcessors", settingsList)
+        self.assertNotIn("nTasks", settingsList)
 
     def test_setModuleVerbosities(self):
         # init settings and use them to set module-level logging levels
