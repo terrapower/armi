@@ -139,7 +139,7 @@ class TestPluginRegistration(unittest.TestCase):
 
         # non-empty cases
         PassiveDBLoadPlugin.SKIP_BP_SECTIONS = ["hi", "mom"]
-        PassiveDBLoadPlugin.SKIP_PARAMS = {Block: ["fake1", "fake2"]}
+        PassiveDBLoadPlugin.UNKNOWN_PARAMS = {Block: ["fake1", "fake2"]}
         bpSections = plug.defineBlueprintsSections()
         self.assertEqual(len(bpSections), 2)
         self.assertTrue(type(bpSections[0]), tuple)

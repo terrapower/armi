@@ -39,22 +39,23 @@ class PassThroughYamlize(yamlize.Object):
 
 
 class PassiveDBLoadPlugin(plugins.ArmiPlugin):
-    """Provides the ability to ignore parameters sections of blueprint files.
+    """Provides the ability to passively load a reactor data model from an ARMI DB even if there are
+    unknown parameters and blueprint sections.
 
-    This plugin allows you to more easily open a database, because you can ignore sections of the
-    blueprint files and as many of the parameters as you want.
+    This plugin allows you two define two things:
 
-    This was designed to allow loading an ARMI database without the application that created it.
+    1. Sections of blueprint files to ignore entirely.
+    2. A collection of unknown parameters that will be loaded without units or underlying metadata.
 
     Notes
     -----
-    Obviously, if you are ignoring huge groups of parameters or whole sections of the blueprints,
-    you are losing information. There is no way to use this plugin and still claim full fidelity of
-    your understanding of the reactor. ARMI does not support any such claims.
+    Obviously, if you are loading huge numbers of unknown parameters and ignoring whole sections of
+    blueprints, you are losing information. There is no way to use this plugin and still claim full
+    fidelity of your understanding of the reactor. ARMI does not support any such claims.
     """
 
     SKIP_BP_SECTIONS = []
-    SKIP_PARAMS = {}
+    UNKNOWN_PARAMS = {}
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -80,7 +81,7 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
         """Define parameters for the plugin."""
         # build all the parameters we are missing in default ARMI
         params = {}
-        for dataClass, paramNames in PassiveDBLoadPlugin.SKIP_PARAMS.items():
+        for dataClass, paramNames in PassiveDBLoadPlugin.UNKNOWN_PARAMS.items():
             if len(paramNames):
                 params[dataClass] = PassiveDBLoadPlugin.buildParamColl(paramNames)
 
