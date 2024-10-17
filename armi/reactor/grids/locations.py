@@ -97,7 +97,7 @@ class LocationBase(ABC):
         """
         return hash((self.i, self.j, self.k))
 
-    def __eq__(self, other: Union[Tuple[int, int, int], "LocationBase"]) -> bool:
+    def __eq__(self, other: Union[IJKType, "LocationBase"]) -> bool:
         if isinstance(other, tuple):
             return (self.i, self.j, self.k) == other
         if isinstance(other, LocationBase):
@@ -443,6 +443,13 @@ class MultiIndexLocation(IndexLocation):
             is designed to be consistent with the Grid's ``__getitem__()`` method.
         """
         return [loc.indices for loc in self._locations]
+
+    def getLocalCoordinates(self, nativeCoords=False) -> np.ndarray:
+        """Return the local coordinates for every included location."""
+        locs = [
+            location.getLocalCoordinates(nativeCoords=nativeCoords) for location in self
+        ]
+        return np.array(locs)
 
 
 class CoordinateLocation(IndexLocation):
