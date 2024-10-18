@@ -821,11 +821,11 @@ class Database3:
     @staticmethod
     def _setParamsBeforeFreezing(r):
         """Set some special case parameters before they are made read-only."""
-        for a in r.core:
-            for b in a:
-                for c in b:
-                    # calling Component.getVolume() sets the volume parameter
-                    _vol = c.getVolume()
+        for child in r.getChildren(deep=True):
+            if not isinstance(child, Component):
+                continue
+            # calling Component.getVolume() sets the volume parameter
+            child.getVolume()
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):
