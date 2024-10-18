@@ -777,6 +777,7 @@ class Block(composites.Composite):
         ## populate molesHmBOL on components within the block as well
         for c in self.getChildren():
             c.p.molesHmBOL = c.getHMMoles()
+            c.p.puFrac = self.getPuMoles() / c.p.molesHmBOL if c.p.molesHmBOL > 0.0 else 0.0
 
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
@@ -1709,18 +1710,6 @@ class Block(composites.Composite):
         if total == 0.0:
             return 0.0
         return b10 / total
-
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        puN = sum(self.getNuclideNumberDensities(nucNames))
-
-        return (
-            puN
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
 
     def getUraniumMassEnrich(self):
         """Returns U-235 mass fraction assuming U-235 and U-238 only."""
