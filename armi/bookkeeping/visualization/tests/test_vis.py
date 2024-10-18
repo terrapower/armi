@@ -19,7 +19,7 @@ import numpy as np
 from pyevtk.vtk import VtkTetra
 
 from armi import settings
-from armi.bookkeeping.db import Database3
+from armi.bookkeeping.db import Database
 from armi.bookkeeping.visualization import utils
 from armi.bookkeeping.visualization import vtk
 from armi.bookkeeping.visualization import xdmf
@@ -100,7 +100,7 @@ class TestVisDump(unittest.TestCase):
     def test_dumpReactorXdmf(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
         with TemporaryDirectoryChanger(dumpOnException=False):
-            db = Database3("testDatabase.h5", "w")
+            db = Database("testDatabase.h5", "w")
             with db:
                 db.writeToDB(self.r)
             dumper = xdmf.XdmfDumper("testVtk", inputName="testDatabase.h5")

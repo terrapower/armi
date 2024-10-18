@@ -282,8 +282,8 @@ def disconnectAllHdfDBs() -> None:
     garbage collector would raise an exception related to the repr'ing the object. We get around
     this by using the garbage collector to manually disconnect all open HdfDBs.
     """
-    from armi.bookkeeping.db import Database3
+    from armi.bookkeeping.db import Database
 
-    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
+    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database)]
     for db in h5dbs:
         db.close()

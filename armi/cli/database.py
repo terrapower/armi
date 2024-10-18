@@ -52,9 +52,9 @@ class ExtractInputs(EntryPoint):
             self.args.output_base = os.path.splitext(self.args.h5db)[0]
 
     def invoke(self):
-        from armi.bookkeeping.db.database3 import Database3
+        from armi.bookkeeping.db.database import Database
 
-        db = Database3(self.args.h5db, "r")
+        db = Database(self.args.h5db, "r")
 
         with db:
             settings, geom, bp = db.readInputsFromDB()
@@ -113,7 +113,7 @@ class InjectInputs(EntryPoint):
         )
 
     def invoke(self):
-        from armi.bookkeeping.db.database3 import Database3
+        from armi.bookkeeping.db.database import Database
 
         if all(
             li is None
@@ -139,7 +139,7 @@ class InjectInputs(EntryPoint):
         if self.args.settings is not None:
             settings = resolveMarkupInclusions(pathlib.Path(self.args.settings)).read()
 
-        db = Database3(self.args.h5db, "a")
+        db = Database(self.args.h5db, "a")
 
         with db:
             # Not calling writeInputsToDb, since it makes too many assumptions about
