@@ -152,10 +152,10 @@ class TestInspector(unittest.TestCase):
         self.assertIn("nCycles", keys)
 
     def test_createQueryRevertBadPathToDefault(self):
-        query = createQueryRevertBadPathToDefault(self.inspector, "numProcessors")
+        query = createQueryRevertBadPathToDefault(self.inspector, "nTasks")
         self.assertEqual(
             str(query),
-            "<Query: Setting numProcessors points to a nonexistent location:\n1>",
+            "<Query: Setting nTasks points to a nonexistent location:\n1>",
         )
 
     def test_correctCyclesToZeroBurnup(self):

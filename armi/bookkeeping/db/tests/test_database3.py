@@ -535,7 +535,7 @@ class TestDatabase3Smaller(unittest.TestCase):
 
     def test_loadCS(self):
         cs = self.db.loadCS()
-        self.assertEqual(cs["numProcessors"], 1)
+        self.assertEqual(cs["nTasks"], 1)
         self.assertEqual(cs["nCycles"], 2)
 
     def test_loadBlueprints(self):
