@@ -82,7 +82,6 @@ def corners(rotation=0):
     )
 
     rotation = rotation / 180.0 * math.pi
-
     rotation = np.array(
         [
             [math.cos(rotation), -math.sin(rotation)],
