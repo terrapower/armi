@@ -173,9 +173,13 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactEveryNodeWhenCoupled(self):
         """
-        Test that the XS lib is not cleared when coupled iterations are turned on.
+        Test that the XS lib is not cleared when coupled iterations are turned on
+        and XS will be generated during the coupled iterations.
         """
         self.o.couplingIsActive = lambda: True
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.firstCoupledIteration
+        )
         self.latticeInterface.interactEveryNode()
         self.assertEqual(self.o.r.core.lib, "Nonsense")
 
