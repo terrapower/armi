@@ -216,9 +216,19 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Generate new cross sections based off the case settings and the current state
         of the reactor if the lattice physics frequency is at least everyNode.
+
+        If this is not a coupled calculation, or if cross sections are only being
+        generated at everyNode, then we want to regenerate all cross sections here.
+        If it _is_ a coupled calculation, and we are generating cross sections at
+        coupled iterations, then keep the existing XS lib for now, adding
+        any XS groups as necessary to ensure that all XS groups are covered.
         """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
-            self.r.core.lib = None
+            if (
+                not self.o.couplingIsActive()
+                or self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode
+            ):
+                self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def interactCoupled(self, iteration):
