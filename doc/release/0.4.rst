@@ -42,7 +42,6 @@ API Changes
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`)
 #. Renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
 #. Renaming ``mpiTasksPerNode`` to ``nTasksPerNode``. (`PR#1964 <https://github.com/terrapower/armi/pull/1964>`_)
->>>>>>> main
 #. TBD
 
 Bug Fixes
