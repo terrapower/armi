@@ -17,13 +17,13 @@ from typing import Tuple, Union, List, Iterable, Optional, Sequence
 
 import numpy as np
 
+from armi.reactor.grids.grid import Grid
 from armi.reactor.grids.locations import (
     IJKType,
-    LocationBase,
     IndexLocation,
+    LocationBase,
     MultiIndexLocation,
 )
-from armi.reactor.grids.grid import Grid
 
 # data structure for database-serialization of grids
 GridParameters = collections.namedtuple(
