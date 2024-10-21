@@ -165,7 +165,7 @@ class TestApps(unittest.TestCase):
         settings = app.getSettings()
 
         self.assertGreater(len(settings), 100)
-        self.assertEqual(settings["nTasks"].value, 1)
+        self.assertEqual(settings["numProcessors"].value, 1)
         self.assertEqual(settings["nCycles"].value, 1)
 
     def test_splashText(self):

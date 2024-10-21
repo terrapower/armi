@@ -74,7 +74,7 @@ def buildSimpleFuelBlock():
     return b
 
 
-def loadTestBlock(cold=True):
+def loadTestBlock(cold=True) -> blocks.HexBlock:
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
     caseSetting[CONF_XS_KERNEL] = "MC2v2"
@@ -202,7 +202,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempStructure,
         "ip": 16.6,
         "op": 17.3,
-        "mult": 1.0,
+        "mult": 1,
     }
     duct = components.Hexagon("duct", "HT9", **ductDims)
 
@@ -211,7 +211,7 @@ def loadTestBlock(cold=True):
         "Thot": hotTempCoolant,
         "op": 17.8,
         "ip": "duct.op",
-        "mult": 1.0,
+        "mult": 1,
     }
     interDims["components"] = {"duct": duct}
     interSodium = components.Hexagon("interCoolant", "Sodium", **interDims)
@@ -1463,37 +1463,6 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 
-    def test_rotatePins(self):
-        b = self.block
-        b.setRotationNum(0)
-        index = b._rotatePins(0, justCompute=True)
-        self.assertEqual(b.getRotationNum(), 0)
-        self.assertEqual(index[5], 5)
-        self.assertEqual(index[2], 2)  # pin 1 is center and never rotates.
-
-        index = b._rotatePins(1)
-        self.assertEqual(b.getRotationNum(), 1)
-        self.assertEqual(index[2], 3)
-        self.assertEqual(b.p.pinLocation[1], 3)
-
-        index = b._rotatePins(1)
-        self.assertEqual(b.getRotationNum(), 2)
-        self.assertEqual(index[2], 4)
-        self.assertEqual(b.p.pinLocation[1], 4)
-
-        index = b._rotatePins(2)
-        index = b._rotatePins(4)  # over-rotate to check modulus
-        self.assertEqual(b.getRotationNum(), 2)
-        self.assertEqual(index[2], 4)
-        self.assertEqual(index[6], 2)
-        self.assertEqual(b.p.pinLocation[1], 4)
-        self.assertEqual(b.p.pinLocation[5], 2)
-
-        self.assertRaises(ValueError, b._rotatePins, -1)
-        self.assertRaises(ValueError, b._rotatePins, 10)
-        self.assertRaises((ValueError, TypeError), b._rotatePins, None)
-        self.assertRaises((ValueError, TypeError), b._rotatePins, "a")
-
     def test_expandElementalToIsotopics(self):
         r"""Tests the expand to elementals capability."""
         initialN = {}
@@ -2083,13 +2052,41 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(self.HexBlock.spatialGrid.pitch, 1.0)
         self.assertTrue(self.HexBlock.hasFlags(Flags.INTERCOOLANT))
 
+    def test_getPinLocations(self):
+        """Test pin locations can be obtained."""
+        locs = set(self.HexBlock.getPinLocations())
+        nPins = self.HexBlock.getNumPins()
+        self.assertEqual(len(locs), nPins)
+        for l in locs:
+            self.assertIs(l.grid, self.HexBlock.spatialGrid)
+        # Check all clad components are represented
+        for c in self.HexBlock.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(c.spatialLocator, grids.MultiIndexLocation):
+                for l in c.spatialLocator:
+                    locs.remove(l)
+            else:
+                locs.remove(c.spatialLocator)
+        self.assertFalse(
+            locs,
+            msg="Some clad locations were not found but returned by getPinLocations",
+        )
+
+    def test_getPinCoordsAndLocsAgree(self):
+        """Ensure consistency in ordering of pin locations and coordinates."""
+        locs = self.HexBlock.getPinLocations()
+        coords = self.HexBlock.getPinCoordinates()
+        self.assertEqual(len(locs), len(coords))
+        for loc, coord in zip(locs, coords):
+            convertedCoords = loc.getLocalCoordinates()
+            np.testing.assert_array_equal(coord, convertedCoords, err_msg=f"{loc=}")
+
     def test_getPinCoords(self):
         blockPitch = self.HexBlock.getPitch()
         pinPitch = self.HexBlock.getPinPitch()
         nPins = self.HexBlock.getNumPins()
         side = hexagon.side(blockPitch)
         xyz = self.HexBlock.getPinCoordinates()
-        x, y, _z = zip(*xyz)
+        x, y, z = xyz.T
         self.assertAlmostEqual(
             y[1], y[2]
         )  # first two pins should be side by side on top.
@@ -2104,15 +2101,20 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertGreater(min(x), -side)
 
         # center pin should be at 0
-        mags = [(xi**2 + yi**2, (xi, yi)) for xi, yi, zi in xyz]
-        _centerMag, (cx, cy) = min(mags)
+        mags = x * x + y * y
+        minIndex = mags.argmin()
+        cx = x[minIndex]
+        cy = y[minIndex]
         self.assertAlmostEqual(cx, 0.0)
         self.assertAlmostEqual(cy, 0.0)
 
         # extreme pin should be at proper radius
-        cornerMag, (cx, cy) = max(mags)
+        cornerMag = mags.max()
         nRings = hexagon.numRingsToHoldNumCells(nPins) - 1
         self.assertAlmostEqual(math.sqrt(cornerMag), nRings * pinPitch)
+
+        # all z coords equal to zero
+        np.testing.assert_equal(z, 0)
 
     def test_getPitchHomogeneousBlock(self):
         """
@@ -2688,23 +2690,3 @@ class MassConservationTests(unittest.TestCase):
             10,
             "Sum of component mass {0} != total block mass {1}. ".format(tMass, bMass),
         )
-
-
-class EmptyBlockRotateTest(unittest.TestCase):
-    """Rotation tests on an empty hexagonal block.
-
-    Useful for enforcing rotation works on blocks without pins.
-
-    """
-
-    def setUp(self):
-        self.block = blocks.HexBlock("empty")
-
-    def test_orientation(self):
-        """Test the orientation parameter is updated on a rotated empty block."""
-        rotDegrees = 60
-        preRotateOrientation = self.block.p.orientation[2]
-        self.block.rotate(math.radians(rotDegrees))
-        postRotationOrientation = self.block.p.orientation[2]
-        self.assertNotEqual(preRotateOrientation, postRotationOrientation)
-        self.assertEqual(postRotationOrientation, rotDegrees)
