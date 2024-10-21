@@ -41,7 +41,6 @@ API Changes
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index. (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`_)
 #. ``Block.getPinCoordinates`` returns an ``(N, 3)`` array, rather than a length ``N`` list of three-length arrays. (`PR#1943 <https://github.com/terrapower/armi/pull/1943>`_)
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`)
-#. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
 #. TBD
 
 Bug Fixes
