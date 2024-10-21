@@ -125,11 +125,11 @@ class Block(composites.Composite):
 
     def __repr__(self):
         # be warned, changing this might break unit tests on input file generations
-        return "<{type} {name} at {loc} XS: {xs} BU GP: {bu}>".format(
+        return "<{type} {name} at {loc} XS: {xs} ENV GP: {env}>".format(
             type=self.getType(),
             name=self.getName(),
             xs=self.p.xsType,
-            bu=self.p.buGroup,
+            env=self.p.envGroup,
             loc=self.getLocation(),
         )
 
@@ -405,12 +405,12 @@ class Block(composites.Composite):
 
         Notes
         -----
-        The single-letter use for xsType and buGroup limit users to 26 groups of each.
-        ARMI will allow 2-letter xsType designations if and only if the `buGroups`
-        setting has length 1 (i.e. no burnup groups are defined). This is useful for
+        The single-letter use for xsType and envGroup limit users to 26 groups of each.
+        ARMI will allow 2-letter xsType designations if and only if the `envGroup`
+        setting has length 1 (i.e. no burnup/temp groups are defined). This is useful for
         high-fidelity XS modeling of V&V models such as the ZPPRs.
         """
-        bu = self.p.buGroup
+        bu = self.p.envGroup
         if not bu:
             raise RuntimeError(
                 "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
@@ -419,18 +419,13 @@ class Block(composites.Composite):
 
         xsType = self.p.xsType
         if len(xsType) == 1:
-            if not cs["tempGroupBoundaries"]:
-                return xsType + bu
-            else:
-                #do math for getting burnup group + temp group into 1 char
-                #probably actually done with xsgm
-                return xsType + tempBurnup
+            return xsType + bu
         elif len(xsType) == 2 and ord(bu) > ord("A"):
             raise ValueError(
                 "Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
         else:
-            # multi Char XS type to support ZPPR for EG
+            # multi Char XS type to support assigning 2 chars in blueprints
             return xsType
 
     def getHeight(self):
@@ -1851,7 +1846,7 @@ class HexBlock(Block):
         # assign macros and LFP
         b.macros = self.macros
         b._lumpedFissionProducts = self._lumpedFissionProducts
-        b.p.buGroup = self.p.buGroup
+        b.p.envGroup = self.p.envGroup
 
         hexComponent = Hexagon(
             "homogenizedHex",

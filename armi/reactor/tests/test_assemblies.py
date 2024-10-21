@@ -210,7 +210,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.blockParams = {
             "height": self.height,
             "bondRemoved": 0.0,
-            "buGroupNum": 0,
+            "envGroupNum": 0,
             "buLimit": 35,
             "buRate": 0.0,
             "eqRegion": -1,
@@ -229,7 +229,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.blockSettings = {
             "axMesh": 1,
             "bondBOL": 0.0028698019026172574,
-            "buGroup": "A",
+            "envGroup": "A",
             "height": 14.4507,
             "molesHmAtBOL": 65.8572895758245,
             "nHMAtBOL": 0.011241485251783766,
@@ -703,7 +703,7 @@ class Assembly_TestCase(unittest.TestCase):
             "fastFluence": 1.01,
             "fastFluencePeak": 50.0,
             "power": 10000.0,
-            "buGroup": 4,
+            "envGroup": 4,
             "residence": 3.145,
             "eqRegion": -1,
             "id": 299.0,

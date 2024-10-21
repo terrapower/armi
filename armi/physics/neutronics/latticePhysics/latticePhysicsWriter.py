@@ -76,7 +76,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
     DEPLETABLE = "Depletable" + 4 * _SPACE
     UNDEPLETABLE = "Non-Depletable"
     REPRESENTED = "Represented" + 2 * _SPACE
-    UNREPRESENTED = "Unrepresented"
+    INF_DILUTE = "Inf Dilute"
 
     def __init__(
         self,
@@ -300,7 +300,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             if nucName in objNuclides:
                 nucCategory += self.REPRESENTED + self._SEPARATOR
             else:
-                nucCategory += self.UNREPRESENTED + self._SEPARATOR
+                nucCategory += self.INF_DILUTE + self._SEPARATOR
 
             if nucName in depletableNuclides:
                 nucCategory += self.DEPLETABLE

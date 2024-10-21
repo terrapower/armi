@@ -250,19 +250,20 @@ class XSSettings(dict):
         if xsID in self:
             return dict.__getitem__(self, xsID)
 
+        # exact key not present so give lowest env group key
         xsType = xsID[0]
-        buGroup = xsID[1]
+        envGroup = xsID[1]
         existingXsOpts = [
             xsOpt
             for xsOpt in self.values()
-            if xsOpt.xsType == xsType and xsOpt.buGroup < buGroup
+            if xsOpt.xsType == xsType and xsOpt.envGroup < envGroup
         ]
 
         if not any(existingXsOpts):
             return self._getDefault(xsID)
 
         else:
-            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.buGroup)[0]
+            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.envGroup)[0]
 
     def setDefaults(self, blockRepresentation, validBlockTypes):
         """
@@ -509,7 +510,7 @@ class XSModelingOptions:
         return self.xsID[0]
 
     @property
-    def buGroup(self):
+    def envGroup(self):
         """Return the single-char burnup group indicator."""
         return self.xsID[1]
 

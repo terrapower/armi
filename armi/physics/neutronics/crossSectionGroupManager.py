@@ -850,7 +850,10 @@ class CrossSectionGroupManager(interfaces.Interface):
         self._upperBuGroupBounds = None
         self.representativeBlocks = collections.OrderedDict()
         self.avgNucTemperatures = {}
-        self._buGroupUpdatesEnabled = True
+
+        # this turns off updates for when core changes are made, but dont want to re-evaluate XS
+        # for example if lattice physics was only once per cycle we might not want to re-evaluate groups
+        self._envGroupUpdatesEnabled = True
         self._setBuGroupBounds(self.cs["buGroups"])
         self._unrepresentedXSIDs = []
 
@@ -991,9 +994,9 @@ class CrossSectionGroupManager(interfaces.Interface):
         ValueError
             If the provided burnup groups are invalid
         """
-        self._upperBuGroupBounds = upperBuGroupBounds
         lastBu = 0.0
-        for upperBu in self._upperBuGroupBounds:
+        # validate structure
+        for upperBu in upperBuGroupBounds:
             if upperBu <= 0 or upperBu > 100:
                 raise ValueError(
                     "Burnup group upper bound {0} is invalid".format(upperBu)
@@ -1002,7 +1005,13 @@ class CrossSectionGroupManager(interfaces.Interface):
                 raise ValueError("Burnup groups must be ascending")
             lastBu = upperBu
 
-    def _updateBurnupGroups(self, blockList):
+        self._upperBuGroupBounds = upperBuGroupBounds
+
+    def _setTempGroupBounds(self, upperTempGroupBounds):
+        # implement here
+        pass
+
+    def _updateEnviromentGroups(self, blockList):
         """
         Update the burnup group of each block based on its burnup.
 
@@ -1013,21 +1022,32 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         armi.reactor.blocks.Block.getMicroSuffix
         """
-        if self._buGroupUpdatesEnabled and len(self._upperBuGroupBounds) > 1:
-            runLog.debug("Updating burnup groups of {0} blocks".format(len(blockList)))
-            for block in blockList:
-                bu = block.p.percentBu
-                for buGroupIndex, upperBu in enumerate(self._upperBuGroupBounds):
-                    if bu <= upperBu:
-                        block.p.buGroupNum = buGroupIndex
-                        break
-                else:
-                    raise ValueError("no bu group found for bu={0}".format(bu))
-        else:
+        if self._envGroupUpdatesEnabled:
             runLog.debug(
                 "Skipping burnup group update of {0} blocks because it is disabled"
                 "".format(len(blockList))
             )
+
+        if self._envGroupUpdatesEnabled and len(self._upperBuGroupBounds) > 0:
+            runLog.debug("Updating burnup groups of {0} blocks".format(len(blockList)))
+            for block in blockList:
+                bu = block.p.percentBu
+                for buGroupIndex, upperBu in enumerate(self._upperBuGroupBounds):
+
+                    if bu <= upperBu:
+                        if self.cs["tempGroupBoundaries"]:
+                            # Avg temp will still just be average  temp in each group, but not exactly the midpoint of the boundaries
+                            # ["tempGroupBoundaries"]  = [300, 350, 400, 450, 500, 550, 600, 650] 
+                            for tempGroupIndex, upperTemp in enumerate(
+                                self._upperTempGroupBounds
+                            ):
+
+                                
+                                getIndex(buGroupIndex, tempGroupIndex)
+                                block.p.envGroupNum = buGroupIndex
+                else:
+                    raise ValueError("no bu group found for bu={0}".format(bu))
+
 
     def _addXsGroupsFromBlocks(self, blockCollectionsByXsGroup, blockList):
         """
@@ -1035,10 +1055,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         Also ensures that their BU group is up to date with their burnup.
         """
-        self._updateBurnupGroups(blockList)
-        if self.cs["tempGroupBoundaries"]:
-            # Avg temp will still just be average  temp in each group, but not exactly the midpoint of the boundaries 
-            # ["tempGroupBoundaries"]  = [300, 350, 400, 450, 500, 550, 600, 650]  # similar to mcnp
+        self._updateEnviromentGroups(blockList)
             self._updateTempGroups(blockList)
         for b in blockList:
             xsID = b.getMicroSuffix()
@@ -1164,9 +1181,8 @@ class CrossSectionGroupManager(interfaces.Interface):
                 self.avgNucTemperatures[xsID] = collection.avgNucTemperatures
             else:
                 runLog.debug(
-                    "No candidate blocks for {} will apply different burnup group".format(
-                        xsID
-                    )
+                    "No candidate blocks in group for {} (with a valid representative block flag). "
+                    "Will apply different burnup group".format(xsID)
                 )
                 self._unrepresentedXSIDs.append(xsID)
 
@@ -1346,22 +1362,22 @@ class CrossSectionGroupManager(interfaces.Interface):
             )
         return availableXsTypes[:howMany]
 
-    def _getUnrepresentedBlocks(self, blockCollectionsByXsGroup):
+    def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):
         """
-        Gets all blocks with suffixes not yet represented (for blocks in assemblies in the blueprints but not the core).
+        Gets all blocks with suffixes not yet represented (for blocks in assemblies in the blueprints but not in the core).
 
         Notes
         -----
         Certain cases (ZPPR validation cases) need to run cross sections for assemblies not in
         the core to get by region cross sections and flux factors.
         """
-        unrepresentedBlocks = []
+        missingBlueprintBlocks = []
         for a in self.r.blueprints.assemblies.values():
             for b in a:
                 if b.getMicroSuffix() not in blockCollectionsByXsGroup:
                     b2 = copy.deepcopy(b)
-                    unrepresentedBlocks.append(b2)
-        return unrepresentedBlocks
+                    missingBlueprintBlocks.append(b2)
+        return missingBlueprintBlocks
 
     def makeCrossSectionGroups(self):
         """Make cross section groups for all blocks in reactor and unrepresented blocks from blueprints."""
@@ -1370,40 +1386,50 @@ class CrossSectionGroupManager(interfaces.Interface):
             bCollectXSGroup, self.r.core.getBlocks()
         )
         bCollectXSGroup = self._addXsGroupsFromBlocks(
-            bCollectXSGroup, self._getUnrepresentedBlocks(bCollectXSGroup)
+            bCollectXSGroup, self._getMissingBlueprintBlocks(bCollectXSGroup)
         )
         blockCollectionsByXsGroup = collections.OrderedDict(
             sorted(bCollectXSGroup.items())
         )
         return blockCollectionsByXsGroup
 
+    def _getTempGroupOfDifferentBurnup(self, missingXsType):
+        """Get a substitute block to use since there are no blacks with flags for xs gen."""
+        # Update here
+        for otherXsID in self.representativeBlocks:  # order gets closest BU
+            repType, repBuGroup = otherXsID
+            if repType == missingXsType:
+                pass
+
     def _modifyUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
         """
         Adjust the xsID of blocks in the groups that are not represented.
 
         Try to just adjust the burnup group up to something that is represented
-        (can happen to structure in AA when only AB, AC, AD still remain).
+        (can happen to structure in AA when only AB, AC, AD still remain, 
+        but if some fresh AA happened to be added it might be needed).
         """
         for xsID in self._unrepresentedXSIDs:
-            missingXsType, _missingBuGroup = xsID
-            for otherXsID in self.representativeBlocks:  # order gets closest BU
-                repType, repBuGroup = otherXsID
-                if repType == missingXsType:
-                    nonRepBlocks = blockCollectionsByXsGroup.get(xsID)
-                    if nonRepBlocks:
-                        runLog.extra(
-                            "Changing XSID of {0} blocks from {1} to {2}"
-                            "".format(len(nonRepBlocks), xsID, otherXsID)
-                        )
-                        for b in nonRepBlocks:
-                            b.p.buGroup = repBuGroup
-                    break
-            else:
-                runLog.warning(
-                    "No representative blocks with XS type {0} exist in the core. "
-                    "These XS cannot be generated and must exist in the working "
-                    "directory or the run will fail.".format(xsID)
-                )
+            missingXsType, _missingEnvGroup = xsID
+            nonRepBlocks = blockCollectionsByXsGroup.get(xsID)
+            if nonRepBlocks:
+                newEnvType = self._getTempGroupOfDifferentBurnup(missingXsType)
+                if newEnvType:
+                    # there were no blocks flagged to xs gen even though there were some not suitable for
+                    # generation in the group so can't make XS and use different.
+                    runLog.warning(
+                        "Changing XSID of {0} blocks from {1} to {2}"
+                        "".format(len(nonRepBlocks), xsID, missingXsType[0] +newEnvType)
+                    )
+                    for b in nonRepBlocks:
+                        b.p.envGroup = newEnvType
+                else:
+                    runLog.warning(
+                        "No representative blocks with XS type {0} exist in the core. "
+                        "There were also no similar blocks to use"
+                        "These XS cannot be generated and must exist in the working "
+                        "directory or the run will fail.".format(xsID)
+                    )
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
         """Summarize current contents of the XS groups."""
@@ -1448,7 +1474,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             return self._NON_REPR_GROUP
         return None
 
-    def disableBuGroupUpdates(self):
+    def disableEnvGroupUpdates(self):
         """
         Turn off updating bu groups based on burnup.
 
@@ -1456,23 +1482,23 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         See Also
         --------
-        enableBuGroupUpdates
+        enableGroupUpdates
         """
-        runLog.extra("Burnup group updating disabled")
-        wasEnabled = self._buGroupUpdatesEnabled
-        self._buGroupUpdatesEnabled = False
+        runLog.extra("Enviroment xs group updating disabled")
+        wasEnabled = self._envGroupUpdatesEnabled
+        self._envGroupUpdatesEnabled = False
         return wasEnabled
 
-    def enableBuGroupUpdates(self):
+    def enableGroupUpdates(self):
         """
         Turn on updating bu groups based on burnup.
 
         See Also
         --------
-        disableBuGroupUpdates
+        disableEnvGroupUpdates
         """
-        runLog.extra("Burnup group updating enabled")
-        self._buGroupUpdatesEnabled = True
+        runLog.extra("Enviroment xs group updating enabled")
+        self._envGroupUpdatesEnabled = True
 
     def getNucTemperature(self, xsID, nucName):
         """

@@ -119,7 +119,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["YA"].geometry, "0D")
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
 
-    def test_setDefaultSettingsByLowestBuGroupHomogeneous(self):
+    def test_setDefaultSettingsByLowestEnvGroupHomogeneous(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xs = XSSettings()
@@ -145,7 +145,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("JB", xs)
         self.assertNotEqual(xs["JD"], xs["JB"])
 
-    def test_setDefaultSettingsByLowestBuGroupOneDimensional(self):
+    def test_setDefaultSettingsByLowestEnvGroupOneDimensional(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xsModel = XSSettings()

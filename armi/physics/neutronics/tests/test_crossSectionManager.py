@@ -403,7 +403,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
         assert "AC" in xsgm.representativeBlocks, (
             "Assemblies not in the core should still have XS groups"
-            "see getUnrepresentedBlocks()"
+            "see _getMissingBlueprintBlocks()"
         )
 
 
@@ -701,16 +701,16 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
 
-    def test_updateBurnupGroups(self):
+    def test_updateEnviromentGroups(self):
         self.blockList[1].p.percentBu = 3.1
         self.blockList[2].p.percentBu = 10.0
 
-        self.csm._updateBurnupGroups(self.blockList)
+        self.csm._updateEnviromentGroups(self.blockList)
 
-        self.assertEqual(self.blockList[0].p.buGroup, "A")
-        self.assertEqual(self.blockList[1].p.buGroup, "B")
-        self.assertEqual(self.blockList[2].p.buGroup, "B")
-        self.assertEqual(self.blockList[-1].p.buGroup, "D")
+        self.assertEqual(self.blockList[0].p.envGroup, "A")
+        self.assertEqual(self.blockList[1].p.envGroup, "B")
+        self.assertEqual(self.blockList[2].p.envGroup, "B")
+        self.assertEqual(self.blockList[-1].p.envGroup, "D")
 
     def test_setBuGroupBounds(self):
         self.assertAlmostEqual(self.csm._upperBuGroupBounds[2], 30.0)
@@ -738,7 +738,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.blockList[3].p.percentBu = 1.5
         for b in self.blockList[4:]:
             b.p.percentBu = 0.0
-        self.csm._updateBurnupGroups(self.blockList)
+        self.csm._updateEnviromentGroups(self.blockList)
         blockCollectionsByXsGroup = {}
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
             blockCollectionsByXsGroup, self.blockList

@@ -549,16 +549,16 @@ class Block_TestCase(unittest.TestCase):
         ref = "BB"
         self.assertEqual(cur, ref)
 
-    def test_27b_setBuGroup(self):
+    def test_27b_setEnvGroup(self):
         type_ = "A"
-        self.block.p.buGroup = type_
-        cur = self.block.p.buGroupNum
+        self.block.p.envGroup = type_
+        cur = self.block.p.envGroupNum
         ref = ord(type_) - 65
         self.assertEqual(cur, ref)
 
         typeNumber = 25
-        self.block.p.buGroupNum = typeNumber
-        cur = self.block.p.buGroup
+        self.block.p.envGroupNum = typeNumber
+        cur = self.block.p.envGroup
         ref = chr(typeNumber + 65)
         self.assertEqual(cur, ref)
 
@@ -985,7 +985,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.p.xsType = "RS"
         self.assertEqual(self.block.getMicroSuffix(), "RS")
 
-        self.block.p.buGroup = "X"
+        self.block.p.envGroup = "X"
         self.block.p.xsType = "AB"
         with self.assertRaises(ValueError):
             self.block.getMicroSuffix()
