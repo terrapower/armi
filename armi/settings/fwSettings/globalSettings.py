@@ -595,6 +595,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Number of independent processes that are allocated to each "
             "cluster node. 0 means 1 process per CPU.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
+            oldNames=[("mpiTasksPerNode", None)], 
         ),
         setting.Setting(
             CONF_N_CYCLES,
