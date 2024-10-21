@@ -387,11 +387,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         )
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
-        if self.p.detailedNDens:
-            newDetailedNDens = self.p.detailedNDens * (
-                1.0 / coldMatAxialExpansionFactor
-            )
-            self.p.detailedNDens = newDetailedNDens
 
     def adjustDensityForHeightExpansion(self, newHot):
         """
@@ -407,11 +402,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         See AxialExpansionChanger.
         """
         self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
-        if self.p.detailedNDens:
-            newDetailedNDens = self.p.detailedNDens * (
-                1.0 / self.getHeightFactor(newHot)
-            )
-            self.p.detailedNDens = newDetailedNDens
 
     def getHeightFactor(self, newHot):
         """
@@ -672,9 +662,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             prevTemp, self.temperatureInC
         )
         self.changeNDensByFactor(f)
-        if self.p.detailedNDens:
-            newDetailedNDens = self.p.detailedNDens * f
-            self.p.detailedNDens = newDetailedNDens
         self.clearLinkedCache()
 
     def getNuclides(self):

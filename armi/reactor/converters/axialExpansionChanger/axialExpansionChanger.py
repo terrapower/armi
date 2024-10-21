@@ -276,9 +276,6 @@ class AxialExpansionChanger:
                 c.temperatureInC, c.inputTemperatureInC
             )
             c.changeNDensByFactor(axialExpansionFactor)
-            if c.p.detailedNDens:
-                newDetailedNDens = c.p.detailedNDens * axialExpansionFactor
-                c.p.detailedNDens = newDetailedNDens
 
     def _isTopDummyBlockPresent(self):
         """Determines if top most block of assembly is a dummy block.
@@ -345,17 +342,12 @@ class AxialExpansionChanger:
                             # the top of the block below it
                             c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
                     c.ztop = c.zbottom + c.height
-                    # update component number densities and detailed number densities
+                    # update component number densities
                     newNumberDensities = {
                         nuc: c.getNumberDensity(nuc) / growFrac
                         for nuc in c.getNuclides()
                     }
                     c.setNumberDensities(newNumberDensities)
-
-                    if c.p.detailedNDens:
-                        newDetailedNDens = c.p.detailedNDens * growFrac
-                        c.p.detailedNDens = newDetailedNDens
-
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
