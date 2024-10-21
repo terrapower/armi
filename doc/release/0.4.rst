@@ -40,6 +40,7 @@ API Changes
 #. Removing ``Assembly.rotatePins`` and ``Block.rotatePins``. Prefer ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846>`_)
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`)
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`)
+#. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
 #. TBD
 
 Bug Fixes
