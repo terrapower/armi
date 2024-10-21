@@ -128,11 +128,16 @@ def __fromStringGeneral(cls, typeSpec, updateMethod):
             result |= _CONVERSIONS[conversion]
 
     for name in typeSpec.split():
-        # ignore numbers so we don't have to define flags up to 217+ (number of pins/assem)
-        typeSpecWithoutNumbers = "".join([c for c in name if not c.isdigit()])
-        if not typeSpecWithoutNumbers:
-            continue
-        result |= updateMethod(typeSpecWithoutNumbers)
+        try:
+            # check for an exact name match first
+            result |= cls[name]
+        except KeyError:
+            # ignore numbers so we don't have to define flags up to the number of pins/assem
+            typeSpecWithoutNumbers = "".join([c for c in name if not c.isdigit()])
+            if not typeSpecWithoutNumbers:
+                continue
+            result |= updateMethod(typeSpecWithoutNumbers)
+
     return result
 
 
@@ -148,8 +153,7 @@ def _fromStringIgnoreErrors(cls, typeSpec):
 
     Complications arise when:
 
-    a. multiple-word flags are used such as *grid plate* or
-       *inlet nozzle* so we use lookups.
+    a. multiple-word flags are used such as *grid plate* or *inlet nozzle* so we use lookups.
     b. Some flags have digits in them. We just strip those off.
     """
 
@@ -170,8 +174,8 @@ def _fromString(cls, typeSpec):
             return cls[typeSpec]
         except KeyError:
             raise InvalidFlagsError(
-                "The requested type specification `{}` is invalid. "
-                "See armi.reactor.flags documentation.".format(typeSpec)
+                f"The requested type specification `{typeSpec}` is invalid. "
+                "See armi.reactor.flags documentation."
             )
 
     return __fromStringGeneral(cls, typeSpec, updateMethod)
