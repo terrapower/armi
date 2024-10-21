@@ -80,6 +80,7 @@ CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
+CONF_N_TASKS_PER_NODE = "nTasksPerNode"
 CONF_N_CYCLES = "nCycles"
 CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_N_TASKS = "nTasks"
@@ -586,6 +587,14 @@ def defineSettings() -> List[setting.Setting]:
             label="Low-power Region Fraction",
             description="Description needed",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
+        ),
+        setting.Setting(
+            CONF_N_TASKS_PER_NODE,
+            default=0,
+            label="MPI Tasks per Node",
+            description="Number of independent processes that are allocated to each "
+            "cluster node. 0 means 1 process per CPU.",
+            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_N_CYCLES,
