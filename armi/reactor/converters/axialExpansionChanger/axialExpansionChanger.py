@@ -343,11 +343,7 @@ class AxialExpansionChanger:
                             c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
                     c.ztop = c.zbottom + c.height
                     # update component number densities
-                    newNumberDensities = {
-                        nuc: c.getNumberDensity(nuc) / growFrac
-                        for nuc in c.getNuclides()
-                    }
-                    c.setNumberDensities(newNumberDensities)
+                    c.changeNDensByFactor(1.0 / growFrac)
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
