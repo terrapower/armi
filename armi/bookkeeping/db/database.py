@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-ARMI Database implementation.
+ARMI Database implementation, version 3.4.
 
 A reactor model should be fully recoverable from the database; all the way down to the
 component level. As a result, the structure of the underlying data is bound to the
@@ -74,6 +74,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor.parameters import parameterCollections
+from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import getNodesPerCycle
@@ -97,7 +98,7 @@ def getH5GroupName(cycle: int, timeNode: int, statePointName: str = None) -> str
 
 class Database:
     """
-    The ARMI Database, handling serialization and loading of Reactor states.
+    ARMI Database, handling serialization and loading of Reactor states.
 
     This implementation of the database pushes all objects in the Composite Reactor
     Model into the database. This process is aided by the ``Layout`` class, which
@@ -141,9 +142,10 @@ class Database:
         self.h5db: Optional[h5py.File] = None
 
         # Allows context management on open files.
-        # If context management is used on a file that is already open, it will not reopen and it
-        # will also not close after leaving that context. This allows the treatment of all databases
-        # the same whether they are open or closed.
+        # If context management is used on a file that is already open, it will not reopen
+        # and it will also not close after leaving that context.
+        # This allows the treatment of all databases the same whether they are open or
+        # closed.
         self._openCount: int = 0
 
         if permission == "w":
@@ -192,7 +194,7 @@ class Database:
             return
 
         if self._permission == "w":
-            # assume fast path
+            # assume fast path!
             filePath = os.path.join(context.getFastPath(), filePath)
             self._fullPath = os.path.abspath(filePath)
 
@@ -707,13 +709,11 @@ class Database:
         statePointName=None,
         allowMissing=False,
     ):
-        """Load a new reactor from (cycle, node).
+        """Load a new reactor from a DB at (cycle, node).
 
-        Case settings and blueprints can be provided by the client, or read from the
-        database itself. Providing these from the client could be useful when
-        performing snapshot runs or where it is expected to use results from a run
-        using different settings and continue with new settings (or if blueprints are
-        not on the database). Geometry is read from the database itself.
+        Case settings and blueprints can be provided, or read from the database. Providing these
+        can be useful for snapshot runs or when you want to change settings mid-simulation. Geometry
+        is read from the database.
 
         .. impl:: Users can load a reactor from a DB.
             :id: I_ARMI_DB_R_LOAD
@@ -733,14 +733,13 @@ class Database:
         cycle : int
             Cycle number
         node : int
-            Time node. If value is negative, will be indexed from EOC backwards
-            like a list.
-        cs : armi.settings.Settings (optional)
+            Time node. If value is negative, will be indexed from EOC backwards like a list.
+        cs : armi.settings.Settings, optional
             If not provided one is read from the database
-        bp : armi.reactor.Blueprints (optional)
+        bp : armi.reactor.Blueprints, optional
             If not provided one is read from the database
-        statePointName : str
-            Optional arbitrary statepoint name (e.g., "special" for "c00n00-special/")
+        statePointName : str, optional
+            Statepoint name (e.g., "special" for "c00n00-special/")
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
@@ -796,6 +795,37 @@ class Database:
             )
 
         return root
+
+    def loadReadOnly(self, cycle, node, statePointName=None):
+        """Load a new reactor, in read-only mode from a DB at (cycle, node).
+
+        Parameters
+        ----------
+        cycle : int
+            Cycle number
+        node : int
+            Time node. If value is negative, will be indexed from EOC backwards like a list.
+        statePointName : str, optional
+            Statepoint name (e.g., "special" for "c00n00-special/")
+
+        Returns
+        -------
+        Reactor
+            The top-level object stored in the database; a Reactor.
+        """
+        r = self.load(cycle, node, statePointName=statePointName, allowMissing=True)
+        self._setParamsBeforeFreezing(r)
+        makeParametersReadOnly(r)
+        return r
+
+    @staticmethod
+    def _setParamsBeforeFreezing(r):
+        """Set some special case parameters before they are made read-only."""
+        for child in r.getChildren(deep=True):
+            if not isinstance(child, Component):
+                continue
+            # calling Component.getVolume() sets the volume parameter
+            child.getVolume()
 
     @staticmethod
     def _assignBlueprintsParams(blueprints, groupedComps):

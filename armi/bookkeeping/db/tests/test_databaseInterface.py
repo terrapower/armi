@@ -456,6 +456,21 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertEqual(len(r.core.circularRingList), 0)
         self.assertEqual(len(r.core.blocksByName), 95)
 
+    def test_loadReadOnly(self):
+        with Database(self.dbName, "r") as db:
+            r = db.loadReadOnly(0, 0)
+
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
+
+            b = r.core.getFirstBlock()
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1
+
+            for c in b:
+                self.assertGreater(c.getVolume(), 0)
+
     def test_growToFullCore(self):
         with Database(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
