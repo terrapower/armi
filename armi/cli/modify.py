@@ -30,7 +30,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
 
     Run the entry point like this::
 
-        $ python -m armi modify --nTasks=3 *.yaml
+        $ python -m armi modify --numProcessors=3 *.yaml
 
     """
 
