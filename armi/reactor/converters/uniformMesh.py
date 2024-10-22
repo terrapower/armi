@@ -75,6 +75,10 @@ from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SI
 
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
+from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+    RX_PARAM_NAMES,
+    RX_ABS_MICRO_LABELS,
+)
 
 
 def converterFactory(globalFluxOptions):
@@ -1122,10 +1126,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
         """
-        from armi.physics.neutronics.globalFlux.globalFluxInterface import (
-            calcReactionRatesBlockList,
-        )
-
         xsTypeGroups = collections.defaultdict(list)
         for b in core.getBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
@@ -1136,9 +1136,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 nucSet.update(
                     nuc for nuc, ndens in b.getNumberDensities().items() if ndens > 0.0
                 )
-            nucList = sorted(nucSet)
-            xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucList}
-            calcReactionRatesBlockList(blockList, keff, xsNucDict)
+            xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucSet}
+            UniformMeshGeometryConverter._calcReactionRatesBlockList(
+                blockList, keff, xsNucDict
+            )
 
     @staticmethod
     def _calculateReactionRates(lib, keff, assem):
@@ -1162,6 +1163,84 @@ class UniformMeshGeometryConverter(GeometryConverter):
             except TypeError:
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
+
+    def _calcReactionRatesBlockList(objList, keff, xsNucDict):
+        r"""
+        Compute 1-group reaction rates for the objects in objList (usually a block).
+
+        Parameters
+        ----------
+        objList : List[Block]
+            The list of objects to compute reaction rates on. Notionally this could be upgraded to be
+            any kind of ArmiObject but with params defined as they are it currently is only
+            implemented for a block.
+
+        keff : float
+            The keff of the core. This is required to get the neutron production rate correct
+            via the neutron balance statement (since nuSigF has a 1/keff term).
+
+        xsNucDict: Dict[str, XSNuclide]
+            Microscopic cross sections to use in computing the reaction rates. Keys are
+            nuclide names (e.g., "U235") and values are the associated XSNuclide objects
+            from the cross section library, which contain the microscopic cross section
+            data for a given nuclide in the current cross section group.
+
+        .. impl:: Return the reaction rates for a given ArmiObject
+            :id: I_ARMI_FLUX_RX_RATES_BY_XS_ID
+            :implements: R_ARMI_FLUX_RX_RATES
+
+            This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that
+            is more efficient when computing reaction rates for a large set of blocks
+            that share a common set of microscopic cross sections.
+
+            For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
+        """
+        for obj in objList:
+            rate = collections.defaultdict(float)
+
+            numberDensities = obj.getNumberDensities()
+            try:
+                mgFlux = np.array(obj.getMgFlux())
+            except TypeError:
+                continue
+
+            for nucName, numberDensity in numberDensities.items():
+                if numberDensity == 0.0:
+                    continue
+                nucRate = collections.defaultdict(float)
+
+                micros = xsNucDict[nucName].micros
+
+                # absorption is fission + capture (no n2n here)
+                for name in RX_ABS_MICRO_LABELS:
+                    volumetricRR = numberDensity * mgFlux.dot(micros[name])
+                    nucRate["rateAbs"] += volumetricRR
+                    if name != "fission":
+                        nucRate["rateCap"] += volumetricRR
+                    else:
+                        nucRate["rateFis"] += volumetricRR
+                        # scale nu by keff.
+                        nusigmaF = micros["fission"] * micros.neutronsPerFission
+                        nucRate["rateProdFis"] += (
+                            numberDensity * mgFlux.dot(nusigmaF) / keff
+                        )
+
+                nucRate["rateProdN2n"] += 2.0 * numberDensity * mgFlux.dot(micros.n2n)
+
+                for rx in RX_PARAM_NAMES:
+                    if nucRate[rx]:
+                        rate[rx] += nucRate[rx]
+
+            for paramName, val in rate.items():
+                obj.p[paramName] = val  # put in #/cm^3/s
+
+            if rate["rateFis"] > 0.0:
+                fuelVolFrac = obj.getComponentAreaFrac(Flags.FUEL)
+                obj.p.fisDens = rate["rateFis"] / fuelVolFrac
+                obj.p.fisDensHom = rate["rateFis"]
+            else:
+                obj.p.fisDens = 0.0
+                obj.p.fisDensHom = 0.0
 
     def updateReactionRates(self):
         """
