@@ -129,7 +129,7 @@ def __fromStringGeneral(cls, typeSpec, updateMethod):
 
     for name in typeSpec.split():
         try:
-            # check for an exact name match first
+            # first, check for an exact match, to cover flags with digits
             result |= cls[name]
         except KeyError:
             # ignore numbers so we don't have to define flags up to the number of pins/assem
