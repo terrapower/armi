@@ -18,6 +18,7 @@ New Features
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. Provide ``Parameter.hasCategory`` for quickly checking if a parameter is defined with a given category. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
 #. Provide ``ParameterCollection.where`` for efficient iteration over parameters who's definition matches a given condition. (`PR#1899 <https://github.com/terrapower/armi/pull/1899>`_)
+#. Flags can now be defined with letters and numbers. (`PR#1966 <https://github.com/terrapower/armi/pull/1966>`_)
 #. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion. (`PR#1870 <https://github.com/terrapower/armi/pull/1870`_)
 #. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion. (`PR#1870 <https://github.com/terrapower/armi/pull/1870>`_)
 #. New plugin hook ``beforeReactorConstruction`` added to enable plugins to process case settings before reactor init. (`PR#1945 <https://github.com/terrapower/armi/pull/1945>`_)
@@ -40,6 +41,7 @@ API Changes
 #. Removing ``Assembly.rotatePins`` and ``Block.rotatePins``. Prefer ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846>`_)
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`)
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`)
+#. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
 #. TBD
 
 Bug Fixes
