@@ -25,9 +25,10 @@ the particular shuffling of a case.
 This module also handles repeat shuffles when doing a restart.
 """
 # ruff: noqa: F401
+import inspect
 import os
 import re
-import warnings
+
 
 import numpy as np
 
@@ -114,10 +115,7 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                try:
-                    rotationMethod()
-                except TypeError:
-                    rotationMethod(self)
+                self._tryCallAssemblyRotation(rotationMethod)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
@@ -165,6 +163,15 @@ class FuelHandler:
         moved = self.moved[:]
         self.moved = []
         return moved
+
+    def _tryCallAssemblyRotation(self, rotationMethod):
+        """Determine the best way to call the rotation algorithm.
+
+        Some callers take no arguments, some take the fuel handler.
+        """
+        sig = inspect.signature(rotationMethod)
+        args = (self,) if sig.parameters else ()
+        rotationMethod(*args)
 
     def chooseSwaps(self, shuffleFactors=None):
         """Moves the fuel around or otherwise processes it between cycles."""
