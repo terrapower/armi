@@ -70,13 +70,13 @@ def describeInterfaces(cs):
 
 
 def getTotalJobMemory(nRanks, tasksPerNode):
-    """Function to calculate the total memory of a cluster job. This is a constant during a simulation."""
-    CPU_PER_NODE = cpu_count()
-    RAM_PER_CPU_GB = psutil.virtual_memory().total / (1024**3) / CPU_PER_NODE
+    """Function to calculate the total memory of a job. This is a constant during a simulation."""
+    cpuPerNode = cpu_count()
+    ramPerCpuGB = psutil.virtual_memory().total / (1024**3) / cpuPerNode
     if tasksPerNode == 0:
-        tasksPerNode = CPU_PER_NODE
-    cpusPerRank = CPU_PER_NODE / tasksPerNode
-    jobMem = nRanks * cpusPerRank * RAM_PER_CPU_GB
+        tasksPerNode = cpuPerNode
+    cpusPerRank = cpuPerNode / tasksPerNode
+    jobMem = nRanks * cpusPerRank * ramPerCpuGB
     return jobMem
 
 
@@ -86,8 +86,7 @@ def getCurrentMemoryUsage():
     memUsageAction.broadcast()
     smpu = SystemAndProcessMemoryUsage()
     memUsages = memUsageAction.gather(smpu)
-    # We grab virtual memory instead of physical. There is a large discrepancy
-    # sometimes and we'd rather be conservative
+    # Grab virtual memory instead of physical. There is a large discrepancy, we will be conservative
     memoryUsageInMB = sum([mu.processVirtualMemoryInMB for mu in memUsages])
     return memoryUsageInMB
 
@@ -102,7 +101,6 @@ def printCurrentMemoryState(mpiTasksPerNode):
         f"There is {availableMemoryInGB} GB of memory left. "
         f"There is a total allocation of {totalMemoryInGB} GB."
     )
-    # return totalMemoryInGB, availableMemoryInGB, currentMemoryUsageInGB
 
 
 class MemoryProfiler(interfaces.Interface):

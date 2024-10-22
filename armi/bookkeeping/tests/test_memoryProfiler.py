@@ -13,11 +13,17 @@
 # limitations under the License.
 
 """Tests for memoryProfiler."""
+from unittest.mock import MagicMock, patch
 import logging
 import unittest
 
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
+from armi.bookkeeping.memoryProfiler import (
+    getCurrentMemoryUsage,
+    getTotalJobMemory,
+    printCurrentMemoryState,
+)
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs, TEST_ROOT
 
@@ -122,6 +128,47 @@ class TestMemoryProfiler(unittest.TestCase):
     def test_profileMemoryUsageAction(self):
         pmua = memoryProfiler.ProfileMemoryUsageAction("timeDesc")
         self.assertEqual(pmua.timeDescription, "timeDesc")
+
+    @patch("psutil.virtual_memory")
+    @patch("armi.bookkeeping.memoryProfiler.cpu_count")
+    def test_getTotalJobMemory(self, mockCpuCount, mockVMem):
+        mockCpuCount.return_value = 1
+        vMem = MagicMock()
+        vMem.total = (1024**2) * 4
+        mockVMem.return_value = vMem
+
+        self.assertAlmostEqual(getTotalJobMemory(1, 1), 0.00390625, delta=0.001)
+        self.assertAlmostEqual(getTotalJobMemory(2, 2), 0.00390625, delta=0.001)
+        self.assertAlmostEqual(getTotalJobMemory(4, 0), 0.015625, delta=0.001)
+
+    @patch("armi.bookkeeping.memoryProfiler.PrintSystemMemoryUsageAction")
+    @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
+    def test_getCurrentMemoryUsage(self, mock1, mock2):
+        self.assertEqual(getCurrentMemoryUsage(), 0)
+
+    @patch("armi.bookkeeping.memoryProfiler.PrintSystemMemoryUsageAction")
+    @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
+    @patch("psutil.virtual_memory")
+    @patch("armi.bookkeeping.memoryProfiler.cpu_count")
+    def test_printCurrentMemoryState(self, mockCpuCount, mockVMem, mock1, mock2):
+        mockCpuCount.return_value = 1
+        vMem = MagicMock()
+        vMem.total = (1024**2) * 4
+        mockVMem.return_value = vMem
+
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            testName = "test_printCurrentMemoryState"
+            runLog.LOG.startLog(testName)
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            printCurrentMemoryState(2)
+
+            stdOut = mock.getStdout()
+            self.assertIn("Currently using 0.0", stdOut)
+            self.assertIn("There is 0.0", stdOut)
+            self.assertIn("There is a total allocation of 0.0", stdOut)
 
 
 class KlassCounterTests(unittest.TestCase):
