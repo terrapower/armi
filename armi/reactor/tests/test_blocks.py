@@ -39,6 +39,7 @@ from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 from armi.nuclearDataIO import xsCollections
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_a
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -553,14 +554,41 @@ class Block_TestCase(unittest.TestCase):
         type_ = "A"
         self.block.p.envGroup = type_
         cur = self.block.p.envGroupNum
-        ref = ord(type_) - 65
+        ref = ord(type_) - ASCII_LETTER_A
         self.assertEqual(cur, ref)
 
-        typeNumber = 25
+        typeNumber = 25  # this is Z due to 0 based numbers
         self.block.p.envGroupNum = typeNumber
         cur = self.block.p.envGroup
-        ref = chr(typeNumber + 65)
+        ref = chr(typeNumber + ASCII_LETTER_A)
         self.assertEqual(cur, ref)
+        self.assertEqual(cur, "Z")
+
+        type_ = "a"
+        self.block.p.envGroup = type_
+        cur = self.block.p.envGroupNum
+        ref = ord(type_) - ASCII_LETTER_a
+        self.assertEqual(cur, ref)
+
+        typeNumber = 26  # this is a due to 0 based numbers
+        self.block.p.envGroupNum = typeNumber
+        cur = self.block.p.envGroup
+        ref = chr(typeNumber + ASCII_LETTER_a)
+        self.assertEqual(cur, ref)
+        self.assertEqual(cur, "a")
+
+        type_ = "z"
+        self.block.p.envGroup = type_
+        cur = self.block.p.envGroupNum
+        ref = ord(type_) - ASCII_LETTER_a
+        self.assertEqual(cur, ref)
+
+        typeNumber = 51  # this is a due to 0 based numbers
+        self.block.p.envGroupNum = typeNumber
+        cur = self.block.p.envGroup
+        ref = chr(typeNumber + ASCII_LETTER_a + 26)
+        self.assertEqual(cur, ref)
+        self.assertEqual(cur, "z")
 
     def test_setZeroHeight(self):
         """Test that demonstrates that a block's height can be set to zero."""

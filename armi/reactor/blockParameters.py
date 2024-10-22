@@ -21,7 +21,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
-from armi.utils.units import ASCII_LETTER_A
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
 
 
 def getBlockParameterDefinitions():
@@ -202,7 +202,7 @@ def getBlockParameterDefinitions():
                 runLog.warning(
                     f"Attempting to set `b.p.envGroup` to int value ({envGroupChar}). Possibly loading from old database",
                     single=True,
-                    label="bu group as int " + str(intValue),
+                    label="env group as int " + str(intValue),
                 )
                 self.envGroupNum = intValue
                 return
@@ -211,7 +211,11 @@ def getBlockParameterDefinitions():
                     f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}"
                 )
 
-            envGroupNum = ord(envGroupChar) - ASCII_LETTER_A
+            if envGroupChar.islower():
+                lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A + 1
+                envGroupNum = ord(envGroupChar) - ASCII_LETTER_a + lowerCaseOffset
+            else:
+                envGroupNum = ord(envGroupChar) - ASCII_LETTER_A
             self._p_envGroup = envGroupChar
             self._p_envGroupNum = envGroupNum
             envGroupNumDef = parameters.ALL_DEFINITIONS["envGroupNum"]
@@ -226,21 +230,27 @@ def getBlockParameterDefinitions():
         )
 
         def envGroupNum(self, envGroupNum):
+            # support capital and lowercase alpha chars (52= 26*2)
             if envGroupNum > 52:
                 raise RuntimeError(
-                    "Invalid bu group number ({}): too many groups. 26 is the max.".format(
+                    "Invalid env group number ({}): too many groups. 52 is the max.".format(
                         envGroupNum
                     )
                 )
             self._p_envGroupNum = envGroupNum
-            self._p_envGroup = chr(envGroupNum + ASCII_LETTER_A)
+            lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A
+            if envGroupNum > lowerCaseOffset:
+                envGroupNum = envGroupNum - (lowerCaseOffset + 1)
+                self._p_envGroup = chr(envGroupNum + ASCII_LETTER_a)
+            else:
+                self._p_envGroup = chr(envGroupNum + ASCII_LETTER_A)
             envGroupDef = parameters.ALL_DEFINITIONS["envGroup"]
             envGroupDef.assigned = parameters.SINCE_ANYTHING
 
         pb.defParam(
             "envGroupNum",
             units=units.UNITLESS,
-            description="An integer representation of the burnup group, linked to buGroup.",
+            description="An integer representation of the environment group (burnup/temperature/ect environment). linked to envGroup.",
             default=0,
             setter=envGroupNum,
         )

@@ -34,6 +34,7 @@ Examples
 --------
     csm = CrossSectionGroupManager()
     csm._setBuGroupBounds(cs['buGroups'])
+    csm._setTempGroupBounds(cs['tempGroups']) # or empty list
     csm._addXsGroupsFromBlocks(blockList)
     csm.createRepresentativeBlocks()
     representativeBlockList = csm.representativeBlocks.values()
@@ -64,7 +65,7 @@ from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import flags
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
-from armi.utils.units import TRACE_NUMBER_DENSITY
+from armi.utils.units import TRACE_NUMBER_DENSITY, C_TO_K
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
@@ -495,12 +496,13 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     components, volFracs = zip(*block.getVolumeFractions())
     # D = CxN matrix of number densities
     ndens = np.array([getNumberDensitiesWithTrace(c, allNucNames) for c in components])
-    temperatures = np.array(
-        [c.temperatureInC for c in components]
-    )  # C-length temperature array
-    nvBlock = (
-        ndens.T * np.array(volFracs) * vol
-    )  # multiply each component's values by volume frac, now NxC
+
+    # C-length temperature array
+    temperatures = np.array([c.temperatureInC for c in components])
+
+    # multiply each component's values by volume frac, now NxC
+    nvBlock = ndens.T * np.array(volFracs) * vol
+
     nvt = sum((nvBlock * temperatures).T)  # N-length array summing over components.
     nv = sum(nvBlock.T)  # N-length array
     return nvt, nv
@@ -847,7 +849,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
-        self._upperBuGroupBounds = None
+        self._buGroupBounds = []
+        self._tempGroupBounds = []
         self.representativeBlocks = collections.OrderedDict()
         self.avgNucTemperatures = {}
 
@@ -855,6 +858,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         # for example if lattice physics was only once per cycle we might not want to re-evaluate groups
         self._envGroupUpdatesEnabled = True
         self._setBuGroupBounds(self.cs["buGroups"])
+        self._setTempGroupBounds(self.cs["tempGroups"])
         self._unrepresentedXSIDs = []
 
     def interactBOL(self):
@@ -980,13 +984,13 @@ class CrossSectionGroupManager(interfaces.Interface):
         self.representativeBlocks = collections.OrderedDict()
         self.avgNucTemperatures = {}
 
-    def _setBuGroupBounds(self, upperBuGroupBounds):
+    def _setBuGroupBounds(self, buGroupBounds):
         """
         Set the burnup group structure.
 
         Parameters
         ----------
-        upperBuGroupBounds : list
+        buGroupBounds : list
             List of upper burnup values in percent.
 
         Raises
@@ -996,7 +1000,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         lastBu = 0.0
         # validate structure
-        for upperBu in upperBuGroupBounds:
+        for upperBu in buGroupBounds:
             if upperBu <= 0 or upperBu > 100:
                 raise ValueError(
                     "Burnup group upper bound {0} is invalid".format(upperBu)
@@ -1005,13 +1009,23 @@ class CrossSectionGroupManager(interfaces.Interface):
                 raise ValueError("Burnup groups must be ascending")
             lastBu = upperBu
 
-        self._upperBuGroupBounds = upperBuGroupBounds
+        self._buGroupBounds = buGroupBounds
 
-    def _setTempGroupBounds(self, upperTempGroupBounds):
-        # implement here
-        pass
+    def _setTempGroupBounds(self, tempGroupBounds):
+        """Set the temperature group structure."""
+        lastTemp = 0.0
+        # validate structure
+        for upperTemp in tempGroupBounds:
+            if upperTemp < -C_TO_K:
+                raise ValueError(
+                    "Temperature boundary is below absolute zero {0}.format(upperTemp)"
+                )
+            if upperTemp < lastTemp:
+                raise ValueError("Temp groups must be ascending")
+            lastTemp = upperTemp
+        self._tempGroupBounds = buGroupBounds
 
-    def _updateEnviromentGroups(self, blockList):
+    def _updateEnvironmentGroups(self, blockList):
         """
         Update the burnup group of each block based on its burnup.
 
@@ -1027,27 +1041,29 @@ class CrossSectionGroupManager(interfaces.Interface):
                 "Skipping burnup group update of {0} blocks because it is disabled"
                 "".format(len(blockList))
             )
+            return
 
-        if self._envGroupUpdatesEnabled and len(self._upperBuGroupBounds) > 0:
+        numBuGroups = len(self._buGroupBounds) + 1
+        if numBuGroups > 1:
             runLog.debug("Updating burnup groups of {0} blocks".format(len(blockList)))
             for block in blockList:
                 bu = block.p.percentBu
-                for buGroupIndex, upperBu in enumerate(self._upperBuGroupBounds):
+                for buGroupIndex, upperBu in enumerate(self._buGroupBounds):
 
                     if bu <= upperBu:
                         if self.cs["tempGroupBoundaries"]:
+                            # most designs have U238, unless its thorium. if thats the case, U233
+                            # use getBlockNuclideTemperatureAvgTerms(block, ["U235"])
                             # Avg temp will still just be average  temp in each group, but not exactly the midpoint of the boundaries
-                            # ["tempGroupBoundaries"]  = [300, 350, 400, 450, 500, 550, 600, 650] 
+                            # ["tempGroupBoundaries"]  = [300, 350, 400, 450, 500, 550, 600, 650]
                             for tempGroupIndex, upperTemp in enumerate(
-                                self._upperTempGroupBounds
+                                self._tempGroupBounds
                             ):
 
-                                
                                 getIndex(buGroupIndex, tempGroupIndex)
                                 block.p.envGroupNum = buGroupIndex
                 else:
                     raise ValueError("no bu group found for bu={0}".format(bu))
-
 
     def _addXsGroupsFromBlocks(self, blockCollectionsByXsGroup, blockList):
         """
@@ -1055,14 +1071,22 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         Also ensures that their BU group is up to date with their burnup.
         """
-        self._updateEnviromentGroups(blockList)
-            self._updateTempGroups(blockList)
+        self._updateEnvironmentGroups(blockList)
         for b in blockList:
             xsID = b.getMicroSuffix()
             xsSettings = self._initializeXsID(xsID)
+            if (
+                self.self.cs["tempGroups"]
+                and xsSettings["xsBlockRepresentation"] == MEDIAN_BLOCK_COLLECTION
+            ):
+                runLog.warning(
+                    "Median block currently only consider median burnup block, and "
+                    "not median temperature block in group"
+                )
             blockCollectionType = blockCollectionFactory(
                 xsSettings, self.r.blueprints.allNuclidesInProblem
             )
+
             group = blockCollectionsByXsGroup.get(xsID, blockCollectionType)
             group.append(b)
             blockCollectionsByXsGroup[xsID] = group
@@ -1385,6 +1409,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         bCollectXSGroup = self._addXsGroupsFromBlocks(
             bCollectXSGroup, self.r.core.getBlocks()
         )
+
+        # add blocks that are defined in blueprints, but not in core
         bCollectXSGroup = self._addXsGroupsFromBlocks(
             bCollectXSGroup, self._getMissingBlueprintBlocks(bCollectXSGroup)
         )
@@ -1406,9 +1432,11 @@ class CrossSectionGroupManager(interfaces.Interface):
         Adjust the xsID of blocks in the groups that are not represented.
 
         Try to just adjust the burnup group up to something that is represented
-        (can happen to structure in AA when only AB, AC, AD still remain, 
+        (can happen to structure in AA when only AB, AC, AD still remain,
         but if some fresh AA happened to be added it might be needed).
         """
+        # No Blocks in in this id had a valid representative block flag (such as `fuel` for default),
+        # so nothing valid to run lattice physics on...
         for xsID in self._unrepresentedXSIDs:
             missingXsType, _missingEnvGroup = xsID
             nonRepBlocks = blockCollectionsByXsGroup.get(xsID)
@@ -1419,7 +1447,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                     # generation in the group so can't make XS and use different.
                     runLog.warning(
                         "Changing XSID of {0} blocks from {1} to {2}"
-                        "".format(len(nonRepBlocks), xsID, missingXsType[0] +newEnvType)
+                        "".format(
+                            len(nonRepBlocks), xsID, missingXsType[0] + newEnvType
+                        )
                     )
                     for b in nonRepBlocks:
                         b.p.envGroup = newEnvType
@@ -1444,6 +1474,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 xsIDGroup = self._getXsIDGroup(xsID)
                 if xsIDGroup == self._REPR_GROUP:
                     reprBlock = self.representativeBlocks.get(xsID)
+                    # look into adding temperature and burnup
                     runLog.extra(
                         "XS ID {} contains {:4d} blocks, represented by: {:65s}".format(
                             xsID, len(blocks), reprBlock

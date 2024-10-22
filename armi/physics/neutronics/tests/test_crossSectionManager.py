@@ -713,7 +713,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertEqual(self.blockList[-1].p.envGroup, "D")
 
     def test_setBuGroupBounds(self):
-        self.assertAlmostEqual(self.csm._upperBuGroupBounds[2], 30.0)
+        self.assertAlmostEqual(self.csm._buGroupBounds[2], 30.0)
 
         with self.assertRaises(ValueError):
             self.csm._setBuGroupBounds([3, 10, 300])
@@ -723,6 +723,9 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.csm._setBuGroupBounds([1, 5, 3])
+
+    def test_setTempGroupBounds(self):
+        pass  # for now
 
     def test_addXsGroupsFromBlocks(self):
         blockCollectionsByXsGroup = {}
