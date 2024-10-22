@@ -333,6 +333,9 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual(b.parent, a)
             self.assertEqual(len(a), n + 1)
 
+        with self.assertRaises(TypeError):
+            a.add(blocks.CartesianBlock("Test Cart Block"))
+
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
         i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
@@ -390,20 +393,6 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_doubleResolution(self):
-        b = self.assembly[0]
-        initialHeight = b.p.heightBOL
-        self.assembly.doubleResolution()
-        cur = len(self.assembly.getBlocks())
-        ref = 2 * len(self.blockList)
-        self.assertEqual(cur, ref)
-
-        cur = self.assembly.getBlocks()[0].getHeight()
-        ref = self.height / 2.0
-        places = 6
-        self.assertNotEqual(initialHeight, b.p.heightBOL)
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_adjustResolution(self):
@@ -1026,8 +1015,8 @@ class Assembly_TestCase(unittest.TestCase):
         """Test rotation of an assembly spatial objects.
 
         .. test:: An assembly can be rotated about its z-axis.
-            :id: T_ARMI_SHUFFLE_ROTATE
-            :tests: R_ARMI_SHUFFLE_ROTATE
+            :id: T_ARMI_ROTATE_HEX
+            :tests: R_ARMI_ROTATE_HEX
         """
         a = makeTestAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")
@@ -1089,6 +1078,9 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual("", mock.getStdout())
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
+
+        with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
+            a.rotate(math.radians(40))
 
     def test_assem_block_types(self):
         """Test that all children of an assembly are blocks, ordered from top to bottom.

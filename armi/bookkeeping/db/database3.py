@@ -223,6 +223,9 @@ class Database3:
         self.h5db.attrs["pluginPaths"] = ps
         self.h5db.attrs["localCommitHash"] = Database3.grabLocalCommitHash()
 
+    def isOpen(self):
+        return self.h5db is not None
+
     @staticmethod
     def writeSystemAttributes(h5db):
         """Write system attributes to the database.
@@ -867,6 +870,8 @@ class Database3:
             comp.processLoading(cs, dbLoad=True)
         elif isinstance(comp, Assembly):
             comp.calculateZCoords()
+        elif isinstance(comp, Component):
+            comp.finalizeLoadingFromDB()
 
         return comp
 
@@ -1063,9 +1068,24 @@ class Database3:
             if "linkedDims" in attrs:
                 linkedDims = np.char.decode(attrs["linkedDims"])
 
+            unpackedData = data.tolist()
+            if len(comps) != len(unpackedData):
+                msg = (
+                    "While unpacking special data for {}, encountered "
+                    "composites and parameter data with unmatched sizes.\n"
+                    "Length of composites list = {}\n"
+                    "Length of data list = {}\n"
+                    "This could indicate an error in data unpacking, which could "
+                    "result in faulty data on the resulting reactor model.".format(
+                        paramName, len(comps), len(unpackedData)
+                    )
+                )
+                runLog.error(msg)
+                raise ValueError(msg)
+
             # iterating of np is not fast...
             for c, val, linkedDim in itertools.zip_longest(
-                comps, data.tolist(), linkedDims, fillvalue=""
+                comps, unpackedData, linkedDims, fillvalue=""
             ):
                 try:
                     if linkedDim != "":

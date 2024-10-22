@@ -26,6 +26,7 @@ from armi import interfaces
 from armi import plugins
 from armi import settings
 from armi import utils
+from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.flags import Flags
@@ -42,13 +43,36 @@ class PluginFlags1(plugins.ArmiPlugin):
         return {"SUPER_FLAG": utils.flags.auto()}
 
 
+class SillyAxialExpansionChanger(AxialExpansionChanger):
+    """Fake, test-specific axial expansion changer that a plugin will register."""
+
+
+class SillyAxialPlugin(plugins.ArmiPlugin):
+    """Trivial plugin that implements the axial expansion hook."""
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def getAxialExpansionChanger() -> type[SillyAxialExpansionChanger]:
+        return SillyAxialExpansionChanger
+
+
+class BeforeReactorPlugin(plugins.ArmiPlugin):
+    """Trivial plugin that implements the before reactor construction hook."""
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def beforeReactorConstruction(cs) -> None:
+        cs.beforeReactorConstructionFlag = True
+
+
 class TestPluginRegistration(unittest.TestCase):
     def setUp(self):
         """
         Manipulate the standard App. We can't just configure our own, since the
         pytest environment bleeds between tests.
         """
-        self._backupApp = deepcopy(getApp())
+        self.app = getApp()
+        self._backupApp = deepcopy(self.app)
 
     def tearDown(self):
         """Restore the App to its original state."""
@@ -91,6 +115,32 @@ class TestPluginRegistration(unittest.TestCase):
 
         # show the flag exists now
         self.assertEqual(type(Flags.SUPER_FLAG._value), int)
+
+    def test_axialExpansionHook(self):
+        """Test that plugins can override the axial expansion of assemblies via a hook."""
+        pm = self.app.pluginManager
+        first = pm.hook.getAxialExpansionChanger()
+        # By default, make sure we get the armi-shipped expansion class
+        self.assertIs(first, AxialExpansionChanger)
+        pm.register(SillyAxialPlugin)
+        second = pm.hook.getAxialExpansionChanger()
+        # Registering a plugin that implements the hook means we get
+        # that plugin's axial expander
+        self.assertIs(second, SillyAxialExpansionChanger)
+
+    def test_beforeReactorConstructionHook(self):
+        """Test that plugin hook successfully injects code before reactor initialization.
+
+        .. test:: Capture code in the beforeReactorConstruction hook from reactor construction being carried out.
+            :id: T_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+            :tests: R_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+        """
+        pm = getPluginManagerOrFail()
+        pm.register(BeforeReactorPlugin)
+        o = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[0]
+        self.assertTrue(o.cs.beforeReactorConstructionFlag)
 
 
 class TestPluginBasics(unittest.TestCase):

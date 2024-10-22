@@ -225,6 +225,9 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
+            constructedObject.p.theoreticalDensityFrac = (
+                constructedObject.material.getTD()
+            )
 
         # set the custom density for non-custom material components after construction
         self.setCustomDensity(constructedObject, blueprint, matMods)

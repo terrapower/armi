@@ -490,6 +490,7 @@ class BlockAvgToCylConverter(BlockConverter):
             plt.savefig(fName)
         else:
             plt.show()
+        plt.close()
         return fName
 
 

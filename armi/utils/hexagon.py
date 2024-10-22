@@ -145,3 +145,49 @@ def numPositionsInRing(ring):
         rings is indexed to 1, i.e. the centermost position in the lattice is ``ring=1``.
     """
     return (ring - 1) * 6 if ring != 1 else 1
+
+
+def totalPositionsUpToRing(ring: int) -> int:
+    """Return the number of positions in a hexagon with a given number of rings."""
+    return 1 + 3 * ring * (ring - 1)
+
+
+def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
+    """Obtain a new cell number after placing a hexagon in a new orientation.
+
+    Parameters
+    ----------
+    initialCellIndex : int
+        Positive number for this cell's position in a hexagonal lattice.
+    orientationNumber :
+        Orientation in number of 60 degree, counter clockwise rotations. An orientation
+        of zero means the first cell in each ring of a flags up hexagon is in the upper
+        right corner.
+
+    Returns
+    -------
+    int
+        New cell number across the rotation
+
+    Raises
+    ------
+    ValueError
+        If ``initialCellIndex`` is not positive.
+        If ``orientationNumber`` is less than zero or greater than five.
+    """
+    if orientationNumber < 0 or orientationNumber > 5:
+        raise ValueError(
+            f"Orientation number must be in [0:5], got {orientationNumber}"
+        )
+    if initialCellIndex > 1:
+        if orientationNumber == 0:
+            return initialCellIndex
+        ring = numRingsToHoldNumCells(initialCellIndex)
+        tot_pins = totalPositionsUpToRing(ring)
+        newPinLocation = initialCellIndex + (ring - 1) * orientationNumber
+        if newPinLocation > tot_pins:
+            newPinLocation -= (ring - 1) * 6
+        return newPinLocation
+    elif initialCellIndex == 1:
+        return initialCellIndex
+    raise ValueError(f"Cell number must be positive, got {initialCellIndex}")
