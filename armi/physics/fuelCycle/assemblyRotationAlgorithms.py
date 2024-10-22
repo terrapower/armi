@@ -25,7 +25,6 @@ import math
 
 from armi import runLog
 from armi.reactor.assemblies import Assembly
-# from armi.physics.fuelCycle.fuelHandlers import FuelHandler
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
