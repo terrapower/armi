@@ -1798,6 +1798,13 @@ class HexBlock(Block):
             round(y, units.FLOAT_DIMENSION_DECIMALS),
         )
 
+    def cornersUp(self):
+        """Determine if the hex shape of is corners up or flats up, in relation to the Y axis."""
+        if self.spatialGrid is None:
+            return None
+
+        return self.spatialGrid.cornersUp
+
     def createHomogenizedCopy(self, pinSpatialLocators=False):
         """
         Create a new homogenized copy of a block that is less expensive than a full deepcopy.
@@ -1909,7 +1916,6 @@ class HexBlock(Block):
             This method first retrieves the pitch of the hexagonal Block
             (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
             area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
-
         """
         pitch = self.getPitch()
         if not pitch:
