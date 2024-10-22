@@ -25,8 +25,6 @@ import math
 
 from armi import runLog
 from armi.reactor.assemblies import Assembly
-
-# from armi.physics.fuelCycle.fuelHandlers import FuelHandler
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
@@ -88,7 +86,9 @@ def _rotateByComparingLocations(aNow: Assembly, aPrev: Assembly):
     """
     rot = getOptimalAssemblyOrientation(aNow, aPrev)
     radians = _rotationNumberToRadians(rot)
-    runLog.important(f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW.")
+    runLog.important(
+        f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW."
+    )
     aNow.rotate(radians)
 
 
