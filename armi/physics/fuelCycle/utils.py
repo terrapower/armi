@@ -15,10 +15,58 @@
 
 import typing
 
+import numpy as np
+
+from armi.reactor.flags import Flags
 from armi.reactor.grids import IndexLocation
 
 if typing.TYPE_CHECKING:
     from armi.reactor.blocks import Block
+
+
+def assemblyHasFuelPinPowers(a: typing.Iterable["Block"]) -> bool:
+    """Determine if an assembly has pin powers.
+
+    These are necessary for determining rotation and may or may
+    not be present on all assemblies.
+
+    Parameters
+    ----------
+    a : Assembly
+        Assembly in question
+
+    Returns
+    -------
+    bool
+        If at least one fuel block in the assembly has pin powers.
+    """
+    # Avoid using Assembly.getChildrenWithFlags(Flags.FUEL)
+    # because that creates an entire list where we may just need the first
+    # fuel block
+    return any(b.hasFlags(Flags.FUEL) and np.any(b.p.linPowByPin) for b in a)
+
+
+def assemblyHasFuelPinBurnup(a: typing.Iterable["Block"]) -> bool:
+    """Determine if an assembly has pin burnups.
+
+    These are necessary for determining rotation and may or may not
+    be present on all assemblies.
+
+    Parameters
+    ----------
+    a : Assembly
+        Assembly in question
+
+    Returns
+    -------
+    bool
+        If a block with pin burnup was found.
+
+    """
+    # Avoid using Assembly.getChildrenWithFlags(Flags.FUEL)
+    # because that creates an entire list where we may just need the first
+    # fuel block. Same for avoiding Block.getChildrenWithFlags.
+    return any(b.hasFlags(Flags.FUEL) and b.p.percentBuMaxPinLocation for b in a)
 
 
 def maxBurnupFuelPinLocation(b: "Block") -> IndexLocation:

@@ -14,15 +14,34 @@
 
 from unittest import TestCase, mock
 
-from armi.reactor.grids import IndexLocation
+import numpy as np
+
 from armi.reactor.blocks import Block
+from armi.reactor.components import Circle
+from armi.reactor.flags import Flags
+from armi.reactor.grids import IndexLocation
 from armi.physics.fuelCycle import utils
+
 
 class FuelCycleUtilsTests(TestCase):
     """Tests for geometry indifferent fuel cycle routines."""
 
+    N_PINS = 271
+
     def setUp(self):
         self.block = Block("test block")
+        self.fuel = Circle(
+            "test pin",
+            material="UO2",
+            Tinput=20,
+            Thot=20,
+            mult=self.N_PINS,
+            id=0.0,
+            od=1.0,
+        )
+        self.block.add(self.fuel)
+        # Force no fuel flags
+        self.fuel.p.flags = Flags.PIN
 
     def test_maxBurnupPinLocationBlockParameter(self):
         """Test that the ``Block.p.percentBuMaxPinLocation`` parameter gets the location."""
@@ -34,3 +53,21 @@ class FuelCycleUtilsTests(TestCase):
         expected = locations[pinLocationIndex]
         actual = utils.maxBurnupFuelPinLocation(self.block)
         self.assertIs(actual, expected)
+
+    def test_assemblyHasPinPower(self):
+        """Test the ability to check if an assembly has fuel pin powers."""
+        fakeAssem = [self.block]
+        # No fuel blocks, no pin power on blocks => no pin powers
+        self.assertFalse(utils.assemblyHasFuelPinBurnup(fakeAssem))
+
+        # Yes fuel blocks, no pin power on blocks => no pin powers
+        self.block.p.flags |= Flags.FUEL
+        self.assertFalse(utils.assemblyHasFuelPinPowers(fakeAssem))
+
+        # Yes fuel blocks, yes pin power on blocks => yes pin powers
+        self.block.p.linPowByPin = np.arange(self.N_PINS, dtype=float)
+        self.assertTrue(utils.assemblyHasFuelPinPowers(fakeAssem))
+
+        # Yes fuel blocks, yes pin power assigned but all zeros => no pin powers
+        self.block.p.linPowByPin = np.zeros(self.N_PINS, dtype=float)
+        self.assertFalse(utils.assemblyHasFuelPinPowers(fakeAssem))

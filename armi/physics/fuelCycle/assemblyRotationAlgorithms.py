@@ -23,8 +23,13 @@ These algorithms are defined in assemblyRotationAlgorithms.py, but they are used
 """
 import math
 
+
 from armi import runLog
 from armi.reactor.assemblies import Assembly
+from armi.physics.fuelCycle.utils import (
+    assemblyHasFuelPinBurnup,
+    assemblyHasFuelPinPowers,
+)
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
@@ -51,8 +56,6 @@ def buReducingAssemblyRotation(fh):
     """
     runLog.info("Algorithmically rotating assemblies to minimize burnup")
     numRotated = 0
-    hist = fh.o.getInterface("history")
-    detailAssemblies = hist.getDetailAssemblies()
     for aPrev in fh.moved:
         # If the assembly was out of the core, no need to rotate an assembly
         # that is outside the core.
@@ -60,15 +63,19 @@ def buReducingAssemblyRotation(fh):
             continue
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
         # no point in rotation if there's no pin detail
-        if aNow in detailAssemblies:
+        if assemblyHasFuelPinPowers(aPrev) and assemblyHasFuelPinBurnup(aNow):
             _rotateByComparingLocations(aNow, aPrev)
             numRotated += 1
 
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
-        for a in detailAssemblies:
-            if a not in fh.moved:
-                _rotateByComparingLocations(a, a)
-                numRotated += 1
+        for a in filter(
+            lambda asm: asm not in fh.moved
+            and assemblyHasFuelPinPowers(asm)
+            and assemblyHasFuelPinBurnup(asm),
+            fh.r.core,
+        ):
+            _rotateByComparingLocations(a, a)
+            numRotated += 1
 
     runLog.info("Rotated {0} assemblies".format(numRotated))
 
@@ -86,9 +93,7 @@ def _rotateByComparingLocations(aNow: Assembly, aPrev: Assembly):
     """
     rot = getOptimalAssemblyOrientation(aNow, aPrev)
     radians = _rotationNumberToRadians(rot)
-    runLog.important(
-        f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW."
-    )
+    runLog.important(f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW.")
     aNow.rotate(radians)
 
 

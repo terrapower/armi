@@ -129,7 +129,6 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         """Test that the fuel handler supports the burnup reducing assembly rotation."""
         fh = FullImplFuelHandler(self.o)
 
-        hist = self.o.getInterface("history")
         newSettings = {
             CONF_ASSEM_ROTATION_STATIONARY: True,
             "fluxRecon": True,
@@ -146,7 +145,6 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
             b.p.percentBuMax = 5
             b.p.linPowByPin = reversed(range(b.getNumPins()))
 
-        addSomeDetailAssemblies(hist, [assem])
         # Show that we call the optimal assembly orientation function.
         # This function is tested seperately and more extensively elsewhere.
         with mock.patch(
