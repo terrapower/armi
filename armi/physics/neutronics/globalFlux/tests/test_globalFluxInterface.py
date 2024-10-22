@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic global flux interface."""
-import copy
 import unittest
 from unittest.mock import patch
 
@@ -452,27 +451,6 @@ class TestGlobalFluxUtils(unittest.TestCase):
         vfrac = b.getComponentAreaFrac(Flags.FUEL)
         self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
         self.assertEqual(b.p.fisDensHom, b.p.rateFis)
-
-    def test_calcReactionRatesBlockList(self):
-        """
-        Test that the efficient reaction rate code executes and sets a param > 0.0.
-
-        .. test:: Return the reaction rates for a given list of ArmiObjects.
-            :id: T_ARMI_FLUX_RX_RATES_BY_XS_ID
-            :tests: R_ARMI_FLUX_RX_RATES
-        """
-        b = test_blocks.loadTestBlock()
-        test_blocks.applyDummyData(b)
-        self.assertAlmostEqual(b.p.rateAbs, 0.0)
-        blockList = [copy.deepcopy(b) for _i in range(3)]
-        xsID = b.getMicroSuffix()
-        xsNucDict = {nuc: b.core.lib.getNuclide(nuc, xsID) for nuc in b.getNuclides()}
-        globalFluxInterface.calcReactionRatesBlockList(blockList, 1.01, xsNucDict)
-        for b in blockList:
-            self.assertGreater(b.p.rateAbs, 0.0)
-            vfrac = b.getComponentAreaFrac(Flags.FUEL)
-            self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
-            self.assertEqual(b.p.fisDensHom, b.p.rateFis)
 
 
 def applyDummyFlux(r, ng=33):

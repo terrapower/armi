@@ -75,10 +75,6 @@ from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SI
 
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
-from armi.physics.neutronics.globalFlux.globalFluxInterface import (
-    RX_PARAM_NAMES,
-    RX_ABS_MICRO_LABELS,
-)
 
 
 def converterFactory(globalFluxOptions):
@@ -1195,6 +1191,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
         """
+        from armi.physics.neutronics.globalFlux.globalFluxInterface import (
+            RX_PARAM_NAMES,
+            RX_ABS_MICRO_LABELS,
+        )
+
         for obj in objList:
             rate = collections.defaultdict(float)
 
