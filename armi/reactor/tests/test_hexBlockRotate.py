@@ -81,7 +81,6 @@ class HexBlockRotateTests(unittest.TestCase):
         .. test:: After rotating a block, the orientation parameter reflects the current rotation.
             :id: T_ARMI_ROTATE_HEX_ORIENTATION
             :tests: R_ARMI_ROTATE_HEX_PARAMS
-            :acceptance_criteria: Through a unit test, compare the z-rotation entry against the rotation amount.
         """
         for nRotations in range(-10, 10):
             rotationAmount = 60 * nRotations
