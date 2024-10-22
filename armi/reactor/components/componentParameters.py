@@ -145,6 +145,7 @@ def getComponentParameterDefinitions():
             setter=isNumpyArray("pinPercentBu"),
             units=f"{units.PERCENT_FIMA}",
             description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
+            default=None,
         )
 
         pb.defParam(
@@ -158,6 +159,7 @@ def getComponentParameterDefinitions():
             setter=isNumpyArray("pinPuFrac"),
             units=units.UNITLESS,
             description="Current pin-wise Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
+            default=None,
         )
 
         pb.defParam(
