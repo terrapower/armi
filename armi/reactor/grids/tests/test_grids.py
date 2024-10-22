@@ -312,8 +312,9 @@ class TestHexGrid(unittest.TestCase):
         # short in Y
         maxY = max(v[1] for v in vals)
         minY = min(v[1] for v in vals)
-        self.assertLess(maxY, 1)
-        self.assertGreater(minY, -1)
+        val = math.sqrt(3) / 2
+        self.assertAlmostEqual(maxY, val, delta=0.0001)
+        self.assertAlmostEqual(minY, -val, delta=0.0001)
 
         # long in X
         maxX = max(v[0] for v in vals)
@@ -339,8 +340,9 @@ class TestHexGrid(unittest.TestCase):
         # short in X
         maxX = max(v[0] for v in vals)
         minX = min(v[0] for v in vals)
-        self.assertLess(maxX, 1)
-        self.assertGreater(minX, -1)
+        val = math.sqrt(3) / 2
+        self.assertAlmostEqual(maxX, val, delta=0.0001)
+        self.assertAlmostEqual(minX, -val, delta=0.0001)
 
     def test_neighbors(self):
         grid = grids.HexGrid.fromPitch(1.0)

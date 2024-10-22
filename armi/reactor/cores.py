@@ -570,7 +570,7 @@ class Core(composites.Composite):
 
         if self.geomType == geometry.GeomType.HEX:
             cornerUp = self.spatialGrid.cornersUp
-            a.orientBlocks(cornersUp=cornerUp)
+            a.orientBlocks(cornersUp=not cornerUp)
 
             ring, _loc = self.spatialGrid.getRingPos(
                 a.spatialLocator.getCompleteIndices()
