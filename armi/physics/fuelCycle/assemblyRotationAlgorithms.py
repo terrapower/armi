@@ -23,6 +23,8 @@ These algorithms are defined in assemblyRotationAlgorithms.py, but they are used
 """
 import math
 
+import numpy as np
+
 from armi import runLog
 from armi.reactor.assemblies import Assembly
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
@@ -34,6 +36,25 @@ from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 def _rotationNumberToRadians(rot: int) -> float:
     """Convert a rotation number to radians, assuming a HexAssembly."""
     return rot * math.pi / 3
+
+
+def assemblyHasPinPowers(a: Assembly) -> bool:
+    """Determine if an assembly has pin pin powers.
+
+    These are necessary for determining rotation and may or may
+    not be present on all assemblies.
+
+    Parameters
+    ----------
+    a : Assembly
+        Assembly in question
+
+    Returns
+    -------
+    bool
+        If at least one block in the assembly has pin powers.
+    """
+    return any(np.any(b.p.linPowByPin) for b in a)
 
 
 def buReducingAssemblyRotation(fh):
@@ -51,8 +72,6 @@ def buReducingAssemblyRotation(fh):
     """
     runLog.info("Algorithmically rotating assemblies to minimize burnup")
     numRotated = 0
-    hist = fh.o.getInterface("history")
-    detailAssemblies = hist.getDetailAssemblies()
     for aPrev in fh.moved:
         # If the assembly was out of the core, no need to rotate an assembly
         # that is no outside the core.
@@ -60,12 +79,14 @@ def buReducingAssemblyRotation(fh):
             continue
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
         # no point in rotation if there's no pin detail
-        if aNow in detailAssemblies:
+        if assemblyHasPinPowers(aNow):
             _rotateByComparingLocations(aNow, aPrev)
             numRotated += 1
 
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
-        for a in detailAssemblies:
+        hist = fh.o.getInterface("history")
+        detailAssemblies = hist.getDetailAssemblies()
+        for a in filter(assemblyHasPinPowers, detailAssemblies):
             if a not in fh.moved:
                 _rotateByComparingLocations(a, a)
                 numRotated += 1
@@ -86,9 +107,7 @@ def _rotateByComparingLocations(aNow: Assembly, aPrev: Assembly):
     """
     rot = getOptimalAssemblyOrientation(aNow, aPrev)
     radians = _rotationNumberToRadians(rot)
-    runLog.important(
-        f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW."
-    )
+    runLog.important(f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW.")
     aNow.rotate(radians)
 
 
