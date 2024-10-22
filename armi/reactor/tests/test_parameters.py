@@ -11,11 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the Parameters class."""
+"""Tests for assorted Parameters tools."""
+from glob import glob
+from shutil import copyfile
 import copy
+import os
 import unittest
 
 from armi.reactor import parameters
+from armi.reactor.reactorParameters import makeParametersReadOnly
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class MockComposite:
@@ -471,7 +478,16 @@ class ParameterTests(unittest.TestCase):
     def test_parameterCollectionsHave__slots__(self):
         """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
-            set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
+            set(
+                [
+                    "_hist",
+                    "_backup",
+                    "assigned",
+                    "_p_serialNum",
+                    "serialNum",
+                    "readOnly",
+                ]
+            ),
             set(parameters.ParameterCollection._slots),
         )
 
@@ -587,3 +603,29 @@ class ParamCollectionWhere(unittest.TestCase):
             self.assertTrue(check(p), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty")
+
+
+class TestMakeParametersReadOnly(unittest.TestCase):
+    def test_makeParametersReadOnly(self):
+        with TemporaryDirectoryChanger():
+            # copy test reactor to local
+            yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+            for yamlFile in yamls:
+                copyfile(yamlFile, os.path.basename(yamlFile))
+
+            # load some random test reactor
+            _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
+
+            # prove we can edit various params at will
+            r.core.p.keff = 1.01
+            b = r.core.getFirstBlock()
+            b.p.power = 123.4
+
+            makeParametersReadOnly(r)
+
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
+
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1
