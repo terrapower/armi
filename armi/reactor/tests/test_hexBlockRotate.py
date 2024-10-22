@@ -54,14 +54,12 @@ class HexBlockRotateTests(unittest.TestCase):
 
     PIN_DATA = np.arange(NUM_PINS_IN_TEST_BLOCK, dtype=float)
 
-    @classmethod
-    def setUpClass(cls):
-        cls.BASE_BLOCK = loadTestBlock()
-        cls._assignParamData(cls.BOUNDARY_PARAMS, cls.BOUNDARY_DATA)
-        cls._assignParamData(cls.PIN_PARAMS, cls.PIN_DATA)
+    def setUp(self):
+        self.baseBlock = loadTestBlock()
+        self._assignParamData(self.BOUNDARY_PARAMS, self.BOUNDARY_DATA)
+        self._assignParamData(self.PIN_PARAMS, self.PIN_DATA)
 
-    @classmethod
-    def _assignParamData(cls, names: list[str], referenceData: np.ndarray):
+    def _assignParamData(self, names: list[str], referenceData: np.ndarray):
         """Assign initial rotatable pararameter data.
 
         Make some arrays, some lists to make sure we have good coverage of usage.
@@ -69,7 +67,7 @@ class HexBlockRotateTests(unittest.TestCase):
         # Yes we're putting the variable type in the name but that's why this method exists
         listData = referenceData.tolist()
         for ix, name in enumerate(names):
-            cls.BASE_BLOCK.p[name] = referenceData if (ix % 2) else listData
+            self.baseBlock.p[name] = referenceData if (ix % 2) else listData
 
     def test_orientationVector(self):
         """Test the z-value in the orientation vector matches rotation.
@@ -84,7 +82,7 @@ class HexBlockRotateTests(unittest.TestCase):
         """
         for nRotations in range(-10, 10):
             rotationAmount = 60 * nRotations
-            fresh = copy.deepcopy(self.BASE_BLOCK)
+            fresh = copy.deepcopy(self.baseBlock)
             self.assertEqual(fresh.p.orientation[2], 0.0, msg=nRotations)
             fresh.rotate(math.radians(rotationAmount))
             # Ensure rotation is bounded [0, 360)
@@ -113,7 +111,7 @@ class HexBlockRotateTests(unittest.TestCase):
         self._rotateAndCompareBoundaryParams(360, self.BOUNDARY_DATA)
 
     def _rotateAndCompareBoundaryParams(self, degrees: float, expected: np.ndarray):
-        fresh = copy.deepcopy(self.BASE_BLOCK)
+        fresh = copy.deepcopy(self.baseBlock)
         fresh.rotate(math.radians(degrees))
         for name in self.BOUNDARY_PARAMS:
             data = fresh.p[name]
@@ -148,10 +146,10 @@ class HexBlockRotateTests(unittest.TestCase):
             :id: T_ARMI_ROTATE_HEX_PIN_LOCS
             :tests: R_ARMI_ROTATE_HEX
         """
-        preRotation = self.BASE_BLOCK.getPinLocations()
+        preRotation = self.baseBlock.getPinLocations()
         for nRotations in range(-10, 10):
             degrees = 60 * nRotations
-            fresh = copy.deepcopy(self.BASE_BLOCK)
+            fresh = copy.deepcopy(self.baseBlock)
             g = fresh.spatialGrid
             fresh.rotate(math.radians(degrees))
             postRotation = fresh.getPinLocations()
@@ -167,11 +165,11 @@ class HexBlockRotateTests(unittest.TestCase):
             :id: T_ARMI_ROTATE_HEX_PIN_COORDS
             :tests: R_ARMI_ROTATE_HEX
         """
-        preRotation = self.BASE_BLOCK.getPinCoordinates()
+        preRotation = self.baseBlock.getPinCoordinates()
         # Over- and under-rotate to make sure we can handle clockwise and counter
         # clockwise rotations, and cases that wrap around a full rotation
         for degrees in range(-600, 600, 60):
-            fresh = copy.deepcopy(self.BASE_BLOCK)
+            fresh = copy.deepcopy(self.baseBlock)
             rads = math.radians(degrees)
             fresh.rotate(rads)
             rotationMatrix = np.array(
@@ -199,11 +197,11 @@ class HexBlockRotateTests(unittest.TestCase):
             :tests: R_ARMI_ROTATE_HEX
         """
         for nRotations in range(-10, 10):
-            fresh = copy.deepcopy(self.BASE_BLOCK)
+            fresh = copy.deepcopy(self.baseBlock)
             degrees = 60 * nRotations
             rads = math.radians(degrees)
             fresh.rotate(rads)
-            for originalC, newC in zip(self.BASE_BLOCK, fresh):
+            for originalC, newC in zip(self.baseBlock, fresh):
                 self._compareComponentLocationsAfterRotation(
                     originalC, newC, nRotations, rads
                 )
@@ -239,7 +237,7 @@ class HexBlockRotateTests(unittest.TestCase):
         Reinforces the idea that data like ``linPowByPin[i]`` are assigned to
         pin ``i``, wherever it may be. Locations are defined instead by ``getPinCoordinates()[i]``.
         """
-        fresh = copy.deepcopy(self.BASE_BLOCK)
+        fresh = copy.deepcopy(self.baseBlock)
         fresh.rotate(math.radians(60))
         for paramName in self.PIN_PARAMS:
             actual = fresh.p[paramName]
