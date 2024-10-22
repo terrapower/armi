@@ -121,6 +121,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         self.refAssembly = copy.deepcopy(self.assembly)
         self.directoryChanger.open()
+        self.r.core.locateAllAssemblies()
 
     def tearDown(self):
         # clean up the test

@@ -24,6 +24,8 @@ These algorithms are defined in assemblyRotationAlgorithms.py, but they are used
 import math
 
 from armi import runLog
+from armi.reactor.assemblies import Assembly
+# from armi.physics.fuelCycle.fuelHandlers import FuelHandler
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
@@ -51,15 +53,20 @@ def buReducingAssemblyRotation(fh):
     runLog.info("Algorithmically rotating assemblies to minimize burnup")
     numRotated = 0
     hist = fh.o.getInterface("history")
-    for aPrev in fh.moved:  # much more convenient to loop through aPrev first
+    detailAssemblies = hist.getDetailAssemblies()
+    for aPrev in fh.moved:
+        # If the assembly was out of the core, no need to rotate an assembly
+        # that is no outside the core.
+        if aPrev.lastLocationLabel in Assembly.NOT_IN_CORE:
+            continue
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
         # no point in rotation if there's no pin detail
-        if aNow in hist.getDetailAssemblies():
+        if aNow in detailAssemblies:
             _rotateByComparingLocations(aNow, aPrev)
             numRotated += 1
 
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
-        for a in hist.getDetailAssemblies():
+        for a in detailAssemblies:
             if a not in fh.moved:
                 _rotateByComparingLocations(a, a)
                 numRotated += 1
@@ -67,7 +74,7 @@ def buReducingAssemblyRotation(fh):
     runLog.info("Rotated {0} assemblies".format(numRotated))
 
 
-def _rotateByComparingLocations(aNow, aPrev):
+def _rotateByComparingLocations(aNow: Assembly, aPrev: Assembly):
     """Rotate an assembly based on its previous location.
 
     Parameters
@@ -80,11 +87,10 @@ def _rotateByComparingLocations(aNow, aPrev):
     """
     rot = getOptimalAssemblyOrientation(aNow, aPrev)
     radians = _rotationNumberToRadians(rot)
-    aNow.rotate(radians)
-    (ring, pos) = aNow.spatialLocator.getRingPos()
     runLog.important(
-        "Rotating Assembly ({0},{1}) to Orientation {2}".format(ring, pos, rot)
+        f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW."
     )
+    aNow.rotate(radians)
 
 
 def simpleAssemblyRotation(fh):
