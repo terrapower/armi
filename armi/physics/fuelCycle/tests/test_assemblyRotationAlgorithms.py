@@ -36,6 +36,13 @@ from armi.physics.fuelCycle.tests.test_fuelHandlers import FuelHandlerTestHelper
 from armi.reactor.flags import Flags
 
 
+class FullImplFuelHandler(fuelHandlers.FuelHandler):
+    """Implements the entire interface but with empty methods."""
+
+    def chooseSwaps(self, *args, **kwargs):
+        pass
+
+
 class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
     N_PINS = 271
 
@@ -119,9 +126,15 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
 
 class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
     def test_buReducingAssemblyRotation(self):
-        fh = fuelHandlers.FuelHandler(self.o)
+        """Test that the fuel handler supports the burnup reducing assembly rotation."""
+        fh = FullImplFuelHandler(self.o)
+
         hist = self.o.getInterface("history")
-        newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
+        newSettings = {
+            CONF_ASSEM_ROTATION_STATIONARY: True,
+            "fluxRecon": True,
+            "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
+        }
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
 
@@ -130,17 +143,42 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
             b.initializePinLocations()
             b.p.percentBuMaxPinLocation = 10
             b.p.percentBuMax = 5
-            b.p.linPowByPin = list(reversed(range(b.getNumPins())))
+            b.p.linPowByPin = reversed(range(b.getNumPins()))
 
         addSomeDetailAssemblies(hist, [assem])
         # Show that we call the optimal assembly orientation function.
         # This function is tested seperately and more extensively elsewhere.
         with mock.patch(
             "armi.physics.fuelCycle.assemblyRotationAlgorithms.getOptimalAssemblyOrientation",
-            return_value=0,
+            return_value=4,
         ) as p:
-            rotAlgos.buReducingAssemblyRotation(fh)
+            fh.outage(1)
         p.assert_called_once_with(assem, assem)
+        for b in assem.getBlocks(Flags.FUEL):
+            # Four rotations is 240 degrees
+            self.assertEqual(b.p.orientation[2], 240)
+
+    def test_buRotationWithFreshFeed(self):
+        """Test that rotation works if a new assembly is swapped with fresh fuel.
+
+        Fresh feed assemblies will not exist in the reactor, and various checks that
+        try to the "previous" assembly's location can fail.
+        """
+        newSettings = {
+            CONF_ASSEM_ROTATION_STATIONARY: True,
+            "fluxRecon": True,
+            "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
+        }
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+        fresh = self.r.core.createFreshFeed(self.o.cs)
+        self.assertEqual(fresh.lastLocationLabel, HexAssembly.LOAD_QUEUE)
+        fh = FullImplFuelHandler(self.o)
+        with mock.patch(
+            "armi.physics.fuelCycle.assemblyRotationAlgorithms.getOptimalAssemblyOrientation",
+        ) as p:
+            fh.outage()
+        # The only moved assembly was most recently outside the core so we have no need to rotate
+        p.assert_not_called()
 
     def test_simpleAssemblyRotation(self):
         """Test rotating assemblies 120 degrees."""
