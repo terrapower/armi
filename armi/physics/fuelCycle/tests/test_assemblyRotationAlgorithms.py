@@ -38,6 +38,7 @@ from armi.reactor.flags import Flags
 
 class FullImplFuelHandler(fuelHandlers.FuelHandler):
     """Implements the entire interface but with empty methods"""
+
     def chooseSwaps(self, *args, **kwargs):
         pass
 
@@ -159,7 +160,7 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
 
     def test_buRotationWithFreshFeed(self):
         """Test that rotation works if a new assembly is swapped with fresh fuel.
-        
+
         Fresh feed assemblies will not exist in the reactor, and various checks that
         try to the "previous" assembly's location can fail.
         """
@@ -178,7 +179,6 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
             fh.outage()
         # The only moved assembly was most recently outside the core so we have no need to rotate
         p.assert_not_called()
-
 
     def test_simpleAssemblyRotation(self):
         """Test rotating assemblies 120 degrees."""

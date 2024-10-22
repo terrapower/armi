@@ -170,7 +170,7 @@ class FuelHandler:
         Some callers take no arguments, some take the fuel handler.
         """
         sig = inspect.signature(rotationMethod)
-        args = (self, ) if sig.parameters else ()
+        args = (self,) if sig.parameters else ()
         rotationMethod(*args)
 
     def chooseSwaps(self, shuffleFactors=None):

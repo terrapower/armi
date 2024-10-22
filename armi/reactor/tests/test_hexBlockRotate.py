@@ -21,7 +21,12 @@ import numpy as np
 
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
-from armi.reactor.grids import MultiIndexLocation, CoordinateLocation, IndexLocation, HexGrid
+from armi.reactor.grids import (
+    MultiIndexLocation,
+    CoordinateLocation,
+    IndexLocation,
+    HexGrid,
+)
 from armi.reactor.tests.test_blocks import loadTestBlock, NUM_PINS_IN_TEST_BLOCK
 from armi.utils import iterables
 
@@ -116,7 +121,9 @@ class HexBlockRotateTests(unittest.TestCase):
             msg = f"{name=} :: {degrees=} :: {data=}"
             np.testing.assert_array_equal(data, expected, err_msg=msg)
 
-    def assertIndexLocationEquivalent(self, actual: IndexLocation, expected: IndexLocation):
+    def assertIndexLocationEquivalent(
+        self, actual: IndexLocation, expected: IndexLocation
+    ):
         """More flexible equivalency check on index locations.
 
         Specifically focused on locations on hex grids because this file
