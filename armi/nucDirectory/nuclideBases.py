@@ -1002,6 +1002,10 @@ class LumpNuclideBase(INuclide):
         """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
         return self.mcc2id
 
+    def getMcc3Id(self):
+        """Return the MC2-3 nuclide identification label based on the ENDF/B-V.2 cross section library."""
+        return self.getMcc3IdEndfbVII1()
+
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
         return self.mcc3idEndfbVII0
