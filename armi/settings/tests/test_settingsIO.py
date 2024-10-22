@@ -63,7 +63,7 @@ class SettingsReaderTests(unittest.TestCase):
     def test_basicSettingsReader(self):
         reader = settingsIO.SettingsReader(self.cs)
 
-        self.assertEqual(reader["nTasks"], 1)
+        self.assertEqual(reader["numProcessors"], 1)
         self.assertEqual(reader["nCycles"], 1)
 
         self.assertFalse(getattr(reader, "filelessBP"))
@@ -165,7 +165,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.cs.loadFromInputFile(self.filepathYaml)
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)
-        self.assertNotIn("nTasks", txt)
+        self.assertNotIn("numProcessors", txt)
 
     def test_writeMedium(self):
         """Setting output as a sparse file that only includes defaults if they are
@@ -173,10 +173,10 @@ class SettingsWriterTests(unittest.TestCase):
         """
         with open(self.filepathYaml, "w") as stream:
             # Specify a setting that is also a default
-            self.cs.writeToYamlStream(stream, "medium", ["nTasks"])
+            self.cs.writeToYamlStream(stream, "medium", ["numProcessors"])
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)
-        self.assertIn("nTasks: 1", txt)
+        self.assertIn("numProcessors: 1", txt)
 
     def test_writeFull(self):
         """Setting output as a full, all defaults included file.
@@ -189,7 +189,7 @@ class SettingsWriterTests(unittest.TestCase):
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)
         # check a default setting
-        self.assertIn("nTasks: 1", txt)
+        self.assertIn("numProcessors: 1", txt)
 
     def test_writeYaml(self):
         self.cs.writeToYamlFile(self.filepathYaml)

@@ -426,7 +426,7 @@ def insertSettingsData(cs, report):
         "burnSteps",
         "skipCycles",
         "cycleLength",
-        "nTasks",
+        "numProcessors",
     ]:
         report[COMPREHENSIVE_REPORT][CASE_PARAMETERS].addRow([key, cs[key]])
 
