@@ -105,7 +105,7 @@ class ParameterTests(unittest.TestCase):
         This tests the ability to add a serializer to a parameter instantiation line.
         It assumes that if this parameter is not None, that the pack and unpack methods
         will be called during storage to and reading from the database. See
-        database3._writeParams for an example use of this functionality.
+        database._writeParams for an example use of this functionality.
 
         .. test:: Custom parameter serializer
             :id: T_ARMI_PARAM_SERIALIZE
