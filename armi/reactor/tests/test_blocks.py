@@ -2095,10 +2095,10 @@ class HexBlock_TestCase(unittest.TestCase):
         xyz = self.hexBlock.getPinCoordinates()
         x, y, _z = zip(*xyz)
 
-        # these two pins should be side by side on top
+        # these two pins should be side by side
         self.assertTrue(self.hexBlock.spatialGrid.cornersUp)
-        self.assertAlmostEqual(y[1], y[3])
-        self.assertNotAlmostEqual(x[1], x[3])
+        self.assertAlmostEqual(y[1], y[2])
+        self.assertAlmostEqual(x[1], -x[2])
         self.assertEqual(len(xyz), self.hexBlock.getNumPins())
 
         # ensure all pins are within the proper bounds of a
@@ -2325,16 +2325,16 @@ class TestHexBlockOrientation(unittest.TestCase):
             inputFileName="armiRunSmallest.yaml",
         )
 
-        # grab a pinned fuel block, and verify it is corners up
+        # grab a pinned fuel block, and verify it is flats up
         b = r.core.getFirstBlock(Flags.FUEL)
         self.assertTrue(r.core.spatialGrid.cornersUp)
         self.assertFalse(b.spatialGrid.cornersUp)
         self.assertNotEqual(r.core.spatialGrid.cornersUp, b.spatialGrid.cornersUp)
 
-        # for a flats up block-grid, the hex centroids should stretch more in X than Y
+        # for a flats up block-grid, the hex centroids should stretch more in Y than X
         minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
         ratio = (maxY - minY) / (maxX - minX)
-        self.assertAlmostEqual(ratio, math.sqrt(3) / 2, delta=0.0001)
+        self.assertAlmostEqual(ratio, 2 / math.sqrt(3), delta=0.0001)
 
     def test_validateReactorFlatsUp(self):
         """Validate the spatial grid for a flats up HexBlock and its children."""
@@ -2355,16 +2355,16 @@ class TestHexBlockOrientation(unittest.TestCase):
             self.td.destination, inputFileName="armiRunSmallest.yaml"
         )
 
-        # grab a pinned fuel block, and verify it is flats up
+        # grab a pinned fuel block, and verify it is corners up
         b = r.core.getFirstBlock(Flags.FUEL)
         self.assertFalse(r.core.spatialGrid.cornersUp)
         self.assertTrue(b.spatialGrid.cornersUp)
         self.assertNotEqual(r.core.spatialGrid.cornersUp, b.spatialGrid.cornersUp)
 
-        # for a corners up block-grid, the hex centroids should stretch more in Y than X
+        # for a corners up block-grid, the hex centroids should stretch more in X than Y
         minX, maxX, minY, maxY = self.getLocalCoordinatesBlockBounds(b)
         ratio = (maxX - minX) / (maxY - minY)
-        self.assertAlmostEqual(ratio, math.sqrt(3) / 2, delta=0.0001)
+        self.assertAlmostEqual(ratio, 2 / math.sqrt(3), delta=0.0001)
 
 
 class ThRZBlock_TestCase(unittest.TestCase):

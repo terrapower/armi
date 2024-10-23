@@ -2387,14 +2387,6 @@ class HexBlock(Block):
             cornersUp=cornersUp,
         )
 
-        # build the sub-grid, with opposite orientation to the block
-        subGrid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True),
-            numRings=0,
-            armiObject=self,
-            cornersUp=not cornersUp,
-        )
-
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
         for ring in range(ringNumber):
@@ -2408,11 +2400,11 @@ class HexBlock(Block):
             )
 
         # set the spatial position of the sub-block components
-        spatialLocators = grids.MultiIndexLocation(grid=subGrid)
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
-            for pos in range(subGrid.getPositionsInRing(ring + 1)):
-                i, j = subGrid.getIndicesFromRingAndPos(ring + 1, pos + 1)
-                spatialLocators.append(subGrid[i, j, 0])
+            for pos in range(grid.getPositionsInRing(ring + 1)):
+                i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
+                spatialLocators.append(grid[i, j, 0])
 
         # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
