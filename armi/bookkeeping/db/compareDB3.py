@@ -53,8 +53,8 @@ import h5py
 import numpy as np
 
 from armi import runLog
-from armi.bookkeeping.db import database3
-from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db import database
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.factory import databaseFactory
 from armi.bookkeeping.db.permissions import Permissions
 from armi.reactor.composites import ArmiObject
@@ -179,7 +179,7 @@ def compareDatabases(
     with OutputWriter(outputName) as out:
         ref = databaseFactory(refFileName, Permissions.READ_ONLY_FME)
         src = databaseFactory(srcFileName, Permissions.READ_ONLY_FME)
-        if not isinstance(ref, Database3) or not isinstance(src, Database3):
+        if not isinstance(ref, Database) or not isinstance(src, Database):
             raise TypeError(
                 "This database comparer only knows how to deal with database version "
                 "3; received {} and {}".format(type(ref), type(src))
@@ -363,8 +363,8 @@ def _diffSpecialData(
         return
 
     try:
-        src = database3.unpackSpecialData(srcData[()], srcData.attrs, paramName)
-        ref = database3.unpackSpecialData(refData[()], refData.attrs, paramName)
+        src = database.unpackSpecialData(srcData[()], srcData.attrs, paramName)
+        ref = database.unpackSpecialData(refData[()], refData.attrs, paramName)
     except Exception:
         runLog.error(
             f"Unable to unpack special data for paramName {paramName}. "
@@ -380,9 +380,8 @@ def _diffSpecialData(
                 diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
-            # make sure not to try to compare empty arrays. Numpy is mediocre at
-            # these; they are super degenerate and cannot participate in concatenation.
-            # Why?
+            # Make sure not to try to compare empty arrays. Numpy is mediocre at these;
+            # they are super degenerate and cannot participate in concatenation.
             if 0 not in dSrc.shape:
                 # Use the mean of the two to calc relative error. This is more robust to
                 # changes that cause one of the values to be zero, while the other is

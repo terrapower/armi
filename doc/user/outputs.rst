@@ -78,7 +78,7 @@ Among other things, the database file can be used to recover an ARMI reactor mod
 any of the time nodes that it contains. This can be useful for performing restart runs,
 or for doing custom post-processing tasks. To load a reactor state, you will need to
 open the database file into a ``Database`` object. From there, you can call the
-:py:meth:`armi.bookkeeping.db.Database3.load()` method to get a recovered
+:py:meth:`armi.bookkeeping.db.Database.load()` method to get a recovered
 reactor object. For instance, given a database file called ``myDatabase.h5``, we could
 load the reactor state at cycle 5, time node 2 with the following::
 
@@ -95,8 +95,8 @@ Extracting Reactor History
 --------------------------
 Not only can the database reproduce reactor state for a given time node, it can also
 extract a history of specific parameters for specific objects through the
-:py:meth:`armi.bookkeeping.db.Database3.getHistory()` and
-:py:meth:`armi.bookkeeping.db.Database3.getHistories()` methods.
+:py:meth:`armi.bookkeeping.db.Database.getHistory()` and
+:py:meth:`armi.bookkeeping.db.Database.getHistories()` methods.
 For example, given the reactor object, ``r`` from the example above, we could get the
 entire history of an assembly's ring, position and areal power density with the
 following::
@@ -247,6 +247,6 @@ the composite model sometimes need to be manipulated to fit into the HDF5 format
 still being able to faithfully reconstruct the original data. To accomplish this, we use
 HDF5 dataset attributes to indicate when some manipulation is necessary. Writing
 such special data to the HDF5 file and reading it back again is accomplished with the
-:py:func:`armi.bookkeeping.db.database3.packSpecialData` and
-:py:func:`armi.bookkeeping.db.database3.unpackSpecialData`. Refer to their implementations
+:py:func:`armi.bookkeeping.db.database.packSpecialData` and
+:py:func:`armi.bookkeeping.db.database.unpackSpecialData`. Refer to their implementations
 and documentation for more details.

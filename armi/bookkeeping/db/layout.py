@@ -17,10 +17,10 @@ Groundwork for ARMI Database, version 3.4.
 
 When interacting with the database file, the :py:class:`Layout` class is used to help
 map the hierarchical Composite Reactor Model to the flat representation in
-:py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`.
+:py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
 This module also stores packing/packing tools to support
-:py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`, as well as datbase
+:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as datbase
 versioning information.
 """
 
@@ -44,7 +44,7 @@ from armi.reactor.excoreStructure import ExcoreStructure
 from armi.reactor.reactors import Core
 from armi.reactor.reactors import Reactor
 
-# Here we store the Database3 version information.
+# Here we store the Database version information.
 DB_MAJOR = 3
 DB_MINOR = 4
 DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
@@ -95,7 +95,7 @@ class Layout:
     """
     The Layout class describes the hierarchical layout of the Composite Reactor model
     in a flat representation for
-    :py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`.
+    :py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
     A Layout is built by starting at the root of a composite tree and recursively
     appending each node in the tree to a list of data. So the data will be ordered by
@@ -138,7 +138,7 @@ class Layout:
         # There is a minor asymmetry here in that before writing to the DB, this is
         # truly a flat list of tuples. However when reading, this may contain lists of
         # tuples, which represent MI locations. This comes from the fact that we map the
-        # tuples to Location objects in Database3._compose, but map from Locations to
+        # tuples to Location objects in Database._compose, but map from Locations to
         # tuples in Layout._createLayout. Ideally we would handle both directions in the
         # same place so this can be less surprising. Resolving this would require
         # changing the interface of the various pack/unpack functions, which have
