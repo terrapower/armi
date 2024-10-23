@@ -515,7 +515,9 @@ class TestCalcReationRates(unittest.TestCase):
         blockList = [copy.deepcopy(b) for _i in range(3)]
         xsID = b.getMicroSuffix()
         xsNucDict = {nuc: b.core.lib.getNuclide(nuc, xsID) for nuc in b.getNuclides()}
-        uniformMesh.UniformMeshGeometryConverter._calcReactionRatesBlockList(blockList, 1.01, xsNucDict)
+        uniformMesh.UniformMeshGeometryConverter._calcReactionRatesBlockList(
+            blockList, 1.01, xsNucDict
+        )
         for b in blockList:
             self.assertGreater(b.p.rateAbs, 0.0)
             vfrac = b.getComponentAreaFrac(Flags.FUEL)

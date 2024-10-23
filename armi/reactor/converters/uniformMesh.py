@@ -75,6 +75,8 @@ from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SI
 
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
+RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
+RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
 
 def converterFactory(globalFluxOptions):
@@ -1164,6 +1166,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         r"""
         Compute 1-group reaction rates for the objects in objList (usually a block).
 
+        :meta public:
+
         Parameters
         ----------
         objList : List[Block]
@@ -1191,11 +1195,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
         """
-        from armi.physics.neutronics.globalFlux.globalFluxInterface import (
-            RX_PARAM_NAMES,
-            RX_ABS_MICRO_LABELS,
-        )
-
         for obj in objList:
             rate = collections.defaultdict(float)
 
