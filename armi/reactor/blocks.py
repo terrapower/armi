@@ -405,13 +405,13 @@ class Block(composites.Composite):
 
         Notes
         -----
-        The single-letter use for xsType and envGroup limit users to 26 groups of each.
+        The single-letter use for xsType and envGroup limit users to 52 groups of each.
         ARMI will allow 2-letter xsType designations if and only if the `envGroup`
         setting has length 1 (i.e. no burnup/temp groups are defined). This is useful for
         high-fidelity XS modeling of V&V models such as the ZPPRs.
         """
-        bu = self.p.envGroup
-        if not bu:
+        env = self.p.envGroup
+        if not env:
             raise RuntimeError(
                 "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
                 "".format(self, self.parent)
@@ -419,8 +419,8 @@ class Block(composites.Composite):
 
         xsType = self.p.xsType
         if len(xsType) == 1:
-            return xsType + bu
-        elif len(xsType) == 2 and ord(bu) > ord("A"):
+            return xsType + env
+        elif len(xsType) == 2 and ord(env) > ord("A"):
             raise ValueError(
                 "Use of multiple burnup groups is not allowed with multi-character xs groups!"
             )
