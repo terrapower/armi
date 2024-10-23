@@ -27,15 +27,17 @@ from armi.physics import executers
 from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import reactors
+from armi.nuclearDataIO.xsCollections import RX_ABS_MICRO_LABELS
+from armi.physics.neutronics.parameters import RX_PARAM_NAMES
 from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
-from armi.reactor.converters.uniformMesh import RX_PARAM_NAMES, RX_ABS_MICRO_LABELS
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
 from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
+
 
 class GlobalFluxInterface(interfaces.Interface):
     """

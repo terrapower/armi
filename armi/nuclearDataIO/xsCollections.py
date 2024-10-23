@@ -50,7 +50,7 @@ from armi.utils import units
 # they have some origin in the ISOTXS file format card 04 definition
 # fmt: off
 NGAMMA = "nGamma"      # radiative capture
-NAPLHA = "nalph"       # (n, alpha)
+NALPHA = "nalph"       # (n, alpha)
 NP = "np"              # (n, proton)
 ND = "nd"              # (n, deuteron)
 NT = "nt"              # (n, triton)
@@ -59,7 +59,9 @@ N2N_XS = "n2n"         # (n,2n)
 NUSIGF = "nuSigF"
 NU = "neutronsPerFission"
 # fmt: on
-CAPTURE_XS = [NGAMMA, NAPLHA, NP, ND, NT]
+CAPTURE_XS = [NGAMMA, NALPHA, NP, ND, NT]
+
+RX_ABS_MICRO_LABELS = [NGAMMA, FISSION_XS, NALPHA, NP, ND, NT]
 
 # Cross section types that are represented by 2-D matrices in the multigroup approximation
 BASIC_SCAT_MATRIX = ["elasticScatter", "inelasticScatter", "n2nScatter"]
