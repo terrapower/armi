@@ -61,8 +61,6 @@ NU = "neutronsPerFission"
 # fmt: on
 CAPTURE_XS = [NGAMMA, NALPHA, NP, ND, NT]
 
-RX_ABS_MICRO_LABELS = [NGAMMA, FISSION_XS, NALPHA, NP, ND, NT]
-
 # Cross section types that are represented by 2-D matrices in the multigroup approximation
 BASIC_SCAT_MATRIX = ["elasticScatter", "inelasticScatter", "n2nScatter"]
 OTHER_SCAT_MATRIX = ["totalScatter", "elasticScatter1stOrder"]
