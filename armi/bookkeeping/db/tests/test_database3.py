@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the Database3 class."""
+"""Tests for the Database class."""
 from glob import glob
 import os
 import shutil
@@ -22,7 +22,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db import _getH5File
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -44,8 +44,8 @@ elif shutil.which("git.exe") is not None:
     GIT_EXE = "git.exe"
 
 
-class TestDatabase3(unittest.TestCase):
-    """Tests for the Database3 class that require a large, complicated reactor."""
+class TestDatabase(unittest.TestCase):
+    """Tests for the Database class that require a large, complicated reactor."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -57,7 +57,7 @@ class TestDatabase3(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database3.Database3 = self.dbi.database
+        self.db: database.Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -189,8 +189,8 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
 
-class TestDatabase3Smaller(unittest.TestCase):
-    """Tests for the Database3 class, that can use a smaller test reactor."""
+class TestDatabaseSmaller(unittest.TestCase):
+    """Tests for the Database class, that can use a smaller test reactor."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -203,7 +203,7 @@ class TestDatabase3Smaller(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database3.Database3 = self.dbi.database
+        self.db: database.Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -249,8 +249,8 @@ class TestDatabase3Smaller(unittest.TestCase):
 
     def _compareRoundTrip(self, data):
         """Make sure that data is unchanged by packing/unpacking."""
-        packed, attrs = database3.packSpecialData(data, "testing")
-        roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
+        packed, attrs = database.packSpecialData(data, "testing")
+        roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
     def test_writeToDB(self):
@@ -354,7 +354,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
         randomText = "this isn't a reference to another dataset"
-        database3.Database3._writeAttrs(
+        database.Database._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
@@ -364,7 +364,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         )
 
         db_path = "restartDB.h5"
-        db2 = database3.Database3(db_path, "w")
+        db2 = database.Database(db_path, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -378,7 +378,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             )
 
             # exercise the _resolveAttrs function
-            attrs = database3.Database3._resolveAttrs(
+            attrs = database.Database._resolveAttrs(
                 tnGroup["layout/serialNum"].attrs, tnGroup
             )
             self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
@@ -401,7 +401,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
             self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()][0], 0)
             self.assertNotIn("c03n00", newDb)
-            self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
+            self.assertEqual(newDb.attrs["databaseVersion"], database.DB_VERSION)
 
             # validate that the min set of meta data keys exists
             meta_data_keys = [
@@ -437,7 +437,7 @@ class TestDatabase3Smaller(unittest.TestCase):
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
@@ -452,7 +452,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             return
 
         self.assertEqual(code, 0)
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 3. test inside a git repo with one tag
@@ -475,7 +475,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.assertEqual(code, 0)
 
         # test that we recover the correct commit hash
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
         # delete the .git directory
@@ -524,7 +524,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.assertIn("blocks:", inputs[2])
 
     def test_deleting(self):
-        self.assertEqual(type(self.db), database3.Database3)
+        self.assertTrue(isinstance(self.db, database.Database))
         del self.db
         self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database
@@ -535,7 +535,7 @@ class TestDatabase3Smaller(unittest.TestCase):
 
     def test_loadCS(self):
         cs = self.db.loadCS()
-        self.assertEqual(cs["numProcessors"], 1)
+        self.assertEqual(cs["nTasks"], 1)
         self.assertEqual(cs["nCycles"], 2)
 
     def test_loadBlueprints(self):
@@ -692,13 +692,13 @@ class TestDatabase3Smaller(unittest.TestCase):
         ]
 
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren), expected_1
+            database.Layout.computeAncestors(serialNums, numChildren), expected_1
         )
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
+            database.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
         )
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
+            database.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
 
 
@@ -758,7 +758,7 @@ grids:
         self.o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database3.Database3 = self.dbi.database
+        self.db: database.Database = self.dbi.database
 
     def tearDown(self):
         self.db.close()
@@ -795,7 +795,7 @@ grids:
         self.db.close()
 
         # open the DB and verify, the first timenode
-        with database3.Database3(self._testMethodName + ".h5", "r") as db:
+        with database.Database(self._testMethodName + ".h5", "r") as db:
             r0 = db.load(0, 0, allowMissing=True)
             self.assertEqual(r0.p.cycle, 0)
             self.assertEqual(r0.p.timeNode, 0)
@@ -818,7 +818,7 @@ grids:
             self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
 
         # open the DB and verify, the second timenode
-        with database3.Database3(self._testMethodName + ".h5", "r") as db:
+        with database.Database(self._testMethodName + ".h5", "r") as db:
             r1 = db.load(0, 1, allowMissing=True)
             self.assertEqual(r1.p.cycle, 0)
             self.assertEqual(r1.p.timeNode, 1)
@@ -856,5 +856,5 @@ grids:
             circleGroup.create_dataset("massHmBOL", data=badData)
 
         with self.assertRaises(ValueError):
-            with database3.Database3(self.db.fileName, "r") as db:
+            with database.Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
