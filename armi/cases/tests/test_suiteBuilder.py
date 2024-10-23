@@ -33,7 +33,7 @@ cs = settings.Settings(
         "..",
         "..",
         "tests",
-        "tutorials",
+        "anl-afci-177",
         "anl-afci-177.yaml",
     )
 )

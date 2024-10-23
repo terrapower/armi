@@ -1458,7 +1458,7 @@ class Block(composites.Composite):
         # Handle all other components that may be linked to the fuel multiplicity
         # by unlinking them and setting them directly.
         # TODO: What about other (actual) dimensions? This is a limitation in that only fuel
-        # compuents are duplicated, and not the entire pin. It is also a reasonable assumption with
+        # components are duplicated, and not the entire pin. It is also a reasonable assumption with
         # current/historical usage of ARMI.
         for comp, dim in self.getComponentsThatAreLinkedTo(fuel, "mult"):
             comp.setDimension(dim, nPins)
