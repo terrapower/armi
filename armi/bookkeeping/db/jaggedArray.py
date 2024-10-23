@@ -54,32 +54,40 @@ class JaggedArray:
         offsets = []
         shapes = []
         nones = []
+        scalarValue = False
         for i, arr in enumerate(jaggedData):
             if isinstance(arr, (np.ndarray, list, tuple)):
-                if len(arr) == 0:
-                    nones.append(i)
+                if arr.shape == tuple():
+                    # check for 0D array; treat as a scalar
+                    scalarValue = True
                 else:
-                    offsets.append(offset)
-                    try:
-                        numpyArray = np.array(arr)
-                        shapes.append(numpyArray.shape)
-                        offset += numpyArray.size
-                        flattenedArray.extend(numpyArray.flatten())
-                    except:  # noqa: E722
-                        # numpy might fail if it's jagged
-                        flattenedList = self.flatten(arr)
-                        shapes.append(
-                            len(flattenedList),
-                        )
-                        offset += len(flattenedList)
-                        flattenedArray.extend(flattenedList)
+                    if len(arr) == 0:
+                        nones.append(i)
+                    else:
+                        offsets.append(offset)
+                        try:
+                            numpyArray = np.array(arr)
+                            shapes.append(numpyArray.shape)
+                            offset += numpyArray.size
+                            flattenedArray.extend(numpyArray.flatten())
+                        except:  # noqa: E722
+                            # numpy might fail if it's jagged
+                            flattenedList = self.flatten(arr)
+                            shapes.append(
+                                len(flattenedList),
+                            )
+                            offset += len(flattenedList)
+                            flattenedArray.extend(flattenedList)
             elif isinstance(arr, (int, float)):
+                scalarValue = True
+            elif arr is None:
+                nones.append(i)
+
+            if scalarValue:
                 offsets.append(offset)
                 shapes.append((1,))
                 offset += 1
                 flattenedArray.append(arr)
-            elif arr is None:
-                nones.append(i)
 
         self.flattenedArray = np.array(flattenedArray)
         self.offsets = np.array(offsets)
