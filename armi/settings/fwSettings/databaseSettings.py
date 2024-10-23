@@ -73,7 +73,7 @@ def defineSettings():
         ),
         setting.Setting(
             CONF_SYNC_AFTER_WRITE,
-            default=False,
+            default=True,
             label="Sync Database After Write",
             description=(
                 "Copy the output database from the fast scratch space to the shared "
