@@ -26,8 +26,6 @@ from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.reactor.reactors import Core
 from armi.utils import units
 
-RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
-
 
 def getNeutronicsParameterDefinitions():
     """Return ParameterDefinitionCollections for each appropriate ArmiObject."""

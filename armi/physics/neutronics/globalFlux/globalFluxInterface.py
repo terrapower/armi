@@ -27,8 +27,7 @@ from armi.physics import executers
 from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import reactors
-from armi.nuclearDataIO.xsCollections import RX_ABS_MICRO_LABELS
-from armi.physics.neutronics.parameters import RX_PARAM_NAMES
+from armi.physics.neutronics.globalFlux import RX_PARAM_NAMES, RX_ABS_MICRO_LABELS
 from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh

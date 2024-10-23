@@ -72,8 +72,7 @@ from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.reactor import parameters
 from armi.reactor.reactors import Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.physics.neutronics.parameters import RX_PARAM_NAMES
-from armi.nuclearDataIO.xsCollections import RX_ABS_MICRO_LABELS
+from armi.physics.neutronics.globalFlux import RX_PARAM_NAMES, RX_ABS_MICRO_LABELS
 
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
