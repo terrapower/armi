@@ -23,6 +23,7 @@ New Features
 #. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion. (`PR#1870 <https://github.com/terrapower/armi/pull/1870>`_)
 #. New plugin hook ``beforeReactorConstruction`` added to enable plugins to process case settings before reactor init. (`PR#1945 <https://github.com/terrapower/armi/pull/1945>`_)
 #. Provide ``Block.getInputHeight`` for determining the height of a block from blueprints. (`PR#1927 <https://github.com/terrapower/armi/pull/1927`_)
+#. Improve performance by changing the lattice physics interface so that cross sections are not updated on ``everyNode`` calls during coupled calculations (`PR#1963 <https://github.com/terrapower/armi/pull/1963>`_)
 #. TBD
 
 API Changes
