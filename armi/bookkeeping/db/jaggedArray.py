@@ -54,40 +54,45 @@ class JaggedArray:
         offsets = []
         shapes = []
         nones = []
-        scalarValue = False
         for i, arr in enumerate(jaggedData):
-            if isinstance(arr, (np.ndarray, list, tuple)):
+            scalarValue = None
+            listValue = None
+            if isinstance(arr, np.ndarray):
                 if arr.shape == tuple():
-                    # check for 0D array; treat as a scalar
-                    scalarValue = True
+                    scalarValue = arr[()]
                 else:
-                    if len(arr) == 0:
-                        nones.append(i)
-                    else:
-                        offsets.append(offset)
-                        try:
-                            numpyArray = np.array(arr)
-                            shapes.append(numpyArray.shape)
-                            offset += numpyArray.size
-                            flattenedArray.extend(numpyArray.flatten())
-                        except:  # noqa: E722
-                            # numpy might fail if it's jagged
-                            flattenedList = self.flatten(arr)
-                            shapes.append(
-                                len(flattenedList),
-                            )
-                            offset += len(flattenedList)
-                            flattenedArray.extend(flattenedList)
+                    listValue = arr
+            elif isinstance(arr, (list, tuple)):
+                if len(arr) == 0:
+                    nones.append(i)
+                else:
+                    listValue = arr
             elif isinstance(arr, (int, float)):
-                scalarValue = True
+                scalarValue = arr
             elif arr is None:
                 nones.append(i)
 
-            if scalarValue:
+            if scalarValue is not None:
+                # check for 0D array; treat as a scalar
                 offsets.append(offset)
                 shapes.append((1,))
                 offset += 1
-                flattenedArray.append(arr)
+                flattenedArray.append(scalarValue)
+            elif listValue is not None:
+                offsets.append(offset)
+                try:
+                    numpyArray = np.array(arr)
+                    shapes.append(numpyArray.shape)
+                    offset += numpyArray.size
+                    flattenedArray.extend(numpyArray.flatten())
+                except:  # noqa: E722
+                    # numpy might fail if it's jagged
+                    flattenedList = self.flatten(arr)
+                    shapes.append(
+                        len(flattenedList),
+                    )
+                    offset += len(flattenedList)
+                    flattenedArray.extend(flattenedList)
 
         self.flattenedArray = np.array(flattenedArray)
         self.offsets = np.array(offsets)
@@ -122,6 +127,11 @@ class JaggedArray:
             An iterable. Can be a nested iterable in which the elements
             themselves are also iterable.
         """
+        # check for zero-dimensional numpy array
+        if isinstance(x, np.ndarray):
+            if x.shape == tuple():
+                return [x[()]]
+
         if isinstance(x, (list, tuple, np.ndarray)):
             if len(x) == 0:
                 return []

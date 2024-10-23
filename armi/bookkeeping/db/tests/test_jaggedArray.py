@@ -43,9 +43,9 @@ class TestJaggedArray(unittest.TestCase):
 
     def test_flatten(self):
         """Test the recursive flattening static method."""
-        testdata = [(1, 2), [3, 4, 5], [], None, 6, np.array([7, 8, 9])]
+        testdata = [(1, 2), [3, 4, 5], [], None, 6, np.array([7, 8, 9]), np.array(10)]
         flatArray = JaggedArray.flatten(testdata)
-        self.assertEqual(flatArray, [1, 2, 3, 4, 5, None, 6, 7, 8, 9])
+        self.assertEqual(flatArray, [1, 2, 3, 4, 5, None, 6, 7, 8, 9, 10])
 
     def test_backwardsCompatible(self):
         """
@@ -140,7 +140,6 @@ class TestJaggedArray(unittest.TestCase):
         - Empty lists become `None`
 
         """
-        # self.assertEqual(type(src), JaggedArray)
         if isinstance(ref, np.ndarray):
             ref = ref.tolist()
             src = src.tolist()
