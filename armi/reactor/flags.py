@@ -128,11 +128,16 @@ def __fromStringGeneral(cls, typeSpec, updateMethod):
             result |= _CONVERSIONS[conversion]
 
     for name in typeSpec.split():
-        # ignore numbers so we don't have to define flags up to 217+ (number of pins/assem)
-        typeSpecWithoutNumbers = "".join([c for c in name if not c.isdigit()])
-        if not typeSpecWithoutNumbers:
-            continue
-        result |= updateMethod(typeSpecWithoutNumbers)
+        try:
+            # first, check for an exact match, to cover flags with digits
+            result |= cls[name]
+        except KeyError:
+            # ignore numbers so we don't have to define flags up to the number of pins/assem
+            typeSpecWithoutNumbers = "".join([c for c in name if not c.isdigit()])
+            if not typeSpecWithoutNumbers:
+                continue
+            result |= updateMethod(typeSpecWithoutNumbers)
+
     return result
 
 
@@ -148,8 +153,7 @@ def _fromStringIgnoreErrors(cls, typeSpec):
 
     Complications arise when:
 
-    a. multiple-word flags are used such as *grid plate* or
-       *inlet nozzle* so we use lookups.
+    a. multiple-word flags are used such as *grid plate* or *inlet nozzle* so we use lookups.
     b. Some flags have digits in them. We just strip those off.
     """
 
@@ -170,8 +174,8 @@ def _fromString(cls, typeSpec):
             return cls[typeSpec]
         except KeyError:
             raise InvalidFlagsError(
-                "The requested type specification `{}` is invalid. "
-                "See armi.reactor.flags documentation.".format(typeSpec)
+                f"The requested type specification `{typeSpec}` is invalid. "
+                "See armi.reactor.flags documentation."
             )
 
     return __fromStringGeneral(cls, typeSpec, updateMethod)
@@ -185,7 +189,8 @@ def _toString(cls, typeSpec):
     -----
     This converts a flag from ``Flags.A|B`` to ``'A B'``
     """
-    return str(typeSpec).split("{}.".format(cls.__name__))[1].replace("|", " ")
+    strings = str(typeSpec).split("{}.".format(cls.__name__))[1]
+    return " ".join(sorted(strings.split("|")))
 
 
 class Flags(Flag):
@@ -288,15 +293,14 @@ class Flags(Flag):
             :id: I_ARMI_FLAG_TO_STR0
             :implements: R_ARMI_FLAG_TO_STR
 
-            For a string passed as ``typeSpec``, first converts the whole string
-            to uppercase. Then tries to parse the string for any special phrases, as
-            defined in the module dictionary ``_CONVERSIONS``, and converts those
-            phrases to flags directly.
+            For a string passed as ``typeSpec``, first converts the whole string to uppercase. Then
+            tries to parse the string for any special phrases, as defined in the module dictionary
+            ``_CONVERSIONS``, and converts those phrases to flags directly.
 
-            Then it splits the remaining string into separate words based on the presence
-            of spaces. Looping over each of the words, any numbers are stripped out
-            and the remaining string is matched up to any class attribute names.
-            If any matches are found these are returned as flags.
+            Then it splits the remaining string into words based on spaces. Looping over each of the
+            words, if any word exactly matches a flag name. Otherwise, any numbers are stripped out
+            and the remaining string is matched up to any class attribute names. If any matches are
+            found these are returned as flags.
         """
         return _fromString(cls, typeSpec)
 
@@ -309,11 +313,9 @@ class Flags(Flag):
             :id: I_ARMI_FLAG_TO_STR1
             :implements: R_ARMI_FLAG_TO_STR
 
-            This converts the representation of a bunch of flags from ``typeSpec``,
-            which might look like ``Flags.A|B``,
-            into a string with spaces in between the flag names, which would look
-            like  ``'A B'``. This is done via nesting string splitting and replacement
-            actions.
+            This converts the representation of a bunch of flags from ``typeSpec``, which might look
+            like ``Flags.A|B``, into a string with spaces in between the flag names, which would
+            look like  ``'A B'``. This is done via nesting string splitting and replacement actions.
         """
         return _toString(cls, typeSpec)
 

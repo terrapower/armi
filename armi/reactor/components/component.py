@@ -226,6 +226,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     pDefs = componentParameters.getComponentParameterDefinitions()
 
+    material: materials.Material
+
     def __init__(
         self,
         name,
@@ -1275,13 +1277,17 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
-    def density(self):
+    def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
-        if not density:
-            # possible that there are no nuclides in this component yet. In that case, defer to Material.
-            density = self.material.density(Tc=self.temperatureInC)
+        if not density and not isinstance(self.material, void.Void):
+            # possible that there are no nuclides in this component yet. In that case,
+            # defer to Material. Material.density is wrapped to warn if it's attached
+            # to a parent. Avoid that by calling the inner function directly
+            density = self.material.density.__wrapped__(
+                self.material, Tc=self.temperatureInC
+            )
 
         return density
 
@@ -1323,6 +1329,21 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getFuelMass(self) -> float:
         """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
+
+    def finalizeLoadingFromDB(self):
+        """Apply any final actions after creating the component from database.
+
+        This should **only** be called internally by the database loader. Otherwise
+        some properties could be doubly applied.
+
+        This exists because the theoretical density is initially defined as a material
+        modification, and then stored as a Material attribute. When reading from blueprints,
+        the blueprint loader sets the theoretical density parameter from the Material
+        attribute. Component parameters are also set when reading from the database.
+        But, we need to set the Material attribute so routines that fetch a material's
+        density property account for the theoretical density.
+        """
+        self.material.adjustTD(self.p.theoreticalDensityFrac)
 
 
 class ShapedComponent(Component):

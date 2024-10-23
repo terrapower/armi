@@ -15,25 +15,26 @@
 """
 Assemblies are collections of Blocks.
 
-Generally, blocks are stacked from bottom to top.
+Generally, Blocks are stacked from bottom to top.
 """
 import copy
 import math
 import pickle
 from random import randint
+from typing import ClassVar, Optional, Type
 
 import numpy as np
 from scipy import interpolate
 
 from armi import runLog
-from armi.reactor import assemblyLists
+from armi.materials.material import Fluid
 from armi.reactor import assemblyParameters
 from armi.reactor import blocks
 from armi.reactor import composites
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.materials.material import Fluid
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.spentFuelPool import SpentFuelPool
 
 
 class Assembly(composites.Composite):
@@ -42,14 +43,15 @@ class Assembly(composites.Composite):
     Append blocks to add them up. Index blocks with 0 being the bottom.
     """
 
+    _BLOCK_TYPE: ClassVar[Optional[Type[blocks.Block]]] = None
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
 
-    LOAD_QUEUE = "LoadQueue"
-    SPENT_FUEL_POOL = "SFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
     # of fuel management stuff doesn't treat its re-placement into the core as a new move
     DATABASE = "database"
+    LOAD_QUEUE = "LoadQueue"
+    SPENT_FUEL_POOL = "SFP"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
     def __init__(self, typ, assemNum=None):
@@ -58,7 +60,6 @@ class Assembly(composites.Composite):
         ----------
         typ : str
             Name of assembly design (e.g. the name from the blueprints input file).
-
         assemNum : int, optional
             The unique ID number of this assembly. If None is provided, we generate a
             random int. This makes it clear that it is a placeholder. When an assembly with
@@ -87,14 +88,12 @@ class Assembly(composites.Composite):
 
         Notes
         -----
-        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
-        are more permissive in the grid consistency checks to accomodate situations
-        where assemblies might be children of the same Core, but not in the same grid as
-        each other (as can be the case in the spent fuel pool). In these situations,
-        the operator returns ``False``.  This behavior may lead to some strange sorting
-        behavior when two or more Assemblies are being compared that do not live in the
-        same grid. It may be beneficial in the future to maintain the more strict behavior
-        of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
+        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies are more
+        permissive in the grid consistency checks to accomodate situations where assemblies might be
+        children of the same Core, but not in the same grid as each other (like in the spent fuel
+        pool). In these situations, the operator returns ``False``.  This behavior may lead to some
+        strange sorting behavior when two or more Assemblies are being compared that do not live in
+        the same grid.
 
         See Also
         --------
@@ -160,6 +159,17 @@ class Assembly(composites.Composite):
         self.p.assemNum = randint(-9000000000000, -1)
         self.renumber(self.p.assemNum)
 
+    def _checkPotentialChild(self, obj: blocks.Block, action: str = "add"):
+        """An internal helper method to ensure the Block type is valid for this Assembly."""
+        if self._BLOCK_TYPE is None or isinstance(obj, self._BLOCK_TYPE):
+            # this is the right Block, pass on
+            return
+
+        # if we got here, this Block is not the right type for this Assembly
+        msg = f"Cannot {action} {obj} to this Assembly, it is not a {self._BLOCK_TYPE}."
+        runLog.error(msg)
+        raise TypeError(msg)
+
     def add(self, obj: blocks.Block):
         """
         Add an object to this assembly.
@@ -180,12 +190,19 @@ class Assembly(composites.Composite):
             are updated. The axial mesh and other Block geometry parameters are
             updated in ``calculateZCoords``.
         """
+        self._checkPotentialChild(obj, "add")
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
 
         # more work is needed, make a new mesh
         self.reestablishBlockOrder()
         self.calculateZCoords()
+
+    def insert(self, index, obj):
+        """Insert an object at a given index position with the assembly."""
+        self._checkPotentialChild(obj, "insert")
+        composites.Composite.insert(self, index, obj)
+        obj.spatialLocator = self.spatialGrid[0, 0, index]
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
@@ -196,11 +213,6 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
-
-    def insert(self, index, obj):
-        """Insert an object at a given index position with the assembly."""
-        composites.Composite.insert(self, index, obj)
-        obj.spatialLocator = self.spatialGrid[0, 0, index]
 
     def getNum(self):
         """Return unique integer for this assembly."""
@@ -224,7 +236,7 @@ class Assembly(composites.Composite):
         # just use ring and position, not axial (which is 0)
         if not self.parent:
             return self.LOAD_QUEUE
-        elif isinstance(self.parent, assemblyLists.SpentFuelPool):
+        elif isinstance(self.parent, SpentFuelPool):
             return self.SPENT_FUEL_POOL
         return self.parent.spatialGrid.getLabel(
             self.spatialLocator.getCompleteIndices()[:2]
@@ -314,38 +326,6 @@ class Assembly(composites.Composite):
             plenumTemps = [self[-1].p.THcoolantOutletT]
 
         return sum(plenumTemps) / len(plenumTemps)
-
-    def doubleResolution(self):
-        """
-        Turns each block into two half-size blocks.
-
-        Notes
-        -----
-        Used for mesh sensitivity studies.
-
-        Warning
-        -------
-        This is likely destined for a geometry converter rather than this instance method.
-        """
-        newBlockStack = []
-        topIndex = -1
-        for b in self:
-            b0 = b
-            b1 = copy.deepcopy(b)
-            for bx in [b0, b1]:
-                newHeight = bx.getHeight() / 2.0
-                bx.p.height = newHeight
-                bx.p.heightBOL = newHeight
-                topIndex += 1
-                bx.p.topIndex = topIndex
-                newBlockStack.append(bx)
-                bx.clearCache()
-
-        self.removeAll()
-        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
-        for b in newBlockStack:
-            self.add(b)
-        self.reestablishBlockOrder()
 
     def adjustResolution(self, refA):
         """Split the blocks in this assembly to have the same mesh structure as refA."""
@@ -1237,15 +1217,6 @@ class Assembly(composites.Composite):
 
         Each Block on the Assembly is rotated in turn.
 
-        .. impl:: An assembly can be rotated about its z-axis.
-            :id: I_ARMI_SHUFFLE_ROTATE
-            :implements: R_ARMI_SHUFFLE_ROTATE
-
-            This method loops through every ``Block`` in this ``Assembly`` and rotates
-            it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction. To perform the ``Block`` rotation, the
-            :py:meth:`armi.reactor.blocks.Block.rotate` method is called.
-
         Parameters
         ----------
         rad: float
@@ -1261,10 +1232,21 @@ class Assembly(composites.Composite):
 
 
 class HexAssembly(Assembly):
-    """Placeholder, so users can explicitly define a hex-based Assembly."""
+    """An assembly that is hexagonal in cross-section."""
+
+    _BLOCK_TYPE = blocks.HexBlock
 
     def rotate(self, rad: float):
         """Rotate an assembly and its children.
+
+        .. impl:: A hexagonal assembly shall support rotating around the z-axis in 60 degree increments.
+            :id: I_ARMI_ROTATE_HEX
+            :implements: R_ARMI_ROTATE_HEX
+
+            This method loops through every ``Block`` in this ``HexAssembly`` and rotates
+            it by a given angle (in radians). The rotation angle is positive in the
+            counter-clockwise direction. To perform the ``Block`` rotation, the
+            :meth:`armi.reactor.blocks.HexBlock.rotate` method is called.
 
         Parameters
         ----------
@@ -1279,27 +1261,31 @@ class HexAssembly(Assembly):
         """
         if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
             return super().rotate(rad)
-        raise ValueError(
-            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} "
-            f"degrees ({rad} radians)"
+
+        msg = (
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees "
+            f"({rad} radians)."
         )
+        runLog.error(msg)
+        raise ValueError(msg)
 
 
 class CartesianAssembly(Assembly):
-    pass
+    """An assembly that is rectangular in cross-section."""
+
+    _BLOCK_TYPE = blocks.CartesianBlock
 
 
 class RZAssembly(Assembly):
     """
-    RZAssembly are assemblies in RZ geometry; they need to be different objects than
-    HexAssembly because they use different locations and need to have Radial Meshes in
-    their setting.
+    RZAssembly are assemblies in RZ geometry; they need to be different objects than HexAssembly
+    because they use different locations and need to have Radial Meshes in their setting.
 
     Notes
     -----
-    ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
-    they should have a common place to put information about subdividing the global mesh
-    for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
+    ThRZAssemblies should be a subclass of Assemblies because they should have a common place to put
+    information about subdividing the global mesh for transport. This is similar to how blocks have
+    'AxialMesh' in their blocks.
     """
 
     def __init__(self, name, assemNum=None):
@@ -1307,43 +1293,19 @@ class RZAssembly(Assembly):
         self.p.RadMesh = 1
 
     def radialOuter(self):
-        """
-        Returns the outer radial boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.radialOuter
-        """
+        """Returns the outer radial boundary of this assembly."""
         return self[0].radialOuter()
 
     def radialInner(self):
-        """
-        Returns the inner radial boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.radialInner
-        """
+        """Returns the inner radial boundary of this assembly."""
         return self[0].radialInner()
 
     def thetaOuter(self):
-        """
-        Returns the outer azimuthal boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.thetaOuter
-        """
+        """Returns the outer azimuthal boundary of this assembly."""
         return self[0].thetaOuter()
 
     def thetaInner(self):
-        """
-        Returns the outer azimuthal boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.thetaInner
-        """
+        """Returns the outer azimuthal boundary of this assembly."""
         return self[0].thetaInner()
 
 
@@ -1352,11 +1314,6 @@ class ThRZAssembly(RZAssembly):
     ThRZAssembly are assemblies in ThetaRZ geometry, they need to be different objects
     than HexAssembly because they use different locations and need to have Radial Meshes
     in their setting.
-
-    Notes
-    -----
-    This is a subclass of RZAssemblies, which is itself a subclass of the generic
-    Assembly class.
     """
 
     def __init__(self, assemType, assemNum=None):

@@ -11,11 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the Parameters class."""
+"""Tests for assorted Parameters tools."""
+from glob import glob
+from shutil import copyfile
 import copy
+import os
 import unittest
 
 from armi.reactor import parameters
+from armi.reactor.reactorParameters import makeParametersReadOnly
+from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class MockComposite:
@@ -456,14 +463,31 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(p2.categories, set(["awesome", "stuff", "bacon"]))
         self.assertEqual(p3.categories, set(["bacon"]))
 
+        for p in [p1, p2, p3]:
+            self._testCategoryConsistency(p)
+
         self.assertEqual(set(pc.paramDefs.inCategory("awesome")), set([p1, p2]))
         self.assertEqual(set(pc.paramDefs.inCategory("stuff")), set([p1, p2]))
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
 
+    def _testCategoryConsistency(self, p: parameters.Parameter):
+        for category in p.categories:
+            self.assertTrue(p.hasCategory(category))
+        self.assertFalse(p.hasCategory("this_shouldnot_exist"))
+
     def test_parameterCollectionsHave__slots__(self):
         """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
-            set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
+            set(
+                [
+                    "_hist",
+                    "_backup",
+                    "assigned",
+                    "_p_serialNum",
+                    "serialNum",
+                    "readOnly",
+                ]
+            ),
             set(parameters.ParameterCollection._slots),
         )
 
@@ -502,3 +526,106 @@ class ParameterTests(unittest.TestCase):
         pcc = MockPCChild()
         with self.assertRaises(AssertionError):
             pcc.whatever = 33
+
+
+class ParamCollectionWhere(unittest.TestCase):
+    """Tests for ParameterCollection.where."""
+
+    class ScopeParamCollection(parameters.ParameterCollection):
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam(
+                name="empty",
+                description="Bare",
+                location=None,
+                categories=None,
+                units="",
+            )
+            pb.defParam(
+                name="keff",
+                description="keff",
+                location=parameters.ParamLocation.VOLUME_INTEGRATED,
+                categories=[parameters.Category.neutronics],
+                units="",
+            )
+            pb.defParam(
+                name="cornerFlux",
+                description="corner flux",
+                location=parameters.ParamLocation.CORNERS,
+                categories=[
+                    parameters.Category.neutronics,
+                ],
+                units="",
+            )
+            pb.defParam(
+                name="edgeTemperature",
+                description="edge temperature",
+                location=parameters.ParamLocation.EDGES,
+                categories=[parameters.Category.thermalHydraulics],
+                units="",
+            )
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Define a couple useful parameters with categories, locations, etc."""
+        cls.pc = cls.ScopeParamCollection()
+
+    def test_onCategory(self):
+        """Test the use of Parameter.hasCategory on filtering."""
+        names = {"keff", "cornerFlux"}
+        for p in self.pc.where(
+            lambda pd: pd.hasCategory(parameters.Category.neutronics)
+        ):
+            self.assertTrue(p.hasCategory(parameters.Category.neutronics), msg=p)
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty!")
+
+    def test_onLocation(self):
+        """Test the use of Parameter.atLocation in filtering."""
+        names = {"edgeTemperature"}
+        for p in self.pc.where(
+            lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)
+        ):
+            self.assertTrue(p.atLocation(parameters.ParamLocation.EDGES), msg=p)
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty!")
+
+    def test_complicated(self):
+        """Test a multi-condition filter."""
+        names = {"cornerFlux"}
+
+        def check(p: parameters.Parameter) -> bool:
+            return p.atLocation(parameters.ParamLocation.CORNERS) and p.hasCategory(
+                parameters.Category.neutronics
+            )
+
+        for p in self.pc.where(check):
+            self.assertTrue(check(p), msg=p)
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty")
+
+
+class TestMakeParametersReadOnly(unittest.TestCase):
+    def test_makeParametersReadOnly(self):
+        with TemporaryDirectoryChanger():
+            # copy test reactor to local
+            yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+            for yamlFile in yamls:
+                copyfile(yamlFile, os.path.basename(yamlFile))
+
+            # load some random test reactor
+            _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
+
+            # prove we can edit various params at will
+            r.core.p.keff = 1.01
+            b = r.core.getFirstBlock()
+            b.p.power = 123.4
+
+            makeParametersReadOnly(r)
+
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
+
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1

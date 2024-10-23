@@ -34,12 +34,12 @@ from armi import interfaces
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
-from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
+from armi.settings import settingsValidation
 from armi.settings.fwSettings.globalSettings import (
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_MAX_ITERS,
@@ -1255,16 +1255,6 @@ class Operator:
         )
         pathTools.copyOrWarn(
             "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder
-        )
-        pathTools.copyOrWarn(
-            "Flow history for snapshot",
-            self.cs.caseTitle + ".flow_history.txt",
-            newFolder,
-        )
-        pathTools.copyOrWarn(
-            "Pressure history for snapshot",
-            self.cs.caseTitle + ".pressure_history.txt",
-            newFolder,
         )
 
     @staticmethod
