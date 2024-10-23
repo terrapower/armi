@@ -42,6 +42,7 @@ API Changes
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index. (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`_)
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class. (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`_)
 #. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
+#. Changing ``synDbAfterWrite`` default to ``True``. (`PR#1968 <https://github.com/terrapower/armi/pull/1968>`_)
 #. TBD
 
 Bug Fixes
