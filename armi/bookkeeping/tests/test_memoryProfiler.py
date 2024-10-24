@@ -132,43 +132,57 @@ class TestMemoryProfiler(unittest.TestCase):
     @patch("psutil.virtual_memory")
     @patch("armi.bookkeeping.memoryProfiler.cpu_count")
     def test_getTotalJobMemory(self, mockCpuCount, mockVMem):
-        mockCpuCount.return_value = 1
+        """Use an example node with 50 GB of total physical memory and 10 CPUs."""
+        mockCpuCount.return_value = 10
         vMem = MagicMock()
-        vMem.total = (1024**2) * 4
+        vMem.total = (1024**3) * 50
         mockVMem.return_value = vMem
 
-        self.assertAlmostEqual(getTotalJobMemory(1, 1), 0.00390625, delta=0.001)
-        self.assertAlmostEqual(getTotalJobMemory(2, 2), 0.00390625, delta=0.001)
-        self.assertAlmostEqual(getTotalJobMemory(4, 0), 0.015625, delta=0.001)
+        expectedArrangement = {0: 50, 1: 50, 2: 50, 3: 45, 4: 40, 5: 50}
+        for nTasksPerNode, jobMemory in expectedArrangement.items():
+            self.assertEqual(getTotalJobMemory(nTasksPerNode), jobMemory)
 
     @patch("armi.bookkeeping.memoryProfiler.PrintSystemMemoryUsageAction")
     @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
-    def test_getCurrentMemoryUsage(self, mock1, mock2):
-        self.assertEqual(getCurrentMemoryUsage(), 0)
+    def test_getCurrentMemoryUsage(
+        self, mockSysAndProcMemUse, mockPrintSysMemUseAction
+    ):
+        """Mock the memory usage across 3 different processes and that the total usage is as expected (6 MB)."""
+        self._setMemUseMock(mockPrintSysMemUseAction)
+        self.assertAlmostEqual(getCurrentMemoryUsage(), 6 * 1024)
 
     @patch("armi.bookkeeping.memoryProfiler.PrintSystemMemoryUsageAction")
     @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
     @patch("psutil.virtual_memory")
     @patch("armi.bookkeeping.memoryProfiler.cpu_count")
-    def test_printCurrentMemoryState(self, mockCpuCount, mockVMem, mock1, mock2):
-        mockCpuCount.return_value = 1
+    def test_printCurrentMemoryState(
+        self, mockCpuCount, mockVMem, mock1, mockPrintSysMemUseAction
+    ):
+        """Use an example node with 50 GB of total physical memory and 10 CPUs while using 6 GB."""
+        mockCpuCount.return_value = 10
         vMem = MagicMock()
-        vMem.total = (1024**2) * 4
+        vMem.total = (1024**3) * 50
         mockVMem.return_value = vMem
+        self._setMemUseMock(mockPrintSysMemUseAction)
 
         with mockRunLogs.BufferLog() as mock:
-            # we should start with a clean slate
-            self.assertEqual("", mock.getStdout())
-            testName = "test_printCurrentMemoryState"
-            runLog.LOG.startLog(testName)
-            runLog.LOG.setVerbosity(logging.INFO)
-
             printCurrentMemoryState(2)
-
             stdOut = mock.getStdout()
-            self.assertIn("Currently using 0.0", stdOut)
-            self.assertIn("There is 0.0", stdOut)
-            self.assertIn("There is a total allocation of 0.0", stdOut)
+            self.assertIn("Currently using 6.0 GB of memory.", stdOut)
+            self.assertIn("There is 44.0 GB of memory left.", stdOut)
+            self.assertIn("There is a total allocation of 50.0 GB", stdOut)
+
+    def _setMemUseMock(self, mockPrintSysMemUseAction):
+        class mockMemUse:
+            def __init__(self, mem: float):
+                self.processVirtualMemoryInMB = mem
+
+        instance = mockPrintSysMemUseAction.return_value
+        instance.gather.return_value = [
+            mockMemUse(1 * 1024),
+            mockMemUse(2 * 1024),
+            mockMemUse(3 * 1024),
+        ]
 
 
 class KlassCounterTests(unittest.TestCase):

@@ -40,6 +40,7 @@ from os import cpu_count
 from typing import Optional
 import gc
 import sys
+from math import floor
 
 from armi import context
 from armi import interfaces
@@ -69,14 +70,14 @@ def describeInterfaces(cs):
     return (MemoryProfiler, {})
 
 
-def getTotalJobMemory(nRanks, tasksPerNode):
+def getTotalJobMemory(nTasksPerNode):
     """Function to calculate the total memory of a job. This is a constant during a simulation."""
     cpuPerNode = cpu_count()
     ramPerCpuGB = psutil.virtual_memory().total / (1024**3) / cpuPerNode
-    if tasksPerNode == 0:
-        tasksPerNode = cpuPerNode
-    cpusPerRank = cpuPerNode / tasksPerNode
-    jobMem = nRanks * cpusPerRank * ramPerCpuGB
+    if nTasksPerNode == 0:
+        nTasksPerNode = cpuPerNode
+    cpusPerTask = floor(cpuPerNode / nTasksPerNode)
+    jobMem = nTasksPerNode * cpusPerTask * ramPerCpuGB
     return jobMem
 
 
@@ -91,9 +92,9 @@ def getCurrentMemoryUsage():
     return memoryUsageInMB
 
 
-def printCurrentMemoryState(mpiTasksPerNode):
+def printCurrentMemoryState(nTasksPerNode):
     """Print the current memory footprint and available memory."""
-    totalMemoryInGB = getTotalJobMemory(context.MPI_SIZE, mpiTasksPerNode)
+    totalMemoryInGB = getTotalJobMemory(nTasksPerNode)
     currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
     availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
     runLog.info(
