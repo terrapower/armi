@@ -1167,6 +1167,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         :meta public:
 
+        .. impl:: Return the reaction rates for a given ArmiObject
+            :id: I_ARMI_FLUX_RX_RATES_BY_XS_ID
+            :implements: R_ARMI_FLUX_RX_RATES
+
+            This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that
+            is more efficient when computing reaction rates for a large set of blocks
+            that share a common set of microscopic cross sections.
+
+            For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
+
         Parameters
         ----------
         objList : List[Block]
@@ -1183,16 +1193,6 @@ class UniformMeshGeometryConverter(GeometryConverter):
             nuclide names (e.g., "U235") and values are the associated XSNuclide objects
             from the cross section library, which contain the microscopic cross section
             data for a given nuclide in the current cross section group.
-
-        .. impl:: Return the reaction rates for a given ArmiObject
-            :id: I_ARMI_FLUX_RX_RATES_BY_XS_ID
-            :implements: R_ARMI_FLUX_RX_RATES
-
-            This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that
-            is more efficient when computing reaction rates for a large set of blocks
-            that share a common set of microscopic cross sections.
-
-            For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
         """
         for obj in objList:
             rate = collections.defaultdict(float)
