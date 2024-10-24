@@ -165,15 +165,25 @@ class TestMemoryProfiler(unittest.TestCase):
         vMem.total = (1024**3) * 50
         mockVMem.return_value = vMem
         self._setMemUseMock(mockPrintSysMemUseAction)
-        with mockRunLogs.BufferLog() as mock:
+        with mockRunLogs.BufferLog() as mockLogs:
             csMock = MagicMock()
             csMock.__getitem__.return_value = 2
             self.memPro.cs = csMock
             self.memPro.printCurrentMemoryState()
-            stdOut = mock.getStdout()
+            stdOut = mockLogs.getStdout()
             self.assertIn("Currently using 6.0 GB of memory.", stdOut)
             self.assertIn("There is 44.0 GB of memory left.", stdOut)
             self.assertIn("There is a total allocation of 50.0 GB", stdOut)
+
+    def test_printCurrentMemoryState_noSetting(self):
+        """Test that the try/except works as it should."""
+        expectedStr = (
+            "To view memory consumed, remaining available, and total allocated for a case, "
+            "add the setting 'nTasksPerNode' to your application."
+        )
+        with mockRunLogs.BufferLog() as mockLogs:
+            self.memPro.printCurrentMemoryState()
+            self.assertIn(expectedStr, mockLogs.getStdout())
 
     def _setMemUseMock(self, mockPrintSysMemUseAction):
         class mockMemUse:

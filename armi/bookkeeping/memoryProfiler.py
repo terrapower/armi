@@ -48,6 +48,7 @@ from armi import mpiActions
 from armi import runLog
 from armi.reactor.composites import ArmiObject
 from armi.utils import tabulate
+from armi.utils.customExceptions import NonexistentSetting
 
 try:
     # psutil is an optional requirement, since it doesnt support MacOS very well
@@ -137,7 +138,7 @@ class MemoryProfiler(interfaces.Interface):
         """Print the current memory footprint and available memory."""
         try:
             nTasksPerNode = self.cs["nTasksPerNode"]
-        except NameError:
+        except NonexistentSetting:
             runLog.extra(
                 "To view memory consumed, remaining available, and total allocated for a case, "
                 "add the setting 'nTasksPerNode' to your application."
