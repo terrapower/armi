@@ -13,32 +13,32 @@
 # limitations under the License.
 """Tests blocks.py."""
 import copy
+import io
 import math
 import os
 import unittest
 from unittest.mock import MagicMock, patch
-import io
 
 import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
-from armi.reactor import blueprints
-from armi.reactor.components import basicShapes, complexShapes
 from armi.nucDirectory import nucDir, nuclideBases
+from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
-from armi.physics.neutronics import NEUTRON, GAMMA
+from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import blocks, components, geometry, grids
+from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.nuclearDataIO import xsCollections
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -70,8 +70,6 @@ def buildSimpleFuelBlock():
     b.add(duct)
     b.add(coolant)
     b.add(intercoolant)
-
-    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b
 
@@ -232,8 +230,6 @@ def loadTestBlock(cold=True):
     block.add(coolant)
     block.add(duct)
     block.add(interSodium)
-
-    block.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     block.setHeight(16.0)
 
@@ -399,6 +395,21 @@ class Block_TestCase(unittest.TestCase):
             - self.block.getDim(Flags.FUEL, "id") ** 2
         ) / self.block.getDim(Flags.INNER | Flags.LINER, "id") ** 2
         self.assertAlmostEqual(cur, ref, places=10)
+
+    def test_getSmearDensityEdgeCases(self):
+        # show smear density is not computed for non-fuel blocks
+        b0 = blocks.Block("DummyReflectorBlock")
+        self.assertEqual(b0.getSmearDensity(), 0.0)
+
+        # show smear density is only defined for pinned fuel blocks
+        b1 = blocks.HexBlock("TestFuelHexBlock")
+        b1.setType("fuel")
+        b1.p.nPins = 0
+        fuel = components.Circle(
+            "fuel", "UZr", Tinput=25.0, Thot=25.0, od=0.84, id=0.6, mult=0
+        )
+        b1.add(fuel)
+        self.assertEqual(b1.getSmearDensity(), 0.0)
 
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1
@@ -1455,33 +1466,33 @@ class Block_TestCase(unittest.TestCase):
     def test_rotatePins(self):
         b = self.block
         b.setRotationNum(0)
-        index = b.rotatePins(0, justCompute=True)
+        index = b._rotatePins(0, justCompute=True)
         self.assertEqual(b.getRotationNum(), 0)
         self.assertEqual(index[5], 5)
         self.assertEqual(index[2], 2)  # pin 1 is center and never rotates.
 
-        index = b.rotatePins(1)
+        index = b._rotatePins(1)
         self.assertEqual(b.getRotationNum(), 1)
         self.assertEqual(index[2], 3)
         self.assertEqual(b.p.pinLocation[1], 3)
 
-        index = b.rotatePins(1)
+        index = b._rotatePins(1)
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(b.p.pinLocation[1], 4)
 
-        index = b.rotatePins(2)
-        index = b.rotatePins(4)  # over-rotate to check modulus
+        index = b._rotatePins(2)
+        index = b._rotatePins(4)  # over-rotate to check modulus
         self.assertEqual(b.getRotationNum(), 2)
         self.assertEqual(index[2], 4)
         self.assertEqual(index[6], 2)
         self.assertEqual(b.p.pinLocation[1], 4)
         self.assertEqual(b.p.pinLocation[5], 2)
 
-        self.assertRaises(ValueError, b.rotatePins, -1)
-        self.assertRaises(ValueError, b.rotatePins, 10)
-        self.assertRaises((ValueError, TypeError), b.rotatePins, None)
-        self.assertRaises((ValueError, TypeError), b.rotatePins, "a")
+        self.assertRaises(ValueError, b._rotatePins, -1)
+        self.assertRaises(ValueError, b._rotatePins, 10)
+        self.assertRaises((ValueError, TypeError), b._rotatePins, None)
+        self.assertRaises((ValueError, TypeError), b._rotatePins, "a")
 
     def test_expandElementalToIsotopics(self):
         r"""Tests the expand to elementals capability."""
@@ -1705,13 +1716,29 @@ class Block_TestCase(unittest.TestCase):
 
         .. warning:: This will likely be pushed to the component level.
         """
-        fluxes = np.ones((33, 10))
+        fluxes = np.random.rand(10, 33)
+        p, g = np.random.randint(low=0, high=[10, 33])
+
+        # Test without pinLocation
+        self.block.pinLocation = None
         self.block.setPinMgFluxes(fluxes)
         self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
         self.block.setPinMgFluxes(fluxes * 3, gamma=True)
-        self.assertEqual(self.block.p.pinMgFluxes[0][2], 1.0)
-        self.assertEqual(self.block.p.pinMgFluxesAdj[0][2], 2.0)
-        self.assertEqual(self.block.p.pinMgFluxesGamma[0][2], 3.0)
+        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[p, g])
+        self.assertEqual(self.block.p.pinMgFluxesAdj.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxesAdj[p, g], fluxes[p, g] * 2)
+        self.assertEqual(self.block.p.pinMgFluxesGamma.shape, (10, 33))
+        self.assertEqual(self.block.p.pinMgFluxesGamma[p, g], fluxes[p, g] * 3)
+
+        # Test with pinLocation
+        self.block.setType(self.block.getType(), Flags.FUEL)
+        self.block.p.pinLocation = np.random.choice(10, size=10, replace=False) + 1
+        self.block.setPinMgFluxes(fluxes)
+        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
+        self.assertEqual(
+            self.block.p.pinMgFluxes[p, g], fluxes[self.block.p.pinLocation[p] - 1, g]
+        )
 
     def test_getComponentsInLinkedOrder(self):
         comps = self.block.getComponentsInLinkedOrder()
@@ -1769,6 +1796,39 @@ class Block_TestCase(unittest.TestCase):
             block.getReactionRates("PU39"),
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
+
+
+class BlockInputHeightsTests(unittest.TestCase):
+    def test_foundReactor(self):
+        """Test the input height is pullable from blueprints."""
+        r = loadTestReactor()[1]
+        msg = "Input height from blueprints differs. Did a blueprint get updated and not this test?"
+
+        # Grab a block from an assembly, so long as we have the height
+        assem = r.core.getFirstAssembly(Flags.IGNITER | Flags.FUEL)
+        lowerB = assem[0]
+        self.assertEqual(
+            lowerB.getInputHeight(),
+            25,
+            msg=msg,
+        )
+        # Grab another block just for good measure
+        midBlock = assem[2]
+        self.assertEqual(
+            midBlock.getInputHeight(),
+            25,
+            msg=msg,
+        )
+        # Top block has a different height. Make sure we don't just
+        # return 25 all the time
+        topBlock = assem[4]
+        self.assertEqual(topBlock.getInputHeight(), 75, msg=msg)
+
+    def test_noBlueprints(self):
+        """Verify an error is raised if there are no blueprints."""
+        b = buildSimpleFuelBlock()
+        with self.assertRaisesRegex(AttributeError, "No ancestor.*blueprints"):
+            b.getInputHeight()
 
 
 class BlockEnergyDepositionConstants(unittest.TestCase):
@@ -2628,3 +2688,23 @@ class MassConservationTests(unittest.TestCase):
             10,
             "Sum of component mass {0} != total block mass {1}. ".format(tMass, bMass),
         )
+
+
+class EmptyBlockRotateTest(unittest.TestCase):
+    """Rotation tests on an empty hexagonal block.
+
+    Useful for enforcing rotation works on blocks without pins.
+
+    """
+
+    def setUp(self):
+        self.block = blocks.HexBlock("empty")
+
+    def test_orientation(self):
+        """Test the orientation parameter is updated on a rotated empty block."""
+        rotDegrees = 60
+        preRotateOrientation = self.block.p.orientation[2]
+        self.block.rotate(math.radians(rotDegrees))
+        postRotationOrientation = self.block.p.orientation[2]
+        self.assertNotEqual(preRotateOrientation, postRotationOrientation)
+        self.assertEqual(postRotationOrientation, rotDegrees)

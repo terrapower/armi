@@ -45,6 +45,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools
 from armi.utils import hexagon
+from armi.utils import iterables
 from armi.utils import units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
@@ -204,9 +205,10 @@ class Block(composites.Composite):
         all the area is fuel, it has 100% smear density. Lower smear density allows more room for
         swelling.
 
-        .. warning:: This requires circular fuel and circular cladding. Designs that vary
-            from this will be wrong. It may make sense in the future to put this somewhere a
-            bit more design specific.
+        Warning
+        -------
+        This requires circular fuel and circular cladding. Designs that vary from this will be
+        wrong. It may make sense in the future to put this somewhere a bit more design specific.
 
         Notes
         -----
@@ -224,12 +226,16 @@ class Block(composites.Composite):
 
         Returns
         -------
-        smearDensity : float
-            The smear density as a fraction
+        float
+            The smear density as a fraction.
         """
         fuels = self.getComponents(Flags.FUEL)
         if not fuels:
-            return 0.0  # Smear density is not computed for non-fuel blocks
+            # smear density is not computed for non-fuel blocks
+            return 0.0
+        elif not self.getNumPins():
+            # smear density is only defined for pinned blocks
+            return 0.0
 
         circles = self.getComponentsOfShape(components.Circle)
         if not circles:
@@ -345,13 +351,10 @@ class Block(composites.Composite):
         """
         Store the pin-detailed multi-group neutron flux.
 
-        The [g][i] indexing is transposed to be a list of lists, one for each pin. This makes it
-        simple to do depletion for each pin, etc.
-
         Parameters
         ----------
-        fluxes : 2-D list of floats
-            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for
+        fluxes : np.ndarray
+            The block-level pin multigroup fluxes. fluxes[i, g] represents the flux in group g for
             pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         adjoint : bool, optional
@@ -361,28 +364,16 @@ class Block(composites.Composite):
 
         Outputs
         -------
-        self.p.pinMgFluxes : 2-D array of floats
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g
+        self.p.pinMgFluxes : np.ndarray
+            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
             for pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
-        pinFluxes = []
+        if self.hasFlags(Flags.FUEL):
+            pinFluxes = fluxes[(np.array(self.p.pinLocation) - 1)]
+        else:
+            pinFluxes = fluxes[:]
 
-        G, nPins = fluxes.shape
-
-        for pinNum in range(1, nPins + 1):
-            thisPinFlux = []
-
-            if self.hasFlags(Flags.FUEL):
-                pinLoc = self.p.pinLocation[pinNum - 1]
-            else:
-                pinLoc = pinNum
-
-            for g in range(G):
-                thisPinFlux.append(fluxes[g][pinLoc - 1])
-            pinFluxes.append(thisPinFlux)
-
-        pinFluxes = np.array(pinFluxes)
         if gamma:
             if adjoint:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
@@ -1463,7 +1454,7 @@ class Block(composites.Composite):
         # Handle all other components that may be linked to the fuel multiplicity
         # by unlinking them and setting them directly.
         # TODO: What about other (actual) dimensions? This is a limitation in that only fuel
-        # compuents are duplicated, and not the entire pin. It is also a reasonable assumption with
+        # components are duplicated, and not the entire pin. It is also a reasonable assumption with
         # current/historical usage of ARMI.
         for comp, dim in self.getComponentsThatAreLinkedTo(fuel, "mult"):
             comp.setDimension(dim, nPins)
@@ -1565,10 +1556,6 @@ class Block(composites.Composite):
         ---------
         targetComponent: :py:class:`Component <armi.reactor.components.component.Component>` object
             Component specified to be target component for axial expansion changer
-
-        See Also
-        --------
-        armi.reactor.converters.axialExpansionChanger.py::ExpansionData::_setTargetComponents
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
@@ -1582,11 +1569,6 @@ class Block(composites.Composite):
         -------
         localCoordinates : list
             list of (x,y,z) pairs representing each pin in the order they are listed as children
-
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed. Only works if pins have clad.
         """
         coords = []
         for clad in self.getChildrenWithFlags(Flags.CLAD):
@@ -1744,6 +1726,34 @@ class Block(composites.Composite):
             return 0.0
         u8 = self.getMass("U238")
         return u5 / (u8 + u5)
+
+    def getInputHeight(self) -> float:
+        """Determine the input height from blueprints.
+
+        Returns
+        -------
+        float
+            Height for this block pulled from the blueprints.
+
+        Raises
+        ------
+        AttributeError
+            If no ancestor of this block contains the input blueprints. Blueprints are
+            usually stored on the reactor object, which is typically an ancestor of
+            the block (block -> assembly -> core -> reactor). However, this may be the case
+            when creating blocks from scratch in testing where the entire composite
+            tree may not exist.
+        """
+        ancestorWithBp = self.getAncestor(
+            lambda o: getattr(o, "blueprints", None) is not None
+        )
+        if ancestorWithBp is not None:
+            bp = ancestorWithBp.blueprints
+            assemDesign = bp.assemDesigns[self.parent.getType()]
+            heights = assemDesign.height
+            myIndex = self.parent.index(self)
+            return heights[myIndex]
+        raise AttributeError(f"No ancestor of {self} has blueprints")
 
 
 class HexBlock(Block):
@@ -2016,8 +2026,7 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the pinLocation parameter, is also updated via
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`.
+        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
 
         Parameters
         ----------
@@ -2026,54 +2035,53 @@ class HexBlock(Block):
             in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
             and 2 * PI)
 
-        See Also
-        --------
-        :py:meth:`rotatePins <armi.reactor.blocks.HexBlock.rotatePins>`
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self.rotatePins(rotNum)
-        params = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
-        params += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
-        for param in params:
-            if isinstance(self.p[param], list):
-                if len(self.p[param]) == 6:
-                    self.p[param] = self.p[param][-rotNum:] + self.p[param][:-rotNum]
-                elif self.p[param] == []:
-                    # List hasn't been defined yet, no warning needed.
-                    pass
-                else:
-                    msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
-                    )
-                    runLog.warning(msg)
-            elif isinstance(self.p[param], np.ndarray):
-                if len(self.p[param]) == 6:
-                    self.p[param] = np.concatenate(
-                        (self.p[param][-rotNum:], self.p[param][:-rotNum])
-                    )
-                elif len(self.p[param]) == 0:
+        self._rotatePins(rotNum)
+        self._rotateBoundaryParameters(rotNum)
+        self._rotateDisplacement(rad)
+
+    def _rotateBoundaryParameters(self, rotNum: int):
+        """Rotate any parameters defined on the corners or edge of bounding hexagon.
+
+        Parameters
+        ----------
+        rotNum : int
+            Rotation number between zero and five, inclusive, specifying how many
+            rotations have taken place.
+
+        """
+        names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
+        names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
+        for name in names:
+            original = self.p[name]
+            if isinstance(original, (list, np.ndarray)):
+                if len(original) == 6:
+                    # Rotate by making the -rotNum item be first
+                    self.p[name] = iterables.pivot(original, -rotNum)
+                elif len(original) == 0:
                     # Hasn't been defined yet, no warning needed.
                     pass
                 else:
                     msg = (
                         "No rotation method defined for spatial parameters that aren't "
                         "defined once per hex edge/corner. No rotation performed "
-                        f"on {param}"
+                        f"on {name}"
                     )
                     runLog.warning(msg)
-            elif isinstance(self.p[param], (int, float)):
+            elif isinstance(original, (int, float)):
                 # this is a scalar and there shouldn't be any rotation.
                 pass
-            elif self.p[param] is None:
+            elif original is None:
                 # param is not set yet. no rotations as well.
                 pass
             else:
                 raise TypeError(
-                    f"b.rotate() method received unexpected data type for {param} on block {self}\n"
-                    + f"expected list, np.ndarray, int, or float. received {self.p[param]}"
+                    f"b.rotate() method received unexpected data type for {name} on block {self}\n"
+                    + f"expected list, np.ndarray, int, or float. received {original}"
                 )
+
+    def _rotateDisplacement(self, rad: float):
         # This specifically uses the .get() functionality to avoid an error if this
         # parameter does not exist.
         dispx = self.p.get("displacementX")
@@ -2082,7 +2090,7 @@ class HexBlock(Block):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def rotatePins(self, rotNum, justCompute=False):
+    def _rotatePins(self, rotNum, justCompute=False):
         """
         Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
         not rotate all block quantities, just the pins.
@@ -2141,10 +2149,12 @@ class HexBlock(Block):
                 "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
             )
 
-        # Pin numbers start at 1. Number of pins in the block is assumed to be based on
-        # cladding count.
-        numPins = self.getNumComponents(Flags.CLAD)
-        rotateIndexLookup = dict(zip(range(1, numPins + 1), range(1, numPins + 1)))
+        numPins = self.getNumPins()
+        hexRings = hexagon.numRingsToHoldNumCells(numPins)
+        fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
+        rotateIndexLookup = dict(
+            zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1))
+        )
 
         # Look up the current orientation and add this to it. The math below just rotates
         # from the reference point so we need a total rotation.
@@ -2152,22 +2162,12 @@ class HexBlock(Block):
 
         # non-trivial rotation requested
         # start at 2 because pin 1 never changes (it's in the center!)
-        for pinNum in range(2, numPins + 1):
+        for pinNum in range(2, fullNumPins + 1):
             if rotNum == 0:
                 # Rotation to reference orientation. Pin locations are pin IDs.
                 pass
             else:
-                # Determine the pin ring. Rotation does not change the pin ring!
-                ring = int(
-                    math.ceil((3.0 + math.sqrt(9.0 - 12.0 * (1.0 - pinNum))) / 6.0)
-                )
-
-                # Rotate the pin position (within the ring, which does not change)
-                tot_pins = 1 + 3 * ring * (ring - 1)
-                newPinLocation = pinNum + (ring - 1) * rotNum
-                if newPinLocation > tot_pins:
-                    newPinLocation -= (ring - 1) * 6
-
+                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
                 # Assign "before" and "after" pin indices to the index lookup
                 rotateIndexLookup[pinNum] = newPinLocation
 
@@ -2177,7 +2177,7 @@ class HexBlock(Block):
         if not justCompute:
             self.setRotationNum(rotNum)
             self.p["pinLocation"] = [
-                rotateIndexLookup[pinNum] for pinNum in range(1, numPins + 1)
+                rotateIndexLookup[pinNum] for pinNum in range(1, fullNumPins + 1)
             ]
 
         return rotateIndexLookup

@@ -18,18 +18,63 @@ import unittest
 
 import numpy as np
 
-from armi.reactor.converters import blockConverters
-from armi.reactor import blocks
-from armi.reactor import components
-from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
-from armi.utils import hexagon
-from armi.reactor import grids
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
+from armi.reactor import blocks, components, grids
+from armi.reactor.converters import blockConverters
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.utils import hexagon
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+
+def buildSimpleFuelBlockNegativeArea():
+    """
+    Return a simple block containing fuel, clad, duct, and coolant.
+
+    The block has a negative-area gap between fuel and cladding for testing.
+    """
+    b = blocks.HexBlock("fuel", height=10.0)
+
+    fuelDims = {"Tinput": 25, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    cladDims = {"Tinput": 25, "Thot": 600, "od": 0.80, "id": 0.76, "mult": 127.0}
+    ductDims = {"Tinput": 25, "Thot": 600, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    gapDims = {
+        "Tinput": 25,
+        "Thot": 600,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
+    gapDims["components"] = {"fuel": fuel, "clad": clad}
+    gap = components.Circle("gap", "Void", **gapDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
+    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(fuel)
+    b.add(gap)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    b.getVolumeFractions()
+
+    return b
 
 
 class TestBlockConverter(unittest.TestCase):
@@ -87,6 +132,25 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve_multi(
             loadTestBlock(), ["inner liner", "outer liner"], "clad"
         )
+
+    def test_dissolveZeroArea(self):
+        """Test dissolving a zero-area component into another."""
+        self._test_dissolve(loadTestBlock(), "gap2", "outer liner")
+
+    def test_dissolveIntoZeroArea(self):
+        """Test dissolving a component into a zero-area solvent (raises ValueError)."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(loadTestBlock(), "outer liner", "gap2")
+
+    def test_dissolveNegativeArea(self):
+        """Test dissolving a zero-area component into another."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
+
+    def test_dissolveIntoNegativeArea(self):
+        """Test dissolving a zero-area component into another."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "clad", "gap")
 
     def _test_dissolve_multi(self, block, soluteNames, solventName):
         converter = blockConverters.MultipleComponentMerger(
@@ -378,8 +442,8 @@ def _buildJoyoFuel():
 
 def buildControlBlockWithLinkedNegativeAreaComponent():
     """
-    Return a block that contains a bond component that resolves to a negative area
-    once the fuel and clad thermal expansion have occurred.
+    Return a block that contains a bond component that resolves to a negative area once the fuel and
+    clad thermal expansion have occurred.
     """
     b = blocks.HexBlock("control", height=10.0)
 
@@ -429,7 +493,5 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     b.add(duct)
     b.add(coolant)
     b.add(intercoolant)
-
-    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b

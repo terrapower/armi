@@ -257,8 +257,6 @@ class OperatorTests(unittest.TestCase):
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
-                self.assertIn("Flow history for snapshot", mock.getStdout())
-                self.assertIn("Pressure history for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_1"))
 
         with TemporaryDirectoryChanger():
@@ -269,8 +267,6 @@ class OperatorTests(unittest.TestCase):
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
                 self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
-                self.assertIn("Flow history for snapshot", mock.getStdout())
-                self.assertIn("Pressure history for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_2"))
 
 

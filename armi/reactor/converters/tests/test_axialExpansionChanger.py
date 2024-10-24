@@ -18,6 +18,8 @@ import os
 import unittest
 from statistics import mean
 
+from numpy import array, linspace, zeros
+
 from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
@@ -28,14 +30,15 @@ from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
     ExpansionData,
-    _determineLinked,
     getSolidComponents,
+)
+from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
+    _determineLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import units
-from numpy import array, linspace, zeros
 
 
 class AxialExpansionTestBase(unittest.TestCase):
@@ -448,6 +451,10 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         .. test:: Ensure the ACLP does not move during fuel-only expansion.
             :id: T_ARMI_AXIAL_EXP_PRESC1
             :tests: R_ARMI_AXIAL_EXP_PRESC
+
+        .. test:: Ensure the component volumes are correctly updated during prescribed expansion.
+            :id: T_ARMI_AXIAL_EXP_PRESC2
+            :tests: R_ARMI_AXIAL_EXP_PRESC
         """
         # build test assembly with ACLP
         assembly = HexAssembly("testAssemblyType")
@@ -470,6 +477,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
+        # get total assembly fluid mass pre-expansion
+        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
+
         # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
@@ -477,6 +487,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         pList = zeros(len(cList)) + 1.01
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
+
+        # get total assembly fluid mass post-expansion
+        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
 
         # do assertion
         self.assertEqual(
@@ -489,6 +502,26 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             aclp.p.ztop,
             msg="ACLP ztop has changed. It should not with fuel component only expansion!",
         )
+
+        # verify that the component volumes are correctly updated
+        for b in assembly:
+            for c in b:
+                self.assertAlmostEqual(
+                    c.getArea() * b.getHeight(),
+                    c.getVolume(),
+                    places=12,
+                )
+        # verify that the total assembly fluid mass is preserved through expansion
+        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
+
+    @staticmethod
+    def _getTotalAssemblyFluidMass(assembly) -> float:
+        totalAssemblyFluidMass = 0.0
+        for b in assembly:
+            for c in b:
+                if isinstance(c.material, materials.material.Fluid):
+                    totalAssemblyFluidMass += c.getMass()
+        return totalAssemblyFluidMass
 
     def test_reset(self):
         self.obj.setAssembly(self.a)

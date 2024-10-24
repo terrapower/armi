@@ -15,7 +15,7 @@ systems:
             z: 6000.0
 grids:
     core:
-      geom: hex
+      geom: hex_corners_up
       lattice map: |
         IC
       symmetry: full

@@ -175,7 +175,6 @@ class FlagSerializer(parameters.Serializer):
             flagCls.extend({k: auto() for k in missingFlags})
 
         flagOrderNow = flagCls.sortedFields()
-        flagSetNow = set(flagOrderNow)
 
         if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
             out = [flagCls.from_bytes(row.tobytes()) for row in data]
@@ -505,7 +504,6 @@ class ArmiObject(metaclass=CompositeModelType):
         ----------
         other : ArmiObject
             The object to copy params from
-
         """
         self.p = other.p.__class__()
         for p, val in other.p.items():
@@ -2734,12 +2732,11 @@ class Composite(ArmiObject):
         Parameters
         ----------
         typeSpec : TypeSpec
-            Component flags. Will restrict Components to specific ones matching the
-            flags specified.
+            Component flags. Will restrict Components to specific ones matching the flags specified.
 
         exact : bool, optional
             Only match exact component labels (names). If True, 'coolant' will not match
-            'interCoolant'.  This has no impact if typeSpec is None.
+            'interCoolant'. This has no impact if typeSpec is None.
 
         Returns
         -------

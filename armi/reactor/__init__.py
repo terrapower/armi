@@ -21,17 +21,14 @@ The key classes of the reactor package are shown below:
 .. _reactor-class-diagram:
 
 .. pyreverse:: armi.reactor -A -k --ignore=
-               assemblyLists.py,
                assemblyParameters.py,
                basicShapes.py,
-               batch.py,
-               batchParameters.py,
                blockParameters.py,
                blueprints,
                complexShapes.py,
                componentParameters.py,
                converters,
-               dodecaShapes.py,
+               excoreStructure.py,
                flags.py,
                geometry.py,
                grids.py,
@@ -39,6 +36,7 @@ The key classes of the reactor package are shown below:
                plugins.py,
                reactorParameters.py,
                shapes.py,
+               spentFuelPool.py,
                tests,
                volumetricShapes.py,
                zones.py
@@ -53,19 +51,30 @@ See :doc:`/developer/index`.
 
 from typing import Dict, Callable, Union, TYPE_CHECKING
 
+from armi import materials
 from armi import plugins
 
-# Provide type checking but avoid circular imports
-# Not used during runtime so we could have a coverage drop here. Add the
-# pragma line to tell coverage.py to skip this
-# https://coverage.readthedocs.io/en/stable/excluding.html
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from armi.reactor.reactors import Core
-    from armi.reactor.assemblyLists import SpentFuelPool
+    from armi.reactor.excoreStructure import ExcoreStructure
+    from armi.reactor.spentFuelPool import SpentFuelPool
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
     """Plugin exposing built-in reactor components, blocks, assemblies, etc."""
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def beforeReactorConstruction(cs) -> None:
+        """Just before reactor construction, update the material "registry" with user settings,
+        if it is set. Often it is set by the application.
+        """
+        from armi.settings.fwSettings.globalSettings import (
+            CONF_MATERIAL_NAMESPACE_ORDER,
+        )
+
+        if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
+            materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -95,12 +104,21 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL(trylast=True)
     def defineSystemBuilders() -> Dict[
-        str, Callable[[str], Union["Core", "SpentFuelPool"]]
+        str, Callable[[str], Union["Core", "ExcoreStructure", "SpentFuelPool"]]
     ]:
+        from armi.reactor.spentFuelPool import SpentFuelPool
+        from armi.reactor.excoreStructure import ExcoreStructure
         from armi.reactor.reactors import Core
-        from armi.reactor.assemblyLists import SpentFuelPool
 
         return {
             "core": Core,
+            "excore": ExcoreStructure,
             "sfp": SpentFuelPool,
         }
+
+    @staticmethod
+    @plugins.HOOKIMPL(trylast=True)
+    def getAxialExpansionChanger():
+        from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
+
+        return AxialExpansionChanger

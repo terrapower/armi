@@ -19,8 +19,8 @@ import unittest
 from armi import context
 from armi import operators
 from armi import settings
-from armi.operators import settingsValidation
-from armi.operators.settingsValidation import createQueryRevertBadPathToDefault
+from armi.settings import settingsValidation
+from armi.settings.settingsValidation import createQueryRevertBadPathToDefault
 from armi.utils import directoryChangers
 
 
@@ -152,10 +152,10 @@ class TestInspector(unittest.TestCase):
         self.assertIn("nCycles", keys)
 
     def test_createQueryRevertBadPathToDefault(self):
-        query = createQueryRevertBadPathToDefault(self.inspector, "numProcessors")
+        query = createQueryRevertBadPathToDefault(self.inspector, "nTasks")
         self.assertEqual(
             str(query),
-            "<Query: Setting numProcessors points to a nonexistent location:\n1>",
+            "<Query: Setting nTasks points to a nonexistent location:\n1>",
         )
 
     def test_correctCyclesToZeroBurnup(self):

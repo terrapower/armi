@@ -106,9 +106,9 @@ class FuelHandlerInterface(interfaces.Interface):
             self.manageFuel(cycle)
 
     def interactEOC(self, cycle=None):
-        if self.r.sfp is not None:
+        if self.r.excore.get("sfp") is not None:
             runLog.extra(
-                f"There are {len(self.r.sfp)} assemblies in the Spent Fuel Pool"
+                f"There are {len(self.r.excore['sfp'])} assemblies in the Spent Fuel Pool"
             )
 
     def interactEOL(self):
@@ -142,7 +142,7 @@ class FuelHandlerInterface(interfaces.Interface):
 
         This can be used to export shuffling to an external code or to
         perform explicit repeat shuffling in a restart.
-        It creates a ``*SHUFFLES.txt`` file based on the Reactor.moveList structure
+        It creates a ``*SHUFFLES.txt`` file based on the Reactor.moves structure
 
         See Also
         --------
@@ -155,7 +155,7 @@ class FuelHandlerInterface(interfaces.Interface):
             # remember, we put cycle 0 in so we could do BOL branch searches.
             # This also syncs cycles up with external physics kernel cycles.
             out.write("Before cycle {0}:\n".format(cycle + 1))
-            movesThisCycle = self.r.core.moveList.get(cycle)
+            movesThisCycle = self.r.core.moves.get(cycle)
             if movesThisCycle is not None:
                 for (
                     fromLoc,

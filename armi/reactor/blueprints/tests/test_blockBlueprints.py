@@ -332,7 +332,6 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
 
-    # TODO: This test passes, but shouldn't.
     def test_densityConsistentWithComponentConstructor(self):
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints

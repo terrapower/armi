@@ -241,10 +241,11 @@ class TestCompareSuites(unittest.TestCase):
         with TemporaryDirectoryChanger():
             cs = CompareSuites()
             cs.addOptions()
-            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5", "-I"])
 
             self.assertEqual(cs.name, "compare-suites")
             self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
+            self.assertTrue(cs.args.skip_inspection)
             self.assertIsNone(cs.args.weights)
 
 
@@ -368,15 +369,15 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
             for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
                 copyfile(os.path.join(TEST_ROOT, fileName), fileName)
 
-            # pass in --numProcessors=333
-            mcs.parse_args(["--numProcessors=333", "--rootDir", ".", "armiRun.yaml"])
+            # pass in --nTasks=333
+            mcs.parse_args(["--nTasks=333", "--rootDir", ".", "armiRun.yaml"])
 
             # invoke the CLI
             mcs.invoke()
 
-            # validate the change to numProcessors was made
+            # validate the change to nTasks was made
             txt = open("armiRun.yaml", "r").read()
-            self.assertIn("numProcessors: 333", txt)
+            self.assertIn("nTasks: 333", txt)
 
 
 class TestReportsEntryPoint(unittest.TestCase):
