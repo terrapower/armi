@@ -1231,8 +1231,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     if nucRate[rx]:
                         rate[rx] += nucRate[rx]
 
-            for paramName, val in rate.items():
-                obj.p[paramName] = val  # put in #/cm^3/s
+            for paramName in RX_PARAM_NAMES:
+                obj.p[paramName] = rate[paramName]  # put in #/cm^3/s
 
             if rate["rateFis"] > 0.0:
                 fuelVolFrac = obj.getComponentAreaFrac(Flags.FUEL)
