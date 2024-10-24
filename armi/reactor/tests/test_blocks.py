@@ -237,7 +237,7 @@ def loadTestBlock(cold=True):
 
     block.setHeight(16.0)
 
-    block.autoCreateSpatialGrids()
+    block.autoCreateSpatialGrids(r.core.spatialGrid)
     assembly.add(block)
     r.core.add(assembly)
     return block
@@ -1962,12 +1962,12 @@ class HexBlock_TestCase(unittest.TestCase):
         self.hexBlock.add(
             components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
         )
-        self.hexBlock.autoCreateSpatialGrids()
-        r = tests.getEmptyHexReactor()
+        self.r = tests.getEmptyHexReactor()
+        self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
         a = makeTestAssembly(1, 1)
         a.add(self.hexBlock)
-        loc1 = r.core.spatialGrid[0, 1, 0]
-        r.core.add(a, loc1)
+        loc1 = self.r.core.spatialGrid[0, 1, 0]
+        self.r.core.add(a, loc1)
 
     def test_getArea(self):
         """Test that we can correctly calculate the area of a hexagonal block.
@@ -2215,7 +2215,7 @@ class HexBlock_TestCase(unittest.TestCase):
         b = self.hexBlock
         # The block should have a spatial grid at construction,
         # since it has mults = 1 or 169 from setup
-        b.autoCreateSpatialGrids()
+        b.autoCreateSpatialGrids(self.r.core.spatialGrid)
         self.assertIsNotNone(b.spatialGrid)
         for c in b:
             if c.getDimension("mult", cold=True) == 169:
@@ -2260,7 +2260,7 @@ class HexBlock_TestCase(unittest.TestCase):
         b.add(duct)
         b.add(wire)
         with self.assertRaises(ValueError):
-            b.autoCreateSpatialGrids()
+            b.autoCreateSpatialGrids(self.r.core.spatialGrid)
         self.assertIsNone(b.spatialGrid)
 
     def test_gridNotCreatedMultipleMultiplicities(self):
@@ -2278,7 +2278,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.hexBlock.add(wire)
         self.hexBlock.spatialGrid = None  # clear existing
         with self.assertRaises(ValueError):
-            self.hexBlock.autoCreateSpatialGrids()
+            self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
 
         self.assertIsNone(self.hexBlock.spatialGrid)
 
@@ -2476,8 +2476,9 @@ class ThRZBlock_TestCase(unittest.TestCase):
     def test_getThetaRZGrid(self):
         """Since not applicable to ThetaRZ Grids."""
         b = self.ThRZBlock
-        with self.assertRaises(NotImplementedError):
-            b.autoCreateSpatialGrids()
+        self.assertIsNone(b.spatialGrid)
+        b.autoCreateSpatialGrids("FakeSpatilGrid")
+        self.assertIsNotNone(b.spatialGrid)
 
     def test_getWettedPerimeter(self):
         with self.assertRaises(NotImplementedError):
@@ -2580,8 +2581,9 @@ class CartesianBlock_TestCase(unittest.TestCase):
     def test_getCartesianGrid(self):
         """Since not applicable to Cartesian Grids."""
         b = self.cartesianBlock
-        with self.assertRaises(NotImplementedError):
-            b.autoCreateSpatialGrids()
+        self.assertIsNone(b.spatialGrid)
+        b.autoCreateSpatialGrids("FakeSpatialGrid")
+        self.assertIsNotNone(b.spatialGrid)
 
     def test_getWettedPerimeter(self):
         with self.assertRaises(NotImplementedError):

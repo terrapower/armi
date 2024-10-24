@@ -568,10 +568,8 @@ class Core(composites.Composite):
         for b in a:
             self.blocksByName[b.getName()] = b
 
+        a.orientBlocks(parentSpatialGrid=self.spatialGrid)
         if self.geomType == geometry.GeomType.HEX:
-            cornerUp = self.spatialGrid.cornersUp
-            a.orientBlocks(cornersUp=not cornerUp)
-
             ring, _loc = self.spatialGrid.getRingPos(
                 a.spatialLocator.getCompleteIndices()
             )

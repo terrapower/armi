@@ -292,14 +292,19 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self, cornersUp=True):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Creates a spatialGrid for a Block.
 
-        Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
-        spatialGrids inferred based on the multiplicty of their components.
-        This would add the ability to create a spatialGrid for a Block and give its children
-        the corresponding spatialLocators if certain conditions are met.
+        Blocks do not always have a spatialGrid from Blueprints, but some Blocks can have their
+        spatialGrids inferred based on the multiplicty of their components. This would add the
+        ability to create a spatialGrid for a Block and give its children the corresponding
+        spatialLocators if certain conditions are met.
+
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Raises
         ------
@@ -307,7 +312,8 @@ class Block(composites.Composite):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        raise NotImplementedError()
+        if self.spatialGrid is None:
+            self.spatialGrid = systemSpatialGrid
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
@@ -2340,7 +2346,7 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self, cornersUp=True):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
@@ -2351,8 +2357,8 @@ class HexBlock(Block):
 
         Parameters
         ----------
-        cornersUp: bool
-            Should the hexagons of this grid be corners up (as opposed to flats-up)?
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Notes
         -----
@@ -2380,6 +2386,11 @@ class HexBlock(Block):
             )
 
         # build the grid, from pitch and orientation
+        if isinstance(systemSpatialGrid, grids.HexGrid):
+            cornersUp = not systemSpatialGrid.cornersUp
+        else:
+            cornersUp = False
+
         grid = grids.HexGrid.fromPitch(
             self.getPinPitch(cold=True),
             numRings=0,
