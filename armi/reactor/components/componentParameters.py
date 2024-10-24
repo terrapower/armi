@@ -79,20 +79,6 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
-            "powerDecay",
-            units=units.WATTS,
-            description="Decay power from decaying radionuclides",
-            default=0.0,
-        )
-
-        pb.defParam(
-            "pdensDecay",
-            units=f"{units.WATTS}/{units.CM}^3",
-            description="Decay power density from decaying radionuclides",
-            default=0.0,
-        )
-
-        pb.defParam(
             "percentBu",
             units=f"{units.PERCENT_FIMA}",
             description="Burnup as a percentage of initial (heavy) metal atoms.",
