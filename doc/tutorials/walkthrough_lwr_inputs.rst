@@ -1,3 +1,5 @@
+.. _walkthrough-lwr:
+
 ******************************************
 Building input files for a thermal reactor
 ******************************************
