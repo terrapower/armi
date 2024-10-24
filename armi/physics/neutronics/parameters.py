@@ -655,8 +655,6 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.neutronics],
         )
 
-        pb.defParam("powerDecay", units=units.WATTS, description="Total decay power")
-
         pb.defParam(
             "powerGamma",
             units=units.WATTS,
