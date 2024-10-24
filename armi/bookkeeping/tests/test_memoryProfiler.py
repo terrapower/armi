@@ -22,7 +22,6 @@ from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.memoryProfiler import (
     getCurrentMemoryUsage,
     getTotalJobMemory,
-    printCurrentMemoryState,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs, TEST_ROOT
@@ -35,7 +34,9 @@ class TestMemoryProfiler(unittest.TestCase):
             {"debugMem": True},
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
-        self.memPro = self.o.getInterface("memoryProfiler")
+        self.memPro: memoryProfiler.MemoryProfiler = self.o.getInterface(
+            "memoryProfiler"
+        )
 
     def tearDown(self):
         self.o.removeInterface(self.memPro)
@@ -164,9 +165,11 @@ class TestMemoryProfiler(unittest.TestCase):
         vMem.total = (1024**3) * 50
         mockVMem.return_value = vMem
         self._setMemUseMock(mockPrintSysMemUseAction)
-
         with mockRunLogs.BufferLog() as mock:
-            printCurrentMemoryState(2)
+            csMock = MagicMock()
+            csMock.__getitem__.return_value = 2
+            self.memPro.cs = csMock
+            self.memPro.printCurrentMemoryState()
             stdOut = mock.getStdout()
             self.assertIn("Currently using 6.0 GB of memory.", stdOut)
             self.assertIn("There is 44.0 GB of memory left.", stdOut)

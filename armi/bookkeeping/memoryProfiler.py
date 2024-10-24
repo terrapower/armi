@@ -92,18 +92,6 @@ def getCurrentMemoryUsage():
     return memoryUsageInMB
 
 
-def printCurrentMemoryState(nTasksPerNode):
-    """Print the current memory footprint and available memory."""
-    totalMemoryInGB = getTotalJobMemory(nTasksPerNode)
-    currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
-    availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
-    runLog.info(
-        f"Currently using {currentMemoryUsageInGB} GB of memory. "
-        f"There is {availableMemoryInGB} GB of memory left. "
-        f"There is a total allocation of {totalMemoryInGB} GB."
-    )
-
-
 class MemoryProfiler(interfaces.Interface):
 
     name = "memoryProfiler"
@@ -114,11 +102,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
-
-        # prints the bottom line memory state...
-        # the code after this is somewhat confusing to interpret
-        printCurrentMemoryState(self.cs["mpiTasksPerNode"])
-
+        self.printCurrentMemoryState()
         mpiAction = PrintSystemMemoryUsageAction()
         mpiAction.broadcast().invoke(self.o, self.r, self.cs)
         mpiAction.printUsage("BOL SYS_MEM")
@@ -129,9 +113,7 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEveryNode(self, cycle, node):
-        # prints the bottom line memory state...
-        # the code after this is somewhat confusing to interpret
-        printCurrentMemoryState(self.cs["mpiTasksPerNode"])
+        self.printCurrentMemoryState()
 
         mp = PrintSystemMemoryUsageAction()
         mp.broadcast()
@@ -146,10 +128,29 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEOL(self):
-        r"""End of life hook. Good place to wrap up or print out summary outputs."""
+        """End of life hook. Good place to wrap up or print out summary outputs."""
         if self.cs["debugMem"]:
             mpiAction = ProfileMemoryUsageAction("EOL")
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
+
+    def printCurrentMemoryState(self):
+        """Print the current memory footprint and available memory."""
+        try:
+            nTasksPerNode = self.cs["nTasksPerNode"]
+        except NameError:
+            runLog.extra(
+                "To view memory consumed, remaining available, and total allocated for a case, "
+                "add the setting 'nTasksPerNode' to your application."
+            )
+            return
+        totalMemoryInGB = getTotalJobMemory(nTasksPerNode)
+        currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
+        availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
+        runLog.info(
+            f"Currently using {currentMemoryUsageInGB} GB of memory. "
+            f"There is {availableMemoryInGB} GB of memory left. "
+            f"There is a total allocation of {totalMemoryInGB} GB."
+        )
 
     def displayMemoryUsage(self, timeDescription):
         r"""
