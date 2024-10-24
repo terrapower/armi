@@ -22,13 +22,12 @@ import yamlize
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
 from armi.reactor import blocks
-from armi.reactor.composites import Composite
 from armi.reactor import parameters
-from armi.reactor.flags import Flags
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.components.component import Component
+from armi.reactor.composites import Composite
 from armi.reactor.converters import blockConverters
-from armi.settings.fwSettings import globalSettings
+from armi.reactor.flags import Flags
 
 
 def _configureGeomOptions():
@@ -240,11 +239,6 @@ class BlockBlueprint(yamlize.KeyedList):
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid
 
-        if b.spatialGrid is None and cs[globalSettings.CONF_BLOCK_AUTO_GRID]:
-            try:
-                b.autoCreateSpatialGrids()
-            except (ValueError, NotImplementedError) as e:
-                runLog.warning(str(e), single=True)
         return b
 
     def _getBlockwiseMaterialModifierOptions(

@@ -106,7 +106,7 @@ class TestPlotting(unittest.TestCase):
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
             first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
-            first_fuel_block.autoCreateSpatialGrids()
+            first_fuel_block.autoCreateSpatialGrids(self.r.core.spatialGrid)
             plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
             self.assertTrue(os.path.exists("blockDiagram23.svg"))
 
