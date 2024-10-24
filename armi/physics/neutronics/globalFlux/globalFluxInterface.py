@@ -27,6 +27,7 @@ from armi.physics import executers
 from armi.physics import neutronics
 from armi.reactor import geometry
 from armi.reactor import reactors
+from armi.physics.neutronics.globalFlux import RX_PARAM_NAMES, RX_ABS_MICRO_LABELS
 from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
@@ -35,9 +36,6 @@ from armi.settings.caseSettings import Settings
 from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
-
-RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
-RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
 
 class GlobalFluxInterface(interfaces.Interface):
