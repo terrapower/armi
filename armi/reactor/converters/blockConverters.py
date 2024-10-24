@@ -880,7 +880,9 @@ def stripComponents(block, compFlags):
     Returns
     -------
     newBlock : armi.reactor.blocks.Block
-        Copy of source block with specified components stripped off
+        Copy of source block with specified components stripped off.
+    mixtureFlags : TypeSpec
+        Combination of all component flags within newBlock.
 
     Notes
     -----
