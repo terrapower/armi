@@ -1454,7 +1454,7 @@ class Block(composites.Composite):
         # Handle all other components that may be linked to the fuel multiplicity
         # by unlinking them and setting them directly.
         # TODO: What about other (actual) dimensions? This is a limitation in that only fuel
-        # compuents are duplicated, and not the entire pin. It is also a reasonable assumption with
+        # components are duplicated, and not the entire pin. It is also a reasonable assumption with
         # current/historical usage of ARMI.
         for comp, dim in self.getComponentsThatAreLinkedTo(fuel, "mult"):
             comp.setDimension(dim, nPins)
@@ -1726,6 +1726,34 @@ class Block(composites.Composite):
             return 0.0
         u8 = self.getMass("U238")
         return u5 / (u8 + u5)
+
+    def getInputHeight(self) -> float:
+        """Determine the input height from blueprints.
+
+        Returns
+        -------
+        float
+            Height for this block pulled from the blueprints.
+
+        Raises
+        ------
+        AttributeError
+            If no ancestor of this block contains the input blueprints. Blueprints are
+            usually stored on the reactor object, which is typically an ancestor of
+            the block (block -> assembly -> core -> reactor). However, this may be the case
+            when creating blocks from scratch in testing where the entire composite
+            tree may not exist.
+        """
+        ancestorWithBp = self.getAncestor(
+            lambda o: getattr(o, "blueprints", None) is not None
+        )
+        if ancestorWithBp is not None:
+            bp = ancestorWithBp.blueprints
+            assemDesign = bp.assemDesigns[self.parent.getType()]
+            heights = assemDesign.height
+            myIndex = self.parent.index(self)
+            return heights[myIndex]
+        raise AttributeError(f"No ancestor of {self} has blueprints")
 
 
 class HexBlock(Block):

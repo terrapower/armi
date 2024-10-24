@@ -269,6 +269,21 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
+    def beforeReactorConstruction(cs) -> None:
+        """
+        Function to call before the reactor is constructed.
+
+        .. impl:: Plugins can inject code before reactor initialization.
+            :id: I_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+            :implements: R_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+
+            This method allows for plugin developers to implement code after settings
+            are loaded but before the reactor is constructed. This hook is called
+            in :py:func:`armi.reactor.reactors.factory`.
+        """
+
+    @staticmethod
+    @HOOKSPEC
     def defineFlags() -> Dict[str, Union[int, flags.auto]]:
         """
         Add new flags to the reactor data model, and the simulation.
