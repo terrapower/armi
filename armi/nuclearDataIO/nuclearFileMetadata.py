@@ -252,4 +252,4 @@ class RegionXSMetadata(FileMetadata):
 
 
 class NuclideMetadata(_Metadata):
-    """Simple dictionary for providing metadata about how to read/write a nuclde to/from a file."""
+    """Simple dictionary for providing metadata about how to read/write a nuclide to/from a file."""
