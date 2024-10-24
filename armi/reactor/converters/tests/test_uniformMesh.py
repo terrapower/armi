@@ -16,6 +16,7 @@ import collections
 import os
 import random
 import unittest
+import copy
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
@@ -23,6 +24,7 @@ from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SI
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies
+from armi.reactor.tests import test_blocks
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, ISOAA_PATH
 
@@ -496,6 +498,31 @@ class TestUniformMesh(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateAbs)
                 self.assertTrue(b.p.rateCap)
+
+
+class TestCalcReationRates(unittest.TestCase):
+    def test_calcReactionRatesBlockList(self):
+        """
+        Test that the efficient reaction rate code executes and sets a param > 0.0.
+
+        .. test:: Return the reaction rates for a given list of ArmiObjects.
+            :id: T_ARMI_FLUX_RX_RATES_BY_XS_ID
+            :tests: R_ARMI_FLUX_RX_RATES
+        """
+        b = test_blocks.loadTestBlock()
+        test_blocks.applyDummyData(b)
+        self.assertAlmostEqual(b.p.rateAbs, 0.0)
+        blockList = [copy.deepcopy(b) for _i in range(3)]
+        xsID = b.getMicroSuffix()
+        xsNucDict = {nuc: b.core.lib.getNuclide(nuc, xsID) for nuc in b.getNuclides()}
+        uniformMesh.UniformMeshGeometryConverter._calcReactionRatesBlockList(
+            blockList, 1.01, xsNucDict
+        )
+        for b in blockList:
+            self.assertGreater(b.p.rateAbs, 0.0)
+            vfrac = b.getComponentAreaFrac(Flags.FUEL)
+            self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
+            self.assertEqual(b.p.fisDensHom, b.p.rateFis)
 
 
 class TestGammaUniformMesh(unittest.TestCase):
