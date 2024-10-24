@@ -1161,6 +1161,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
 
+    @staticmethod
     def _calcReactionRatesBlockList(objList, keff, xsNucDict):
         r"""
         Compute 1-group reaction rates for the objects in objList (usually a block).
