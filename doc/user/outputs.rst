@@ -64,6 +64,8 @@ Some Linux users tend to use the **tail** command to monitor the progress of an 
 
 This provides live information on the progress.
 
+.. _database-file:
+
 The Database File
 =================
 The **database** file is a self-contained complete (or nearly complete) binary
@@ -181,6 +183,11 @@ documentation of the database modules.
 
        Also, it is important to note that all components are flattened and then grouped
        by type.
+   * - ``/c{CC}n{NN}EOL/``
+     - H5Group
+     - A special time node, like the one above, where {CC} is the last cycle and {NN} is the last
+       node. If this exists, it is meant to represent the EOL, which is perhaps a few days after the
+       end of the last cycle, where fuel is decaying non-operationally.
    * - ``/c{CC}n{NN}/layout/``
      - H5Group
      - A group that contains  a description of the ARMI model within this timenode
