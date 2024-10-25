@@ -44,4 +44,3 @@ jobs:
           branch: main
           folder: doc/_build/html
           target-folder: armi
-
