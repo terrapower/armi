@@ -20,7 +20,7 @@ component level. As a result, the structure of the underlying data is bound to t
 hierarchical Composite Reactor Model. Furthermore, this database format is intended to
 be more dynamic, permitting as-yet undeveloped levels and classes in the Composite
 Reactor Model to be supported as they are added. More high-level discussion is
-contained in :doc:`/user/outputs/database`.
+contained in :ref:`database-file`.
 
 The :py:class:`Database` class contains most of the functionality for interacting
 with the underlying data. This includes things like dumping a Reactor state to the

@@ -23,7 +23,7 @@ By default, the specific Flags that are bound to each object are derived by that
 object's name when constructed; if the name contains any valid flag names, those Flags
 will be assigned to the object. However, specific Flags may be specified within
 blueprints, in which case the name is ignored and only the explicitly-requested Flags
-are applied (see :doc:`/user/inputs/blueprints` for more details).
+are applied (see :ref:`bp-input-file` for more details).
 
 Individual Flags tend to be various nouns and adjectives that describe common objects
 that go into a reactor (e.g. "fuel", "shield", "control", "duct", "plenum", etc.). In

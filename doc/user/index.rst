@@ -12,7 +12,6 @@ analyzing ARMI output files, etc.
    :maxdepth: 2
    :numbered:
 
-   user_install
    inputs
    outputs
    manual_data_access
