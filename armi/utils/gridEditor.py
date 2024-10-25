@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
+The Grid Editor
+---------------
+
 GUI elements for manipulating grid layout and contents.
 
 This provides a handful of classes which provide wxPython Controls for manipulating
@@ -25,6 +28,12 @@ If you have an existing set of input files, pass in the blueprints input file
 as the first argument and the system will load up the associated grid, e.g.::
 
     $ python -m armi grids FFTF-blueprints.yaml
+
+
+.. figure:: /.static/gridEditor.png
+    :align: center
+
+    An example of the Grid Editor being used on a FFTF input file
 
 
 **Known Issues**

@@ -18,7 +18,7 @@ fuel processing (in fluid systems).
 The :py:class:`FuelHandlerInterface` instantiates a ``FuelHandler``, which is typically a user-defined
 subclass the :py:class:`FuelHandler` object in custom shuffle-logic input files.
 Users point to the code modules with their custom fuel handlers using the
-``shuffleLogic`` and ``fuelHandlerName`` settings, as described in :doc:`/user/inputs/fuel_management`.
+``shuffleLogic`` and ``fuelHandlerName`` settings, as described in :ref:`fuel-management-input`.
 These subclasses override ``chooseSwaps`` that determine
 the particular shuffling of a case.
 
@@ -177,7 +177,7 @@ class FuelHandler:
 
         This is the default shuffle control function. Usually you would override this
         with your own in a custom shuffleLogic.py file. For more details about how this
-        works, refer to :doc:`/user/inputs/fuel_management`.
+        works, refer to :ref:`fuel-management-input`.
 
         This will get bound to the default FuelHandler as a static method below. This is
         done to allow a user to mix and match FuelHandler class implementations and

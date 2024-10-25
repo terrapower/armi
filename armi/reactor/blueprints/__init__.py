@@ -22,7 +22,7 @@ custom material properties or basic structures like the assemblies in use.
 This is essentially a wrapper for a yaml loader.
 The given yaml file is expected to rigidly adhere to given key:value pairings.
 
-See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
+See the :ref:`blueprints documentation <bp-input-file>` for more details.
 
 The file structure is expectation is::
 
