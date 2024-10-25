@@ -212,6 +212,26 @@ class PyReverse(Directive):
             )
 
 
+class SkipNeedsDirective(Directive):
+    """
+    A no-op directive that filters out any sphinx-need directives from docs.
+
+    Temporary patch until we figure out a different/better way to maintain formal QA docs.
+    """
+
+    has_content = True
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = True
+
+    def run(self):
+        _delete_opt = self.options.get("delete")
+        _collapse = self.options.get("collapse")
+        _jinja_content = self.options.get("jinja_content")
+        _hide = "hide" in self.options
+        return []
+
+
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     """Manually exclude certain methods/functions from docs."""
     # exclude special methods from unittest
@@ -234,8 +254,8 @@ def setup(app):
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
-    app.add_directive("impl", directives.admonitions.Note)
-    app.add_directive("test", directives.admonitions.Note)
+    app.add_directive("impl", SkipNeedsDirective)
+    app.add_directive("test", SkipNeedsDirective)
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
