@@ -2,8 +2,8 @@ name: Documentation
 
 on:
   push:
-#    branches:
-#      - main
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,12 +36,12 @@ jobs:
           git submodule init
           git submodule update
           make html
-#      - name: deploy
-#        uses: JamesIves/github-pages-deploy-action@v4.6.1
-#        with:
-#          token: ${{ secrets.ACCESS_TOKEN }}
-#          repository-name: ${{ github.repository_owner }}/terrapower.github.io
-#          branch: main
-#          folder: doc/_build/html
-#          target-folder: armi
+      - name: deploy
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          repository-name: ${{ github.repository_owner }}/terrapower.github.io
+          branch: main
+          folder: doc/_build/html
+          target-folder: armi
 

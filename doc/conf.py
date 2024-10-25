@@ -213,6 +213,11 @@ class PyReverse(Directive):
 
 
 class SkipNeedsDirective(Directive):
+    """
+    A no-op directive that filters out any sphinx-need directives from docs.
+
+    Temporary patch until we figure out a different/better way to maintain formal QA docs.
+    """
     has_content = True
     required_arguments = 1
     optional_arguments = 0
