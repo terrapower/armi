@@ -218,6 +218,7 @@ class SkipNeedsDirective(Directive):
 
     Temporary patch until we figure out a different/better way to maintain formal QA docs.
     """
+
     has_content = True
     required_arguments = 1
     optional_arguments = 0
