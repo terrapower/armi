@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-The Grid Editor
----------------
-
 GUI elements for manipulating grid layout and contents.
 
 This provides a handful of classes which provide wxPython Controls for manipulating
@@ -57,6 +54,7 @@ as the first argument and the system will load up the associated grid, e.g.::
   specifiers. Adding zoom would make for a fun first task to a new developer interested
   in computer graphics.
 """
+
 import colorsys
 import enum
 import io

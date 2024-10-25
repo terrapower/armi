@@ -89,7 +89,7 @@ to the same Blueprints, Core Map, and Fuel Management inputs.
 
 The assembly clicker
 ^^^^^^^^^^^^^^^^^^^^
-The assembly clicker (aka the :py:mod:`armi.utils.gridEditor``) allows users to define the 2-D layout of the assemblies defined in the
+The assembly clicker (aka the :py:mod:`Grid Editor <armi.utils.gridEditor>`) allows users to define the 2-D layout of the assemblies defined in the
 :ref:`bp-input-file`. This can be done in hexagon or cartesian. The results of this arrangement get written to
 grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
 assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
