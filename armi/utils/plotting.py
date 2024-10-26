@@ -178,10 +178,10 @@ def plotBlockDepthMap(
 
     if fName:
         plt.savefig(fName, dpi=150)
+        plt.close()
     else:
         plt.show()
 
-    plt.close()
     return fName
 
 
@@ -402,13 +402,16 @@ def plotFaceMap(
                 "Cannot update facemap at {0}: IOError. Is the file open?"
                 "".format(fName)
             )
+        plt.close(fig)
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
         return fName
     else:
+        # Never close figures after a .show()
+        # because they're being used interactively e.g.
+        # in a live tutorial or by the doc gallery
         plt.show()
 
-    plt.close(fig)
     return fName
 
 
@@ -823,8 +826,8 @@ def plotAssemblyTypes(
     if fileName:
         fig.savefig(fileName)
         runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
+        plt.close(fig)
 
-    plt.close(fig)
     return fig
 
 
@@ -1092,10 +1095,10 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
             os.path.abspath(fName),
             report.FLUX_PLOT,
         )
+        plt.close()
     else:
+        # Never close interactive plots
         plt.show()
-
-    plt.close()
 
 
 def makeHistogram(x, y):
@@ -1503,7 +1506,6 @@ def plotNucXs(
 
     if fName:
         plt.savefig(fName)
+        plt.close()
     elif not noShow:
         plt.show()
-
-    plt.close()

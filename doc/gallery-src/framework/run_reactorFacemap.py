@@ -33,4 +33,3 @@ for b in reactor.core.getBlocks():
     b.p.pdens = x**2 + y**2 + z**2
 
 plotting.plotFaceMap(reactor.core, param="pdens", labelFmt="{0:.1e}")
-plotting.close()
