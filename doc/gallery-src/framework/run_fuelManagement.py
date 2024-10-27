@@ -30,7 +30,6 @@ demonstration purposes.
 # sphinx_gallery_thumbnail_number = 2
 import math
 
-import matplotlib.pyplot as plt
 
 from armi import configure
 from armi.physics.fuelCycle import fuelHandlers
@@ -73,4 +72,3 @@ for num in range(8):
 
 # show final burnup distribution
 plotting.plotFaceMap(reactor.core, param="percentBu")
-plt.close()
