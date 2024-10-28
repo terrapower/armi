@@ -122,7 +122,7 @@ byName = {}
 byDBName = {}
 byLabel = {}
 byMcc2Id = {}
-byMcc3Id = {} # for backwards compatibility. Identical to byMcc3IdEndfbVII1
+byMcc3Id = {}  # for backwards compatibility. Identical to byMcc3IdEndfbVII1
 byMcc3IdEndfbVII0 = {}
 byMcc3IdEndfbVII1 = {}
 byMcnpId = {}
@@ -1009,11 +1009,10 @@ class LumpNuclideBase(INuclide):
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
         return self.mcc3idEndfbVII0
-    
+
     def getMcc3IdEndfbVII1(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
         return self.mcc3idEndfbVII1
-
 
 
 def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclides):
@@ -1344,11 +1343,11 @@ def readMCCNuclideData():
 
         This function reads the mcc-nuclides.yaml file from the ARMI resources
         folder. This file contains the MC\ :sup:`2`-2 ID (from ENDF/B-V.2) and MC\ :sup:`2`-3 ID
-        (from ENDF/B-VII.0) for all nuclides in MC\ :sup:`2`. The ``mcc2id``, 
+        (from ENDF/B-VII.0) for all nuclides in MC\ :sup:`2`. The ``mcc2id``,
         ``mcc3idEndfVII0``, and  ``mcc3idEndfVII1`` attributes of each :py:class:`NuclideBase
         <armi.nucDirectory.nuclideBases.NuclideBase>` instance are updated as
         the data is read, and the global dictionaries ``byMcc2Id``
-        ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated with the nuclide bases 
+        ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated with the nuclide bases
         keyed by their corresponding ID for each code.
     """
     global byMcc2Id
@@ -1377,6 +1376,7 @@ def readMCCNuclideData():
 
     # Have the byMcc3Id dictionary be VII.1 IDs.
     byMcc3Id = byMcc3IdEndfbVII1
+
 
 def updateNuclideBasesForSpecialCases():
     """
