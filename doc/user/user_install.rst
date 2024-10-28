@@ -1,3 +1,5 @@
+.. Note that this is currently within the user dir but rendered at the top level.
+
 ************
 Installation
 ************

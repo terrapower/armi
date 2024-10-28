@@ -55,4 +55,3 @@ converter.convert(r)
 figs = converter.plotConvertedReactor()
 
 plt.show()
-plt.close()
