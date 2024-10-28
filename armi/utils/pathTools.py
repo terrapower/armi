@@ -72,7 +72,9 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
         else:
             shutil.copy(sourcePath, destinationPath)
         runLog.debug(
-            "Copied {}: {} -> {}".format(filepathDescription, sourcePath, destinationPath)
+            "Copied {}: {} -> {}".format(
+                filepathDescription, sourcePath, destinationPath
+            )
         )
     except shutil.SameFileError:
         pass
