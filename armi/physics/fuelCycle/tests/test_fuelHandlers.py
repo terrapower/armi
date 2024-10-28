@@ -121,6 +121,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         self.refAssembly = copy.deepcopy(self.assembly)
         self.directoryChanger.open()
+        self.r.core.locateAllAssemblies()
 
     def tearDown(self):
         # clean up the test
@@ -222,6 +223,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(len(fh.moved), 0)
 
     def test_outageEdgeCase(self):
+        """Check that an error is raised if the list of moved assemblies is invalid."""
+
         class MockFH(fuelHandlers.FuelHandler):
             def chooseSwaps(self, factor=1.0):
                 self.moved = [None]
