@@ -473,6 +473,12 @@ class AverageBlockCollection(BlockCollection):
             return True
 
 
+def getBlockNuclideTemperature(block, nuclide):
+    """Return the average temperature for 1 nuclide."""
+    tempIntegratedVolume, volume = getBlockNuclideTemperatureAvgTerms(block, [nuclide])
+    return tempIntegratedVolume / volume
+
+
 def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     """
     Compute terms (numerator, denominator) of average for this block.
@@ -1009,7 +1015,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 raise ValueError("Burnup groups must be ascending")
             lastBu = upperBu
 
-        self._buGroupBounds = buGroupBounds
+        self._buGroupBounds = buGroupBounds + [float("inf")]
 
     def _setTempGroupBounds(self, tempGroupBounds):
         """Set the temperature group structure."""
@@ -1023,7 +1029,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             if upperTemp < lastTemp:
                 raise ValueError("Temp groups must be ascending")
             lastTemp = upperTemp
-        self._tempGroupBounds = buGroupBounds
+        self._tempGroupBounds = tempGroupBounds + [float("inf")]
 
     def _updateEnvironmentGroups(self, blockList):
         """
@@ -1043,27 +1049,26 @@ class CrossSectionGroupManager(interfaces.Interface):
             )
             return
 
-        numBuGroups = len(self._buGroupBounds) + 1
-        if numBuGroups > 1:
-            runLog.debug("Updating burnup groups of {0} blocks".format(len(blockList)))
-            for block in blockList:
-                bu = block.p.percentBu
-                for buGroupIndex, upperBu in enumerate(self._buGroupBounds):
-
-                    if bu <= upperBu:
-                        if self.cs["tempGroupBoundaries"]:
-                            # most designs have U238, unless its thorium. if thats the case, U233
-                            # use getBlockNuclideTemperatureAvgTerms(block, ["U235"])
-                            # Avg temp will still just be average  temp in each group, but not exactly the midpoint of the boundaries
-                            # ["tempGroupBoundaries"]  = [300, 350, 400, 450, 500, 550, 600, 650]
-                            for tempGroupIndex, upperTemp in enumerate(
-                                self._tempGroupBounds
-                            ):
-
-                                getIndex(buGroupIndex, tempGroupIndex)
-                                block.p.envGroupNum = buGroupIndex
-                else:
-                    raise ValueError("no bu group found for bu={0}".format(bu))
+        numBuGroups = len(self._buGroupBounds)
+        runLog.debug("Updating env groups of {0} blocks".format(len(blockList)))
+        for block in blockList:
+            bu = block.p.percentBu
+            for buGroupIndex, upperBu in enumerate(self._buGroupBounds):
+                if bu <= upperBu:
+                    tempGroupIndex = 0
+                    if len(self._tempGroupBounds) > 1:
+                        # if statement saves this somewhat expensive calc if we are not doing temp groups
+                        tempC = getBlockNuclideTemperature(
+                            block, self.cs["xsTempIsotope"]
+                        )
+                        for tempGroupIndex, upperTemp in enumerate(
+                            self._tempGroupBounds
+                        ):
+                            if temp <= upperTemp:
+                                break
+                    # this ordering groups like-temperatures together in group number
+                    block.p.envGroupNum = tempGroupIndex * numBuGroups + buGroupIndex
+                    break
 
     def _addXsGroupsFromBlocks(self, blockCollectionsByXsGroup, blockList):
         """
@@ -1419,13 +1424,25 @@ class CrossSectionGroupManager(interfaces.Interface):
         )
         return blockCollectionsByXsGroup
 
-    def _getTempGroupOfDifferentBurnup(self, missingXsType):
-        """Get a substitute block to use since there are no blacks with flags for xs gen."""
-        # Update here
-        for otherXsID in self.representativeBlocks:  # order gets closest BU
-            repType, repBuGroup = otherXsID
+    def _getAlternateEnvGroup(self, missingXsType):
+        """
+        Get a substitute block to use since there are no blacks with flags for xs gen.
+
+        Prefer matching temp to burnup.
+        """
+        anyEnvGroup = None
+        # get group of same temp if possible
+
+        for otherXsID in self.representativeBlocks:
+            repType, repEnvGroup = otherXsID
             if repType == missingXsType:
-                pass
+                if anyEnvGroup is None:
+                    anyEnvGroup = repEnvGroup
+                if tempMatches:
+                    return repEnvGroup
+
+            # couldn't find temp, just return the first one we found
+            return repEnvGroup
 
     def _modifyUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
         """
@@ -1441,18 +1458,18 @@ class CrossSectionGroupManager(interfaces.Interface):
             missingXsType, _missingEnvGroup = xsID
             nonRepBlocks = blockCollectionsByXsGroup.get(xsID)
             if nonRepBlocks:
-                newEnvType = self._getTempGroupOfDifferentBurnup(missingXsType)
-                if newEnvType:
+                newEnvGroup = self._getAlternateEnvGroup(missingXsType)
+                if newEnvGroup:
                     # there were no blocks flagged to xs gen even though there were some not suitable for
                     # generation in the group so can't make XS and use different.
                     runLog.warning(
                         "Changing XSID of {0} blocks from {1} to {2}"
                         "".format(
-                            len(nonRepBlocks), xsID, missingXsType[0] + newEnvType
+                            len(nonRepBlocks), xsID, missingXsType[0] + newEnvGroup
                         )
                     )
                     for b in nonRepBlocks:
-                        b.p.envGroup = newEnvType
+                        b.p.envGroup = newEnvGroup
                 else:
                     runLog.warning(
                         "No representative blocks with XS type {0} exist in the core. "
@@ -1474,10 +1491,14 @@ class CrossSectionGroupManager(interfaces.Interface):
                 xsIDGroup = self._getXsIDGroup(xsID)
                 if xsIDGroup == self._REPR_GROUP:
                     reprBlock = self.representativeBlocks.get(xsID)
-                    # look into adding temperature and burnup
+                    temp = self.avgNucTemperatures.get(self.cs["xsTempIsotope"], "N/A")
                     runLog.extra(
-                        "XS ID {} contains {:4d} blocks, represented by: {:65s}".format(
-                            xsID, len(blocks), reprBlock
+                        "XS ID {} contains {:4d} blocks, with burnup {} and avg fuel temp {}, represented by: {:65s}".format(
+                            xsID,
+                            len(blocks),
+                            reprBlock.percentBu,
+                            temp,
+                            reprBlock,
                         )
                     )
                 elif xsIDGroup == self._NON_REPR_GROUP:

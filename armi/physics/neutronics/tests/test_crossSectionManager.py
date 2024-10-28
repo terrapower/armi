@@ -95,6 +95,21 @@ class TestBlockCollectionMedian(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
+    def test_getBlockNuclideTemperature(self):
+        # doesn't have to be in median block tests, but this is a simpler test
+        nuc = "U235"
+        testBlock = blockList[0]
+        amt, amtWeightedTemp = 0, 0
+        for c in testBlock:
+            if c.getNumberDensity(nuc) > 0:
+                thisAmt = c.getNumberDensities * c.getVolume()
+                amt += thisAmt
+                amtWeightedTemp += thisAmt * c.temperatureInC
+        avgTemp = amtWeightedTemp / amt
+        self.assertAlmostEqual(
+            avgTemp, crossSectionGroupManager.getBlockNuclideTemperature(testBlock, nuc)
+        )
+
 
 class TestBlockCollectionAverage(unittest.TestCase):
     @classmethod
