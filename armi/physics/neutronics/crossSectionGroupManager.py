@@ -1427,22 +1427,11 @@ class CrossSectionGroupManager(interfaces.Interface):
     def _getAlternateEnvGroup(self, missingXsType):
         """
         Get a substitute block to use since there are no blacks with flags for xs gen.
-
-        Prefer matching temp to burnup.
         """
-        anyEnvGroup = None
-        # get group of same temp if possible
-
         for otherXsID in self.representativeBlocks:
             repType, repEnvGroup = otherXsID
             if repType == missingXsType:
-                if anyEnvGroup is None:
-                    anyEnvGroup = repEnvGroup
-                if tempMatches:
-                    return repEnvGroup
-
-            # couldn't find temp, just return the first one we found
-            return repEnvGroup
+                return repEnvGroup
 
     def _modifyUnrepresentedXSIDs(self, blockCollectionsByXsGroup):
         """
