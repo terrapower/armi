@@ -54,17 +54,17 @@ def armiAbsPath(*pathParts):
         return result
 
 
-def copyOrWarn(fileDescription, sourcePath, destinationPath):
+def copyOrWarn(filepathDescription, sourcePath, destinationPath):
     """Copy a file or directory, or warn if the filepath doesn't exist.
 
     Parameters
     ----------
-    fileDescription : str
+    filepathDescription : str
         a description of the file and/or operation being performed.
     sourcePath : str
-        Path of the file to be copied.
+        Filepath to be copied.
     destinationPath : str
-        Path for the copied file.
+        Copied filepath.
     """
     try:
         if os.path.isdir(sourcePath):
@@ -72,14 +72,14 @@ def copyOrWarn(fileDescription, sourcePath, destinationPath):
         else:
             shutil.copy(sourcePath, destinationPath)
         runLog.debug(
-            "Copied {}: {} -> {}".format(fileDescription, sourcePath, destinationPath)
+            "Copied {}: {} -> {}".format(filepathDescription, sourcePath, destinationPath)
         )
     except shutil.SameFileError:
         pass
     except Exception as e:
         runLog.warning(
             "Could not copy {} from {} to {}\nError was: {}".format(
-                fileDescription, sourcePath, destinationPath, e
+                filepathDescription, sourcePath, destinationPath, e
             )
         )
 
