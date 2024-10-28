@@ -1576,7 +1576,7 @@ class ArmiObject(metaclass=CompositeModelType):
         }
         self.setNumberDensities(densitiesScaled)
         # Update detailedNDens
-        if self.p.detailedNDens:
+        if self.p.detailedNDens is not None:
             self.p.detailedNDens *= factor
 
     def clearNumberDensities(self):

@@ -16,6 +16,7 @@
 import collections
 import os
 import unittest
+import copy
 from statistics import mean
 
 from numpy import array, linspace, zeros
@@ -267,6 +268,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         a = buildTestAssemblyWithFakeMaterial(name="HT9")
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
+        # set component detailedNDens
+        origDetailedNDens = self._setComponentDetailedNDens(a, origNDens)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
 
         tempGrid = linspace(0.0, a.getHeight())
@@ -281,16 +284,20 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             # Set new isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
             oldMasses, oldNDens = self._getComponentMassAndNDens(a)
+            oldDetailedNDens = self._getComponentDetailedNDens(a)
             axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
             newMasses, newNDens = self._getComponentMassAndNDens(a)
+            newDetailedNDens = self._getComponentDetailedNDens(a)
             self._checkMass(oldMasses, newMasses)
             self._checkNDens(oldNDens, newNDens, totGrowthFrac)
+            self._checkDetailedNDens(oldDetailedNDens, newDetailedNDens, totGrowthFrac)
 
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
             self.assertAlmostEqual(orig, new, places=12)
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
+        self._checkDetailedNDens(origDetailedNDens, newDetailedNDens, 1.0)
 
     def test_thermalExpansionContractionConservation_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.
@@ -412,7 +419,13 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             for prev, new in zip(prevComp.values(), newComp.values()):
                 if prev:
                     self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
-
+    
+    def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
+        for prevComp, newComp in zip(prevDetailedNDen.values(), newDetailedNDens.values()):
+            for prev, new in zip(prevComp, newComp):
+                if prev:
+                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
+    
     @staticmethod
     def _getComponentMassAndNDens(a):
         masses = {}
@@ -422,6 +435,23 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 masses[c] = c.getMass()
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
+    
+    @staticmethod
+    def _setComponentDetailedNDens(a, nDens):
+        detailedNDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                c.p.detailedNDens = copy.deepcopy([val for val in nDens[c].values()])
+                detailedNDens[c] = c.p.detailedNDens
+        return detailedNDens
+    
+    @staticmethod
+    def _getComponentDetailedNDens(a):
+        detailedNDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
+        return detailedNDens
 
     def test_targetComponentMassConservation(self):
         """Tests mass conservation for target components."""
