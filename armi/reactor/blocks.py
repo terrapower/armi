@@ -2052,10 +2052,6 @@ class HexBlock(Block):
 
         The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
 
-        .. impl:: A hexagonal block shall be rotatable by 60 degree increments.
-            :id: I_ARMI_ROTATE_HEX
-            :implements: R_ARMI_ROTATE_HEX
-
         .. impl:: Rotating a hex block updates the orientation parameter.
             :id: I_ARMI_ROTATE_HEX_ORIENTATION
             :implements: R_ARMI_ROTATE_HEX_PARAMS
