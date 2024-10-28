@@ -2050,8 +2050,6 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
-
         .. impl:: Rotating a hex block updates the orientation parameter.
             :id: I_ARMI_ROTATE_HEX_ORIENTATION
             :implements: R_ARMI_ROTATE_HEX_PARAMS
