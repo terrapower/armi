@@ -25,12 +25,11 @@ import typing
 import numpy as np
 
 from armi import runLog
+from armi.physics.fuelCycle.utils import maxBurnupFuelPinLocation
 from armi.utils.mathematics import findClosest
 
 if typing.TYPE_CHECKING:
-    from armi.reactor.grids import IndexLocation
     from armi.reactor.assemblies import HexAssembly
-    from armi.reactor.blocks import HexBlock
 
 
 def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int:
@@ -95,7 +94,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
         raise ValueError(
             f"Block {maxBuBlock} in {a} does not have a spatial grid. Cannot rotate."
         )
-    maxBuPinLocation = _maxBuPinLocation(maxBuBlock)
+    maxBuPinLocation = maxBurnupFuelPinLocation(maxBuBlock)
     # No need to rotate if max burnup pin is the center
     if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
         return 0
@@ -127,18 +126,6 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
             candidateRotation = rot
             candidatePower = newPower
     return candidateRotation
-
-
-def _maxBuPinLocation(maxBuBlock: "HexBlock") -> "IndexLocation":
-    """Find the grid position for the highest burnup pin.
-
-    percentBuMaxPinLocation corresponds to the "pin number" which is one indexed
-    and can be found at ``maxBuBlock.getPinLocations()[pinNumber - 1]``
-    """
-    buMaxPinNumber = maxBuBlock.p.percentBuMaxPinLocation
-    pinLocations = maxBuBlock.getPinLocations()
-    maxBuPinLocation = pinLocations[buMaxPinNumber - 1]
-    return maxBuPinLocation
 
 
 def buildRingSchedule(
