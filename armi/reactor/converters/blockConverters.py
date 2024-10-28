@@ -488,9 +488,9 @@ class BlockAvgToCylConverter(BlockConverter):
         fig.tight_layout()
         if fName:
             plt.savefig(fName)
+            plt.close()
         else:
             plt.show()
-        plt.close()
         return fName
 
 

@@ -14,6 +14,7 @@
 
 """Tests for grids."""
 from io import BytesIO
+from random import randint
 import math
 import pickle
 import unittest
@@ -23,6 +24,7 @@ from numpy.testing import assert_allclose, assert_array_equal
 
 from armi.reactor import geometry
 from armi.reactor import grids
+from armi.utils import hexagon
 
 
 class MockLocator(grids.IndexLocation):
@@ -674,6 +676,102 @@ class TestHexGrid(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             _ = grids.HexGrid._indicesAndEdgeFromRingAndPos(1, 3)
+
+    def test_rotatedIndices(self):
+        """Test that a hex grid can produce a rotated cell location."""
+        g = grids.HexGrid.fromPitch(1.0, numRings=3)
+        center: grids.IndexLocation = g[(0, 0, 0)]
+        notRotated = self._rotateAndCheckAngle(g, center, 0)
+        self.assertEqual(notRotated, center)
+
+        # One rotation for a trivial check
+        northEast: grids.IndexLocation = g[(1, 0, 0)]
+        dueNorth: grids.IndexLocation = g[(0, 1, 0)]
+        northWest: grids.IndexLocation = g[(-1, 1, 0)]
+        actual = self._rotateAndCheckAngle(g, northEast, 1)
+        self.assertEqual(actual, dueNorth)
+        np.testing.assert_allclose(dueNorth.getLocalCoordinates(), [0.0, 1.0, 0.0])
+
+        actual = self._rotateAndCheckAngle(g, dueNorth, 1)
+        self.assertEqual(actual, northWest)
+        np.testing.assert_allclose(
+            northWest.getLocalCoordinates(), [-hexagon.SQRT3 / 2, 0.5, 0]
+        )
+
+        # Two rotations from the "first" object in the first full ring
+        actual = self._rotateAndCheckAngle(g, northEast, 2)
+        self.assertEqual(actual, northWest)
+
+        # Fuzzy rotation: if we rotate an location, and then rotate it back, we get the same location
+        for _ in range(10):
+            startI = randint(-10, 10)
+            startJ = randint(-10, 10)
+            start = g[(startI, startJ, 0)]
+            rotations = randint(-10, 10)
+            postRotate = self._rotateAndCheckAngle(g, start, rotations)
+            if startI == 0 and startJ == 0:
+                self.assertEqual(postRotate, start)
+                continue
+            if rotations % 6:
+                self.assertNotEqual(postRotate, start, msg=rotations)
+            else:
+                self.assertEqual(postRotate, start, msg=rotations)
+            reversed = self._rotateAndCheckAngle(g, postRotate, -rotations)
+            self.assertEqual(reversed, start)
+
+    def _rotateAndCheckAngle(
+        self, g: grids.HexGrid, start: grids.IndexLocation, rotations: int
+    ) -> grids.IndexLocation:
+        """Rotate a location and verify it lands where we expected."""
+        finish = g.rotateIndex(start, rotations)
+        self._checkAngle(start, finish, rotations)
+        return finish
+
+    def _checkAngle(
+        self, start: grids.IndexLocation, finish: grids.IndexLocation, rotations: int
+    ):
+        """Compare two locations that should be some number of 60 degree CCW rotations apart."""
+        startXY = start.getLocalCoordinates()[:2]
+        theta = math.pi / 3 * rotations
+        rotationMatrix = np.array(
+            [
+                [math.cos(theta), -math.sin(theta)],
+                [math.sin(theta), math.cos(theta)],
+            ]
+        )
+        expected = rotationMatrix.dot(startXY)
+        finishXY = finish.getLocalCoordinates()[:2]
+        np.testing.assert_allclose(finishXY, expected, atol=1e-8)
+
+    def test_inconsistentRotationGrids(self):
+        """Test that only locations in consistent grids are rotatable."""
+        base = grids.HexGrid.fromPitch(1, cornersUp=False)
+        larger = grids.HexGrid.fromPitch(base.pitch * 2, cornersUp=base.cornersUp)
+        fromLarger = larger[1, 0, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromLarger)
+
+        differentOrientation = grids.HexGrid.fromPitch(
+            base.pitch, cornersUp=not base.cornersUp
+        )
+        fromDiffOrientation = differentOrientation[0, 1, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromDiffOrientation)
+
+        axialGrid = grids.AxialGrid.fromNCells(5)
+        fromAxial = axialGrid[2, 0, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromAxial)
+
+    def test_rotatedIndexGridAssignment(self):
+        """Test that the grid of the rotated index is identical through rotation."""
+        base = grids.HexGrid.fromPitch(1)
+        other = grids.HexGrid.fromPitch(base.pitch, cornersUp=base.cornersUp)
+
+        for i, j in ((0, 0), (1, 1), (2, 1), (-1, 3)):
+            loc = grids.IndexLocation(i, j, k=0, grid=other)
+            postRotate = base.rotateIndex(loc, rotations=2)
+            self.assertIs(postRotate.grid, loc.grid)
 
 
 class TestBoundsDefinedGrid(unittest.TestCase):
