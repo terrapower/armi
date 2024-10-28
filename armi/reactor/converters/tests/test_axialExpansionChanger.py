@@ -419,13 +419,15 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             for prev, new in zip(prevComp.values(), newComp.values()):
                 if prev:
                     self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
-    
+
     def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
-        for prevComp, newComp in zip(prevDetailedNDen.values(), newDetailedNDens.values()):
+        for prevComp, newComp in zip(
+            prevDetailedNDen.values(), newDetailedNDens.values()
+        ):
             for prev, new in zip(prevComp, newComp):
                 if prev:
                     self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
-    
+
     @staticmethod
     def _getComponentMassAndNDens(a):
         masses = {}
@@ -435,7 +437,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 masses[c] = c.getMass()
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
-    
+
     @staticmethod
     def _setComponentDetailedNDens(a, nDens):
         detailedNDens = {}
@@ -444,7 +446,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 c.p.detailedNDens = copy.deepcopy([val for val in nDens[c].values()])
                 detailedNDens[c] = c.p.detailedNDens
         return detailedNDens
-    
+
     @staticmethod
     def _getComponentDetailedNDens(a):
         detailedNDens = {}
@@ -601,6 +603,19 @@ class TestManageCoreMesh(unittest.TestCase):
         # expand refAssem by 1.01 L1/L0
         componentLst = [c for b in self.r.core.refAssem for c in b]
         expansionGrowthFracs = 1.01 + zeros(len(componentLst))
+        self.origDetailedNDens = {}
+        for c in componentLst:
+            if any(
+                [
+                    x in c.getType()
+                    for x in [
+                        "clad",
+                    ]
+                ]
+            ):  # "clad", "duct"]]):
+                c.p.detailedNDens = [val for val in c.getNumberDensities().values()]
+                self.origDetailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
+                self.originalVolumes[c] = c.getVolume()
         self.axialExpChngr.performPrescribedAxialExpansion(
             self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True
         )
@@ -611,6 +626,61 @@ class TestManageCoreMesh(unittest.TestCase):
         # skip first and last entries as they do not change
         for old, new in zip(self.oldAxialMesh[1:-1], newAxialMesh[1:-1]):
             self.assertLess(old, new)
+
+    def test_fuelComponentConservation(self):
+        componentLst = [c for b in self.r.core.refAssem for c in b]
+        newDetailedNDens = {}
+        for c in componentLst:
+            if any(
+                [
+                    x in c.getType()
+                    for x in [
+                        "clad",
+                    ]
+                ]
+            ):  # "clad", "duct"]]):
+                newDetailedNDens[c] = c.p.detailedNDens
+        print(newDetailedNDens)
+        # print(len(self.origDetailedNDens))
+        print(self.origDetailedNDens)
+        self._checkDetailedNDens(self.origDetailedNDens, newDetailedNDens, 1.01)
+
+    @staticmethod
+    def _setComponentDetailedNDens(a, nDens):
+        detailedNDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                c.p.detailedNDens = copy.deepcopy([1.0 for val in nDens[c].values()])
+                detailedNDens[c] = c.p.detailedNDens
+        return detailedNDens
+
+    @staticmethod
+    def _getComponentDetailedNDens(a):
+        detailedNDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
+        return detailedNDens
+
+    @staticmethod
+    def _getComponentMassAndNDens(a):
+        masses = {}
+        nDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                masses[c] = c.getMass()
+                nDens[c] = c.getNumberDensities()
+        return masses, nDens
+
+    def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
+        for prevComp, newComp in zip(
+            prevDetailedNDen.values(), newDetailedNDens.values()
+        ):
+            # print(prevComp, newComp)
+            for prev, new in zip(prevComp, newComp):
+                # print(prev, new)
+                if prev:
+                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
