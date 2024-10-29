@@ -41,6 +41,7 @@ API Changes
 #. Removing ``Assembly.doubleResolution()``. (`PR#1951 <https://github.com/terrapower/armi/pull/1951>`_)
 #. Removing ``assemblyLists.py`` and the ``AssemblyList`` class. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
 #. Removing ``Assembly.rotatePins`` and ``Block.rotatePins``. Prefer ``Assembly.rotate`` and ``Block.rotate``. (`PR#1846 <https://github.com/terrapower/armi/1846>`_)
+#. Removing unused setting ``autoGenerateBlockGrids``. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Transposing ``pinMgFluxes`` parameters so that leading dimension is pin index. (`PR#1937 <https://github.com/terrapower/armi/pull/1937>`_)
 #. ``Block.getPinCoordinates`` returns an ``(N, 3)`` array, rather than a length ``N`` list of three-length arrays. (`PR#1943 <https://github.com/terrapower/armi/pull/1943>`_)
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class. (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`_)
@@ -50,6 +51,7 @@ API Changes
 
 Bug Fixes
 ---------
+#. Fixed spatial grids of pins in Blocks on flats-up grids. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Fixed ``DerivedShape.getArea`` for ``cold=True``. (`PR#1831 <https://github.com/terrapower/armi/pull/1831>`_)
 #. Fixed error parsing command line integers in ``ReportsEntryPoint``. (`PR#1824 <https://github.com/terrapower/armi/pull/1824>`_)
 #. Fixed ``PermissionError`` when using ``syncDbAfterWrite``. (`PR#1857 <https://github.com/terrapower/armi/pull/1857>`_)
@@ -66,8 +68,8 @@ Quality Work
 ------------
 #. Removing deprecated code ``axialUnitGrid``. (`PR#1809 <https://github.com/terrapower/armi/pull/1809>`_)
 #. Refactoring ``axialExpansionChanger``. (`PR#1861 <https://github.com/terrapower/armi/pull/1861>`_)
+#. Raising a ValueError when database load fails. (`PR#1940 <https://github.com/terrapower/armi/pull/1940>`_)
 #. Changes to make axial expansion related classes more extensible. (`PR#1920 <https://github.com/terrapower/armi/pull/1920>`_)
-#. Raise a ValueError when database load fails. (`PR#1940 <https://github.com/terrapower/armi/pull/1940>`_)
 #. TBD
 
 Changes that Affect Requirements

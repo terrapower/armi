@@ -293,14 +293,19 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Creates a spatialGrid for a Block.
 
-        Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
-        spatialGrids inferred based on the multiplicty of their components.
-        This would add the ability to create a spatialGrid for a Block and give its children
-        the corresponding spatialLocators if certain conditions are met.
+        Blocks do not always have a spatialGrid from Blueprints, but some Blocks can have their
+        spatialGrids inferred based on the multiplicty of their components. This would add the
+        ability to create a spatialGrid for a Block and give its children the corresponding
+        spatialLocators if certain conditions are met.
+
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Raises
         ------
@@ -308,7 +313,8 @@ class Block(composites.Composite):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        raise NotImplementedError()
+        if self.spatialGrid is None:
+            self.spatialGrid = systemSpatialGrid
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
@@ -2316,7 +2322,7 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
@@ -2325,12 +2331,19 @@ class HexBlock(Block):
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
         into a given number of hex rings.  Otherwise, do not create a grid for this block.
 
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
+
         Notes
         -----
-        If the Block meets all the conditions, we gather all components to either be a
-        multiIndexLocation containing all of the pin positions, or the locator is the center (0,0).
+        When a hex grid has another hex grid nested inside it, the nested grid has the opposite
+        orientation (corners vs flats up). This method takes care of that.
 
-        Also, this only works on blocks that have 'flat side up'.
+        If components inside this block are multiplicity 1, they get a single locator at the center
+        of the grid cell. If the multiplicity is greater than 1, all the components are added to a
+        multiIndexLocation on the hex grid.
 
         Raises
         ------
@@ -2338,7 +2351,7 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        # Check multiplicities...
+        # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
@@ -2348,29 +2361,39 @@ class HexBlock(Block):
                 )
             )
 
-        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
-        # For the below to work, there must not be multiple wire or multiple clad types.
-        # note that it's the pointed end of the cell hexes that are up (but the
-        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
+        # build the grid, from pitch and orientation
+        if isinstance(systemSpatialGrid, grids.HexGrid):
+            cornersUp = not systemSpatialGrid.cornersUp
+        else:
+            cornersUp = False
+
         grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=True
+            self.getPinPitch(cold=True),
+            numRings=0,
+            armiObject=self,
+            cornersUp=cornersUp,
         )
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+
         if numLocations != self.getNumPins():
             raise ValueError(
-                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                "Cannot create spatialGrid, number of locations in rings {} not equal to pin number {}".format(
                     numLocations, self.getNumPins()
                 )
             )
 
-        i = 0
+        # set the spatial position of the sub-block components
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 spatialLocators.append(grid[i, j, 0])
+
+        # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:
