@@ -37,12 +37,7 @@ DO_NOT_CLEAN_PATHS = [
 
 
 def armiAbsPath(*pathParts):
-    """
-    Convert a list of path components to an absolute path, without drive letters if possible.
-
-    This is mostly useful on Windows systems, where drive letters are not well defined for shared
-    drives. In these cases, it is useful to try to convert to a UNC path ifpossible.
-    """
+    """Convert a list of path components to an absolute path, without drive letters if possible."""
     return os.path.abspath(os.path.join(*pathParts))
 
 
