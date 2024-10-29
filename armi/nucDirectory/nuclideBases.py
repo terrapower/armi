@@ -615,23 +615,15 @@ class NuclideBase(INuclide, IMcnpNuclide):
         return self.mcc2id
 
     def getMcc3Id(self):
-        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library.
-
-        .. impl:: Isotopes and isomers can be queried by MC2-3 ID.
-            :id: I_ARMI_ND_ISOTOPES3
-            :implements: R_ARMI_ND_ISOTOPES
-
-            This method returns the ``mcc3idEndfbVII1`` attribute of a
-            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
-            mcc-nuclides.yaml file in the ARMI resources folder.
+        """
+        Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library.
         """
         return self.getMcc3IdEndfbVII1()
 
     def getMcc3IdEndfbVII0(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library.
 
-        .. impl:: Isotopes and isomers can be queried by MC2-3 ID.
+        .. impl:: Isotopes and isomers can be queried by MC2-3 ENDF/B-VII.0 ID.
             :id: I_ARMI_ND_ISOTOPES3
             :implements: R_ARMI_ND_ISOTOPES
 
@@ -645,8 +637,8 @@ class NuclideBase(INuclide, IMcnpNuclide):
     def getMcc3IdEndfbVII1(self):
         """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library.
 
-        .. impl:: Isotopes and isomers can be queried by MC2-3 ID.
-            :id: I_ARMI_ND_ISOTOPES3
+        .. impl:: Isotopes and isomers can be queried by MC2-3 ENDF/B-VII.1 ID.
+            :id: I_ARMI_ND_ISOTOPES7
             :implements: R_ARMI_ND_ISOTOPES
 
             This method returns the ``mcc3idEndfbVII1`` attribute of a

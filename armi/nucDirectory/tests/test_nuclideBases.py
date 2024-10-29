@@ -382,9 +382,9 @@ class TestNuclide(unittest.TestCase):
         self.assertAlmostEqual(activity, 0.9885593, places=6)
 
     def test_loadMcc2Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-V.2 nuclides in the data model.
 
-        .. test:: Test that MCC v2 IDs can be queried by nuclides.
+        .. test:: Test that MCC v2 ENDF/B-V.2 IDs can be queried by nuclides.
             :id: T_ARMI_ND_ISOTOPES3
             :tests: R_ARMI_ND_ISOTOPES
         """
@@ -403,13 +403,13 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
 
     def test_loadMcc3EndfVII0Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the VII.0 nuclides in the data model.
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-VII.0 nuclides in the data model.
 
-        .. test:: Test that MCC v3 IDs can be queried by nuclides.
+        .. test:: Test that MCC v3 ENDF/B-VII.0 IDs can be queried by nuclides.
             :id: T_ARMI_ND_ISOTOPES4
             :tests: R_ARMI_ND_ISOTOPES
 
-        .. test:: Test the MCC nuclide data that was read from file instead of code.
+        .. test:: Test the MCC ENDF/B-VII.0 nuclide data that was read from file instead of code.
             :id: T_ARMI_ND_DATA1
             :tests: R_ARMI_ND_DATA
         """
@@ -429,14 +429,14 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(len(nuclideBases.byMcc3IdEndfbVII0), len(expectedNuclides) - 1)
 
     def test_loadMcc3EndfVII1Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the VII.1 nuclides in the data model.
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-VII.1 nuclides in the data model.
 
-        .. test:: Test that MCC v3 IDs can be queried by nuclides.
-            :id: T_ARMI_ND_ISOTOPES4
+        .. test:: Test that MCC v3 ENDF/B-VII.1 IDs can be queried by nuclides.
+            :id: T_ARMI_ND_ISOTOPES6
             :tests: R_ARMI_ND_ISOTOPES
 
-        .. test:: Test the MCC nuclide data that was read from file instead of code.
-            :id: T_ARMI_ND_DATA1
+        .. test:: Test the MCC ENDF/B-VII.1 nuclide data that was read from file instead of code.
+            :id: T_ARMI_ND_DATA2
             :tests: R_ARMI_ND_DATA
         """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
