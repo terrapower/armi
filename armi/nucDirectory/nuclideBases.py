@@ -615,9 +615,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         return self.mcc2id
 
     def getMcc3Id(self):
-        """
-        Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library.
-        """
+        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
         return self.getMcc3IdEndfbVII1()
 
     def getMcc3IdEndfbVII0(self):
