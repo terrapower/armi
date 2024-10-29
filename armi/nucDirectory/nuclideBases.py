@@ -929,7 +929,7 @@ class DummyNuclideBase(INuclide):
         return self.mcc3idEndfbVII0
 
     def getMcc3IdEndfbVII1(self):
-        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.0 cross section library."""
+        """Return the MC2-3 nuclide identification label based on the ENDF/B-VII.1 cross section library."""
         return self.mcc3idEndfbVII1
 
 
