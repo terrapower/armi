@@ -24,16 +24,19 @@ from armi import materials
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
-from armi.reactor.components import DerivedShape, UnshapedComponent
+from armi.reactor.components import Component, DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
     AxialExpansionChanger,
+    AssemblyAxialLinkage,
     ExpansionData,
     getSolidComponents,
+    iterSolidComponents,
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
-    _determineLinked,
+    areAxiallyLinked,
+    AxialLink,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -87,7 +90,7 @@ class AxialExpansionTestBase(unittest.TestCase):
         for b in a:
             # store block ztop
             self.blockZtop[b].append(b.p.ztop)
-            for c in getSolidComponents(b):
+            for c in iterSolidComponents(b):
                 # store mass and density of component
                 self.componentMass[c].append(c.getMass())
                 self.componentDensity[c].append(
@@ -320,7 +323,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         for temp in tempAdjust:
             # adjust component temperatures by temp
             for b in a:
-                for c in getSolidComponents(b):
+                for c in iterSolidComponents(b):
                     axialExpChngr.expansionData.updateComponentTemp(
                         c, c.temperatureInC + temp
                     )
@@ -374,7 +377,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         axExpChngr = AxialExpansionChanger()
         origMesh = a.getAxialMesh()
         origMasses, origNDens = self._getComponentMassAndNDens(a)
-        componentLst = [c for b in a for c in getSolidComponents(b)]
+        componentLst = [c for b in a for c in iterSolidComponents(b)]
         expansionGrowthFrac = 1.01
         contractionGrowthFrac = 1.0 / expansionGrowthFrac
         for i in range(0, 10):
@@ -418,7 +421,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         masses = {}
         nDens = {}
         for b in a:
-            for c in getSolidComponents(b):
+            for c in iterSolidComponents(b):
                 masses[c] = c.getMass()
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
@@ -697,7 +700,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
         compDims = {"Tinput": 25.0, "Thot": 25.0}
         compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
         compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(_determineLinked(compA, compB))
+        self.assertFalse(areAxiallyLinked(compA, compB))
 
     def test_getLinkedComponents(self):
         """Test for multiple component axial linkage."""
@@ -731,18 +734,22 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(clad)
         b.add(self.coolant)
-        # make sure that b.p.axialExpTargetComponent is empty initially
+        self._checkTarget(b, fuel)
+
+    def _checkTarget(self, b: HexBlock, expected: Component):
+        """Call determineTargetMethod and compare what we get with expected."""
+        # Value unset initially
         self.assertFalse(b.p.axialExpTargetComponent)
-        # call method, and check that target component is correct
-        self.expData.determineTargetComponent(b)
+        target = self.expData.determineTargetComponent(b)
+        self.assertIs(target, expected)
         self.assertTrue(
-            self.expData.isTargetComponent(fuel),
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
+            self.expData.isTargetComponent(target),
+            msg=f"determineTargetComponent failed to recognize intended component: {expected}",
         )
         self.assertEqual(
             b.p.axialExpTargetComponent,
-            fuel.name,
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
+            expected.name,
+            msg=f"determineTargetComponent failed to recognize intended component: {expected}",
         )
 
     def test_determineTargetComponentBlockWithMultipleFlags(self):
@@ -756,12 +763,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(fuel)
         b.add(poison)
         b.add(self.coolant)
-        # call method, and check that target component is correct
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(fuel),
-            msg=f"determineTargetComponent failed to recognize intended component: {fuel}",
-        )
+        self._checkTarget(b, fuel)
 
     def test_specifyTargetComponent_NotFound(self):
         """Ensure RuntimeError gets raised when no target component is found."""
@@ -786,11 +788,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(self.coolant)
         b.getVolumeFractions()
         b.setType("plenum")
-        self.expData.determineTargetComponent(b)
-        self.assertTrue(
-            self.expData.isTargetComponent(duct),
-            msg=f"determineTargetComponent failed to recognize intended component: {duct}",
-        )
+        self._checkTarget(b, duct)
 
     def test_specifyTargetComponet_MultipleFound(self):
         """Ensure RuntimeError is hit when multiple target components are found.
@@ -857,9 +855,18 @@ class TestGetSolidComponents(unittest.TestCase):
         self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
 
     def test_getSolidComponents(self):
+        """Show that getSolidComponents produces a list of solids, and is consistent with iterSolidComponents."""
         for b in self.a:
-            for c in getSolidComponents(b):
+            solids = getSolidComponents(b)
+            ids = set(map(id, solids))
+            for c in iterSolidComponents(b):
                 self.assertNotEqual(c.material.name, "Sodium")
+                self.assertIn(id(c), ids, msg=f"Found non-solid {c}")
+                ids.remove(id(c))
+            self.assertFalse(
+                ids,
+                msg="Inconsistency between getSolidComponents and iterSolidComponents",
+            )
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
@@ -928,7 +935,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                     self.checkColdHeightBlockMass(bStd, bExp, Flags.CONTROL, "B10")
 
                 if not aStd.hasFlags(Flags.TEST) and not hasCustomMaterial:
-                    for cExp in getSolidComponents(bExp):
+                    for cExp in iterSolidComponents(bExp):
                         if cExp.zbottom == bExp.p.zbottom and cExp.ztop == bExp.p.ztop:
                             matDens = cExp.material.density(Tc=cExp.temperatureInC)
                             compDens = cExp.density()
@@ -977,7 +984,7 @@ def checkColdBlockHeight(bStd, bExp, assertType, strForAssertion):
     )
 
 
-class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
+class TestComponentLinks(AxialExpansionTestBase, unittest.TestCase):
     """Test axial linkage between components."""
 
     def setUp(self):
@@ -1027,26 +1034,26 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
             typeB = method(*common, **dims[1])
             if assertionBool:
                 self.assertTrue(
-                    _determineLinked(typeA, typeB),
+                    areAxiallyLinked(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertTrue(
-                    _determineLinked(typeB, typeA),
+                    areAxiallyLinked(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
             else:
                 self.assertFalse(
-                    _determineLinked(typeA, typeB),
+                    areAxiallyLinked(typeA, typeB),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
                 )
                 self.assertFalse(
-                    _determineLinked(typeB, typeA),
+                    areAxiallyLinked(typeB, typeA),
                     msg="Test {0:s} failed for component type {1:s}!".format(
                         name, str(method)
                     ),
@@ -1145,7 +1152,7 @@ class TestLinkage(AxialExpansionTestBase, unittest.TestCase):
     def test_unshapedComponentAndCircle(self):
         comp1 = Circle(*self.common, od=1.0, id=0.0)
         comp2 = UnshapedComponent(*self.common, area=1.0)
-        self.assertFalse(_determineLinked(comp1, comp2))
+        self.assertFalse(areAxiallyLinked(comp1, comp2))
 
 
 def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
@@ -1266,3 +1273,93 @@ class FakeMatException(materials.ht9.HT9):
         """A fake linear expansion percent."""
         Tc = units.getTc(Tc, Tk)
         return 0.08 * Tc
+
+
+class TestAxialLinkHelper(unittest.TestCase):
+    """Tests for the AxialLink dataclass / namedtuple like class."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.LOWER_BLOCK = _buildDummySodium(20, 10)
+        cls.UPPER_BLOCK = _buildDummySodium(300, 50)
+
+    def test_override(self):
+        """Test the upper and lower attributes can be set after construction."""
+        empty = AxialLink()
+        self.assertIsNone(empty.lower)
+        self.assertIsNone(empty.upper)
+        empty.lower = self.LOWER_BLOCK
+        empty.upper = self.UPPER_BLOCK
+        self.assertIs(empty.lower, self.LOWER_BLOCK)
+        self.assertIs(empty.upper, self.UPPER_BLOCK)
+
+    def test_construct(self):
+        """Test the upper and lower attributes can be set at construction."""
+        link = AxialLink(self.LOWER_BLOCK, self.UPPER_BLOCK)
+        self.assertIs(link.lower, self.LOWER_BLOCK)
+        self.assertIs(link.upper, self.UPPER_BLOCK)
+
+
+class TestBlockLink(unittest.TestCase):
+    """Test the ability to link blocks in an assembly."""
+
+    def test_singleBlock(self):
+        """Test an edge case where a single block exists."""
+        b = _buildDummySodium(300, 50)
+        links = AssemblyAxialLinkage.getLinkedBlocks([b])
+        self.assertEqual(len(links), 1)
+        self.assertIn(b, links)
+        linked = links.pop(b)
+        self.assertIsNone(linked.lower)
+        self.assertIsNone(linked.upper)
+
+    def test_multiBlock(self):
+        """Test links with multiple blocks."""
+        N_BLOCKS = 5
+        blocks = [_buildDummySodium(300, 50) for _ in range(N_BLOCKS)]
+        links = AssemblyAxialLinkage.getLinkedBlocks(blocks)
+        first = blocks[0]
+        lowLink = links[first]
+        self.assertIsNone(lowLink.lower)
+        self.assertIs(lowLink.upper, blocks[1])
+        for ix in range(1, N_BLOCKS - 1):
+            current = blocks[ix]
+            below = blocks[ix - 1]
+            above = blocks[ix + 1]
+            link = links[current]
+            self.assertIs(link.lower, below)
+            self.assertIs(link.upper, above)
+        top = blocks[-1]
+        lastLink = links[top]
+        self.assertIsNone(lastLink.upper)
+        self.assertIs(lastLink.lower, blocks[-2])
+
+    def test_emptyBlocks(self):
+        """Test even smaller edge case when no blocks are passed."""
+        with self.assertRaisesRegex(
+            ValueError, "No blocks passed. Cannot determine links"
+        ):
+            AssemblyAxialLinkage.getLinkedBlocks([])
+
+    def test_onAssembly(self):
+        """Test assembly behavior is the same as sequence of blocks."""
+        assembly = HexAssembly("test")
+        N_BLOCKS = 5
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numCells=N_BLOCKS)
+        assembly.spatialGrid.armiObject = assembly
+
+        blocks = []
+        for _ in range(N_BLOCKS):
+            b = _buildDummySodium(300, 10)
+            assembly.add(b)
+            blocks.append(b)
+
+        fromBlocks = AssemblyAxialLinkage.getLinkedBlocks(blocks)
+        fromAssem = AssemblyAxialLinkage.getLinkedBlocks(assembly)
+
+        self.assertSetEqual(set(fromBlocks), set(fromAssem))
+
+        for b, bLink in fromBlocks.items():
+            aLink = fromAssem[b]
+            self.assertIs(aLink.lower, bLink.lower)
+            self.assertIs(aLink.upper, bLink.upper)
