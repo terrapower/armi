@@ -38,22 +38,31 @@ _HASH_BUFFER_SIZE = 1024 * 1024
 
 def getFileSHA1Hash(filePath, digits=40):
     """
-    Generate a SHA-1 hash of the input file.
+    Generate a SHA-1 hash of input files.
 
     Parameters
     ----------
     filePath : str
-        Path to file to obtain the SHA-1 hash
+        Path to file or directory to obtain the SHA-1 hash
     digits : int, optional
         Number of digits to include in the hash (40 digit maximum for SHA-1)
     """
     sha1 = hashlib.sha1()
-    with open(filePath, "rb") as f:
-        while True:
-            data = f.read(_HASH_BUFFER_SIZE)
-            if not data:
-                break
-            sha1.update(data)
+    filesToHash = []
+    if os.path.isdir(filePath):
+        for root, _, files in os.walk(filePath):
+            for file in sorted(files):
+                filesToHash.append(os.path.join(root, file))
+    else:
+        filesToHash.append(filePath)
+
+    for file in filesToHash:
+        with open(file, "rb") as f:
+            while True:
+                data = f.read(_HASH_BUFFER_SIZE)
+                if not data:
+                    break
+                sha1.update(data)
 
     return sha1.hexdigest()[:digits]
 
