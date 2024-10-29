@@ -603,19 +603,10 @@ class TestManageCoreMesh(unittest.TestCase):
         # expand refAssem by 1.01 L1/L0
         componentLst = [c for b in self.r.core.refAssem for c in b]
         expansionGrowthFracs = 1.01 + zeros(len(componentLst))
-        self.origDetailedNDens = {}
-        for c in componentLst:
-            if any(
-                [
-                    x in c.getType()
-                    for x in [
-                        "clad",
-                    ]
-                ]
-            ):  # "clad", "duct"]]):
-                c.p.detailedNDens = [val for val in c.getNumberDensities().values()]
-                self.origDetailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
-                self.originalVolumes[c] = c.getVolume()
+        (
+            self.origDetailedNDens,
+            self.origVolumes,
+        ) = self._getComponentDetailedNDensAndVol(componentLst)
         self.axialExpChngr.performPrescribedAxialExpansion(
             self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True
         )
@@ -627,60 +618,47 @@ class TestManageCoreMesh(unittest.TestCase):
         for old, new in zip(self.oldAxialMesh[1:-1], newAxialMesh[1:-1]):
             self.assertLess(old, new)
 
-    def test_fuelComponentConservation(self):
+    def test_componentConservation(self):
+        self.axialExpChngr.manageCoreMesh(self.r)
         componentLst = [c for b in self.r.core.refAssem for c in b]
-        newDetailedNDens = {}
-        for c in componentLst:
-            if any(
-                [
-                    x in c.getType()
-                    for x in [
-                        "clad",
-                    ]
-                ]
-            ):  # "clad", "duct"]]):
-                newDetailedNDens[c] = c.p.detailedNDens
-        print(newDetailedNDens)
-        # print(len(self.origDetailedNDens))
-        print(self.origDetailedNDens)
-        self._checkDetailedNDens(self.origDetailedNDens, newDetailedNDens, 1.01)
+        newDetailedNDens, newVolumes = self._getComponentDetailedNDensAndVol(
+            componentLst
+        )
+        for c in newVolumes.keys():
+            self._checkMass(
+                self.origDetailedNDens[c],
+                self.origVolumes[c],
+                newDetailedNDens[c],
+                newVolumes[c],
+                c,
+            )
 
-    @staticmethod
-    def _setComponentDetailedNDens(a, nDens):
+    def _getComponentDetailedNDensAndVol(self, componentLst):
         detailedNDens = {}
-        for b in a:
-            for c in getSolidComponents(b):
-                c.p.detailedNDens = copy.deepcopy([1.0 for val in nDens[c].values()])
-                detailedNDens[c] = c.p.detailedNDens
-        return detailedNDens
-
-    @staticmethod
-    def _getComponentDetailedNDens(a):
-        detailedNDens = {}
-        for b in a:
-            for c in getSolidComponents(b):
+        volumes = {}
+        # reverse component list to start at top of assembly
+        for c in reversed(componentLst):
+            if any([comp in c.getType() for comp in ["fuel", "clad", "duct"]]):
+                c.p.detailedNDens = [val for val in c.getNumberDensities().values()]
                 detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
-        return detailedNDens
+                volumes[c] = c.getVolume()
+                # stop at fuel block
+                if all(
+                    c in str(detailedNDens.keys()) for c in ["fuel", "clad", "duct"]
+                ):
+                    return (detailedNDens, volumes)
 
-    @staticmethod
-    def _getComponentMassAndNDens(a):
-        masses = {}
-        nDens = {}
-        for b in a:
-            for c in getSolidComponents(b):
-                masses[c] = c.getMass()
-                nDens[c] = c.getNumberDensities()
-        return masses, nDens
-
-    def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
-        for prevComp, newComp in zip(
-            prevDetailedNDen.values(), newDetailedNDens.values()
+    def _checkMass(self, origDetailedNDens, origVolume, newDetailedNDens, newVolume, c):
+        for prevMass, newMass in zip(
+            origDetailedNDens * origVolume, newDetailedNDens * newVolume
         ):
-            # print(prevComp, newComp)
-            for prev, new in zip(prevComp, newComp):
-                # print(prev, new)
-                if prev:
-                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
+            if "fuel" in c.getType():
+                self.assertAlmostEqual(prevMass, newMass, delta=1e-12)
+            elif "fuel" in c.parent.getType():
+                self.assertAlmostEqual(prevMass, newMass, delta=1e-12)
+            else:
+                # should not conserve mass here as it is structural material above active fuel
+                self.assertNotAlmostEqual(prevMass, newMass, delta=1e-5)
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):

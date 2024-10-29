@@ -384,7 +384,7 @@ class AxialExpansionChanger:
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             for a in r.core.getAssemblies():
-                a.setBlockMesh(r.core.refAssem.getAxialMesh())
+                a.setBlockMesh(r.core.refAssem.getAxialMesh(), conserveMassFlag="auto")
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()
