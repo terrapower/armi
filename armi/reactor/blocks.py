@@ -2486,13 +2486,10 @@ class HexBlock(Block):
         )
 
         # flags pertaining to circular pin components where the exterior of the circle is wetted
-        wettedPinComponentFlags = (
-            Flags.CLAD,
-            Flags.WIRE,
-        )
+        wettedPinComponentFlags = (Flags.CLAD, Flags.WIRE)
 
-        # flags pertaining to circular components where both the interior and exterior of the circle are wetted
-        wettedHollowCircleComponentFlags = (Flags.DUCT | Flags.INNER,)
+        # flags pertaining to components where both the interior and exterior are wetted
+        wettedHollowComponentFlags = (Flags.DUCT | Flags.INNER,)
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []
@@ -2506,9 +2503,13 @@ class HexBlock(Block):
             wettedPinComponents.append(c) if c else None
 
         wettedHollowCircleComponents = []
-        for flag in wettedHollowCircleComponentFlags:
+        wettedHollowHexComponents = []
+        for flag in wettedHollowComponentFlags:
             c = self.getComponent(flag, exact=True)
-            wettedHollowCircleComponents.append(c) if c else None
+            if isinstance(c, Hexagon):
+                wettedHollowHexComponents.append(c) if c else None
+            else:
+                wettedHollowCircleComponents.append(c) if c else None
 
         # calculate wetted perimeters according to their geometries
 
@@ -2542,10 +2543,19 @@ class HexBlock(Block):
             )
         wettedHollowCirclePerimeter *= math.pi
 
+        # hollow hexagon = 6 * (ip + op) / sqrt(3)
+        wettedHollowHexPerimeter = 0.0
+        for c in wettedHollowHexComponents:
+            wettedHollowHexPerimeter += (
+                c.getDimension("ip") + c.getDimension("op") if c else 0.0
+            )
+        wettedHollowHexPerimeter *= 6 / math.sqrt(3)
+
         return (
             wettedHollowHexagonPerimeter
             + wettedPinPerimeter
             + wettedHollowCirclePerimeter
+            + wettedHollowHexPerimeter
         )
 
     def getFlowArea(self):
