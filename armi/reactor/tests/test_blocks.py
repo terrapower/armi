@@ -811,8 +811,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(3, len(block))
         self.assertEqual(block.p.height, refHeight)
 
-    def test_getWettedPerimeterCircularInnerDuct(self):
-        """Calculate the wetted perimeter for a HexBlock with circular inner duct."""
+    def test_getWettedPerimeter(self):
         # calculate the reference value
         wire = self.block.getComponent(Flags.WIRE)
         correctionFactor = np.hypot(
@@ -830,6 +829,39 @@ class Block_TestCase(unittest.TestCase):
 
         # test getWettedPerimeter
         cur = self.block.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getWettedPerimeterCircularInnerDuct(self):
+        """Calculate the wetted perimeter for a HexBlock with circular inner duct."""
+        # build a test block with a Hex inner duct
+        fuelDims = {"Tinput": 400, "Thot": 400, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 400, "Thot": 400, "od": 0.80, "id": 0.77, "mult": 127.0}
+        ductDims = {"Tinput": 400, "Thot": 400, "od": 16, "id": 15.3, "mult": 1.0}
+        intercoolantDims = {
+            "Tinput": 400,
+            "Thot": 400,
+            "od": 17.0,
+            "id": ductDims["od"],
+            "mult": 1.0,
+        }
+
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        clad = components.Circle("clad", "HT9", **cladDims)
+        duct = components.Circle("inner duct", "HT9", **ductDims)
+        intercoolant = components.Circle("intercoolant", "Sodium", **intercoolantDims)
+
+        b = blocks.HexBlock("fuel", height=10.0)
+        b.add(fuel)
+        b.add(clad)
+        b.add(duct)
+        b.add(intercoolant)
+
+        # calculate the reference value
+        ref = (ductDims["id"] + ductDims["od"]) * math.pi
+        ref += b.getNumPins() * cladDims["od"] * math.pi
+
+        # test getWettedPerimeter
+        cur = b.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
     def test_getWettedPerimeterHexInnerDuct(self):
