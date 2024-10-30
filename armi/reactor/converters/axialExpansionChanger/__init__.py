@@ -26,4 +26,5 @@ from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import 
 from armi.reactor.converters.axialExpansionChanger.expansionData import ExpansionData
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     getSolidComponents,
+    iterSolidComponents,
 )

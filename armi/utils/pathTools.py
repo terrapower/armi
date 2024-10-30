@@ -37,21 +37,8 @@ DO_NOT_CLEAN_PATHS = [
 
 
 def armiAbsPath(*pathParts):
-    """
-    Convert a list of path components to an absolute path, without drive letters if possible.
-
-    This is mostly useful on Windows systems, where drive letters are not well defined
-    across systems. In these cases, it is useful to try to convert to a UNC path if
-    possible.
-    """
-    # imported here to prevent cluster failures, unsure why this causes an error
-    result = os.path.abspath(os.path.join(*pathParts))
-    try:
-        from ccl import common_operations
-
-        return common_operations.convert_to_unc_path(result)
-    except Exception:
-        return result
+    """Convert a list of path components to an absolute path, without drive letters if possible."""
+    return os.path.abspath(os.path.join(*pathParts))
 
 
 def copyOrWarn(filepathDescription, sourcePath, destinationPath):
