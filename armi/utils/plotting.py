@@ -1155,7 +1155,7 @@ def _makeBlockPinPatches(block, cold):
     cornersUp = False
     if isinstance(block.spatialGrid, grids.HexGrid):
         largestPitch, comp = block.getPitch(returnComp=True)
-        cornersUp = block.cornersUp()
+        cornersUp = block.spatialGrid.cornersUp
     elif isinstance(block.spatialGrid, grids.ThetaRZGrid):
         raise TypeError(
             "This plot function is not currently supported for ThetaRZGrid grids."
