@@ -289,7 +289,7 @@ class IndexLocation(LocationBase):
         """Return the coordinates of the center of the mesh cell here in cm."""
         if self.grid is None:
             raise ValueError(
-                "Cannot get local coordinates of {} because grid is None.".format(self)
+                f"Cannot get local coordinates of {self} because grid is None."
             )
         return self.grid.getCoordinates(self.indices, nativeCoords=nativeCoords)
 

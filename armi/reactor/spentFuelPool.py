@@ -41,7 +41,7 @@ class SpentFuelPool(ExcoreStructure):
         Parameters
         ----------
         assem : Assembly
-            The Assembly to add to the list
+            The Assembly to add to the spent fuel pool
         loc : LocationBase, optional
             If provided, the assembly is inserted at this location.
             If it is not provided, the locator on the Assembly object will be used.
@@ -69,6 +69,9 @@ class SpentFuelPool(ExcoreStructure):
             loc = loc or assem.spatialLocator
         else:
             loc = self._getNextLocation()
+
+        # orient the blocks to match this grid
+        assem.orientBlocks(parentSpatialGrid=self.spatialGrid)
 
         super().add(assem, loc)
 
