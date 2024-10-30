@@ -14,6 +14,7 @@
 
 """Unit tests for pathTools."""
 import os
+import shutil
 import time
 import types
 import unittest
@@ -26,6 +27,41 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 class PathToolsTests(unittest.TestCase):
+    def test_copyOrWarnFile(self):
+        with TemporaryDirectoryChanger():
+            # Test a successful copy
+            path = "test.txt"
+            pathCopy = "testcopy.txt"
+            with open(path, "w") as f1:
+                f1.write("test")
+            pathTools.copyOrWarn("Test File", path, pathCopy)
+            self.assertTrue(os.path.exists(pathCopy))
+
+            # Test an exception
+            with self.assertRaises(Exception) as e:
+                pathTools.copyOrWarn("Test File", "FileDoesntExist.txt", pathCopy)
+                self.assertIn("Could not copy", e)
+                self.assertIn("No such file or directory", e)
+
+    def test_copyOrWarnDir(self):
+        with TemporaryDirectoryChanger():
+            # Test a successful copy
+            pathDir = "testDir"
+            path = os.path.join(pathDir, "test.txt")
+            pathDirCopy = "testcopy"
+            os.mkdir(pathDir)
+            with open(path, "w") as f1:
+                f1.write("test")
+            pathTools.copyOrWarn("Test File", pathDir, pathDirCopy)
+            self.assertTrue(os.path.exists(pathDirCopy))
+            self.assertTrue(os.path.exists(os.path.join(pathDirCopy, "test.txt")))
+
+            # Test an exception
+            with self.assertRaises(Exception) as e:
+                pathTools.copyOrWarn("Test File", "DirDoesntExist", pathDirCopy)
+                self.assertIn("Could not copy", e)
+                self.assertIn("No such file or directory", e)
+
     def test_separateModuleAndAttribute(self):
         self.assertRaises(
             ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon"
