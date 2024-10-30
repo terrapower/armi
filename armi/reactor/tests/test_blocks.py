@@ -1739,14 +1739,6 @@ class Block_TestCase(unittest.TestCase):
             self.block.getComponent(Flags.INTERCOOLANT).getDimension("ip"),
         )
 
-    def test_breakFuelComponentsIntoIndividuals(self):
-        fuel = self.block.getComponent(Flags.FUEL)
-        mult = fuel.getDimension("mult")
-        self.assertGreater(mult, 1.0)
-        self.block.completeInitialLoading()
-        self.block.breakFuelComponentsIntoIndividuals()
-        self.assertEqual(fuel.getDimension("mult"), 1.0)
-
     def test_pinMgFluxes(self):
         """
         Test setting/getting of pin-wise fluxes.
