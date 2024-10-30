@@ -1063,7 +1063,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                             block, self.cs["xsTempIsotope"]
                         )
                         for tempIndex, upperTemp in enumerate(self._tempGroupBounds):
-                            if temp <= upperTemp:
+                            if tempC <= upperTemp:
                                 tempGroupVal = tempIndex
                                 break
                     # this ordering groups like-temperatures together in group number
@@ -1393,7 +1393,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):
         """
-        Gets all blocks with suffixes not yet represented (for blocks in assemblies in the blueprints but not in the core).
+        Gets all blocks with suffixes not yet represented.
+        (for blocks in assemblies in the blueprints but not in the core).
 
         Notes
         -----
@@ -1425,9 +1426,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         return blockCollectionsByXsGroup
 
     def _getAlternateEnvGroup(self, missingXsType):
-        """
-        Get a substitute block to use since there are no blacks with flags for xs gen.
-        """
+        """Get a substitute block to use since there are no blacks with flags for xs gen."""
         for otherXsID in self.representativeBlocks:
             repType, repEnvGroup = otherXsID
             if repType == missingXsType:
@@ -1482,7 +1481,10 @@ class CrossSectionGroupManager(interfaces.Interface):
                     reprBlock = self.representativeBlocks.get(xsID)
                     temp = self.avgNucTemperatures.get(self.cs["xsTempIsotope"], "N/A")
                     runLog.extra(
-                        "XS ID {} contains {:4d} blocks, with burnup {} and avg fuel temp {}, represented by: {:65s}".format(
+                        (
+                            "XS ID {} contains {:4d} blocks, with burnup {} "
+                            "and avg fuel temp {}, represented by: {:65s}"
+                        ).format(
                             xsID,
                             len(blocks),
                             reprBlock.p.percentBu,

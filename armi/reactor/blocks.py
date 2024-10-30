@@ -413,7 +413,7 @@ class Block(composites.Composite):
         env = self.p.envGroup
         if not env:
             raise RuntimeError(
-                "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
+                "Cannot get MicroXS suffix because {0} in {1} does not have a environment(env) group"
                 "".format(self, self.parent)
             )
 

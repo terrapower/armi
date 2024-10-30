@@ -428,7 +428,8 @@ def defineSettings() -> List[setting.Setting]:
             CONF_TEMP_GROUPS,
             default=[],
             label="Temperature XS Groups",
-            description="The fuel temperature boundaries where in between where cross-sections will be grouped together.",
+            description="The fuel temperature boundaries where in between where cross-sections "
+            "will be grouped together.",
             schema=vol.Schema(
                 [vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]
             ),
@@ -437,7 +438,8 @@ def defineSettings() -> List[setting.Setting]:
             CONF_XS_TEMP_ISOTOPE,
             default="U235",  # should work for non-thorium reactor. For Thorium change to U233 or TH232
             label="Isotope to determine xs temperature",
-            description="The isotope whose temperature is interrogated when placing a block in a temperature cross section group. See `tempGroups`.",
+            description="The isotope whose temperature is interrogated when placing a block in "
+            "a temperature cross section group. See `tempGroups`.",
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,
