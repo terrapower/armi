@@ -250,7 +250,8 @@ class XSSettings(dict):
         if xsID in self:
             return dict.__getitem__(self, xsID)
 
-        # exact key not present so give lowest env group key
+        # exact key not present so give lowest env group key, eg AA or BA as the source for
+        # settings since users do not typically provide all combinations of second chars explicitly
         xsType = xsID[0]
         envGroup = xsID[1]
         existingXsOpts = [

@@ -212,7 +212,8 @@ def getBlockParameterDefinitions():
                 )
 
             if envGroupChar.islower():
-                lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A + 1
+                # if lower case find the distance from lowercase a and add the span of A to Z
+                lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A + 1 # 26
                 envGroupNum = ord(envGroupChar) - ASCII_LETTER_a + lowerCaseOffset
             else:
                 envGroupNum = ord(envGroupChar) - ASCII_LETTER_A
@@ -250,7 +251,7 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "envGroupNum",
             units=units.UNITLESS,
-            description="An integer representation of the environment group (burnup/temperature/ect environment). linked to envGroup.",
+            description="An integer representation of the environment group (burnup/temperature/etc. environment). linked to envGroup.",
             default=0,
             setter=envGroupNum,
         )

@@ -1019,7 +1019,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _setTempGroupBounds(self, tempGroupBounds):
         """Set the temperature group structure."""
-        lastTemp = 0.0
+        lastTemp = -C_TO_K
         # validate structure
         for upperTemp in tempGroupBounds:
             if upperTemp < -C_TO_K:
@@ -1042,7 +1042,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         armi.reactor.blocks.Block.getMicroSuffix
         """
-        if self._envGroupUpdatesEnabled:
+        if not self._envGroupUpdatesEnabled:
             runLog.debug(
                 "Skipping burnup group update of {0} blocks because it is disabled"
                 "".format(len(blockList))
@@ -1053,21 +1053,21 @@ class CrossSectionGroupManager(interfaces.Interface):
         runLog.debug("Updating env groups of {0} blocks".format(len(blockList)))
         for block in blockList:
             bu = block.p.percentBu
-            for buGroupIndex, upperBu in enumerate(self._buGroupBounds):
+            for buIndex, upperBu in enumerate(self._buGroupBounds):
                 if bu <= upperBu:
-                    tempGroupIndex = 0
+                    buGroupVal = buIndex
+                    tempGroupVal = 0
                     if len(self._tempGroupBounds) > 1:
                         # if statement saves this somewhat expensive calc if we are not doing temp groups
                         tempC = getBlockNuclideTemperature(
                             block, self.cs["xsTempIsotope"]
                         )
-                        for tempGroupIndex, upperTemp in enumerate(
-                            self._tempGroupBounds
-                        ):
+                        for tempIndex, upperTemp in enumerate(self._tempGroupBounds):
                             if temp <= upperTemp:
+                                tempGroupVal = tempIndex
                                 break
                     # this ordering groups like-temperatures together in group number
-                    block.p.envGroupNum = tempGroupIndex * numBuGroups + buGroupIndex
+                    block.p.envGroupNum = tempGroupVal * numBuGroups + buGroupVal
                     break
 
     def _addXsGroupsFromBlocks(self, blockCollectionsByXsGroup, blockList):
@@ -1081,7 +1081,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             xsID = b.getMicroSuffix()
             xsSettings = self._initializeXsID(xsID)
             if (
-                self.self.cs["tempGroups"]
+                self.cs["tempGroups"]
                 and xsSettings["xsBlockRepresentation"] == MEDIAN_BLOCK_COLLECTION
             ):
                 runLog.warning(
@@ -1485,7 +1485,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                         "XS ID {} contains {:4d} blocks, with burnup {} and avg fuel temp {}, represented by: {:65s}".format(
                             xsID,
                             len(blocks),
-                            reprBlock.percentBu,
+                            reprBlock.p.percentBu,
                             temp,
                             reprBlock,
                         )

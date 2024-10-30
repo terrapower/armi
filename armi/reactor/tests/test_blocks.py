@@ -39,7 +39,7 @@ from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import hexagon, units
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 from armi.nuclearDataIO import xsCollections
-from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_a
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -564,29 +564,28 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
         self.assertEqual(cur, "Z")
 
+        before_a = ASCII_LETTER_a - 1
         type_ = "a"
         self.block.p.envGroup = type_
         cur = self.block.p.envGroupNum
-        ref = ord(type_) - ASCII_LETTER_a
+        ref = ord(type_) - (before_a) + (ASCII_LETTER_Z - ASCII_LETTER_A)
         self.assertEqual(cur, ref)
 
         typeNumber = 26  # this is a due to 0 based numbers
         self.block.p.envGroupNum = typeNumber
         cur = self.block.p.envGroup
-        ref = chr(typeNumber + ASCII_LETTER_a)
-        self.assertEqual(cur, ref)
         self.assertEqual(cur, "a")
 
         type_ = "z"
         self.block.p.envGroup = type_
         cur = self.block.p.envGroupNum
-        ref = ord(type_) - ASCII_LETTER_a
+        ref = ord(type_) - before_a + (ASCII_LETTER_Z - ASCII_LETTER_A)
         self.assertEqual(cur, ref)
 
         typeNumber = 51  # this is a due to 0 based numbers
         self.block.p.envGroupNum = typeNumber
         cur = self.block.p.envGroup
-        ref = chr(typeNumber + ASCII_LETTER_a + 26)
+        ref = chr((typeNumber - 26) + ASCII_LETTER_a)
         self.assertEqual(cur, ref)
         self.assertEqual(cur, "z")
 

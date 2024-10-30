@@ -98,11 +98,12 @@ class TestBlockCollectionMedian(unittest.TestCase):
     def test_getBlockNuclideTemperature(self):
         # doesn't have to be in median block tests, but this is a simpler test
         nuc = "U235"
-        testBlock = blockList[0]
+        testBlock = self.blockList[0]
         amt, amtWeightedTemp = 0, 0
         for c in testBlock:
-            if c.getNumberDensity(nuc) > 0:
-                thisAmt = c.getNumberDensities * c.getVolume()
+            dens = c.getNumberDensity(nuc)
+            if dens > 0:
+                thisAmt = dens * c.getVolume()
                 amt += thisAmt
                 amtWeightedTemp += thisAmt * c.temperatureInC
         avgTemp = amtWeightedTemp / amt
@@ -716,11 +717,11 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
 
-    def test_updateEnviromentGroups(self):
+    def test_updateEnvironmentGroups(self):
         self.blockList[1].p.percentBu = 3.1
         self.blockList[2].p.percentBu = 10.0
 
-        self.csm._updateEnviromentGroups(self.blockList)
+        self.csm._updateEnvironmentGroups(self.blockList)
 
         self.assertEqual(self.blockList[0].p.envGroup, "A")
         self.assertEqual(self.blockList[1].p.envGroup, "B")
@@ -740,7 +741,12 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             self.csm._setBuGroupBounds([1, 5, 3])
 
     def test_setTempGroupBounds(self):
-        pass  # for now
+        # negative temps in C are allowed
+        self.csm._setTempGroupBounds([-5, 3, 10, 300])
+        self.assertAlmostEqual(self.csm._tempGroupBounds[2], 10.0)
+
+        with self.assertRaises(ValueError):
+            self.csm._setTempGroupBounds([1, 5, 3])
 
     def test_addXsGroupsFromBlocks(self):
         blockCollectionsByXsGroup = {}
@@ -756,7 +762,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.blockList[3].p.percentBu = 1.5
         for b in self.blockList[4:]:
             b.p.percentBu = 0.0
-        self.csm._updateEnviromentGroups(self.blockList)
+        self.csm._updateEnvironmentGroups(self.blockList)
         blockCollectionsByXsGroup = {}
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
             blockCollectionsByXsGroup, self.blockList

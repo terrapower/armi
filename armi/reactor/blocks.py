@@ -420,12 +420,13 @@ class Block(composites.Composite):
         xsType = self.p.xsType
         if len(xsType) == 1:
             return xsType + env
-        elif len(xsType) == 2 and ord(env) > ord("A"):
+        elif len(xsType) == 2 and ord(env) != ord("A"):
+            # default is "A" so if we got an off default 2 char, there is no way to resolve.
             raise ValueError(
-                "Use of multiple burnup groups is not allowed with multi-character xs groups!"
+                "Use of non-default env groups is not allowed with multi-character xs groups!"
             )
         else:
-            # multi Char XS type to support assigning 2 chars in blueprints
+            # ignore env group, multi Char XS type to support assigning 2 chars in blueprints
             return xsType
 
     def getHeight(self):
