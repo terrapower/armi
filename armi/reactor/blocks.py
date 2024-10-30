@@ -29,7 +29,6 @@ import numpy as np
 from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
-from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
@@ -784,7 +783,9 @@ class Block(composites.Composite):
         ## populate molesHmBOL on components within the block as well
         for c in self.getChildren():
             c.p.molesHmBOL = c.getHMMoles()
-            c.p.puFrac = self.getPuMoles() / c.p.molesHmBOL if c.p.molesHmBOL > 0.0 else 0.0
+            c.p.puFrac = (
+                self.getPuMoles() / c.p.molesHmBOL if c.p.molesHmBOL > 0.0 else 0.0
+            )
 
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
@@ -1433,7 +1434,6 @@ class Block(composites.Composite):
                 c.updateDims()
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
-
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
