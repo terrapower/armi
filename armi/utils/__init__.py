@@ -24,7 +24,6 @@ import re
 import shutil
 import sys
 import tempfile
-import threading
 import time
 
 from armi import runLog
@@ -65,19 +64,6 @@ def getFileSHA1Hash(filePath, digits=40):
                 sha1.update(data)
 
     return sha1.hexdigest()[:digits]
-
-
-def copyWithoutBlocking(src, dest):
-    """
-    Copy a file in a separate thread to avoid blocking while IO completes.
-
-    Useful for copying large files while ARMI moves along.
-    """
-    files = "{} to {}".format(src, dest)
-    runLog.extra("Copying (without blocking) {}".format(files))
-    t = threading.Thread(target=shutil.copy, args=(src, dest))
-    t.start()
-    return t
 
 
 def getPowerFractions(cs):

@@ -14,7 +14,6 @@
 
 """Unit tests for pathTools."""
 import os
-import shutil
 import time
 import types
 import unittest
