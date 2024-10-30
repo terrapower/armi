@@ -855,7 +855,7 @@ def _copyInputsHelper(
     -------
     destFilePath (or origFile) : str
     """
-    sourceName = os.path.basename(sourcePath)
+    sourceName = pathlib.Path(sourcePath).name
     destFilePath = os.path.join(destPath, sourceName)
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
