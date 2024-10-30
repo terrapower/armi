@@ -724,9 +724,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.p.numberDensities[nucName] = val
         self.p.assigned = parameters.SINCE_ANYTHING
         # necessary for syncMpiState
-        parameters.ALL_DEFINITIONS["numberDensities"].assigned = (
-            parameters.SINCE_ANYTHING
-        )
+        parameters.ALL_DEFINITIONS[
+            "numberDensities"
+        ].assigned = parameters.SINCE_ANYTHING
 
     def setNumberDensities(self, numberDensities):
         """

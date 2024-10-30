@@ -164,7 +164,7 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "puFrac",
-            default = 0.0,
+            default=0.0,
             units=units.UNITLESS,
             description="Current average Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
         )
