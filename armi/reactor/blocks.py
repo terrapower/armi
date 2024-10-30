@@ -293,14 +293,19 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Creates a spatialGrid for a Block.
 
-        Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
-        spatialGrids inferred based on the multiplicty of their components.
-        This would add the ability to create a spatialGrid for a Block and give its children
-        the corresponding spatialLocators if certain conditions are met.
+        Blocks do not always have a spatialGrid from Blueprints, but some Blocks can have their
+        spatialGrids inferred based on the multiplicty of their components. This would add the
+        ability to create a spatialGrid for a Block and give its children the corresponding
+        spatialLocators if certain conditions are met.
+
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Raises
         ------
@@ -308,7 +313,8 @@ class Block(composites.Composite):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        raise NotImplementedError()
+        if self.spatialGrid is None:
+            self.spatialGrid = systemSpatialGrid
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
@@ -1986,17 +1992,11 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
-
-        .. impl:: A hexagonal block shall be rotatable by 60 degree increments.
-            :id: I_ARMI_ROTATE_HEX
-            :implements: R_ARMI_ROTATE_HEX
-
         .. impl:: Rotating a hex block updates the orientation parameter.
             :id: I_ARMI_ROTATE_HEX_ORIENTATION
             :implements: R_ARMI_ROTATE_HEX_PARAMS
 
-        .. imp:: Rotating a hex block updates parameters on the boundary of the hexagon.
+        .. impl:: Rotating a hex block updates parameters on the boundary of the hexagon.
             :id: I_ARMI_ROTATE_HEX_BOUNDARY
             :tests: R_ARMI_ROTATE_HEX_PARAMS
 
@@ -2258,7 +2258,7 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
@@ -2267,12 +2267,19 @@ class HexBlock(Block):
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
         into a given number of hex rings.  Otherwise, do not create a grid for this block.
 
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
+
         Notes
         -----
-        If the Block meets all the conditions, we gather all components to either be a
-        multiIndexLocation containing all of the pin positions, or the locator is the center (0,0).
+        When a hex grid has another hex grid nested inside it, the nested grid has the opposite
+        orientation (corners vs flats up). This method takes care of that.
 
-        Also, this only works on blocks that have 'flat side up'.
+        If components inside this block are multiplicity 1, they get a single locator at the center
+        of the grid cell. If the multiplicity is greater than 1, all the components are added to a
+        multiIndexLocation on the hex grid.
 
         Raises
         ------
@@ -2280,7 +2287,7 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        # Check multiplicities...
+        # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
@@ -2290,29 +2297,39 @@ class HexBlock(Block):
                 )
             )
 
-        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
-        # For the below to work, there must not be multiple wire or multiple clad types.
-        # note that it's the pointed end of the cell hexes that are up (but the
-        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
+        # build the grid, from pitch and orientation
+        if isinstance(systemSpatialGrid, grids.HexGrid):
+            cornersUp = not systemSpatialGrid.cornersUp
+        else:
+            cornersUp = False
+
         grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=True
+            self.getPinPitch(cold=True),
+            numRings=0,
+            armiObject=self,
+            cornersUp=cornersUp,
         )
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+
         if numLocations != self.getNumPins():
             raise ValueError(
-                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                "Cannot create spatialGrid, number of locations in rings {} not equal to pin number {}".format(
                     numLocations, self.getNumPins()
                 )
             )
 
-        i = 0
+        # set the spatial position of the sub-block components
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 spatialLocators.append(grid[i, j, 0])
+
+        # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:
@@ -2428,13 +2445,10 @@ class HexBlock(Block):
         )
 
         # flags pertaining to circular pin components where the exterior of the circle is wetted
-        wettedPinComponentFlags = (
-            Flags.CLAD,
-            Flags.WIRE,
-        )
+        wettedPinComponentFlags = (Flags.CLAD, Flags.WIRE)
 
-        # flags pertaining to circular components where both the interior and exterior of the circle are wetted
-        wettedHollowCircleComponentFlags = (Flags.DUCT | Flags.INNER,)
+        # flags pertaining to components where both the interior and exterior are wetted
+        wettedHollowComponentFlags = (Flags.DUCT | Flags.INNER,)
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []
@@ -2448,9 +2462,13 @@ class HexBlock(Block):
             wettedPinComponents.append(c) if c else None
 
         wettedHollowCircleComponents = []
-        for flag in wettedHollowCircleComponentFlags:
+        wettedHollowHexComponents = []
+        for flag in wettedHollowComponentFlags:
             c = self.getComponent(flag, exact=True)
-            wettedHollowCircleComponents.append(c) if c else None
+            if isinstance(c, Hexagon):
+                wettedHollowHexComponents.append(c) if c else None
+            else:
+                wettedHollowCircleComponents.append(c) if c else None
 
         # calculate wetted perimeters according to their geometries
 
@@ -2484,10 +2502,19 @@ class HexBlock(Block):
             )
         wettedHollowCirclePerimeter *= math.pi
 
+        # hollow hexagon = 6 * (ip + op) / sqrt(3)
+        wettedHollowHexPerimeter = 0.0
+        for c in wettedHollowHexComponents:
+            wettedHollowHexPerimeter += (
+                c.getDimension("ip") + c.getDimension("op") if c else 0.0
+            )
+        wettedHollowHexPerimeter *= 6 / math.sqrt(3)
+
         return (
             wettedHollowHexagonPerimeter
             + wettedPinPerimeter
             + wettedHollowCirclePerimeter
+            + wettedHollowHexPerimeter
         )
 
     def getFlowArea(self):
