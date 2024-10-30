@@ -717,7 +717,24 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
 
-    def test_updateEnvironmentGroups(self):
+    def test_enableEnvGroupUpdates(self):
+        self.csm._envGroupUpdatesEnabled = False
+        self.csm.enableEnvGroupUpdates()
+        self.assertTrue(self.csm._envGroupUpdatesEnabled)
+        # test flipping again keeps true
+        self.csm.enableEnvGroupUpdates()
+        self.assertTrue(self.csm._envGroupUpdatesEnabled)
+
+    def test_disableEnvGroupUpdates(self):
+        self.csm._envGroupUpdatesEnabled = True
+        wasEnabled = self.csm.disableEnvGroupUpdates()
+        self.assertTrue(wasEnabled)
+        self.assertFalse(self.csm._envGroupUpdatesEnabled)
+        wasEnabled = self.csm.disableEnvGroupUpdates()
+        self.assertFalse(wasEnabled)
+        self.assertFalse(self.csm._envGroupUpdatesEnabled)
+
+    def test_updateBurnupGroups(self):
         self.blockList[1].p.percentBu = 3.1
         self.blockList[2].p.percentBu = 10.0
 

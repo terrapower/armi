@@ -1440,7 +1440,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         (can happen to structure in AA when only AB, AC, AD still remain,
         but if some fresh AA happened to be added it might be needed).
         """
-        # No Blocks in in this id had a valid representative block flag (such as `fuel` for default),
+        # No blocks in in this ID had a valid representative block flag (such as `fuel` for default),
         # so nothing valid to run lattice physics on...
         for xsID in self._unrepresentedXSIDs:
             missingXsType, _missingEnvGroup = xsID
@@ -1482,7 +1482,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                     temp = self.avgNucTemperatures.get(self.cs["xsTempIsotope"], "N/A")
                     runLog.extra(
                         (
-                            "XS ID {} contains {:4d} blocks, with burnup {} "
+                            "XS ID {} contains {:4d} blocks, with avg burnup {} "
                             "and avg fuel temp {}, represented by: {:65s}"
                         ).format(
                             xsID,
@@ -1525,14 +1525,14 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         See Also
         --------
-        enableGroupUpdates
+        enableEnvGroupUpdates
         """
         runLog.extra("Enviroment xs group updating disabled")
         wasEnabled = self._envGroupUpdatesEnabled
         self._envGroupUpdatesEnabled = False
         return wasEnabled
 
-    def enableGroupUpdates(self):
+    def enableEnvGroupUpdates(self):
         """
         Turn on updating bu groups based on burnup.
 

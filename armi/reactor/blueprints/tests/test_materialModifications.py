@@ -54,13 +54,41 @@ assemblies:
         xs types: [A]
 """
 
-    boronInput = uZrInput.replace("UZr", "B")
+    b4cInput = r"""
+nuclide flags:
+    B: {burn: false, xs: true}
+    C: {burn: false, xs: true}
+blocks:
+    poison: &block_poison
+        poison:
+            shape: Hexagon
+            material: B4C
+            Tinput: 600.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1
+            op: 10.0
+assemblies:
+    assem a: &assembly_a
+        specifier: IC
+        blocks: [*block_poison]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
+"""
 
     def loadUZrAssembly(self, materialModifications):
-        yamlString = self.uZrInput + "\n" + materialModifications
+        return self._loadAssembly(self.uZrInput, materialModifications, "fuel a")
+
+    @staticmethod
+    def _loadAssembly(bpBase: str, materialModifications: str, assem: str):
+        yamlString = bpBase + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
         design._prepConstruction(settings.Settings())
-        return design.assemblies["fuel a"]
+        return design.assemblies[assem]
+
+    def loadB4CAssembly(self, materialModifications: str):
+        return self._loadAssembly(self.b4cInput, materialModifications, "assem a")
 
     def test_noMaterialModifications(self):
         a = self.loadUZrAssembly("")
@@ -152,7 +180,20 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.50, u235 / u)
 
-    def test_invalid_component_modification(self):
+    def test_materialModificationLength(self):
+        """If the wrong number of material modifications are defined, there is an error."""
+        with self.assertRaises(ValueError):
+            _a = self.loadUZrAssembly(
+                """
+        material modifications:
+            by component:
+                fuel1:
+                    U235_wt_frac: [0.2]
+            U235_wt_frac: [0.11, 0.22, 0.33, 0.44]
+            """
+            )
+
+    def test_invalidComponentModification(self):
         with self.assertRaises(ValueError):
             _a = self.loadUZrAssembly(
                 """
@@ -160,10 +201,10 @@ assemblies:
             by component:
                 invalid component:
                     U235_wt_frac: [0.2]
-        """
+            """
             )
 
-    def test_zr_wt_frac_modification(self):
+    def test_zrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -175,7 +216,7 @@ assemblies:
         zr = fuelComponent.getMass("ZR")
         assert_allclose(0.077, zr / totalMass)
 
-    def test_both_u235_zr_wt_frac_modification(self):
+    def test_bothU235ZrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -306,3 +347,15 @@ custom isotopics:
         U: 1
 """
             )
+
+    def test_theoreticalDensity(self):
+        """Test the theoretical density can be loaded from material modifications."""
+        mods = """
+        material modifications:
+            TD_frac: [0.5]
+        """
+        a = self.loadB4CAssembly(mods)
+        comp = a[0][0]
+        mat = comp.material
+        self.assertEqual(mat.getTD(), 0.5)
+        self.assertEqual(comp.p.theoreticalDensityFrac, 0.5)

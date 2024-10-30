@@ -26,7 +26,6 @@ from armi import getApp
 from armi import getPluginManagerOrFail
 from armi import plugins
 from armi import settings
-from armi.operators.settingsValidation import Inspector, validateVersion
 from armi.physics.fuelCycle import FuelHandlerPlugin
 from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
@@ -34,6 +33,7 @@ from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
 from armi.settings import caseSettings
 from armi.settings import setting
+from armi.settings.settingsValidation import Inspector, validateVersion
 from armi.tests import TEST_ROOT, ARMI_RUN_PATH
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
@@ -151,7 +151,7 @@ class TestAddingOptions(unittest.TestCase):
         # modify the default/text settings YAML file to include neutronicsKernel
         fin = os.path.join(TEST_ROOT, "armiRun.yaml")
         txt = open(fin, "r").read()
-        txt = txt.replace("\n  nodeGroup:", "\n  neutronicsKernel: MCNP\n  nodeGroup:")
+        txt = txt.replace("\n  nCycles:", "\n  neutronicsKernel: MCNP\n  nCycles:")
         fout = "test_addingOptions.yaml"
         open(fout, "w").write(txt)
 
@@ -322,9 +322,9 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
         # This test is dependent on the current setup of armiRun.yaml, which includes
         # some default settings values
-        for sett in ["availabilityFactor", "economics"]:
+        for sett in ["availabilityFactor", "db"]:
             self.assertIn(sett, settingsList)
-        self.assertNotIn("numProcessors", settingsList)
+        self.assertNotIn("nTasks", settingsList)
 
     def test_setModuleVerbosities(self):
         # init settings and use them to set module-level logging levels

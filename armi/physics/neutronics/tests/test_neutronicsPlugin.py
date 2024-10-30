@@ -19,7 +19,6 @@ import unittest
 from ruamel.yaml import YAML
 
 from armi import getPluginManagerOrFail, settings, tests
-from armi.operators import settingsValidation
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
@@ -33,8 +32,9 @@ from armi.physics.neutronics.settings import (
     CONF_LATTICE_PHYSICS_FREQUENCY,
     getNeutronicsSettingValidators,
 )
-from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 from armi.settings import caseSettings
+from armi.settings import settingsValidation
+from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers

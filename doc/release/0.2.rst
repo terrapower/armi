@@ -175,7 +175,7 @@ What's new in ARMI
 #. Changed the default Git branch name to ``main``.
 #. Moved math utilities into their own module.
 #. Moved ``newReports`` into their final location in ``armi/bookkeeping/report/``.
-#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`_)
+#. Removed ``_swapFluxParam`` method (`PR#665 <https://github.com/terrapower/armi/pull/665#discussion_r893348409>`__)
 #. Removed the last usage of ``settingsRules``; now only use ``settingsValidation``.
 #. Removed separate blueprints in snapshot runs, they must come from the database (`PR#872 https://github.com/terrapower/armi/pull/872`)
 #. Added reporting of neutron and gamma energy groups in the XS library ``__repr__``.
@@ -183,7 +183,7 @@ What's new in ARMI
 #. Store thermally expanded block heights at BOL in ``armi/reactor/reactors.py::Core::processLoading``.
 #. Added neutronics settings: ``inners`` and ``outers`` for downstream support.
 #. Removed unused Thermal Hydraulics settings.
-#. Replaced setting ``stationaryBlocks`` with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`_)
+#. Replaced setting ``stationaryBlocks`` with ``stationaryBlockFlags`` setting (`PR#665 <https://github.com/terrapower/armi/pull/665>`__))
 #. Changed the default value of the ``trackAssems`` setting to ``False``.
 #. Add setting ``inputHeightsConsideredHot`` to enable thermal expansion of assemblies at BOL.
 
@@ -215,7 +215,7 @@ Release Date: 2022-02-08
 What's new in ARMI
 ------------------
 #. Upgrading the version of NumPy for a security alert (`PR#530 <https://github.com/terrapower/armi/pull/530>`_)
-#. Upgraded ThoriumOxide material (`PR#558 <https://github.com/terrapower/armi/pull/548>`_)
+#. Upgraded ThoriumOxide material (`PR#548 <https://github.com/terrapower/armi/pull/548>`_)
 #. Upgraded Lithium material (`PR#546 <https://github.com/terrapower/armi/pull/546>`_)
 #. Improved Helix class (`PR#558 <https://github.com/terrapower/armi/pull/558>`_)
 

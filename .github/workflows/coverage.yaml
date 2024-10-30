@@ -1,5 +1,8 @@
 name: Coverage
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
@@ -10,8 +13,14 @@ on:
     paths-ignore:
       - 'doc/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    # Deploying coverage to coveralls.io should not happen on forks
+    if: github.repository == 'terrapower/armi'
     runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -33,6 +42,7 @@ jobs:
           coverage run --rcfile=pyproject.toml -m pytest -n 4 --cov=armi --cov-config=pyproject.toml --cov-report=lcov --ignore=venv armi
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiDirectoryChangers.py || true
           coverage combine --rcfile=pyproject.toml --keep -a
       - name: Publish to coveralls.io
         uses: coverallsapp/github-action@v2

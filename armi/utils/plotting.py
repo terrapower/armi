@@ -178,10 +178,10 @@ def plotBlockDepthMap(
 
     if fName:
         plt.savefig(fName, dpi=150)
+        plt.close()
     else:
         plt.show()
 
-    plt.close()
     return fName
 
 
@@ -402,13 +402,16 @@ def plotFaceMap(
                 "Cannot update facemap at {0}: IOError. Is the file open?"
                 "".format(fName)
             )
+        plt.close(fig)
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
         return fName
     else:
+        # Never close figures after a .show()
+        # because they're being used interactively e.g.
+        # in a live tutorial or by the doc gallery
         plt.show()
 
-    plt.close(fig)
     return fName
 
 
@@ -425,7 +428,7 @@ def close(fig=None):
 
 
 def _makeAssemPatches(core):
-    """Return a list of assembly shaped patch for each assembly."""
+    """Return a list of assembly shaped patches for each assembly."""
     patches = []
 
     if isinstance(core.spatialGrid, grids.HexGrid):
@@ -441,8 +444,12 @@ def _makeAssemPatches(core):
     for a in core:
         x, y, _ = a.spatialLocator.getLocalCoordinates()
         if nSides == 6:
+            if core.spatialGrid.cornersUp:
+                orientation = 0
+            else:
+                orientation = math.pi / 2.0
             assemPatch = matplotlib.patches.RegularPolygon(
-                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=math.pi / 2.0
+                (x, y), nSides, radius=pitch / math.sqrt(3), orientation=orientation
             )
         elif nSides == 4:
             # for rectangle x, y is defined as sides instead of center
@@ -819,8 +826,8 @@ def plotAssemblyTypes(
     if fileName:
         fig.savefig(fileName)
         runLog.debug("Writing assem layout {} in {}".format(fileName, os.getcwd()))
+        plt.close(fig)
 
-    plt.close(fig)
     return fig
 
 
@@ -942,10 +949,6 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
     bList2 :
         a separate list of blocks that will also be plotted on a separate axis on the same plot.
         This is useful for comparing flux in some blocks with flux in some other blocks.
-
-    Notes
-    -----
-    This is not a great method. It should be cleand up and migrated into ``utils.plotting``.
     """
 
     class BlockListFlux:
@@ -1092,10 +1095,10 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
             os.path.abspath(fName),
             report.FLUX_PLOT,
         )
+        plt.close()
     else:
+        # Never close interactive plots
         plt.show()
-
-    plt.close()
 
 
 def makeHistogram(x, y):
@@ -1503,7 +1506,6 @@ def plotNucXs(
 
     if fName:
         plt.savefig(fName)
+        plt.close()
     elif not noShow:
         plt.show()
-
-    plt.close()
