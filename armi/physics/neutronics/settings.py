@@ -43,6 +43,7 @@ CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_INNERS_ = "inners"
 CONF_LOADING_FILE = "loadingFile"
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
+CONF_MCNP_LIB_BASE = "mcnpLibraryBaseName"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
@@ -171,6 +172,16 @@ def defineSettings():
             description="The neutronics / depletion solver for global flux solve.",
             options=[],
             enforcedOptions=True,
+        ),
+        setting.Setting(
+            CONF_MCNP_LIB_BASE,
+            default="ENDF/B-VII.1",
+            description=(
+                "Library name for MCNP cross sections. "
+                "ENDF/B-VII.1 is the default library. "
+            ),
+            label="Default base library name",
+            options=["ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
         ),
         setting.Setting(
             CONF_NEUTRONICS_TYPE,

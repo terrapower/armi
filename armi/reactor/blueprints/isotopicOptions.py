@@ -33,6 +33,7 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
 from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
     CONF_NEUTRONICS_KERNEL,
     CONF_XS_KERNEL,
 )
@@ -456,7 +457,6 @@ def getDefaultNuclideFlags():
     We will include B10 and B11 without depletion, sodium, and structural elements.
 
     We will include LFPs with depletion.
-
     """
     nuclideFlags = {}
     actinides = {
@@ -511,7 +511,6 @@ def eleExpandInfoBasedOnCodeENDF(cs):
         For example: {oxygen: [oxygen16]} indicates that all
         oxygen should be expanded to O16, ignoring natural
         O17 and O18. (variables are Natural/NuclideBases)
-
     """
     elementalsToKeep = set()
     oxygenElementals = [nuclideBases.byName["O"]]
@@ -536,22 +535,20 @@ def eleExpandInfoBasedOnCodeENDF(cs):
 
     if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
-        if int(cs["mcnpLibrary"]) == 50:
-            elementalsToKeep.update(nuclideBases.instances)  # skip expansion
         # ENDF/B VII.0
-        elif 70 <= int(cs["mcnpLibrary"]) <= 79:
+        if cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.0":
             elementalsToKeep.update(endf70Elementals)
         # ENDF/B VII.1
-        elif 80 <= int(cs["mcnpLibrary"]) <= 89:
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.1":
             elementalsToKeep.update(endf71Elementals)
+        # ENDF/B VIII.0
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VIII.0":
+            elementalsToKeep.update(endf80Elementals)
         else:
             raise InputError(
-                "Failed to determine nuclides for modeling. "
-                "The `mcnpLibrary` setting value ({}) is not supported.".format(
-                    cs["mcnpLibrary"]
-                )
+                "Failed to determine nuclides for modeling. The `mcnpLibraryBaseName` "
+                f"setting value ({cs[CONF_MCNP_LIB_BASE]}) is not supported."
             )
-
     elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
         elementalsToKeep.update(endf70Elementals)
         expansionStrings.update(mc2Expansions)
