@@ -14,7 +14,7 @@
 
 import copy
 import pickle
-from typing import Any, Optional, List, Set
+from typing import Any, Optional, List, Set, Iterator, Callable
 import sys
 
 import numpy as np
@@ -146,6 +146,10 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             should come from a call to __getstate__(). This should only be used
             internally to this model.
         """
+        # add a hook to make this readOnly
+        self._slots.add("readOnly")
+        self.readOnly = False
+
         if self.pDefs is None or not self.pDefs.locked:
             type(self).applyParameters()
 
@@ -276,6 +280,14 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             "a ParameterCollection!".format(key)
         )
 
+        if getattr(self, "readOnly", False):
+            if key == "readOnly":
+                raise RuntimeError(
+                    "A read-only Parameter Collection cannot be made writeable."
+                )
+            else:
+                raise RuntimeError(f"Cannot set a read-only parameter {key}.")
+
         object.__setattr__(self, key, value)
 
     def __deepcopy__(self, memo):
@@ -367,7 +379,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         else:
             return name in self._hist
 
-    def __eq__(self, other):
+    def __eq__(self, other: "ParameterCollection"):
         if not isinstance(other, self.__class__):
             return False
 
@@ -382,7 +394,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
 
         return True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
+        """Iterate over names of assigned parameters define on this collection."""
         return (
             pd.name
             for pd in self.paramDefs
@@ -430,7 +443,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         Get the :py:class:`ParameterDefinitionCollection` associated with this instance.
 
         This serves as both an alias for the pDefs class attribute, and as a read-only
-        accessor for them. Most non-paramter-system related interactions with an
+        accessor for them. Most non-parameter-system related interactions with an
         object's ``ParameterCollection`` should go through this. In the future, it
         probably makes sense to make the ``pDefs`` that the ``applyDefinitions`` and
         ``ResolveParametersMeta`` things are sensitive to more hidden from outside the
@@ -500,6 +513,32 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
                 setattr(self, pd.fieldName, currentValue)
                 pd.assigned = SINCE_ANYTHING
                 self.assigned = SINCE_ANYTHING
+
+    def where(
+        self, f: Callable[[parameterDefinitions.Parameter], bool]
+    ) -> Iterator[parameterDefinitions.Parameter]:
+        """Produce an iterator over parameters that meet some criteria.
+
+        Parameters
+        ----------
+        f : callable function f(parameter) -> bool
+            Function to check if a parameter should be fetched during the iteration.
+
+        Returns
+        -------
+        iterator of :class:`armi.reactor.parameters.Parameter`
+            Iterator, **not** list or tuple, that produces each parameter that
+            meets ``f(parameter) == True``.
+
+        Examples
+        --------
+        >>> block = r.core[0][0]
+        >>> pdef = block.p.paramDefs
+        >>> for param in pdef.where(lambda pd: pd.atLocation(ParamLocation.EDGES)):
+        ...     print(param.name, block.p[param.name])
+
+        """
+        return filter(f, self.paramDefs)
 
 
 def collectPluginParameters(pm):

@@ -18,7 +18,10 @@ import unittest
 
 import numpy as np
 
+from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
+from armi.reactor import blueprints
+from armi.reactor import reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH, TEST_ROOT
@@ -51,13 +54,13 @@ class TestPlotting(unittest.TestCase):
             fName = plotting.plotBlockDepthMap(
                 self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
             )
-            self._checkExists(fName)
+            self._checkFileExists(fName)
 
     def test_plotAssemblyTypes(self):
         with TemporaryDirectoryChanger():
             plotPath = "coreAssemblyTypes1.png"
             plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
-            self._checkExists(plotPath)
+            self._checkFileExists(plotPath)
 
             if os.path.exists(plotPath):
                 os.remove(plotPath)
@@ -69,7 +72,7 @@ class TestPlotting(unittest.TestCase):
                 yAxisLabel="y axis",
                 title="title",
             )
-            self._checkExists(plotPath)
+            self._checkFileExists(plotPath)
 
             if os.path.exists(plotPath):
                 os.remove(plotPath)
@@ -94,40 +97,37 @@ class TestPlotting(unittest.TestCase):
             plotting.plotBlockFlux(
                 self.r.core, fName="peak.png", bList=blockList, peak=True
             )
-            self.assertTrue(os.path.exists("peak.png"))
+            self._checkFileExists("peak.png")
             plotting.plotBlockFlux(
                 self.r.core,
                 fName="bList2.png",
                 bList=blockList,
                 bList2=blockList,
             )
-            self.assertTrue(os.path.exists("bList2.png"))
+            self._checkFileExists("bList2.png")
 
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
             first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
-            first_fuel_block.autoCreateSpatialGrids()
+            first_fuel_block.autoCreateSpatialGrids(self.r.core.spatialGrid)
             plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
-            self.assertTrue(os.path.exists("blockDiagram23.svg"))
+            self._checkFileExists("blockDiagram23.svg")
 
     def test_plotCartesianBlock(self):
-        from armi import settings
-        from armi.reactor import blueprints, reactors
-
         with TemporaryDirectoryChanger():
             cs = settings.Settings(
-                os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
+                os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml")
             )
-
             blueprint = blueprints.loadFromCs(cs)
             _ = reactors.factory(cs, blueprint)
             for name, bDesign in blueprint.blockDesigns.items():
                 b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
                 plotting.plotBlockDiagram(b, "{}.svg".format(name), True)
-            self.assertTrue(os.path.exists("uo2.svg"))
-            self.assertTrue(os.path.exists("mox.svg"))
 
-    def _checkExists(self, fName):
+            self._checkFileExists("uo2.svg")
+            self._checkFileExists("mox.svg")
+
+    def _checkFileExists(self, fName):
         self.assertTrue(os.path.exists(fName))
 
 

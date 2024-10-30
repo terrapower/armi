@@ -130,7 +130,7 @@ class Serializer:
     ``serializer`` allows for special operations to be performed on the parameter values as they are
     stored to the database or read back in.
 
-    The ``Database3`` already knows how to handle certain cases where the data are not
+    The ``Database`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
       - There are ``None``\ s.
@@ -168,8 +168,8 @@ class Serializer:
 
     See Also
     --------
-    armi.bookkeeping.db.database3.packSpecialData
-    armi.bookkeeping.db.database3.unpackSpecialData
+    armi.bookkeeping.db.database.packSpecialData
+    armi.bookkeeping.db.database.unpackSpecialData
     armi.reactor.flags.FlagSerializer
     """
 
@@ -420,6 +420,10 @@ class Parameter:
     def atLocation(self, loc):
         """True if parameter is defined at location."""
         return self.location and self.location & loc
+
+    def hasCategory(self, category: str) -> bool:
+        """True if a parameter has a specific category."""
+        return category in self.categories
 
 
 class ParameterDefinitionCollection:

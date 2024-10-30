@@ -36,6 +36,8 @@ See Also
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
+from math import floor
+from os import cpu_count
 from typing import Optional
 import gc
 import sys
@@ -46,6 +48,7 @@ from armi import mpiActions
 from armi import runLog
 from armi.reactor.composites import ArmiObject
 from armi.utils import tabulate
+from armi.utils.customExceptions import NonexistentSetting
 
 try:
     # psutil is an optional requirement, since it doesnt support MacOS very well
@@ -68,6 +71,28 @@ def describeInterfaces(cs):
     return (MemoryProfiler, {})
 
 
+def getTotalJobMemory(nTasksPerNode):
+    """Function to calculate the total memory of a job. This is a constant during a simulation."""
+    cpuPerNode = cpu_count()
+    ramPerCpuGB = psutil.virtual_memory().total / (1024**3) / cpuPerNode
+    if nTasksPerNode == 0:
+        nTasksPerNode = cpuPerNode
+    cpusPerTask = floor(cpuPerNode / nTasksPerNode)
+    jobMem = nTasksPerNode * cpusPerTask * ramPerCpuGB
+    return jobMem
+
+
+def getCurrentMemoryUsage():
+    """This scavenges the memory profiler in ARMI to get the current memory usage."""
+    memUsageAction = PrintSystemMemoryUsageAction()
+    memUsageAction.broadcast()
+    smpu = SystemAndProcessMemoryUsage()
+    memUsages = memUsageAction.gather(smpu)
+    # Grab virtual memory instead of physical. There is a large discrepancy, we will be conservative
+    memoryUsageInMB = sum([mu.processVirtualMemoryInMB for mu in memUsages])
+    return memoryUsageInMB
+
+
 class MemoryProfiler(interfaces.Interface):
 
     name = "memoryProfiler"
@@ -78,6 +103,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
+        self.printCurrentMemoryState()
         mpiAction = PrintSystemMemoryUsageAction()
         mpiAction.broadcast().invoke(self.o, self.r, self.cs)
         mpiAction.printUsage("BOL SYS_MEM")
@@ -88,6 +114,8 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEveryNode(self, cycle, node):
+        self.printCurrentMemoryState()
+
         mp = PrintSystemMemoryUsageAction()
         mp.broadcast()
         mp.invoke(self.o, self.r, self.cs)
@@ -101,10 +129,29 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEOL(self):
-        r"""End of life hook. Good place to wrap up or print out summary outputs."""
+        """End of life hook. Good place to wrap up or print out summary outputs."""
         if self.cs["debugMem"]:
             mpiAction = ProfileMemoryUsageAction("EOL")
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
+
+    def printCurrentMemoryState(self):
+        """Print the current memory footprint and available memory."""
+        try:
+            nTasksPerNode = self.cs["nTasksPerNode"]
+        except NonexistentSetting:
+            runLog.extra(
+                "To view memory consumed, remaining available, and total allocated for a case, "
+                "add the setting 'nTasksPerNode' to your application."
+            )
+            return
+        totalMemoryInGB = getTotalJobMemory(nTasksPerNode)
+        currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
+        availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
+        runLog.info(
+            f"Currently using {currentMemoryUsageInGB} GB of memory. "
+            f"There is {availableMemoryInGB} GB of memory left. "
+            f"There is a total allocation of {totalMemoryInGB} GB."
+        )
 
     def displayMemoryUsage(self, timeDescription):
         r"""
@@ -141,8 +188,10 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
                 )
 
-        if self.r.sfp is not None:
-            runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.sfp)))
+        if self.r.excore.get("sfp") is not None:
+            runLog.important(
+                "SFP has {:4d} ArmiObjects".format(len(self.r.excore["sfp"]))
+            )
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
         """Scans thorugh ARMI model for duplicate objects."""

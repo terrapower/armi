@@ -4,7 +4,8 @@
 Component Parameters
 ********************
 
-This document lists all of the Component Parameters that are provided by the ARMI Framework.
+This document lists all of the :py:mod:`Component Parameters <armi.reactor.components.componentParameters>` that are
+provided by the ARMI Framework. See :py:mod:`armi.reactor.parameters` for use.
 
 .. exec::
    from armi.reactor.components import Component
