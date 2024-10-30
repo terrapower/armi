@@ -16,6 +16,7 @@
 import os
 import unittest
 
+import math
 import numpy as np
 
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
@@ -183,6 +184,20 @@ class TestBlockConverter(unittest.TestCase):
             components[3].getArea() + components[-1].getArea(),
             clad.getArea() * numPinsInRing / clad.getDimension("mult"),
         )
+
+    def test_buildInsideDuct(self):
+        """Test building inside the duct."""
+        block = loadTestBlock(cold=False)
+        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
+        converter = blockConverters.HexComponentsToCylConverter(block)
+        converter._buildInsideDuct()
+        insideBlock = converter.convertedBlock
+        ductIP = block.getComponent(Flags.DUCT).getDimension("ip")
+        bondMass = block.getComponent(Flags.BOND).getMass("NA")
+        coolantMass = block.getComponent(Flags.COOLANT).getMass("NA")
+        self.assertAlmostEqual(insideBlock.getMass("U235"), block.getMass("U235"))
+        self.assertAlmostEqual(insideBlock.getMass("NA"), bondMass + coolantMass)
+        self.assertAlmostEqual(insideBlock.getArea(), ductIP ** 2 * math.sqrt(3)/2)
 
     def test_convert(self):
         """Test conversion with no fuel driver.
