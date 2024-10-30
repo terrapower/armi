@@ -55,7 +55,7 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
     """
     try:
         if os.path.isdir(sourcePath):
-            shutil.copytree(sourcePath, destinationPath)
+            shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
         else:
             shutil.copy(sourcePath, destinationPath)
         runLog.debug(
