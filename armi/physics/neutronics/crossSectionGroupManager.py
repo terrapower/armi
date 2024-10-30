@@ -1082,7 +1082,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             xsSettings = self._initializeXsID(xsID)
             if (
                 self.cs["tempGroups"]
-                and xsSettings["xsBlockRepresentation"] == MEDIAN_BLOCK_COLLECTION
+                and xsSettings.blockRepresentation == MEDIAN_BLOCK_COLLECTION
             ):
                 runLog.warning(
                     "Median block currently only consider median burnup block, and "
