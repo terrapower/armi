@@ -48,7 +48,7 @@ NUM_PINS_IN_TEST_BLOCK = 217
 
 
 def buildSimpleFuelBlock():
-    """Return a simple block containing fuel, clad, duct, and coolant."""
+    """Return a simple hex block containing fuel, clad, duct, and coolant."""
     b = blocks.HexBlock("fuel", height=10.0)
 
     fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -816,8 +816,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(block.p.height, refHeight)
 
     def test_getWettedPerimeter(self):
-        cur = self.block.getWettedPerimeter()
-
+        # calculate the reference value
         wire = self.block.getComponent(Flags.WIRE)
         correctionFactor = np.hypot(
             1.0,
@@ -825,16 +824,81 @@ class Block_TestCase(unittest.TestCase):
             * wire.getDimension("helixDiameter")
             / wire.getDimension("axialPitch"),
         )
-        wireDiameter = wire.getDimension("od") * correctionFactor
+        wireDiam = wire.getDimension("od") * correctionFactor
 
-        ref = math.pi * (
-            self.block.getDim(Flags.CLAD, "od") + wireDiameter
-        ) * self.block.getDim(Flags.CLAD, "mult") + 6 * self.block.getDim(
-            Flags.DUCT, "ip"
-        ) / math.sqrt(
-            3
-        )
+        ipDim = self.block.getDim(Flags.DUCT, "ip")
+        odDim = self.block.getDim(Flags.CLAD, "od")
+        mult = self.block.getDim(Flags.CLAD, "mult")
+        ref = math.pi * (odDim + wireDiam) * mult + 6 * ipDim / math.sqrt(3)
 
+        # test getWettedPerimeter
+        cur = self.block.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getWettedPerimeterCircularInnerDuct(self):
+        """Calculate the wetted perimeter for a HexBlock with circular inner duct."""
+        # build a test block with a Hex inner duct
+        fuelDims = {"Tinput": 400, "Thot": 400, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 400, "Thot": 400, "od": 0.80, "id": 0.77, "mult": 127.0}
+        ductDims = {"Tinput": 400, "Thot": 400, "od": 16, "id": 15.3, "mult": 1.0}
+        intercoolantDims = {
+            "Tinput": 400,
+            "Thot": 400,
+            "od": 17.0,
+            "id": ductDims["od"],
+            "mult": 1.0,
+        }
+
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        clad = components.Circle("clad", "HT9", **cladDims)
+        duct = components.Circle("inner duct", "HT9", **ductDims)
+        intercoolant = components.Circle("intercoolant", "Sodium", **intercoolantDims)
+
+        b = blocks.HexBlock("fuel", height=10.0)
+        b.add(fuel)
+        b.add(clad)
+        b.add(duct)
+        b.add(intercoolant)
+
+        # calculate the reference value
+        ref = (ductDims["id"] + ductDims["od"]) * math.pi
+        ref += b.getNumPins() * cladDims["od"] * math.pi
+
+        # test getWettedPerimeter
+        cur = b.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getWettedPerimeterHexInnerDuct(self):
+        """Calculate the wetted perimeter for a HexBlock with hexagonal inner duct."""
+        # build a test block with a Hex inner duct
+        fuelDims = {"Tinput": 400, "Thot": 400, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 400, "Thot": 400, "od": 0.80, "id": 0.77, "mult": 127.0}
+        ductDims = {"Tinput": 400, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+        intercoolantDims = {
+            "Tinput": 400,
+            "Thot": 400,
+            "op": 17.0,
+            "ip": ductDims["op"],
+            "mult": 1.0,
+        }
+
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        clad = components.Circle("clad", "HT9", **cladDims)
+        duct = components.Hexagon("inner duct", "HT9", **ductDims)
+        intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+        b = blocks.HexBlock("fuel", height=10.0)
+        b.add(fuel)
+        b.add(clad)
+        b.add(duct)
+        b.add(intercoolant)
+
+        # calculate the reference value
+        ref = 6 * (ductDims["ip"] + ductDims["op"]) / math.sqrt(3)
+        ref += b.getNumPins() * cladDims["od"] * math.pi
+
+        # test getWettedPerimeter
+        cur = b.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowAreaPerPin(self):
