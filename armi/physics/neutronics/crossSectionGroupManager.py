@@ -63,6 +63,7 @@ from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import flags
 from armi.reactor.components import basicShapes
+from armi.reactor.converters.blockConverters import stripComponents
 from armi.reactor.flags import Flags
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -623,7 +624,11 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             weight = bWeight * c.getArea()
             totalWeight += weight
             densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
-        return allNucNames, densities / totalWeight
+        if totalWeight > 0.0:
+            weightedDensities = densities / totalWeight
+        else:
+            weightedDensities = np.zeros_like(densities)
+        return allNucNames, weightedDensities
 
     def _orderComponentsInGroup(self, repBlock):
         """Order the components based on dimension and material type within the representative
@@ -642,6 +647,64 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             wt = self.getWeight(block)
             nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(
                 block, self.allNuclidesInProblem
+            )
+            nvt += nvtBlock * wt
+            nv += nvBlock * wt
+        return nvt, nv
+
+
+class CylindricalComponentsDuctHetAverageBlockCollection(
+    CylindricalComponentsAverageBlockCollection
+):
+    """
+    Creates a representative block for the purpose of cross section generation with a one-
+    dimensional cylindrical model where all material inside the duct is homogenized.
+
+    .. impl:: Create partially heterogeneous representative blocks.
+        :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS2
+        :implements: R_ARMI_XSGM_CREATE_REPR_BLOCKS
+
+        This class constructs representative blocks based on a volume-weighted average using
+        cylindrical blocks from an existing block list. Inheriting functionality from the abstract
+        :py:class:`Reactor <armi.physics.neutronics.crossSectionGroupManager.BlockCollection>`
+        object, this class will construct representative blocks using averaged parameters of all
+        blocks in the given collection. Number density averages are computed at a component level.
+        Nuclide temperatures from a median block-average temperature are used and the average burnup
+        is evaluated across all blocks in the block list.
+
+        The average nuclide temperatures are calculated only for the homogenized region inside of
+        the duct. For the non-homogenized regions, the MC2 writer uses the component temperatures.
+
+    Notes
+    -----
+    The representative block for this collection is the same as the parent. The only difference between
+    the two collection types is that this collection calculates average nuclide temperatures based only
+    on the components that are inside of the duct.
+    """
+
+    def _getNewBlock(self):
+        newBlock = copy.deepcopy(self._selectCandidateBlock())
+        newBlock.name = "1D_CYL_DUCT_HET_AVG_" + newBlock.getMicroSuffix()
+        return newBlock
+
+    def _makeRepresentativeBlock(self):
+        """Build a representative fuel block based on component number densities."""
+        self.calcAvgNuclideTemperatures()
+        return CylindricalComponentsAverageBlockCollection._makeRepresentativeBlock(
+            self
+        )
+
+    def _getNucTempHelper(self):
+        """All candidate blocks are used in the average."""
+        nvt = np.zeros(len(self.allNuclidesInProblem))
+        nv = np.zeros(len(self.allNuclidesInProblem))
+        for block in self.getCandidateBlocks():
+            wt = self.getWeight(block)
+            # remove the duct and intercoolant from the block before
+            # calculating average nuclide temps
+            newBlock, _mixtureFlags = stripComponents(block, Flags.DUCT)
+            nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(
+                newBlock, self.allNuclidesInProblem
             )
             nvt += nvtBlock * wt
             nv += nvBlock * wt
@@ -789,7 +852,11 @@ class SlabComponentsAverageBlockCollection(BlockCollection):
             weight = bWeight * c.getArea()
             totalWeight += weight
             densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
-        return allNucNames, densities / totalWeight
+        if totalWeight > 0.0:
+            weightedDensities = densities / totalWeight
+        else:
+            weightedDensities = np.zeros_like(densities)
+        return allNucNames, weightedDensities
 
     def _orderComponentsInGroup(self, repBlock):
         """Order the components based on dimension and material type within the representative block."""
@@ -1520,6 +1587,9 @@ AVERAGE_BLOCK_COLLECTION = "Average"
 FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION = "FluxWeightedAverage"
 SLAB_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DSlab"
 CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION = "ComponentAverage1DCylinder"
+CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION = (
+    "ComponentAverage1DCylinderDuctHeterogeneous"
+)
 
 # Mapping between block collection string constants and their
 # respective block collection classes.
@@ -1529,12 +1599,17 @@ BLOCK_COLLECTIONS = {
     FLUX_WEIGHTED_AVERAGE_BLOCK_COLLECTION: FluxWeightedAverageBlockCollection,
     SLAB_COMPONENTS_BLOCK_COLLECTION: SlabComponentsAverageBlockCollection,
     CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION: CylindricalComponentsAverageBlockCollection,
+    CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION: CylindricalComponentsDuctHetAverageBlockCollection,
 }
 
 
 def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     """Build a block collection based on user settings and input."""
     blockRepresentation = xsSettings.blockRepresentation
+    if (
+        blockRepresentation == CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION
+    ) and xsSettings.ductHeterogeneous:
+        blockRepresentation = CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION
     validBlockTypes = xsSettings.validBlockTypes
     averageByComponent = xsSettings.averageByComponent
     return BLOCK_COLLECTIONS[blockRepresentation](
