@@ -57,6 +57,7 @@ CONF_XS_PRIORITY = "xsPriority"
 CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
+CONF_XS_TEMP_ISOTOPE = "xsTempIsotope"
 
 
 class XSGeometryTypes(Enum):
@@ -118,6 +119,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
@@ -131,6 +133,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
@@ -149,6 +152,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -165,6 +169,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
 }
 
@@ -194,6 +199,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
+        vol.Optional(CONF_XS_TEMP_ISOTOPE): str,
     }
 )
 
@@ -435,6 +441,14 @@ class XSModelingOptions:
         The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
 
+    xsTempIsotope: str
+            The isotope whose temperature is interrogated when placing a block in a temperature cross section group.
+            See `tempGroups`. "U235" is default.
+            U238 tends to be more important for doppler, but U235 gets the most heat so will have larger temp variation.
+            The only time it would matter is if you have more than one component with the isotope. In that case the
+            presumption is to follow the isotope with the heat deposition since if you have DU pins the temperature
+            would have less variation. For Thorium change to U233 or TH232.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -466,6 +480,7 @@ class XSModelingOptions:
         xsMaxAtomNumber=None,
         averageByComponent=False,
         minDriverDensity=0.0,
+        xsTempIsotope="U235",
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -491,6 +506,7 @@ class XSModelingOptions:
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
+        self.xsTempIsotope = xsTempIsotope
 
     def __repr__(self):
         if self.xsIsPregenerated:

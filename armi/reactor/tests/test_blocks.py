@@ -598,7 +598,7 @@ class Block_TestCase(unittest.TestCase):
         ref = ord(type_) - before_a + (ASCII_LETTER_Z - ASCII_LETTER_A)
         self.assertEqual(cur, ref)
 
-        typeNumber = 51  # this is a due to 0 based numbers
+        typeNumber = 26 * 2 - 1  # 2x letters in alpha with 0 based index
         self.block.p.envGroupNum = typeNumber
         cur = self.block.p.envGroup
         ref = chr((typeNumber - 26) + ASCII_LETTER_a)

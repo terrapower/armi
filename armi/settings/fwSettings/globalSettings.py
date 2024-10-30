@@ -41,7 +41,6 @@ CONF_BETA = "beta"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
 CONF_TEMP_GROUPS = "tempGroups"
-CONF_XS_TEMP_ISOTOPE = "xsTempIsotope"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_BURN_STEPS = "burnSteps"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -432,13 +431,6 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.Schema(
                 [vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]
             ),
-        ),
-        setting.Setting(
-            CONF_XS_TEMP_ISOTOPE,
-            default="U235",  # should work for non-thorium reactor. For Thorium change to U233 or TH232
-            label="Isotope to determine xs temperature",
-            description="The isotope whose temperature is interrogated when placing a block in "
-            "a temperature cross section group. See `tempGroups`.",
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,

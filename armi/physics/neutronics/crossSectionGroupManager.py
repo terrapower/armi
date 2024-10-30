@@ -1033,9 +1033,9 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _updateEnvironmentGroups(self, blockList):
         """
-        Update the burnup group of each block based on its burnup.
+        Update the burnup group of each block based on its burnup and temperature .
 
-        If only one burnup group exists, then this is skipped so as to accomodate the possibility
+        If only one burnup group exists, then this is skipped so as to accommodate the possibility
         of 2-character xsGroup values (useful for detailed V&V models w/o depletion).
 
         See Also
@@ -1051,17 +1051,19 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         numBuGroups = len(self._buGroupBounds)
         runLog.debug("Updating env groups of {0} blocks".format(len(blockList)))
+        if len(self._buGroupBounds) == 1 and len(self._tempGroupBounds) == 1:
+            # dont set block.p.envGroupNum since all 1 group and we want to support 2 char xsGroup
+            return
         for block in blockList:
             bu = block.p.percentBu
             for buIndex, upperBu in enumerate(self._buGroupBounds):
                 if bu <= upperBu:
                     buGroupVal = buIndex
                     tempGroupVal = 0
-                    if len(self._tempGroupBounds) > 1:
+                    isotope = self._initializeXsID(block.getMicroSuffix()).xsTempIsotope
+                    if isotope and len(self._tempGroupBounds) > 1:
                         # if statement saves this somewhat expensive calc if we are not doing temp groups
-                        tempC = getBlockNuclideTemperature(
-                            block, self.cs["xsTempIsotope"]
-                        )
+                        tempC = getBlockNuclideTemperature(block, isotope)
                         for tempIndex, upperTemp in enumerate(self._tempGroupBounds):
                             if tempC <= upperTemp:
                                 tempGroupVal = tempIndex
@@ -1479,7 +1481,10 @@ class CrossSectionGroupManager(interfaces.Interface):
                 xsIDGroup = self._getXsIDGroup(xsID)
                 if xsIDGroup == self._REPR_GROUP:
                     reprBlock = self.representativeBlocks.get(xsID)
-                    temp = self.avgNucTemperatures.get(self.cs["xsTempIsotope"], "N/A")
+                    xsSettings = self._initializeXsID(reprBlock.getMicroSuffix())
+                    temp = self.avgNucTemperatures[xsID].get(
+                        xsSettings.xsTempIsotope, "N/A"
+                    )
                     runLog.extra(
                         (
                             "XS ID {} contains {:4d} blocks, with avg burnup {} "
