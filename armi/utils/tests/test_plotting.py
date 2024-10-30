@@ -109,13 +109,14 @@ class TestPlotting(unittest.TestCase):
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
             first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
+            first_fuel_block.autoCreateSpatialGrids(self.r.core.spatialGrid)
             plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
             self._checkFileExists("blockDiagram23.svg")
 
     def test_plotCartesianBlock(self):
         with TemporaryDirectoryChanger():
             cs = settings.Settings(
-                os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
+                os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml")
             )
             blueprint = blueprints.loadFromCs(cs)
             _ = reactors.factory(cs, blueprint)

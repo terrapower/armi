@@ -27,6 +27,12 @@ as the first argument and the system will load up the associated grid, e.g.::
     $ python -m armi grids FFTF-blueprints.yaml
 
 
+.. figure:: /.static/gridEditor.png
+    :align: center
+
+    An example of the Grid Editor being used on a FFTF input file
+
+
 **Known Issues**
 
 * There is no action stack or undo functionality. Save frequently if you want to
@@ -48,6 +54,7 @@ as the first argument and the system will load up the associated grid, e.g.::
   specifiers. Adding zoom would make for a fun first task to a new developer interested
   in computer graphics.
 """
+
 import colorsys
 import enum
 import io

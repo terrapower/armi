@@ -56,12 +56,21 @@ class TestHistoryTracker(ArmiTestHelper):
 
     @classmethod
     def setUpClass(cls):
-        # We need to be in the TUTORIAL_DIR so that for `filesToMove` to work right.
-        os.chdir(TUTORIAL_DIR)
-
         # Do this work in a temp dir, to avoid race conditions.
-        cls.dirChanger = TemporaryDirectoryChanger(filesToMove=TUTORIAL_FILES)
+        cls.dirChanger = TemporaryDirectoryChanger()
         cls.dirChanger.__enter__()
+
+        os.mkdir("tutorials")
+        os.mkdir(CASE_TITLE)
+
+        for filePath in TUTORIAL_FILES:
+            dirName = CASE_TITLE if CASE_TITLE in filePath else "tutorials"
+            outFile = os.path.join(
+                cls.dirChanger.destination, dirName, os.path.basename(filePath)
+            )
+            shutil.copyfile(filePath, outFile)
+
+        os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
         runTutorialNotebook()
 
     @classmethod
@@ -69,7 +78,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(f"{CASE_TITLE}.yaml")
+        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 2
