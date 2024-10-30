@@ -97,7 +97,7 @@ class LocationBase(ABC):
         """
         return hash((self.i, self.j, self.k))
 
-    def __eq__(self, other: Union[Tuple[int, int, int], "LocationBase"]) -> bool:
+    def __eq__(self, other: Union[IJKType, "LocationBase"]) -> bool:
         if isinstance(other, tuple):
             return (self.i, self.j, self.k) == other
         if isinstance(other, LocationBase):
@@ -289,7 +289,7 @@ class IndexLocation(LocationBase):
         """Return the coordinates of the center of the mesh cell here in cm."""
         if self.grid is None:
             raise ValueError(
-                "Cannot get local coordinates of {} because grid is None.".format(self)
+                f"Cannot get local coordinates of {self} because grid is None."
             )
         return self.grid.getCoordinates(self.indices, nativeCoords=nativeCoords)
 

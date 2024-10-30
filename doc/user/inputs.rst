@@ -67,7 +67,7 @@ Here is an excerpt from a settings file:
     :lines: 3-15
 
 A full listing of settings available in the framework may be found in the
-`Table of all global settings <#settings-report>`_ .
+:ref:`Table of all global settings <settings-report>` .
 
 Many settings are provided by the ARMI Framework, and others are defined by various plugins.
 
@@ -84,11 +84,12 @@ them.
 Note that one settings input file is required for each ARMI case, though many ARMI cases can refer
 to the same Blueprints, Core Map, and Fuel Management inputs.
 
-.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework
+.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple
+    grid editor GUI is, as described in :ref:`grids`
 
 The assembly clicker
 ^^^^^^^^^^^^^^^^^^^^
-The assembly clicker (in the ``grids`` editor) allows users to define the 2-D layout of the assemblies defined in the
+The assembly clicker (aka the :py:mod:`Grid Editor <armi.utils.gridEditor>`) allows users to define the 2-D layout of the assemblies defined in the
 :ref:`bp-input-file`. This can be done in hexagon or cartesian. The results of this arrangement get written to
 grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
 assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
@@ -1372,6 +1373,7 @@ The code will crash if materials used in :ref:`blocks-and-components` contain nu
 .. |Tinput| replace:: T\ :sub:`input`
 .. |Thot| replace:: T\ :sub:`hot`
 
+.. _fuel-management-input:
 
 Fuel Management Input
 =====================

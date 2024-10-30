@@ -64,6 +64,8 @@ Some Linux users tend to use the **tail** command to monitor the progress of an 
 
 This provides live information on the progress.
 
+.. _database-file:
+
 The Database File
 =================
 The **database** file is a self-contained complete (or nearly complete) binary

@@ -21,6 +21,7 @@ Assemblies are made of blocks. Blocks are made of components.
 from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
+import functools
 import math
 
 import numpy as np
@@ -292,14 +293,19 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Creates a spatialGrid for a Block.
 
-        Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
-        spatialGrids inferred based on the multiplicty of their components.
-        This would add the ability to create a spatialGrid for a Block and give its children
-        the corresponding spatialLocators if certain conditions are met.
+        Blocks do not always have a spatialGrid from Blueprints, but some Blocks can have their
+        spatialGrids inferred based on the multiplicty of their components. This would add the
+        ability to create a spatialGrid for a Block and give its children the corresponding
+        spatialLocators if certain conditions are met.
+
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Raises
         ------
@@ -307,7 +313,8 @@ class Block(composites.Composite):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        raise NotImplementedError()
+        if self.spatialGrid is None:
+            self.spatialGrid = systemSpatialGrid
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
@@ -1559,7 +1566,31 @@ class Block(composites.Composite):
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
-    def getPinCoordinates(self):
+    def getPinLocations(self) -> list[grids.IndexLocation]:
+        """Produce all the index locations for pins in the block.
+
+        Returns
+        -------
+        list[grids.IndexLocation]
+            Integer locations where pins can be found in the block.
+
+        Notes
+        -----
+        Only components with ``Flags.CLAD`` are considered to define a pin's location.
+
+        See Also
+        --------
+        :meth:`getPinCoordinates` - companion for this method.
+        """
+        items = []
+        for clad in self.getChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                items.extend(clad.spatialLocator)
+            else:
+                items.append(clad.spatialLocator)
+        return items
+
+    def getPinCoordinates(self) -> np.ndarray:
         """
         Compute the local centroid coordinates of any pins in this block.
 
@@ -1567,18 +1598,17 @@ class Block(composites.Composite):
 
         Returns
         -------
-        localCoordinates : list
-            list of (x,y,z) pairs representing each pin in the order they are listed as children
+        localCoords : numpy.ndarray
+            ``(N, 3)`` array of coordinates for pins locations. ``localCoords[i]`` contains a triplet of
+            the x, y, z location for pin ``i``. Ordered according to how they are listed as children
+
+        See Also
+        --------
+        :meth:`getPinLocations` - companion for this method
         """
-        coords = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                coords.extend(
-                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
-                )
-            else:
-                coords.append(clad.spatialLocator.getLocalCoordinates())
-        return coords
+        indices = self.getPinLocations()
+        coords = [location.getLocalCoordinates() for location in indices]
+        return np.array(coords)
 
     def getTotalEnergyGenerationConstants(self):
         """
@@ -2017,7 +2047,7 @@ class HexBlock(Block):
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, rad):
+    def rotate(self, rad: float):
         """
         Rotates a block's spatially varying parameters by a specified angle in the
         counter-clockwise direction.
@@ -2026,7 +2056,17 @@ class HexBlock(Block):
         Python list of length 6 in order to be eligible for rotation; all parameters that
         do not meet these two criteria are not rotated.
 
-        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
+        .. impl:: Rotating a hex block updates the orientation parameter.
+            :id: I_ARMI_ROTATE_HEX_ORIENTATION
+            :implements: R_ARMI_ROTATE_HEX_PARAMS
+
+        .. impl:: Rotating a hex block updates parameters on the boundary of the hexagon.
+            :id: I_ARMI_ROTATE_HEX_BOUNDARY
+            :tests: R_ARMI_ROTATE_HEX_PARAMS
+
+        .. impl:: Rotating a hex block updates the spatial coordinates on contained objects.
+            :id: I_ARMI_ROTATE_HEX_PIN
+            :tests: R_ARMI_ROTATE_HEX
 
         Parameters
         ----------
@@ -2037,9 +2077,43 @@ class HexBlock(Block):
 
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self._rotatePins(rotNum)
+        self._rotateChildLocations(rad, rotNum)
+        self.p.orientation[2] += rotNum * 60
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
+
+    def _rotateChildLocations(self, radians: float, rotNum: int):
+        """Update spatial locators for children."""
+        if self.spatialGrid is None:
+            return
+
+        locationRotator = functools.partial(
+            self.spatialGrid.rotateIndex, rotations=rotNum
+        )
+        rotationMatrix = np.array(
+            [
+                [math.cos(radians), -math.sin(radians)],
+                [math.sin(radians), math.cos(radians)],
+            ]
+        )
+        for c in self:
+            if isinstance(c.spatialLocator, grids.MultiIndexLocation):
+                newLocations = list(map(locationRotator, c.spatialLocator))
+                c.spatialLocator = grids.MultiIndexLocation(self.spatialGrid)
+                c.spatialLocator.extend(newLocations)
+            elif isinstance(c.spatialLocator, grids.CoordinateLocation):
+                oldCoords = c.spatialLocator.getLocalCoordinates()
+                newXY = rotationMatrix.dot(oldCoords[:2])
+                newLocation = grids.CoordinateLocation(
+                    newXY[0], newXY[1], oldCoords[2], self.spatialGrid
+                )
+                c.spatialLocator = newLocation
+            elif isinstance(c.spatialLocator, grids.IndexLocation):
+                c.spatialLocator = locationRotator(c.spatialLocator)
+            elif c.spatialLocator is not None:
+                msg = f"{c} on {self} has an invalid spatial locator for rotation: {c.spatialLocator}"
+                runLog.error(msg)
+                raise TypeError(msg)
 
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.
@@ -2089,98 +2163,6 @@ class HexBlock(Block):
         if (dispx is not None) and (dispy is not None):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
-
-    def _rotatePins(self, rotNum, justCompute=False):
-        """
-        Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
-        not rotate all block quantities, just the pins.
-
-        Parameters
-        ----------
-        rotNum : int, required
-            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
-            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
-
-        justCompute : boolean, optional
-            If True, rotateIndexLookup will be returned but NOT assigned to the object parameter
-            self.p.pinLocation. If False, rotateIndexLookup will be returned AND assigned to the
-            object variable self.p.pinLocation.  Useful for figuring out which rotation is best
-            to minimize burnup, etc.
-
-        Returns
-        -------
-        rotateIndexLookup : dict of ints
-            This is an index lookup (or mapping) between pin ids and pin locations. The pin
-            indexing is 1-D (not ring,pos or GEODST). The "ARMI pin ordering" is used for location,
-            which is counter-clockwise from 1 o'clock. Pin ids are always consecutively
-            ordered starting at 1, while pin locations are not once a rotation has been
-            applied.
-
-        Notes
-        -----
-        Changing (x,y) positions of pins does NOT constitute rotation, because the indexing of pin
-        atom densities must be re-ordered.  Re-order indexing of pin-level quantities, NOT (x,y)
-        locations of pins.  Otherwise, subchannel input will be in wrong order.
-
-        How rotations works is like this. There are pins with unique pin numbers in each block.
-        These pin numbers will not change no matter what happens to a block, so if you have pin 1,
-        you always have pin 1. However, these pins are all in pinLocations, and these are what
-        change with rotations. At BOL, a pin's pinLocation is equal to its pin number, but after
-        a rotation, this will no longer be so.
-
-        So, all params that don't care about exactly where in space the pin is (such as depletion)
-        can just use the pin number, but anything that needs to know the spatial location (such as
-        fluxRecon, which interpolates the flux spatially, or subchannel codes, which needs to know where the
-        power is) need to map through the pinLocation parameters.
-
-        This method rotates the pins by changing the pinLocation parameter.
-
-        See Also
-        --------
-        armi.reactor.blocks.HexBlock.rotate
-            Rotates the entire block (pins, ducts, and spatial quantities).
-
-        Examples
-        --------
-            rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
-        """
-        if not 0 <= rotNum <= 5:
-            raise ValueError(
-                "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
-            )
-
-        numPins = self.getNumPins()
-        hexRings = hexagon.numRingsToHoldNumCells(numPins)
-        fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
-        rotateIndexLookup = dict(
-            zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1))
-        )
-
-        # Look up the current orientation and add this to it. The math below just rotates
-        # from the reference point so we need a total rotation.
-        rotNum = int((self.getRotationNum() + rotNum) % 6)
-
-        # non-trivial rotation requested
-        # start at 2 because pin 1 never changes (it's in the center!)
-        for pinNum in range(2, fullNumPins + 1):
-            if rotNum == 0:
-                # Rotation to reference orientation. Pin locations are pin IDs.
-                pass
-            else:
-                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
-                # Assign "before" and "after" pin indices to the index lookup
-                rotateIndexLookup[pinNum] = newPinLocation
-
-        # Because the above math creates indices based on the absolute rotation number,
-        # the old values of pinLocation (if they've been set in the past) can be overwritten
-        # with new numbers
-        if not justCompute:
-            self.setRotationNum(rotNum)
-            self.p["pinLocation"] = [
-                rotateIndexLookup[pinNum] for pinNum in range(1, fullNumPins + 1)
-            ]
-
-        return rotateIndexLookup
 
     def verifyBlockDims(self):
         """Perform some checks on this type of block before it is assembled."""
@@ -2286,13 +2268,13 @@ class HexBlock(Block):
 
         return pinToDuctGap
 
-    def getRotationNum(self):
+    def getRotationNum(self) -> int:
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
         return (
             np.rint(self.p.orientation[2] / 360.0 * 6) % 6
         )  # assume rotation only in Z
 
-    def setRotationNum(self, rotNum):
+    def setRotationNum(self, rotNum: int):
         """
         Set orientation based on a number 0 through 5 indicating number of rotations
         counterclockwise around the z-axis.
@@ -2340,7 +2322,7 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
@@ -2349,12 +2331,19 @@ class HexBlock(Block):
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
         into a given number of hex rings.  Otherwise, do not create a grid for this block.
 
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
+
         Notes
         -----
-        If the Block meets all the conditions, we gather all components to either be a
-        multiIndexLocation containing all of the pin positions, or the locator is the center (0,0).
+        When a hex grid has another hex grid nested inside it, the nested grid has the opposite
+        orientation (corners vs flats up). This method takes care of that.
 
-        Also, this only works on blocks that have 'flat side up'.
+        If components inside this block are multiplicity 1, they get a single locator at the center
+        of the grid cell. If the multiplicity is greater than 1, all the components are added to a
+        multiIndexLocation on the hex grid.
 
         Raises
         ------
@@ -2362,7 +2351,7 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        # Check multiplicities...
+        # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
         if len(mults) != 2 or 1 not in mults:
@@ -2372,29 +2361,39 @@ class HexBlock(Block):
                 )
             )
 
-        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
-        # For the below to work, there must not be multiple wire or multiple clad types.
-        # note that it's the pointed end of the cell hexes that are up (but the
-        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
+        # build the grid, from pitch and orientation
+        if isinstance(systemSpatialGrid, grids.HexGrid):
+            cornersUp = not systemSpatialGrid.cornersUp
+        else:
+            cornersUp = False
+
         grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=True
+            self.getPinPitch(cold=True),
+            numRings=0,
+            armiObject=self,
+            cornersUp=cornersUp,
         )
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
+
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+
         if numLocations != self.getNumPins():
             raise ValueError(
-                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                "Cannot create spatialGrid, number of locations in rings {} not equal to pin number {}".format(
                     numLocations, self.getNumPins()
                 )
             )
 
-        i = 0
+        # set the spatial position of the sub-block components
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 spatialLocators.append(grid[i, j, 0])
+
+        # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:
