@@ -799,7 +799,9 @@ class Block(composites.Composite):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
                 child.p.puFrac = (
-                    self.getPuMoles() / child.p.molesHmBOL if child.p.molesHmBOL > 0.0 else 0.0
+                    self.getPuMoles() / child.p.molesHmBOL
+                    if child.p.molesHmBOL > 0.0
+                    else 0.0
                 )
 
         self.p.massHmBOL = massHmBOL
