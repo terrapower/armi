@@ -26,6 +26,7 @@ New Features
 #. Improve performance by changing the lattice physics interface so that cross sections are not updated on ``everyNode`` calls during coupled calculations (`PR#1963 <https://github.com/terrapower/armi/pull/1963>`_)
 #. Improve efficiency of reaction rate calculations. (`PR#1887 <https://github.com/terrapower/armi/pull/1887>`_)
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
+#. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
 #. TBD
 
 API Changes
