@@ -214,8 +214,8 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
 
 
 def buVsTime(name, scalars, extension=None):
-    r"""
-    produces a burnup and DPA vs. time plot for this case.
+    """
+    Produces a burnup and DPA vs time plot for this case.
 
     Will add a second axis containing DPA if the scalar column maxDPA exists.
 
@@ -235,8 +235,8 @@ def buVsTime(name, scalars, extension=None):
         plt.plot(scalars["time"], scalars["maxBuI"], ".-", label="Driver")
     except ValueError:
         runLog.warning(
-            "Incompatible axis length in burnup plot. Time has {0}, bu has {1}. Skipping"
-            "".format(len(scalars["time"]), len(scalars["maxBuI"]))
+            f"Incompatible axis length in burnup plot. Time has {len(scalars['time'])}, bu has "
+            f"{len(scalars['maxBuI'])}. Skipping"
         )
         plt.close(1)
         return
@@ -258,7 +258,7 @@ def buVsTime(name, scalars, extension=None):
 
     plt.title(title)
     plt.legend(loc="lower right")
-    figName = name + ".bu." + extension
+    figName = f"{name}.bu.{extension}"
     plt.savefig(figName)
     plt.close(1)
 
@@ -266,8 +266,8 @@ def buVsTime(name, scalars, extension=None):
 
 
 def xsHistoryVsTime(name, history, buGroups, extension=None):
-    r"""
-    Plot cross section history vs. time.
+    """
+    Plot cross section history vs time.
 
     Parameters
     ----------

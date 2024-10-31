@@ -304,7 +304,6 @@ class SequentialReader:
         ----------
         text : str
             text to find within the file
-
         warning : str
             An warning message to issue.
 
@@ -316,7 +315,8 @@ class SequentialReader:
         self._textWarnings.append((text, warning))
 
     def raiseErrorOnFindingText(self, text, error):
-        """Add a text search for every line of the file, if the text is found the specified error will be raised.
+        """Add a text search for every line of the file, if the text is found the specified error
+        will be raised.
 
         This is important for determining if errors occurred while searching for text.
 
@@ -335,7 +335,8 @@ class SequentialReader:
         self._textErrors.append((text, error))
 
     def raiseErrorOnFindingPattern(self, pattern, error):
-        """Add a pattern search for every line of the file, if the pattern is found the specified error will be raised.
+        """Add a pattern search for every line of the file, if the pattern is found the specified
+        error will be raised.
 
         This is important for determining if errors occurred while searching for text.
 
@@ -533,7 +534,7 @@ class TextProcessor:
     number = FLOATING_PATTERN
     decimal = DECIMAL_PATTERN
 
-    def __init__(self, fname, highMem=False):
+    def __init__(self, fname):
         self.eChecking = False
         # Preserve python 2-like behavior for unit tests that pass None and provide
         # their own text data (in py2, passing None to abspath yields cwd; py3 raises)
@@ -546,12 +547,7 @@ class TextProcessor:
                 # need this not to fail for detecting when RXSUM doesn't exist, etc.
                 # note: Could make it check before instantiating...
                 raise FileNotFoundError(f"{fname} does not exist.")
-        if not highMem:
-            # keep the file on disk, read as necessary
-            self.f = f
-        else:
-            # read all of f into memory and set up a list that remembers where it is.
-            self.f = SmartList(f)
+        self.f = f
 
     def reset(self):
         """Rewinds the file so you can search through it again."""
@@ -616,42 +612,3 @@ class TextProcessor:
                 result = ""
 
         return result
-
-
-class SmartList:
-    """A list that does stuff like files do i.e. remembers where it was, can seek, etc.
-    Actually this is pretty slow. so much for being smart. nice idea though.
-    """
-
-    def __init__(self, f):
-        self.lines = f.readlines()
-        self.position = 0
-        self.name = f.name
-        self.length = len(self.lines)
-
-    def __getitem__(self, index):
-        return self.lines[index]
-
-    def __setitem__(self, index, line):
-        self.lines[index] = line
-
-    def next(self):
-        if self.position >= self.length:
-            self.position = 0
-            raise StopIteration
-        else:
-            c = self.position
-            self.position += 1
-            return self.lines[c]
-
-    def __iter__(self):
-        return self
-
-    def __len__(self):
-        return len(self.lines)
-
-    def seek(self, line):
-        self.position = line
-
-    def close(self):
-        pass
