@@ -539,7 +539,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
     def test_ComponentAverageDuctHet1DCylinder(self):
         """
         Tests that the cross-section group manager calculates the expected component atom density,
-        component area, and average nuclide temperature correctly for a duct heterogeneous cylindrical 
+        component area, and average nuclide temperature correctly for a duct heterogeneous cylindrical
         block collection.
         """
         self.o.cs[CONF_CROSS_SECTION]["ZA"].ductHeterogeneous = True
@@ -595,7 +595,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                     self.assertGreater(
                         diff,
                         1.0,
-                        f"{nuc} temperature matches expected value of {compTemp} for component {c} but they should be different",
+                        f"{nuc} temperature should be different from {compTemp} for component {c}",
                     )
 
     def test_checkComponentConsistency(self):

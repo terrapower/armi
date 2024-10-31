@@ -197,7 +197,7 @@ class TestBlockConverter(unittest.TestCase):
         coolantMass = block.getComponent(Flags.COOLANT).getMass("NA")
         self.assertAlmostEqual(insideBlock.getMass("U235"), block.getMass("U235"))
         self.assertAlmostEqual(insideBlock.getMass("NA"), bondMass + coolantMass)
-        self.assertAlmostEqual(insideBlock.getArea(), ductIP ** 2 * math.sqrt(3)/2)
+        self.assertAlmostEqual(insideBlock.getArea(), ductIP**2 * math.sqrt(3) / 2)
 
     def test_convert(self):
         """Test conversion with no fuel driver.
