@@ -1310,8 +1310,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             None,
         )
         indexMap = list(map(getIndex, indices))
-        # print(len(indices))
-        # print(len(indicesAll))
         if None in indexMap:
             msg = f"Failed to retrieve pin indices for component {self}."
             runLog.error(msg)
