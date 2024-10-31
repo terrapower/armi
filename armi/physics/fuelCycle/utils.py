@@ -13,7 +13,6 @@
 # limitations under the License.
 """Geometric agnostic routines that are useful for fuel cycle analysis."""
 
-import contextlib
 import typing
 
 import numpy as np
@@ -74,9 +73,7 @@ def assemblyHasFuelPinBurnup(a: typing.Iterable["Block"]) -> bool:
     # fuel block. Same for avoiding Block.getChildrenWithFlags.
     return any(
         b.hasFlags(Flags.FUEL)
-        and (
-            any(c.hasFlags(Flags.FUEL) and np.any(c.p.pinPercentBu) for c in b)
-        )
+        and (any(c.hasFlags(Flags.FUEL) and np.any(c.p.pinPercentBu) for c in b))
         for b in a
     )
 
@@ -144,4 +141,4 @@ def maxBurnupBlock(a: typing.Iterable["Block"]) -> "Block":
             maxBlock = b
     if maxBlock is not None:
         return maxBlock
-    raise ValueError(f"No blocks with burnup found")
+    raise ValueError("No blocks with burnup found")
