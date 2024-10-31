@@ -909,38 +909,29 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowArea(self):
+        """Test Block.getFlowArea() for a Block with just coolant."""
         ref = self.block.getComponent(Flags.COOLANT).getArea()
         cur = self.block.getFlowArea()
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowAreaInterDuctCoolant(self):
+        """Test Block.getFlowArea() for a Block with coolant and interductcoolant."""
         # build a test block with a Hex inter duct collant
         fuelDims = {"Tinput": 400, "Thot": 400, "od": 0.76, "id": 0.00, "mult": 127.0}
-        cladDims = {"Tinput": 400, "Thot": 400, "od": 0.80, "id": 0.77, "mult": 127.0}
         ductDims = {"Tinput": 400, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
-        coolDims = {"Tinput": 25.0, "Thot": 400}
-        intercoolantDims = {
-            "Tinput": 400,
-            "Thot": 400,
-            "op": 17.0,
-            "ip": ductDims["op"],
-            "mult": 1.0,
-        }
+        coolDims = {"Tinput": 400, "Thot": 400}
+        iCoolantDims = {"Tinput": 400, "Thot": 400, "op": 17.0, "ip": 16, "mult": 1.0}
 
         fuel = components.Circle("fuel", "UZr", **fuelDims)
-        clad = components.Circle("clad", "HT9", **cladDims)
         duct = components.Hexagon("inner duct", "HT9", **ductDims)
         coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
-        intercoolant = components.Hexagon(
-            "interductcoolant", "Sodium", **intercoolantDims
-        )
+        iCoolant = components.Hexagon("interductcoolant", "Sodium", **iCoolantDims)
 
         b = blocks.HexBlock("fuel", height=10.0)
         b.add(fuel)
-        b.add(clad)
         b.add(coolant)
         b.add(duct)
-        b.add(intercoolant)
+        b.add(iCoolant)
 
         ref = b.getComponent(Flags.COOLANT).getArea()
         ref += b.getComponent(Flags.INTERDUCTCOOLANT).getArea()
