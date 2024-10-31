@@ -43,17 +43,6 @@ class FuelCycleUtilsTests(TestCase):
         # Force no fuel flags
         self.fuel.p.flags = Flags.PIN
 
-    def test_maxBurnupPinLocationBlockParameter(self):
-        """Test that the ``Block.p.percentBuMaxPinLocation`` parameter gets the location."""
-        # Zero-indexed pin index, pin number is this plus one
-        pinLocationIndex = 3
-        self.block.p.percentBuMaxPinLocation = pinLocationIndex + 1
-        locations = [IndexLocation(i, 0, 0, None) for i in range(pinLocationIndex + 5)]
-        self.block.getPinLocations = mock.Mock(return_value=locations)
-        expected = locations[pinLocationIndex]
-        actual = utils.maxBurnupFuelPinLocation(self.block)
-        self.assertIs(actual, expected)
-
     def test_maxBurnupLocationFromComponents(self):
         """Test that the ``Component.p.pinPercentBu`` parameter can reveal max burnup location."""
         self.fuel.spatialLocator = MultiIndexLocation(None)
@@ -68,7 +57,7 @@ class FuelCycleUtilsTests(TestCase):
         maxBuIndex = self.N_PINS // 3
         self.fuel.p.pinPercentBu[maxBuIndex] *= 2
         expectedLoc = locations[maxBuIndex]
-        actual = utils.maxBurnupFuelPinLocation(self.block)
+        actual = utils.maxBurnupLocator(self.block)
         self.assertEqual(actual, expectedLoc)
 
     def test_singleLocatorWithBurnup(self):
@@ -80,7 +69,7 @@ class FuelCycleUtilsTests(TestCase):
         freeComp.p.pinPercentBu = [
             0.01,
         ]
-        loc = utils.getMaxBurnupLocationFromChildren([freeComp])
+        loc = utils.maxBurnupLocator([freeComp])
         self.assertIs(loc, freeComp.spatialLocator)
 
     def test_assemblyHasPinPower(self):
@@ -122,6 +111,3 @@ class FuelCycleUtilsTests(TestCase):
         self.assertFalse(self.fuel.hasFlags(Flags.FUEL))
         self.fuel.p.pinPercentBu = np.arange(self.N_PINS, dtype=float)
         self.assertFalse(utils.assemblyHasFuelPinBurnup(fakeAssem))
-        # No pin component burnup, but a pin burnup location parameter => yes assembly burnup
-        self.block.p.percentBuMaxPinLocation = 3
-        self.assertTrue(utils.assemblyHasFuelPinBurnup(fakeAssem))

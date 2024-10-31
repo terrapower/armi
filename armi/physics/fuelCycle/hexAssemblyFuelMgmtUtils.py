@@ -25,7 +25,7 @@ import typing
 import numpy as np
 
 from armi import runLog
-from armi.physics.fuelCycle.utils import maxBurnupFuelPinLocation, maxBurnupBlock
+from armi.physics.fuelCycle.utils import maxBurnupBlock, maxBurnupLocator
 from armi.utils.mathematics import findClosest
 
 if typing.TYPE_CHECKING:
@@ -94,7 +94,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
         raise ValueError(
             f"Block {maxBuBlock} in {a} does not have a spatial grid. Cannot rotate."
         )
-    maxBuPinLocation = maxBurnupFuelPinLocation(maxBuBlock)
+    maxBuPinLocation = maxBurnupLocator(maxBuBlock)
     # No need to rotate if max burnup pin is the center
     if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
         return 0
