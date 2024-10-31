@@ -148,8 +148,9 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         # apply dummy pin-level data to allow intelligent rotation
         for b in assem.getBlocks(Flags.FUEL):
             b.initializePinLocations()
-            b.p.percentBuMaxPinLocation = 10
-            b.p.percentBuMax = 5
+            fuel = b.getChildrenWithFlags(Flags.FUEL)[0]
+            mult = fuel.getDimension("mult")
+            fuel.p.pinPercentBu = np.arange(mult, dtype=float)[::-1]
             b.p.linPowByPin = reversed(range(b.getNumPins()))
 
         # Show that we call the optimal assembly orientation function.
