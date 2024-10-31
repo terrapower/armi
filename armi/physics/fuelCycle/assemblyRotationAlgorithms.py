@@ -57,8 +57,8 @@ def buReducingAssemblyRotation(fh):
     runLog.info("Algorithmically rotating assemblies to minimize burnup")
     numRotated = 0
     for aPrev in fh.moved:
-        # If the assembly was out of the core, no need to rotate an assembly
-        # that is outside the core.
+        # If the assembly was out of the core, it will not have pin powers.
+        # No rotation information to be gained.
         if aPrev.lastLocationLabel in Assembly.NOT_IN_CORE:
             continue
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
