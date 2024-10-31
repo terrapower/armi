@@ -24,7 +24,6 @@ for instance, plot some sequence of objects in a loop at every time node. If you
 to see your memory usage grow inexplicably, you should question any plots that you are
 generating.
 """
-
 import itertools
 import math
 import os
@@ -111,12 +110,8 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         ymin=1.0,
         extension=extension,
     )
-    buVsTime(reactor.name, scalars, extension=extension)
     xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
     movesVsCycle(reactor.name, scalars, extension=extension)
-
-
-# --------------------------
 
 
 def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
@@ -211,58 +206,6 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     plt.close(1)
 
     report.setData("K-Eff", os.path.abspath(figName), report.KEFF_PLOT)
-
-
-def buVsTime(name, scalars, extension=None):
-    r"""
-    produces a burnup and DPA vs. time plot for this case.
-
-    Will add a second axis containing DPA if the scalar column maxDPA exists.
-
-    Parameters
-    ----------
-    name : str
-        reactor.name
-    scalars : dict
-        Scalar values for this case
-    extension : str, optional
-        The file extension for saving the figure
-    """
-    extension = extension or settings.Settings()["outputFileExtension"]
-
-    plt.figure()
-    try:
-        plt.plot(scalars["time"], scalars["maxBuI"], ".-", label="Driver")
-    except ValueError:
-        runLog.warning(
-            "Incompatible axis length in burnup plot. Time has {0}, bu has {1}. Skipping"
-            "".format(len(scalars["time"]), len(scalars["maxBuI"]))
-        )
-        plt.close(1)
-        return
-
-    plt.plot(scalars["time"], scalars["maxBuF"], ".-", label="Feed")
-    plt.xlabel("Time (yr)")
-    plt.ylabel("BU (%FIMA)")
-    plt.grid(color="0.70")
-    plt.legend(loc="lower left")
-    title = "Maximum burnup"
-    if scalars["maxDPA"]:
-        plt.twinx()
-        plt.plot(scalars["time"], scalars["maxDPA"], "r--", label="dpa")
-        plt.legend(loc="lower right")
-        plt.ylabel("dpa")
-        title += " and DPA"
-
-    title += " for " + name
-
-    plt.title(title)
-    plt.legend(loc="lower right")
-    figName = name + ".bu." + extension
-    plt.savefig(figName)
-    plt.close(1)
-
-    report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
 
 
 def xsHistoryVsTime(name, history, buGroups, extension=None):
@@ -675,7 +618,6 @@ def createPlotMetaData(
     -------
     metadata : dict
         Dictionary with all plot metadata information
-
     """
     metadata = {}
 
