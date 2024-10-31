@@ -2591,7 +2591,11 @@ class HexBlock(Block):
             Retrieving the flow area requires that there be a single coolant Component.
             If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
         """
-        return self.getComponent(Flags.COOLANT, exact=True).getArea()
+        area = self.getComponent(Flags.COOLANT, exact=True).getArea()
+        for c in self.getComponents(Flags.INTERDUCTCOOLANT, exact=True):
+            area += c.getArea()
+
+        return area
 
     def getHydraulicDiameter(self):
         r"""
