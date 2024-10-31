@@ -256,12 +256,19 @@ class Flag(metaclass=_FlagMeta):
         <MyFlags.SUPER: 8>
         """
         # add explicit values first, so that autos know about them
+        print("=============================")
+        print(fields)
+        print("=============================")
         for field, value in ((f, v) for f, v in fields.items() if isinstance(v, int)):
+            print(field, value)
             cls._registerField(field, value)
         toResolve = [field for field, val in fields.items() if isinstance(val, auto)]
         resolved = cls._resolveAutos(toResolve)
+        print("xxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
         for field, value in resolved:
+            print(field, value)
             cls._registerField(field, value)
+        print("-----------------------------")
 
     def to_bytes(self, byteorder="little"):
         """
