@@ -534,7 +534,7 @@ class TextProcessor:
     number = FLOATING_PATTERN
     decimal = DECIMAL_PATTERN
 
-    def __init__(self, fname):
+    def __init__(self, fname, highMem=False):
         self.eChecking = False
         # Preserve python 2-like behavior for unit tests that pass None and provide
         # their own text data (in py2, passing None to abspath yields cwd; py3 raises)
