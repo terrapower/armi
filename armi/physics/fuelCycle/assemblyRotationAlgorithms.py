@@ -62,6 +62,10 @@ def buReducingAssemblyRotation(fh):
         if aPrev.lastLocationLabel in Assembly.NOT_IN_CORE:
             continue
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
+        # An assembly in the SFP could have burnup but if it's coming from the load
+        # queue it's totally fresh. Skip a check over all pins in the model
+        if aNow.lastLocationLabel == Assembly.LOAD_QUEUE:
+            continue
         # no point in rotation if there's no pin detail
         if assemblyHasFuelPinPowers(aPrev) and assemblyHasFuelPinBurnup(aNow):
             _rotateByComparingLocations(aNow, aPrev)
