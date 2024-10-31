@@ -780,12 +780,6 @@ class Block(composites.Composite):
         self.p.puFrac = (
             self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
         )
-        ## populate molesHmBOL on components within the block as well
-        for c in self.getChildren():
-            c.p.molesHmBOL = c.getHMMoles()
-            c.p.puFrac = (
-                self.getPuMoles() / c.p.molesHmBOL if c.p.molesHmBOL > 0.0 else 0.0
-            )
 
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
@@ -799,9 +793,14 @@ class Block(composites.Composite):
         for child in self:
             hmMass = child.getHMMass() * sf
             massHmBOL += hmMass
-            # Components have a massHmBOL parameter but not every composite will
+            # Components have the following parameters but not every composite will
+            # massHmBOL, molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+                child.p.molesHmBOL = child.getHMMoles()
+                child.p.puFrac = (
+                    self.getPuMoles() / child.p.molesHmBOL if child.p.molesHmBOL > 0.0 else 0.0
+                )
 
         self.p.massHmBOL = massHmBOL
 

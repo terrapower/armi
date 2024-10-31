@@ -151,6 +151,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "molesHmBOL",
             units=f"{units.MOLES}",
+            default=0.0,
             description="Total number of moles of heavy metal at BOL.",
         )
 
