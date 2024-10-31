@@ -22,7 +22,6 @@ from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.reportPlotting import (
-    buVsTime,
     createPlotMetaData,
     keffVsTime,
     movesVsCycle,
@@ -97,19 +96,6 @@ class TestRadar(unittest.TestCase):
         valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
         self.assertTrue(os.path.exists("R-armiRunSmallest.val.png"))
         self.assertGreater(os.path.getsize("R-armiRunSmallest.val.png"), 0)
-
-    def test_buVsTime(self):
-        name = "buvstime"
-        scalars = {
-            "time": [1, 2, 3, 4],
-            "maxBuI": [6, 7, 8, 9],
-            "maxBuF": [6, 7, 8, 9],
-            "maxDPA": [6, 7, 8, 9],
-        }
-        figName = name + ".bu.png"
-        buVsTime(name, scalars, "png")
-        self.assertTrue(os.path.exists(figName))
-        self.assertGreater(os.path.getsize(figName), 0)
 
     def test_movesVsCycle(self):
         name = "movesVsCycle"
