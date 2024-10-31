@@ -855,7 +855,7 @@ def _copyInputsHelper(
     -------
     destFilePath (or origFile) : str
     """
-    sourceName = os.path.basename(sourcePath)
+    sourceName = pathlib.Path(sourcePath).name
     destFilePath = os.path.join(destPath, sourceName)
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
@@ -880,9 +880,10 @@ def copyInterfaceInputs(
     This function should now be able to handle the updating of:
 
       - a single file (relative or absolute)
-      - a list of files (relative or absolute), and
+      - a list of files (relative or absolute)
       - a file entry that has a wildcard processing into multiple files.
         Glob is used to offer support for wildcards.
+      - a directory and its contents
 
     If the file paths are absolute, do nothing. The case will be able to find the file.
 
@@ -950,7 +951,7 @@ def copyInterfaceInputs(
                 path = pathlib.Path(f)
                 if not WILDCARD and not RELATIVE:
                     try:
-                        if path.is_absolute() and path.exists() and path.is_file():
+                        if path.is_absolute() and path.exists():
                             # Path is absolute, no settings modification or filecopy needed
                             newFiles.append(path)
                             continue

@@ -27,6 +27,7 @@ New Features
 #. Improve efficiency of reaction rate calculations. (`PR#1887 <https://github.com/terrapower/armi/pull/1887>`_)
 #. Adding support for ENDF/B-VII.1-based MC2-3 libraries. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
+#. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
 #. TBD
 
 API Changes
@@ -50,6 +51,7 @@ API Changes
 #. Removing ``globalFluxInterface.DoseResultsMapper`` class. (`PR#1952 <https://github.com/terrapower/armi/pull/1952>`_)
 #. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
 #. Changing ``synDbAfterWrite`` default to ``True``. (`PR#1968 <https://github.com/terrapower/armi/pull/1968>`_)
+#. Removing unused class ``SmartList``. (`PR#1992 <https://github.com/terrapower/armi/pull/1992>`_)
 #. `nuclideBases.byMcc3ID` and `getMcc3Id()` return IDs consistent with ENDF/B-VII.1. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. TBD
 
