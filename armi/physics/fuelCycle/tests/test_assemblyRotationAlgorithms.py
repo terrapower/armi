@@ -50,12 +50,16 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
     def prepShuffledAssembly(a: HexAssembly, percentBuMaxPinLocation: int):
         """Prepare the assembly that will be shuffled and rotated."""
         for b in a.getChildrenWithFlags(Flags.FUEL):
-            # Fake some maximum burnup
-            b.p.percentBuMax = 5
             # Fake enough information to build a spatial grid
             b.getPinPitch = mock.Mock(return_value=1.1)
             b.autoCreateSpatialGrids()
-            b.p.percentBuMaxPinLocation = percentBuMaxPinLocation
+            for c in b.getChildrenWithFlags(Flags.FUEL):
+                mult = c.getDimension("mult")
+                if mult <= percentBuMaxPinLocation:
+                    continue
+                burnups = np.ones(mult, dtype=float)
+                burnups[percentBuMaxPinLocation] *= 2
+                c.p.pinPercentBu = burnups
 
     @staticmethod
     def prepPreviousAssembly(a: HexAssembly, pinPowers: list[float]):
@@ -79,7 +83,7 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
         """If max burnup pin is at the center, no rotation is suggested."""
         # Fake a higher power towards the center
         powers = np.arange(self.N_PINS)[::-1]
-        self.prepShuffledAssembly(self.assembly, percentBuMaxPinLocation=1)
+        self.prepShuffledAssembly(self.assembly, percentBuMaxPinLocation=0)
         self.prepPreviousAssembly(self.assembly, powers)
         rot = getOptimalAssemblyOrientation(self.assembly, self.assembly)
         self.assertEqual(rot, 0)
@@ -95,22 +99,26 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
             :tests: R_ARMI_ROTATE_HEX_BURNUP
             :acceptance_criteria: After rotating a hexagonal assembly, confirm the pin with the highest burnup is
                 in the same sector as pin with the lowest power in the high burnup pin's ring.
+
+        Notes
+        -----
+        Note: use zero-indexed pin location not pin ID to assign burnups and powers. Since
+        we have a single component, ``Block.p.linPowByPin[i] <-> Component.p.pinPercentBu[i]``
         """
         shuffledAssembly = self.assembly
         previousAssembly = copy.deepcopy(shuffledAssembly)
-        for startPin, oppositePin in ((2, 5), (3, 6), (4, 7), (5, 2), (6, 3), (7, 4)):
+        for startPin, oppositePin in ((1, 4), (2, 5), (3, 6), (4, 1), (5, 2), (6, 3)):
             powers = np.ones(self.N_PINS)
-            powers[startPin - 1] *= 2
-            powers[oppositePin - 1] = 0
+            powers[oppositePin] = 0
             self.prepShuffledAssembly(shuffledAssembly, startPin)
             self.prepPreviousAssembly(previousAssembly, powers)
             rot = getOptimalAssemblyOrientation(shuffledAssembly, previousAssembly)
             # 180 degrees is three 60 degree rotations
             self.assertEqual(rot, 3, msg=f"{startPin=} :: {oppositePin=}")
 
-    def test_noGridOnShuffledBlock(self):
-        """Require a spatial grid on the shuffled block."""
-        with self.assertRaisesRegex(ValueError, "spatial grid"):
+    def test_noBlocksWithBurnup(self):
+        """Require at least one block to have burnup."""
+        with self.assertRaisesRegex(ValueError, "No blocks with burnup found"):
             getOptimalAssemblyOrientation(self.assembly, self.assembly)
 
     def test_mismatchPinPowersAndLocations(self):

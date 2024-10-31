@@ -170,3 +170,23 @@ def getMaxBurnupLocationFromChildren(
     if maxLocation is not None:
         return maxLocation
     raise ValueError("No burnups found!")
+
+
+def maxBurnupBlock(a: typing.Iterable["Block"]) -> "Block":
+    """Find the block that contains the pin with the highest burnup."""
+    maxBlock = None
+    maxBurnup = 0
+    for b in a:
+        maxCompBu = 0
+        for c in b:
+            if not np.any(c.p.pinPercentBu):
+                continue
+            compBu = c.p.pinPercentBu.max()
+            if compBu > maxCompBu:
+                maxCompBu = compBu
+        if maxCompBu > maxBurnup:
+            maxBurnup = maxCompBu
+            maxBlock = b
+    if maxBlock is not None:
+        return maxBlock
+    raise ValueError(f"No blocks with burnup found")
