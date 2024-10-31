@@ -38,6 +38,7 @@ API Changes
 #. Renaming ``Reactor.moveList`` to ``Reactor.moves``. (`PR#1881 <https://github.com/terrapower/armi/pull/1881>`_)
 #. ``copyInterfaceInputs`` no longer requires a valid setting object. (`PR#1934 <https://github.com/terrapower/armi/pull/1934>`_)
 #. Removing ``buildEqRingSchedule``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
+#. Removing broken plot ``buVsTime``. (`PR#1994 <https://github.com/terrapower/armi/pull/1994>`_)
 #. Allowing for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
 #. Removing ``Assembly.doubleResolution()``. (`PR#1951 <https://github.com/terrapower/armi/pull/1951>`_)
 #. Removing ``assemblyLists.py`` and the ``AssemblyList`` class. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
