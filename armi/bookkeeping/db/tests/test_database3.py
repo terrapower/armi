@@ -11,19 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for the Database3 class."""
+"""Tests for the Database class."""
+from glob import glob
+import os
 import shutil
 import subprocess
 import unittest
 
 import h5py
-import numpy
+import numpy as np
 
 from armi.bookkeeping.db import _getH5File
-from armi.bookkeeping.db import database3
-from armi.bookkeeping.db.jaggedArray import JaggedArray
+from armi.bookkeeping.db import database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
+from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
+from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.reactors import Core
+from armi.reactor.reactors import Reactor
+from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import TEST_ROOT
@@ -38,8 +44,8 @@ elif shutil.which("git.exe") is not None:
     GIT_EXE = "git.exe"
 
 
-class TestDatabase3(unittest.TestCase):
-    """Tests for the Database3 class that require a large, complicated reactor."""
+class TestDatabase(unittest.TestCase):
+    """Tests for the Database class that require a large, complicated reactor."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -51,7 +57,7 @@ class TestDatabase3(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database3.Database3 = self.dbi.database
+        self.db: database.Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -183,8 +189,8 @@ class TestDatabase3(unittest.TestCase):
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
 
-class TestDatabase3Smaller(unittest.TestCase):
-    """Tests for the Database3 class, that can use a smaller test reactor."""
+class TestDatabaseSmaller(unittest.TestCase):
+    """Tests for the Database class, that can use a smaller test reactor."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -197,7 +203,7 @@ class TestDatabase3Smaller(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database3.Database3 = self.dbi.database
+        self.db: database.Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -229,22 +235,22 @@ class TestDatabase3Smaller(unittest.TestCase):
         element-by-element.
         """
         self.assertEqual(type(ref), type(src))
-        if isinstance(ref, numpy.ndarray):
+        if isinstance(ref, np.ndarray):
             ref = ref.tolist()
             src = src.tolist()
 
         for v1, v2 in zip(ref, src):
             # Entries may be None
-            if isinstance(v1, numpy.ndarray):
+            if isinstance(v1, np.ndarray):
                 v1 = v1.tolist()
-            if isinstance(v2, numpy.ndarray):
+            if isinstance(v2, np.ndarray):
                 v2 = v2.tolist()
             self.assertEqual(v1, v2)
 
     def _compareRoundTrip(self, data):
         """Make sure that data is unchanged by packing/unpacking."""
-        packed, attrs = database3.packSpecialData(data, "testing")
-        roundTrip = database3.unpackSpecialData(packed, attrs, "testing")
+        packed, attrs = database.packSpecialData(data, "testing")
+        roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
     def test_writeToDB(self):
@@ -315,22 +321,19 @@ class TestDatabase3Smaller(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.db.genAuxiliaryData((-1, -1))
 
-    # TODO: This should be expanded.
     def test_replaceNones(self):
         """Super basic test that we handle Nones correctly in database read/writes."""
-        data3 = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-        data1 = numpy.array([1, 2, 3, 4, 5, 6, 7, 8])
-        data1iNones = numpy.array([1, 2, None, 5, 6])
-        data1fNones = numpy.array([None, 2.0, None, 5.0, 6.0])
-        data2fNones = numpy.array(
-            [None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object
-        )
-        twoByTwo = numpy.array([[1, 2], [3, 4]])
-        twoByOne = numpy.array([[1], [None]])
-        threeByThree = numpy.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        data3 = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+        data1 = np.array([1, 2, 3, 4, 5, 6, 7, 8])
+        data1iNones = np.array([1, 2, None, 5, 6])
+        data1fNones = np.array([None, 2.0, None, 5.0, 6.0])
+        data2fNones = np.array([None, [[1.0, 2.0, 6.0], [2.0, 3.0, 4.0]]], dtype=object)
+        twoByTwo = np.array([[1, 2], [3, 4]])
+        twoByOne = np.array([[1], [None]])
+        threeByThree = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         dataJag = JaggedArray([twoByTwo, threeByThree], "testParam")
         dataJagNones = JaggedArray([twoByTwo, twoByOne, threeByThree], "testParam")
-        dataDict = numpy.array(
+        dataDict = np.array(
             [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
         )
         self._compareRoundTrip(data3)
@@ -351,17 +354,17 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
         randomText = "this isn't a reference to another dataset"
-        database3.Database3._writeAttrs(
+        database.Database._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": numpy.eye(64),
+                "fakeBigData": np.eye(64),
                 "someString": randomText,
             },
         )
 
         db_path = "restartDB.h5"
-        db2 = database3.Database3(db_path, "w")
+        db2 = database.Database(db_path, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -375,10 +378,10 @@ class TestDatabase3Smaller(unittest.TestCase):
             )
 
             # exercise the _resolveAttrs function
-            attrs = database3.Database3._resolveAttrs(
+            attrs = database.Database._resolveAttrs(
                 tnGroup["layout/serialNum"].attrs, tnGroup
             )
-            self.assertTrue(numpy.array_equal(attrs["fakeBigData"], numpy.eye(64)))
+            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)
@@ -398,7 +401,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             self.assertEqual(newDb["c00n00/Reactor/cycle"][()], 0)
             self.assertEqual(newDb["c00n00/Reactor/cycleLength"][()][0], 0)
             self.assertNotIn("c03n00", newDb)
-            self.assertEqual(newDb.attrs["databaseVersion"], database3.DB_VERSION)
+            self.assertEqual(newDb.attrs["databaseVersion"], database.DB_VERSION)
 
             # validate that the min set of meta data keys exists
             meta_data_keys = [
@@ -434,7 +437,7 @@ class TestDatabase3Smaller(unittest.TestCase):
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
@@ -449,7 +452,7 @@ class TestDatabase3Smaller(unittest.TestCase):
             return
 
         self.assertEqual(code, 0)
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 3. test inside a git repo with one tag
@@ -472,7 +475,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.assertEqual(code, 0)
 
         # test that we recover the correct commit hash
-        localHash = database3.Database3.grabLocalCommitHash()
+        localHash = database.Database.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
         # delete the .git directory
@@ -521,7 +524,7 @@ class TestDatabase3Smaller(unittest.TestCase):
         self.assertIn("blocks:", inputs[2])
 
     def test_deleting(self):
-        self.assertEqual(type(self.db), database3.Database3)
+        self.assertTrue(isinstance(self.db, database.Database))
         del self.db
         self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database
@@ -532,7 +535,7 @@ class TestDatabase3Smaller(unittest.TestCase):
 
     def test_loadCS(self):
         cs = self.db.loadCS()
-        self.assertEqual(cs["numProcessors"], 1)
+        self.assertEqual(cs["nTasks"], 1)
         self.assertEqual(cs["nCycles"], 2)
 
     def test_loadBlueprints(self):
@@ -689,11 +692,169 @@ class TestDatabase3Smaller(unittest.TestCase):
         ]
 
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren), expected_1
+            database.Layout.computeAncestors(serialNums, numChildren), expected_1
         )
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
+            database.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
         )
         self.assertEqual(
-            database3.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
+            database.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
         )
+
+
+class TestWriteReadDatabase(unittest.TestCase):
+    """Round-trip tests that we can write/read data to and from a Database."""
+
+    SMALL_YAML = """!include refOneBlockReactor.yaml
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+    sfp:
+        type: sfp
+        grid name: sfp
+        origin:
+            x: 1000.0
+            y: 1000.0
+            z: 1000.0
+    evst:
+        type: excore
+        grid name: evst
+        origin:
+            x: 2000.0
+            y: 2000.0
+            z: 2000.0
+grids:
+    core:
+      geom: hex_corners_up
+      lattice map: |
+        IC
+      symmetry: full
+    evst:
+      lattice pitch:
+          x: 32.0
+          y: 32.0
+      geom: hex
+      symmetry: full
+"""
+
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+        # copy these test files over, so we can edit them
+        thisDir = self.td.destination
+        yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+        for yam in yamls:
+            shutil.copy(os.path.join(TEST_ROOT, "smallestTestReactor", yam), thisDir)
+
+        # Add an EVST to this reactor
+        with open("refSmallestReactor.yaml", "w") as f:
+            f.write(self.SMALL_YAML)
+
+        self.o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
+        self.dbi = DatabaseInterface(self.r, self.o.cs)
+        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.db: database.Database = self.dbi.database
+
+    def tearDown(self):
+        self.db.close()
+        self.td.__exit__(None, None, None)
+
+    def test_readWriteRoundTrip(self):
+        """Test DB some round tripping, writing some data to a DB, then reading from it.
+
+        In particular, we test some parameters on the reactor, core, and blocks. And we move an
+        assembly from the core to an EVST between timenodes, and test that worked.
+        """
+        # put some data in the DB, for timenode 0
+        self.r.p.cycle = 0
+        self.r.p.timeNode = 0
+        self.r.core.p.keff = 0.99
+        b = self.r.core.getFirstBlock()
+        b.p.power = 12345.6
+
+        self.db.writeToDB(self.r)
+
+        # put some data in the DB, for timenode 1
+        self.r.p.timeNode = 1
+        self.r.core.p.keff = 1.01
+
+        # move the assembly from the core to the EVST
+        a = self.r.core.getFirstAssembly()
+        loc = self.r.excore.evst.spatialGrid[(0, 0, 0)]
+        self.r.core.remove(a)
+        self.r.excore.evst.add(a, loc)
+
+        self.db.writeToDB(self.r)
+
+        # close the DB
+        self.db.close()
+
+        # open the DB and verify, the first timenode
+        with database.Database(self._testMethodName + ".h5", "r") as db:
+            r0 = db.load(0, 0, allowMissing=True)
+            self.assertEqual(r0.p.cycle, 0)
+            self.assertEqual(r0.p.timeNode, 0)
+            self.assertEqual(r0.core.p.keff, 0.99)
+
+            # check the types of the data model objects
+            self.assertTrue(isinstance(r0, Reactor))
+            self.assertTrue(isinstance(r0.core, Core))
+            self.assertTrue(isinstance(r0.excore, ExcoreCollection))
+            self.assertTrue(isinstance(r0.excore.evst, ExcoreStructure))
+            self.assertTrue(isinstance(r0.excore.sfp, SpentFuelPool))
+
+            # Prove our one special block is in the core
+            self.assertEqual(len(r0.core.getChildren()), 1)
+            b0 = r0.core.getFirstBlock()
+            self.assertEqual(b0.p.power, 12345.6)
+
+            # the ex-core structures should be empty
+            self.assertEqual(len(r0.excore["sfp"].getChildren()), 0)
+            self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
+
+        # open the DB and verify, the second timenode
+        with database.Database(self._testMethodName + ".h5", "r") as db:
+            r1 = db.load(0, 1, allowMissing=True)
+            self.assertEqual(r1.p.cycle, 0)
+            self.assertEqual(r1.p.timeNode, 1)
+            self.assertEqual(r1.core.p.keff, 1.01)
+
+            # check the types of the data model objects
+            self.assertTrue(isinstance(r1, Reactor))
+            self.assertTrue(isinstance(r1.core, Core))
+            self.assertTrue(isinstance(r1.excore, ExcoreCollection))
+            self.assertTrue(isinstance(r1.excore.evst, ExcoreStructure))
+            self.assertTrue(isinstance(r1.excore.sfp, SpentFuelPool))
+
+            # Prove our one special block is NOT in the core, or the SFP
+            self.assertEqual(len(r1.core.getChildren()), 0)
+            self.assertEqual(len(r1.excore["sfp"].getChildren()), 0)
+            self.assertEqual(len(r1.excore.sfp.getChildren()), 0)
+
+            # Prove our one special block is in the EVST
+            evst = r1.excore["evst"]
+            self.assertEqual(len(evst.getChildren()), 1)
+            b1 = evst.getChildren()[0].getChildren()[0]
+            self.assertEqual(b1.p.power, 12345.6)
+
+    def test_badData(self):
+        # create a DB to be modified
+        self.db.writeToDB(self.r)
+        self.db.close()
+
+        # modify the HDF5 file to corrupt a dataset
+        with h5py.File(self.db.fileName, "r+") as hf:
+            circleGroup = hf["c00n00"]["Circle"]
+            circleMass = np.array(circleGroup["massHmBOL"][()])
+            badData = circleMass[:-1]
+            del circleGroup["massHmBOL"]
+            circleGroup.create_dataset("massHmBOL", data=badData)
+
+        with self.assertRaises(ValueError):
+            with database.Database(self.db.fileName, "r") as db:
+                _r = db.load(0, 0, allowMissing=True)

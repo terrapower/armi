@@ -30,7 +30,7 @@ import enum
 import functools
 import re
 
-import numpy
+import numpy as np
 
 from armi.reactor.flags import Flags
 from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
@@ -130,7 +130,7 @@ class Serializer:
     ``serializer`` allows for special operations to be performed on the parameter values as they are
     stored to the database or read back in.
 
-    The ``Database3`` already knows how to handle certain cases where the data are not
+    The ``Database`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
       - There are ``None``\ s.
@@ -168,8 +168,8 @@ class Serializer:
 
     See Also
     --------
-    armi.bookkeeping.db.database3.packSpecialData
-    armi.bookkeeping.db.database3.unpackSpecialData
+    armi.bookkeeping.db.database.packSpecialData
+    armi.bookkeeping.db.database.unpackSpecialData
     armi.reactor.flags.FlagSerializer
     """
 
@@ -179,7 +179,7 @@ class Serializer:
     version: Optional[str] = None
 
     @staticmethod
-    def pack(data: Sequence[any]) -> Tuple[numpy.ndarray, Dict[str, any]]:
+    def pack(data: Sequence[any]) -> Tuple[np.ndarray, Dict[str, any]]:
         """
         Given unpacked data, return packed data and a dictionary of attributes needed to unpack it.
 
@@ -195,7 +195,7 @@ class Serializer:
 
     @classmethod
     def unpack(
-        cls, data: numpy.ndarray, version: Any, attrs: Dict[str, any]
+        cls, data: np.ndarray, version: Any, attrs: Dict[str, any]
     ) -> Sequence[any]:
         """Given packed data and attributes, return the unpacked data."""
         raise NotImplementedError()
@@ -216,10 +216,10 @@ def isNumpyArray(paramStr):
     """
 
     def setParameter(selfObj, value):
-        if value is None or isinstance(value, numpy.ndarray):
+        if value is None or isinstance(value, np.ndarray):
             setattr(selfObj, "_p_" + paramStr, value)
         else:
-            setattr(selfObj, "_p_" + paramStr, numpy.array(value))
+            setattr(selfObj, "_p_" + paramStr, np.array(value))
 
     return setParameter
 
@@ -420,6 +420,10 @@ class Parameter:
     def atLocation(self, loc):
         """True if parameter is defined at location."""
         return self.location and self.location & loc
+
+    def hasCategory(self, category: str) -> bool:
+        """True if a parameter has a specific category."""
+        return category in self.categories
 
 
 class ParameterDefinitionCollection:

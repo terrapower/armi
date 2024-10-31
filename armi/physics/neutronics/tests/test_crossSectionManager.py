@@ -536,6 +536,68 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                     f"{nuc} temperature does not match expected value of {compTemp}",
                 )
 
+    def test_ComponentAverageDuctHet1DCylinder(self):
+        """
+        Tests that the cross-section group manager calculates the expected component atom density,
+        component area, and average nuclide temperature correctly for a duct heterogeneous cylindrical
+        block collection.
+        """
+        self.o.cs[CONF_CROSS_SECTION]["ZA"].ductHeterogeneous = True
+        xsgm = self.o.getInterface("xsGroups")
+
+        xsgm.interactBOL()
+
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
+        xsOpt = self.o.cs[CONF_CROSS_SECTION]["ZA"]
+        self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
+
+        xsgm.createRepresentativeBlocks()
+        xsgm.updateNuclideTemperatures()
+
+        representativeBlockList = list(xsgm.representativeBlocks.values())
+        representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
+        reprBlock = xsgm.representativeBlocks["ZA"]
+        self.assertEqual(reprBlock.name, "1D_CYL_DUCT_HET_AVG_ZA")
+        self.assertEqual(reprBlock.p.percentBu, 0.0)
+
+        refTemps = {"fuel": 600.0, "coolant": 450.0, "structure": 462.4565}
+
+        for c, compDensity, compArea in zip(
+            reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
+        ):
+            self.assertEqual(compArea, c.getArea())
+            cNucs = c.getNuclides()
+            for nuc in cNucs:
+                self.assertAlmostEqual(
+                    c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
+                )
+                if "fuel" in c.getType():
+                    compTemp = refTemps["fuel"]
+                elif any(sodium in c.getType() for sodium in ["bond", "coolant"]):
+                    compTemp = refTemps["coolant"]
+                else:
+                    compTemp = refTemps["structure"]
+
+                if any(comp in c.getType() for comp in ["fuel", "bond", "coolant"]):
+                    # only 1 fuel component, and bond and coolant are both at same temperature
+                    # the component temp should match the avg nuc temp
+                    self.assertAlmostEqual(
+                        compTemp,
+                        xsgm.avgNucTemperatures["ZA"][nuc],
+                        2,
+                        f"{nuc} temperature does not match expected value of {compTemp} for component {c}",
+                    )
+                else:
+                    # steel components are at different temperatures
+                    # the temperatures should be different
+                    diff = abs(compTemp - xsgm.avgNucTemperatures["ZA"][nuc])
+                    self.assertGreater(
+                        diff,
+                        1.0,
+                        f"{nuc} temperature should be different from {compTemp} for component {c}",
+                    )
+
     def test_checkComponentConsistency(self):
         xsgm = self.o.getInterface("xsGroups")
         xsgm.interactBOL()
@@ -700,6 +762,16 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
+
+    def test_enableBuGroupUpdates(self):
+        self.csm._buGroupUpdatesEnabled = False
+        self.csm.enableBuGroupUpdates()
+        self.assertTrue(self.csm.enableBuGroupUpdates)
+
+    def test_disableBuGroupUpdates(self):
+        self.csm._buGroupUpdatesEnabled = False
+        res = self.csm.disableBuGroupUpdates()
+        self.assertFalse(res)
 
     def test_updateBurnupGroups(self):
         self.blockList[1].p.percentBu = 3.1

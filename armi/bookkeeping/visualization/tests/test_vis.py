@@ -15,11 +15,11 @@
 """Test report visualization."""
 import unittest
 
-import numpy
+import numpy as np
 from pyevtk.vtk import VtkTetra
 
 from armi import settings
-from armi.bookkeeping.db import Database3
+from armi.bookkeeping.db import Database
 from armi.bookkeeping.visualization import utils
 from armi.bookkeeping.visualization import vtk
 from armi.bookkeeping.visualization import xdmf
@@ -41,12 +41,12 @@ class TestVtkMesh(unittest.TestCase):
         self.assertEqual(mesh.offsets.size, 0)
         self.assertEqual(mesh.cellTypes.size, 0)
 
-        verts = numpy.array(
+        verts = np.array(
             [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.25, 0.25, 0.5]]
         )
-        conn = numpy.array([0, 1, 2, 3])
-        offsets = numpy.array([4])
-        cellTypes = numpy.array([VtkTetra.tid])
+        conn = np.array([0, 1, 2, 3])
+        offsets = np.array([4])
+        cellTypes = np.array([VtkTetra.tid])
         newMesh = utils.VtkMesh(verts, conn, offsets, cellTypes)
 
         mesh.append(newMesh)
@@ -100,7 +100,7 @@ class TestVisDump(unittest.TestCase):
     def test_dumpReactorXdmf(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
         with TemporaryDirectoryChanger(dumpOnException=False):
-            db = Database3("testDatabase.h5", "w")
+            db = Database("testDatabase.h5", "w")
             with db:
                 db.writeToDB(self.r)
             dumper = xdmf.XdmfDumper("testVtk", inputName="testDatabase.h5")

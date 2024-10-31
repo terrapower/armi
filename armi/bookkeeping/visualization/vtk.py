@@ -27,23 +27,21 @@ that can be improved upon. For instance:
   vertices than needed. Some fancy canned algorithms probably exist to do this, and it
   wouldn't be too difficult to do here either. Also future work, but probably not super
   important unless dealing with really big meshes.
-
 """
-
 from typing import Dict, Any, List, Optional, Set, Tuple
 
-import numpy
+import numpy as np
 from pyevtk.vtk import VtkGroup
 
 from armi import runLog
+from armi.bookkeeping.db import database
+from armi.bookkeeping.visualization import dumper
+from armi.bookkeeping.visualization import utils
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import composites
-from armi.reactor import reactors
 from armi.reactor import parameters
-from armi.bookkeeping.db import database3
-from armi.bookkeeping.visualization import dumper
-from armi.bookkeeping.visualization import utils
+from armi.reactor import reactors
 
 
 class VtkDumper(dumper.VisFileDumper):
@@ -109,10 +107,10 @@ class VtkDumper(dumper.VisFileDumper):
         blockData = _collectObjectData(blks, includeParams, excludeParams)
         assemData = _collectObjectData(assems, includeParams, excludeParams)
         # block number densities are special, since they arent stored as params
-        blockNdens = database3.collectBlockNumberDensities(blks)
+        blockNdens = database.collectBlockNumberDensities(blks)
         # we need to copy the number density vectors to guarantee unit stride, which
         # pyevtk requires. Kinda seems like something it could do for us, but oh well.
-        blockNdens = {key: numpy.array(value) for key, value in blockNdens.items()}
+        blockNdens = {key: np.array(value) for key, value in blockNdens.items()}
         blockData.update(blockNdens)
 
         fullPath = blockMesh.write(blockPath, blockData)
@@ -161,7 +159,7 @@ def _collectObjectData(
             val = obj.p[pDef.name]
             data.append(val)
 
-        data = numpy.array(data)
+        data = np.array(data)
 
         if data.dtype.kind == "S" or data.dtype.kind == "U":
             # no string support!
@@ -169,7 +167,7 @@ def _collectObjectData(
         if data.dtype.kind == "O":
             # datatype is "object", usually because it's jagged, or has Nones. We are
             # willing to try handling the Nones, but jagged also isnt visualizable.
-            nones = numpy.where([d is None for d in data])[0]
+            nones = np.where([d is None for d in data])[0]
 
             if len(nones) == data.shape[0]:
                 # all Nones, so give up
@@ -180,7 +178,7 @@ def _collectObjectData(
                 continue
 
             try:
-                data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
+                data = database.replaceNonesWithNonsense(data, pDef.name, nones=nones)
             except (ValueError, TypeError):
                 # Looks like we have some weird data. We might be able to handle it
                 # with more massaging, but probably not visualizable anyhow

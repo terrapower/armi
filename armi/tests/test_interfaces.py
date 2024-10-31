@@ -14,12 +14,9 @@
 
 """Tests the Interface."""
 import unittest
-import os
 
 from armi import interfaces
 from armi import settings
-from armi.tests import TEST_ROOT
-from armi.utils import textProcessors
 
 
 class DummyInterface(interfaces.Interface):
@@ -73,25 +70,6 @@ class TestCodeInterface(unittest.TestCase):
 
         self.assertEqual(type(i), type(iDup))
         self.assertEqual(i.enabled(), iDup.enabled())
-
-
-class TestTextProcessor(unittest.TestCase):
-    """Test Text processor."""
-
-    def setUp(self):
-        self.tp = textProcessors.TextProcessor(os.path.join(TEST_ROOT, "geom.xml"))
-
-    def test_fsearch(self):
-        """Test fsearch in re mode."""
-        line = self.tp.fsearch("xml")
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
-
-    def test_fsearch_text(self):
-        """Test fsearch in text mode."""
-        line = self.tp.fsearch("xml", textFlag=True)
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
 
 
 class TestTightCoupler(unittest.TestCase):

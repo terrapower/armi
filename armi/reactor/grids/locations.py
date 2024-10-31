@@ -16,7 +16,7 @@ from typing import Optional, TYPE_CHECKING, Union, Hashable, Tuple, List, Iterat
 from abc import ABC, abstractmethod
 import math
 
-import numpy
+import numpy as np
 
 if TYPE_CHECKING:
     # Avoid some circular imports
@@ -97,7 +97,7 @@ class LocationBase(ABC):
         """
         return hash((self.i, self.j, self.k))
 
-    def __eq__(self, other: Union[Tuple[int, int, int], "LocationBase"]) -> bool:
+    def __eq__(self, other: Union[IJKType, "LocationBase"]) -> bool:
         if isinstance(other, tuple):
             return (self.i, self.j, self.k) == other
         if isinstance(other, LocationBase):
@@ -158,7 +158,7 @@ class LocationBase(ABC):
 
     @property
     @abstractmethod
-    def indices(self) -> numpy.ndarray:
+    def indices(self) -> np.ndarray:
         """Get the non-grid indices (i,j,k) of this locator.
 
         This strips off the annoying ``grid`` tagalong which is there to ensure proper
@@ -239,7 +239,7 @@ class IndexLocation(LocationBase):
         return None
 
     @property
-    def indices(self) -> numpy.ndarray:
+    def indices(self) -> np.ndarray:
         """
         Get the non-grid indices (i,j,k) of this locator.
 
@@ -253,7 +253,7 @@ class IndexLocation(LocationBase):
         2. It can be written/read from the database.
 
         """
-        return numpy.array(self[:3])
+        return np.array(self[:3])
 
     def getCompleteIndices(self) -> IJKType:
         """
@@ -289,7 +289,7 @@ class IndexLocation(LocationBase):
         """Return the coordinates of the center of the mesh cell here in cm."""
         if self.grid is None:
             raise ValueError(
-                "Cannot get local coordinates of {} because grid is None.".format(self)
+                f"Cannot get local coordinates of {self} because grid is None."
             )
         return self.grid.getCoordinates(self.indices, nativeCoords=nativeCoords)
 
@@ -339,8 +339,8 @@ class IndexLocation(LocationBase):
         return math.sqrt(
             (
                 (
-                    numpy.array(self.getGlobalCoordinates())
-                    - numpy.array(other.getGlobalCoordinates())
+                    np.array(self.getGlobalCoordinates())
+                    - np.array(other.getGlobalCoordinates())
                 )
                 ** 2
             ).sum()
@@ -429,7 +429,7 @@ class MultiIndexLocation(IndexLocation):
         self._locations.pop(location)
 
     @property
-    def indices(self) -> List[numpy.ndarray]:
+    def indices(self) -> List[np.ndarray]:
         """
         Return indices for all locations.
 

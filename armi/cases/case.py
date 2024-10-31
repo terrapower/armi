@@ -302,8 +302,10 @@ class Case:
         return self.title == that.title and self.directory == that.directory
 
     def __hash__(self):
-        # computes the hash of a Case object. This is required in Python3 when __eq__ has been
-        # defined.  take the hash of the tuple of the "primary key"
+        """Computes the hash of a Case object.
+
+        This is required when __eq__ is been defined. Take the hash of the tuple of the "primary key".
+        """
         return hash((self.title, self.directory))
 
     def setUpTaskDependence(self):
@@ -311,15 +313,10 @@ class Case:
         Set the task dependence based on the :code:`dependencies`.
 
         This accounts for whether or not the dependency is enabled.
-
-        TODO
-        ----
-        This is a leftover from before the release of the ARMI framework. The API of the
-        proprietary cluster communication library is being used here. This should either
-        be moved out into the cluster plugin, or the library should be made available.
         """
         if not self.enabled:
             return
+
         for dependency in self.dependencies:
             if dependency.enabled:
                 self._tasks[0].add_parent(dependency._tasks[-1])
@@ -327,7 +324,6 @@ class Case:
     def run(self):
         """
         Run an ARMI case.
-
 
         .. impl:: The case class allows for a generic ARMI simulation.
             :id: I_ARMI_CASE
@@ -344,11 +340,11 @@ class Case:
 
         Notes
         -----
-        Room for improvement: The coverage, profiling, etc. stuff can probably be moved
-        out of here to a more elegant place (like a context manager?).
+        Room for improvement: The coverage, profiling, etc. stuff can probably be moved out of here
+        to a more elegant place (like a context manager?).
         """
-        # Start the log here so that the verbosities for the head and workers
-        # can be configured based on the user settings for the rest of the run
+        # Start the log here so that the verbosities for the head and workers can be configured
+        # based on the user settings for the rest of the run.
         runLog.LOG.startLog(self.cs.caseTitle)
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self.cs["verbosity"])
@@ -859,7 +855,7 @@ def _copyInputsHelper(
     -------
     destFilePath (or origFile) : str
     """
-    sourceName = os.path.basename(sourcePath)
+    sourceName = pathlib.Path(sourcePath).name
     destFilePath = os.path.join(destPath, sourceName)
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
@@ -882,10 +878,12 @@ def copyInterfaceInputs(
     enables developers to add new inputs in a plugin-dependent/ modular way.
 
     This function should now be able to handle the updating of:
+
       - a single file (relative or absolute)
-      - a list of files (relative or absolute), and
+      - a list of files (relative or absolute)
       - a file entry that has a wildcard processing into multiple files.
         Glob is used to offer support for wildcards.
+      - a directory and its contents
 
     If the file paths are absolute, do nothing. The case will be able to find the file.
 
@@ -900,12 +898,12 @@ def copyInterfaceInputs(
         The source case settings to find input files
     destination : str
         The target directory to copy input files to
-    sourceDir : str (optional)
+    sourceDir : str, optional
         The directory from which to copy files. Defaults to cs.inputDirectory
 
     Returns
     -------
-    newSettings : dict
+    dict
         A new settings object that contains settings for the keys and values that are
         either an absolute file path, a list of absolute file paths, or the original
         file path if absolute paths could not be resolved
@@ -931,12 +929,15 @@ def copyInterfaceInputs(
             if not isinstance(key, settings.Setting):
                 try:
                     key = cs.getSetting(key)
+                    label = key.name
+                    isSetting = True
                 except NonexistentSetting(key):
-                    raise ValueError(
-                        f"{key} is not a valid setting. Ensure the relevant specifyInputs "
-                        "method uses a correct setting name."
-                    )
-            label = key.name
+                    runLog.debug(f"{key} is not a valid setting; continuing on anyway.")
+                    label = key
+                    isSetting = False
+            else:
+                isSetting = True
+                label = key.name
 
             newFiles = []
             for f in files:
@@ -950,7 +951,7 @@ def copyInterfaceInputs(
                 path = pathlib.Path(f)
                 if not WILDCARD and not RELATIVE:
                     try:
-                        if path.is_absolute() and path.exists() and path.is_file():
+                        if path.is_absolute() and path.exists():
                             # Path is absolute, no settings modification or filecopy needed
                             newFiles.append(path)
                             continue
@@ -981,15 +982,16 @@ def copyInterfaceInputs(
 
                 if destFilePath == f:
                     runLog.debug(
-                        f"No input files for `{label}` setting could be resolved with "
-                        f"the following path: `{sourceFullPath}`. Will not update `{label}`."
+                        f"No input files for `{label}` could be resolved with the "
+                        f"following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects
-            if len(files) == 1 and not WILDCARD:
-                newSettings[label] = newFiles[0]
-            else:
-                newSettings[label] = newFiles
+            if isSetting:
+                if len(files) == 1 and not WILDCARD:
+                    newSettings[label] = newFiles[0]
+                else:
+                    newSettings[label] = newFiles
 
     return newSettings

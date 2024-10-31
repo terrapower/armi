@@ -251,6 +251,31 @@ For reference, here are the log levels that ARMI supports:
       - Use ONLY to define major sections in the log files.
 
 
+Blocking Duplicate Logs
+-----------------------
+Sometimes you want to add a log message, but based on program logic it might pop up in the final log
+file multiple times, even thousands of times. And probably you do not want that. Happily, the
+``runLog`` tool provides a simple argument that will stop a single log line from being logged more
+than once.
+
+Here is a (silly) example of a heavily duplicate log message:
+
+.. code-block:: python
+
+    for _i in range(1000):
+        runLog.warning("Something wicked this way comes.")
+
+That log message gets printed 1,000 times, but we can ensure it is only printed once:
+
+.. code-block:: python
+
+    for _i in range(1000):
+        runLog.warning("Something wicked this way comes.", single=True)
+
+Obviously, this will not be useful in every scenario. But it is a handy tool to clean up your log
+files.
+
+
 Module-Level Logging
 --------------------
 The ``runLog`` tool also allows for you to log one module differently from the rest of the code

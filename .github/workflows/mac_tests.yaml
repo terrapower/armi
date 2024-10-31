@@ -1,12 +1,21 @@
 name: ARMI MacOS Tests
 
+permissions:
+  contents: read
+
 on:
   push:
+    branches:
+      - main
     paths-ignore:
       - 'doc/**'
   pull_request:
     paths-ignore:
       - 'doc/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:

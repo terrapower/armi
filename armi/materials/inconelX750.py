@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Inconel X750."""
-import numpy
+import numpy as np
 
-from armi.utils.units import getTc
 from armi.materials.material import Material
+from armi.utils.units import getTc
 
 
 class InconelX750(Material):
@@ -104,7 +104,7 @@ class InconelX750(Material):
             22.21,
             23.65,
         ]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(k), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(k), power).tolist()
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
@@ -144,7 +144,7 @@ class InconelX750(Material):
         """
         Tc = [21.1, 93.3, 204.4, 315.6, 426.7, 537.8, 648.9, 760.0, 871.1]
         cp = [431.2, 456.4, 485.7, 502.4, 523.4, 544.3, 573.6, 632.2, 715.9]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(cp), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(cp), power).tolist()
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""
@@ -207,9 +207,7 @@ class InconelX750(Material):
 
         Tc.insert(0, refTempC)
 
-        return numpy.polyfit(
-            numpy.array(Tc), numpy.array(linExpPercent), power
-        ).tolist()
+        return np.polyfit(np.array(Tc), np.array(linExpPercent), power).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""

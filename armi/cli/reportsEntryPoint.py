@@ -19,15 +19,16 @@ from armi.bookkeeping.report import newReports as reports
 from armi.cli import entryPoint
 from armi.reactor import blueprints
 from armi.reactor import reactors
-from armi.utils import directoryChangers
+from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
-    """Create report from database files."""
+    """Create a report from a database file."""
 
     name = "report"
     settingsArgument = "optional"
     description = "Convert ARMI databases into a report"
+    report_out_dir = "reportsOutputFiles"
 
     def __init__(self):
         entryPoint.EntryPoint.__init__(self)
@@ -43,8 +44,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         self.parser.add_argument(
             "--output-name",
             "-o",
-            help="Base name for output file(s). File extensions will be added as "
-            "appropriate",
+            help="Base name for output file(s). File extensions will be added as appropriate",
             type=str,
             default=None,
         )
@@ -57,15 +57,15 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         )
         self.parser.add_argument(
             "--max-node",
-            help="An optional (cycle,timeNode) tuple to specify the latest time step "
-            "that should be included",
+            help="An optional (cycle,timeNode) tuple to specify the latest time step that should "
+            "be included",
             type=str,
             default=None,
         )
         self.parser.add_argument(
             "--min-node",
-            help="An optional (cycle,timeNode) tuple to specify the earliest time step "
-            "that should be included",
+            help="An optional (cycle,timeNode) tuple to specify the earliest time step that should "
+            "be included",
             type=str,
             default=None,
         )
@@ -78,31 +78,22 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         )
 
     def invoke(self):
-        nodes = self.args.nodes
-
         if self.args.h5db is None:
-            # Just do begining stuff, no database is given...
-            if self.cs is not None:
-                site = createReportFromSettings(self.cs)
-                if self.args.view:
-                    webbrowser.open(site)
-            else:
-                raise RuntimeError(
-                    "No Settings with Blueprint or Database, cannot gerenate a report"
-                )
-
+            # Just do BOL stuff, no database is given.
+            site = createReportFromSettings(self.cs)
+            if self.args.view:
+                webbrowser.open(site)
         else:
+            self._cleanArgs()
+            nodes = self.args.nodes
+            blueprint = self.args.bp
+
             report = reports.ReportContent("Overview")
             pm = getPluginManagerOrFail()
             db = databaseFactory(self.args.h5db, "r")
-            if self.args.bp is not None:
-                blueprint = self.args.bp
 
             with db:
-                with directoryChangers.ForcedCreationDirectoryChanger(
-                    "reportsOutputFiles"
-                ):
-
+                with ForcedCreationDirectoryChanger(self.report_out_dir):
                     dbNodes = list(db.genTimeSteps())
                     cs = db.loadCS()
                     if self.args.bp is None:
@@ -118,6 +109,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                     )
                     stage = reports.ReportStage.Standard
                     for cycle, node in dbNodes:
+                        # check to see if we should skip this time node
                         if nodes is not None and (cycle, node) not in nodes:
                             continue
 
@@ -148,23 +140,68 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                     if self.args.view:
                         webbrowser.open(site)
 
+    @staticmethod
+    def toTwoTuple(strInput):
+        """Convert a string to a two-tuple of integers.
+
+        Parameters
+        ----------
+        strInput : str
+            Representing a simple two-tuple of integers: '(1,3)'.
+
+        Returns
+        -------
+        tuple
+            A tuple of two integers.
+        """
+        s = strInput.replace("(", "").replace(")", "").split(",")
+        return tuple([int(s[0]), int(s[1])])
+
+    def _cleanArgs(self):
+        """The string arguments passed to this entry point, on the command line, need to be
+        converted to integers.
+        """
+        if self.args.min_node is not None and type(self.args.min_node) is str:
+            self.args.min_node = ReportsEntryPoint.toTwoTuple(self.args.min_node)
+
+        if self.args.max_node is not None and type(self.args.max_node) is str:
+            self.args.max_node = ReportsEntryPoint.toTwoTuple(self.args.max_node)
+
+        if self.args.nodes is not None and type(self.args.nodes) is str:
+            self.args.nodes = [
+                ReportsEntryPoint.toTwoTuple(n) for n in self.args.nodes.split(")")[:-1]
+            ]
+
 
 def createReportFromSettings(cs):
     """
     Create BEGINNING reports, given a settings file.
 
-    This will construct a reactor from the given settings and create BOL reports for
-    that reactor/settings.
+    This will construct a reactor from the given settings and create BOL reports for that
+    reactor/settings.
+
+    Parameters
+    ----------
+    cs : Settings
+        A standard ARMI Settings object, to define a run.
+
+    Returns
+    -------
+    str
+        A string representing the HTML for a web page.
     """
+    if cs is None:
+        raise RuntimeError(
+            "No Settings with Blueprint or Database, cannot gerenate a report"
+        )
+
     blueprint = blueprints.loadFromCs(cs)
     r = reactors.factory(cs, blueprint)
     report = reports.ReportContent("Overview")
     pm = getPluginManagerOrFail()
     report.title = r.name
 
-    with directoryChangers.ForcedCreationDirectoryChanger(
-        "{}-reports".format(cs.caseTitle)
-    ):
+    with ForcedCreationDirectoryChanger("{}-reports".format(cs.caseTitle)):
         _ = pm.hook.getReportContents(
             r=r,
             cs=cs,

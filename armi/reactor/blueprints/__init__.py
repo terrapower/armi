@@ -22,7 +22,7 @@ custom material properties or basic structures like the assemblies in use.
 This is essentially a wrapper for a yaml loader.
 The given yaml file is expected to rigidly adhere to given key:value pairings.
 
-See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
+See the :ref:`blueprints documentation <bp-input-file>` for more details.
 
 The file structure is expectation is::
 
@@ -151,7 +151,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
         else:
             pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
-                for (attrName, section, resolver) in plug:
+                for attrName, section, resolver in plug:
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
@@ -326,10 +326,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                axialExpansionChanger.expandColdDimsToHot(
-                    assemsToExpand,
-                    cs[CONF_DETAILED_AXIAL_EXPANSION],
-                )
+                axialExpander = getPluginManagerOrFail().hook.getAxialExpansionChanger()
+                if axialExpander is not None:
+                    axialExpander.expandColdDimsToHot(
+                        assemsToExpand,
+                        cs[CONF_DETAILED_AXIAL_EXPANSION],
+                    )
 
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs

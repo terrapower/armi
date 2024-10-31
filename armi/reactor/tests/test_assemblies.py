@@ -39,7 +39,6 @@ from armi.reactor.assemblies import (
     Flags,
     grids,
     HexAssembly,
-    numpy,
     runLog,
 )
 from armi.reactor.tests import test_reactors
@@ -334,6 +333,9 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual(b.parent, a)
             self.assertEqual(len(a), n + 1)
 
+        with self.assertRaises(TypeError):
+            a.add(blocks.CartesianBlock("Test Cart Block"))
+
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
         i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
@@ -391,20 +393,6 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_doubleResolution(self):
-        b = self.assembly[0]
-        initialHeight = b.p.heightBOL
-        self.assembly.doubleResolution()
-        cur = len(self.assembly.getBlocks())
-        ref = 2 * len(self.blockList)
-        self.assertEqual(cur, ref)
-
-        cur = self.assembly.getBlocks()[0].getHeight()
-        ref = self.height / 2.0
-        places = 6
-        self.assertNotEqual(initialHeight, b.p.heightBOL)
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_adjustResolution(self):
@@ -605,8 +593,8 @@ class Assembly_TestCase(unittest.TestCase):
 
         for refBlock, curBlock in zip(self.assembly, assembly2):
             numNucs = 0
-            for nuc in self.assembly.getAncestorWithFlags(
-                Flags.REACTOR
+            for nuc in self.assembly.getAncestor(
+                lambda c: isinstance(c, reactors.Reactor)
             ).blueprints.allNuclidesInProblem:
                 numNucs += 1
                 # Block level density
@@ -632,7 +620,7 @@ class Assembly_TestCase(unittest.TestCase):
                     continue
                 ref = refBlock.p[refParam]
                 cur = curBlock.p[refParam]
-                if isinstance(cur, numpy.ndarray):
+                if isinstance(cur, np.ndarray):
                     self.assertTrue((cur == ref).all())
                 else:
                     if refParam == "location":
@@ -659,7 +647,7 @@ class Assembly_TestCase(unittest.TestCase):
                 continue
             ref = self.assembly.p[param]
             cur = assembly2.p[param]
-            if isinstance(cur, numpy.ndarray):
+            if isinstance(cur, np.ndarray):
                 assert_allclose(cur, ref)
             else:
                 self.assertEqual(cur, ref)
@@ -952,35 +940,29 @@ class Assembly_TestCase(unittest.TestCase):
             for b in self.assembly:
                 b.p.percentBu = None
             self.assertTrue(
-                numpy.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
+                np.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
             )
 
             # multiDimensional param
             for b, flux in zip(self.assembly, [[1, 10], [2, 8], [3, 6]]):
                 b.p.mgFlux = flux
             self.assertTrue(
-                numpy.allclose(
-                    [2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0)
-                )
+                np.allclose([2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0))
             )
             self.assertTrue(
-                numpy.allclose(
-                    [1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
             for b in self.assembly:
                 b.p.mgFlux = [0.0] * 2
             self.assertTrue(
-                numpy.allclose(
-                    [0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
 
             # single value param at corner
             for b, temp in zip(self.assembly, [100, 200, 300]):
                 b.p.THcornTemp = [temp + iCorner for iCorner in range(6)]
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
-            self.assertTrue(numpy.allclose([200, 201, 202, 203, 204, 205], value))
+            self.assertTrue(np.allclose([200, 201, 202, 203, 204, 205], value))
         finally:
             percentBuDef.location = originalLoc
 
@@ -1033,8 +1015,8 @@ class Assembly_TestCase(unittest.TestCase):
         """Test rotation of an assembly spatial objects.
 
         .. test:: An assembly can be rotated about its z-axis.
-            :id: T_ARMI_SHUFFLE_ROTATE
-            :tests: R_ARMI_SHUFFLE_ROTATE
+            :id: T_ARMI_ROTATE_HEX
+            :tests: R_ARMI_ROTATE_HEX
         """
         a = makeTestAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")
@@ -1096,6 +1078,9 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual("", mock.getStdout())
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
+
+        with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
+            a.rotate(math.radians(40))
 
     def test_assem_block_types(self):
         """Test that all children of an assembly are blocks, ordered from top to bottom.

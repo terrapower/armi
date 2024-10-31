@@ -24,18 +24,17 @@ for instance, plot some sequence of objects in a loop at every time node. If you
 to see your memory usage grow inexplicably, you should question any plots that you are
 generating.
 """
-
 import itertools
 import math
 import os
 
-from matplotlib import cm
+from matplotlib import colormaps
 from matplotlib import colors as mpltcolors
 import matplotlib.path
 import matplotlib.projections.polar
 import matplotlib.pyplot as plt
 import matplotlib.spines
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi import settings
@@ -111,12 +110,8 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         ymin=1.0,
         extension=extension,
     )
-    buVsTime(reactor.name, scalars, extension=extension)
     xsHistoryVsTime(reactor.name, history, buGroups, extension=extension)
     movesVsCycle(reactor.name, scalars, extension=extension)
-
-
-# --------------------------
 
 
 def valueVsTime(name, x, y, key, yaxis, title, ymin=None, extension=None):
@@ -213,58 +208,6 @@ def keffVsTime(name, time, keff, keffUnc=None, ymin=None, extension=None):
     report.setData("K-Eff", os.path.abspath(figName), report.KEFF_PLOT)
 
 
-def buVsTime(name, scalars, extension=None):
-    r"""
-    produces a burnup and DPA vs. time plot for this case.
-
-    Will add a second axis containing DPA if the scalar column maxDPA exists.
-
-    Parameters
-    ----------
-    name : str
-        reactor.name
-    scalars : dict
-        Scalar values for this case
-    extension : str, optional
-        The file extension for saving the figure
-    """
-    extension = extension or settings.Settings()["outputFileExtension"]
-
-    plt.figure()
-    try:
-        plt.plot(scalars["time"], scalars["maxBuI"], ".-", label="Driver")
-    except ValueError:
-        runLog.warning(
-            "Incompatible axis length in burnup plot. Time has {0}, bu has {1}. Skipping"
-            "".format(len(scalars["time"]), len(scalars["maxBuI"]))
-        )
-        plt.close(1)
-        return
-
-    plt.plot(scalars["time"], scalars["maxBuF"], ".-", label="Feed")
-    plt.xlabel("Time (yr)")
-    plt.ylabel("BU (%FIMA)")
-    plt.grid(color="0.70")
-    plt.legend(loc="lower left")
-    title = "Maximum burnup"
-    if scalars["maxDPA"]:
-        plt.twinx()
-        plt.plot(scalars["time"], scalars["maxDPA"], "r--", label="dpa")
-        plt.legend(loc="lower right")
-        plt.ylabel("dpa")
-        title += " and DPA"
-
-    title += " for " + name
-
-    plt.title(title)
-    plt.legend(loc="lower right")
-    figName = name + ".bu." + extension
-    plt.savefig(figName)
-    plt.close(1)
-
-    report.setData("Burnup Plot", os.path.abspath(figName), report.BURNUP_PLOT)
-
-
 def xsHistoryVsTime(name, history, buGroups, extension=None):
     r"""
     Plot cross section history vs. time.
@@ -305,7 +248,7 @@ def xsHistoryVsTime(name, history, buGroups, extension=None):
     plt.legend()
     plt.title("Block burnups used to generate XS for {0}".format(name))
     plt.xlabel("Time (years)")
-    plt.ylabel("Burnup (% FIMA)")
+    plt.ylabel(r"Burnup (% FIMA)")
 
     plt.ylim(0, maxbu * 1.05)
     figName = name + ".bugroups." + extension
@@ -396,7 +339,7 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
                     ]
                 )
             )
-            physicsVals = numpy.array(physicsVals)
+            physicsVals = np.array(physicsVals)
             theta = thetas.get(physicsName)
             if theta is None:
                 # first time through. Build the radar, store the axis
@@ -417,11 +360,11 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
                 plt.rgrids([0.2, 0.4, 0.6, 0.8])  # radial grid lines
             else:
                 ax = axes[physicsName]
-            with numpy.errstate(divide="ignore", invalid="ignore"):
+            with np.errstate(divide="ignore", invalid="ignore"):
                 vals = (
                     physicsVals / firstReactorVals[physicsName]
                 )  # normalize to first reactor b/c values differ by a lot.
-                vals[numpy.isnan(vals)] = 0.2
+                vals[np.isnan(vals)] = 0.2
             ax.plot(theta, vals, color=color)
             ax.fill(theta, vals, facecolor=color, alpha=0.25)
 
@@ -560,9 +503,9 @@ def _radarFactory(numVars, frame="circle"):
     # calculate evenly-spaced axis angles
     # rotate theta such that the first axis is at the top
     # keep within 0 to 2pi range though.
-    theta = (
-        numpy.linspace(0, 2 * numpy.pi, numVars, endpoint=False) + numpy.pi / 2
-    ) % (2.0 * numpy.pi)
+    theta = (np.linspace(0, 2 * np.pi, numVars, endpoint=False) + np.pi / 2) % (
+        2.0 * np.pi
+    )
 
     def drawPolyPatch():
         verts = _unitPolyVerts(theta)
@@ -576,8 +519,8 @@ def _radarFactory(numVars, frame="circle"):
         """Closes the input line."""
         x, y = line.get_data()
         if x[0] != x[-1]:
-            x = numpy.concatenate((x, [x[0]]))
-            y = numpy.concatenate((y, [y[0]]))
+            x = np.concatenate((x, [x[0]]))
+            y = np.concatenate((y, [y[0]]))
             line.set_data(x, y)
 
     patchDict = {"polygon": drawPolyPatch, "circle": drawCirclePatch}
@@ -609,7 +552,7 @@ def _radarFactory(numVars, frame="circle"):
                 close_line(line)
 
         def set_var_labels(self, labels):
-            self.set_thetagrids(numpy.degrees(theta), labels)
+            self.set_thetagrids(np.degrees(theta), labels)
 
         def _gen_axes_patch(self):
             return self.draw_patch()
@@ -641,7 +584,7 @@ def _unitPolyVerts(theta):
     This polygon is circumscribed by a unit circle centered at (0.5, 0.5)
     """
     x0 = y0 = r = 0.5
-    verts = list(zip(r * numpy.cos(theta) + x0, r * numpy.sin(theta) + y0))
+    verts = list(zip(r * np.cos(theta) + x0, r * np.sin(theta) + y0))
     return verts
 
 
@@ -675,7 +618,6 @@ def createPlotMetaData(
     -------
     metadata : dict
         Dictionary with all plot metadata information
-
     """
     metadata = {}
 
@@ -724,10 +666,10 @@ def plotAxialProfile(zVals, dataVals, fName, metadata, nPlot=1, yLog=False):
     ax = plt.gca()
 
     if yLog:  # plot the axial profiles on a log scale
-        dataVals = numpy.log10(abs(dataVals))
+        dataVals = np.log10(abs(dataVals))
 
     if nPlot > 1:
-        colormap = cm.get_cmap("jet")
+        colormap = colormaps["jet"]
         norm = mpltcolors.Normalize(0, nPlot - 1)
 
         # alternate between line styles to help distinguish neighboring groups (close on the color map)

@@ -17,10 +17,12 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
+import functools
+import traceback
 import warnings
 
 from scipy.optimize import fsolve
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
@@ -30,6 +32,33 @@ from armi.utils.units import getTk, getTc
 
 # globals
 FAIL_ON_RANGE = False
+
+
+def parentAwareDensityRedirect(f):
+    """Wrap Material.density to warn people about potential problems.
+
+    If a Material is linked to a Component, ``Material.density`` may produce
+    different results from ``Component.density``. The component's density
+    is considered the source of truth because it incorporates changes in volume,
+    composition, and temperature in concert with the state of the reactor.
+    """
+
+    @functools.wraps(f)
+    def inner(self: "Material", *args, **kwargs) -> float:
+        if self.parent is not None:
+            stack = traceback.extract_stack()
+            # last entry is here, second to last is what called this
+            caller = stack[-2]
+            label = f"Found call to Material.density in {caller.filename} at line {caller.lineno}"
+            runLog.warning(
+                f"{label}. Calls to Material.density when attached to a component have the potential to induce "
+                "subtle differences as Component.density and Material.density can diverge.",
+                single=True,
+                label=label,
+            )
+        return f(self, *args, **kwargs)
+
+    return inner
 
 
 class Material:
@@ -74,6 +103,11 @@ class Material:
     Specific material classes may have many more attributes specific to the implementation
     for that material.
     """
+
+    def __init_subclass__(cls) -> None:
+        # Apply the density decorator to every subclass
+        if not hasattr(cls.density, "__wrapped__"):
+            cls.density = parentAwareDensityRedirect(cls.density)
 
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
@@ -344,8 +378,8 @@ class Material:
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
-        massDensities = numpy.array([self.massFrac[nuc] for nuc in nucsNames]) * density
-        atomicMasses = numpy.array(
+        massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
+        atomicMasses = np.array(
             [nuclideBases.byName[nuc].weight for nuc in nucsNames]
         )  # in AMU
         molesPerCC = massDensities / atomicMasses  # item-wise division
@@ -413,7 +447,7 @@ class Material:
         updatedDensity = updatedMassDensities.sum()
         massFracs = updatedMassDensities / updatedDensity
 
-        if not numpy.isclose(sum(massFracs), 1.0, atol=1e-10):
+        if not np.isclose(sum(massFracs), 1.0, atol=1e-10):
             raise RuntimeError(
                 f"The mass fractions {massFracs} in {self} do not sum to 1.0."
             )
@@ -432,7 +466,7 @@ class Material:
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
+        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC)[0])
         return tAtTargetDensity
 
     @property
@@ -640,7 +674,7 @@ class Material:
             msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(
                 val, minT, maxT, self.name, label
             )
-            if FAIL_ON_RANGE or numpy.isnan(val):
+            if FAIL_ON_RANGE or np.isnan(val):
                 runLog.error(msg)
                 raise ValueError
             else:
