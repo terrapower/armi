@@ -1113,7 +1113,6 @@ class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
         cs = settings.Settings()
         cs["tempGroups"] = [300, 400, 500]
         self.blockList = makeBlocks(11)
-        firstTime = 200
         buAndTemps = (
             (1, 340),
             (2, 150),
