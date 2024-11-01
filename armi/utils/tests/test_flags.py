@@ -57,15 +57,6 @@ class TestFlag(unittest.TestCase):
         F.extend({"A": auto(), "B": 8, "C": auto(), "D": auto(), "E": auto()})
 
         self.assertEqual(int(F.B), 8)
-
-        import math
-
-        print("...............................")
-        print(F)
-        print(F.width())
-        print(F._nameToValue)
-        print(len(F._nameToValue))
-        print(math.ceil(len(F._nameToValue) / 8))
         self.assertEqual(F.width(), 1)
 
         F.extend({"LAST": auto()})
