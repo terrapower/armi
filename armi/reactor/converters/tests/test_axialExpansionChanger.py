@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test axialExpansionChanger."""
-
 import collections
 import os
 import unittest
