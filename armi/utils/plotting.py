@@ -766,7 +766,7 @@ def plotAssemblyTypes(
         maxAssems = numAssems
 
     if yAxisLabel is None:
-        yAxisLabel = "Thermally Expanded Axial Heights (cm)"
+        yAxisLabel = "Axial Heights (cm)"
 
     if title is None:
         title = "Assembly Designs"
