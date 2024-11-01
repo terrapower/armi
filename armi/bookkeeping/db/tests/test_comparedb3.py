@@ -228,15 +228,17 @@ class TestCompareDB3(unittest.TestCase):
             refData4 = f4.create_dataset("numberDensities", data=a2)
             refData4.attrs["shapes"] = "2"
             refData4.attrs["numDens"] = a2
+            refData4.attrs["specialFormatting"] = True
             f5 = h5py.File("test_diffSpecialData5.hdf5", "w")
             srcData5 = f5.create_dataset("numberDensities", data=a2)
             srcData5.attrs["shapes"] = "2"
             srcData5.attrs["numDens"] = a2
+            srcData5.attrs["specialFormatting"] = True
 
-            # there should an exception
-            with self.assertRaises(Exception) as e:
+            # there should a log message
+            with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData4, srcData5, out, dr)
-                self.assertIn("Unable to unpack special data for paramName", e)
+                self.assertIn("Unable to unpack special data for", mock.getStdout())
 
             # make an H5 datasets that will add a np.inf diff because keys don't match
             f6 = h5py.File("test_diffSpecialData6.hdf5", "w")
