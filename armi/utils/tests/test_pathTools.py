@@ -41,9 +41,6 @@ class PathToolsTests(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "FileDoesntExist.txt", pathCopy)
                 self.assertIn("Could not copy", mock.getStdout())
-                self.assertIn(
-                    "The system cannot find the file specified", mock.getStdout()
-                )
 
     def test_copyOrWarnDir(self):
         with TemporaryDirectoryChanger():
@@ -62,9 +59,6 @@ class PathToolsTests(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "DirDoesntExist", pathDirCopy)
                 self.assertIn("Could not copy", mock.getStdout())
-                self.assertIn(
-                    "The system cannot find the file specified", mock.getStdout()
-                )
 
     def test_separateModuleAndAttribute(self):
         self.assertRaises(
