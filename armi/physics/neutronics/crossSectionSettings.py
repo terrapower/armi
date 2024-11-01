@@ -443,11 +443,7 @@ class XSModelingOptions:
 
     xsTempIsotope: str
             The isotope whose temperature is interrogated when placing a block in a temperature cross section group.
-            See `tempGroups`. "U235" is default.
-            U238 tends to be more important for doppler, but U235 gets the most heat so will have larger temp variation.
-            The only time it would matter is if you have more than one component with the isotope. In that case the
-            presumption is to follow the isotope with the heat deposition since if you have DU pins the temperature
-            would have less variation. For Thorium change to U233 or TH232.
+            See `tempGroups`. "U238" is default since it tends to be dominant doppler isotope in most reactors.
 
     Notes
     -----
@@ -480,7 +476,7 @@ class XSModelingOptions:
         xsMaxAtomNumber=None,
         averageByComponent=False,
         minDriverDensity=0.0,
-        xsTempIsotope="U235",
+        xsTempIsotope="U238",
     ):
         self.xsID = xsID
         self.geometry = geometry

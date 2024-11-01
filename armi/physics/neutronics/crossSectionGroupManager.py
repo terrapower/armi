@@ -476,7 +476,7 @@ class AverageBlockCollection(BlockCollection):
 def getBlockNuclideTemperature(block, nuclide):
     """Return the average temperature for 1 nuclide."""
     tempIntegratedVolume, volume = getBlockNuclideTemperatureAvgTerms(block, [nuclide])
-    return tempIntegratedVolume / volume
+    return tempIntegratedVolume / volume if volume > 0 else 0.0
 
 
 def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
@@ -569,6 +569,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             )
             for nuc, aDensity in zip(allNucsNames, densities):
                 c.setNumberDensity(nuc, aDensity)
+        self.calcAvgNuclideTemperatures()
         return repBlock
 
     @staticmethod

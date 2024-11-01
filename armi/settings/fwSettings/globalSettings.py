@@ -409,7 +409,7 @@ def defineSettings() -> List[setting.Setting]:
             default=[10, 20, 30],
             label="Burnup XS Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type (units of %FIMA)",
+            "for a given cross section type (units of %FIMA)",
             schema=vol.Schema(
                 [
                     vol.All(
@@ -426,8 +426,8 @@ def defineSettings() -> List[setting.Setting]:
             CONF_TEMP_GROUPS,
             default=[],
             label="Temperature XS Groups",
-            description="The fuel temperature boundaries where in between where cross-sections "
-            "will be grouped together.",
+            description="The range of fuel temperatures where cross-sections will be the same "
+            "for a given cross section type (units of degrees C)",
             schema=vol.Schema(
                 [vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]
             ),

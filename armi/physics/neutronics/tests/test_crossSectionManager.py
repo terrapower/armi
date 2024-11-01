@@ -1046,6 +1046,87 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             self.assertTrue(os.path.exists("rzmflxYA"))
 
 
+class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
+    def setUp(self):
+        cs = settings.Settings()
+        cs["tempGroups"] = [300, 400, 500]
+        self.blockList = makeBlocks(11)
+        firstTime = 200
+        buAndTemps = (
+            (1, 340),
+            (2, 150),
+            (6, 410),
+            (10.5, 290),
+            (2.5, 360),
+            (4, 460),
+            (15, 370),
+            (16, 340),
+            (15, 700),
+            (14, 720),
+        )
+        for b, env in zip(self.blockList, buAndTemps):
+            bu, temp = env
+            comps = b.getComponents(Flags.FUEL)
+            assert len(comps) == 1
+            c = next(iter(comps))
+            c.setTemperature(temp)
+            b.p.percentBu = bu
+        core = self.blockList[0].core
+
+        def getBlocks(includeAll=True):
+            return self.blockList
+
+        core.getBlocks = getBlocks
+        for b in core.getBlocks():
+            print(b)
+        self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
+        self.csm._setBuGroupBounds([3, 10, 30, 100])
+        self.csm.interactBOL()
+
+    def test_updateEnvironmentGroups(self):
+        self.csm.createRepresentativeBlocks()
+        BL = self.blockList
+        loners = [BL[1], BL[3]]
+        for b in BL:
+            print(b.getMicroSuffix())
+        self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
+        sameGroups = [(BL[0], BL[4]), (BL[2], BL[5]), (BL[6], BL[7]), (BL[8], BL[9])]
+
+        # check that likes have like and different are different
+        for group in sameGroups:
+            b1, b2 = group
+            xsSuffix = b1.getMicroSuffix()
+            self.assertEqual(xsSuffix, b2.getMicroSuffix())
+            for group in sameGroups:
+                newb1, newb2 = group
+                if b1 is newb1:
+                    continue
+                self.assertNotEqual(xsSuffix, newb1.getMicroSuffix())
+                self.assertNotEqual(xsSuffix, newb2.getMicroSuffix())
+            for lone in loners:
+                self.assertNotEqual(xsSuffix, lone.getMicroSuffix())
+        self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
+
+        # calculated based on the average of buAndTemps
+        expectedIDs = ["AF", "AA", "AL", "AC", "AH", "AR"]
+        expectedTemps = [
+            (340 + 360) / 2,
+            150,
+            (410 + 460) / 2,
+            290,
+            (370 + 340) / 2,
+            (700 + 720) / 2,
+        ]
+        expectedBurnups = (1.75, 2, 5, 10.5, 15.5, 14.5)
+        for xsID, expectedTemp, expectedBurnup in zip(
+            expectedIDs, expectedTemps, expectedBurnups
+        ):
+            b = self.csm.representativeBlocks[xsID]
+            thisTemp = self.csm.avgNucTemperatures[xsID]["U238"]
+            self.assertAlmostEqual(thisTemp, expectedTemp)
+            self.assertAlmostEqual(b.p.percentBu, expectedBurnup)
+
+
 class TestXSNumberConverters(unittest.TestCase):
     def test_conversion(self):
         label = crossSectionGroupManager.getXSTypeLabelFromNumber(65)
