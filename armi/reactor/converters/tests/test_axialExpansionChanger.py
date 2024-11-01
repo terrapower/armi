@@ -272,7 +272,6 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         a = buildTestAssemblyWithFakeMaterial(name="HT9")
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
-        # set component detailedNDens
         origDetailedNDens = self._setComponentDetailedNDens(a, origNDens)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
 
