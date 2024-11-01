@@ -14,9 +14,9 @@
 
 """Test axialExpansionChanger."""
 import collections
+import copy
 import os
 import unittest
-import copy
 from statistics import mean
 
 from numpy import array, linspace, zeros
@@ -29,15 +29,15 @@ from armi.reactor.components import Component, DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
-    AxialExpansionChanger,
     AssemblyAxialLinkage,
+    AxialExpansionChanger,
     ExpansionData,
     getSolidComponents,
     iterSolidComponents,
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
-    areAxiallyLinked,
     AxialLink,
+    areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
