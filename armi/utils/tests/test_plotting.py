@@ -16,6 +16,7 @@
 import os
 import unittest
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from armi import settings
@@ -82,6 +83,25 @@ class TestPlotting(unittest.TestCase):
 
             if os.path.exists(plotPath):
                 os.remove(plotPath)
+
+    def test_plotBlocksInAssembly(self):
+        _fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
+        xBlockLoc, yBlockHeights, yBlockAxMesh = plotting._plotBlocksInAssembly(
+            ax,
+            self.r.core.getFirstAssembly(Flags.FUEL),
+            True,
+            [],
+            set(),
+            0.5,
+            5.6,
+            True,
+        )
+        self.assertEqual(xBlockLoc, 0.5)
+        self.assertEqual(yBlockHeights[0], 25.0)
+        yBlockAxMesh = list(yBlockAxMesh)[0]
+        self.assertIn(10.0, yBlockAxMesh)
+        self.assertIn(25.0, yBlockAxMesh)
+        self.assertIn(1, yBlockAxMesh)
 
     def test_plotBlockFlux(self):
         with TemporaryDirectoryChanger():

@@ -766,7 +766,7 @@ def plotAssemblyTypes(
         maxAssems = numAssems
 
     if yAxisLabel is None:
-        yAxisLabel = "THERMALLY EXPANDED AXIAL HEIGHTS (CM)"
+        yAxisLabel = "Thermally Expanded Axial Heights (cm)"
 
     if title is None:
         title = "Assembly Designs"
@@ -864,9 +864,11 @@ def _plotBlocksInAssembly(
     xBlockLoc = xAssemLoc
     xTextLoc = xBlockLoc + blockWidth / 20.0
     for b in assem:
-        blockHeight = b.getHeight()
-        blockXsId = b.p.xsType
-        yBlockCenterLoc = yBlockLoc + blockHeight / 2.5
+        # get block height
+        try:
+            blockHeight = b.getInputHeight()
+        except AttributeError:
+            blockHeight = b.getHeight()
 
         # Get the basic text label for the block
         try:
@@ -881,6 +883,7 @@ def _plotBlocksInAssembly(
             color = "grey"
 
         # Get the detailed text label for the block
+        blockXsId = b.p.xsType
         dLabel = ""
         if b.hasFlags(Flags.FUEL):
             dLabel = " {:0.2f}%".format(b.getFissileMassEnrich() * 100)
@@ -901,6 +904,7 @@ def _plotBlocksInAssembly(
             ls="solid",
         )
         axis.add_patch(blockPatch)
+        yBlockCenterLoc = yBlockLoc + blockHeight / 2.5
         axis.text(
             xTextLoc,
             yBlockCenterLoc,
