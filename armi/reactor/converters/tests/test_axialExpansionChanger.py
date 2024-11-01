@@ -603,29 +603,31 @@ class TestManageCoreMesh(unittest.TestCase):
         reduceTestReactorRings(self.r, o.cs, 3)
 
         self.oldAxialMesh = self.r.core.p.axialMesh
+        self.componentLst = []
+        for b in self.r.core.refAssem:
+            if b.hasFlags([Flags.FUEL, Flags.PLENUM]):
+                self.componentLst.extend(getSolidComponents(b))
         # expand refAssem by 1.01 L1/L0
-        componentLst = [c for b in self.r.core.refAssem for c in b]
-        expansionGrowthFracs = 1.01 + zeros(len(componentLst))
+        expansionGrowthFracs = 1.01 + zeros(len(self.componentLst))
         (
             self.origDetailedNDens,
             self.origVolumes,
-        ) = self._getComponentDetailedNDensAndVol(componentLst)
+        ) = self._getComponentDetailedNDensAndVol(self.componentLst)
         self.axialExpChngr.performPrescribedAxialExpansion(
-            self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True
+            self.r.core.refAssem, self.componentLst, expansionGrowthFracs, setFuel=True
         )
 
     def test_manageCoreMesh(self):
         self.axialExpChngr.manageCoreMesh(self.r)
         newAxialMesh = self.r.core.p.axialMesh
-        # skip first and last entries as they do not change
-        for old, new in zip(self.oldAxialMesh[1:-1], newAxialMesh[1:-1]):
+        # the top and bottom and top of the grid plate block are not expected to change
+        for old, new in zip(self.oldAxialMesh[2:-1], newAxialMesh[2:-1]):
             self.assertLess(old, new)
 
     def test_componentConservation(self):
         self.axialExpChngr.manageCoreMesh(self.r)
-        componentLst = [c for b in self.r.core.refAssem for c in b]
         newDetailedNDens, newVolumes = self._getComponentDetailedNDensAndVol(
-            componentLst
+            self.componentLst
         )
         for c in newVolumes.keys():
             self._checkMass(
@@ -639,29 +641,21 @@ class TestManageCoreMesh(unittest.TestCase):
     def _getComponentDetailedNDensAndVol(self, componentLst):
         detailedNDens = {}
         volumes = {}
-        # reverse component list to start at top of assembly
-        for c in reversed(componentLst):
-            if any([comp in c.getType() for comp in ["fuel", "clad", "duct"]]):
-                c.p.detailedNDens = [val for val in c.getNumberDensities().values()]
-                detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
-                volumes[c] = c.getVolume()
-                # stop at fuel block
-                if all(
-                    c in str(detailedNDens.keys()) for c in ["fuel", "clad", "duct"]
-                ):
-                    return (detailedNDens, volumes)
+        for c in componentLst:
+            c.p.detailedNDens = [val for val in c.getNumberDensities().values()]
+            detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
+            volumes[c] = c.getVolume()
+        return (detailedNDens, volumes)
 
     def _checkMass(self, origDetailedNDens, origVolume, newDetailedNDens, newVolume, c):
         for prevMass, newMass in zip(
             origDetailedNDens * origVolume, newDetailedNDens * newVolume
         ):
-            if "fuel" in c.getType():
-                self.assertAlmostEqual(prevMass, newMass, delta=1e-12)
-            elif "fuel" in c.parent.getType():
-                self.assertAlmostEqual(prevMass, newMass, delta=1e-12)
+            if c.parent.hasFlags(Flags.FUEL):
+                self.assertAlmostEqual(prevMass, newMass, delta=1e-12, msg=f"{c}, {c.parent}")
             else:
                 # should not conserve mass here as it is structural material above active fuel
-                self.assertNotAlmostEqual(prevMass, newMass, delta=1e-5)
+                self.assertAlmostEqual(newMass/prevMass, 0.99, msg=f"{c}, {c.parent}")
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
