@@ -1018,28 +1018,24 @@ class Assembly(composites.Composite):
         This caches interpolators for each param and must be cleared if new params are
         set or new heights are set.
 
-        WARNING:
-        Fails when requested to extrapolate.With higher order splines it is possible
-        to interpolate non-physical values, for example a negative flux or dpa. Please
-        use caution when going off default in interpType and be certain that
-        interpolated values are physical.
+        Warning
+        -------
+        Fails when requested to extrapolate.With higher order splines it is possible to interpolate
+        non-physical values, for example a negative flux or dpa. Please use caution when going off
+        default in interpType and be certain that interpolated values are physical.
 
         Parameters
         ----------
         param : str
             the parameter to interpolate
-
         elevations : array of float
-            the elevations from the bottom of the assembly in cm at which you want the
-            point.
-
+            the elevations from the bottom of the assembly in cm at which you want the point.
         interpType: str or int
             used in interp1d. interp1d documention: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
             spline interpolator to use. Default is 'linear'.
-
         fillValue: str
             Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
             lower and upper bounds are used as the extended value. If 'extrapolate',
@@ -1070,23 +1066,22 @@ class Assembly(composites.Composite):
         This caches interpolators for each param and must be cleared if new params are
         set or new heights are set.
 
-        WARNING: Fails when requested to extrapololate. With higher order splines it is
-        possible to interpolate nonphysical values, for example a negative flux or dpa.
-        Please use caution when going off default in interpType and be certain that
-        interpolated values are physical.
+        Warning
+        -------
+        Fails when requested to extrapololate. With higher order splines it is possible to
+        interpolate nonphysical values, for example a negative flux or dpa. Please use caution when
+        going off default in interpType and be certain that interpolated values are physical.
 
         Parameters
         ----------
         param : str
             the parameter to interpolate
-
         interpType: str or int
             used in interp1d. interp1d documention: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
             spline interpolator to use. Default is 'linear'.
-
         fillValue: float
             Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
             lower and upper bounds are used as the extended value. If 'extrapolate',
