@@ -118,6 +118,8 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("YA", xsModel)
         self.assertEqual(xsModel["YA"].geometry, "0D")
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
+        self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
+        self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
 
     def test_setDefaultSettingsByLowestEnvGroupHomogeneous(self):
         # Initialize some micro suffix in the cross sections
@@ -177,7 +179,13 @@ class TestCrossSectionSettings(unittest.TestCase):
         """Test that optional key shows up with default value."""
         cs = settings.Settings()
         xsModel = XSSettings()
-        da = XSModelingOptions("DA", geometry="1D cylinder", meshSubdivisionsPerCm=1.0)
+        da = XSModelingOptions(
+            "DA",
+            geometry="1D cylinder",
+            meshSubdivisionsPerCm=1.0,
+            ductHeterogeneous=True,
+            traceIsotopeThreshold=1.0e-5,
+        )
         xsModel["DA"] = da
         xsModel.setDefaults(
             cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -185,6 +193,9 @@ class TestCrossSectionSettings(unittest.TestCase):
         )
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
+        self.assertEqual(xsModel["DA"].ductHeterogeneous, True)
+        self.assertEqual(xsModel["DA"].traceIsotopeThreshold, 1.0e-5)
+        self.assertEqual(xsModel["DA"].mergeIntoFuel, [])
 
     def test_badCrossSections(self):
         with self.assertRaises(TypeError):
