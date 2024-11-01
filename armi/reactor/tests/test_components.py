@@ -18,6 +18,7 @@ import math
 import numpy as np
 from numpy.testing import assert_equal
 import unittest
+from unittest.mock import Mock
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
@@ -1821,7 +1822,9 @@ class TestPinQuantities(unittest.TestCase):
     """Test methods that involve retrieval of pin quantities."""
 
     def setUp(self):
-        self.r = loadTestReactor()[1]
+        self.r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[1]
 
     def test_getPinMgFluxes(self):
         """Test proper retrieval of pin multigroup flux for fuel component."""
@@ -1848,9 +1851,8 @@ class TestPinQuantities(unittest.TestCase):
         assert_equal(pinMgFluxesAdj, simPinMgFluxesAdj)
         assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
 
-        # Get a coolant block and replace the spatialLocator in the component to test exception raised
-        coolantBlock: Block = self.r.core.getFirstBlock(flags.Flags.CONTROL)
-        coolantComponent: Component = coolantBlock.getComponent(flags.Flags.CONTROL)
-        coolantComponent.spatialLocator = fuelComponent.spatialLocator
+        # Mock the spatial locator of the component to raise error
+        fuelComponent.spatialLocator = Mock()
+        fuelComponent.spatialLocator.indices = [np.array([111, 111, 111])]
         with self.assertRaises(ValueError):
-            coolantComponent.getPinMgFluxes()
+            fuelComponent.getPinMgFluxes()
