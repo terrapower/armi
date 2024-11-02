@@ -253,7 +253,7 @@ def getBlockParameterDefinitions():
             "envGroupNum",
             units=units.UNITLESS,
             description="An integer representation of the environment group "
-            "(burnup/temperature/etc. environment). linked to envGroup.",
+            "(burnup/temperature/etc.). linked to envGroup.",
             default=0,
             setter=envGroupNum,
         )
