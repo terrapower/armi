@@ -1281,7 +1281,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             else:
                 runLog.debug(
                     "No candidate blocks in group for {} (with a valid representative block flag). "
-                    "Will apply different burnup group".format(xsID)
+                    "Will apply different environment group".format(xsID)
                 )
                 self._unrepresentedXSIDs.append(xsID)
 
@@ -1496,7 +1496,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         return blockCollectionsByXsGroup
 
     def _getAlternateEnvGroup(self, missingXsType):
-        """Get a substitute block to use since there are no blacks with flags for xs gen."""
+        """Get a substitute block to use since there are no blocks with flags for xs gen."""
         for otherXsID in self.representativeBlocks:
             repType, repEnvGroup = otherXsID
             if repType == missingXsType:
