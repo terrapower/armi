@@ -546,7 +546,7 @@ def eleExpandInfoBasedOnCodeENDF(cs):
             elementalsToKeep.update(endf80Elementals)
         else:
             raise InputError(
-                "Failed to determine nuclides for modeling. The `mcnpLibraryBaseName` "
+                "Failed to determine nuclides for modeling. The `mcnpLibraryVersion` "
                 f"setting value ({cs[CONF_MCNP_LIB_BASE]}) is not supported."
             )
     elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
