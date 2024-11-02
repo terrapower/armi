@@ -1531,7 +1531,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 else:
                     runLog.warning(
                         "No representative blocks with XS type {0} exist in the core. "
-                        "There were also no similar blocks to use"
+                        "There were also no similar blocks to use. "
                         "These XS cannot be generated and must exist in the working "
                         "directory or the run will fail.".format(xsID)
                     )
