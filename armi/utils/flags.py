@@ -91,6 +91,7 @@ class _FlagMeta(type):
 
         # Auto fields have been resolved, so now collect all ints
         allFields = {name: val for name, val in attrs.items() if isinstance(val, int)}
+        allFields = {n: v for n, v in allFields.items() if not _FlagMeta.isdunder(n)}
         flagClass._nameToValue = allFields
         flagClass._valuesTaken = set(val for _, val in allFields.items())
         flagClass._autoAt = autoAt
@@ -103,6 +104,10 @@ class _FlagMeta(type):
             setattr(flagClass, name, instance)
 
         return flagClass
+
+    @staticmethod
+    def isdunder(s):
+        return s.startswith("__") and s.endswith("__")
 
     def __getitem__(cls, key):
         """
