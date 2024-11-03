@@ -424,7 +424,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
         """Check whether the detailedNDens of two input dictionaries containing the
-        detailedNDens arrays for all components of an assembly are conserved
+        detailedNDens arrays for all components of an assembly are conserved.
         """
         for prevComp, newComp in zip(
             prevDetailedNDen.values(), newDetailedNDens.values()
@@ -447,7 +447,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     def _setComponentDetailedNDens(a, nDens):
         """Returns a dictionary that contains detailedNDens for all components in an
         assembly object input which are set to the corresponding component number densities
-        from a number density dictionary input
+        from a number density dictionary input.
         """
         detailedNDens = {}
         for b in a:
@@ -459,7 +459,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
     @staticmethod
     def _getComponentDetailedNDens(a):
         """Returns a dictionary containing all solid components and their corresponding
-        detailedNDens from an assembly object input
+        detailedNDens from an assembly object input.
         """
         detailedNDens = {}
         for b in a:
@@ -649,7 +649,7 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def _getComponentDetailedNDensAndVol(self, componentLst):
         """Returns a tuple containing dictionaries of detailedNDens and volumes of
-        all components from a component list input
+        all components from a component list input.
         """
         detailedNDens = {}
         volumes = {}
