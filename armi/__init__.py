@@ -144,6 +144,9 @@ def init(choice=None, fName=None, cs=None, skipInspection=False):
         If supplied, this CS object will supercede the other case input methods and use
         the object directly.
 
+    skipInspection : bool, optional
+        Whether or not the inputs should be checked for valid settings. Default is True.
+
     Examples
     --------
     >>> o = armi.init()
