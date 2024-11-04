@@ -7,7 +7,7 @@ settings:
   comment: "Revised benchmark  "
   geomFile: ThRZGeom.xml
   loadingFile: ThRZloading.yaml
-  numProcessors: 12
+  nTasks: 12
   outputFileExtension: png
   power: 1000000.0
 
