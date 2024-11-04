@@ -114,7 +114,7 @@ def isStableReleaseVersion(version=None):
     return "-" not in version
 
 
-def init(choice=None, fName=None, cs=None):
+def init(choice=None, fName=None, cs=None, skipInspection=False):
     """
     Scan a directory for armi inputs and load one to interact with.
 
@@ -157,7 +157,8 @@ def init(choice=None, fName=None, cs=None):
         cs = settings.Settings(fName)
 
     armiCase = cases.Case(cs=cs)
-    armiCase.checkInputs()
+    if not skipInspection:
+        armiCase.checkInputs()
 
     try:
         return armiCase.initializeOperator()
