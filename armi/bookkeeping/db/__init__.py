@@ -86,6 +86,7 @@ def loadOperator(
     loadNode,
     statePointName=None,
     allowMissing=False,
+    handleInvalids=True,
 ):
     """
     Return an operator given the path to a database.
@@ -104,6 +105,8 @@ def loadOperator(
     allowMissing : bool
         Whether to emit a warning, rather than crash if reading a database
         with undefined parameters. Default False.
+    handleInvalids : bool
+        Whether to check for invlaid settings. Default True.
 
     See Also
     --------
@@ -145,7 +148,7 @@ def loadOperator(
         # init Case here as it keeps track of execution time and assigns a reactor
         # attribute. This attribute includes the time it takes to initialize the reactor
         # so creating a reactor from the database should be included.
-        cs = db.loadCS()
+        cs = db.loadCS(handleInvalids=handleInvalids)
         thisCase = cases.Case(cs)
 
         r = db.load(
@@ -153,6 +156,7 @@ def loadOperator(
             loadNode,
             statePointName=statePointName,
             allowMissing=allowMissing,
+            handleInvalids=handleInvalids,
         )
 
     o = thisCase.initializeOperator(r=r)

@@ -393,8 +393,13 @@ class Database:
             raise RuntimeError("Cannot change Database file name while it's opened!")
         self._fileName = fName
 
-    def loadCS(self):
+    def loadCS(self, handleInvalids=True):
         """Attempt to load settings from the database file.
+
+        Parameters
+        ----------
+        handleInvalids : bool
+            Whether to check for invlaid settings. Default True.
 
         Notes
         -----
@@ -405,7 +410,9 @@ class Database:
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
-            cs.loadFromString(self.h5db["inputs/settings"].asstr()[()])
+            cs.loadFromString(
+                self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids
+            )
         except KeyError:
             # not all paths to writing a database require inputs to be written to the
             # database. Technically, settings do affect some of the behavior of database
@@ -708,6 +715,7 @@ class Database:
         bp=None,
         statePointName=None,
         allowMissing=False,
+        handleInvalids=True,
     ):
         """Load a new reactor from a DB at (cycle, node).
 
@@ -743,6 +751,8 @@ class Database:
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
+        handleInvalids : bool
+            Whether to check for invlaid settings. Default True.
 
         Returns
         -------
@@ -751,7 +761,7 @@ class Database:
         """
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
-        cs = cs or self.loadCS()
+        cs = cs or self.loadCS(handleInvalids=handleInvalids)
         bp = bp or self.loadBlueprints()
 
         if node < 0:
