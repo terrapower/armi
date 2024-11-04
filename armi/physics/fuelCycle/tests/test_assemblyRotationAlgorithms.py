@@ -177,14 +177,19 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
             "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
         }
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
+
         fresh = self.r.core.createFreshFeed(self.o.cs)
         self.assertEqual(fresh.lastLocationLabel, HexAssembly.LOAD_QUEUE)
         fh = FullImplFuelHandler(self.o)
+        fh.chooseSwaps = mock.Mock(side_effect=lambda _: fh.moved.append(fresh))
+
         with mock.patch(
             "armi.physics.fuelCycle.assemblyRotationAlgorithms.getOptimalAssemblyOrientation",
         ) as p:
             fh.outage()
         # The only moved assembly was most recently outside the core so we have no need to rotate
+        # Make sure our fake chooseSwaps added the fresh assembly to the moved assemblies
+        fh.chooseSwaps.assert_called_once()
         p.assert_not_called()
 
     def test_simpleAssemblyRotation(self):
