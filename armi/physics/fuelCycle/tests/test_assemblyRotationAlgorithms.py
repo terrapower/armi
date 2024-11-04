@@ -133,19 +133,9 @@ class TestOptimalAssemblyRotation(FuelHandlerTestHelper):
 
 
 class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
-    def test_buReducingAssemblyRotation(self):
-        """Test that the fuel handler supports the burnup reducing assembly rotation."""
-        fh = FullImplFuelHandler(self.o)
-
-        newSettings = {
-            CONF_ASSEM_ROTATION_STATIONARY: True,
-            "fluxRecon": True,
-            "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
-        }
-        self.o.cs = self.o.cs.modified(newSettings=newSettings)
-        assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-
-        # apply dummy pin-level data to allow intelligent rotation
+    @staticmethod
+    def prepareAssemForBurnupRotation(assem: HexAssembly):
+        """Set necessary data in order for the burnup rotation to be performed."""
         for b in assem.getBlocks(Flags.FUEL):
             b.initializePinLocations()
             fuel = b.getChildrenWithFlags(Flags.FUEL)[0]
@@ -153,15 +143,38 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
             fuel.p.pinPercentBu = np.arange(mult, dtype=float)[::-1]
             b.p.linPowByPin = reversed(range(b.getNumPins()))
 
+    def test_buReducingAssemblyRotation(self):
+        """Test that the fuel handler supports the burnup reducing assembly rotation."""
+        newSettings = {
+            CONF_ASSEM_ROTATION_STATIONARY: False,
+            "fluxRecon": True,
+            "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
+        }
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+
+        # Grab two assemblies and make them look like they were part of a shuffling operation
+        rotatedAssem, shuffledAway = self.o.r.core.getChildrenWithFlags(Flags.FUEL)[:2]
+        self.prepareAssemForBurnupRotation(rotatedAssem)
+        self.prepareAssemForBurnupRotation(shuffledAway)
+
+        # Mimic a shuffling where shuffledAway used to be where rotatedAssem is now
+        shuffledAway.lastLocationLabel = rotatedAssem.getLocation()
+
         # Show that we call the optimal assembly orientation function.
         # This function is tested seperately and more extensively elsewhere.
+        fh = FullImplFuelHandler(self.o)
+        # Mocked swap function updates the moved assemblies collection
+        fh.chooseSwaps = mock.Mock(side_effect=lambda _: fh.moved.append(shuffledAway))
         with mock.patch(
             "armi.physics.fuelCycle.assemblyRotationAlgorithms.getOptimalAssemblyOrientation",
             return_value=4,
         ) as p:
             fh.outage(1)
-        p.assert_called_once_with(assem, assem)
-        for b in assem.getBlocks(Flags.FUEL):
+        # fh.outage clears fh.moved at the end. But if it was called, we know our mock function added
+        # our shuffled assembly to the moved assemblies.
+        fh.chooseSwaps.assert_called_once()
+        p.assert_called_once_with(rotatedAssem, shuffledAway)
+        for b in rotatedAssem.getBlocks(Flags.FUEL):
             # Four rotations is 240 degrees
             self.assertEqual(b.p.orientation[2], 240)
 
@@ -172,7 +185,6 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         try to the "previous" assembly's location can fail.
         """
         newSettings = {
-            CONF_ASSEM_ROTATION_STATIONARY: True,
             "fluxRecon": True,
             "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
         }
@@ -191,6 +203,33 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
         # Make sure our fake chooseSwaps added the fresh assembly to the moved assemblies
         fh.chooseSwaps.assert_called_once()
         p.assert_not_called()
+
+    def test_buRotationWithStationaryRotation(self):
+        """Test that the burnup equalizing rotation algorithm works on non-shuffled assemblies."""
+        newSettings = {
+            CONF_ASSEM_ROTATION_STATIONARY: True,
+            "fluxRecon": True,
+            "assemblyRotationAlgorithm": "buReducingAssemblyRotation",
+        }
+        self.o.cs = self.o.cs.modified(newSettings=newSettings)
+
+        # Grab two assemblies that were not moved. One of which will have the detailed information
+        # needed for rotation
+        detailedAssem, coarseAssem = self.o.r.core.getChildrenWithFlags(Flags.FUEL)[:2]
+        self.prepareAssemForBurnupRotation(detailedAssem)
+        detailedAssem.rotate = mock.Mock()
+        coarseAssem.rotate = mock.Mock()
+
+        fh = FullImplFuelHandler(self.o)
+
+        with mock.patch(
+            "armi.physics.fuelCycle.assemblyRotationAlgorithms.getOptimalAssemblyOrientation",
+            return_value=5,
+        ) as p:
+            fh.outage()
+        p.assert_called_once_with(detailedAssem, detailedAssem)
+        detailedAssem.rotate.assert_called_once()
+        coarseAssem.rotate.assert_not_called()
 
     def test_simpleAssemblyRotation(self):
         """Test rotating assemblies 120 degrees."""
