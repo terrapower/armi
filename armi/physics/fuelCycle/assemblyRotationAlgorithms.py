@@ -97,7 +97,9 @@ def _rotateByComparingLocations(aNow: Assembly, aPrev: Assembly):
     """
     rot = getOptimalAssemblyOrientation(aNow, aPrev)
     radians = _rotationNumberToRadians(rot)
-    runLog.important(f"Rotating Assembly {aNow} {math.degrees(radians)} degrees CCW.")
+    runLog.important(
+        f"Rotating Assembly {aNow} {math.degrees(radians):.3f} degrees CCW."
+    )
     aNow.rotate(radians)
 
 
