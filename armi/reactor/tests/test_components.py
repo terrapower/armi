@@ -1851,10 +1851,25 @@ class TestPinQuantities(unittest.TestCase):
         assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
 
         # Mock the spatial locator of the component to raise error
-        fuelComponent.spatialLocator = unittest.mock.Mock()
-        fuelComponent.spatialLocator.indices = [np.array([111, 111, 111])]
+        with unittest.mock.patch.object(fuelComponent, "spatialLocator") as mockLocator:
+            mockLocator.i = 111
+            mockLocator.j = 111
+            with self.assertRaisesRegex(
+                ValueError,
+                f"Failed to retrieve pin indices for component {fuelComponent}",
+            ):
+                fuelComponent.getPinMgFluxes()
+
+        # Check assertion for adjoint gamma flux
+        with self.assertRaisesRegex(
+            ValueError, "Adjoint gamma flux is currently unsupported."
+        ):
+            fuelComponent.getPinMgFluxes(adjoint=True, gamma=True)
+
+        # Check assertion for not-found parameter
+        fuelBlock.p.pinMgFluxes = None
         with self.assertRaisesRegex(
             ValueError,
-            expected_regex=f"Failed to retrieve pin indices for component {fuelComponent}",
+            f"Failure getting pinMgFluxes from {fuelComponent} via parent {fuelBlock}",
         ):
             fuelComponent.getPinMgFluxes()
