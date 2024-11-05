@@ -32,7 +32,6 @@ from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.reactor import flags
-from armi.reactor import grids
 from armi.reactor import parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
@@ -1291,13 +1290,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             a pin.
         """
         # Get the (i, j, k) location of all pins from the parent block
-        # FIXME: This should be changed to just using Block.getPinLocations once Drew's PR is merged
-        indicesAll = []
-        for clad in self.parent.getChildrenWithFlags(flags.Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                indicesAll.extend(clad.spatialLocator.indices)
-            else:
-                indicesAll.append(clad.spatialLocator.indices)
+        indicesAll = self.parent.getPinLocations()
 
         # Retrieve the indices of this component
         indices = self.spatialLocator.indices
@@ -1306,7 +1299,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         # Map this component's indices to block's pin indices
         getIndex = lambda ind: next(
-            (i for i, indA in enumerate(indicesAll) if np.all(ind == indA)),
+            (i for i, indA in enumerate(indicesAll) if np.all(ind == indA.indices)),
             None,
         )
         indexMap = list(map(getIndex, indices))

@@ -1851,7 +1851,7 @@ class TestPinQuantities(unittest.TestCase):
         assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
 
         # Mock the spatial locator of the component to raise error
-        fuelComponent.spatialLocator = Mock()
+        fuelComponent.spatialLocator = unittest.mock.Mock()
         fuelComponent.spatialLocator.indices = [np.array([111, 111, 111])]
         with self.assertRaises(ValueError):
             fuelComponent.getPinMgFluxes()
