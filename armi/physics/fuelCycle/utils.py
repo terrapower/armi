@@ -44,7 +44,8 @@ def assemblyHasFuelPinPowers(a: typing.Iterable["Block"]) -> bool:
     # Avoid using Assembly.getChildrenWithFlags(Flags.FUEL)
     # because that creates an entire list where we may just need the first
     # fuel block
-    return any(b.hasFlags(Flags.FUEL) and np.any(b.p.linPowByPin) for b in a)
+    fuelBlocks = filter(lambda b: b.hasFlags(Flags.FUEL), a)
+    return any(b.hasFlags(Flags.FUEL) and np.any(b.p.linPowByPin) for b in fuelBlocks)
 
 
 def assemblyHasFuelPinBurnup(a: typing.Iterable["Block"]) -> bool:
@@ -71,11 +72,12 @@ def assemblyHasFuelPinBurnup(a: typing.Iterable["Block"]) -> bool:
     # Avoid using Assembly.getChildrenWithFlags(Flags.FUEL)
     # because that creates an entire list where we may just need the first
     # fuel block. Same for avoiding Block.getChildrenWithFlags.
-    return any(
-        b.hasFlags(Flags.FUEL)
-        and (any(c.hasFlags(Flags.FUEL) and np.any(c.p.pinPercentBu) for c in b))
-        for b in a
-    )
+    hasFuelFlags = lambda o: o.hasFlags(Flags.FUEL)
+    for b in filter(hasFuelFlags, a):
+        for c in filter(hasFuelFlags, b):
+            if np.any(c.p.pinPercentBu):
+                return True
+    return False
 
 
 def maxBurnupLocator(
