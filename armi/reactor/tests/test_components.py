@@ -1831,7 +1831,7 @@ class TestPinQuantities(unittest.TestCase):
         fuelBlock: Block = self.r.core.getFirstBlock(flags.Flags.FUEL)
         fuelComponent: Component = fuelBlock.getComponent(flags.Flags.FUEL)
         numPins = int(fuelComponent.p.mult)
-        self.assertGreater(numPins, 1)
+        self.assertEqual(numPins, 169)
 
         # Set pin fluxes at block level
         fuelBlock.initializePinLocations()
@@ -1853,5 +1853,8 @@ class TestPinQuantities(unittest.TestCase):
         # Mock the spatial locator of the component to raise error
         fuelComponent.spatialLocator = unittest.mock.Mock()
         fuelComponent.spatialLocator.indices = [np.array([111, 111, 111])]
-        with self.assertRaises(ValueError):
+        with self.assertRaisesRegex(
+            ValueError,
+            expected_regex=f"Failed to retrieve pin indices for component {fuelComponent}",
+        ):
             fuelComponent.getPinMgFluxes()
