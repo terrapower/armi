@@ -535,14 +535,17 @@ def eleExpandInfoBasedOnCodeENDF(cs):
 
     if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
-        # ENDF/B VII.0
-        if cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.0":
+        if cs[CONF_MCNP_LIB_BASE] == "ENDF/B-V.0":
+            # ENDF/B V.0
+            elementalsToKeep.update(nuclideBases.instances)  # skip expansion
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.0":
+            # ENDF/B VII.0
             elementalsToKeep.update(endf70Elementals)
-        # ENDF/B VII.1
         elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.1":
+            # ENDF/B VII.1
             elementalsToKeep.update(endf71Elementals)
-        # ENDF/B VIII.0
         elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VIII.0":
+            # ENDF/B VIII.0
             elementalsToKeep.update(endf80Elementals)
         else:
             raise InputError(
@@ -552,7 +555,6 @@ def eleExpandInfoBasedOnCodeENDF(cs):
     elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
         elementalsToKeep.update(endf70Elementals)
         expansionStrings.update(mc2Expansions)
-
     elif cs[CONF_XS_KERNEL] == "DRAGON":
         # Users need to use default nuclear lib name. This is documented.
         dragLib = cs["dragonDataPath"]
