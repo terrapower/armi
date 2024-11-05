@@ -15,40 +15,39 @@
 """Tests functionalities of components within ARMI."""
 import copy
 import math
+import unittest
+
 import numpy as np
 from numpy.testing import assert_equal
-import unittest
-from unittest.mock import Mock
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
-from armi.reactor import components
-from armi.reactor import flags
+from armi.reactor import components, flags
 from armi.reactor.blocks import Block
 from armi.reactor.components import (
-    Component,
-    UnshapedComponent,
-    NullComponent,
     Circle,
+    Component,
+    ComponentType,
+    Cube,
+    DerivedShape,
+    DifferentialRadialSegment,
+    Helix,
     Hexagon,
-    HoledHexagon,
     HexHoledCircle,
+    HoledHexagon,
     HoledRectangle,
     HoledSquare,
-    Helix,
-    Sphere,
-    Cube,
+    NullComponent,
+    RadialSegment,
     Rectangle,
     SolidRectangle,
+    Sphere,
     Square,
     Triangle,
-    RadialSegment,
-    DifferentialRadialSegment,
-    DerivedShape,
+    UnshapedComponent,
     UnshapedVolumetricComponent,
-    ComponentType,
+    materials,
 )
-from armi.reactor.components import materials
 from armi.reactor.tests.test_reactors import loadTestReactor
 
 
