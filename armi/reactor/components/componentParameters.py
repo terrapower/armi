@@ -143,14 +143,14 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "pinPercentBu",
             setter=isNumpyArray("pinPercentBu"),
-            units=f"{units.PERCENT_FIMA}",
+            units=units.PERCENT_FIMA,
             description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
             default=None,
         )
 
         pb.defParam(
             "molesHmBOL",
-            units=f"{units.MOLES}",
+            units=units.MOLES,
             default=0.0,
             description="Total number of moles of heavy metal at BOL.",
         )
