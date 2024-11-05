@@ -22,7 +22,7 @@ These algorithms are defined in assemblyRotationAlgorithms.py, but they are used
 .. warning:: Nothing should go in this file, but rotation algorithms.
 """
 import math
-
+from collections import defaultdict
 
 from armi import runLog
 from armi.reactor.assemblies import Assembly
@@ -55,7 +55,11 @@ def buReducingAssemblyRotation(fh):
     simpleAssemblyRotation : an alternative rotation algorithm
     """
     runLog.info("Algorithmically rotating assemblies to minimize burnup")
-    numRotated = 0
+    # Store how we should rotate each assembly but don't perform the rotation just yet
+    # Consider assembly A is shuffled to a new location and rotated.
+    # Now, assembly B is shuffled to where assembly A used to be. We need to consider the
+    # power profile of A prior to it's rotation to understand the power profile B may see.
+    rotations: dict[int, list[Assembly]] = defaultdict(list)
     for aPrev in fh.moved:
         # If the assembly was out of the core, it will not have pin powers.
         # No rotation information to be gained.
@@ -68,8 +72,8 @@ def buReducingAssemblyRotation(fh):
             continue
         # no point in rotation if there's no pin detail
         if assemblyHasFuelPinPowers(aPrev) and assemblyHasFuelPinBurnup(aNow):
-            _rotateByComparingLocations(aNow, aPrev)
-            numRotated += 1
+            rot = getOptimalAssemblyOrientation(aNow, aPrev)
+            rotations[rot].append(aNow)
 
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
         for a in filter(
@@ -78,29 +82,20 @@ def buReducingAssemblyRotation(fh):
             and assemblyHasFuelPinBurnup(asm),
             fh.r.core,
         ):
-            _rotateByComparingLocations(a, a)
-            numRotated += 1
+            rot = getOptimalAssemblyOrientation(a, a)
+            rotations[rot].append(a)
 
-    runLog.info("Rotated {0} assemblies".format(numRotated))
+    nRotations = 0
+    for rot, assems in filter(lambda item: item[0], rotations.items()):
+        # Radians used for the actual rotation. But a neater degrees print out is nice for logs
+        radians = _rotationNumberToRadians(rot)
+        degrees = round(math.degrees(radians), 3)
+        for a in assems:
+            runLog.important(f"Rotating assembly {a} {degrees} CCW.")
+            a.rotate(radians)
+            nRotations += 1
 
-
-def _rotateByComparingLocations(aNow: Assembly, aPrev: Assembly):
-    """Rotate an assembly based on its previous location.
-
-    Parameters
-    ----------
-    aNow : Assembly
-        Assembly to be rotated
-    aPrev : Assembly
-        Assembly that previously occupied the location of this assembly.
-        If ``aNow`` has not been moved, this should be ``aNow``
-    """
-    rot = getOptimalAssemblyOrientation(aNow, aPrev)
-    radians = _rotationNumberToRadians(rot)
-    runLog.important(
-        f"Rotating Assembly {aNow} {math.degrees(radians):.3f} degrees CCW."
-    )
-    aNow.rotate(radians)
+    runLog.info(f"Rotated {nRotations} assemblies.")
 
 
 def simpleAssemblyRotation(fh):
