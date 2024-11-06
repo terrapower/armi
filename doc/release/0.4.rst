@@ -27,6 +27,7 @@ New Features
 #. Improve efficiency of reaction rate calculations. (`PR#1887 <https://github.com/terrapower/armi/pull/1887>`_)
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
 #. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
+#. Add a method getPinMgFluxes to retrieve the pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. TBD
 
 API Changes
@@ -51,6 +52,9 @@ API Changes
 #. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
 #. Changing ``synDbAfterWrite`` default to ``True``. (`PR#1968 <https://github.com/terrapower/armi/pull/1968>`_)
 #. Removing unused class ``SmartList``. (`PR#1992 <https://github.com/terrapower/armi/pull/1992>`_)
+#. History Tracker: "detail assemblies" are now fuel and control assemblies. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Removing ``Blocks.py::block::breakFuelComponentsIntoIndividuals``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Move getPuMoles from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. TBD
 
 Bug Fixes
