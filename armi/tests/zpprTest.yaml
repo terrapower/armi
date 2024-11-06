@@ -12,7 +12,7 @@ settings:
   geomFile: zpprTestGeom.xml
   loadingFile: 1DslabXSByCompTest.yaml
   mpiTasksPerNode: 6
-  numProcessors: 12
+  nTasks: 12
   outputFileExtension: pdf
   power: 75000000.0
   sortReactor: false # zpprs dont sor the right way. need better component sorting for slab...
