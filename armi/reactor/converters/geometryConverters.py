@@ -822,9 +822,9 @@ class HexToRZThetaConverter(GeometryConverter):
 
             # Assign the new block cross section type and burn up group
             newBlock.setType(newBlockType)
-            newXsType, newBuGroup = self._createBlendedXSID(newBlock)
+            newXsType, newEnvGroup = self._createBlendedXSID(newBlock)
             newBlock.p.xsType = newXsType
-            newBlock.p.buGroup = newBuGroup
+            newBlock.p.envGroup = newEnvGroup
 
             # Update the block dimensions and set the block densities
             newComponent.updateDims()  # ugh.
@@ -989,12 +989,12 @@ class HexToRZThetaConverter(GeometryConverter):
     def _createBlendedXSID(self, newBlock):
         """Generate the blended XS id using the most common XS id in the hexIdList."""
         ids = [hexBlock.getMicroSuffix() for hexBlock in self.blockMap[newBlock]]
-        xsTypeList, buGroupList = zip(*ids)
+        xsTypeList, envGroupList = zip(*ids)
 
         xsType, _count = collections.Counter(xsTypeList).most_common(1)[0]
-        buGroup, _count = collections.Counter(buGroupList).most_common(1)[0]
+        envGroup, _count = collections.Counter(envGroupList).most_common(1)[0]
 
-        return xsType, buGroup
+        return xsType, envGroup
 
     def _writeRadialThetaZoneHeader(
         self, radIdx, lowerRing, upperRing, thIdx, lowerTheta, upperTheta

@@ -97,6 +97,8 @@ New Features
    (`PR#1729 <https://github.com/terrapower/armi/pull/1729>`_ and `PR#1750 <https://github.com/terrapower/armi/pull/1750>`_)
 #. Density can be specified for components via ``custom isotopics`` in the blueprints. (`PR#1745 <https://github.com/terrapower/armi/pull/1745>`_)
 #. Implement a new ``JaggedArray`` class that handles HDF5 interface for jagged data. (`PR#1726 <https://github.com/terrapower/armi/pull/1726>`_)
+#. Adding temperature dependent representative blocks to cross section group manager. (`PR#1987 <https://github.com/terrapower/armi/pull/1987>`_)
+
 
 API Changes
 -----------
@@ -136,6 +138,7 @@ API Changes
 #. Changing the Doppler constant params to ``VOLUME_INTEGRATED``. (`PR#1659 <https://github.com/terrapower/armi/pull/1659>`_)
 #. Change ``Operator._expandCycleAndTimeNodeArgs`` to be a non-static method. (`PR#1766 <https://github.com/terrapower/armi/pull/1766>`_)
 #. Database now writes state at the last time node of a cycle rather than during the ``DatabaseInterface.interactEOC`` interaction. (`PR#1090 <https://github.com/terrapower/armi/pull/1090>`_)
+#. Renaming ``b.p.buGroup`` to ``b.p.envGroup``. Environment group captures both burnup and temperature. (`PR#1987 <https://github.com/terrapower/armi/pull/1987>`_)
 
 Bug Fixes
 ---------
