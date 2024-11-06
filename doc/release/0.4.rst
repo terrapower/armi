@@ -28,6 +28,7 @@ New Features
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
 #. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
 #. Add a method getPinMgFluxes to retrieve the pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Exposing ``detailedNDens`` to components. (`PR#1954 <https://github.com/terrapower/armi/pull/1954>`_)
 #. TBD
 
 API Changes

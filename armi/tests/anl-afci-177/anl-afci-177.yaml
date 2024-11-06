@@ -19,6 +19,6 @@ settings:
     - 100
   comment: ANL-AFCI-177 CR 1.0 metal core but with HALEU instead of TRU
   genXS: Neutron
-  numProcessors: 1
+  nTasks: 1
   versions:
     armi: uncontrolled
