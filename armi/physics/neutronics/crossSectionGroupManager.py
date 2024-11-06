@@ -1142,9 +1142,9 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _addXsGroupsFromBlocks(self, blockCollectionsByXsGroup, blockList):
         """
-        Build all the cross section groups based on their XS type and BU group.
+        Build all the cross section groups based on their XS type and Env group.
 
-        Also ensures that their BU group is up to date with their burnup.
+        Also ensures that their Env group is up to date with their environment.
         """
         self._updateEnvironmentGroups(blockList)
         for b in blockList:
@@ -1592,7 +1592,7 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def disableEnvGroupUpdates(self):
         """
-        Turn off updating bu groups based on burnup.
+        Turn off updating Env groups based on environment.
 
         Useful during reactivity coefficient calculations to be consistent with ref. run.
 
@@ -1600,20 +1600,20 @@ class CrossSectionGroupManager(interfaces.Interface):
         --------
         enableEnvGroupUpdates
         """
-        runLog.extra("Enviroment xs group updating disabled")
+        runLog.extra("Environment xs group updating disabled")
         wasEnabled = self._envGroupUpdatesEnabled
         self._envGroupUpdatesEnabled = False
         return wasEnabled
 
     def enableEnvGroupUpdates(self):
         """
-        Turn on updating bu groups based on burnup.
+        Turn on updating Env groups based on environment.
 
         See Also
         --------
         disableEnvGroupUpdates
         """
-        runLog.extra("Enviroment xs group updating enabled")
+        runLog.extra("Environment xs group updating enabled")
         self._envGroupUpdatesEnabled = True
 
     def getNucTemperature(self, xsID, nucName):
