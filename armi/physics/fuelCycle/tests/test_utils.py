@@ -72,6 +72,24 @@ class FuelCycleUtilsTests(TestCase):
         loc = utils.maxBurnupLocator([freeComp])
         self.assertIs(loc, freeComp.spatialLocator)
 
+    def test_maxBurnupLocatorWithNoBurnup(self):
+        """Ensure we catch an error if no burnup is found across components."""
+        with self.assertRaisesRegex(ValueError, "No burnups found"):
+            utils.maxBurnupLocator([])
+
+    def test_maxBurnupLocatorMismatchedData(self):
+        """Ensure pin burnup and locations must agree."""
+        freeComp = Circle(
+            "free fuel", material="UO2", Tinput=200, Thot=200, id=0, od=1, mult=1
+        )
+        freeComp.spatialLocator = IndexLocation(2, 4, 0, None)
+        freeComp.p.pinPercentBu = [
+            0.01,
+            0.02,
+        ]
+        with self.assertRaisesRegex(ValueError, "Pin burnup.*pin locations.*differ"):
+            utils.maxBurnupLocator([freeComp])
+
     def test_assemblyHasPinPower(self):
         """Test the ability to check if an assembly has fuel pin powers."""
         fakeAssem = [self.block]
