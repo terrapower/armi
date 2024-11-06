@@ -39,7 +39,17 @@ class FuelCycleUtilsTests(TestCase):
             id=0.0,
             od=1.0,
         )
+
+        clad = Circle(
+            "clad",
+            material="HT9",
+            Tinput=20,
+            Thot=300,
+            id=1.0,
+            od=1.1,
+        )
         self.block.add(self.fuel)
+        self.block.add(clad)
         # Force no fuel flags
         self.fuel.p.flags = Flags.PIN
 
