@@ -26,7 +26,7 @@ from armi.physics.fuelCycle import utils
 class FuelCycleUtilsTests(TestCase):
     """Tests for geometry indifferent fuel cycle routines."""
 
-    N_PINS = 271
+    N_PINS = 169
 
     def setUp(self):
         self.block = Block("test block")
