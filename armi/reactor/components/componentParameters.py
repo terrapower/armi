@@ -15,6 +15,7 @@
 """Component parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 
 
@@ -35,7 +36,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "mult",
             units=units.UNITLESS,
-            description="The multiplicity of this component, i.e. how many of them there are. ",
+            description="The multiplicity of this component, i.e. how many of them there are.",
             default=1,
         )
 
@@ -61,6 +62,20 @@ def getComponentParameterDefinitions():
             "numberDensities",
             units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
+        )
+
+        pb.defParam(
+            "detailedNDens",
+            setter=isNumpyArray("detailedNDens"),
+            units=f"atoms/(bn*{units.CM})",
+            description=(
+                "High-fidelity number density vector with up to thousands of nuclides. "
+                "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
+                "This param keeps the hi-fi and low-fi depletion values from interfering. "
+                "See core.p.detailedNucKeys for keys."
+            ),
+            saveToDB=True,
+            default=None,
         )
 
         pb.defParam(
@@ -98,7 +113,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "customIsotopicsName",
             units=units.UNITLESS,
-            description="Label of isotopics applied to this component. ",
+            description="Label of isotopics applied to this component.",
         )
 
         pb.defParam(
@@ -111,7 +126,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "zrFrac",
             units=units.UNITLESS,
-            description="Original Zr frac of this, used for material properties. ",
+            description="Original Zr frac of this, used for material properties.",
         )
 
         pb.defParam(
