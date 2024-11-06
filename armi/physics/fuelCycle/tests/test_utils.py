@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 from unittest import TestCase
 
 import numpy as np
@@ -139,3 +140,23 @@ class FuelCycleUtilsTests(TestCase):
         self.assertFalse(self.fuel.hasFlags(Flags.FUEL))
         self.fuel.p.pinPercentBu = np.arange(self.N_PINS, dtype=float)
         self.assertFalse(utils.assemblyHasFuelPinBurnup(fakeAssem))
+
+    def test_maxBurnupBlock(self):
+        """Test the ability to find maximum burnup block in an assembly."""
+        reflector = Block("reflector")
+        assem = [reflector, self.block]
+        self.fuel.p.pinPercentBu = [0.1]
+        expected = utils.maxBurnupBlock(assem)
+        self.assertIs(expected, self.block)
+
+        # add a new block with more burnup higher up the stack
+        hotter = copy.deepcopy(self.block)
+        hotter[0].p.pinPercentBu *= 2
+        expected = utils.maxBurnupBlock(
+            [reflector, self.block, hotter, self.block, reflector]
+        )
+        self.assertIs(expected, hotter)
+
+    def test_maxBurnupBlockNoBurnup(self):
+        with self.assertRaisesRegex(ValueError, "No blocks with burnup found"):
+            utils.maxBurnupBlock([])
