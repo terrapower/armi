@@ -114,7 +114,8 @@ def maxBurnupLocator(
             locations = [child.spatialLocator]
         if len(locations) != pinBu.size:
             raise ValueError(
-                f"Pin burnup and pin locations on {child} differ: {locations=} :: {pinBu=}"
+                f"Pin burnup (n={len(locations)}) and pin locations (n={pinBu.size}) "
+                f"on {child} differ: {locations=} :: {pinBu=}"
             )
         myMaxIX = pinBu.argmax()
         myMaxBu = pinBu[myMaxIX]
