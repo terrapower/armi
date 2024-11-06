@@ -1137,9 +1137,9 @@ class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
         def getBlocks(includeAll=True):
             return self.blockList
 
+        # this sets XSGM to only analyze the blocks in the block list.
         core.getBlocks = getBlocks
-        for b in core.getBlocks():
-            print(b)
+
         self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
@@ -1148,8 +1148,7 @@ class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
         self.csm.createRepresentativeBlocks()
         BL = self.blockList
         loners = [BL[1], BL[3]]
-        for b in BL:
-            print(b.getMicroSuffix())
+
         self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
         sameGroups = [(BL[0], BL[4]), (BL[2], BL[5]), (BL[6], BL[7]), (BL[8], BL[9])]
 
