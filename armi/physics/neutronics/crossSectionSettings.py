@@ -60,6 +60,7 @@ CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
 CONF_DUCT_HETEROGENEOUS = "ductHeterogeneous"
 CONF_TRACE_ISOTOPE_THRESHOLD = "traceIsotopeThreshold"
+CONF_XS_TEMP_ISOTOPE = "xsTempIsotope"
 
 
 class XSGeometryTypes(Enum):
@@ -121,6 +122,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
@@ -134,6 +136,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
@@ -155,6 +158,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_MIN_DRIVER_DENSITY,
         CONF_DUCT_HETEROGENEOUS,
         CONF_TRACE_ISOTOPE_THRESHOLD,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -171,6 +175,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
 }
 
@@ -203,6 +208,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
         vol.Optional(CONF_DUCT_HETEROGENEOUS): bool,
         vol.Optional(CONF_TRACE_ISOTOPE_THRESHOLD): vol.Coerce(float),
+        vol.Optional(CONF_XS_TEMP_ISOTOPE): str,
     }
 )
 
@@ -259,19 +265,21 @@ class XSSettings(dict):
         if xsID in self:
             return dict.__getitem__(self, xsID)
 
+        # exact key not present so give lowest env group key, eg AA or BA as the source for
+        # settings since users do not typically provide all combinations of second chars explicitly
         xsType = xsID[0]
-        buGroup = xsID[1]
+        envGroup = xsID[1]
         existingXsOpts = [
             xsOpt
             for xsOpt in self.values()
-            if xsOpt.xsType == xsType and xsOpt.buGroup < buGroup
+            if xsOpt.xsType == xsType and xsOpt.envGroup < envGroup
         ]
 
         if not any(existingXsOpts):
             return self._getDefault(xsID)
 
         else:
-            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.buGroup)[0]
+            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.envGroup)[0]
 
     def setDefaults(self, blockRepresentation, validBlockTypes):
         """
@@ -469,6 +477,10 @@ class XSModelingOptions:
         model. The setting takes a float value that represents the number density cutoff
         for isotopes to be considered "trace". If no value is provided, the default is 0.0.
 
+    xsTempIsotope: str
+            The isotope whose temperature is interrogated when placing a block in a temperature cross section group.
+            See `tempGroups`. "U238" is default since it tends to be dominant doppler isotope in most reactors.
+
     Notes
     -----
     Not all default attributes may be useful for your specific application and you may
@@ -503,6 +515,7 @@ class XSModelingOptions:
         minDriverDensity=0.0,
         ductHeterogeneous=False,
         traceIsotopeThreshold=0.0,
+        xsTempIsotope="U238",
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -531,6 +544,7 @@ class XSModelingOptions:
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
+        self.xsTempIsotope = xsTempIsotope
 
     def __repr__(self):
         if self.xsIsPregenerated:
@@ -551,7 +565,7 @@ class XSModelingOptions:
         return self.xsID[0]
 
     @property
-    def buGroup(self):
+    def envGroup(self):
         """Return the single-char burnup group indicator."""
         return self.xsID[1]
 

@@ -348,11 +348,7 @@ class AxialExpansionChanger:
                             c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                     c.ztop = c.zbottom + c.height
                     # update component number densities
-                    newNumberDensities = {
-                        nuc: c.getNumberDensity(nuc) / growFrac
-                        for nuc in c.getNuclides()
-                    }
-                    c.setNumberDensities(newNumberDensities)
+                    c.changeNDensByFactor(1.0 / growFrac)
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
@@ -393,7 +389,7 @@ class AxialExpansionChanger:
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             for a in r.core.getAssemblies():
-                a.setBlockMesh(r.core.refAssem.getAxialMesh())
+                a.setBlockMesh(r.core.refAssem.getAxialMesh(), conserveMassFlag="auto")
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()

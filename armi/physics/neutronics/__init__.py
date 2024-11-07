@@ -66,6 +66,11 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
+    def defineParameterRenames():
+        return {"buGroup": "envGroup", "buGroupNum": "envGroupNum"}
+
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineEntryPoints():
         """Define entry points for the plugin."""
         from armi.physics.neutronics import diffIsotxs

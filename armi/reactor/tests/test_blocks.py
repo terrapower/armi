@@ -43,6 +43,8 @@ from armi.tests import ISOAA_PATH
 from armi.utils import hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
+
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -564,18 +566,44 @@ class Block_TestCase(unittest.TestCase):
         ref = "BB"
         self.assertEqual(cur, ref)
 
-    def test_27b_setBuGroup(self):
+    def test_27b_setEnvGroup(self):
         type_ = "A"
-        self.block.p.buGroup = type_
-        cur = self.block.p.buGroupNum
-        ref = ord(type_) - 65
+        self.block.p.envGroup = type_
+        cur = self.block.p.envGroupNum
+        ref = ord(type_) - ASCII_LETTER_A
         self.assertEqual(cur, ref)
 
-        typeNumber = 25
-        self.block.p.buGroupNum = typeNumber
-        cur = self.block.p.buGroup
-        ref = chr(typeNumber + 65)
+        typeNumber = 25  # this is Z due to 0 based numbers
+        self.block.p.envGroupNum = typeNumber
+        cur = self.block.p.envGroup
+        ref = chr(typeNumber + ASCII_LETTER_A)
         self.assertEqual(cur, ref)
+        self.assertEqual(cur, "Z")
+
+        before_a = ASCII_LETTER_a - 1
+        type_ = "a"
+        self.block.p.envGroup = type_
+        cur = self.block.p.envGroupNum
+        ref = ord(type_) - (before_a) + (ASCII_LETTER_Z - ASCII_LETTER_A)
+        self.assertEqual(cur, ref)
+
+        typeNumber = 26  # this is a due to 0 based numbers
+        self.block.p.envGroupNum = typeNumber
+        cur = self.block.p.envGroup
+        self.assertEqual(cur, "a")
+
+        type_ = "z"
+        self.block.p.envGroup = type_
+        cur = self.block.p.envGroupNum
+        ref = ord(type_) - before_a + (ASCII_LETTER_Z - ASCII_LETTER_A)
+        self.assertEqual(cur, ref)
+
+        typeNumber = 26 * 2 - 1  # 2x letters in alpha with 0 based index
+        self.block.p.envGroupNum = typeNumber
+        cur = self.block.p.envGroup
+        ref = chr((typeNumber - 26) + ASCII_LETTER_a)
+        self.assertEqual(cur, ref)
+        self.assertEqual(cur, "z")
 
     def test_setZeroHeight(self):
         """Test that demonstrates that a block's height can be set to zero."""
@@ -1064,7 +1092,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.p.xsType = "RS"
         self.assertEqual(self.block.getMicroSuffix(), "RS")
 
-        self.block.p.buGroup = "X"
+        self.block.p.envGroup = "X"
         self.block.p.xsType = "AB"
         with self.assertRaises(ValueError):
             self.block.getMicroSuffix()
