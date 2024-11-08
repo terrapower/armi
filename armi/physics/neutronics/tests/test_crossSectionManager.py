@@ -437,7 +437,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         sodiumDensity = {"NA23": 0.022166571826233578}
         steelDensity = {
             "C": 0.0007685664978992269,
-            "V": 0.0002718224847461385,
+            "V50": 6.795562118653462e-07,
+            "V51": 0.0002711429285342731,
             "SI28": 0.0003789374369638149,
             "SI29": 1.924063709833714e-05,
             "SI30": 1.268328992580968e-05,
