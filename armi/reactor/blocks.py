@@ -126,11 +126,11 @@ class Block(composites.Composite):
 
     def __repr__(self):
         # be warned, changing this might break unit tests on input file generations
-        return "<{type} {name} at {loc} XS: {xs} BU GP: {bu}>".format(
+        return "<{type} {name} at {loc} XS: {xs} ENV GP: {env}>".format(
             type=self.getType(),
             name=self.getName(),
             xs=self.p.xsType,
-            bu=self.p.buGroup,
+            env=self.p.envGroup,
             loc=self.getLocation(),
         )
 
@@ -402,26 +402,28 @@ class Block(composites.Composite):
 
         Notes
         -----
-        The single-letter use for xsType and buGroup limit users to 26 groups of each.
-        ARMI will allow 2-letter xsType designations if and only if the `buGroups`
-        setting has length 1 (i.e. no burnup groups are defined). This is useful for
+        The single-letter use for xsType and envGroup limit users to 52 groups of each.
+        ARMI will allow 2-letter xsType designations if and only if the `envGroup`
+        setting has length 1 (i.e. no burnup/temp groups are defined). This is useful for
         high-fidelity XS modeling of V&V models such as the ZPPRs.
         """
-        bu = self.p.buGroup
-        if not bu:
+        env = self.p.envGroup
+        if not env:
             raise RuntimeError(
-                "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
+                "Cannot get MicroXS suffix because {0} in {1} does not have a environment(env) group"
                 "".format(self, self.parent)
             )
 
         xsType = self.p.xsType
         if len(xsType) == 1:
-            return xsType + bu
-        elif len(xsType) == 2 and ord(bu) > ord("A"):
+            return xsType + env
+        elif len(xsType) == 2 and ord(env) != ord("A"):
+            # default is "A" so if we got an off default 2 char, there is no way to resolve.
             raise ValueError(
-                "Use of multiple burnup groups is not allowed with multi-character xs groups!"
+                "Use of non-default env groups is not allowed with multi-character xs groups!"
             )
         else:
+            # ignore env group, multi Char XS type to support assigning 2 chars in blueprints
             return xsType
 
     def getHeight(self):
@@ -1822,7 +1824,7 @@ class HexBlock(Block):
         # assign macros and LFP
         b.macros = self.macros
         b._lumpedFissionProducts = self._lumpedFissionProducts
-        b.p.buGroup = self.p.buGroup
+        b.p.envGroup = self.p.envGroup
 
         hexComponent = Hexagon(
             "homogenizedHex",

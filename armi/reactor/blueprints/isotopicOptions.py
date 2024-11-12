@@ -552,8 +552,12 @@ def eleExpandInfoBasedOnCodeENDF(cs):
                 )
             )
 
-    elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+    elif cs[CONF_XS_KERNEL] == "SERPENT":
         elementalsToKeep.update(endf70Elementals)
+        expansionStrings.update(mc2Expansions)
+
+    elif cs[CONF_XS_KERNEL] in ["", "MC2v3", "MC2v3-PARTISN"]:
+        elementalsToKeep.update(endf71Elementals)
         expansionStrings.update(mc2Expansions)
 
     elif cs[CONF_XS_KERNEL] == "DRAGON":
