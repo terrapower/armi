@@ -30,7 +30,7 @@ Release Date: 2024-12-14
 New Features
 ------------
 #. Adding data models for ex-core structures in ARMI. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
-#. Supporting opening some DBs without the ``App`` that created them. (`PR#1917 <https://github.com/terrapower/armi/pull/1917>`_)
+#. Opening some DBs without the ``App`` that created them. (`PR#1917 <https://github.com/terrapower/armi/pull/1917>`_)
 #. Adding support for ENDF/B-VII.1-based MC2-3 libraries. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. ``HexBlock.rotate`` updates the spatial locator for children of that block. (`PR#1943 <https://github.com/terrapower/armi/pull/1943>`_)
@@ -41,8 +41,8 @@ New Features
 #. Supporting Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Provide utilities for determining location of a rotated object in a hexagonal lattice (``getIndexOfRotatedCell``). (`PR#1846 <https://github.com/terrapower/armi/1846>`_)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
-#. Plugins can provide the ``getAxialExpansionChanger`` hook to customize axial expansion. (`PR#1870 <https://github.com/terrapower/armi/pull/1870>`_)
-#. New plugin hook ``beforeReactorConstruction`` added to enable plugins to process case settings before reactor init. (`PR#1945 <https://github.com/terrapower/armi/pull/1945>`_)
+#. New plugin hook ``getAxialExpansionChanger`` to customize axial expansion. (`PR#1870 <https://github.com/terrapower/armi/pull/1870>`_)
+#. New plugin hook ``beforeReactorConstruction`` to process settings before reactor init. (`PR#1945 <https://github.com/terrapower/armi/pull/1945>`_)
 #. Improving performance in the lattice physics interface by not updating cross sections at ``everyNode`` during coupled calculations. (`PR#1963 <https://github.com/terrapower/armi/pull/1963>`_)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
 #. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
