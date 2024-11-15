@@ -40,6 +40,7 @@ CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_BETA = "beta"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
+CONF_TEMP_GROUPS = "tempGroups"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_BURN_STEPS = "burnSteps"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -405,16 +406,30 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_BU_GROUPS,
-            default=[10, 20, 30, 100],
-            label="Burnup Groups",
+            default=[10, 20, 30],
+            label="Burnup XS Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type (units of %FIMA)",
+            "for a given cross section type (units of %FIMA)",
             schema=vol.Schema(
                 [
                     vol.All(
-                        vol.Coerce(int), vol.Range(min=0, min_included=False, max=100)
+                        vol.Coerce(int),
+                        vol.Range(
+                            min=0,
+                            min_included=False,
+                        ),
                     )
                 ]
+            ),
+        ),
+        setting.Setting(
+            CONF_TEMP_GROUPS,
+            default=[],
+            label="Temperature XS Groups",
+            description="The range of fuel temperatures where cross-sections will be the same "
+            "for a given cross section type (units of degrees C)",
+            schema=vol.Schema(
+                [vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]
             ),
         ),
         setting.Setting(
