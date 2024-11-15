@@ -11,7 +11,7 @@ The Reactor Data Model
 The ARMI framework represents a nuclear reactor via a reactor data model, which is defined in the
 :py:mod:`~armi.reactor` package. Each physical piece of the nuclear reactor is defined by a Python
 object, called an :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>`. Each ``ArmiObject``
-has associated data such as: shape, material, and physical values. The physical values can be
+has associated data like: shape, material, or other physical values. The physical values can be
 nearly anything, and are attached to the data model via ARMI's
 :py:mod:`Parameter <armi.reactor.parameters>` system. Example parameters might be: ``keff``,
 ``flow rates``, ``power``, ``flux``, etc.
@@ -19,15 +19,13 @@ nearly anything, and are attached to the data model via ARMI's
 The reactor data model is a hierarchical model, following the `Composite Design Pattern
 <http://en.wikipedia.org/wiki/Composite_pattern>`_. The top of the data model is the
 :py:class:`Reactor <armi.reactor.reactors.Reactor>`, which contains one
-:py:class:`Core <armi.reactor.cores.Core>` object and a collection of
+:py:class:`Core <armi.reactor.cores.Core>` object and a collection of zero or more
 :py:class:`ExcoreStructures <armi.reactor.excoreStructure.ExcoreStructure>`. An example
 ``ExcoreStructure`` might be a :py:class:`SpentFuelPool <armi.reactor.spentFuelPool.SpentFuelPool>`.
 
 For now, the ``Core`` object in ARMI assumes it contains **Assembly** objects, which are in turn
-made up as a collection of **Block** objects. This will be optional in the future. The leaves of the
-the Composite Model in the ARMI framework are called
-:py:class:`Component <armi.reactor.components.component.Component>`.
-
+made up as a collection of **Block** objects. The leaves of the the Composite Model in the ARMI
+framework are called :py:class:`Component <armi.reactor.components.component.Component>`.
 
 .. figure:: /.static/armi_reactor_objects.png
     :align: center
