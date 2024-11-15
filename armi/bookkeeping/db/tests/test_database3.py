@@ -23,6 +23,7 @@ import numpy as np
 
 from armi.bookkeeping.db import _getH5File
 from armi.bookkeeping.db import database
+from armi.bookkeeping.db import loadOperator
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -32,6 +33,7 @@ from armi.reactor.reactors import Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.tests import mockRunLogs
 from armi.tests import TEST_ROOT
 from armi.utils import getPreviousTimeNode
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -206,10 +208,6 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.db: database.Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
-        # used to test location-based history. see details below
-        self.centralAssemSerialNums = []
-        self.centralTopBlockSerialNums = []
-
     def tearDown(self):
         self.db.close()
         self.stateRetainer.__exit__()
@@ -225,6 +223,37 @@ class TestDatabaseSmaller(unittest.TestCase):
             self.r.p.cycleLength = cycle
 
             self.db.writeToDB(self.r)
+
+    def test_loadOperator(self):
+        self.makeHistory()
+        self.db.close()
+        # Write a bad setting
+        with h5py.File(self.db.fileName, "r+") as hf:
+            settings = hf["inputs/settings"].asstr()[()]
+            settings += "  fakeSetting: I'll be back"
+            del hf["inputs/settings"]
+            hf["inputs/settings"] = settings
+        # Test with no complaints
+        with mockRunLogs.BufferLog() as mock:
+            o = loadOperator(
+                self._testMethodName + ".h5",
+                0,
+                0,
+                allowMissing=False,
+                handleInvalids=False,
+            )
+            self.assertNotIn("fakeSetting", mock.getStdout())
+            self.assertEqual(o.cs["fakeSetting"], "I'll be back")
+        # test with complaints
+        with mockRunLogs.BufferLog() as mock:
+            o = loadOperator(
+                self._testMethodName + ".h5",
+                0,
+                0,
+                allowMissing=False,
+                handleInvalids=True,
+            )
+            self.assertIn("fakeSetting", mock.getStdout())
 
     def _compareArrays(self, ref, src):
         """
