@@ -96,8 +96,7 @@ various physics operations.
 
 For example, some lattice physics routines convert the full core to a 2D R-Z model and
 compute flux with thousands of energy groups to properly capture the spectral-spatial
-coupling in a core/reflector interface. The converters are used heavily in these
-operations.
+coupling in a core/reflector interface. The converters are used heavily in these operations.
 
 Blueprints
 ----------
@@ -247,7 +246,6 @@ When using the Operators that come with ARMI, Interfaces are discovered using th
 :py:meth:`createInterfaces <armi.operators.operator.Operator.createInterfaces>` method.
 
 
-
 How interfaces get called
 -------------------------
 
@@ -264,9 +262,9 @@ To use interfaces in parallel, please refer to :py:mod:`armi.mpiActions`.
 Plugins
 =======
 
-Plugins are higher-level objects that can bring in one or more Interfaces, settings
-definitions, parameters, validations, etc. They are documented in
-:ref:`armi-app-making` and :py:mod:`armi.plugins`.
+Plugins are higher-level objects that can add things to the simulations like Interfaces, settings
+definitions, parameters, validations, etc. They are documented in :ref:`armi-app-making` and
+:py:mod:`armi.plugins`.
 
 
 Entry Points
@@ -280,5 +278,3 @@ are loaded into a :py:class:`Settings <armi.settings.caseSettings.Settings>`
 object. From those settings, an :py:class:`Operator <armi.operators.operator.Operator>`
 subclass is built by a factory and its ``operate`` method is called. This fires up the
 main ARMI analysis loop and its interface stack is looped over as indicated by user input.
-
-
