@@ -145,7 +145,7 @@ def init(choice=None, fName=None, cs=None, skipInspection=False):
         the object directly.
 
     skipInspection : bool, optional
-        Whether or not the inputs should be checked for valid settings. Default is True.
+        Whether or not the inputs should be checked for valid settings. Default is False.
 
     Examples
     --------

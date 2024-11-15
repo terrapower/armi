@@ -399,7 +399,7 @@ class Database:
         Parameters
         ----------
         handleInvalids : bool
-            Whether to check for invlaid settings. Default True.
+            Whether to check for invalid settings. Default True.
 
         Notes
         -----
@@ -752,7 +752,7 @@ class Database:
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
         handleInvalids : bool
-            Whether to check for invlaid settings. Default True.
+            Whether to check for invalid settings. Default True.
 
         Returns
         -------
