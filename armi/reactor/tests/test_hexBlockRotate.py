@@ -72,13 +72,10 @@ class HexBlockRotateTests(unittest.TestCase):
     def test_orientationVector(self):
         """Test the z-value in the orientation vector matches rotation.
 
-        .. test:: Demonstrate that a HexBlock can be rotated in 60 degree increments.
+        .. test:: Demonstrate that a HexBlock can be rotated in 60 degree increments, and the
+            orientation parameter reflects the current rotation.
             :id: T_ARMI_ROTATE_HEX_BLOCK
             :tests: R_ARMI_ROTATE_HEX
-
-        .. test:: After rotating a block, the orientation parameter reflects the current rotation.
-            :id: T_ARMI_ROTATE_HEX_ORIENTATION
-            :tests: R_ARMI_ROTATE_HEX_PARAMS
         """
         for nRotations in range(-10, 10):
             rotationAmount = 60 * nRotations
@@ -100,7 +97,7 @@ class HexBlockRotateTests(unittest.TestCase):
 
         .. test:: Rotating a hex block updates parameters on the boundary of the hexagon.
             :id: T_ARMI_ROTATE_HEX_BOUNDARY
-            :tests: R_ARMI_ROTATE_HEX_PARAMS
+            :tests: R_ARMI_ROTATE_HEX
         """
         # No rotation == no changes to data
         self._rotateAndCompareBoundaryParams(0, self.BOUNDARY_DATA)

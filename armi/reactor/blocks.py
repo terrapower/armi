@@ -2051,32 +2051,23 @@ class HexBlock(Block):
 
     def rotate(self, rad: float):
         """
-        Rotates a block's spatially varying parameters by a specified angle in the
-        counter-clockwise direction.
+        Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise
+        direction.
 
-        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
-        Python list of length 6 in order to be eligible for rotation; all parameters that
-        do not meet these two criteria are not rotated.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a Python
+        list of length 6 in order to be eligible for rotation; all parameters that do not meet these
+        two criteria are not rotated.
 
-        .. impl:: Rotating a hex block updates the orientation parameter.
-            :id: I_ARMI_ROTATE_HEX_ORIENTATION
-            :implements: R_ARMI_ROTATE_HEX_PARAMS
-
-        .. impl:: Rotating a hex block updates parameters on the boundary of the hexagon.
-            :id: I_ARMI_ROTATE_HEX_BOUNDARY
-            :tests: R_ARMI_ROTATE_HEX_PARAMS
-
-        .. impl:: Rotating a hex block updates the spatial coordinates on contained objects.
-            :id: I_ARMI_ROTATE_HEX_PIN
-            :tests: R_ARMI_ROTATE_HEX
+        .. impl:: Rotating a hex block updates the orientation parameter, other parameters on the
+            boundary of the hexagon, and updates spatial coordinates of contained objects.
+            :id: I_ARMI_ROTATE_HEX_UPDATES
+            :implements: R_ARMI_ROTATE_HEX
 
         Parameters
         ----------
         rad: float, required
-            Angle of counter-clockwise rotation in units of radians. Rotations must be
-            in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
-            and 2 * PI)
-
+            Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
+            increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, and 2 * PI)
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
