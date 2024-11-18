@@ -28,7 +28,7 @@ New Features
 #. Adding support for ENDF/B-VII.1-based MC2-3 libraries. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
 #. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
-#. Add a method getPinMgFluxes to retrieve the pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Adding a method ``getPinMgFluxes`` to get pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. Exposing ``detailedNDens`` to components. (`PR#1954 <https://github.com/terrapower/armi/pull/1954>`_)
 #. TBD
 
@@ -56,7 +56,7 @@ API Changes
 #. Removing unused class ``SmartList``. (`PR#1992 <https://github.com/terrapower/armi/pull/1992>`_)
 #. `nuclideBases.byMcc3ID` and `getMcc3Id()` return IDs consistent with ENDF/B-VII.1. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. History Tracker: "detail assemblies" are now fuel and control assemblies. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
-#. Removing ``Blocks.py::block::breakFuelComponentsIntoIndividuals``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Removing ``Block.breakFuelComponentsIntoIndividuals()``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. Move getPuMoles from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. TBD
 
