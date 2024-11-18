@@ -1239,11 +1239,13 @@ class Block_TestCase(unittest.TestCase):
         )
         self.assertAlmostEqual(cur, ref, places=12)
 
+        totalHMMass = 0.0
         for c in self.block:
             nucs = c.getNuclides()
             hmNucs = [nuc for nuc in nucs if nucDir.isHeavyMetal(nuc)]
             hmNDens = {hmNuc: c.getNumberDensity(hmNuc) for hmNuc in hmNucs}
             hmMass = densityTools.calculateMassDensity(hmNDens) * c.getVolume()
+            totalHMMass += hmMass
             if hmMass:
                 # hmMass does not need to account for sf since what's calculated in blocks.completeInitialLoading
                 # ends up cancelling out sf
@@ -1261,6 +1263,8 @@ class Block_TestCase(unittest.TestCase):
             else:
                 self.assertEqual(c.p.massHmBOL, 0.0)
                 self.assertEqual(c.p.molesHmBOL, 0.0)
+
+        self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
