@@ -14,9 +14,11 @@
 """Geometric agnostic routines that are useful for fuel cycle analysis."""
 
 import typing
+import operator
 
 import numpy as np
 
+from armi import runLog
 from armi.reactor.flags import Flags
 from armi.reactor.grids import IndexLocation, MultiIndexLocation
 
@@ -129,19 +131,12 @@ def maxBurnupLocator(
 
 def maxBurnupBlock(a: typing.Iterable["Block"]) -> "Block":
     """Find the block that contains the pin with the highest burnup."""
-    maxBlock = None
-    maxBurnup = 0
-    for b in a:
-        maxCompBu = 0
-        for c in b:
-            if not np.any(c.p.pinPercentBu):
-                continue
-            compBu = c.p.pinPercentBu.max()
-            if compBu > maxCompBu:
-                maxCompBu = compBu
-        if maxCompBu > maxBurnup:
-            maxBurnup = maxCompBu
-            maxBlock = b
-    if maxBlock is not None:
-        return maxBlock
-    raise ValueError("No blocks with burnup found")
+    buGetter = operator.attrgetter("p.percentBuPeak")
+    # Discard any blocks with zero burnup
+    blocksWithBurnup = filter(buGetter, a)
+    try:
+        return max(blocksWithBurnup, key=buGetter)
+    except Exception as ee:
+        msg = f"Error finding max burnup block from {a}"
+        runLog.error(msg)
+        raise ValueError(msg) from ee

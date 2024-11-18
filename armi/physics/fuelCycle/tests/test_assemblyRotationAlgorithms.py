@@ -87,8 +87,10 @@ class ShuffleAndRotateTestHelper(TestCase):
 
     def setAssemblyPinBurnups(self, a: HexAssembly, burnups: np.ndarray):
         """Prepare the assembly that will be shuffled and rotated."""
+        peakBu = burnups.max()
         for b in a.getChildrenWithFlags(Flags.FUEL):
             self.ensureBlockHasSpatialGrid(b)
+            b.p.percentBuPeak = peakBu
             for c in b.getChildrenWithFlags(Flags.FUEL):
                 c.p.pinPercentBu = burnups
 
@@ -182,7 +184,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
 
     def test_noBlocksWithBurnup(self):
         """Require at least one block to have burnup."""
-        with self.assertRaisesRegex(ValueError, "No blocks with burnup found"):
+        with self.assertRaisesRegex(ValueError, "Error finding max burnup"):
             getOptimalAssemblyOrientation(self.assembly, self.assembly)
 
     def test_mismatchPinPowersAndLocations(self):

@@ -145,18 +145,25 @@ class FuelCycleUtilsTests(TestCase):
         """Test the ability to find maximum burnup block in an assembly."""
         reflector = Block("reflector")
         assem = [reflector, self.block]
-        self.fuel.p.pinPercentBu = [0.1]
+        self.block.p.percentBuPeak = 40
         expected = utils.maxBurnupBlock(assem)
         self.assertIs(expected, self.block)
 
         # add a new block with more burnup higher up the stack
         hotter = copy.deepcopy(self.block)
-        hotter[0].p.pinPercentBu *= 2
+        hotter.p.percentBuPeak *= 2
         expected = utils.maxBurnupBlock(
             [reflector, self.block, hotter, self.block, reflector]
         )
         self.assertIs(expected, hotter)
 
-    def test_maxBurnupBlockNoBurnup(self):
-        with self.assertRaisesRegex(ValueError, "No blocks with burnup found"):
+    def test_maxBurnupBlockNoBlocks(self):
+        """Ensure a more helpful error is provided for empty sequence."""
+        with self.assertRaisesRegex(ValueError, "Error finding max burnup"):
             utils.maxBurnupBlock([])
+
+    def test_maxBurnupBlockNoBurnup(self):
+        """Ensure that we will not return a block with zero burnup."""
+        self.block.p.percentBuPeak = 0.0
+        with self.assertRaisesRegex(ValueError, "Error finding max burnup"):
+            utils.maxBurnupBlock([self.block])
