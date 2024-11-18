@@ -95,6 +95,22 @@ class TestBlockCollectionMedian(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
+    def test_getBlockNuclideTemperature(self):
+        # doesn't have to be in median block tests, but this is a simpler test
+        nuc = "U235"
+        testBlock = self.blockList[0]
+        amt, amtWeightedTemp = 0, 0
+        for c in testBlock:
+            dens = c.getNumberDensity(nuc)
+            if dens > 0:
+                thisAmt = dens * c.getVolume()
+                amt += thisAmt
+                amtWeightedTemp += thisAmt * c.temperatureInC
+        avgTemp = amtWeightedTemp / amt
+        self.assertAlmostEqual(
+            avgTemp, crossSectionGroupManager.getBlockNuclideTemperature(testBlock, nuc)
+        )
+
 
 class TestBlockCollectionAverage(unittest.TestCase):
     @classmethod
@@ -403,7 +419,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
 
         assert "AC" in xsgm.representativeBlocks, (
             "Assemblies not in the core should still have XS groups"
-            "see getUnrepresentedBlocks()"
+            "see _getMissingBlueprintBlocks()"
         )
 
 
@@ -421,7 +437,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         sodiumDensity = {"NA23": 0.022166571826233578}
         steelDensity = {
             "C": 0.0007685664978992269,
-            "V": 0.0002718224847461385,
+            "V50": 6.795562118653462e-07,
+            "V51": 0.0002711429285342731,
             "SI28": 0.0003789374369638149,
             "SI29": 1.924063709833714e-05,
             "SI30": 1.268328992580968e-05,
@@ -763,29 +780,36 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
 
-    def test_enableBuGroupUpdates(self):
-        self.csm._buGroupUpdatesEnabled = False
-        self.csm.enableBuGroupUpdates()
-        self.assertTrue(self.csm.enableBuGroupUpdates)
+    def test_enableEnvGroupUpdates(self):
+        self.csm._envGroupUpdatesEnabled = False
+        self.csm.enableEnvGroupUpdates()
+        self.assertTrue(self.csm._envGroupUpdatesEnabled)
+        # test flipping again keeps true
+        self.csm.enableEnvGroupUpdates()
+        self.assertTrue(self.csm._envGroupUpdatesEnabled)
 
-    def test_disableBuGroupUpdates(self):
-        self.csm._buGroupUpdatesEnabled = False
-        res = self.csm.disableBuGroupUpdates()
-        self.assertFalse(res)
+    def test_disableEnvGroupUpdates(self):
+        self.csm._envGroupUpdatesEnabled = True
+        wasEnabled = self.csm.disableEnvGroupUpdates()
+        self.assertTrue(wasEnabled)
+        self.assertFalse(self.csm._envGroupUpdatesEnabled)
+        wasEnabled = self.csm.disableEnvGroupUpdates()
+        self.assertFalse(wasEnabled)
+        self.assertFalse(self.csm._envGroupUpdatesEnabled)
 
     def test_updateBurnupGroups(self):
         self.blockList[1].p.percentBu = 3.1
         self.blockList[2].p.percentBu = 10.0
 
-        self.csm._updateBurnupGroups(self.blockList)
+        self.csm._updateEnvironmentGroups(self.blockList)
 
-        self.assertEqual(self.blockList[0].p.buGroup, "A")
-        self.assertEqual(self.blockList[1].p.buGroup, "B")
-        self.assertEqual(self.blockList[2].p.buGroup, "B")
-        self.assertEqual(self.blockList[-1].p.buGroup, "D")
+        self.assertEqual(self.blockList[0].p.envGroup, "A")
+        self.assertEqual(self.blockList[1].p.envGroup, "B")
+        self.assertEqual(self.blockList[2].p.envGroup, "B")
+        self.assertEqual(self.blockList[-1].p.envGroup, "D")
 
     def test_setBuGroupBounds(self):
-        self.assertAlmostEqual(self.csm._upperBuGroupBounds[2], 30.0)
+        self.assertAlmostEqual(self.csm._buGroupBounds[2], 30.0)
 
         with self.assertRaises(ValueError):
             self.csm._setBuGroupBounds([3, 10, 300])
@@ -795,6 +819,14 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.csm._setBuGroupBounds([1, 5, 3])
+
+    def test_setTempGroupBounds(self):
+        # negative temps in C are allowed
+        self.csm._setTempGroupBounds([-5, 3, 10, 300])
+        self.assertAlmostEqual(self.csm._tempGroupBounds[2], 10.0)
+
+        with self.assertRaises(ValueError):
+            self.csm._setTempGroupBounds([1, 5, 3])
 
     def test_addXsGroupsFromBlocks(self):
         blockCollectionsByXsGroup = {}
@@ -810,7 +842,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.blockList[3].p.percentBu = 1.5
         for b in self.blockList[4:]:
             b.p.percentBu = 0.0
-        self.csm._updateBurnupGroups(self.blockList)
+        self.csm._updateEnvironmentGroups(self.blockList)
         blockCollectionsByXsGroup = {}
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
             blockCollectionsByXsGroup, self.blockList
@@ -1075,6 +1107,85 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             csm._copyPregeneratedFluxSolutionFile("YA")
             self.assertTrue(os.path.exists("ISOXA"))
             self.assertTrue(os.path.exists("rzmflxYA"))
+
+
+class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
+    def setUp(self):
+        cs = settings.Settings()
+        cs["tempGroups"] = [300, 400, 500]
+        self.blockList = makeBlocks(11)
+        buAndTemps = (
+            (1, 340),
+            (2, 150),
+            (6, 410),
+            (10.5, 290),
+            (2.5, 360),
+            (4, 460),
+            (15, 370),
+            (16, 340),
+            (15, 700),
+            (14, 720),
+        )
+        for b, env in zip(self.blockList, buAndTemps):
+            bu, temp = env
+            comps = b.getComponents(Flags.FUEL)
+            assert len(comps) == 1
+            c = next(iter(comps))
+            c.setTemperature(temp)
+            b.p.percentBu = bu
+        core = self.blockList[0].core
+
+        def getBlocks(includeAll=True):
+            return self.blockList
+
+        # this sets XSGM to only analyze the blocks in the block list.
+        core.getBlocks = getBlocks
+
+        self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
+        self.csm._setBuGroupBounds([3, 10, 30, 100])
+        self.csm.interactBOL()
+
+    def test_updateEnvironmentGroups(self):
+        self.csm.createRepresentativeBlocks()
+        BL = self.blockList
+        loners = [BL[1], BL[3]]
+
+        self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
+        sameGroups = [(BL[0], BL[4]), (BL[2], BL[5]), (BL[6], BL[7]), (BL[8], BL[9])]
+
+        # check that likes have like and different are different
+        for group in sameGroups:
+            b1, b2 = group
+            xsSuffix = b1.getMicroSuffix()
+            self.assertEqual(xsSuffix, b2.getMicroSuffix())
+            for group in sameGroups:
+                newb1, newb2 = group
+                if b1 is newb1:
+                    continue
+                self.assertNotEqual(xsSuffix, newb1.getMicroSuffix())
+                self.assertNotEqual(xsSuffix, newb2.getMicroSuffix())
+            for lone in loners:
+                self.assertNotEqual(xsSuffix, lone.getMicroSuffix())
+        self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
+
+        # calculated based on the average of buAndTemps
+        expectedIDs = ["AF", "AA", "AL", "AC", "AH", "AR"]
+        expectedTemps = [
+            (340 + 360) / 2,
+            150,
+            (410 + 460) / 2,
+            290,
+            (370 + 340) / 2,
+            (700 + 720) / 2,
+        ]
+        expectedBurnups = (1.75, 2, 5, 10.5, 15.5, 14.5)
+        for xsID, expectedTemp, expectedBurnup in zip(
+            expectedIDs, expectedTemps, expectedBurnups
+        ):
+            b = self.csm.representativeBlocks[xsID]
+            thisTemp = self.csm.avgNucTemperatures[xsID]["U238"]
+            self.assertAlmostEqual(thisTemp, expectedTemp)
+            self.assertAlmostEqual(b.p.percentBu, expectedBurnup)
 
 
 class TestXSNumberConverters(unittest.TestCase):

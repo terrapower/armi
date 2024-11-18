@@ -121,7 +121,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
         self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
 
-    def test_setDefaultSettingsByLowestBuGroupHomogeneous(self):
+    def test_setDefaultSettingsByLowestEnvGroupHomogeneous(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xs = XSSettings()
@@ -147,7 +147,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("JB", xs)
         self.assertNotEqual(xs["JD"], xs["JB"])
 
-    def test_setDefaultSettingsByLowestBuGroupOneDimensional(self):
+    def test_setDefaultSettingsByLowestEnvGroupOneDimensional(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xsModel = XSSettings()
