@@ -178,7 +178,7 @@ def defineSettings():
             default="ENDF/B-VII.1",
             description="Library name for MCNP cross sections. ENDF/B-VII.1 is the default library.",
             label="ENDF data library version to use for MCNP Analysis",
-            options=["ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
+            options=["ENDF/B-V.0", "ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
         ),
         setting.Setting(
             CONF_NEUTRONICS_TYPE,
