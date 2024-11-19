@@ -1,0 +1,1 @@
+Removing flags CORE and REACTOR

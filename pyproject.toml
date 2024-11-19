@@ -265,6 +265,35 @@ exclude_also = [
 
 ignore_errors = true
 
+#######################################################################
+#                            towncrier                                #
+#######################################################################
+[tool.towncrier]
+package = "armi"
+directory = "news"
+single_file = false
+filename = "doc/{version}.rst"
+issue_format = "`PR#{issue} <https://github.com/terrapower/armi/pull/{issue}>`_"
+template = "doc/news.jinja"
+
+# Custom fragment types
+# Fragment types are discovered by their file name
+# Where as the "name" here is the section name these fragments are
+# placed under when generating the changelog. So
+# "123.feat.rst" would be collected in the "New Features" section
+# while "456.api.rst" would be collected in the "API Changes" section.
+[tool.towncrier.fragment.feat]
+name = "New Features"
+
+[tool.towncrier.fragment.api]
+name = "API Changes"
+
+[tool.towncrier.fragment.fix]
+name = "Bug Fixes"
+
+[tool.towncrier.fragment.qa]
+name = "Quality Work"
+
 
 #######################################################################
 #              DATA FILES TO BE INCLUDED WITH THE PROJECT             #

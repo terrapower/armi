@@ -1,0 +1,15 @@
+{{ versiondata.name | upper }} v{{ versiondata.version }}
+{{ top_underline * ((versiondata.name + versiondata.version) | length + 2) }}
+
+Release Date: {{ versiondata.date }}
+
+{% for section, changes in sections.items() %}
+{% for category, parameters in definitions.items() if category in changes %}
+{{ parameters["name"] }}
+{{ underlines[0] * parameters["name"]|length}}
+{% for text, values in changes[category].items() %}
+- {{ values | join("") }} {{ text }}
+{% endfor %}
+
+{% endfor %}
+{% endfor %}
