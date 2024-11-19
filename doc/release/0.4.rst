@@ -57,7 +57,7 @@ API Changes
 #. `nuclideBases.byMcc3ID` and `getMcc3Id()` return IDs consistent with ENDF/B-VII.1. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. History Tracker: "detail assemblies" are now fuel and control assemblies. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. Removing ``Block.breakFuelComponentsIntoIndividuals()``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
-#. Move getPuMoles from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Moving ``getPuMoles`` from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. TBD
 
 Bug Fixes
