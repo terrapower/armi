@@ -86,6 +86,14 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "pinPercentBu",
+            setter=isNumpyArray("pinPercentBu"),
+            units=units.PERCENT_FIMA,
+            description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
+            default=None,
+        )
+
+        pb.defParam(
             "buRate",
             units=f"{units.PERCENT_FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
