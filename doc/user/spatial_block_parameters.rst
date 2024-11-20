@@ -186,7 +186,7 @@ component exists in space. If we grab the fuel component from the UO2 block in t
     [ 0.4444 -0.4444  0.    ]
     [0.76972338 0.76972338 0.        ]
     [0. 0. 0.]
-    Anchor: <fuel B0009-001 at 008-040-001 XS: C BU GP: A>
+    Anchor: <fuel B0009-001 at 008-040-001 XS: C ENV GP: A>
     Offset: [0. 0. 0.]
     Num Locations: 400>
     >>> fuel = fuelBlock.getChildrenWithFlags(Flags.FUEL)[0]
