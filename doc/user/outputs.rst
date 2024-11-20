@@ -2,8 +2,8 @@
 Outputs
 *******
 
-ARMI output files are described in this section. Many outputs may be generated during an ARMI run. They fall into
-various categories:
+ARMI output files are described in this section. Many outputs may be generated during an ARMI run.
+They fall into various categories:
 
 Framework outputs
     Files like the **stdout** and the **database** are produced in nearly all runs.
@@ -15,10 +15,10 @@ Physics kernel outputs
     If ARMI executes an external physics kernel during a run, its associated output files are often available in the
     working directory. These files are typically read by ARMI during the run, and relevant data is transferred onto the
     reactor model (and ends up in the ARMI **database**). If the user desires to retain all of the inputs and outputs
-    associated with the physics kernel runs for a given time step, this can be specified with the ``savePhysicsIO`` setting.
-    For any time step specified in the list under ``savePhysicsIO``, a ``cXnY/`` folder will be created, and ARMI will store all
-    inputs and outputs associated with each physics kernel executed at this time step in a folder inside of ``cXnY/``.
-    The format for specifying a state point is 00X00Y for cycle X, step Y.
+    associated with the physics kernel runs for a given time step, this can be specified with the ``savePhysicsIO``
+    setting. For any time step specified in the list under ``savePhysicsIO``, a ``cXnY/`` folder will be created, and
+    ARMI will store all inputs and outputs associated with each physics kernel executed at this time step in a folder
+    inside of ``cXnY/``. The format for specifying a state point is 00X00Y for cycle X, step Y.
 
 Together the output fully define the analyzed ARMI case.
 
@@ -68,28 +68,26 @@ This provides live information on the progress.
 
 The Database File
 =================
-The **database** file is a self-contained complete (or nearly complete) binary
-representation of the ARMI composite model state during a case. The database contains
-the text of the input files that were used to create the case, and for each time node,
-the values of all composite parameters as well as layout information to help fully
-reconstruct the structure of the reactor model.
+The **database** file is a self-contained, binary representation of the state of the ARMI composite
+model state during a simulation. The database contains full, plain-text of the input files that were
+used to create the case. And for each time node, the values of all composite parameters as well as
+layout information to help fully reconstruct the reactor data model.
 
 Loading Reactor State
 ---------------------
-Among other things, the database file can be used to recover an ARMI reactor model from
-any of the time nodes that it contains. This can be useful for performing restart runs,
-or for doing custom post-processing tasks. To load a reactor state, you will need to
-open the database file into a ``Database`` object. From there, you can call the
-:py:meth:`armi.bookkeeping.db.Database.load()` method to get a recovered
-reactor object. For instance, given a database file called ``myDatabase.h5``, we could
-load the reactor state at cycle 5, time node 2 with the following::
+Among other things, the database file can be used to recover an ARMI reactor model from any of the
+time nodes that it contains. This can be useful for performing restart runs, or for doing custom
+post-processing analysis. To load a reactor state, you will need to open the database file into a
+``Database`` object. From there, you can call the :py:meth:`armi.bookkeeping.db.Database.load()`
+method to get a recovered ``Reactor`` object. For instance, given a database file called
+``myDatabase.h5``, we could load the reactor state at cycle 5, time node 2 with the following::
 
    from armi.bookkeeping.db import databaseFactory
 
    db = databaseFactory("myDatabase.h5", "r")
 
-   # The underlying file is not left open when we can help it. Use the handy context
-   # manager to temporarily open the file and interact with the data:
+   # The underlying file is not left open unless necessary. Use the handy context manager to
+   # temporarily open the file and interact with the data:
    with db:
        r = db.load(5, 2)
 
@@ -127,28 +125,22 @@ available for viewing, editing, and scripting HDF5 files. The ARMI database uses
 `h5py` package for interacting with the underlying data and metadata.
 At a high level there are 3 things to know about HDF5:
 
-1. Groups - groups are named collections of datasets. You might think of a group as a
-   filesystem folder.
-2. Datasets - Datasets are named values. If a group is a folder, a dataset
-   is a file. Values are
-   strongly typed (think `int`, `float`, `double`, but also whether it is big endian,
-   little endian so that the file is portable across different systems). Values can be
-   scalar, vector, or N-dimensional arrays.
-3. Attributes - attributes can exist on a dataset or a group to provide supplemental
-   information about the group or dataset. We use attributes to indicate the ARMI
-   database version that was used to create the database, the time the case was
-   executed, and whether or not the case completed successfully. We also sometimes apply
-   attributes to datasets to indicate if any special formatting or layout was used to
-   store Parameter values or the like.
+1. **Groups** - Groups are named collections of datasets. Think of a group as a filesystem folder.
+2. **Datasets** - Datasets are named values. If a group is a folder, a dataset is a file. Values are
+   strongly typed (think `int`, `float`, `double`, but also whether it is big endian, little endian
+   so that the file is portable across different systems). Values can be scalar, vector, or
+   N-dimensional arrays.
+3. **Attributes** - Attributes can exist on a dataset or a group to provide supplemental
+   information about the group or dataset. We use attributes to indicate the ARMI database version
+   that was used to create the database, the time the case was executed, and whether or not the
+   case completed successfully. We also sometimes apply attributes to datasets to indicate if any
+   special formatting or layout was used to store Parameter values or the like.
 
-There are many other features of HDF5, but from a usability standpoint that is enough
-information to get started.
+There are many other features of HDF5, but this is enough information to get started.
 
 Database Structure
 ------------------
-The database structure is outlined below. This shows the broad strokes of how the
-database is put together, but many more details may be gleaned from the in-line
-documentation of the database modules.
+The broad strokes of the database structure is outlined below.
 
 .. list-table:: Database structure
    :header-rows: 1
@@ -257,3 +249,25 @@ such special data to the HDF5 file and reading it back again is accomplished wit
 :py:func:`armi.bookkeeping.db.database.packSpecialData` and
 :py:func:`armi.bookkeeping.db.database.unpackSpecialData`. Refer to their implementations
 and documentation for more details.
+
+Loading Reactor State as Read-Only
+----------------------------------
+Another option you have, though it will probably come up less often, is to lead a ``Reactor`` object
+from a database file in read-only mode. Mostly what this does is set all the parameters loaded into
+the reactor data model to a read-only mode. This can be useful to ensure that downstream analysts
+do not modify the data they are reading. It looks much like the usual database load::
+
+   from armi.bookkeeping.db import databaseFactory
+
+   db = databaseFactory("myDatabase.h5", "r")
+
+   with db:
+       r = db.loadReadOnly(5, 2)
+
+Another common use for ``Database.loadReadOnly()`` is when you want to build a tool for analysts
+that can open an ARMI database file without the ``App`` that created it. Solving such a problem
+generically is hard-or-impossible, but assuming you probably know a lot about the ``App`` that
+created an ARMI output file, this is usually doable in practice. To do so, you will want to look at
+the :py:class:`PassiveDBLoadPlugin <armi.bookkeeping.db.passiveDBLoadPlugin.PassiveDBLoadPlugin>`.
+This tool allows you to passively load an output database even if there are parameters or blueprint
+sections that are unknown.
