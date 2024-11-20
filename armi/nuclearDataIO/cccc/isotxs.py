@@ -113,6 +113,7 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
     equal &= lib1.isotxsMetadata.compare(lib2.isotxsMetadata, lib1, lib2)
     # check the nuclides
     for nucName in set(lib1.nuclideLabels + lib2.nuclideLabels):
+        runLog.important("Results for {}".format(nucName))
         nuc1 = lib1.get(nucName, None)
         nuc2 = lib2.get(nucName, None)
         if nuc1 is None or nuc2 is None:
@@ -123,7 +124,10 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
                 runLog.warning(warning.format(nuc2, 2, 1))
             equal = False
             continue
-        equal &= compareNuclideXS(nuc1, nuc2, tolerance, verbose)
+        nucEqual = compareNuclideXS(nuc1, nuc2, tolerance, verbose)
+        if nucEqual:
+            runLog.important("cross sections equal")
+        equal &= nucEqual
     return equal
 
 
