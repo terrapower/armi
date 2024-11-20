@@ -14,6 +14,8 @@ permissions:
 
 jobs:
   stale:
+    # This workflow is not designed to make sense on forks
+    if: github.repository == 'terrapower/armi'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/stale@v8

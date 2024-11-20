@@ -30,7 +30,7 @@ from typing import (
 from armi import context
 from armi import interfaces
 from armi import runLog
-from armi.bookkeeping.db.database3 import Database3, getH5GroupName
+from armi.bookkeeping.db.database import Database, getH5GroupName
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.composites import ArmiObject
 from armi.bookkeeping.db.typedefs import History, Histories
@@ -118,11 +118,10 @@ class DatabaseInterface(interfaces.Interface):
 
         if self.cs["reloadDBName"].lower() == str(self._dbPath).lower():
             raise ValueError(
-                "It appears that reloadDBName is the same as the case "
-                "title. This could lead to data loss! Rename the reload DB or the "
-                "case."
+                "It appears that reloadDBName is the same as the case title. "
+                "This could lead to data loss! Rename the reload DB or the case."
             )
-        self._db = Database3(self._dbPath, "w")
+        self._db = Database(self._dbPath, "w")
         self._db.open()
 
         # Grab geomString here because the DB-level has no access to the reactor or
@@ -206,7 +205,7 @@ class DatabaseInterface(interfaces.Interface):
         if context.MPI_RANK > 0:
             # DB may not exist if distribute state is called early.
             if self._dbPath is not None and os.path.exists(self._dbPath):
-                self._db = Database3(self._dbPath, "r")
+                self._db = Database(self._dbPath, "r")
                 self._db.open()
 
     def distributable(self):
@@ -227,7 +226,7 @@ class DatabaseInterface(interfaces.Interface):
 
             This method loads the state of a reactor from a particular point in time
             from a standard ARMI
-            :py:class:`Database <armi.bookkeeping.db.database3.Database3>`. This is a
+            :py:class:`Database <armi.bookkeeping.db.database.Database>`. This is a
             major use-case for having ARMI databases in the first case. And restarting
             from such a database is easy, you just need to set a few settings::
 
@@ -251,7 +250,7 @@ class DatabaseInterface(interfaces.Interface):
         startCycle = self.cs["startCycle"]
         startNode = self.cs["startNode"]
 
-        with Database3(reloadDBName, "r") as inputDB:
+        with Database(reloadDBName, "r") as inputDB:
             loadDbCs = inputDB.loadCS()
 
             # pull the history up to the cycle/node prior to `startCycle`/`startNode`
@@ -312,12 +311,12 @@ class DatabaseInterface(interfaces.Interface):
             if self._db is not None and fileName == self._db._fileName:
                 yield self._db
             elif os.path.exists(fileName):
-                yield Database3(fileName, "r")
+                yield Database(fileName, "r")
         else:
             if self._db is not None:
                 yield self._db
             if os.path.exists(self.cs["reloadDBName"]):
-                yield Database3(self.cs["reloadDBName"], "r")
+                yield Database(self.cs["reloadDBName"], "r")
 
     def loadState(self, cycle, timeNode, timeStepName="", fileName=None):
         """
@@ -371,15 +370,14 @@ class DatabaseInterface(interfaces.Interface):
         """
         Get historical parameter values for a single object.
 
-        This is mostly a wrapper around the same function on the ``Database3`` class,
+        This is mostly a wrapper around the same function on the ``Database`` class,
         but knows how to return the current value as well.
 
         See Also
         --------
-        Database3.getHistory
+        Database.getHistory
         """
-        # make a copy so that we can potentially remove timesteps without affecting the
-        # caller
+        # make a copy so that we can potentially remove timesteps without affecting the caller
         timeSteps = copy.copy(timeSteps)
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None
@@ -411,12 +409,12 @@ class DatabaseInterface(interfaces.Interface):
         """
         Get historical parameter values for one or more objects.
 
-        This is mostly a wrapper around the same function on the ``Database3`` class,
+        This is mostly a wrapper around the same function on the ``Database`` class,
         but knows how to return the current value as well.
 
         See Also
         --------
-        Database3.getHistories
+        Database.getHistories
         """
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None

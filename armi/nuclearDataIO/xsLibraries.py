@@ -127,7 +127,7 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         isosWithSuffix = [
             iso
             for iso in isosToMerge
-            if re.match(f".*ISO[A-Z]{{2}}F?{xsLibrarySuffix}$", iso)
+            if re.match(f".*ISO[A-Za-z]{{2}}F?{xsLibrarySuffix}$", iso)
         ]
         isosToMerge = [
             iso
@@ -193,7 +193,7 @@ def mergeXSLibrariesInWorkingDirectory(
     for xsLibFilePath in sorted(xsLibFiles):
         try:
             # get XS ID from the cross section library name
-            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(1)
+            xsID = re.search("ISO([A-Z0-9a-z]{2})", xsLibFilePath).group(1)
         except AttributeError:
             # if glob has matched something that is not actually an ISOXX file,
             # the .group() call will fail

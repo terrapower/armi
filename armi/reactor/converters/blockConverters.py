@@ -488,9 +488,9 @@ class BlockAvgToCylConverter(BlockConverter):
         fig.tight_layout()
         if fName:
             plt.savefig(fName)
+            plt.close()
         else:
             plt.show()
-        plt.close()
         return fName
 
 
@@ -508,6 +508,11 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
     nonpins ...
 
+    The ``ductHeterogeneous`` option allows the user to treat everything inside the duct
+    as a single homogenized composition. This could significantly reduce the memory and runtime
+    required for the lattice physics solver, and also provide an alternative approximation for
+    the spatial self-shielding effect on microscopic cross sections.
+
     This converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined and for
     the ``sourceBlock`` to have a spatial grid defined. Additionally, both the ``sourceBlock``
     and ``driverFuelBlock`` must be instances of HexBlocks.
@@ -519,6 +524,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         driverFuelBlock=None,
         numExternalRings=None,
         mergeIntoClad=None,
+        mergeIntoFuel=None,
+        ductHeterogeneous=False,
     ):
         BlockAvgToCylConverter.__init__(
             self,
@@ -548,6 +555,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 )
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
+        self.mergeIntoFuel = mergeIntoFuel or []
+        self.ductHeterogeneous = ductHeterogeneous
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
         if not self.interRingComponent:
@@ -583,9 +592,12 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self._sourceBlock.getNumPins()
         )
         pinComponents, nonPins = self._classifyComponents()
-        self._buildFirstRing(pinComponents)
-        for ring in range(2, numRings + 1):
-            self._buildNthRing(pinComponents, ring)
+        if self.ductHeterogeneous:
+            self._buildInsideDuct()
+        else:
+            self._buildFirstRing(pinComponents)
+            for ring in range(2, numRings + 1):
+                self._buildNthRing(pinComponents, ring)
         self._buildNonPinRings(nonPins)
         self._addDriverFuelRings()
 
@@ -606,9 +618,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         )
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
 
-        # do user-input merges
+        # do user-input merges into cladding
         for componentName in self.mergeIntoClad:
             self.dissolveComponentIntoComponent(componentName, "clad")
+
+        # do user-input merges into fuel
+        for componentName in self.mergeIntoFuel:
+            self.dissolveComponentIntoComponent(componentName, "fuel")
 
     def _classifyComponents(self):
         """
@@ -644,6 +660,25 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 nonPins.append(c)
 
         return list(sorted(pinComponents)), nonPins
+
+    def _buildInsideDuct(self):
+        """Build a homogenized material of the components inside the duct."""
+        blockType = self._sourceBlock.getType()
+        blockName = f"Homogenized {blockType}"
+        newBlock, mixtureFlags = stripComponents(self._sourceBlock, Flags.DUCT)
+        outerDiam = getOuterDiamFromIDAndArea(0.0, newBlock.getArea())
+        circle = components.Circle(
+            blockName,
+            "_Mixture",
+            newBlock.getAverageTempInC(),
+            newBlock.getAverageTempInC(),
+            id=0.0,
+            od=outerDiam,
+            mult=1,
+        )
+        circle.setNumberDensities(newBlock.getNumberDensities())
+        circle.p.flags = mixtureFlags
+        self.convertedBlock.add(circle)
 
     def _buildFirstRing(self, pinComponents):
         """Add first ring of components to new block."""
@@ -693,14 +728,17 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         Also needs to add final coolant layer between the outer pins and the non-pins.
         Will crash if there are things that are not circles or hexes.
         """
-        # fill in the last ring of coolant using the rest
-        coolInnerDiam = self.convertedBlock[-1].getDimension("od")
-        coolantOD = getOuterDiamFromIDAndArea(
-            coolInnerDiam, self._remainingCoolantFillArea
-        )
-        self._addCoolantRing(coolantOD, " outer")
+        if not self.ductHeterogeneous:
+            # fill in the last ring of coolant using the rest
+            coolInnerDiam = self.convertedBlock[-1].getDimension("od")
+            coolantOD = getOuterDiamFromIDAndArea(
+                coolInnerDiam, self._remainingCoolantFillArea
+            )
+            self._addCoolantRing(coolantOD, " outer")
+            innerDiameter = coolantOD
+        else:
+            innerDiameter = self.convertedBlock[-1].getDimension("od")
 
-        innerDiameter = coolantOD
         for i, hexagon in enumerate(sorted(nonPins)):
             outerDiam = getOuterDiamFromIDAndArea(
                 innerDiameter, hexagon.getArea()
@@ -824,3 +862,63 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
         rLast, bigRLast = rodRadius, distFromCenterComp
 
     return sorted(radiiFromRodCenter)
+
+
+def stripComponents(block, compFlags):
+    """
+    Remove all components from a block outside of the first component that matches compFlags.
+
+    Parameters
+    ----------
+    block : armi.reactor.blocks.Block
+        Source block from which to produce a modified copy
+    compFlags : armi.reactor.flags.Flags
+        Component flags to indicate which components to strip from the
+        block. All components outside of the first one that matches
+        compFlags are stripped.
+
+    Returns
+    -------
+    newBlock : armi.reactor.blocks.Block
+        Copy of source block with specified components stripped off.
+    mixtureFlags : TypeSpec
+        Combination of all component flags within newBlock.
+
+    Notes
+    -----
+    This is often used for creating a partially heterogeneous representation
+    of a block. For example, one might want to treat everything inside of a
+    specific component (such as the duct) as homogenized, while keeping a
+    heterogeneous representation of the remaining components.
+    """
+    newBlock = copy.deepcopy(block)
+    avgBlockTemp = block.getAverageTempInC()
+    mixtureFlags = newBlock.getComponent(Flags.COOLANT).p.flags
+    innerMostComp = next(
+        i
+        for i, c in enumerate(sorted(newBlock.getComponents()))
+        if c.hasFlags(compFlags)
+    )
+    outsideComp = True
+    indexedComponents = [(i, c) for i, c in enumerate(sorted(newBlock.getComponents()))]
+    for i, c in sorted(indexedComponents, reverse=True):
+        if outsideComp:
+            if i == innerMostComp:
+                compIP = c.getDimension("ip")
+                outsideComp = False
+            newBlock.remove(c, recomputeAreaFractions=False)
+        else:
+            mixtureFlags = mixtureFlags | c.p.flags
+
+    # add pitch defining component with no area
+    newBlock.add(
+        components.Hexagon(
+            "pitchComponent",
+            "Void",
+            avgBlockTemp,
+            avgBlockTemp,
+            ip=compIP,
+            op=compIP,
+        )
+    )
+    return newBlock, mixtureFlags

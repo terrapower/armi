@@ -139,9 +139,6 @@ class HistoryTrackerInterface(interfaces.Interface):
         self.xsHistory = {}
         self._preloadedBlockHistory = None
 
-        msg = "The HistoryTrackerInterface is deprecated, and will be removed."
-        runLog.warning(msg)
-
     def interactBOL(self):
         self.addDetailAssembliesBOL()
 
@@ -342,7 +339,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             out.write("\n\n\nAssembly info\n")
             out.write("{0} {1}\n".format(a.getName(), a.getType()))
             for b in blocks:
-                out.write('"{}" {} {}\n'.format(b.getType(), b.p.xsType, b.p.buGroup))
+                out.write('"{}" {} {}\n'.format(b.getType(), b.p.xsType, b.p.envGroup))
 
     def preloadBlockHistoryVals(self, names, keys, timesteps):
         """

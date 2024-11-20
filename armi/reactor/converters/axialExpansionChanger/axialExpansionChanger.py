@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
+import typing
 
 from numpy import array
 
 from armi import runLog
+from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     ExpansionData,
-    getSolidComponents,
+    iterSolidComponents,
 )
 from armi.reactor.flags import Flags
 
@@ -69,6 +71,9 @@ class AxialExpansionChanger:
       for any other assembly type.
     - Useful for fuel performance, thermal expansion, reactivity coefficients, etc.
     """
+
+    linked: typing.Optional[AssemblyAxialLinkage]
+    expansionData: typing.Optional[ExpansionData]
 
     def __init__(self, detailedAxialExpansion: bool = False):
         """
@@ -149,7 +154,7 @@ class AxialExpansionChanger:
                 b.completeInitialLoading()
 
     def performPrescribedAxialExpansion(
-        self, a, componentLst: list, percents: list, setFuel=True
+        self, a: Assembly, components: list, percents: list, setFuel=True
     ):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
 
@@ -168,10 +173,10 @@ class AxialExpansionChanger:
         ----------
         a : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             ARMI assembly to be changed
-        componentLst : list[:py:class:`Component <armi.reactor.components.component.Component>`]
+        components : list[:py:class:`Component <armi.reactor.components.component.Component>`]
             list of Components to be expanded
         percents : list[float]
-            list of expansion percentages for each component listed in componentList
+            list of expansion percentages for each component listed in components
         setFuel : boolean, optional
             Boolean to determine whether or not fuel blocks should have their target components set
             This is useful when target components within a fuel block need to be determined on-the-fly.
@@ -181,12 +186,12 @@ class AxialExpansionChanger:
         - percents may be positive (expansion) or negative (contraction)
         """
         self.setAssembly(a, setFuel)
-        self.expansionData.setExpansionFactors(componentLst, percents)
+        self.expansionData.setExpansionFactors(components, percents)
         self.axiallyExpandAssembly()
 
     def performThermalAxialExpansion(
         self,
-        a,
+        a: Assembly,
         tempGrid: list,
         tempField: list,
         setFuel: bool = True,
@@ -233,7 +238,7 @@ class AxialExpansionChanger:
         self.linked = None
         self.expansionData = None
 
-    def setAssembly(self, a, setFuel=True, expandFromTinputToThot=False):
+    def setAssembly(self, a: Assembly, setFuel=True, expandFromTinputToThot=False):
         """Set the armi assembly to be changed and init expansion data class for assembly.
 
         Parameters
@@ -322,10 +327,10 @@ class AxialExpansionChanger:
             # set bottom of block equal to top of block below it
             # if ib == 0, leave block bottom = 0.0
             if ib > 0:
-                b.p.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in getSolidComponents(b):
+                for c in iterSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
                     runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
                     c.height = growFrac * blockHeight
@@ -333,21 +338,17 @@ class AxialExpansionChanger:
                     if ib == 0:
                         c.zbottom = 0.0
                     else:
-                        if self.linked.linkedComponents[c][0] is not None:
+                        if self.linked.linkedComponents[c].lower is not None:
                             # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c][0].ztop
+                            c.zbottom = self.linked.linkedComponents[c].lower.ztop
                         else:
                             # otherwise there aren't any linked components
                             # so just set the bottom of the component to
                             # the top of the block below it
-                            c.zbottom = self.linked.linkedBlocks[b][0].p.ztop
+                            c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                     c.ztop = c.zbottom + c.height
                     # update component number densities
-                    newNumberDensities = {
-                        nuc: c.getNumberDensity(nuc) / growFrac
-                        for nuc in c.getNuclides()
-                    }
-                    c.setNumberDensities(newNumberDensities)
+                    c.changeNDensByFactor(1.0 / growFrac)
                     # redistribute block boundaries if on the target component
                     if self.expansionData.isTargetComponent(c):
                         b.p.ztop = c.ztop
@@ -388,7 +389,7 @@ class AxialExpansionChanger:
         if not self._detailedAxialExpansion:
             # loop through again now that the reference is adjusted and adjust the non-fuel assemblies.
             for a in r.core.getAssemblies():
-                a.setBlockMesh(r.core.refAssem.getAxialMesh())
+                a.setBlockMesh(r.core.refAssem.getAxialMesh(), conserveMassFlag="auto")
 
         oldMesh = r.core.p.axialMesh
         r.core.updateAxialMesh()

@@ -49,6 +49,7 @@ CONF_GEOM = "geometry"
 CONF_HOMOGBLOCK = "useHomogenizedBlockComposition"
 CONF_INTERNAL_RINGS = "numInternalRings"
 CONF_MERGE_INTO_CLAD = "mergeIntoClad"
+CONF_MERGE_INTO_FUEL = "mergeIntoFuel"
 CONF_MESH_PER_CM = "meshSubdivisionsPerCm"
 CONF_REACTION_DRIVER = "nuclideReactionDriver"
 CONF_XSID = "xsID"
@@ -57,6 +58,9 @@ CONF_XS_PRIORITY = "xsPriority"
 CONF_COMPONENT_AVERAGING = "averageByComponent"
 CONF_XS_MAX_ATOM_NUMBER = "xsMaxAtomNumber"
 CONF_MIN_DRIVER_DENSITY = "minDriverDensity"
+CONF_DUCT_HETEROGENEOUS = "ductHeterogeneous"
+CONF_TRACE_ISOTOPE_THRESHOLD = "traceIsotopeThreshold"
+CONF_XS_TEMP_ISOTOPE = "xsTempIsotope"
 
 
 class XSGeometryTypes(Enum):
@@ -118,6 +122,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_EXECUTE_EXCLUSIVE,
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB): {
         CONF_XSID,
@@ -131,11 +136,13 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER): {
         CONF_XSID,
         CONF_GEOM,
         CONF_MERGE_INTO_CLAD,
+        CONF_MERGE_INTO_FUEL,
         CONF_DRIVER,
         CONF_HOMOGBLOCK,
         CONF_INTERNAL_RINGS,
@@ -149,6 +156,9 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_DUCT_HETEROGENEOUS,
+        CONF_TRACE_ISOTOPE_THRESHOLD,
+        CONF_XS_TEMP_ISOTOPE,
     },
     XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX): {
         CONF_XSID,
@@ -165,6 +175,7 @@ _VALID_INPUTS_BY_GEOMETRY_TYPE = {
         CONF_XS_PRIORITY,
         CONF_XS_MAX_ATOM_NUMBER,
         CONF_MIN_DRIVER_DENSITY,
+        CONF_XS_TEMP_ISOTOPE,
     },
 }
 
@@ -186,6 +197,7 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_INTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_EXTERNAL_RINGS): vol.Coerce(int),
         vol.Optional(CONF_MERGE_INTO_CLAD): [str],
+        vol.Optional(CONF_MERGE_INTO_FUEL): [str],
         vol.Optional(CONF_XS_FILE_LOCATION): [str],
         vol.Optional(CONF_EXTERNAL_FLUX_FILE_LOCATION): str,
         vol.Optional(CONF_MESH_PER_CM): vol.Coerce(float),
@@ -194,6 +206,9 @@ _SINGLE_XS_SCHEMA = vol.Schema(
         vol.Optional(CONF_XS_MAX_ATOM_NUMBER): vol.Coerce(int),
         vol.Optional(CONF_MIN_DRIVER_DENSITY): vol.Coerce(float),
         vol.Optional(CONF_COMPONENT_AVERAGING): bool,
+        vol.Optional(CONF_DUCT_HETEROGENEOUS): bool,
+        vol.Optional(CONF_TRACE_ISOTOPE_THRESHOLD): vol.Coerce(float),
+        vol.Optional(CONF_XS_TEMP_ISOTOPE): str,
     }
 )
 
@@ -250,19 +265,21 @@ class XSSettings(dict):
         if xsID in self:
             return dict.__getitem__(self, xsID)
 
+        # exact key not present so give lowest env group key, eg AA or BA as the source for
+        # settings since users do not typically provide all combinations of second chars explicitly
         xsType = xsID[0]
-        buGroup = xsID[1]
+        envGroup = xsID[1]
         existingXsOpts = [
             xsOpt
             for xsOpt in self.values()
-            if xsOpt.xsType == xsType and xsOpt.buGroup < buGroup
+            if xsOpt.xsType == xsType and xsOpt.envGroup < envGroup
         ]
 
         if not any(existingXsOpts):
             return self._getDefault(xsID)
 
         else:
-            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.buGroup)[0]
+            return sorted(existingXsOpts, key=lambda xsOpt: xsOpt.envGroup)[0]
 
     def setDefaults(self, blockRepresentation, validBlockTypes):
         """
@@ -410,6 +427,12 @@ class XSModelingOptions:
         and is sometimes used to merge a "gap" or low-density region into
         a "clad" region to avoid numerical issues.
 
+    mergeIntoFuel : list of str
+        This is a lattice physics configuration option that is a list of component
+        names to merge into a "fuel" component. This is highly-design specific
+        and is sometimes used to merge a "gap" or low-density region into
+        a "fuel" region to avoid numerical issues.
+
     meshSubdivisionsPerCm : float
         This is a lattice physics configuration option that can be used to control
         subregion meshing of the representative block in 1D problems.
@@ -419,7 +442,7 @@ class XSModelingOptions:
         no others will allocate to it. This is useful for time balancing when you
         have one task that takes much longer than the others.
 
-    xsPriority:
+    xsPriority: int
         The priority of the mpi tasks that results from this xsID. Lower priority
         will execute first. starting longer jobs first is generally more efficient.
 
@@ -429,9 +452,34 @@ class XSModelingOptions:
         (e.g., fission products) as a depletion product of an isotope with a much
         smaller atomic number.
 
+    averageByComponent: bool
+        Controls whether the representative block averaging is performed on a
+        component-by-component basis or on the block as a whole. If True, the
+        resulting representative block will have component compositions that
+        largely reflect those of the underlying blocks in the collection. If
+        False, the number densities of some nuclides in the individual
+        components may not be reflective of those of the underlying components
+        due to the block number density "dehomogenization".
+
     minDriverDensity: float
         The minimum number density for nuclides included in driver material for a 1D
         lattice physics model.
+
+    ductHeterogeneous : bool
+        This is a lattice physics configuration option used to enable a partially
+        heterogeneous approximation for a 1D cylindrical model. Everything inside of the
+        duct will be treated as homogeneous.
+
+    traceIsotopeThreshold : float
+        This is a lattice physics configuration option used to enable a separate 0D fuel
+        cross section calculation for trace fission products when using a 1D cross section
+        model. This can significantly reduce the memory and run time required for the 1D
+        model. The setting takes a float value that represents the number density cutoff
+        for isotopes to be considered "trace". If no value is provided, the default is 0.0.
+
+    xsTempIsotope: str
+            The isotope whose temperature is interrogated when placing a block in a temperature cross section group.
+            See `tempGroups`. "U238" is default since it tends to be dominant doppler isotope in most reactors.
 
     Notes
     -----
@@ -458,12 +506,16 @@ class XSModelingOptions:
         numInternalRings=None,
         numExternalRings=None,
         mergeIntoClad=None,
+        mergeIntoFuel=None,
         meshSubdivisionsPerCm=None,
         xsExecuteExclusive=None,
         xsPriority=None,
         xsMaxAtomNumber=None,
         averageByComponent=False,
         minDriverDensity=0.0,
+        ductHeterogeneous=False,
+        traceIsotopeThreshold=0.0,
+        xsTempIsotope="U238",
     ):
         self.xsID = xsID
         self.geometry = geometry
@@ -482,13 +534,17 @@ class XSModelingOptions:
         self.numInternalRings = numInternalRings
         self.numExternalRings = numExternalRings
         self.mergeIntoClad = mergeIntoClad
+        self.mergeIntoFuel = mergeIntoFuel
         self.meshSubdivisionsPerCm = meshSubdivisionsPerCm
         self.xsMaxAtomNumber = xsMaxAtomNumber
         self.minDriverDensity = minDriverDensity
         self.averageByComponent = averageByComponent
+        self.ductHeterogeneous = ductHeterogeneous
+        self.traceIsotopeThreshold = traceIsotopeThreshold
         # these are related to execution
         self.xsExecuteExclusive = xsExecuteExclusive
         self.xsPriority = xsPriority
+        self.xsTempIsotope = xsTempIsotope
 
     def __repr__(self):
         if self.xsIsPregenerated:
@@ -509,7 +565,7 @@ class XSModelingOptions:
         return self.xsID[0]
 
     @property
-    def buGroup(self):
+    def envGroup(self):
         """Return the single-char burnup group indicator."""
         return self.xsID[1]
 
@@ -668,12 +724,15 @@ class XSModelingOptions:
                 CONF_GEOM: self.geometry,
                 CONF_DRIVER: "",
                 CONF_MERGE_INTO_CLAD: ["gap"],
+                CONF_MERGE_INTO_FUEL: [],
                 CONF_MESH_PER_CM: 1.0,
                 CONF_INTERNAL_RINGS: 0,
                 CONF_EXTERNAL_RINGS: 1,
                 CONF_HOMOGBLOCK: False,
                 CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
+                CONF_DUCT_HETEROGENEOUS: False,
+                CONF_TRACE_ISOTOPE_THRESHOLD: 0.0,
             }
         elif self.geometry == XSGeometryTypes.getStr(
             XSGeometryTypes.TWO_DIMENSIONAL_HEX
