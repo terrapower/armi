@@ -14,6 +14,7 @@
 
 """Test axialExpansionChanger."""
 import collections
+import copy
 import os
 import unittest
 from statistics import mean
@@ -28,15 +29,15 @@ from armi.reactor.components import Component, DerivedShape, UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.converters.axialExpansionChanger import (
-    AxialExpansionChanger,
     AssemblyAxialLinkage,
+    AxialExpansionChanger,
     ExpansionData,
     getSolidComponents,
     iterSolidComponents,
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
-    areAxiallyLinked,
     AxialLink,
+    areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
@@ -270,6 +271,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         a = buildTestAssemblyWithFakeMaterial(name="HT9")
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
+        origDetailedNDens = self._setComponentDetailedNDens(a, origNDens)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
 
         tempGrid = linspace(0.0, a.getHeight())
@@ -284,16 +286,20 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             # Set new isothermal temp and expand
             tempField = array([temp] * len(tempGrid))
             oldMasses, oldNDens = self._getComponentMassAndNDens(a)
+            oldDetailedNDens = self._getComponentDetailedNDens(a)
             axialExpChngr.performThermalAxialExpansion(a, tempGrid, tempField)
             newMasses, newNDens = self._getComponentMassAndNDens(a)
+            newDetailedNDens = self._getComponentDetailedNDens(a)
             self._checkMass(oldMasses, newMasses)
             self._checkNDens(oldNDens, newNDens, totGrowthFrac)
+            self._checkDetailedNDens(oldDetailedNDens, newDetailedNDens, totGrowthFrac)
 
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
             self.assertAlmostEqual(orig, new, places=12)
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
+        self._checkDetailedNDens(origDetailedNDens, newDetailedNDens, 1.0)
 
     def test_thermalExpansionContractionConservation_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.
@@ -416,6 +422,17 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 if prev:
                     self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
 
+    def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
+        """Check whether the detailedNDens of two input dictionaries containing the
+        detailedNDens arrays for all components of an assembly are conserved.
+        """
+        for prevComp, newComp in zip(
+            prevDetailedNDen.values(), newDetailedNDens.values()
+        ):
+            for prev, new in zip(prevComp, newComp):
+                if prev:
+                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
+
     @staticmethod
     def _getComponentMassAndNDens(a):
         masses = {}
@@ -425,6 +442,30 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                 masses[c] = c.getMass()
                 nDens[c] = c.getNumberDensities()
         return masses, nDens
+
+    @staticmethod
+    def _setComponentDetailedNDens(a, nDens):
+        """Returns a dictionary that contains detailedNDens for all components in an
+        assembly object input which are set to the corresponding component number densities
+        from a number density dictionary input.
+        """
+        detailedNDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                c.p.detailedNDens = copy.deepcopy([val for val in nDens[c].values()])
+                detailedNDens[c] = c.p.detailedNDens
+        return detailedNDens
+
+    @staticmethod
+    def _getComponentDetailedNDens(a):
+        """Returns a dictionary containing all solid components and their corresponding
+        detailedNDens from an assembly object input.
+        """
+        detailedNDens = {}
+        for b in a:
+            for c in getSolidComponents(b):
+                detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
+        return detailedNDens
 
     def test_targetComponentMassConservation(self):
         """Tests mass conservation for target components."""
@@ -571,19 +612,64 @@ class TestManageCoreMesh(unittest.TestCase):
         reduceTestReactorRings(self.r, o.cs, 3)
 
         self.oldAxialMesh = self.r.core.p.axialMesh
+        self.componentLst = []
+        for b in self.r.core.refAssem:
+            if b.hasFlags([Flags.FUEL, Flags.PLENUM]):
+                self.componentLst.extend(getSolidComponents(b))
         # expand refAssem by 1.01 L1/L0
-        componentLst = [c for b in self.r.core.refAssem for c in b]
-        expansionGrowthFracs = 1.01 + zeros(len(componentLst))
+        expansionGrowthFracs = 1.01 + zeros(len(self.componentLst))
+        (
+            self.origDetailedNDens,
+            self.origVolumes,
+        ) = self._getComponentDetailedNDensAndVol(self.componentLst)
         self.axialExpChngr.performPrescribedAxialExpansion(
-            self.r.core.refAssem, componentLst, expansionGrowthFracs, setFuel=True
+            self.r.core.refAssem, self.componentLst, expansionGrowthFracs, setFuel=True
         )
 
     def test_manageCoreMesh(self):
         self.axialExpChngr.manageCoreMesh(self.r)
         newAxialMesh = self.r.core.p.axialMesh
-        # skip first and last entries as they do not change
-        for old, new in zip(self.oldAxialMesh[1:-1], newAxialMesh[1:-1]):
+        # the top and bottom and top of the grid plate block are not expected to change
+        for old, new in zip(self.oldAxialMesh[2:-1], newAxialMesh[2:-1]):
             self.assertLess(old, new)
+
+    def test_componentConservation(self):
+        self.axialExpChngr.manageCoreMesh(self.r)
+        newDetailedNDens, newVolumes = self._getComponentDetailedNDensAndVol(
+            self.componentLst
+        )
+        for c in newVolumes.keys():
+            self._checkMass(
+                self.origDetailedNDens[c],
+                self.origVolumes[c],
+                newDetailedNDens[c],
+                newVolumes[c],
+                c,
+            )
+
+    def _getComponentDetailedNDensAndVol(self, componentLst):
+        """Returns a tuple containing dictionaries of detailedNDens and volumes of
+        all components from a component list input.
+        """
+        detailedNDens = {}
+        volumes = {}
+        for c in componentLst:
+            c.p.detailedNDens = [val for val in c.getNumberDensities().values()]
+            detailedNDens[c] = copy.deepcopy(c.p.detailedNDens)
+            volumes[c] = c.getVolume()
+        return (detailedNDens, volumes)
+
+    def _checkMass(self, origDetailedNDens, origVolume, newDetailedNDens, newVolume, c):
+        for prevMass, newMass in zip(
+            origDetailedNDens * origVolume, newDetailedNDens * newVolume
+        ):
+            if c.parent.hasFlags(Flags.FUEL):
+                self.assertAlmostEqual(
+                    prevMass, newMass, delta=1e-12, msg=f"{c}, {c.parent}"
+                )
+            else:
+                # should not conserve mass here as it is structural material above active fuel
+                self.assertAlmostEqual(newMass / prevMass, 0.99, msg=f"{c}, {c.parent}")
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):

@@ -471,7 +471,7 @@ assemblies:
         self.assertNotIn("FE51", c.getNumberDensities())  # un-natural
         self.assertNotIn("FE", c.getNumberDensities())
 
-    def test_unrepresentedAreOnlyNatural(self):
+    def test_infDiluteAreOnlyNatural(self):
         """Make sure nuclides specified as In-Problem but not actually in any material are only natural isotopics."""
         self.assertIn("AL27", self.bp.allNuclidesInProblem)
         self.assertNotIn("AL26", self.bp.allNuclidesInProblem)

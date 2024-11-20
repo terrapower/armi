@@ -382,9 +382,9 @@ class TestNuclide(unittest.TestCase):
         self.assertAlmostEqual(activity, 0.9885593, places=6)
 
     def test_loadMcc2Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-V.2 nuclides in the data model.
 
-        .. test:: Test that MCC v2 IDs can be queried by nuclides.
+        .. test:: Test that MCC v2 ENDF/B-V.2 IDs can be queried by nuclides.
             :id: T_ARMI_ND_ISOTOPES3
             :tests: R_ARMI_ND_ISOTOPES
         """
@@ -402,14 +402,14 @@ class TestNuclide(unittest.TestCase):
 
         self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
 
-    def test_loadMcc3Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+    def test_loadMcc3EndfVII0Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-VII.0 nuclides in the data model.
 
-        .. test:: Test that MCC v3 IDs can be queried by nuclides.
+        .. test:: Test that MCC v3 ENDF/B-VII.0 IDs can be queried by nuclides.
             :id: T_ARMI_ND_ISOTOPES4
             :tests: R_ARMI_ND_ISOTOPES
 
-        .. test:: Test the MCC nuclide data that was read from file instead of code.
+        .. test:: Test the MCC ENDF/B-VII.0 nuclide data that was read from file instead of code.
             :id: T_ARMI_ND_DATA1
             :tests: R_ARMI_ND_DATA
         """
@@ -420,13 +420,41 @@ class TestNuclide(unittest.TestCase):
                 [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
             )
 
-        for nuc, nb in nuclideBases.byMcc3Id.items():
+        for nuc, nb in nuclideBases.byMcc3IdEndfbVII0.items():
             self.assertIn(nb.name, expectedNuclides)
-            self.assertEqual(nb.getMcc3Id(), nb.mcc3id)
+            self.assertEqual(nb.getMcc3IdEndfbVII0(), nb.mcc3idEndfbVII0)
+            self.assertEqual(nb.getMcc3IdEndfbVII0(), nuc)
+
+        # Subtract 1 nuclide due to DUMP2.
+        self.assertEqual(len(nuclideBases.byMcc3IdEndfbVII0), len(expectedNuclides) - 1)
+
+    def test_loadMcc3EndfVII1Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-VII.1 nuclides in the data model.
+
+        .. test:: Test that MCC v3 ENDF/B-VII.1 IDs can be queried by nuclides.
+            :id: T_ARMI_ND_ISOTOPES6
+            :tests: R_ARMI_ND_ISOTOPES
+
+        .. test:: Test the MCC ENDF/B-VII.1 nuclide data that was read from file instead of code.
+            :id: T_ARMI_ND_DATA2
+            :tests: R_ARMI_ND_DATA
+        """
+        with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
+            yaml = YAML(typ="rt")
+            data = yaml.load(f)
+            expectedNuclides = set(
+                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.1"] is not None]
+            )
+
+        for nuc, nb in nuclideBases.byMcc3IdEndfbVII1.items():
+            self.assertIn(nb.name, expectedNuclides)
+            self.assertEqual(nb.getMcc3IdEndfbVII1(), nb.mcc3idEndfbVII1)
+            self.assertEqual(nb.getMcc3IdEndfbVII1(), nuc)
+            self.assertEqual(nb.getMcc3Id(), nb.mcc3idEndfbVII1)
             self.assertEqual(nb.getMcc3Id(), nuc)
 
         # Subtract 1 nuclide due to DUMP2.
-        self.assertEqual(len(nuclideBases.byMcc3Id), len(expectedNuclides) - 1)
+        self.assertEqual(len(nuclideBases.byMcc3IdEndfbVII1), len(expectedNuclides) - 1)
 
 
 class TestAAAZZZSId(unittest.TestCase):

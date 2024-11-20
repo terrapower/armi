@@ -175,10 +175,10 @@ def deleteCache(cachedFolder):
     """
     Remove this folder.
 
-    Requires safeword because this is potentially extremely destructive.
+    Requires keyword because this is potentially extremely destructive.
     """
-    if "Output_Cache" not in cachedFolder:
-        raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
+    if "cache" not in str(cachedFolder).lower():
+        raise RuntimeError("Cache location must contain keyword: `cache`.")
 
     cleanPath(cachedFolder)
 
