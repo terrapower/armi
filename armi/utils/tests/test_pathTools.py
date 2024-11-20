@@ -19,6 +19,7 @@ import types
 import unittest
 
 from armi import context
+from armi.tests import mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -36,11 +37,10 @@ class PathToolsTests(unittest.TestCase):
             pathTools.copyOrWarn("Test File", path, pathCopy)
             self.assertTrue(os.path.exists(pathCopy))
 
-            # Test an exception
-            with self.assertRaises(Exception) as e:
+            # Test a non-existant file
+            with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "FileDoesntExist.txt", pathCopy)
-                self.assertIn("Could not copy", e)
-                self.assertIn("No such file or directory", e)
+                self.assertIn("Could not copy", mock.getStdout())
 
     def test_copyOrWarnDir(self):
         with TemporaryDirectoryChanger():
@@ -55,11 +55,10 @@ class PathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(pathDirCopy))
             self.assertTrue(os.path.exists(os.path.join(pathDirCopy, "test.txt")))
 
-            # Test an exception
-            with self.assertRaises(Exception) as e:
+            # Test a non-existant file
+            with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "DirDoesntExist", pathDirCopy)
-                self.assertIn("Could not copy", e)
-                self.assertIn("No such file or directory", e)
+                self.assertIn("Could not copy", mock.getStdout())
 
     def test_separateModuleAndAttribute(self):
         self.assertRaises(

@@ -154,8 +154,8 @@ class TestPluginRegistration(unittest.TestCase):
         """Test that plugin hook successfully injects code before reactor initialization.
 
         .. test:: Capture code in the beforeReactorConstruction hook from reactor construction being carried out.
-            :id: T_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
-            :tests: R_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+            :id: T_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
+            :tests: R_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
         """
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
