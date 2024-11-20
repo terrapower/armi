@@ -274,12 +274,12 @@ class ArmiPlugin:
         Function to call before the reactor is constructed.
 
         .. impl:: Plugins can inject code before reactor initialization.
-            :id: I_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
-            :implements: R_ARMI_PLUGIN_BEFORE_REACTOR_HOOK
+            :id: I_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
+            :implements: R_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
 
-            This method allows for plugin developers to implement code after settings
-            are loaded but before the reactor is constructed. This hook is called
-            in :py:func:`armi.reactor.reactors.factory`.
+            This method allows for plugin developers to implement code after settings are loaded but
+            before the reactor is constructed. This hook is called in
+            :py:func:`armi.reactor.reactors.factory`.
         """
 
     @staticmethod
