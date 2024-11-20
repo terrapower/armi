@@ -21,7 +21,7 @@ from armi.reactor import parameters
 from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
-from armi.utils.units import ASCII_LETTER_A
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
 
 
 def getBlockParameterDefinitions():
@@ -196,53 +196,66 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
-        def buGroup(self, buGroupChar):
-            if isinstance(buGroupChar, (int, float)):
-                intValue = int(buGroupChar)
+        def envGroup(self, envGroupChar):
+            if isinstance(envGroupChar, (int, float)):
+                intValue = int(envGroupChar)
                 runLog.warning(
-                    f"Attempting to set `b.p.buGroup` to int value ({buGroupChar}). Possibly loading from old database",
+                    f"Attempting to set `b.p.envGroup` to int value ({envGroupChar})."
+                    "Possibly loading from old database",
                     single=True,
-                    label="bu group as int " + str(intValue),
+                    label="env group as int " + str(intValue),
                 )
-                self.buGroupNum = intValue
+                self.envGroupNum = intValue
                 return
-            elif not isinstance(buGroupChar, six.string_types):
+            elif not isinstance(envGroupChar, six.string_types):
                 raise Exception(
-                    f"Wrong type for buGroupChar {buGroupChar}: {type(buGroupChar)}"
+                    f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}"
                 )
 
-            buGroupNum = ord(buGroupChar) - ASCII_LETTER_A
-            self._p_buGroup = buGroupChar
-            self._p_buGroupNum = buGroupNum
-            buGroupNumDef = parameters.ALL_DEFINITIONS["buGroupNum"]
-            buGroupNumDef.assigned = parameters.SINCE_ANYTHING
+            if envGroupChar.islower():
+                # if lower case find the distance from lowercase a and add the span of A to Z
+                lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A + 1  # 26
+                envGroupNum = ord(envGroupChar) - ASCII_LETTER_a + lowerCaseOffset
+            else:
+                envGroupNum = ord(envGroupChar) - ASCII_LETTER_A
+            self._p_envGroup = envGroupChar
+            self._p_envGroupNum = envGroupNum
+            envGroupNumDef = parameters.ALL_DEFINITIONS["envGroupNum"]
+            envGroupNumDef.assigned = parameters.SINCE_ANYTHING
 
         pb.defParam(
-            "buGroup",
+            "envGroup",
             units=units.UNITLESS,
-            description="The burnup group letter of this block",
+            description="The environment group letter of this block",
             default="A",
-            setter=buGroup,
+            setter=envGroup,
         )
 
-        def buGroupNum(self, buGroupNum):
-            if buGroupNum > 26:
+        def envGroupNum(self, envGroupNum):
+            # support capital and lowercase alpha chars (52= 26*2)
+            if envGroupNum > 52:
                 raise RuntimeError(
-                    "Invalid bu group number ({}): too many groups. 26 is the max.".format(
-                        buGroupNum
+                    "Invalid env group number ({}): too many groups. 52 is the max.".format(
+                        envGroupNum
                     )
                 )
-            self._p_buGroupNum = buGroupNum
-            self._p_buGroup = chr(buGroupNum + ASCII_LETTER_A)
-            buGroupDef = parameters.ALL_DEFINITIONS["buGroup"]
-            buGroupDef.assigned = parameters.SINCE_ANYTHING
+            self._p_envGroupNum = envGroupNum
+            lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A
+            if envGroupNum > lowerCaseOffset:
+                envGroupNum = envGroupNum - (lowerCaseOffset + 1)
+                self._p_envGroup = chr(envGroupNum + ASCII_LETTER_a)
+            else:
+                self._p_envGroup = chr(envGroupNum + ASCII_LETTER_A)
+            envGroupDef = parameters.ALL_DEFINITIONS["envGroup"]
+            envGroupDef.assigned = parameters.SINCE_ANYTHING
 
         pb.defParam(
-            "buGroupNum",
+            "envGroupNum",
             units=units.UNITLESS,
-            description="An integer representation of the burnup group, linked to buGroup.",
+            description="An integer representation of the environment group "
+            "(burnup/temperature/etc.). linked to envGroup.",
             default=0,
-            setter=buGroupNum,
+            setter=envGroupNum,
         )
 
         pb.defParam(

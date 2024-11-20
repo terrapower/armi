@@ -21,14 +21,15 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        python: [3.9, '3.10', '3.11', '3.12']
+        python: [3.9, '3.10', '3.11', '3.12', '3.13']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+          allow-prereleases: true
       - name: Update package index
         run: sudo apt-get update
       - name: Install mpi libs
@@ -37,6 +38,6 @@ jobs:
         run: |
           pip install -e .[memprof,mpi,test]
           pytest -n 4 armi
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/tests/test_mpiFeatures.py || true
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/tests/test_mpiParameters.py || true
-          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --ignore=venv armi/utils/tests/test_directoryChangersMpi.py || true
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiFeatures.py
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiParameters.py
+          mpiexec -n 2 --use-hwthread-cpus pytest armi/utils/tests/test_directoryChangersMpi.py
