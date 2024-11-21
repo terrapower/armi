@@ -224,7 +224,7 @@ def isNumpyArray(paramStr):
     return setParameter
 
 
-def isNumpyArray32Bit(paramStr: str):
+def isNumpyF32Array(paramStr: str):
     """Helper meta-function to create a method that sets a Parameter value to a 32 bit float NumPy array.
 
     Parameters
