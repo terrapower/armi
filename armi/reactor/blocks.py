@@ -2058,9 +2058,9 @@ class HexBlock(Block):
         list of length 6 in order to be eligible for rotation; all parameters that do not meet these
         two criteria are not rotated.
 
-        .. impl:: Rotating a hex block updates the orientation parameter, other parameters on the
-            boundary of the hexagon, and updates spatial coordinates of contained objects.
-            :id: I_ARMI_ROTATE_HEX_UPDATES
+        .. impl:: Rotating a hex block updates parameters on the boundary, the orientation
+            parameter, and the spatial coordinates on contained objects.
+            :id: I_ARMI_ROTATE_HEX_BLOCK
             :implements: R_ARMI_ROTATE_HEX
 
         Parameters

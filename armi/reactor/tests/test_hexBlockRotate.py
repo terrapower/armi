@@ -73,7 +73,7 @@ class HexBlockRotateTests(unittest.TestCase):
         """Test the z-value in the orientation vector matches rotation.
 
         .. test:: Demonstrate that a HexBlock can be rotated in 60 degree increments, and the
-            orientation parameter reflects the current rotation.
+            resultant orientation parameter reflects the current rotation.
             :id: T_ARMI_ROTATE_HEX_BLOCK
             :tests: R_ARMI_ROTATE_HEX
         """

@@ -1254,7 +1254,7 @@ class HexAssembly(Assembly):
         """Rotate an assembly and its children.
 
         .. impl:: A hexagonal assembly shall support rotating around the z-axis in 60 degree increments.
-            :id: I_ARMI_ROTATE_HEX
+            :id: I_ARMI_ROTATE_HEX_ASSEM
             :implements: R_ARMI_ROTATE_HEX
 
             This method loops through every ``Block`` in this ``HexAssembly`` and rotates
