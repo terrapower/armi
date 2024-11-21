@@ -51,7 +51,6 @@ New Features
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
 #. Exposing ``detailedNDens`` to components. (`PR#1954 <https://github.com/terrapower/armi/pull/1954>`_)
-#. ``_writeMachineInformation`` no longer requires MPI_SIZE to be greater than 1 (`PR#2016 <https://github.com/terrapower/armi/pull/2016>`_)
 
 API Changes
 -----------
