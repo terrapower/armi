@@ -85,18 +85,21 @@ def getBlockParameterDefinitions():
             "molesHmBOL",
             units=f"{units.MOLES}",
             description="Total number of atoms of heavy metal at BOL assuming a full assembly",
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "massHmBOL",
             units=units.GRAMS,
             description="Mass of heavy metal at BOL",
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
             "initialB10ComponentVol",
             units=f"{units.CM}^3",
             description="cc's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
+            location=ParamLocation.VOLUME_INTEGRATED,
         )
 
         pb.defParam(
