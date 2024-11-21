@@ -452,18 +452,6 @@ class HexReactorTests(ReactorTests):
                 controlBlock.p.initialB10ComponentVol,
             )
 
-    @patch("armi.reactor.blocks.HexBlock.getSymmetryFactor")
-    def test_setB10VolWithSymmetry(self, mockGetSymmetryFactor):
-        """Tests that initialB10ComponentVol is modified by the symmetry factor."""
-        for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
-            mockGetSymmetryFactor.return_value = 1
-            controlBlock.setB10VolParam(True)  # height being hot shouldn't matter here
-            fullVol = controlBlock.p.initialB10ComponentVol
-            mockGetSymmetryFactor.return_value = 3
-            controlBlock.setB10VolParam(True)
-            thirdVol = controlBlock.p.initialB10ComponentVol
-            self.assertAlmostEqual(thirdVol / fullVol, 1 / 3)
-
     def test_countFuelAxialBlocks(self):
         """Tests that the users definition of fuel blocks is preserved."""
         numFuelBlocks = self.r.core.countFuelAxialBlocks()

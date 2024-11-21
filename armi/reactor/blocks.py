@@ -843,7 +843,7 @@ class Block(composites.Composite):
         coldArea = b10Comp.getArea(cold=True)
         coldFactor = b10Comp.getThermalExpansionFactor() if heightHot else 1
         coldHeight = self.getHeight() / coldFactor
-        self.p.initialB10ComponentVol = coldArea * coldHeight / self.getSymmetryFactor()
+        self.p.initialB10ComponentVol = coldArea * coldHeight
 
     def replaceBlockWithBlock(self, bReplacement):
         """
