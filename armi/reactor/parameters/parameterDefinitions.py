@@ -223,6 +223,30 @@ def isNumpyArray(paramStr):
 
     return setParameter
 
+def isNumpyArray32Bit(paramStr: str):
+    """Helper meta-function to create a method that sets a Parameter value to a 32 bit float NumPy array.
+
+    Parameters
+    ----------
+    paramStr
+        Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a 32 bit NumPy array.
+    """
+
+    def setParameter(selfObj, value):
+        if value is None:
+            # allow default of None to exist
+            setattr(selfObj, "_p_" + paramStr, value)
+        else:
+            # force to 32 bit
+            setattr(selfObj, "_p_" + paramStr, np.array(value, dtype=np.float32))
+
+    return setParameter
+
 
 @functools.total_ordering
 class Parameter:

@@ -1578,6 +1578,9 @@ class ArmiObject(metaclass=CompositeModelType):
         # Update detailedNDens
         if self.p.detailedNDens is not None:
             self.p.detailedNDens *= factor
+        # Update pinNDens
+        if self.p.pinNDens is not None:
+            self.p.pinNDens *= factor
 
     def clearNumberDensities(self):
         """

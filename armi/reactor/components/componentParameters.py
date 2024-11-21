@@ -15,7 +15,7 @@
 """Component parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters.parameterDefinitions import isNumpyArray
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyArray32Bit
 from armi.utils import units
 
 
@@ -75,6 +75,17 @@ def getComponentParameterDefinitions():
                 "See core.p.detailedNucKeys for keys."
             ),
             saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinNDens",
+            setter=isNumpyArray32Bit("pinNDens"),
+            units=f"#/(bn*{units.CM})",
+            description="Pin-wise number densities of each nuclide.",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            categories=["depletion", parameters.Category.pinQuantities],
             default=None,
         )
 

@@ -702,10 +702,12 @@ class TestCircle(TestShapedComponent):
         """Test that demonstates that the number densities on a component can be modified."""
         self.component.p.numberDensities = {"NA23": 1.0}
         self.component.p.detailedNDens = [1.0]
+        self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
         self.assertEqual(self.component.p.detailedNDens[0], 3.0)
+        self.assertEqual(self.component.p.pinNDens[0], 3.0)
 
     def test_fuelMass(self):
         nominalMass = self.component.getMass()
