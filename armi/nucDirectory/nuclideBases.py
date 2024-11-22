@@ -1545,11 +1545,9 @@ class NuclideBases:
             or nuclide.getDatabaseName() in self.byDBName
             or nuclide.label in self.byLabel
         ):
-            raise ValueError(
-                f"{nuclide} has already been added and cannot be duplicated."
-            )
+            raise ValueError(f"{nuclide} has already been added.")
 
-        instances.append(nuclide)
+        self.instances.append(nuclide)
         self.byName[nuclide.name] = nuclide
         self.byDBName[nuclide.getDatabaseName()] = nuclide
         self.byLabel[nuclide.label] = nuclide
@@ -1577,7 +1575,7 @@ class NuclideBases:
         numberDensityDict : dict
             Starting number densities.
         activeNuclides : OrderedSet
-            Active nuclides defined in the reactor blueprints. See: armi.reactor.blueprints.py
+            Active nuclides defined in the reactor blueprints.
         """
         if not self.burnChainImposed:
             return
@@ -1758,8 +1756,7 @@ class NuclideBases:
             # think of this protected stuff as "module level protection" rather than class.
             nuclide._processBurnData(burnInfo)
 
-    @staticmethod
-    def addNuclideBases():
+    def addNuclideBases(self):
         """
         Read natural abundances of any natural nuclides.
 
@@ -1798,13 +1795,14 @@ class NuclideBases:
                 element = elements.bySymbol[sym]
                 nb = NuclideBase(element, a, mass, abun, state, halflife)
                 nb.nuSF = nuSF
+                self.addNuclide(nb)
 
     def __addNaturalNuclideBases(self):
         """Generates a complete set of nuclide bases for each naturally occurring element."""
         for element in elements.byZ.values():
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
-                    NaturalNuclideBase(element.symbol, element)
+                    self.addNuclide(NaturalNuclideBase(element.symbol, element))
 
     def __addDummyNuclideBases(self):
         """Generates a set of dummy nuclides."""
@@ -1880,13 +1878,13 @@ class NuclideBases:
         am242g = self.byName["AM242"]
         am242g.name = "AM242G"
         self.byName["AM242G"] = am242g
-        self.byDBName[byName["AM242G"].getDatabaseName()] = am242g
+        self.byDBName[self.byName["AM242G"].getDatabaseName()] = am242g
 
         # Update the pointer of `AM242` to refer to `AM242M`.
         am242m = self.byName["AM242M"]
         self.byName["AM242"] = am242m
         self.byDBName["nAm242"] = am242m
-        self.byDBName[byName["AM242"].getDatabaseName()] = am242m
+        self.byDBName[self.byName["AM242"].getDatabaseName()] = am242m
 
     def __renormalizeNuclideToElementRelationship(self):
         for nuc in self.instances:
