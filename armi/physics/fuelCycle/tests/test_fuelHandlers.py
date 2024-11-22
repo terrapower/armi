@@ -482,7 +482,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles
-        fh = self.r.o.getInterface("fuelHandler")
+        fh = self.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
         # Make sure the generated shuffles file matches the tracked one.  This will need to be
@@ -505,7 +505,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
-        fh = self.r.o.getInterface("fuelHandler")
+        fh = self.o.getInterface("fuelHandler")
 
         self.runShuffling(fh)
 

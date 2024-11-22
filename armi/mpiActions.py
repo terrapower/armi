@@ -505,7 +505,7 @@ class DistributeStateAction(MpiAction):
         self._skipInterfaces = skipInterfaces
 
     def invokeHook(self):
-        r"""Sync up all nodes with the reactor, the cs, and the interfaces.
+        """Sync up all nodes with the reactor, the cs, and the interfaces.
 
         Notes
         -----
@@ -604,9 +604,7 @@ class DistributeStateAction(MpiAction):
 
         self.r.o = self.o
 
-        runLog.debug(
-            "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
-        )
+        runLog.debug(f"The reactor has {len(self.r.core.getAssemblies())} assemblies")
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
