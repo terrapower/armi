@@ -160,7 +160,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
 
         Notes
         -----
-        Note: use zero-indexed pin location not pin ID to assign burnups and powers. Since
+        Use zero-indexed pin location not pin ID to assign burnups and powers. Since
         we have a single component, ``Block.p.linPowByPin[i] <-> Component.p.pinPercentBu[i]``
         """
         shuffledAssembly = self.assembly
