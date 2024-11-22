@@ -204,7 +204,6 @@ class Assembly_TestCase(unittest.TestCase):
         )
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
-        self.r.core.add(self.assembly)
 
         # Use these if they are needed
         self.blockParams = {
@@ -267,6 +266,7 @@ class Assembly_TestCase(unittest.TestCase):
             self.assembly.add(b)
             self.blockList.append(b)
 
+        self.r.core.add(self.assembly)
         self.assembly.calculateZCoords()
 
     def test_isOnWhichSymmetryLine(self):
@@ -344,6 +344,12 @@ class Assembly_TestCase(unittest.TestCase):
 
         cur = self.assembly.spatialLocator
         self.assertEqual(cur, ref)
+
+    def test_scaleParamsWhenMoved(self):
+        """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
+        ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
+        locator = self.r.core.spatialGrid[i, j, 0]
 
     def test_getName(self):
         cur = self.assembly.getName()
