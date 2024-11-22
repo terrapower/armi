@@ -602,7 +602,7 @@ class Core(composites.Composite):
         upon generation, so this always divides the volume integrated parameters by the symmetry
         factor.
         """
-        if a.getAge() == 0:
+        if a.getAge() != 0:
             return
         a.scaleParamsToNewSymmetryFactor(oldSymmetryFactor=1.0)
 
