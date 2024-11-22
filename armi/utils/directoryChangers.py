@@ -135,12 +135,9 @@ class DirectoryChanger:
 
     def retrieveFiles(self):
         """Copy ``filesToRetrieve`` back into the initial directory on exit."""
-        initialPath = self.destination
-        destinationPath = self.initial
-        self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
         if self.outputPath != self.initial:
-            destinationPath = self.outputPath
-            self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
+            self._transferFiles(self.destination, self.outputPath, self._filesToRetrieve, moveFiles=False)
+        self._transferFiles(self.destination, self.initial, self._filesToRetrieve, moveFiles=True)
 
     def _retrieveEntireFolder(self):
         """
@@ -152,7 +149,7 @@ class DirectoryChanger:
         """
         folderName = os.path.split(self.destination)[1]
         recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
-        shutil.copytree(self.destination, recoveryPath)
+        shutil.move(self.destination, recoveryPath)
 
     def _createOutputDirectory(self):
         if self.outputPath == self.initial:
@@ -173,7 +170,7 @@ class DirectoryChanger:
             runLog.extra(f"Output folder already exists: {self.outputPath}")
 
     @staticmethod
-    def _transferFiles(initialPath, destinationPath, fileList):
+    def _transferFiles(initialPath, destinationPath, fileList, moveFiles=False):
         """
         Transfer files into or out of the directory.
 
@@ -192,6 +189,8 @@ class DirectoryChanger:
             files will be transferred. Alternatively tuples of (initialName, finalName) are allowed
             if you want the file renamed during transit. In the non-tuple option, globs/wildcards
             are allowed.
+        moveFiles: bool, optional
+            Controls whether the files are "moved" (``mv``) or "copied" (``cp``)
 
         Warning
         -------
@@ -223,8 +222,12 @@ class DirectoryChanger:
                     continue
 
                 toPath = os.path.join(destinationPath, destName)
-                runLog.extra("Copying {} to {}".format(fromPath, toPath))
-                shutil.copy(fromPath, toPath)
+                if moveFiles:
+                    runLog.extra("Moving {} to {}".format(fromPath, toPath))
+                    shutil.move(fromPath, toPath)
+                else:
+                    runLog.extra("Copying {} to {}".format(fromPath, toPath))
+                    shutil.copy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):
