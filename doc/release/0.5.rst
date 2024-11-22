@@ -51,6 +51,7 @@ New Features
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
 #. Exposing ``detailedNDens`` to components. (`PR#1954 <https://github.com/terrapower/armi/pull/1954>`_)
+#. Adding a method ``getPinMgFluxes`` to get pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 
 API Changes
 -----------
@@ -75,6 +76,9 @@ API Changes
 #. Removing method ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing setting ``autoGenerateBlockGrids``. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
+#. History Tracker: "detail assemblies" are now fuel and control assemblies. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Removing ``Block.breakFuelComponentsIntoIndividuals()``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Moving ``getPuMoles`` from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 
 Bug Fixes
 ---------

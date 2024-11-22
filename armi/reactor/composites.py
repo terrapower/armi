@@ -1578,6 +1578,9 @@ class ArmiObject(metaclass=CompositeModelType):
         # Update detailedNDens
         if self.p.detailedNDens is not None:
             self.p.detailedNDens *= factor
+        # Update pinNDens
+        if self.p.pinNDens is not None:
+            self.p.pinNDens *= factor
 
     def clearNumberDensities(self):
         """
@@ -3120,6 +3123,18 @@ class Composite(ArmiObject):
         """
         getter = operator.methodcaller("getBoundingCircleOuterDiameter", Tc, cold)
         return sum(map(getter, self))
+
+    def getPuMoles(self):
+        """Returns total number of moles of Pu isotopes."""
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        puN = sum(self.getNuclideNumberDensities(nucNames))
+
+        return (
+            puN
+            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+            * self.getVolume()
+            * self.getSymmetryFactor()
+        )
 
 
 class StateRetainer:
