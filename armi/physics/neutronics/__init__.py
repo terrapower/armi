@@ -67,7 +67,11 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameterRenames():
-        return {"buGroup": "envGroup", "buGroupNum": "envGroupNum"}
+        return {
+            "buGroup": "envGroup",
+            "buGroupNum": "envGroupNum",
+            "percentBuMax": "percentBuPeak",
+        }
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -175,6 +179,7 @@ GENERAL_BC = "Generalized"
 EXTRAPOLATED = "Extrapolated"
 ZEROFLUX = "ZeroSurfaceFlux"
 ZERO_INWARD_CURRENT = "ZeroInwardCurrent"
+
 
 # Common settings checks
 def gammaTransportIsRequested(cs):
