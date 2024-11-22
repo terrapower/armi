@@ -36,9 +36,8 @@ class TestNuclideBases(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
-        cls.nuclideBases = NuclideBases()
         destroyGlobalNuclides()
-        cls.nuclideBases.factory()
+        cls.nuclideBases = NuclideBases()
         # Ensure that the burn chain data is initialized before running these tests.
         cls.nuclideBases.burnChainImposed = False
         with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:

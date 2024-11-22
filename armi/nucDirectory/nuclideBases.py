@@ -1486,6 +1486,7 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+        self.factory()
 
     def factory(self):
         """
