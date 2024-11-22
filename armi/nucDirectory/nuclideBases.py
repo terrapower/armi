@@ -1486,6 +1486,8 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+        self.nuclidesFile = os.path.join(context.RES, "nuclides.dat")
+        self.mccNuclidesFile = os.path.join(context.RES, "mcc-nuclides.yaml")
         self.factory()
 
     def factory(self):
@@ -1773,7 +1775,7 @@ class NuclideBases:
             and spontaneous fission yield. The data in ``nuclides.dat`` have been collected from
             multiple different sources; the references are given in comments at the top of the file.
         """
-        with open(os.path.join(context.RES, "nuclides.dat")) as f:
+        with open(self.nuclidesFile, "r") as f:
             for line in f:
                 # Skip header lines
                 if line.startswith("#") or line.startswith("Z"):
@@ -1833,7 +1835,7 @@ class NuclideBases:
             and the dictionaries ``byMcc2Id``, ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are
             populated with the nuclide bases keyed by their corresponding ID for each code.
         """
-        with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
+        with open(self.mccNuclidesFile, "r") as f:
             yaml = YAML(typ="rt")
             nuclides = yaml.load(f)
 
