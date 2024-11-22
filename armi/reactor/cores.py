@@ -52,6 +52,7 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import tabulate
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
+from armi.reactor.converters.geometryConverters import _scaleParamsInBlock
 
 
 class Core(composites.Composite):
@@ -581,6 +582,8 @@ class Core(composites.Composite):
         if aNum > self.p.maxAssemNum:
             self.p.maxAssemNum = aNum
 
+        self._scaleParametersOnInitialPlacement(a)
+
         if a.lastLocationLabel != a.DATABASE:
             # time the assembly enters the core in days
             a.p.chargeTime = self.r.p.time
@@ -589,6 +592,19 @@ class Core(composites.Composite):
             # convert to kg
             a.p.chargeFis = a.getFissileMass() / 1000.0
             a.p.chargeBu = a.getMaxParam("percentBu")
+
+    @staticmethod
+    def _scaleParametersOnInitialPlacement(a):
+        """
+        Scale volume integrated parameters by the symmetry factor when assembly is first placed in core.
+
+        Assemblies are always generated with symmetry factors of 1 since they do not have a location
+        upon generation, so this always divides the volume integrated parameters by the symmetry
+        factor.
+        """
+        if a.getAge() == 0:
+            return
+        a.scaleParamsToNewSymmetryFactor(oldSymmetryFactor=1.0)
 
     def genAssembliesAddedThisCycle(self):
         """

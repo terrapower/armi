@@ -206,6 +206,7 @@ class Assembly(composites.Composite):
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
+        oldSymmetryFactor = self.getSymmetryFactor()
         composites.Composite.moveTo(self, locator)
         if self.lastLocationLabel != self.DATABASE:
             self.p.numMoves += 1
@@ -213,6 +214,19 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
+        self.scaleParamsToNewSymmetryFactor(oldSymmetryFactor)
+
+    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor=1.0):
+        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+            ParamLocation.VOLUME_INTEGRATED
+        )
+        scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
+        for b in self.getBlocks():
+            for param in volIntegratedParamsToScale:
+                if b.p[param] is None:
+                    continue
+                else:
+                    b.p[param] = b.p[param] / scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
