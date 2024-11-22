@@ -836,6 +836,7 @@ def safeCopy(src: str, dst: str) -> None:
 
     runLog.extra("Copied {} -> {}".format(src, dst))
 
+
 def safeMove(src: str, dst: str) -> None:
     """This copy overwrites ``shutil.move`` and checks that move operation is truly completed before continuing."""
     # Convert files to OS-independence

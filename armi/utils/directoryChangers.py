@@ -136,8 +136,15 @@ class DirectoryChanger:
     def retrieveFiles(self):
         """Copy ``filesToRetrieve`` back into the initial directory on exit."""
         if self.outputPath != self.initial:
-            self._transferFiles(self.destination, self.outputPath, self._filesToRetrieve, moveFiles=False)
-        self._transferFiles(self.destination, self.initial, self._filesToRetrieve, moveFiles=True)
+            self._transferFiles(
+                self.destination,
+                self.outputPath,
+                self._filesToRetrieve,
+                moveFiles=False,
+            )
+        self._transferFiles(
+            self.destination, self.initial, self._filesToRetrieve, moveFiles=True
+        )
 
     def _retrieveEntireFolder(self):
         """
