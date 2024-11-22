@@ -872,6 +872,7 @@ def safeMove(src: str, dst: str) -> None:
             break
 
     runLog.extra("Moved {} -> {}".format(src, dst))
+    return dst
 
 
 # Allow us to check the copy operation is complete before continuing
