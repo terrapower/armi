@@ -556,7 +556,7 @@ class ArmiPlugin:
 
     @staticmethod
     @HOOKSPEC
-    def defineParameterRenames() -> dict[str, str]:
+    def defineParameterRenames() -> Dict:
         """
         Return a mapping from old parameter names to new parameter names.
 
