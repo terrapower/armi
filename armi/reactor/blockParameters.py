@@ -137,6 +137,21 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
+            "percentBuMax",
+            units=units.PERCENT_FIMA,
+            description="Maximum percentage in a single pin of the initial heavy metal "
+            "atoms that have been fissioned",
+            location=ParamLocation.MAX,
+        )
+
+        pb.defParam(
+            "percentBuMaxPinLocation",
+            units=units.UNITLESS,
+            description="Peak burnup pin location (integer)",
+            location=ParamLocation.MAX,
+        )
+
+        pb.defParam(
             "residence",
             units=units.DAYS,
             description=(
@@ -776,11 +791,7 @@ def getBlockParameterDefinitions():
             units=units.PERCENT_FIMA,
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
-            categories=[
-                parameters.Category.cumulative,
-                "eq cumulative shift",
-                parameters.Category.depletion,
-            ],
+            categories=["cumulative", "eq cumulative shift"],
         )
 
         pb.defParam(
