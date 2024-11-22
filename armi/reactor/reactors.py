@@ -20,6 +20,8 @@ import copy
 from typing import Optional
 
 from armi import getPluginManagerOrFail, runLog
+
+# from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.reactor import composites, reactorParameters
 from armi.reactor.cores import Core
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
@@ -62,11 +64,12 @@ class Reactor(composites.Composite):
 
     def __init__(self, name, blueprints):
         composites.Composite.__init__(self, "R-{}".format(name))
-        self.o = None
+        self.o = None  # Deprecated. To be removed.
         self.spatialGrid = None
         self.spatialLocator = None
         self.p.maxAssemNum = 0
         self.p.cycle = 0
+        # self.nuclideBases = NuclideBases()
         self.core = None
         self.excore = ExcoreCollection()
         self.blueprints = blueprints
