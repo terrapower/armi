@@ -1020,8 +1020,8 @@ class Assembly(composites.Composite):
 
         Warning
         -------
-        Fails when requested to extrapolate.With higher order splines it is possible to interpolate
-        non-physical values, for example a negative flux or dpa. Please use caution when going off
+        Fails when requested to extrapolate. With higher order splines it is possible to interpolate
+        non-physical values, for example, a negative flux or dpa. Please use caution when going off
         default in interpType and be certain that interpolated values are physical.
 
         Parameters
@@ -1069,7 +1069,7 @@ class Assembly(composites.Composite):
         Warning
         -------
         Fails when requested to extrapololate. With higher order splines it is possible to
-        interpolate nonphysical values, for example a negative flux or dpa. Please use caution when
+        interpolate nonphysical values, for example, a negative flux or dpa. Please use caution when
         going off default in interpType and be certain that interpolated values are physical.
 
         Parameters
