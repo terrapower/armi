@@ -181,7 +181,7 @@ class TestMemoryProfiler(unittest.TestCase):
             self.assertIn("Currently using 6.0 GB of memory.", stdOut)
             self.assertIn("There is 44.0 GB of memory left.", stdOut)
             self.assertIn("There is a total allocation of 50.0 GB", stdOut)
-            # Try another for funzies
+            # Try another for funzies where we only use half the available resources on the node
             mockLogs.emptyStdout()
             self.memPro.cs = {"cpusPerTask": 5, "nTasks": 1}
             self.memPro.printCurrentMemoryState()
