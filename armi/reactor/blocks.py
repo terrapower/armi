@@ -29,7 +29,6 @@ import numpy as np
 from armi import nuclideBases
 from armi import runLog
 from armi.bookkeeping import report
-from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA
 from armi.physics.neutronics import NEUTRON
@@ -794,11 +793,22 @@ class Block(composites.Composite):
         massHmBOL = 0.0
         sf = self.getSymmetryFactor()
         for child in self:
+            # multiplying by sf ends up cancelling out the symmetry factor used in
+            # Component.getMass(). So massHmBOL does not respect the symmetry factor.
             hmMass = child.getHMMass() * sf
             massHmBOL += hmMass
-            # Components have a massHmBOL parameter but not every composite will
+            # Components have the following parameters but not every composite will
+            # massHmBOL, molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+                # to stay consistent with massHmBOL, molesHmBOL and puFrac should be
+                # independent of sf. As such, the need to be scaled by 1/sf.
+                child.p.molesHmBOL = child.getHMMoles() / sf
+                child.p.puFrac = (
+                    self.getPuMoles() / sf / child.p.molesHmBOL
+                    if child.p.molesHmBOL > 0.0
+                    else 0.0
+                )
 
         self.p.massHmBOL = massHmBOL
 
@@ -1432,63 +1442,6 @@ class Block(composites.Composite):
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
 
-    def breakFuelComponentsIntoIndividuals(self):
-        """
-        Split block-level components (in fuel blocks) into pin-level components.
-
-        The fuel component will be broken up according to its multiplicity.
-
-        Order matters! The first pin component will be located at a particular (x, y), which
-        will be used in the fluxRecon module to determine the interpolated flux.
-
-        The fuel will become fuel001 through fuel169 if there are 169 pins.
-        """
-        fuels = self.getChildrenWithFlags(Flags.FUEL)
-        if len(fuels) != 1:
-            runLog.error(
-                "This block contains {0} fuel components: {1}".format(len(fuels), fuels)
-            )
-            raise RuntimeError(
-                "Cannot break {0} into multiple fuel components b/c there is not a single fuel"
-                " component.".format(self)
-            )
-
-        fuel = fuels[0]
-        fuelFlags = fuel.p.flags
-        nPins = self.getNumPins()
-        runLog.info(
-            "Creating {} individual {} components on {}".format(nPins, fuel, self)
-        )
-
-        # Handle all other components that may be linked to the fuel multiplicity
-        # by unlinking them and setting them directly.
-        # TODO: What about other (actual) dimensions? This is a limitation in that only fuel
-        # components are duplicated, and not the entire pin. It is also a reasonable assumption with
-        # current/historical usage of ARMI.
-        for comp, dim in self.getComponentsThatAreLinkedTo(fuel, "mult"):
-            comp.setDimension(dim, nPins)
-
-        # finish the first pin as a single pin
-        fuel.setDimension("mult", 1)
-        fuel.setName("fuel001")
-        fuel.p.pinNum = 1
-
-        # create all the new pin components and add them to the block with 'fuel001' names
-        for i in range(nPins - 1):
-            # wow, only use of a non-deepcopy
-            newC = copy.copy(fuel)
-            newC.setName("fuel{0:03d}".format(i + 2))  # start with 002.
-            newC.p.pinNum = i + 2
-            self.add(newC)
-
-        # update moles at BOL for each pin
-        self.p.molesHmBOLByPin = []
-        for pin in self.iterComponents(Flags.FUEL):
-            # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
-            pin.p.flags = fuelFlags
-            self.p.molesHmBOLByPin.append(pin.getHMMoles())
-            pin.p.massHmBOL /= nPins
-
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
         Return the volume integrated multigroup neutron tracklength in [n-cm/s].
@@ -1738,18 +1691,6 @@ class Block(composites.Composite):
         if total == 0.0:
             return 0.0
         return b10 / total
-
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        puN = sum(self.getNuclideNumberDensities(nucNames))
-
-        return (
-            puN
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
 
     def getUraniumMassEnrich(self):
         """Returns U-235 mass fraction assuming U-235 and U-238 only."""

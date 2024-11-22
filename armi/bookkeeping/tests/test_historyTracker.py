@@ -231,8 +231,8 @@ class TestHistoryTracker(ArmiTestHelper):
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
-        history.addAllFuelAssems()
-        self.assertEqual(len(history.detailAssemblyNames), 51)
+        history.addAllDetailedAssems()
+        self.assertEqual(len(history.detailAssemblyNames), 54)
 
     def test_getBlockInAssembly(self):
         history = self.o.getInterface("history")
