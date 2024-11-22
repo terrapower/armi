@@ -52,15 +52,6 @@ class SettingsModifier(ParameterSweepConverter):
             )
 
 
-class CustomModifier(ParameterSweepConverter):
-    """Invoke the shuffle logic `applyCustomPerturbation` method to make a custom setting."""
-
-    def convert(self, r=None):
-        ParameterSweepConverter.convert(self, r)
-        fh = r.o.getInterface("fuelHandler")
-        fh.applyCustomPerturbation(self._parameter)
-
-
 class NeutronicConvergenceModifier(ParameterSweepConverter):
     """Adjusts the neutronics convergence parameters."""
 

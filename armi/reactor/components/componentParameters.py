@@ -15,7 +15,7 @@
 """Component parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters.parameterDefinitions import isNumpyArray
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyF32Array
 from armi.utils import units
 
 
@@ -79,10 +79,29 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "pinNDens",
+            setter=isNumpyF32Array("pinNDens"),
+            units=f"atoms/(bn*{units.CM})",
+            description="Pin-wise number densities of each nuclide.",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            categories=["depletion", parameters.Category.pinQuantities],
+            default=None,
+        )
+
+        pb.defParam(
             "percentBu",
             units=f"{units.PERCENT_FIMA}",
             description="Burnup as a percentage of initial (heavy) metal atoms.",
             default=0.0,
+        )
+
+        pb.defParam(
+            "pinPercentBu",
+            setter=isNumpyArray("pinPercentBu"),
+            units=units.PERCENT_FIMA,
+            description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
+            default=None,
         )
 
         pb.defParam(
@@ -153,6 +172,21 @@ def getComponentParameterDefinitions():
             default=1,
             setter=_assignTDFrac,
         )
+
+        pb.defParam(
+            "molesHmBOL",
+            units=units.MOLES,
+            default=0.0,
+            description="Total number of moles of heavy metal at BOL.",
+        )
+
+        pb.defParam(
+            "puFrac",
+            default=0.0,
+            units=units.UNITLESS,
+            description="Current average Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
+        )
+
     return pDefs
 
 

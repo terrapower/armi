@@ -181,7 +181,7 @@ class TestCompareDB3(unittest.TestCase):
             dbs[1]._fullPath,
             timestepCompare=[(0, 0), (0, 1)],
         )
-        self.assertEqual(len(diffs.diffs), 480)
+        self.assertEqual(len(diffs.diffs), 504)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 
