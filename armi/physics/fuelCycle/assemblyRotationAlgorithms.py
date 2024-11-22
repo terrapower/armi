@@ -25,15 +25,15 @@ import math
 from collections import defaultdict
 
 from armi import runLog
-from armi.reactor.assemblies import Assembly
-from armi.physics.fuelCycle.utils import (
-    assemblyHasFuelPinBurnup,
-    assemblyHasFuelPinPowers,
-)
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
+from armi.physics.fuelCycle.utils import (
+    assemblyHasFuelPinBurnup,
+    assemblyHasFuelPinPowers,
+)
+from armi.reactor.assemblies import Assembly
 
 
 def _rotationNumberToRadians(rot: int) -> float:

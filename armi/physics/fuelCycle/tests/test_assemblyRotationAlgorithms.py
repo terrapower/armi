@@ -23,19 +23,19 @@ import copy
 import enum
 import math
 import typing
-from unittest import mock, TestCase
+from unittest import TestCase, mock
 
 import numpy as np
 
-from armi.reactor.assemblies import HexAssembly
-from armi.reactor.blocks import HexBlock
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
+from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
-from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
 from armi.physics.fuelCycle.tests.test_fuelHandlers import addSomeDetailAssemblies
+from armi.reactor.assemblies import HexAssembly
+from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 

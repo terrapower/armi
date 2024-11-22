@@ -13,8 +13,8 @@
 # limitations under the License.
 """Geometric agnostic routines that are useful for fuel cycle analysis."""
 
-import typing
 import operator
+import typing
 
 import numpy as np
 
@@ -23,8 +23,8 @@ from armi.reactor.flags import Flags
 from armi.reactor.grids import IndexLocation, MultiIndexLocation
 
 if typing.TYPE_CHECKING:
-    from armi.reactor.components import Component
     from armi.reactor.blocks import Block
+    from armi.reactor.components import Component
 
 
 def assemblyHasFuelPinPowers(a: typing.Iterable["Block"]) -> bool:

@@ -17,11 +17,11 @@ from unittest import TestCase
 
 import numpy as np
 
+from armi.physics.fuelCycle import utils
 from armi.reactor.blocks import Block
 from armi.reactor.components import Circle
 from armi.reactor.flags import Flags
 from armi.reactor.grids import IndexLocation, MultiIndexLocation
-from armi.physics.fuelCycle import utils
 
 
 class FuelCycleUtilsTests(TestCase):
