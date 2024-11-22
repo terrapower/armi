@@ -1562,7 +1562,7 @@ class NuclideBases:
             self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
     def initReachableActiveNuclidesThroughBurnChain(
-        self, numberDensityDict, activeNuclides
+        self, numberDensities, activeNuclides
     ):
         """
         March through the depletion chain and find all nuclides that can be reached by depleting
@@ -1572,17 +1572,17 @@ class NuclideBases:
 
         Parameters
         ----------
-        numberDensityDict : dict
-            Starting number densities.
+        numberDensities : dict
+            Starting number densities
         activeNuclides : OrderedSet
-            Active nuclides defined in the reactor blueprints.
+            Active nuclides defined in the reactor blueprints
         """
         if not self.burnChainImposed:
             return
 
         missingActiveNuclides = set()
         memo = set()
-        difference = set(numberDensityDict).difference(memo)
+        difference = set(numberDensities).difference(memo)
         while any(difference):
             nuclide = difference.pop()
             memo.add(nuclide)
@@ -1597,13 +1597,13 @@ class NuclideBases:
                     # Interaction nuclides can only be added to the number density dictionary if
                     # they are a part of the user-defined active nuclides
                     productNuclide = interaction.getPreferredProduct(activeNuclides)
-                    if productNuclide not in numberDensityDict:
-                        numberDensityDict[productNuclide] = 0.0
+                    if productNuclide not in numberDensities:
+                        numberDensities[productNuclide] = 0.0
                 except KeyError:
                     # Keep track of the first production nuclide
                     missingActiveNuclides.add(interaction.productNuclides)
 
-            difference = set(numberDensityDict).difference(memo)
+            difference = set(numberDensities).difference(memo)
 
         if self.burnChainImposed and missingActiveNuclides:
             self._failOnMissingActiveNuclides(missingActiveNuclides)
@@ -1621,7 +1621,7 @@ class NuclideBases:
         raise ValueError(msg)
 
     @staticmethod
-    def isotopes(z):
+    def isotopes(z: int):
         return elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName: str):
@@ -1644,7 +1644,7 @@ class NuclideBases:
             raise Exception(f"Too many or too few ({len(matches)}) matches for {name}")
         return matches[0]
 
-    def isMonoIsotopicElement(self, name):
+    def isMonoIsotopicElement(self, name: str):
         """Return true if this is the only naturally occurring isotope of its element."""
         base = self.byName[name]
         return (
@@ -1686,9 +1686,9 @@ class NuclideBases:
         """
         Return a single :py:class:`INuclide` object meeting the specified condition.
 
-        Similar to :py:func:`where`, this function uses a lambda input to filter the
-        :py:attr:`INuclide instances <instances>`. If there is not 1 and only 1 match for the
-        specified condition, an exception is raised.
+        Similar to ``where``, this function uses a lambda input to filter the ``INuclide``
+        instances. If there is not 1-and-only-1 match for the specified condition, an exception is
+        raised.
 
         Examples
         --------
@@ -1709,7 +1709,7 @@ class NuclideBases:
 
         return matches[0]
 
-    def changeLabel(self, nuclideBase, newLabel):
+    def changeLabel(self, nuclideBase, newLabel: str):
         """Updates a nuclide label and modifies the ``byLabel`` look-up dictionary."""
         nuclideBase.label = newLabel
         self.byLabel[newLabel] = nuclideBase
