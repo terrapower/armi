@@ -515,15 +515,13 @@ class NuclideBase(INuclide, IMcnpNuclide):
         :id: I_ARMI_ND_ISOTOPES1
         :implements: R_ARMI_ND_ISOTOPES
 
-        The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-        class provides a data structure for information about a single nuclide,
-        including the atom number, atomic weight, element, isomeric state,
-        half-life, and name. The class contains static methods for creating an
-        internal ARMI name or label for a nuclide. There are instance methods
-        for generating the nuclide ID for external codes, e.g. MCNP or Serpent,
-        and retrieving the nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3.
-        There are also instance methods for generating an AAAZZZS ID and an ENDF
-        MAT number.
+        The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` class provides a
+        data structure for information about a single nuclide, including the atom number, atomic
+        weight, element, isomeric state, half-life, and name. The class contains static methods for
+        creating an internal ARMI name or label for a nuclide. There are instance methods for
+        generating the nuclide ID for external codes, e.g. MCNP or Serpent, and retrieving the
+        nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3. There are also instance methods for
+        generating an AAAZZZS ID and an ENDF MAT number.
     """
 
     def __init__(self, element, a, weight, abundance, state, halflife):
@@ -600,9 +598,9 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :implements: R_ARMI_ND_ISOTOPES
 
             This method returns the ``mcc2id`` attribute of a
-            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
-            mcc-nuclides.yaml file in the ARMI resources folder.
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instance. This
+            attribute is initially populated by reading from the mcc-nuclides.yaml file in the ARMI
+            resources folder.
         """
         return self.mcc2id
 
@@ -618,9 +616,9 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :implements: R_ARMI_ND_ISOTOPES
 
             This method returns the ``mcc3idEndfbVII0`` attribute of a
-            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
-            mcc-nuclides.yaml file in the ARMI resources folder.
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instance. This
+            attribute is initially populated by reading from the mcc-nuclides.yaml file in the ARMI
+            resources folder.
         """
         return self.mcc3idEndfbVII0
 
@@ -632,9 +630,9 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :implements: R_ARMI_ND_ISOTOPES
 
             This method returns the ``mcc3idEndfbVII1`` attribute of a
-            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance.  This attribute is initially populated by reading from the
-            mcc-nuclides.yaml file in the ARMI resources folder.
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instance. This
+            attribute is initially populated by reading from the mcc-nuclides.yaml file in the ARMI
+            resources folder.
         """
         return self.mcc3idEndfbVII1
 
@@ -646,10 +644,9 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :id: I_ARMI_ND_ISOTOPES4
             :implements: R_ARMI_ND_ISOTOPES
 
-            This method generates the MCNP ID for an isotope using the standard
-            MCNP format based on the atomic number A, number of protons Z, and
-            excited state. The implementation includes the special rule for
-            Am-242m, which is 95242. 95642 is used for the less common ground
+            This method generates the MCNP ID for an isotope using the standard MCNP format based on
+            the atomic number A, number of protons Z, and excited state. The implementation includes
+            the special rule for Am-242m, which is 95242. 95642 is used for the less common ground
             state Am-242.
 
         Returns
@@ -1369,18 +1366,16 @@ def updateNuclideBasesForSpecialCases():
         :implements: R_ARMI_ND_ISOTOPES
 
         This function updates the keys for the :py:class:`NuclideBase
-        <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and
-        Am-242 in the ``byName`` and ``byDBName`` global dictionaries.  This
-        function associates the more common isomer Am-242m with the name
-        "AM242", and uses "AM242G" to denote the ground state.
+        <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and Am-242 in the
+        ``byName`` and ``byDBName`` global dictionaries. This function associates the more common
+        isomer Am-242m with the name "AM242", and uses "AM242G" to denote the ground state.
 
     Notes
     -----
-    This function is specifically added to change the definition of
-    `AM242` to refer to its metastable isomer, `AM242M` by default. `AM242M`
-    is most common isomer of `AM242` and is typically the desired isomer
-    when being requested rather than than the ground state (i.e., S=0) of
-    `AM242`.
+    This function is specifically added to change the definition of `AM242` to refer to its
+    metastable isomer, `AM242M` by default. `AM242M` is most common isomer of `AM242` and is
+    typically the desired isomer when being requested rather than than the ground state (i.e., S=0)
+    of `AM242`.
     """
     # Change the name of `AM242` to specific represent its ground state.
     am242g = byName["AM242"]
@@ -1415,6 +1410,7 @@ def __deriveElementalWeightsByNaturalNuclideAbundances():
             element.standardWeight = numer / denom
 
 
+# TODO: JOHN: This needs to stay for now. (While it is still in the INuclide constructor.)
 def addGlobalNuclide(nuclide: NuclideBase):
     """Add an element to the global dictionaries."""
     if (
@@ -1464,6 +1460,13 @@ def destroyGlobalNuclides():
     byAAAZZZSId.clear()
 
 
+"""
+TODO: JOHN: Above this point is the old "global nuclides" code. Soon to be deleted.
+
+TODO: JOHN: Below this point is the new code.
+"""
+
+
 class NuclideBases:
     """
     TODO: This is the class I am crafting to replace global nuclides.
@@ -1484,6 +1487,44 @@ class NuclideBases:
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
 
+    def factory(self):
+        """
+        Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
+
+        Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`.
+        Also clears and fills in the :py:data:`~armi.nucDirectory.nuclideBases.instances`,
+        :py:data:`byName`, :py:attr:`byLabel`, :py:data:`byMcc3IdEndfbVII0`, and
+        :py:data:`byMcc3IdEndfbVII1` module attributes. This method is automatically run upon
+        loading the module, hence it is not usually necessary to re-run it unless there is a
+        change to the data files, which should not happen during run time, or a *bad*
+        :py:class`INuclide` is created.
+
+        Notes
+        -----
+        This cannot be run more than once. NuclideBase instances are used throughout the ARMI
+        ecosystem and are even class attributes in some cases. Re-instantiating them would orphan
+        any existing ones and break everything.
+        """
+        if len(self.instances) != 0:
+            raise RuntimeError(
+                "Nuclides are already initialized and cannot be re-initialized unless "
+                "`nuclideBases.clear()` is called first."
+            )
+
+        self.addNuclideBases()
+        self.__addNaturalNuclideBases()
+        self.__addDummyNuclideBases()
+        self.__addLumpedFissionProductNuclideBases()
+        self.updateNuclideBasesForSpecialCases()
+        self.readMCCNuclideData()
+        self.__renormalizeNuclideToElementRelationship()
+        self.__deriveElementalWeightsByNaturalNuclideAbundances()
+
+        # reload the thermal scattering library with the new nuclideBases too
+        from armi.nucDirectory import thermalScattering
+
+        thermalScattering.factory()
+
     def clear(self):
         self.burnChainImposed = False
         self.instances = []
@@ -1496,6 +1537,31 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+
+    def addNuclide(self, nuclide: INuclide):
+        """Add an element to the dictionaries in this class."""
+        if (
+            nuclide.name in self.byName
+            or nuclide.getDatabaseName() in self.byDBName
+            or nuclide.label in self.byLabel
+        ):
+            raise ValueError(
+                f"{nuclide} has already been added and cannot be duplicated."
+            )
+
+        instances.append(nuclide)
+        self.byName[nuclide.name] = nuclide
+        self.byDBName[nuclide.getDatabaseName()] = nuclide
+        self.byLabel[nuclide.label] = nuclide
+
+        # Add look-up based on the MCNP nuclide ID
+        if isinstance(nuclide, IMcnpNuclide):
+            if nuclide.getMcnpId() in self.byMcnpId:
+                raise ValueError(
+                    f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added."
+                )
+            self.byMcnpId[nuclide.getMcnpId()] = nuclide
+            self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
     def initReachableActiveNuclidesThroughBurnChain(
         self, numberDensityDict, activeNuclides
@@ -1646,14 +1712,7 @@ class NuclideBases:
         return matches[0]
 
     def changeLabel(self, nuclideBase, newLabel):
-        """
-        Updates a nuclide label and modifies the ``byLabel`` look-up dictionary.
-
-        Notes
-        -----
-        Since nuclide objects are defined and stored globally, any change to the attributes will be
-        maintained.
-        """
+        """Updates a nuclide label and modifies the ``byLabel`` look-up dictionary."""
         nuclideBase.label = newLabel
         self.byLabel[newLabel] = nuclideBase
 
@@ -1698,44 +1757,6 @@ class NuclideBases:
             nuclide = self.byName[nucName]
             # think of this protected stuff as "module level protection" rather than class.
             nuclide._processBurnData(burnInfo)
-
-    def factory(self):
-        """
-        Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
-
-        Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`.
-        Also clears and fills in the :py:data:`~armi.nucDirectory.nuclideBases.instances`,
-        :py:data:`byName`, :py:attr:`byLabel`, :py:data:`byMcc3IdEndfbVII0`, and
-        :py:data:`byMcc3IdEndfbVII1` module attributes. This method is automatically run upon
-        loading the module, hence it is not usually necessary to re-run it unless there is a
-        change to the data files, which should not happen during run time, or a *bad*
-        :py:class`INuclide` is created.
-
-        Notes
-        -----
-        This cannot be run more than once. NuclideBase instances are used throughout the ARMI
-        ecosystem and are even class attributes in some cases. Re-instantiating them would orphan
-        any existing ones and break everything.
-        """
-        if len(self.instances) != 0:
-            raise RuntimeError(
-                "Nuclides are already initialized and cannot be re-initialized unless "
-                "`nuclideBases.destroyGlobalNuclides` is called first."
-            )
-
-        self.addNuclideBases()
-        self.__addNaturalNuclideBases()
-        self.__addDummyNuclideBases()
-        self.__addLumpedFissionProductNuclideBases()
-        self.updateNuclideBasesForSpecialCases()
-        self.readMCCNuclideData()
-        self.__renormalizeNuclideToElementRelationship()
-        self.__deriveElementalWeightsByNaturalNuclideAbundances()
-
-        # reload the thermal scattering library with the new nuclideBases too
-        from armi.nucDirectory import thermalScattering
-
-        thermalScattering.factory()
 
     @staticmethod
     def addNuclideBases():
@@ -1785,20 +1806,18 @@ class NuclideBases:
                 if element.isNaturallyOccurring():
                     NaturalNuclideBase(element.symbol, element)
 
-    @staticmethod
-    def __addDummyNuclideBases():
+    def __addDummyNuclideBases(self):
         """Generates a set of dummy nuclides."""
-        DummyNuclideBase(name="DUMP1", weight=10.0)
-        DummyNuclideBase(name="DUMP2", weight=240.0)
+        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0))
+        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0))
 
-    @staticmethod
-    def __addLumpedFissionProductNuclideBases():
-        LumpNuclideBase(name="LFP35", weight=233.273)
-        LumpNuclideBase(name="LFP38", weight=235.78)
-        LumpNuclideBase(name="LFP39", weight=236.898)
-        LumpNuclideBase(name="LFP40", weight=237.7)
-        LumpNuclideBase(name="LFP41", weight=238.812)
-        LumpNuclideBase(name="LREGN", weight=1.0)
+    def __addLumpedFissionProductNuclideBases(self):
+        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273))
+        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78))
+        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898))
+        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7))
+        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812))
+        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0))
 
     def readMCCNuclideData(self):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
@@ -1812,8 +1831,8 @@ class NuclideBases:
             ENDF/B-VII.0) for all nuclides in MC\ :sup:`2`. The ``mcc2id``, ``mcc3idEndfVII0``, and
             ``mcc3idEndfVII1`` attributes of each :py:class:`NuclideBase
             <armi.nucDirectory.nuclideBases.NuclideBase>` instance are updated as the data is read,
-            and the global dictionaries ``byMcc2Id``, ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1``
-            are populated with the nuclide bases keyed by their corresponding ID for each code.
+            and the dictionaries ``byMcc2Id``, ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are
+            populated with the nuclide bases keyed by their corresponding ID for each code.
         """
         with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
             yaml = YAML(typ="rt")
@@ -1847,8 +1866,8 @@ class NuclideBases:
 
             This function updates the keys for the :py:class:`NuclideBase
             <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and Am-242 in the
-            ``byName`` and ``byDBName`` global dictionaries. This function associates the more
-            common isomer Am-242m by the name "AM242", and uses "AM242G" to denote the ground state.
+            ``byName`` and ``byDBName`` dictionaries. This function associates the more common
+            isomer Am-242m by the name "AM242", and uses "AM242G" to denote the ground state.
 
         Notes
         -----
@@ -1887,28 +1906,3 @@ class NuclideBases:
 
             if denom:
                 element.standardWeight = numer / denom
-
-    def addGlobalNuclide(self, nuclide: NuclideBase):
-        """Add an element to the global dictionaries."""
-        if (
-            nuclide.name in self.byName
-            or nuclide.getDatabaseName() in self.byDBName
-            or nuclide.label in self.byLabel
-        ):
-            raise ValueError(
-                f"{nuclide} has already been added and cannot be duplicated."
-            )
-
-        instances.append(nuclide)
-        self.byName[nuclide.name] = nuclide
-        self.byDBName[nuclide.getDatabaseName()] = nuclide
-        self.byLabel[nuclide.label] = nuclide
-
-        # Add look-up based on the MCNP nuclide ID
-        if isinstance(nuclide, IMcnpNuclide):
-            if nuclide.getMcnpId() in self.byMcnpId:
-                raise ValueError(
-                    f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added and cannot be duplicated."
-                )
-            self.byMcnpId[nuclide.getMcnpId()] = nuclide
-            self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
