@@ -223,10 +223,11 @@ class Assembly(composites.Composite):
         scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
         for b in self.getBlocks():
             for param in volIntegratedParamsToScale:
-                if b.p[param] is None:
+                name = param.name
+                if b.p[name] is None:
                     continue
                 else:
-                    b.p[param] = b.p[param] / scalingFactor
+                    b.p[name] = b.p[name] / scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
