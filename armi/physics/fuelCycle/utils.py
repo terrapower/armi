@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Geometric agnostic routines that are useful for fuel cycle analysis."""
+"""Geometric agnostic routines that are useful for fuel cycle analysis on pin-type reactors."""
 
 import operator
 import typing
