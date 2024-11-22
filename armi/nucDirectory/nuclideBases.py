@@ -92,11 +92,10 @@ Retrieve U-235 by the AAAZZZS ID:
 """
 import os
 
-from ruamel.yaml import YAML
 import numpy as np
+from ruamel.yaml import YAML
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.nucDirectory import transmutations
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
