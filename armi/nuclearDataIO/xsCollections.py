@@ -273,7 +273,7 @@ class XSCollection:
 
     def compare(self, other, flux, relativeTolerance=0, verbose=False, nucName=""):
         """Compare the cross sections between two XSCollections objects."""
-        nuclideIDMsg = ""  # f"Nuclide {nucName} " if nucName else ""
+        nuclideIDMsg = f"Nuclide {nucName} " if nucName else ""
         equal = True
         for xsName in ALL_COLLECTION_DATA:
             myXsData = self.__dict__[xsName]
