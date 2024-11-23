@@ -227,7 +227,7 @@ class Assembly(composites.Composite):
                 if b.p[name] is None:
                     continue
                 else:
-                    b.p[name] = b.p[name] / scalingFactor
+                    b.p[name] = b.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""

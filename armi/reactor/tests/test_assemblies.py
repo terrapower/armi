@@ -42,6 +42,7 @@ from armi.reactor.assemblies import (
     runLog,
 )
 from armi.reactor.tests import test_reactors
+from armi.reactor.parameters import ParamLocation
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
@@ -223,6 +224,7 @@ class Assembly_TestCase(unittest.TestCase):
             "xsTypeNum": 40,
             "zbottom": 97.3521,
             "ztop": 111.80279999999999,
+            "massHmBOL": 9.0,
         }
 
         self.blockSettings = {
@@ -248,6 +250,7 @@ class Assembly_TestCase(unittest.TestCase):
         for i in range(NUM_BLOCKS):
             b = blocks.HexBlock("TestHexBlock")
             b.setHeight(self.height)
+            b.p["massHmBOL"] = self.blockParams["massHmBOL"]
 
             self.hexDims = {
                 "Tinput": 273.0,
@@ -347,9 +350,18 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_scaleParamsWhenMoved(self):
         """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
-        ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
-        i, j = grids.HexGrid.getIndicesFromRingAndPos(3, 10)
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
         locator = self.r.core.spatialGrid[i, j, 0]
+        originalParamValues = np.array(
+            [b.p["massHmBOL"] for b in self.assembly.getBlocks(Flags.FUEL)]
+        )
+        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+        self.assembly.moveTo(locator)
+        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+        thirdParamValues = np.array(
+            [b.p["massHmBOL"] for b in self.assembly.getBlocks(Flags.FUEL)]
+        )
+        assert_allclose(thirdParamValues / originalParamValues, 1 / 3)
 
     def test_getName(self):
         cur = self.assembly.getName()
