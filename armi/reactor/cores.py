@@ -52,7 +52,6 @@ from armi.utils import createFormattedStrWithDelimiter, units
 from armi.utils import tabulate
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
-from armi.reactor.converters.geometryConverters import _scaleParamsInBlock
 
 
 class Core(composites.Composite):
