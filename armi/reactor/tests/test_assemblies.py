@@ -42,7 +42,6 @@ from armi.reactor.assemblies import (
     runLog,
 )
 from armi.reactor.tests import test_reactors
-from armi.reactor.parameters import ParamLocation
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
