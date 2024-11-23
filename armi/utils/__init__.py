@@ -859,9 +859,12 @@ def safeMove(src: str, dst: str) -> None:
     maxWaitTime = 60  # 1 min
     totalWaitTime = 0
     while True:
-        dstSize = os.path.getsize(dst)
-        if srcSize == dstSize:
-            break
+        try:
+            dstSize = os.path.getsize(dst)
+            if srcSize == dstSize:
+                break
+        except FileNotFoundError:
+            pass
         time.sleep(waitTime)
         totalWaitTime += waitTime
         if totalWaitTime > maxWaitTime:
