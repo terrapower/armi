@@ -848,7 +848,7 @@ def safeMove(src: str, dst: str) -> None:
     if "win" in sys.platform:
         shutil.move(src, dst)
     elif "linux" in sys.platform:
-        cmd = f'cp "{src}" "{dst}"'
+        cmd = f'mv "{src}" "{dst}"'
         os.system(cmd)
     else:
         raise OSError(
@@ -856,7 +856,7 @@ def safeMove(src: str, dst: str) -> None:
             + "Linux and Windows."
         )
     waitTime = 0.01  # 10 ms
-    maxWaitTime = 60  # 1 min
+    maxWaitTime = 6000  # 1 min
     totalWaitTime = 0
     while True:
         try:
