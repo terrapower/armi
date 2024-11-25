@@ -21,7 +21,7 @@ from typing import Optional
 
 from armi import getPluginManagerOrFail, runLog
 
-# from armi.nucDirectory.nuclideBases import NuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.reactor import composites, reactorParameters
 from armi.reactor.cores import Core
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
@@ -69,7 +69,7 @@ class Reactor(composites.Composite):
         self.spatialLocator = None
         self.p.maxAssemNum = 0
         self.p.cycle = 0
-        # self.nuclideBases = NuclideBases()
+        self.nuclideBases = NuclideBases()
         self.core = None
         self.excore = ExcoreCollection()
         self.blueprints = blueprints

@@ -21,7 +21,6 @@ import unittest
 from ruamel.yaml import YAML
 
 from armi.context import RES
-from armi.nucDirectory.nuclideBases import destroyGlobalNuclides
 from armi.nucDirectory.nuclideBases import (
     DummyNuclideBase,
     LumpNuclideBase,
@@ -36,7 +35,6 @@ class TestNuclideBases(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.nucDirectoryTestsPath = NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
-        destroyGlobalNuclides()
         cls.nuclideBases = NuclideBases()
         # Ensure that the burn chain data is initialized before running these tests.
         cls.nuclideBases.burnChainImposed = False

@@ -278,33 +278,23 @@ class INuclide(NuclideInterface):
     ----------
     z : int
         Number of protons.
-
     a : int
         Number of nucleons.
-
     state : int
         Indicates excitement, 1 is more excited than 0.
-
     abundance : float
-        Isotopic fraction of a naturally occurring nuclide. The sum of all nuclide
-        abundances for a naturally occurring element should be 1.0. This is atom
-        fraction, not mass fraction.
-
+        Isotopic fraction of a naturally occurring nuclide. The sum of all nuclide abundances for a
+        naturally occurring element should be 1.0. This is atom fraction, not mass fraction.
     name : str
         ARMI's unique name for the given nuclide.
-
     label : str
-        ARMI's unique 4 character label for the nuclide.
-        These are not human readable, but do not lose any information.
-        The label is effectively the
-        :attr:`Element.symbol `armi.nucDirectory.elements.Element.symbol`
-        padded to two characters, plus the mass number (A) in base-26 (0-9, A-Z).
-        Additional support for meta-states is provided by adding 100 * the state
-        to the mass number (A).
-
+        ARMI's unique 4 character label for the nuclide. These are not human readable, but do not
+        lose any information. The label is effectively the :attr:`Element.symbol
+        `armi.nucDirectory.elements.Element.symbol` padded to two characters, plus the mass number
+        (A) in base-26 (0-9, A-Z). Additional support for meta-states is provided by adding
+        100 * the state to the mass number (A).
     nuSF : float
-        Neutrons released per spontaneous fission.
-        This should probably be moved at some point.
+        Neutrons released per spontaneous fission. (This could be moved at some point.)
     """
 
     fissile = ["U235", "PU239", "PU241", "AM242M", "CM244", "U233"]
@@ -325,14 +315,9 @@ class INuclide(NuclideInterface):
         mcc2id=None,
         mcc3idEndfbVII0=None,
         mcc3idEndfbVII1=None,
+        writeGlobal=False,
     ):
-        """
-        Create an instance of an INuclide.
-
-        Warning
-        -------
-        Do not call this constructor directly; use the factory instead.
-        """
+        """Create an instance of an INuclide."""
         if element not in elements.byName.values():
             raise ValueError(
                 f"Error in initializing nuclide {name}. Element {element} does not exist in the global element list."
@@ -362,7 +347,8 @@ class INuclide(NuclideInterface):
         self.mcc2id = mcc2id or ""
         self.mcc3idEndfbVII0 = mcc3idEndfbVII0 or ""
         self.mcc3idEndfbVII1 = mcc3idEndfbVII1 or ""
-        addGlobalNuclide(self)
+        if writeGlobal:
+            addGlobalNuclide(self)
         self.element.append(self)
 
     def __hash__(self):
@@ -469,7 +455,7 @@ class INuclide(NuclideInterface):
         return self.name in self.fissile
 
     def getNaturalIsotopics(self):
-        r"""Gets the naturally occurring nuclides for this nuclide.
+        """Gets the naturally occurring nuclides for this nuclide.
 
         Abstract method, see concrete types for implementation.
 
@@ -523,7 +509,9 @@ class NuclideBase(INuclide, IMcnpNuclide):
         generating an AAAZZZS ID and an ENDF MAT number.
     """
 
-    def __init__(self, element, a, weight, abundance, state, halflife):
+    def __init__(
+        self, element, a, weight, abundance, state, halflife, writeGlobal=False
+    ):
         IMcnpNuclide.__init__(self)
         INuclide.__init__(
             self,
@@ -535,6 +523,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
             halflife=halflife,
             name=NuclideBase._createName(element, a, state),
             label=NuclideBase._createLabel(element, a, state),
+            writeGlobal=writeGlobal,
         )
 
     def __repr__(self):
@@ -746,7 +735,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
     have any interactions with the NuclideBase objects.
     """
 
-    def __init__(self, name, element):
+    def __init__(self, name, element, writeGlobal=False):
         INuclide.__init__(
             self,
             element=element,
@@ -759,6 +748,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             halflife=np.inf,
             name=name,
             label=name,
+            writeGlobal=writeGlobal,
         )
 
     def __repr__(self):
@@ -851,11 +841,11 @@ class DummyNuclideBase(INuclide):
 
     Notes
     -----
-    This may be used to store mass from a depletion calculation, specifically
-    in the instances where the burn chain is truncated.
+    This may be used to store mass from a depletion calculation, specifically in the instances where
+    the burn chain is truncated.
     """
 
-    def __init__(self, name, weight):
+    def __init__(self, name, weight, writeGlobal=False):
         INuclide.__init__(
             self,
             element=elements.byName["Dummy"],
@@ -866,6 +856,7 @@ class DummyNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label="DMP" + name[4],
+            writeGlobal=writeGlobal,
         )
 
     def __repr__(self):
@@ -929,7 +920,7 @@ class LumpNuclideBase(INuclide):
         Describes what nuclides LumpNuclideBase is expend to.
     """
 
-    def __init__(self, name, weight):
+    def __init__(self, name, weight, writeGlobal=False):
         INuclide.__init__(
             self,
             element=elements.byName["LumpedFissionProduct"],
@@ -940,6 +931,7 @@ class LumpNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label=name[1:],
+            writeGlobal=writeGlobal,
         )
 
     def __repr__(self):
@@ -1003,9 +995,8 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
     ----------
     numberDensityDict : dict
         Starting number densities.
-
     activeNuclides : OrderedSet
-        Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
+        Active nuclides defined on the reactor blueprints object.
     """
     if not burnChainImposed:
         return
@@ -1021,7 +1012,6 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
             continue
 
         nuclideObj = byName[nuclide]
-
         for interaction in nuclideObj.trans + nuclideObj.decays:
             try:
                 # Interaction nuclides can only be added to the number density
@@ -1190,6 +1180,7 @@ def imposeBurnChain(burnChainStream):
         # processed conftest.py and is now building a Case that also imposes this.
         runLog.warning("Burn chain already imposed. Skipping reimposition.")
         return
+
     burnChainImposed = True
     yaml = YAML(typ="rt")
     yaml.allow_duplicate_keys = False
@@ -1225,6 +1216,7 @@ def factory():
             "Nuclides are already initialized and cannot be re-initialized unless "
             "`nuclideBases.destroyGlobalNuclides` is called first."
         )
+
     addNuclideBases()
     __addNaturalNuclideBases()
     __addDummyNuclideBases()
@@ -1279,7 +1271,7 @@ def addNuclideBases():
             nuSF = float(lineData[8])
 
             element = elements.bySymbol[sym]
-            nb = NuclideBase(element, a, mass, abun, state, halflife)
+            nb = NuclideBase(element, a, mass, abun, state, halflife, writeGlobal=True)
             nb.nuSF = nuSF
 
 
@@ -1288,7 +1280,7 @@ def __addNaturalNuclideBases():
     for element in elements.byZ.values():
         if element.symbol not in byName:
             if element.isNaturallyOccurring():
-                NaturalNuclideBase(element.symbol, element)
+                NaturalNuclideBase(element.symbol, element, writeGlobal=True)
 
 
 def __addDummyNuclideBases():
@@ -1299,17 +1291,17 @@ def __addDummyNuclideBases():
     -----
     These nuclides can be used to truncate a depletion / burn-up chain within the
     """
-    DummyNuclideBase(name="DUMP1", weight=10.0)
-    DummyNuclideBase(name="DUMP2", weight=240.0)
+    DummyNuclideBase(name="DUMP1", weight=10.0, writeGlobal=True)
+    DummyNuclideBase(name="DUMP2", weight=240.0, writeGlobal=True)
 
 
 def __addLumpedFissionProductNuclideBases():
-    LumpNuclideBase(name="LFP35", weight=233.273)
-    LumpNuclideBase(name="LFP38", weight=235.78)
-    LumpNuclideBase(name="LFP39", weight=236.898)
-    LumpNuclideBase(name="LFP40", weight=237.7)
-    LumpNuclideBase(name="LFP41", weight=238.812)
-    LumpNuclideBase(name="LREGN", weight=1.0)
+    LumpNuclideBase(name="LFP35", weight=233.273, writeGlobal=True)
+    LumpNuclideBase(name="LFP38", weight=235.78, writeGlobal=True)
+    LumpNuclideBase(name="LFP39", weight=236.898, writeGlobal=True)
+    LumpNuclideBase(name="LFP40", weight=237.7, writeGlobal=True)
+    LumpNuclideBase(name="LFP41", weight=238.812, writeGlobal=True)
+    LumpNuclideBase(name="LREGN", weight=1.0, writeGlobal=True)
 
 
 def readMCCNuclideData():
