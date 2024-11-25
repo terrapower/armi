@@ -25,8 +25,8 @@ from armi.nucDirectory.nuclideBases import (
     DummyNuclideBase,
     LumpNuclideBase,
     NaturalNuclideBase,
+    NuclideBases,
 )
-from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
 from armi.utils.units import AVOGADROS_NUMBER, CURIE_PER_BECQUEREL, SECONDS_PER_HOUR
 

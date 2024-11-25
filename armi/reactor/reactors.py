@@ -20,7 +20,6 @@ import copy
 from typing import Optional
 
 from armi import getPluginManagerOrFail, runLog
-
 from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.reactor import composites, reactorParameters
 from armi.reactor.cores import Core
