@@ -239,7 +239,7 @@ class TestDatabaseSmaller(unittest.TestCase):
                 self._testMethodName + ".h5",
                 0,
                 0,
-                allowMissing=False,
+                allowMissing=True,
                 handleInvalids=False,
             )
             self.assertNotIn("fakeSetting", mock.getStdout())
@@ -250,7 +250,7 @@ class TestDatabaseSmaller(unittest.TestCase):
                 self._testMethodName + ".h5",
                 0,
                 0,
-                allowMissing=False,
+                allowMissing=True,
                 handleInvalids=True,
             )
             self.assertIn("fakeSetting", mock.getStdout())
