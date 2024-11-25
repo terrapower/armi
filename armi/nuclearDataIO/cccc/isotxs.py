@@ -123,13 +123,14 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
                 runLog.warning(warning.format(nuc2, 2, 1))
             equal = False
             continue
-        equal &= compareNuclideXS(nuc1, nuc2, tolerance, verbose)
+        nucEqual = compareNuclideXS(nuc1, nuc2, tolerance, verbose, nucName)
+        equal &= nucEqual
     return equal
 
 
-def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
+def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False, nucName=""):
     equal = nuc1.isotxsMetadata.compare(nuc2.isotxsMetadata, nuc1, nuc2)
-    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose)
+    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose, nucName=nucName)
     return equal
 
 
