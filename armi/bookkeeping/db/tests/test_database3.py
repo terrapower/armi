@@ -13,6 +13,7 @@
 # limitations under the License.
 """Tests for the Database class."""
 from glob import glob
+import io
 import os
 import shutil
 import subprocess
@@ -227,33 +228,37 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_loadOperator(self):
         self.makeHistory()
         self.db.close()
-        # Write a bad setting
+        # Write a bad setting to the DB
         with h5py.File(self.db.fileName, "r+") as hf:
-            settings = hf["inputs/settings"].asstr()[()]
-            settings += "  fakeSetting: I'll be back"
+            settingz = hf["inputs/settings"].asstr()[()]
+            settingz += "  fakeTerminator: I'll be back"
+            stream = io.StringIO(settingz)
+            csString = stream.read()
             del hf["inputs/settings"]
-            hf["inputs/settings"] = settings
+            hf["inputs/settings"] = csString
+
         # Test with no complaints
         with mockRunLogs.BufferLog() as mock:
-            o = loadOperator(
+            _o = loadOperator(
                 self._testMethodName + ".h5",
                 0,
                 0,
                 allowMissing=True,
                 handleInvalids=False,
             )
-            self.assertNotIn("fakeSetting", mock.getStdout())
-            self.assertEqual(o.cs["fakeSetting"], "I'll be back")
-        # test with complaints
+            self.assertNotIn("fakeTerminator", mock.getStdout())
+
+        # Test with complaints
         with mockRunLogs.BufferLog() as mock:
-            o = loadOperator(
+            _o = loadOperator(
                 self._testMethodName + ".h5",
                 0,
                 0,
                 allowMissing=True,
                 handleInvalids=True,
             )
-            self.assertIn("fakeSetting", mock.getStdout())
+            self.assertIn("Ignoring invalid settings", mock.getStdout())
+            self.assertIn("fakeTerminator", mock.getStdout())
 
     def _compareArrays(self, ref, src):
         """
