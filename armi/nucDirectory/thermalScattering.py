@@ -14,18 +14,17 @@
 """
 Handle awareness of Thermal Scattering Laws.
 
-Scattering characteristics of thermal neutrons are often significantly different
-between a free atom and one bound in a particular molecule. Nuclear data libraries
-often have special tables to account for the bound states.
-These data are commonly represented as S(alpha, beta) tables.
+Scattering characteristics of thermal neutrons are often significantly different between a free atom
+and one bound in a particular molecule. Nuclear data libraries often have special tables to account
+for the bound states. These data are commonly represented as S(alpha, beta) tables.
 
-Here we provide objects representing the thermal scattering law (TSL) information.
-We expect them to be most useful as class attributes on :py:class:`~armi.materials.material.Material` subclasses
-to inform physics solvers that support thermal scattering of the TSLs. See
+Here we provide objects representing the thermal scattering law (TSL) information. We expect them to
+be most useful as class attributes on :py:class:`~armi.materials.material.Material` subclasses to
+inform physics solvers that support thermal scattering of the TSLs. See
 :py:class:`~armi.materials.graphite.Graphite` for an example.
 
-We do not provide special versions of various NuclideBases like C12 because of
-potential errors in choosing one over the other
+We do not provide special versions of various NuclideBases like C12 because of potential errors in
+choosing one over the other
 
 The information contained in here is based on Parsons, LA-UR-18-25096,
 https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
@@ -43,13 +42,13 @@ Scattering law data are currently available for a variety of classifications:
 * Just isotope (Fe56, Al27)
 
 The labels for these vary across evaluations (e.g. ENDF/B-VII, ENDF/B-VIII, etc.). We provide
-ENDF/B-III.0 and ACE labels. Other physics kernels will have to derive their own labels
-as appropriate in client code.
+ENDF/B-III.0 and ACE labels. Other physics kernels will have to derive their own labels as
+appropriate in client code.
 
-Like NuclideBase and Element, we want to have only one ThermalScattering instance
-for each TSL, so we use a module-level directory called ``byNbAndCompound``. This improves
-efficiency and allows better cross-referencing when thousands of material instances
-would otherwise have identical instances of these.
+Like NuclideBase and Element, we want to have only one ThermalScattering instance for each TSL, so
+we use a module-level directory called ``byNbAndCompound``. This improves efficiency and allows
+better cross-referencing when thousands of material instances would otherwise have identical
+instances of these.
 
 Thus, in practice, users should rarely instantiate these on their own.
 """
@@ -82,12 +81,12 @@ class ThermalScattering:
     Parameters
     ----------
     nuclideBases : INuclide or tuple of INuclide
-        One or more nuclide bases whose existence would trigger the inclusion of the TSL.
-        Generally items here will be a NaturalNuclideBase like ``nb.byName["C"]`` for Carbon
-        but it is a tuple to capture, e.g. the C and H in *methane*.
+        One or more nuclide bases whose existence would trigger the inclusion of the TSL. Generally
+        items here will be a NaturalNuclideBase like ``nb.byName["C"]`` for Carbon but it is a tuple
+        to capture, e.g. the C and H in *methane*.
     compoundName : str, optional
-        Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``.
-        Can be left off for, e.g. Fe56.
+        Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``. Can be left off
+        for, e.g. Fe56.
     endf8Label : str, optional
         Label for endf8 evaluation
     aceLabel: str, optional
@@ -122,9 +121,9 @@ class ThermalScattering:
         """
         Return all nuclide bases that could be subject to this law.
 
-        In cases where the law is defined by a NaturalNuclideBase, all potential
-        isotopes of the element as well as the element it self should trigger it.
-        This helps handle cases where, for example, C or C12 is present.
+        In cases where the law is defined by a NaturalNuclideBase, all potential isotopes of the
+        element as well as the element it self should trigger it. This helps handle cases where, for
+        example, C or C12 is present.
         """
         subjectNbs = set()
         for nbi in self.nbs:
@@ -139,21 +138,21 @@ class ThermalScattering:
         """
         Generate the ENDF/B-VIII.0 label.
 
-        Several ad-hoc assumptions are made in converting this object to a ENDF/B-VIII label
-        which may not apply in all cases.
+        Several ad-hoc assumptions are made in converting this object to a ENDF/B-VIII label which
+        may not apply in all cases.
 
-        It is believed that these rules cover most ENDF TSLs listed in
-        Parsons, LA-UR-18-25096, https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
+        It is believed that these rules cover most ENDF TSLs listed in Parsons, LA-UR-18-25096,
+        https://mcnp.lanl.gov/pdf_files/la-ur-18-25096.pdf
 
         Unfortunately, the ace labels are not as easily derived.
 
-        * If nuclideBases is length one and contains a ``NaturalNuclideBase``, then the
-          name will be assumed to be ``Element_in_compoundName``
-        * If nuclideBases is length one and is a NuclideBase, it is assumed to be an isotope
-          like Fe-56 and  the label will be (for example) 026_Fe_056
-        * If nuclideBases has length greater than one, the compoundName will form the
-          entire of the label. So, if Si and O are in the bases, the compoundName must
-          be ``SiO2-alpha`` in order to get ``tsl-SiO2-alpha.endf`` as a endf8 label.
+        * If nuclideBases is length one and contains a ``NaturalNuclideBase``, then the name will be
+          assumed to be ``Element_in_compoundName``
+        * If nuclideBases is length one and is a NuclideBase, it is assumed to be an isotope like
+          Fe-56 and  the label will be (for example) 026_Fe_056
+        * If nuclideBases has length greater than one, the compoundName will form the entire of the
+          label. So, if Si and O are in the bases, the compoundName must be ``SiO2-alpha`` in order
+          to get ``tsl-SiO2-alpha.endf`` as a endf8 label.
         """
         first = next(iter(self.nbs))
         if len(self.nbs) > 1:
@@ -170,19 +169,19 @@ class ThermalScattering:
             )
         else:
             raise ValueError(f"{self} label cannot be generated")
+
         return label
 
     def _genACELabel(self):
         """
         Attempt to derive the ACE label of a TSL.
 
-        There are certain exceptions that cannot be derived and must be provided
-        by the user upon instantiation, for example:
+        There are certain exceptions that cannot be derived and must be provided by the user upon
+        instantiation, for example:
 
         * ``grph10``
         * ``grph30``
         * ``grph``
-
         """
         first = next(iter(self.nbs))
         if len(self.nbs) > 1:
@@ -204,20 +203,19 @@ def factory():
     """
     Generate the :class:`ThermalScattering` instances.
 
-    The logic for these is a bit complex so we skip reading a text file and code
-    it up here.
+    The logic for these is a bit complex so we skip reading a text file and code it up here.
 
-    This is called by the nuclideBases factory since it must ALWAYS be re-run when
-    the nuclideBases are rebuilt.
+    This is called by the nuclideBases factory since it must ALWAYS be re-run when the nuclideBases
+    are rebuilt.
 
     See Also
     --------
     armi.nucDirectory.nuclideBases.factory
         Calls this during ARMI initialization.
 
-    .. warning::
-        This gets called automatically during init, so don't call it
-        unless you know what you're doing.
+    Warning
+    -------
+    This gets called automatically during init, so don't call it unless you know what you're doing.
     """
     global byNbAndCompound
     byNbAndCompound.clear()
