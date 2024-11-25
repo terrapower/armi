@@ -176,36 +176,35 @@ def writeWelcomeHeaders(o, cs):
 
     def _writeMachineInformation():
         """Create a table that contains basic machine and rank information."""
-        if context.MPI_SIZE > 1:
-            processorNames = context.MPI_NODENAMES
-            uniqueNames = set(processorNames)
-            nodeMappingData = []
-            sysInfo = ""
-            for uniqueName in uniqueNames:
-                matchingProcs = [
-                    str(rank)
-                    for rank, procName in enumerate(processorNames)
-                    if procName == uniqueName
-                ]
-                numProcessors = str(len(matchingProcs))
-                nodeMappingData.append(
-                    (uniqueName, numProcessors, ", ".join(matchingProcs))
-                )
-
-                sysInfo += getSystemInfo()
-
-            runLog.header("=========== Machine Information ===========")
-            runLog.info(
-                tabulate.tabulate(
-                    nodeMappingData,
-                    headers=["Machine", "Number of Processors", "Ranks"],
-                    tableFmt="armi",
-                )
+        processorNames = context.MPI_NODENAMES
+        uniqueNames = set(processorNames)
+        nodeMappingData = []
+        sysInfo = ""
+        for uniqueName in uniqueNames:
+            matchingProcs = [
+                str(rank)
+                for rank, procName in enumerate(processorNames)
+                if procName == uniqueName
+            ]
+            numProcessors = str(len(matchingProcs))
+            nodeMappingData.append(
+                (uniqueName, numProcessors, ", ".join(matchingProcs))
             )
 
-            if sysInfo:
-                runLog.header("=========== System Information ===========")
-                runLog.info(sysInfo)
+            sysInfo += getSystemInfo()
+
+        runLog.header("=========== Machine Information ===========")
+        runLog.info(
+            tabulate.tabulate(
+                nodeMappingData,
+                headers=["Machine", "Number of Processors", "Ranks"],
+                tableFmt="armi",
+            )
+        )
+
+        if sysInfo:
+            runLog.header("=========== System Information ===========")
+            runLog.info(sysInfo)
 
     def _writeReactorCycleInformation(o, cs):
         """Verify that all the operating parameters are defined for the same number of cycles."""

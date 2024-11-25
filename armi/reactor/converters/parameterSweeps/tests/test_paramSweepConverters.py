@@ -18,7 +18,6 @@ import unittest
 
 from armi.tests import TEST_ROOT
 from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters import (
-    CustomModifier,
     NeutronicConvergenceModifier,
     ParameterSweepConverter,
     SettingsModifier,
@@ -64,15 +63,3 @@ class TestParamSweepConverters(unittest.TestCase):
         # NOTE: Settings objects are not modified, but we point to new objects
         self.assertIn("Simple test input", self.cs["comment"])
         self.assertEqual(con._cs["comment"], "FakeParam")
-
-    def test_customModifier(self):
-        """Super basic test of the Custom Modifier."""
-        con = CustomModifier(self.cs, "FakeParam")
-        self.assertEqual(con._parameter, "FakeParam")
-
-        # For testing purposes, we need to add a dummy perturbation
-        fh = self.r.o.getInterface("fuelHandler")
-        fh.applyCustomPerturbation = lambda val: val
-
-        con.convert(self.r)
-        self.assertEqual(con._sourceReactor, self.r)
