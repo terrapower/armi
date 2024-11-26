@@ -161,7 +161,7 @@ class DirectoryChanger:
         """
         folderName = os.path.split(self.destination)[1]
         recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
-        safeMove(self.destination, recoveryPath)
+        shutil.copytree(self.destination, recoveryPath)
 
     def _createOutputDirectory(self):
         if self.outputPath == self.initial:
