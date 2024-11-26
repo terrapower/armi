@@ -13,31 +13,22 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-from copy import deepcopy
 import logging
 import unittest
+from copy import deepcopy
 
-from armi import nuclearDataIO
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
-from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
+from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:
@@ -112,6 +103,13 @@ class TestCompositePattern(unittest.TestCase):
         nested.add(self.secondGen)
         container.add(nested)
         self.container = container
+
+        # Add this dummy composite to a dummy reactor
+        _o, self.r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        b = self.r.core.getFirstBlock()
+        b.add(self.container)
 
     def test_composite(self):
         """Test basic Composite things.
@@ -365,20 +363,23 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(mgFlux, [0.0])
 
     def test_getReactionRates(self):
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        self.r.core.lib = lib
+
         # test the null case
         rRates = self.container.getReactionRates("U235")
         self.assertEqual(len(rRates), 6)
         self.assertEqual(sum([r for r in rRates.values()]), 0)
 
         # init reactor
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
-        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        r.core.lib = lib
+        # _o, r = loadTestReactor(
+        #    inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        # )
+        # lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        # self.r.core.lib = lib
 
         # test on a Component
-        b = r.core.getFirstAssembly().getFirstBlock()
+        b = self.r.core.getFirstAssembly().getFirstBlock()
         b.p.mgFlux = 1
         c = b.getComponents()[0]
         rRatesComp = c.getReactionRates("U235")
@@ -391,18 +392,18 @@ class TestCompositePattern(unittest.TestCase):
         self.assertGreater(sum([r for r in rRatesBlock.values()]), 0)
 
         # test on an Assembly
-        assem = r.core.getFirstAssembly()
+        assem = self.r.core.getFirstAssembly()
         rRatesAssem = assem.getReactionRates("U235")
         self.assertEqual(len(rRatesAssem), 6)
         self.assertGreater(sum([r for r in rRatesAssem.values()]), 0)
 
         # test on a Core
-        rRatesCore = r.core.getReactionRates("U235")
+        rRatesCore = self.r.core.getReactionRates("U235")
         self.assertEqual(len(rRatesCore), 6)
         self.assertGreater(sum([r for r in rRatesCore.values()]), 0)
 
         # test on a Reactor
-        rRatesReactor = r.getReactionRates("U235")
+        rRatesReactor = self.r.getReactionRates("U235")
         self.assertEqual(len(rRatesReactor), 6)
         self.assertGreater(sum([r for r in rRatesReactor.values()]), 0)
 
@@ -416,6 +417,13 @@ class TestCompositePattern(unittest.TestCase):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
         numSynced = self.container._syncParameters(data, {})
         self.assertEqual(numSynced, 2)
+
+    def test_getReactionRateDict(self):
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        rxRatesDict = self.container.getReactionRateDict(
+            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
+        )
+        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
 
 class TestCompositeTree(unittest.TestCase):
@@ -869,12 +877,3 @@ class TestMiscMethods(unittest.TestCase):
         obj2.p.percentBu = 15.2
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
-
-
-class TestGetReactionRateDict(unittest.TestCase):
-    def test_getReactionRateDict(self):
-        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(
-            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
-        )
-        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))

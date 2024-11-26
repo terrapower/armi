@@ -68,8 +68,8 @@ class Reactor(composites.Composite):
         self.spatialLocator = None
         self.p.maxAssemNum = 0
         self.p.cycle = 0
-        self.nuclideBases = NuclideBases()
         self.core = None
+        self._nuclideBases = NuclideBases()
         self.excore = ExcoreCollection()
         self.blueprints = blueprints
 
@@ -90,6 +90,10 @@ class Reactor(composites.Composite):
 
     def __repr__(self):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
+
+    @property
+    def nuclideBases(self):
+        return self._nuclideBases
 
     def add(self, container):
         composites.Composite.add(self, container)
