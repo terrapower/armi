@@ -847,6 +847,7 @@ def safeMove(src: str, dst: str) -> None:
 
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
         shutil.move(src, dst)
     elif "linux" in sys.platform:
         cmd = f'mv "{src}" "{dst}"'
@@ -856,6 +857,7 @@ def safeMove(src: str, dst: str) -> None:
             "Cannot perform ``safeMove`` on files because ARMI only supports "
             + "Linux, MacOS, and Windows."
         )
+
     waitTime = 0.01  # 10 ms
     maxWaitTime = 6000  # 1 min
     totalWaitTime = 0
@@ -873,7 +875,7 @@ def safeMove(src: str, dst: str) -> None:
                 f"File move from {dst} to {src} has failed due to exceeding "
                 + f"a maximum wait time of {maxWaitTime/60} minutes."
             )
-            break
+            return
 
     runLog.extra("Moved {} -> {}".format(src, dst))
     return dst
