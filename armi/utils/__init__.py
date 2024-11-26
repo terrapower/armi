@@ -844,6 +844,7 @@ def safeMove(src: str, dst: str) -> None:
     dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
+
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
         shutil.move(src, dst)
@@ -853,7 +854,7 @@ def safeMove(src: str, dst: str) -> None:
     else:
         raise OSError(
             "Cannot perform ``safeMove`` on files because ARMI only supports "
-            + "Linux and Windows."
+            + "Linux, MacOS, and Windows."
         )
     waitTime = 0.01  # 10 ms
     maxWaitTime = 6000  # 1 min
