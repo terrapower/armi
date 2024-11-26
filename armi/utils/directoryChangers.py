@@ -128,10 +128,14 @@ class DirectoryChanger:
         """Copy ``filesToMove`` into the destination directory on entry."""
         initialPath = self.initial
         destinationPath = self.destination
-        self._transferFiles(initialPath, destinationPath, self._filesToMove)
+        self._transferFiles(
+            initialPath, destinationPath, self._filesToMove, moveFiles=False
+        )
         if self.outputPath != self.initial:
             destinationPath = self.outputPath
-            self._transferFiles(initialPath, destinationPath, self._filesToMove)
+            self._transferFiles(
+                initialPath, destinationPath, self._filesToMove, moveFiles=False
+            )
 
     def retrieveFiles(self):
         """Copy ``filesToRetrieve`` back into the initial directory on exit."""
