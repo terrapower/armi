@@ -114,7 +114,7 @@ def isStableReleaseVersion(version=None):
     return "-" not in version
 
 
-def init(choice=None, fName=None, cs=None):
+def init(choice=None, fName=None, cs=None, skipInspection=False):
     """
     Scan a directory for armi inputs and load one to interact with.
 
@@ -144,6 +144,9 @@ def init(choice=None, fName=None, cs=None):
         If supplied, this CS object will supercede the other case input methods and use
         the object directly.
 
+    skipInspection : bool, optional
+        Whether or not the inputs should be checked for valid settings. Default is False.
+
     Examples
     --------
     >>> o = armi.init()
@@ -157,7 +160,8 @@ def init(choice=None, fName=None, cs=None):
         cs = settings.Settings(fName)
 
     armiCase = cases.Case(cs=cs)
-    armiCase.checkInputs()
+    if not skipInspection:
+        armiCase.checkInputs()
 
     try:
         return armiCase.initializeOperator()
