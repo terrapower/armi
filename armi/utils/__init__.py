@@ -846,8 +846,7 @@ def safeMove(src: str, dst: str) -> None:
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
-        shutil.copyfile(src, dst)
-        shutil.copymode(src, dst)
+        os.replace(src, dst)
     elif "linux" in sys.platform:
         cmd = f'mv "{src}" "{dst}"'
         os.system(cmd)
