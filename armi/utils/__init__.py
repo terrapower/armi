@@ -806,8 +806,10 @@ def safeCopy(src: str, dst: str) -> None:
     dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
+
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
         shutil.copyfile(src, dst)
         shutil.copymode(src, dst)
     elif "linux" in sys.platform:
@@ -816,8 +818,9 @@ def safeCopy(src: str, dst: str) -> None:
     else:
         raise OSError(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
-            + "Linux and Windows."
+            + "Linux, MacOs, and Windows."
         )
+
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
     totalWaitTime = 0
@@ -832,7 +835,7 @@ def safeCopy(src: str, dst: str) -> None:
                 f"File copy from {dst} to {src} has failed due to exceeding "
                 + f"a maximum wait time of {maxWaitTime/60} minutes."
             )
-            break
+            Return
 
     runLog.extra("Copied {} -> {}".format(src, dst))
 
