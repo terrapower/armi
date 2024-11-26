@@ -19,9 +19,8 @@ import random
 import shutil
 import string
 
-from armi import context
-from armi import runLog
-from armi.utils import pathTools
+from armi import context, runLog
+from armi.utils import pathTools, safeCopy
 
 
 def _changeDirectory(destination):
@@ -178,7 +177,7 @@ class DirectoryChanger:
         Transfer files into or out of the directory.
 
         This is used in ``moveFiles`` and ``retrieveFiles`` to shuffle files about when creating a
-        target directory or when coming back, respectively. Beware that this uses ``shutil.copy()``
+        target directory or when coming back, respectively. Beware that this uses ``safeCopy()``
         under the hood, which doesn't play nicely with directories.
 
         Parameters
@@ -224,7 +223,7 @@ class DirectoryChanger:
 
                 toPath = os.path.join(destinationPath, destName)
                 runLog.extra("Copying {} to {}".format(fromPath, toPath))
-                shutil.copy(fromPath, toPath)
+                safeCopy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):

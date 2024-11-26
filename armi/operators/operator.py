@@ -25,13 +25,10 @@ the end of plant life.
 import collections
 import os
 import re
-import shutil
 import time
 from typing import Tuple
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
@@ -41,22 +38,22 @@ from armi.physics.neutronics.globalFlux.globalFluxInterface import (
 )
 from armi.settings import settingsValidation
 from armi.settings.fwSettings.globalSettings import (
-    CONF_TIGHT_COUPLING,
-    CONF_TIGHT_COUPLING_MAX_ITERS,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
     CONF_DEFERRED_INTERFACE_NAMES,
     CONF_DEFERRED_INTERFACES_CYCLE,
+    CONF_TIGHT_COUPLING,
+    CONF_TIGHT_COUPLING_MAX_ITERS,
 )
-from armi.utils import codeTiming
 from armi.utils import (
-    pathTools,
-    getPowerFractions,
+    codeTiming,
     getAvailabilityFactors,
-    getStepLengths,
-    getCycleLengths,
     getBurnSteps,
-    getMaxBurnSteps,
+    getCycleLengths,
     getCycleNames,
+    getMaxBurnSteps,
+    getPowerFractions,
+    getStepLengths,
+    pathTools,
 )
 
 
@@ -1219,16 +1216,15 @@ class Operator:
                     )
                 else:
                     newFile = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
-                # add the cycle and timenode to the XS input file names so that a rx-coeff case that runs
-                # in here won't overwrite them.
-                shutil.copy(fileName, os.path.join(newFolder, newFile))
+                # add the cycle and timenode to the XS input file names so that a rx-coeff case that
+                # runs in here won't overwrite them.
+                pathTools.copyOrWarn(
+                    fileName, fileName, os.path.join(newFolder, newFile)
+                )
             if "rzmflx" in fileName:
                 pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
-        fileNamePossibilities = [
-            f"ISOTXS-c{cycle}n{node}",
-            f"ISOTXS-c{cycle}",
-        ]
+        fileNamePossibilities = [f"ISOTXS-c{cycle}n{node}", f"ISOTXS-c{cycle}"]
         if iteration is not None:
             fileNamePossibilities = [
                 f"ISOTXS-c{cycle}n{node}i{iteration}"

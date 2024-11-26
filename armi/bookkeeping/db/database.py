@@ -77,7 +77,7 @@ from armi.reactor.parameters import parameterCollections
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
-from armi.utils import getNodesPerCycle
+from armi.utils import getNodesPerCycle, safeCopy
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 # CONSTANTS
@@ -699,7 +699,7 @@ class Database:
         # Close the h5 file so it can be copied
         self.h5db.close()
         self.h5db = None
-        shutil.copy(self._fullPath, self._fileName)
+        safeCopy(self._fullPath, self._fileName)
 
         # Garbage collect so we don't have multiple databases hanging around in memory
         gc.collect()
