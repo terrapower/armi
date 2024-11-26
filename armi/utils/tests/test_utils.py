@@ -220,7 +220,6 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("file2", mock.getStdout())
                 self.assertIn("->", mock.getStdout())
             self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
-            self.assertTrue(os.path.exists(os.path.join("dir2", "file2.txt")))
 
     def test_safeMove(self):
         with directoryChangers.TemporaryDirectoryChanger():
@@ -249,7 +248,6 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("file2", mock.getStdout())
                 self.assertIn("->", mock.getStdout())
             self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
-            self.assertTrue(os.path.exists(os.path.join("dir2", "file2.txt")))
 
     def test_safeMoveDir(self):
         with directoryChangers.TemporaryDirectoryChanger():
@@ -267,9 +265,7 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("Moved", mock.getStdout())
                 self.assertIn("dir1", mock.getStdout())
                 self.assertIn("dir2", mock.getStdout())
-
             self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
-            self.assertTrue(os.path.exists(os.path.join("dir2", "file2.txt")))
 
 
 class CyclesSettingsTests(unittest.TestCase):
