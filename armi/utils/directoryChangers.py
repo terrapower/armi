@@ -22,6 +22,7 @@ import string
 from armi import context
 from armi import runLog
 from armi.utils import pathTools
+from armi.utils import safeMove
 
 
 def _changeDirectory(destination):
@@ -160,7 +161,7 @@ class DirectoryChanger:
         """
         folderName = os.path.split(self.destination)[1]
         recoveryPath = os.path.join(self.initial, f"dump-{folderName}")
-        shutil.move(self.destination, recoveryPath)
+        safeMove(self.destination, recoveryPath)
 
     def _createOutputDirectory(self):
         if self.outputPath == self.initial:
@@ -235,7 +236,7 @@ class DirectoryChanger:
                 toPath = os.path.join(destinationPath, destName)
                 if moveFiles:
                     runLog.extra("Moving {} to {}".format(fromPath, toPath))
-                    shutil.move(fromPath, toPath)
+                    safeMove(fromPath, toPath)
                 else:
                     runLog.extra("Copying {} to {}".format(fromPath, toPath))
                     shutil.copy(fromPath, toPath)

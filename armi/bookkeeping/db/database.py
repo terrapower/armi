@@ -78,6 +78,7 @@ from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import getNodesPerCycle
+from armi.utils import safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 # CONSTANTS
@@ -312,7 +313,7 @@ class Database:
 
         if self._permission == "w":
             # move out of the FAST_PATH and into the working directory
-            newPath = shutil.move(self._fullPath, self._fileName)
+            newPath = safeMove(self._fullPath, self._fileName)
             self._fullPath = os.path.abspath(newPath)
 
     def splitDatabase(
@@ -351,7 +352,7 @@ class Database:
         backupDBPath = os.path.abspath(label.join(os.path.splitext(self._fileName)))
         runLog.info("Retaining full database history in {}".format(backupDBPath))
         if self._fullPath is not None:
-            shutil.move(self._fullPath, backupDBPath)
+            safeMove(self._fullPath, backupDBPath)
 
         self.h5db = h5py.File(self._fullPath, self._permission)
         dbOut = self.h5db

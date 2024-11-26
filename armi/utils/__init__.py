@@ -838,7 +838,7 @@ def safeCopy(src: str, dst: str) -> None:
 
 
 def safeMove(src: str, dst: str) -> None:
-    """This copy overwrites ``shutil.move`` and checks that move operation is truly completed before continuing."""
+    """Check that a file has been successfully moved before continuing."""
     # Convert files to OS-independence
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
@@ -846,7 +846,7 @@ def safeMove(src: str, dst: str) -> None:
         dst = os.path.join(dst, os.path.basename(src))
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
-        os.replace(src, dst)
+        shutil.move(src, dst)
     elif "linux" in sys.platform:
         cmd = f'mv "{src}" "{dst}"'
         os.system(cmd)
@@ -880,6 +880,4 @@ def safeMove(src: str, dst: str) -> None:
 
 # Allow us to check the copy operation is complete before continuing
 shutil_copy = shutil.copy
-shutil_move = shutil.move
 shutil.copy = safeCopy
-shutil.move = safeMove
