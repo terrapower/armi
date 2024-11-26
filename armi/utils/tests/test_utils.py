@@ -41,6 +41,7 @@ from armi.utils import (
     getStepLengths,
     hasBurnup,
     safeCopy,
+    safeMove,
 )
 
 
@@ -218,6 +219,57 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("Copied", mock.getStdout())
                 self.assertIn("file2", mock.getStdout())
                 self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file2.txt")))
+
+    def test_safeMove(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file1, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file2, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file2.txt")))
+
+    def test_safeMoveDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                safeMove("dir1", "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("dir1", mock.getStdout())
+                self.assertIn("dir2", mock.getStdout())
+
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file2.txt")))
 
 
 class CyclesSettingsTests(unittest.TestCase):
