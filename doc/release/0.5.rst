@@ -34,6 +34,7 @@ New Features
 #. Adding data models for ex-core structures in ARMI. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
 #. Opening some DBs without the ``App`` that created them. (`PR#1917 <https://github.com/terrapower/armi/pull/1917>`_)
 #. Adding support for ENDF/B-VII.1-based MC2-3 libraries. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
+#. Adding setting ``mcnpLibraryVersion`` to chosen ENDF library for MCNP. (`PR#1989 <https://github.com/terrapower/armi/pull/1989>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. ``HexBlock.rotate`` updates the spatial locator for children of that block. (`PR#1943 <https://github.com/terrapower/armi/pull/1943>`_)
 #. Provide ``Block.getInputHeight`` for determining the height of a block from blueprints. (`PR#1927 <https://github.com/terrapower/armi/pull/1927>`_)

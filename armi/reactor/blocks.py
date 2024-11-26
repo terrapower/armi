@@ -1992,12 +1992,12 @@ class HexBlock(Block):
 
     def rotate(self, rad: float):
         """
-        Rotates a block's spatially-varying parameters by a specified angle in the counter-clockwise
+        Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise
         direction.
 
-        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a list of
-        length 6 in order to be eligible for rotation; all parameters that do not meet these two
-        criteria are not rotated.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a Python
+        list of length 6 in order to be eligible for rotation; all parameters that do not meet these
+        two criteria are not rotated.
 
         .. impl:: Rotating a hex block updates parameters on the boundary, the orientation
             parameter, and the spatial coordinates on contained objects.
@@ -2006,9 +2006,9 @@ class HexBlock(Block):
 
         Parameters
         ----------
-        rad: float
+        rad: float, required
             Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
-            increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, and 2 * PI).
+            increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, and 2 * PI)
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
