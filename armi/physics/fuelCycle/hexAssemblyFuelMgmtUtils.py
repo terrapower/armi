@@ -117,23 +117,12 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     targetGrid = blockAtPreviousLocation.spatialGrid
     candidateRotation = 0
     candidatePower = ringPowers.get((maxBuPinLocation.i, maxBuPinLocation.j), math.inf)
-    runLog.debug(f"::Checking possible rotations for {a}")
-    runLog.debug(
-        f"::rotation={candidateRotation}::power after rotation={candidatePower}::location={maxBuPinLocation}"
-    )
     for rot in range(1, 6):
         candidateLocation = targetGrid.rotateIndex(maxBuPinLocation, rot)
         newPower = ringPowers.get((candidateLocation.i, candidateLocation.j), math.inf)
-        runLog.debug(
-            f"::rotation={rot}::power after rotation={newPower}::location={candidateLocation}"
-        )
         if newPower < candidatePower:
             candidateRotation = rot
             candidatePower = newPower
-            runLog.debug(
-                f"::new minimum power for {candidateRotation=}::{candidatePower=}"
-            )
-    runLog.debug(f"::chose {candidateRotation=}")
     return candidateRotation
 
 
