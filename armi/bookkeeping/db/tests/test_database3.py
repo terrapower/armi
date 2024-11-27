@@ -12,31 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database class."""
-from glob import glob
 import io
 import os
 import shutil
 import subprocess
 import unittest
+from glob import glob
 
 import h5py
 import numpy as np
 
-from armi.bookkeeping.db import _getH5File
-from armi.bookkeeping.db import database
-from armi.bookkeeping.db import loadOperator
+from armi.bookkeeping.db import _getH5File, database, loadOperator
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
-from armi.reactor.reactors import Core
-from armi.reactor.reactors import Reactor
+from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
-from armi.utils import getPreviousTimeNode
+from armi.tests import TEST_ROOT, mockRunLogs
+from armi.utils import getPreviousTimeNode, safeCopy
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and git is installed
@@ -783,7 +779,7 @@ grids:
         thisDir = self.td.destination
         yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
         for yam in yamls:
-            shutil.copy(os.path.join(TEST_ROOT, "smallestTestReactor", yam), thisDir)
+            safeCopy(os.path.join(TEST_ROOT, "smallestTestReactor", yam), thisDir)
 
         # Add an EVST to this reactor
         with open("refSmallestReactor.yaml", "w") as f:

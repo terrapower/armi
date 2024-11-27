@@ -806,8 +806,10 @@ def safeCopy(src: str, dst: str) -> None:
     dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
+
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
         shutil.copyfile(src, dst)
         shutil.copymode(src, dst)
     elif "linux" in sys.platform:
@@ -816,8 +818,9 @@ def safeCopy(src: str, dst: str) -> None:
     else:
         raise OSError(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
-            + "Linux and Windows."
+            + "Linux, MacOs, and Windows."
         )
+
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
     totalWaitTime = 0
@@ -832,9 +835,53 @@ def safeCopy(src: str, dst: str) -> None:
                 f"File copy from {dst} to {src} has failed due to exceeding "
                 + f"a maximum wait time of {maxWaitTime/60} minutes."
             )
-            break
+            Return
 
     runLog.extra("Copied {} -> {}".format(src, dst))
+
+
+def safeMove(src: str, dst: str) -> None:
+    """Check that a file has been successfully moved before continuing."""
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
+
+    srcSize = os.path.getsize(src)
+    if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
+        shutil.move(src, dst)
+    elif "linux" in sys.platform:
+        cmd = f'mv "{src}" "{dst}"'
+        os.system(cmd)
+    else:
+        raise OSError(
+            "Cannot perform ``safeMove`` on files because ARMI only supports "
+            + "Linux, MacOS, and Windows."
+        )
+
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 6000  # 1 min
+    totalWaitTime = 0
+    while True:
+        try:
+            dstSize = os.path.getsize(dst)
+            if srcSize == dstSize:
+                break
+        except FileNotFoundError:
+            pass
+        time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File move from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
+            )
+            return
+
+    runLog.extra("Moved {} -> {}".format(src, dst))
+    return dst
 
 
 # Allow us to check the copy operation is complete before continuing

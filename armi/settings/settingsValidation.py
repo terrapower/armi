@@ -24,21 +24,16 @@ is impossible. Would you like to switch to ___?"
 import itertools
 import os
 import re
-import shutil
 
-from armi import context
-from armi import getPluginManagerOrFail
-from armi import runLog
+from armi import context, getPluginManagerOrFail, runLog
 from armi.physics import neutronics
-from armi.reactor import geometry
-from armi.reactor import systemLayoutInput
+from armi.reactor import geometry, systemLayoutInput
 from armi.settings.settingsIO import (
-    prompt,
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
+    prompt,
 )
-from armi.utils import directoryChangers
-from armi.utils import pathTools
+from armi.utils import directoryChangers, pathTools, safeCopy
 from armi.utils.mathematics import expandRepeatedFloats
 
 
@@ -245,7 +240,7 @@ class Inspector:
             runLog.important(
                 f"Preserving original settings file by renaming `{renamePath}`"
             )
-            shutil.copy(self.cs.path, renamePath)
+            safeCopy(self.cs.path, renamePath)
             # save settings file
             self.cs.writeToYamlFile(self.cs.path)
 

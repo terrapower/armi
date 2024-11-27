@@ -377,28 +377,28 @@ def _getSystemInfoLinux():
 
 
 def getSystemInfo():
-    """Get system information, assuming the system is Windows or Linux.
+    """Get system information, assuming the system is Linux, MacOS, and Windows.
 
     Notes
     -----
-    The format of the system information will be different on Windows vs Linux.
+    The format of the system information will be different on Linux, MacOS, and Windows.
 
     Returns
     -------
     str
         Basic system information: OS name, OS version, basic processor information
     """
-    # Get basic system information (on Windows and Linux)
-    if "win" in sys.platform:
+    # Get basic system information (on Linux, MacOS, and Windows)
+    if "darwin" in sys.platform:
+        return _getSystemInfoMac()
+    elif "win" in sys.platform:
         return _getSystemInfoWindows()
     elif "linux" in sys.platform:
         return _getSystemInfoLinux()
-    elif "darwin" in sys.platform:
-        return _getSystemInfoMac()
     else:
         runLog.warning(
             f"Cannot get system information for {sys.platform} because ARMI only "
-            + "supports Linux, Windows, and MacOS."
+            + "supports Linux, MacOS, and Windows."
         )
         return ""
 

@@ -8,7 +8,7 @@ Release Date: TBD
 
 New Features
 ------------
-#. TBD
+#. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
 
 API Changes
 -----------

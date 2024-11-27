@@ -16,14 +16,14 @@
 This module contains commonly used functions relating to directories, files and path
 manipulations.
 """
-from time import sleep
 import importlib
 import os
 import pathlib
 import shutil
+from time import sleep
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
+from armi.utils import safeCopy
 
 DO_NOT_CLEAN_PATHS = [
     "armiruns",
@@ -57,7 +57,7 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
         if os.path.isdir(sourcePath):
             shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
         else:
-            shutil.copy(sourcePath, destinationPath)
+            safeCopy(sourcePath, destinationPath)
         runLog.debug(
             "Copied {}: {} -> {}".format(
                 filepathDescription, sourcePath, destinationPath

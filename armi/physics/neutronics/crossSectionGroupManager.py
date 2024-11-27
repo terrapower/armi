@@ -54,7 +54,6 @@ The class diagram is provided in `xsgm-class-diagram`_
 import collections
 import copy
 import os
-import shutil
 import string
 
 import numpy as np
@@ -66,7 +65,8 @@ from armi.reactor import flags
 from armi.reactor.components import basicShapes
 from armi.reactor.converters.blockConverters import stripComponents
 from armi.reactor.flags import Flags
-from armi.utils.units import TRACE_NUMBER_DENSITY, C_TO_K
+from armi.utils import safeCopy
+from armi.utils.units import C_TO_K, TRACE_NUMBER_DENSITY
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
@@ -1195,7 +1195,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             )
             # Prevent copy error if the path and destination are the same.
             if xsFileLocation != dest:
-                shutil.copy(xsFileLocation, dest)
+                safeCopy(xsFileLocation, dest)
 
     def _copyPregeneratedFluxSolutionFile(self, xsID):
         # stop a race condition to copy files between all processors
@@ -1211,7 +1211,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         )
         # Prevent copy error if the path and destination are the same.
         if fluxFileLocation != dest:
-            shutil.copy(fluxFileLocation, dest)
+            safeCopy(fluxFileLocation, dest)
 
     def _getPregeneratedXsFileLocationData(self, xsID):
         """

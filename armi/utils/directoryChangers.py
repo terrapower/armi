@@ -22,6 +22,7 @@ import string
 from armi import context
 from armi import runLog
 from armi.utils import pathTools
+from armi.utils import safeCopy, safeMove
 
 
 def _changeDirectory(destination):
@@ -128,19 +129,27 @@ class DirectoryChanger:
         """Copy ``filesToMove`` into the destination directory on entry."""
         initialPath = self.initial
         destinationPath = self.destination
-        self._transferFiles(initialPath, destinationPath, self._filesToMove)
+        self._transferFiles(
+            initialPath, destinationPath, self._filesToMove, moveFiles=False
+        )
         if self.outputPath != self.initial:
             destinationPath = self.outputPath
-            self._transferFiles(initialPath, destinationPath, self._filesToMove)
+            self._transferFiles(
+                initialPath, destinationPath, self._filesToMove, moveFiles=False
+            )
 
     def retrieveFiles(self):
         """Copy ``filesToRetrieve`` back into the initial directory on exit."""
-        initialPath = self.destination
-        destinationPath = self.initial
-        self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
         if self.outputPath != self.initial:
-            destinationPath = self.outputPath
-            self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
+            self._transferFiles(
+                self.destination,
+                self.outputPath,
+                self._filesToRetrieve,
+                moveFiles=False,
+            )
+        self._transferFiles(
+            self.destination, self.initial, self._filesToRetrieve, moveFiles=True
+        )
 
     def _retrieveEntireFolder(self):
         """
@@ -173,13 +182,12 @@ class DirectoryChanger:
             runLog.extra(f"Output folder already exists: {self.outputPath}")
 
     @staticmethod
-    def _transferFiles(initialPath, destinationPath, fileList):
+    def _transferFiles(initialPath, destinationPath, fileList, moveFiles=False):
         """
         Transfer files into or out of the directory.
 
         This is used in ``moveFiles`` and ``retrieveFiles`` to shuffle files about when creating a
-        target directory or when coming back, respectively. Beware that this uses ``shutil.copy()``
-        under the hood, which doesn't play nicely with directories.
+        target directory or when coming back, respectively.
 
         Parameters
         ----------
@@ -192,6 +200,8 @@ class DirectoryChanger:
             files will be transferred. Alternatively tuples of (initialName, finalName) are allowed
             if you want the file renamed during transit. In the non-tuple option, globs/wildcards
             are allowed.
+        moveFiles: bool, optional
+            Controls whether the files are "moved" (``mv``) or "copied" (``cp``)
 
         Warning
         -------
@@ -223,8 +233,12 @@ class DirectoryChanger:
                     continue
 
                 toPath = os.path.join(destinationPath, destName)
-                runLog.extra("Copying {} to {}".format(fromPath, toPath))
-                shutil.copy(fromPath, toPath)
+                if moveFiles:
+                    runLog.extra("Moving {} to {}".format(fromPath, toPath))
+                    safeMove(fromPath, toPath)
+                else:
+                    runLog.extra("Copying {} to {}".format(fromPath, toPath))
+                    safeCopy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):
