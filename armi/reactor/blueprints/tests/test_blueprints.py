@@ -612,7 +612,7 @@ assemblies:
         # which is required during construction of a component
         design._resolveNuclides(cs)
         componentDesign = design.componentDesigns["freefuel"]
-        topComponent = componentDesign.construct(design, matMods=dict())
+        topComponent = componentDesign.construct(cs, design, matMods=dict())
         self.assertEqual(topComponent.getDimension("od", cold=True), 4.0)
         self.assertGreater(topComponent.getVolume(), 0.0)
         self.assertGreater(topComponent.getMass("U235"), 0.0)
