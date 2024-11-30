@@ -82,7 +82,8 @@ START_TIME = time.ctime()
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file. In this
 # mode you cannot respond to prompts. (This does not work reliably for both Windows and Linux so an
 # os-specific solution is applied.)
-isatty = sys.stdout.isatty() if "win" in sys.platform else sys.stdin.isatty()
+IS_WINDOWS = ("win" in sys.platform) and ("darwin" not in sys.platform)
+isatty = sys.stdout.isatty() if IS_WINDOWS else sys.stdin.isatty()
 CURRENT_MODE = Mode.INTERACTIVE if isatty else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
@@ -282,8 +283,8 @@ def disconnectAllHdfDBs() -> None:
     garbage collector would raise an exception related to the repr'ing the object. We get around
     this by using the garbage collector to manually disconnect all open HdfDBs.
     """
-    from armi.bookkeeping.db import Database3
+    from armi.bookkeeping.db import Database
 
-    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database3)]
+    h5dbs = [db for db in gc.get_objects() if isinstance(db, Database)]
     for db in h5dbs:
         db.close()

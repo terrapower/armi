@@ -1,5 +1,5 @@
 # This file is part of the walthrough_inputs tutorial in ARMI, which
-# uses .. literalinclude to bring in sections of this file. Thus, 
+# uses .. literalinclude to bring in sections of this file. Thus,
 # the comments and order are important. These will get wiped out
 # if you load and re-write a settings file via the ARMI gui, unfortunately.
 # begin-settings
@@ -19,6 +19,6 @@ settings:
     - 100
   comment: ANL-AFCI-177 CR 1.0 metal core but with HALEU instead of TRU
   genXS: Neutron
-  numProcessors: 1
+  nTasks: 1
   versions:
     armi: uncontrolled

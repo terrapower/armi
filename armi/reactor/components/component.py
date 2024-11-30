@@ -20,7 +20,8 @@ This module contains the abstract definition of a Component.
 import copy
 import re
 
-import numpy
+import numpy as np
+from typing import Optional
 
 from armi import materials
 from armi import runLog
@@ -30,8 +31,9 @@ from armi.materials import material
 from armi.materials import void
 from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
-from armi.reactor import parameters
 from armi.reactor import flags
+from armi.reactor import grids
+from armi.reactor import parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -225,6 +227,8 @@ class Component(composites.Composite, metaclass=ComponentType):
     THERMAL_EXPANSION_DIMS = set()
 
     pDefs = componentParameters.getComponentParameterDefinitions()
+
+    material: materials.Material
 
     def __init__(
         self,
@@ -553,7 +557,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Overlapping is allowed to maintain conservation of atoms while sticking close to the
         as-built geometry. Modules that need true geometries will have to handle this themselves.
         """
-        if numpy.isnan(area):
+        if np.isnan(area):
             return
 
         if area < 0.0:
@@ -576,7 +580,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         self._checkNegativeArea
         """
-        if numpy.isnan(volume):
+        if np.isnan(volume):
             return
 
         if volume < 0.0 and self.containsSolidMaterial():
@@ -1241,7 +1245,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.p.pinNum is None:
             # no pin-level flux is available
             if not self.parent:
-                return numpy.zeros(1)
+                return np.zeros(1)
 
             volumeFraction = self.getVolume() / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
@@ -1260,13 +1264,82 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
-    def density(self):
+    def getPinMgFluxes(
+        self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False
+    ) -> np.ndarray:
+        """Retrieves the pin multigroup fluxes for the component.
+
+        Parameters
+        ----------
+        adjoint : bool, optional
+            Return adjoint flux instead of real
+        gamma : bool, optional
+            Whether to return the neutron flux or the gamma flux.
+
+        Returns
+        -------
+        np.ndarray
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the
+            equivalent to the multiplicity of the component (``self.p.mult``)
+            and ``nGroup`` is the number of energy groups of the flux.
+
+        Raises
+        ------
+        ValueError
+            If the location(s) of the component are not aligned with pin indices
+            from the block. This would happen if this component is not actually
+            a pin.
+        """
+        # Get the (i, j, k) location of all pins from the parent block
+        indicesAll = {
+            (loc.i, loc.j): i for i, loc in enumerate(self.parent.getPinLocations())
+        }
+
+        # Retrieve the indices of this component
+        if isinstance(self.spatialLocator, grids.MultiIndexLocation):
+            indices = [(loc.i, loc.j) for loc in self.spatialLocator]
+        else:
+            indices = [(self.spatialLocator.i, self.spatialLocator.j)]
+
+        # Map this component's indices to block's pin indices
+        indexMap = list(map(indicesAll.get, indices))
+        if None in indexMap:
+            msg = f"Failed to retrieve pin indices for component {self}."
+            runLog.error(msg)
+            raise ValueError(msg)
+
+        # Get the parameter name we are trying to retrieve
+        if gamma:
+            if adjoint:
+                raise ValueError("Adjoint gamma flux is currently unsupported.")
+            else:
+                param = "pinMgFluxesGamma"
+        else:
+            if adjoint:
+                param = "pinMgFluxesAdj"
+            else:
+                param = "pinMgFluxes"
+
+        # Return pin fluxes
+        try:
+            return self.parent.p[param][indexMap]
+        except Exception as ee:
+            msg = f"Failure getting {param} from {self} via parent {self.parent}"
+            runLog.error(msg)
+            runLog.error(ee)
+            raise ValueError(msg) from ee
+
+    def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
         density = composites.Composite.density(self)
 
-        if not density:
-            # possible that there are no nuclides in this component yet. In that case, defer to Material.
-            density = self.material.density(Tc=self.temperatureInC)
+        if not density and not isinstance(self.material, void.Void):
+            # possible that there are no nuclides in this component yet. In that case,
+            # defer to Material. Material.density is wrapped to warn if it's attached
+            # to a parent. Avoid that by calling the inner function directly
+            density = self.material.density.__wrapped__(
+                self.material, Tc=self.temperatureInC
+            )
 
         return density
 
@@ -1308,6 +1381,21 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getFuelMass(self) -> float:
         """Return the mass in grams if this is a fueled component."""
         return self.getMass() if self.hasFlags(flags.Flags.FUEL) else 0.0
+
+    def finalizeLoadingFromDB(self):
+        """Apply any final actions after creating the component from database.
+
+        This should **only** be called internally by the database loader. Otherwise
+        some properties could be doubly applied.
+
+        This exists because the theoretical density is initially defined as a material
+        modification, and then stored as a Material attribute. When reading from blueprints,
+        the blueprint loader sets the theoretical density parameter from the Material
+        attribute. Component parameters are also set when reading from the database.
+        But, we need to set the Material attribute so routines that fetch a material's
+        density property account for the theoretical density.
+        """
+        self.material.adjustTD(self.p.theoreticalDensityFrac)
 
 
 class ShapedComponent(Component):

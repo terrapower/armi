@@ -14,6 +14,7 @@
 
 """Tests for the composite pattern."""
 from copy import deepcopy
+import logging
 import unittest
 
 from armi import nuclearDataIO
@@ -36,6 +37,7 @@ from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.tests import ISOAA_PATH
+from armi.tests import mockRunLogs
 
 
 class MockBP:
@@ -498,7 +500,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
-        a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
+        a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
         otherBlock = deepcopy(self.block)
         a.add(self.block)
         a.add(otherBlock)
@@ -510,7 +512,7 @@ class TestCompositeTree(unittest.TestCase):
 
     def test_summing(self):
         a = assemblies.Assembly("dummy")
-        a.spatialGrid = grids.axialUnitGrid(2, armiObject=a)
+        a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
         otherBlock = deepcopy(self.block)
         a.add(self.block)
         a.add(otherBlock)
@@ -692,10 +694,19 @@ class TestFlagSerializer(unittest.TestCase):
 
         # missing flags in current version Flags
         attrs["flag_order"].append("NONEXISTANTFLAG")
-        with self.assertRaises(ValueError):
+        with mockRunLogs.BufferLog() as mock:
+            self.assertEqual("", mock.getStdout())
+            testName = "test_flagSerialization"
+            runLog.LOG.startLog(testName)
+            runLog.LOG.setVerbosity(logging.WARNING)
+
             data2 = composites.FlagSerializer.unpack(
                 flagsArray, composites.FlagSerializer.version, attrs
             )
+            flagLog = mock.getStdout()
+
+        self.assertIn("The set of flags", flagLog)
+        self.assertIn("NONEXISTANTFLAG", flagLog)
 
     def test_flagConversion(self):
         data = [

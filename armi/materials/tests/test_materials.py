@@ -46,7 +46,7 @@ class _Material_Test:
         )
 
     def test_density(self):
-        """Test that all materials produce a zero density from density."""
+        """Test that all materials produce a non-zero density from density."""
         self.assertNotEqual(self.mat.density(500), 0)
 
     def test_TD(self):
@@ -94,6 +94,10 @@ class _Material_Test:
         dens = self.mat.pseudoDensity(500)
         densKgM3 = self.mat.pseudoDensityKgM3(500)
         self.assertEqual(dens * 1000.0, densKgM3)
+
+    def test_wrappedDensity(self):
+        """Test that the density decorator is applied."""
+        self.assertTrue(hasattr(self.mat.density, "__wrapped__"))
 
 
 class MaterialConstructionTests(unittest.TestCase):

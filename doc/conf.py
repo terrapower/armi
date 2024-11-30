@@ -54,6 +54,7 @@ from armi import context
 from armi import disableFutureConfigures
 from armi import meta
 from armi.bookkeeping import tests as bookkeepingTests
+from armi.utils import safeCopy
 
 context.Mode.setMode(context.Mode.BATCH)
 
@@ -64,9 +65,7 @@ disableFutureConfigures()
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 _TUTORIAL_FILES = [
-    pathlib.Path(SOURCE_DIR) / "tests" / "tutorials" / fName
-    for fName in bookkeepingTests.TUTORIAL_FILES
-    if "ipynb" not in fName
+    fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName
 ]
 
 
@@ -214,6 +213,26 @@ class PyReverse(Directive):
             )
 
 
+class SkipNeedsDirective(Directive):
+    """
+    A no-op directive that filters out any sphinx-need directives from docs.
+
+    Temporary patch until we figure out a different/better way to maintain formal QA docs.
+    """
+
+    has_content = True
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = True
+
+    def run(self):
+        _delete_opt = self.options.get("delete")
+        _collapse = self.options.get("collapse")
+        _jinja_content = self.options.get("jinja_content")
+        _hide = "hide" in self.options
+        return []
+
+
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     """Manually exclude certain methods/functions from docs."""
     # exclude special methods from unittest
@@ -233,17 +252,22 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 def setup(app):
     """Method to make `make html` generate api documentation."""
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
-
     app.add_domain(PatchedPythonDomain, override=True)
-
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+    app.add_directive("impl", SkipNeedsDirective)
+    app.add_directive("test", SkipNeedsDirective)
 
-    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but
-    # the working directory for running the notebooks is the directory of the link
-    # itself, so relative paths don't work.
+    # making tutorial data dir
+    dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
+    if not os.path.exists(dataDir):
+        os.mkdir(dataDir)
+
+    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but the working
+    # directory for running the notebooks is the directory of the link itself, so relative paths
+    # don't work.
     for path in _TUTORIAL_FILES:
-        shutil.copy(path, pathlib.Path("user") / "tutorials")
+        safeCopy(path, dataDir)
 
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -253,36 +277,36 @@ sys.path.insert(0, os.path.abspath(".."))
 
 # -- General configuration -----------------------------------------------------
 
-# Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
+# Add any Sphinx extension module names here, as strings. They can be extensions coming with Sphinx
+# (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
-    "sphinx.ext.todo",
-    "sphinx.ext.mathjax",
-    "sphinx.ext.ifconfig",
-    "sphinx.ext.inheritance_diagram",
-    "sphinx.ext.extlinks",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.intersphinx",
-    "sphinxcontrib.apidoc",
     "nbsphinx",
     "nbsphinx_link",
-    "sphinxext.opengraph",
-    "sphinx_gallery.gen_gallery",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.ifconfig",
     "sphinx.ext.imgconverter",  # to convert GH Actions badge SVGs to PNG for LaTeX
-    "sphinxcontrib.plantuml",
+    "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_gallery.gen_gallery",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
+    "sphinxcontrib.apidoc",
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
+    "sphinxcontrib.plantuml",
+    "sphinxext.opengraph",
 ]
 
 # Our API should make sense without documenting private/special members.
 autodoc_default_options = {
     "members": True,
-    "undoc-members": True,
     "private-members": False,
+    "undoc-members": True,
 }
 autodoc_member_order = "bysource"
 # this line removes huge numbers of false and misleading, inherited docstrings
@@ -333,10 +357,10 @@ release = meta.__version__
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 """
-'library/xml.rst' – ignores the library/xml.rst file (replaces entry in unused_docs)
-'library/xml' – ignores the library/xml directory (replaces entry in exclude_trees)
-'library/xml*' – ignores all files and directories starting with library/xml
-'**/.svn' – ignores all .svn directories (replaces entry in exclude_dirnames)
+'library/xml.rst' - ignores the library/xml.rst file (replaces entry in unused_docs)
+'library/xml' - ignores the library/xml directory (replaces entry in exclude_trees)
+'library/xml*' - ignores all files and directories starting with library/xml
+'**/.svn' - ignores all .svn directories (replaces entry in exclude_dirnames)
 """
 exclude_patterns = [
     "**/Python27*",
@@ -394,9 +418,8 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # as long as this file @import's the theme's main css it won't break anything
 html_style = "css/theme_fixes.css"
 
-# The name of an image file (within the static path) to use as favicon of the
-# docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
-# pixels large.
+# The name of an image file (within the static path) to use as favicon of the docs. This file should
+# be a Windows icon file (.ico) being 16x16 or 32x32 pixels large.
 html_favicon = os.path.join(".static", "armiicon_16x16.ico")
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -481,7 +504,7 @@ sphinx_gallery_conf = {
         ]
     ),
     "within_subsection_order": FileNameSortKey,
-    "default_thumb_file": os.path.join(context.RES, "images", "TerraPowerLogo.png"),
+    "default_thumb_file": os.path.join(".static", "TerraPowerLogo.png"),
 }
 
 suppress_warnings = ["autoapi.python_import_resolution"]

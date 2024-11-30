@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-
+    # Building and deploying docs is broken on forked repos
+    if: github.repository == 'terrapower/armi'
     runs-on: ubuntu-22.04
 
     steps:
@@ -32,6 +38,7 @@ jobs:
           git submodule update
           make html
       - name: deploy
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -39,3 +46,10 @@ jobs:
           branch: main
           folder: doc/_build/html
           target-folder: armi
+      - name: Archive Docs from PR
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-docs
+          path: doc/_build/html
+          retention-days: 5

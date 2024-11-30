@@ -80,7 +80,7 @@ from armi.reactor.grids.locations import (
 
 from armi.reactor.grids.grid import Grid
 from armi.reactor.grids.structuredGrid import StructuredGrid, GridParameters, _tuplify
-from armi.reactor.grids.axial import AxialGrid, axialUnitGrid
+from armi.reactor.grids.axial import AxialGrid
 from armi.reactor.grids.cartesian import CartesianGrid
 from armi.reactor.grids.hexagonal import HexGrid, COS30, SIN30, TRIANGLES_IN_HEXAGON
 from armi.reactor.grids.thetarz import ThetaRZGrid, TAU

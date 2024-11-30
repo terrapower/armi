@@ -170,9 +170,6 @@ class Link(Tag):
     tag = "link"
 
 
-# ---------------------------
-
-
 def encode64(file_path):
     """Return the embedded HTML src attribute for an image in base64."""
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
@@ -193,9 +190,6 @@ def encode64(file_path):
         return r"data:image/{};base64,{}".format(
             xtn, base64.b64encode(img_src.read()).decode()
         )
-
-
-# ---------------------------
 
 
 def writeStandardReportTemplate(f, report, caseTitle=""):
@@ -222,17 +216,7 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
                         with Span(
                             f, attrs={"class": "navbar-text navbar-version pull-left"}
                         ):
-                            with Img(
-                                f,
-                                attrs={
-                                    "src": encode64(
-                                        os.path.join(
-                                            context.RES, "images", "armiicon.ico"
-                                        )
-                                    )
-                                },
-                            ):
-                                pass
+                            pass
 
                         with A(
                             f,

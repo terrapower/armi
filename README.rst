@@ -60,8 +60,7 @@ found in [#touranarmi]_.
 
 Quick start
 -----------
-Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+ on
-Windows or Linux.
+Before starting, you need to have `Python <https://www.python.org/downloads/>`_ 3.9+.
 
 Get the ARMI code, install the prerequisites, and fire up the launcher with the following
 commands. You probably want to do this in a virtual environment as described in the `Installation
@@ -70,7 +69,7 @@ dependencies could conflict with your system dependencies.
 
 First, upgrade your version of pip::
 
-    $ pip install pip>=22.1
+    $ pip install -U pip>=22.1
 
 Now clone and install ARMI::
 
@@ -386,8 +385,9 @@ like ARMI somewhat recently.
 ARMI has been written to support specific engineering/design tasks. As such, polish in
 the GUIs and output is somewhat lacking.
 
-Most of our code is in the ``camelCase`` style, which is not the normal style for
-Python. This started in 2009 and we have stuck with the convention.
+The ARMI framework uses the ``camelCase`` style, which is not the standard style for Python. As this
+is an issue of style, it is not considered worth the API-breaking cost to our downstream users to
+change it.
 
 
 License

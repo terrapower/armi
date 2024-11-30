@@ -33,8 +33,7 @@ visualization tool that supports XDMF.
     wedges. To do that would require splitting the parameter data, which would defeat
     the main benefit of using XMDF in the first place (to be able to plot out of the
     original Database file). Cartesian and R-X-Theta geometries in VisIt seem to work
-    fine. Support for polyhedra is being tracked in `#1287
-    <https://github.com/visit-dav/visit/issues/1287>`_.
+    fine.
 """
 
 import io
@@ -44,7 +43,7 @@ from typing import Optional, Set, List, Tuple, Dict
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
-import numpy
+import numpy as np
 import h5py
 
 from armi import runLog
@@ -52,7 +51,7 @@ from armi.reactor import assemblies
 from armi.reactor import composites
 from armi.reactor import reactors
 from armi.reactor import blocks
-from armi.bookkeeping.db import database3
+from armi.bookkeeping.db import database
 from armi.bookkeeping.visualization import dumper
 from armi.bookkeeping.visualization import utils
 
@@ -67,7 +66,7 @@ _QUADRATIC_HEXAHEDRON = 48
 # proper XDMF, these need to be offset to the proper vertex indices in the full mesh,
 # and have the number of face vertices inserted into the proper locations (notice the
 # [0] placeholders).
-_HEX_PRISM_TOPO = numpy.array(
+_HEX_PRISM_TOPO = np.array(
     [0]
     + list(range(6))
     + [0]
@@ -87,25 +86,25 @@ _HEX_PRISM_TOPO = numpy.array(
 )
 
 # The indices of the placeholder zeros from _HEX_PRISM_TOPO array above
-_HEX_PRISM_FACE_SIZE_IDX = numpy.array([0, 7, 14, 19, 24, 29, 34, 39])
+_HEX_PRISM_FACE_SIZE_IDX = np.array([0, 7, 14, 19, 24, 29, 34, 39])
 
 # The number of vertices for each face
-_HEX_PRISM_FACE_SIZES = numpy.array([6, 6, 4, 4, 4, 4, 4, 4])
+_HEX_PRISM_FACE_SIZES = np.array([6, 6, 4, 4, 4, 4, 4, 4])
 
 
 def _getAttributesFromDataset(d: h5py.Dataset) -> Dict[str, str]:
     dataType = {
-        numpy.dtype("int32"): "Int",
-        numpy.dtype("int64"): "Int",
-        numpy.dtype("float32"): "Float",
-        numpy.dtype("float64"): "Float",
+        np.dtype("int32"): "Int",
+        np.dtype("int64"): "Int",
+        np.dtype("float32"): "Float",
+        np.dtype("float64"): "Float",
     }[d.dtype]
 
     precision = {
-        numpy.dtype("int32"): "4",
-        numpy.dtype("int64"): "8",
-        numpy.dtype("float32"): "4",
-        numpy.dtype("float64"): "8",
+        np.dtype("int32"): "4",
+        np.dtype("int64"): "8",
+        np.dtype("float32"): "4",
+        np.dtype("float64"): "8",
     }[d.dtype]
 
     return {
@@ -165,7 +164,7 @@ class XdmfDumper(dumper.VisFileDumper):
             # into a new h5 file, but why?
             raise ValueError("Input database needed to generate XDMF output!")
 
-        self._inputDb = database3.Database3(self._inputName, "r")
+        self._inputDb = database.Database(self._inputName, "r")
         with self._inputDb as db:
             dbVersion = db.version
 
@@ -282,7 +281,7 @@ class XdmfDumper(dumper.VisFileDumper):
         cycle = r.p.cycle
         node = r.p.timeNode
 
-        timeGroupName = database3.getH5GroupName(cycle, node)
+        timeGroupName = database.getH5GroupName(cycle, node)
 
         # careful here! we are trying to use the database datasets as the source of hard
         # data without copying, so the order that we make the mesh needs to be the same
@@ -373,11 +372,11 @@ class XdmfDumper(dumper.VisFileDumper):
         verticesInH5 = groupName + "/blk_vertices"
         self._meshH5[verticesInH5] = verts
 
-        topoValues = numpy.array([], dtype=numpy.int32)
+        topoValues = np.array([], dtype=np.int32)
         offset = 0
         for b in blks:
             nVerts, cellTopo = _getTopologyFromShape(b, offset)
-            topoValues = numpy.append(topoValues, cellTopo)
+            topoValues = np.append(topoValues, cellTopo)
             offset += nVerts
 
         topoInH5 = groupName + "/blk_topology"
@@ -407,11 +406,11 @@ class XdmfDumper(dumper.VisFileDumper):
         verticesInH5 = groupName + "/asy_vertices"
         self._meshH5[verticesInH5] = verts
 
-        topoValues = numpy.array([], dtype=numpy.int32)
+        topoValues = np.array([], dtype=np.int32)
         offset = 0
         for a in asys:
             nVerts, cellTopo = _getTopologyFromShape(a[0], offset)
-            topoValues = numpy.append(topoValues, cellTopo)
+            topoValues = np.append(topoValues, cellTopo)
             offset += nVerts
 
         topoInH5 = groupName + "/asy_topology"
@@ -473,7 +472,7 @@ def _getTopologyFromShape(b: blocks.Block, offset: int) -> Tuple[int, List[int]]
         prefix = [_POLYHEDRON, 8]
         topo = _HEX_PRISM_TOPO + offset
         topo[_HEX_PRISM_FACE_SIZE_IDX] = _HEX_PRISM_FACE_SIZES
-        topo = numpy.append(prefix, topo)
+        topo = np.append(prefix, topo)
 
         return 12, topo
 

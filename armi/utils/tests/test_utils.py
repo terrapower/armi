@@ -24,26 +24,48 @@ from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
 from armi.tests import mockRunLogs
 from armi.utils import (
+    codeTiming,
     directoryChangers,
-    getPowerFractions,
-    getCycleNames,
     getAvailabilityFactors,
-    getStepLengths,
-    getCycleLengths,
     getBurnSteps,
+    getCumulativeNodeNum,
+    getCycleLengths,
+    getCycleNames,
+    getCycleNodeFromCumulativeNode,
+    getCycleNodeFromCumulativeStep,
+    getFileSHA1Hash,
     getMaxBurnSteps,
     getNodesPerCycle,
-    getCycleNodeFromCumulativeStep,
-    getCycleNodeFromCumulativeNode,
+    getPowerFractions,
     getPreviousTimeNode,
-    getCumulativeNodeNum,
+    getStepLengths,
     hasBurnup,
-    codeTiming,
     safeCopy,
+    safeMove,
 )
 
 
 class TestGeneralUtils(unittest.TestCase):
+    def test_getFileSHA1Hash(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            path = "test.txt"
+            with open(path, "w") as f1:
+                f1.write("test")
+            sha = getFileSHA1Hash(path)
+            self.assertIn("a94a8", sha)
+
+    def test_getFileSHA1HashDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            pathDir = "testDir"
+            path1 = os.path.join(pathDir, "test1.txt")
+            path2 = os.path.join(pathDir, "test2.txt")
+            os.mkdir(pathDir)
+            for i, path in enumerate([path1, path2]):
+                with open(path, "w") as f1:
+                    f1.write(f"test{i}")
+            sha = getFileSHA1Hash(pathDir)
+            self.assertIn("ccd13", sha)
+
     def test_mergeableDictionary(self):
         mergeableDict = utils.MergeableDict()
         normalDict = {"luna": "thehusky", "isbegging": "fortreats", "right": "now"}
@@ -197,6 +219,53 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("Copied", mock.getStdout())
                 self.assertIn("file2", mock.getStdout())
                 self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMove(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file1, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file2, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMoveDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                safeMove("dir1", "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("dir1", mock.getStdout())
+                self.assertIn("dir2", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
 
 
 class CyclesSettingsTests(unittest.TestCase):

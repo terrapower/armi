@@ -24,7 +24,6 @@ import re
 import shutil
 import sys
 import tempfile
-import threading
 import time
 
 from armi import runLog
@@ -38,37 +37,33 @@ _HASH_BUFFER_SIZE = 1024 * 1024
 
 def getFileSHA1Hash(filePath, digits=40):
     """
-    Generate a SHA-1 hash of the input file.
+    Generate a SHA-1 hash of input files.
 
     Parameters
     ----------
     filePath : str
-        Path to file to obtain the SHA-1 hash
+        Path to file or directory to obtain the SHA-1 hash
     digits : int, optional
         Number of digits to include in the hash (40 digit maximum for SHA-1)
     """
     sha1 = hashlib.sha1()
-    with open(filePath, "rb") as f:
-        while True:
-            data = f.read(_HASH_BUFFER_SIZE)
-            if not data:
-                break
-            sha1.update(data)
+    filesToHash = []
+    if os.path.isdir(filePath):
+        for root, _, files in os.walk(filePath):
+            for file in sorted(files):
+                filesToHash.append(os.path.join(root, file))
+    else:
+        filesToHash.append(filePath)
+
+    for file in filesToHash:
+        with open(file, "rb") as f:
+            while True:
+                data = f.read(_HASH_BUFFER_SIZE)
+                if not data:
+                    break
+                sha1.update(data)
 
     return sha1.hexdigest()[:digits]
-
-
-def copyWithoutBlocking(src, dest):
-    """
-    Copy a file in a separate thread to avoid blocking while IO completes.
-
-    Useful for copying large files while ARMI moves along.
-    """
-    files = "{} to {}".format(src, dest)
-    runLog.extra("Copying (without blocking) {}".format(files))
-    t = threading.Thread(target=shutil.copy, args=(src, dest))
-    t.start()
-    return t
 
 
 def getPowerFractions(cs):
@@ -811,8 +806,10 @@ def safeCopy(src: str, dst: str) -> None:
     dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
+
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
         shutil.copyfile(src, dst)
         shutil.copymode(src, dst)
     elif "linux" in sys.platform:
@@ -821,8 +818,9 @@ def safeCopy(src: str, dst: str) -> None:
     else:
         raise OSError(
             "Cannot perform ``safeCopy`` on files because ARMI only supports "
-            + "Linux and Windows."
+            + "Linux, MacOs, and Windows."
         )
+
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
     totalWaitTime = 0
@@ -837,9 +835,53 @@ def safeCopy(src: str, dst: str) -> None:
                 f"File copy from {dst} to {src} has failed due to exceeding "
                 + f"a maximum wait time of {maxWaitTime/60} minutes."
             )
-            break
+            Return
 
     runLog.extra("Copied {} -> {}".format(src, dst))
+
+
+def safeMove(src: str, dst: str) -> None:
+    """Check that a file has been successfully moved before continuing."""
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
+
+    srcSize = os.path.getsize(src)
+    if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
+        shutil.move(src, dst)
+    elif "linux" in sys.platform:
+        cmd = f'mv "{src}" "{dst}"'
+        os.system(cmd)
+    else:
+        raise OSError(
+            "Cannot perform ``safeMove`` on files because ARMI only supports "
+            + "Linux, MacOS, and Windows."
+        )
+
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 6000  # 1 min
+    totalWaitTime = 0
+    while True:
+        try:
+            dstSize = os.path.getsize(dst)
+            if srcSize == dstSize:
+                break
+        except FileNotFoundError:
+            pass
+        time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File move from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
+            )
+            return
+
+    runLog.extra("Moved {} -> {}".format(src, dst))
+    return dst
 
 
 # Allow us to check the copy operation is complete before continuing

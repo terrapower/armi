@@ -33,12 +33,12 @@ from armi.reactor import blocks
 from armi.reactor import geometry
 from armi.reactor import grids
 from armi.reactor import reactors
-from armi.reactor.assemblyLists import SpentFuelPool
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
+from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
@@ -72,7 +72,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     o.initializeInterfaces(r)
 
     a = assemblies.HexAssembly("fuel")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     b = blocks.HexBlock("TestBlock")
     b.setType("fuel")
     dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
@@ -109,7 +109,7 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     o.initializeInterfaces(r)
 
     a = assemblies.CartesianAssembly("fuel")
-    a.spatialGrid = grids.axialUnitGrid(1)
+    a.spatialGrid = grids.AxialGrid.fromNCells(1)
     b = blocks.CartesianBlock("TestBlock")
     b.setType("fuel")
     dims = {
@@ -246,11 +246,11 @@ class HexReactorTests(ReactorTests):
             :tests: R_ARMI_R
         """
         self.assertTrue(isinstance(self.r.core, reactors.Core))
-        self.assertTrue(isinstance(self.r.sfp, SpentFuelPool))
+        self.assertTrue(isinstance(self.r.excore["sfp"], SpentFuelPool))
 
         self.assertTrue(isinstance(self.r, Composite))
         self.assertTrue(isinstance(self.r.core, Composite))
-        self.assertTrue(isinstance(self.r.sfp, Composite))
+        self.assertTrue(isinstance(self.r.excore["sfp"], Composite))
 
     def test_factorySortSetting(self):
         """
@@ -834,8 +834,6 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(dominantFuel.getName(), "UZr")
         self.assertEqual(dominantCool.getName(), "Sodium")
 
-        self.assertEqual(list(dominantCool.getNuclides()), ["NA23"])
-
     def test_getSymmetryFactor(self):
         """
         Test getSymmetryFactor().
@@ -987,7 +985,7 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
-        self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
+        self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
         # confirm only attached to removed assem
         self.assertIs(bLoc, b.spatialLocator)  # block location does not change
@@ -1004,7 +1002,8 @@ class HexReactorTests(ReactorTests):
             a = self.r.core[-1]  # last assembly
             aLoc = a.spatialLocator
             self.assertIsNotNone(aLoc.grid)
-            self.r.sfp = None
+            self.r.excore["sfp"] = None
+            del self.r.excore["sfp"]
             self.r.core.removeAssembly(a)
 
             self.assertIn("No Spent Fuel Pool", mock.getStdout())
@@ -1022,7 +1021,7 @@ class HexReactorTests(ReactorTests):
         self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
             self.assertNotEqual(aLoc[i], a.spatialLocator)
-            self.assertEqual(a.spatialLocator.grid, self.r.sfp.spatialGrid)
+            self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
         """Tests retrieving ring numbers and removing a ring.
@@ -1149,15 +1148,6 @@ class HexReactorTests(ReactorTests):
 
         with self.assertRaises(ValueError):
             self.r.core.geomType
-
-    def test_removeAllAssemblies(self):
-        self.assertGreater(len(self.r.core.blocksByName), 100)
-        self.assertGreater(len(self.r.core.assembliesByName), 12)
-
-        self.r.core.removeAllAssemblies()
-
-        self.assertEqual(0, len(self.r.core.blocksByName))
-        self.assertEqual(0, len(self.r.core.assembliesByName))
 
     def test_pinCoordsAllBlocks(self):
         """Make sure all blocks can get pin coords."""
@@ -1356,6 +1346,15 @@ class CartesianReactorTests(ReactorTests):
     def setUp(self):
         self.o = buildOperatorOfEmptyCartesianBlocks()
         self.r = self.o.r
+
+    def test_add(self):
+        a = self.r.core.getFirstAssembly()
+        numA = len(a)
+        a.add(blocks.CartesianBlock("test cart block"))
+        self.assertEqual(len(a), numA + 1)
+
+        with self.assertRaises(TypeError):
+            a.add(blocks.HexBlock("test hex block"))
 
     def test_getAssemblyPitch(self):
         # Cartesian pitch should have 2 dims since it could be a rectangle that is not square.

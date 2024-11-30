@@ -240,10 +240,9 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
     pyplot.colorbar()
     if fName:
         pyplot.savefig(fName)
+        pyplot.close()
     else:
         pyplot.show()
-
-    pyplot.close()
 
 
 def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
@@ -260,7 +259,6 @@ def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
     pyplot.colorbar()
     if fName:
         pyplot.savefig(fName)
+        pyplot.close()
     else:
         pyplot.show()
-
-    pyplot.close()

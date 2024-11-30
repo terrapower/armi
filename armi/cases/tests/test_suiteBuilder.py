@@ -33,7 +33,7 @@ cs = settings.Settings(
         "..",
         "..",
         "tests",
-        "tutorials",
+        "anl-afci-177",
         "anl-afci-177.yaml",
     )
 )
@@ -116,25 +116,25 @@ class TestFullFactorialSuiteBuilder(unittest.TestCase):
             SettingModifier("settingName2", value) for value in (3, 4, 5)
         )
 
-        self.assertEquals(builder.modifierSets[0][0].value, 1)
-        self.assertEquals(builder.modifierSets[0][1].value, 3)
+        self.assertEqual(builder.modifierSets[0][0].value, 1)
+        self.assertEqual(builder.modifierSets[0][1].value, 3)
 
-        self.assertEquals(builder.modifierSets[1][0].value, 2)
-        self.assertEquals(builder.modifierSets[1][1].value, 3)
+        self.assertEqual(builder.modifierSets[1][0].value, 2)
+        self.assertEqual(builder.modifierSets[1][1].value, 3)
 
-        self.assertEquals(builder.modifierSets[2][0].value, 1)
-        self.assertEquals(builder.modifierSets[2][1].value, 4)
+        self.assertEqual(builder.modifierSets[2][0].value, 1)
+        self.assertEqual(builder.modifierSets[2][1].value, 4)
 
-        self.assertEquals(builder.modifierSets[3][0].value, 2)
-        self.assertEquals(builder.modifierSets[3][1].value, 4)
+        self.assertEqual(builder.modifierSets[3][0].value, 2)
+        self.assertEqual(builder.modifierSets[3][1].value, 4)
 
-        self.assertEquals(builder.modifierSets[4][0].value, 1)
-        self.assertEquals(builder.modifierSets[4][1].value, 5)
+        self.assertEqual(builder.modifierSets[4][0].value, 1)
+        self.assertEqual(builder.modifierSets[4][1].value, 5)
 
-        self.assertEquals(builder.modifierSets[5][0].value, 2)
-        self.assertEquals(builder.modifierSets[5][1].value, 5)
+        self.assertEqual(builder.modifierSets[5][0].value, 2)
+        self.assertEqual(builder.modifierSets[5][1].value, 5)
 
-        self.assertEquals(len(builder.modifierSets), 6)
+        self.assertEqual(len(builder.modifierSets), 6)
 
 
 class TestSeparateEffectsBuilder(unittest.TestCase):
@@ -155,19 +155,19 @@ class TestSeparateEffectsBuilder(unittest.TestCase):
             SettingModifier("settingName2", value) for value in (3, 4, 5)
         )
 
-        self.assertEquals(builder.modifierSets[0][0].value, 1)
-        self.assertEquals(builder.modifierSets[0][0].settingName, "settingName1")
+        self.assertEqual(builder.modifierSets[0][0].value, 1)
+        self.assertEqual(builder.modifierSets[0][0].settingName, "settingName1")
 
-        self.assertEquals(builder.modifierSets[1][0].value, 2)
-        self.assertEquals(builder.modifierSets[1][0].settingName, "settingName1")
+        self.assertEqual(builder.modifierSets[1][0].value, 2)
+        self.assertEqual(builder.modifierSets[1][0].settingName, "settingName1")
 
-        self.assertEquals(builder.modifierSets[2][0].value, 3)
-        self.assertEquals(builder.modifierSets[2][0].settingName, "settingName2")
+        self.assertEqual(builder.modifierSets[2][0].value, 3)
+        self.assertEqual(builder.modifierSets[2][0].settingName, "settingName2")
 
-        self.assertEquals(builder.modifierSets[3][0].value, 4)
-        self.assertEquals(builder.modifierSets[3][0].settingName, "settingName2")
+        self.assertEqual(builder.modifierSets[3][0].value, 4)
+        self.assertEqual(builder.modifierSets[3][0].settingName, "settingName2")
 
-        self.assertEquals(builder.modifierSets[4][0].value, 5)
-        self.assertEquals(builder.modifierSets[4][0].settingName, "settingName2")
+        self.assertEqual(builder.modifierSets[4][0].value, 5)
+        self.assertEqual(builder.modifierSets[4][0].settingName, "settingName2")
 
-        self.assertEquals(len(builder.modifierSets), 5)
+        self.assertEqual(len(builder.modifierSets), 5)

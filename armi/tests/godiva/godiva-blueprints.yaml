@@ -1,0 +1,485 @@
+nuclide flags:
+  PU237: {burn: false, xs: true, expandTo: []}
+  PU240: {burn: false, xs: true, expandTo: []}
+  PU241: {burn: false, xs: true, expandTo: []}
+  AR: {burn: false, xs: true, expandTo: []}
+  PA233: {burn: false, xs: true, expandTo: []}
+  NP238: {burn: false, xs: true, expandTo: []}
+  AR36: {burn: false, xs: true, expandTo: []}
+  TH230: {burn: false, xs: true, expandTo: []}
+  AR38: {burn: false, xs: true, expandTo: []}
+  U238: {burn: false, xs: true, expandTo: []}
+  U239: {burn: false, xs: true, expandTo: []}
+  C: {burn: false, xs: true, expandTo: []}
+  LFP35: {burn: false, xs: true, expandTo: []}
+  U233: {burn: false, xs: true, expandTo: []}
+  U234: {burn: false, xs: true, expandTo: []}
+  U235: {burn: false, xs: true, expandTo: []}
+  U236: {burn: false, xs: true, expandTo: []}
+  U237: {burn: false, xs: true, expandTo: []}
+  PU239: {burn: false, xs: true, expandTo: []}
+  PU238: {burn: false, xs: true, expandTo: []}
+  TH234: {burn: false, xs: true, expandTo: []}
+  TH232: {burn: false, xs: true, expandTo: []}
+  AR40: {burn: false, xs: true, expandTo: []}
+  LFP39: {burn: false, xs: true, expandTo: []}
+  DUMP2: {burn: false, xs: true, expandTo: []}
+  LFP41: {burn: false, xs: true, expandTo: []}
+  LFP40: {burn: false, xs: true, expandTo: []}
+  PU242: {burn: false, xs: true, expandTo: []}
+  PU236: {burn: false, xs: true, expandTo: []}
+  U232: {burn: false, xs: true, expandTo: []}
+  DUMP1: {burn: false, xs: true, expandTo: []}
+  LFP38: {burn: false, xs: true, expandTo: []}
+  AM243: {burn: false, xs: true, expandTo: []}
+  PA231: {burn: false, xs: true, expandTo: []}
+  CM244: {burn: false, xs: true, expandTo: []}
+  CM242: {burn: false, xs: true, expandTo: []}
+  AM242: {burn: false, xs: true, expandTo: []}
+  CM245: {burn: false, xs: true, expandTo: []}
+  CM243: {burn: false, xs: true, expandTo: []}
+  CM246: {burn: false, xs: true, expandTo: []}
+  CM247: {burn: false, xs: true, expandTo: []}
+  O: {burn: false, xs: true, expandTo: [O16]}
+  N: {burn: false, xs: true, expandTo: [N14]}
+  ZR: {burn: false, xs: true, expandTo: []}
+custom isotopics: {}
+blocks: {}
+assemblies:
+  heights:
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
+    - 3.5
+  axial mesh points:
+    - 5
+    - 5
+    - 5
+    - 5
+    - 5
+  assembly1_1:
+    specifier: assembly1_1
+    blocks:
+      - name: block1_1_1
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 0.9226919412612915
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 0.0773080587387085
+      - name: block1_1_2
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 1.0
+      - name: block1_1_3
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 1.0
+      - name: block1_1_4
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 1.0
+      - name: block1_1_5
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 0.9271114468574524
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 3.001
+          inner_radius: 0.0
+          mult: 0.07288855314254761
+    height:
+      - 3.5
+      - 3.5
+      - 3.5
+      - 3.5
+      - 3.5
+    axial mesh points:
+      - 5
+      - 5
+      - 5
+      - 5
+      - 5
+    radial mesh points: 2
+    azimuthal mesh points: 7
+    material modifications:
+      U235_wt_frac:
+        - 0.9371
+        - 0.9371
+        - 0.9371
+        - 0.9371
+        - 0.9371
+      ZR_wt_frac:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+    xs types:
+      - A
+      - A
+      - A
+      - A
+      - A
+  assembly2_1:
+    specifier: assembly2_1
+    blocks:
+      - name: block2_1_1
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 0.5954532027244568
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 0.4045467972755432
+      - name: block2_1_2
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 1.0
+      - name: block2_1_3
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 1.0
+      - name: block2_1_4
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 1.0
+      - name: block2_1_5
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 0.5924441814422607
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 6.002
+          inner_radius: 3.001
+          mult: 0.40755581855773926
+    height:
+      - 3.5
+      - 3.5
+      - 3.5
+      - 3.5
+      - 3.5
+    axial mesh points:
+      - 5
+      - 5
+      - 5
+      - 5
+      - 5
+    radial mesh points: 2
+    azimuthal mesh points: 7
+    material modifications:
+      U235_wt_frac:
+        - 0.9371
+        - 0.9371
+        - 0.9371
+        - 0.9371
+        - 0.9371
+      ZR_wt_frac:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+    xs types:
+      - A
+      - A
+      - A
+      - A
+      - A
+  assembly3_1:
+    specifier: assembly3_1
+    blocks:
+      - name: block3_1_1
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.046154800802469254
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.9538451991975307
+      - name: block3_1_2
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.6035306453704834
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.3964693546295166
+      - name: block3_1_3
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.8756284713745117
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.12437152862548828
+      - name: block3_1_4
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.5993080139160156
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.4006919860839844
+      - name: block3_1_5
+        godiva:
+          shape: RadialSegment
+          material: UZr
+          Tinput: 26.85
+          Thot: 26.85
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.04680449143052101
+        compliment:
+          shape: RadialSegment
+          material: Air
+          Tinput: 0.0
+          Thot: 0.0
+          outer_theta: 0.7853981633974483
+          height: 3.5
+          inner_theta: 0.0
+          outer_radius: 9.0
+          inner_radius: 6.002
+          mult: 0.953195508569479
+    height:
+      - 3.5
+      - 3.5
+      - 3.5
+      - 3.5
+      - 3.5
+    axial mesh points:
+      - 5
+      - 5
+      - 5
+      - 5
+      - 5
+    radial mesh points: 2
+    azimuthal mesh points: 7
+    material modifications:
+      U235_wt_frac:
+        - 0.9371
+        - 0.9371
+        - 0.9371
+        - 0.9371
+        - 0.9371
+      ZR_wt_frac:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+    xs types:
+      - A
+      - A
+      - A
+      - A
+      - A
+systems:
+  core:
+    grid name: core
+    origin:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+grids:
+  core:
+    geom: thetarz
+    lattice map:
+    grid bounds:
+      r:
+        - 0.0
+        - 3.001
+        - 6.002
+        - 9.0
+      theta:
+        - 0.0
+        - 0.7853981633974483
+      z:
+        - -8.75
+        - -5.25
+        - -1.7500000000000002
+        - 1.7500000000000002
+        - 5.25
+        - 8.75
+    symmetry: eighth periodic
+    grid contents:
+      ? - 0
+        - 0
+      : assembly1_1
+      ? - 0
+        - 1
+      : assembly2_1
+      ? - 0
+        - 2
+      : assembly3_1

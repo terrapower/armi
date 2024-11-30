@@ -21,7 +21,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.4.0"
+version = "0.5.0"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
 requires-python = ">3.8"
@@ -31,7 +31,8 @@ authors = [
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
-    "h5py>=3.0,<=3.9", # Needed because our database files are H5 format
+    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
+    "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
     "numpy>=1.21", # Important math library
@@ -39,10 +40,11 @@ dependencies = [
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml.clib<=0.2.7", # C-based core of ruamel below
-    "ruamel.yaml<=0.17.21", # Our foundational YAML library
+    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
-    "tabulate>=0.8.9", # Used to pretty-print tabular data
     "toml>0.9.5", # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1", # Used to validate YAML data files
     "yamlize==0.7.1", # Custom YAML-to-object library
@@ -58,6 +60,8 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
@@ -245,6 +249,9 @@ exclude_also = [
     "def __repr__",
     "if self\\.debug",
 
+    # Don't complain about missing type checking-only code:
+    "if TYPE_CHECKING",
+
     # Don't complain if tests don't hit defensive assertion code:
     "raise AssertionError",
     "raise KeyboardInterrupt",
@@ -304,10 +311,16 @@ armi = [
     "physics/neutronics/tests/ISOXA",
     "physics/neutronics/tests/rzmflxYA",
     "resources/*",
-    "resources/**/*",
     "tests/1DslabXSByCompTest.yaml",
+    "tests/anl-afci-177/anl-afci-177-blueprints.yaml",
+    "tests/anl-afci-177/anl-afci-177-coreMap.yaml",
+    "tests/anl-afci-177/anl-afci-177-fuelManagement.py",
+    "tests/anl-afci-177/anl-afci-177.yaml",
     "tests/armiRun-SHUFFLES.txt",
     "tests/armiRun.yaml",
+    "tests/c5g7",
+    "tests/c5g7/c5g7-blueprints.yaml",
+    "tests/c5g7/c5g7-settings.yaml",
     "tests/COMPXS.ascii",
     "tests/detailedAxialExpansion/armiRun.yaml",
     "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
@@ -322,7 +335,6 @@ armi = [
     "tests/refSmallReactorBase.yaml",
     "tests/refSmallSfpGrid.yaml",
     "tests/refTestCartesian.yaml",
-    "tests/sfpGeom.yaml",
     "tests/smallestTestReactor/armiRunSmallest.yaml",
     "tests/smallestTestReactor/refOneBlockReactor.yaml",
     "tests/smallestTestReactor/refSmallestReactor.yaml",
@@ -331,10 +343,6 @@ armi = [
     "tests/ThRZSettings.yaml",
     "tests/trz_geom.xml",
     "tests/tutorials",
-    "tests/tutorials/anl-afci-177-blueprints.yaml",
-    "tests/tutorials/anl-afci-177-coreMap.yaml",
-    "tests/tutorials/anl-afci-177-fuelManagement.py",
-    "tests/tutorials/anl-afci-177.yaml",
     "tests/tutorials/data_model.ipynb",
     "tests/zpprTest.yaml",
     "tests/zpprTestGeom.xml",

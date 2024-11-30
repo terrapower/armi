@@ -16,11 +16,11 @@
 import os
 
 from armi import runLog
-from armi.operators import settingsValidation
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import NEUTRON
 from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
-from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.settings import setting
+from armi.settings import settingsValidation
 from armi.utils import directoryChangers
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
@@ -43,6 +43,7 @@ CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_INNERS_ = "inners"
 CONF_LOADING_FILE = "loadingFile"
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
+CONF_MCNP_LIB_BASE = "mcnpLibraryVersion"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
@@ -171,6 +172,13 @@ def defineSettings():
             description="The neutronics / depletion solver for global flux solve.",
             options=[],
             enforcedOptions=True,
+        ),
+        setting.Setting(
+            CONF_MCNP_LIB_BASE,
+            default="ENDF/B-VII.1",
+            description="Library name for MCNP cross sections. ENDF/B-VII.1 is the default library.",
+            label="ENDF data library version to use for MCNP Analysis",
+            options=["ENDF/B-V.0", "ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
         ),
         setting.Setting(
             CONF_NEUTRONICS_TYPE,

@@ -24,7 +24,7 @@ physics codes.
 import math
 import collections
 
-import numpy
+import numpy as np
 import ordered_set
 
 from armi import runLog
@@ -76,7 +76,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
     DEPLETABLE = "Depletable" + 4 * _SPACE
     UNDEPLETABLE = "Non-Depletable"
     REPRESENTED = "Represented" + 2 * _SPACE
-    UNREPRESENTED = "Unrepresented"
+    INF_DILUTE = "Inf Dilute"
 
     def __init__(
         self,
@@ -110,9 +110,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.xsId = representativeBlock.getMicroSuffix()
         self.xsSettings = self.cs[CONF_CROSS_SECTION][self.xsId]
         self.mergeIntoClad = self.xsSettings.mergeIntoClad
+        self.mergeIntoFuel = self.xsSettings.mergeIntoFuel
         self.driverXsID = self.xsSettings.driverID
         self.numExternalRings = self.xsSettings.numExternalRings
         self.criticalBucklingSearchActive = self.xsSettings.criticalBuckling
+        self.ductHeterogeneous = self.xsSettings.ductHeterogeneous
+        self.traceIsotopeThreshold = self.xsSettings.traceIsotopeThreshold
 
         self.executeExclusive = self.xsSettings.xsExecuteExclusive
         self.priority = self.xsSettings.xsPriority
@@ -266,8 +269,12 @@ class LatticePhysicsWriter(interfaces.InputWriter):
                 continue  # skip LFPs here but add individual FPs below.
 
             if isinstance(subjectObject, components.Component):
-                # Heterogeneous number densities and temperatures
-                nucTemperatureInC = subjectObject.temperatureInC
+                if self.ductHeterogeneous and "Homogenized" in subjectObject.name:
+                    # Nuclide temperatures representing heterogeneous model component temperatures
+                    nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
+                else:
+                    # Heterogeneous number densities and temperatures
+                    nucTemperatureInC = subjectObject.temperatureInC
             else:
                 # Homogeneous number densities and temperatures
                 nucTemperatureInC = self._getAvgNuclideTemperatureInC(nucName)
@@ -300,7 +307,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             if nucName in objNuclides:
                 nucCategory += self.REPRESENTED + self._SEPARATOR
             else:
-                nucCategory += self.UNREPRESENTED + self._SEPARATOR
+                nucCategory += self.INF_DILUTE + self._SEPARATOR
 
             if nucName in depletableNuclides:
                 nucCategory += self.DEPLETABLE
@@ -351,9 +358,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         if not fuelComponents:
             fuelTemperatureInC = self.block.getAverageTempInC()
         else:
-            fuelTemperatureInC = numpy.mean(
-                [fc.temperatureInC for fc in fuelComponents]
-            )
+            fuelTemperatureInC = np.mean([fc.temperatureInC for fc in fuelComponents])
         if not fuelTemperatureInC or math.isnan(fuelTemperatureInC):
             raise ValueError(
                 "The fuel temperature of block {0} is {1} and is not valid".format(

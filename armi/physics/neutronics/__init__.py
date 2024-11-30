@@ -33,11 +33,11 @@ independent interfaces:
 # ruff: noqa: F401, E402
 from enum import IntEnum
 
-import numpy
-import tabulate
+import numpy as np
 
 from armi import plugins, runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils import tabulate
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -63,6 +63,11 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
         from armi.physics.neutronics import parameters as neutronicsParameters
 
         return neutronicsParameters.getNeutronicsParameterDefinitions()
+
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineParameterRenames():
+        return {"buGroup": "envGroup", "buGroupNum": "envGroupNum"}
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -246,8 +251,8 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
             )
 
         core.p.beta = sum(beta)
-        core.p.betaComponents = numpy.array(beta)
-        core.p.betaDecayConstants = numpy.array(decayConstants)
+        core.p.betaComponents = np.array(beta)
+        core.p.betaDecayConstants = np.array(decayConstants)
 
         reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
         for i, betaComponent in enumerate(core.p.betaComponents):
@@ -268,9 +273,9 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
     else:
         runLog.extra(
             tabulate.tabulate(
-                tabular_data=reportTableData,
+                data=reportTableData,
                 headers=["Component", "Value"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 

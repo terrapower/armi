@@ -40,7 +40,7 @@ Examples
 import traceback
 import itertools
 
-import numpy
+import numpy as np
 from scipy import sparse
 
 from armi import runLog
@@ -123,13 +123,14 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
                 runLog.warning(warning.format(nuc2, 2, 1))
             equal = False
             continue
-        equal &= compareNuclideXS(nuc1, nuc2, tolerance, verbose)
+        nucEqual = compareNuclideXS(nuc1, nuc2, tolerance, verbose, nucName)
+        equal &= nucEqual
     return equal
 
 
-def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
+def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False, nucName=""):
     equal = nuc1.isotxsMetadata.compare(nuc2.isotxsMetadata, nuc1, nuc2)
-    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose)
+    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose, nucName=nucName)
     return equal
 
 
@@ -691,7 +692,7 @@ class _IsotxsNuclideIO:
         if scatter is None:
             # we're reading.
             scatter = sparse.csr_matrix(
-                (numpy.array(dataVals), indices, indptr), shape=(ng, ng)
+                (np.array(dataVals), indices, indptr), shape=(ng, ng)
             )
             scatter.eliminate_zeros()
             self._setScatterMatrix(blockNumIndex, scatter)
@@ -714,7 +715,7 @@ class _IsotxsNuclideIO:
             A index of the scatter matrix.
         """
         try:
-            return numpy.where(self._metadata["scatFlag"] == scatterType)[0][0]
+            return np.where(self._metadata["scatFlag"] == scatterType)[0][0]
         except IndexError:
             return None
 

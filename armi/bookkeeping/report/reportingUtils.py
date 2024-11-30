@@ -23,11 +23,10 @@ import pathlib
 import re
 import subprocess
 import sys
-import tabulate
 import textwrap
 import time
 
-import numpy
+import numpy as np
 
 from armi import context
 from armi import interfaces
@@ -39,6 +38,7 @@ from armi.reactor.flags import Flags
 from armi.utils import getFileSHA1Hash
 from armi.utils import iterables
 from armi.utils import plotting
+from armi.utils import tabulate
 from armi.utils import textProcessors
 from armi.utils import units
 
@@ -84,7 +84,7 @@ def writeWelcomeHeaders(o, cs):
         ]
 
         runLog.header("=========== Case Information ===========")
-        runLog.info(tabulate.tabulate(caseInfo, tablefmt="armi"))
+        runLog.info(tabulate.tabulate(caseInfo, tableFmt="armi"))
 
     def _listInputFiles(cs):
         """
@@ -170,42 +170,41 @@ def writeWelcomeHeaders(o, cs):
             tabulate.tabulate(
                 inputFileData,
                 headers=["Input Type", "Path", "SHA-1 Hash"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
     def _writeMachineInformation():
         """Create a table that contains basic machine and rank information."""
-        if context.MPI_SIZE > 1:
-            processorNames = context.MPI_NODENAMES
-            uniqueNames = set(processorNames)
-            nodeMappingData = []
-            sysInfo = ""
-            for uniqueName in uniqueNames:
-                matchingProcs = [
-                    str(rank)
-                    for rank, procName in enumerate(processorNames)
-                    if procName == uniqueName
-                ]
-                numProcessors = str(len(matchingProcs))
-                nodeMappingData.append(
-                    (uniqueName, numProcessors, ", ".join(matchingProcs))
-                )
-
-                sysInfo += getSystemInfo()
-
-            runLog.header("=========== Machine Information ===========")
-            runLog.info(
-                tabulate.tabulate(
-                    nodeMappingData,
-                    headers=["Machine", "Number of Processors", "Ranks"],
-                    tablefmt="armi",
-                )
+        processorNames = context.MPI_NODENAMES
+        uniqueNames = set(processorNames)
+        nodeMappingData = []
+        sysInfo = ""
+        for uniqueName in uniqueNames:
+            matchingProcs = [
+                str(rank)
+                for rank, procName in enumerate(processorNames)
+                if procName == uniqueName
+            ]
+            numProcessors = str(len(matchingProcs))
+            nodeMappingData.append(
+                (uniqueName, numProcessors, ", ".join(matchingProcs))
             )
 
-            if sysInfo:
-                runLog.header("=========== System Information ===========")
-                runLog.info(sysInfo)
+            sysInfo += getSystemInfo()
+
+        runLog.header("=========== Machine Information ===========")
+        runLog.info(
+            tabulate.tabulate(
+                nodeMappingData,
+                headers=["Machine", "Number of Processors", "Ranks"],
+                tableFmt="armi",
+            )
+        )
+
+        if sysInfo:
+            runLog.header("=========== System Information ===========")
+            runLog.info(sysInfo)
 
     def _writeReactorCycleInformation(o, cs):
         """Verify that all the operating parameters are defined for the same number of cycles."""
@@ -224,7 +223,7 @@ def writeWelcomeHeaders(o, cs):
             paramStr = [str(p) for p in param]
             operatingData.append((name, textwrap.fill(", ".join(paramStr))))
         runLog.header("=========== Reactor Cycle Information ===========")
-        runLog.info(tabulate.tabulate(operatingData, tablefmt="armi"))
+        runLog.info(tabulate.tabulate(operatingData, tableFmt="armi"))
 
     if context.MPI_RANK > 0:
         return  # prevent the worker nodes from printing the same thing
@@ -378,28 +377,28 @@ def _getSystemInfoLinux():
 
 
 def getSystemInfo():
-    """Get system information, assuming the system is Windows or Linux.
+    """Get system information, assuming the system is Linux, MacOS, and Windows.
 
     Notes
     -----
-    The format of the system information will be different on Windows vs Linux.
+    The format of the system information will be different on Linux, MacOS, and Windows.
 
     Returns
     -------
     str
         Basic system information: OS name, OS version, basic processor information
     """
-    # Get basic system information (on Windows and Linux)
-    if "win" in sys.platform:
+    # Get basic system information (on Linux, MacOS, and Windows)
+    if "darwin" in sys.platform:
+        return _getSystemInfoMac()
+    elif "win" in sys.platform:
         return _getSystemInfoWindows()
     elif "linux" in sys.platform:
         return _getSystemInfoLinux()
-    elif "darwin" in sys.platform:
-        return _getSystemInfoMac()
     else:
         runLog.warning(
             f"Cannot get system information for {sys.platform} because ARMI only "
-            + "supports Linux, Windows, and MacOS."
+            + "supports Linux, MacOS, and Windows."
         )
         return ""
 
@@ -429,7 +428,7 @@ def getInterfaceStackSummary(o):
             "EOL order",
             "BOL forced",
         ),
-        tablefmt="armi",
+        tableFmt="armi",
     )
     text = text
     return text
@@ -439,7 +438,7 @@ def writeTightCouplingConvergenceSummary(convergenceSummary):
     runLog.info("Tight Coupling Convergence Summary")
     runLog.info(
         tabulate.tabulate(
-            convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+            convergenceSummary, headers="keys", showIndex=True, tableFmt="armi"
         )
     )
 
@@ -701,7 +700,7 @@ def summarizePinDesign(core):
             designInfo["zrFrac"].append(fuel.getMassFrac("ZR"))
 
         # assumption made that all lists contain only numerical data
-        designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
+        designInfo = {key: np.average(data) for key, data in designInfo.items()}
 
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():

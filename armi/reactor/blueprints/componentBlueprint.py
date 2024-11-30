@@ -236,10 +236,15 @@ class ComponentBlueprint(yamlize.Object):
         else:
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
-            insertDepletableNuclideKeys(constructedObject, blueprint)
-        
+            insertDepletableNuclideKeys(constructedObject, blueprint)       
+            constructedObject.p.theoreticalDensityFrac = (
+                constructedObject.material.getTD()
+            )
+
         self._setComponentCustomDensity(constructedObject, blueprint, matMods, 
                                         blockHeightsConsideredHot=cs[CONF_INPUT_HEIGHTS_HOT])
+        # set the custom density for non-custom material components after construction
+        self.setCustomDensity(constructedObject, blueprint, matMods)
 
         return constructedObject
     

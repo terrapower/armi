@@ -37,7 +37,6 @@ class TestFuelHandlerMgmtTools(FuelHandlerTestHelper):
 
         # apply dummy pin-level data to allow intelligent rotation
         for b in assem.getBlocks(Flags.FUEL):
-            b.breakFuelComponentsIntoIndividuals()
             b.initializePinLocations()
             b.p.percentBuMaxPinLocation = 10
             b.p.percentBuMax = 5

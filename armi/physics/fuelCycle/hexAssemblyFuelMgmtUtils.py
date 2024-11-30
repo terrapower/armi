@@ -19,12 +19,11 @@ Notes
 -----
 We are keeping these in ARMI even if they appear unused internally.
 """
-import math
-
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.reactor.flags import Flags
+from armi.utils.hexagon import getIndexOfRotatedCell
 from armi.utils.mathematics import findClosest
 
 
@@ -101,10 +100,7 @@ def getOptimalAssemblyOrientation(a, aPrev):
             prevAssemPowHereMIN = float("inf")
 
             for possibleRotation in range(6):
-                # get rotated pin index
-                indexLookup = maxBuBlock.rotatePins(possibleRotation, justCompute=True)
-                # rotated index of highest-BU pin
-                index = int(indexLookup[maxBuPinIndexAssem])
+                index = getIndexOfRotatedCell(maxBuPinIndexAssem, possibleRotation)
                 # get pin power at this index in the previously assembly located here
                 # power previously at rotated index
                 prevAssemPowHere = aPrev[bIndexMaxBu].p.linPowByPin[index - 1]
@@ -251,9 +247,7 @@ def buildRingSchedule(
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
 
-    baseRings = [
-        int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
-    ]
+    baseRings = [int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)]
     # eliminate duplicates.
     newBaseRings = []
     for br in baseRings:
@@ -331,7 +325,7 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
     convergent = [
-        int(ring) for ring in numpy.linspace(dischargeRing, chargeRing, numSteps)
+        int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)
     ]
 
     # step 2. eliminate duplicates
@@ -345,162 +339,3 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
 
     # step 4. assemble and return
     return convergent, conWidths
-
-
-def _buildEqRingScheduleHelper(ringSchedule, numRings):
-    r"""
-    turns ``ringScheduler`` into explicit list of rings.
-
-    Pulled out of buildEqRingSchedule for testing.
-
-    Parameters
-    ----------
-    ringSchedule : list
-        List of ring bounds that is required to be an even number of entries.  These
-        entries then are used in a from - to approach to add the rings.  The from ring will
-        always be included.
-
-    numRings : int
-        The number of rings in the hex assembly reactor.
-
-    Returns
-    -------
-    ringList : list
-        List of all rings in the order they should be shuffled.
-
-    Examples
-    --------
-    >>> _buildEqRingScheduleHelper([1,5])
-    [1,2,3,4,5]
-
-    >>> _buildEqRingScheduleHelper([1,5,9,6])
-    [1,2,3,4,5,9,8,7,6]
-
-    >>> _buildEqRingScheduleHelper([9,5,3,4,1,2])
-    [9,8,7,6,5,3,4,1,2]
-
-    >>> _buildEqRingScheduleHelper([2,5,1,1])
-    [2,3,4,5,1]
-    """
-    if len(ringSchedule) % 2 != 0:
-        runLog.error("Ring schedule: {}".format(ringSchedule))
-        raise RuntimeError("Ring schedule does not have an even number of entries.")
-
-    ringList = []
-    for i in range(0, len(ringSchedule), 2):
-        fromRing = ringSchedule[i]
-        toRing = ringSchedule[i + 1]
-        numRings = abs(toRing - fromRing) + 1
-
-        ringList.extend([int(j) for j in numpy.linspace(fromRing, toRing, numRings)])
-
-    # eliminate doubles (but allow a ring to show up multiple times)
-    newList = []
-    lastRing = None
-    for ring in ringList:
-        if ring != lastRing:
-            newList.append(ring)
-        if ring > numRings:
-            # error checking
-            runLog.warning(
-                "Ring {0} in eqRingSchedule larger than largest ring in reactor {1}. "
-                "Adjust shuffling.".format(ring, numRings),
-                single=True,
-                label="too many rings",
-            )
-        lastRing = ring
-
-    return newList
-
-
-def _squaredDistanceFromOrigin(a):
-    """Get the squared distance from the origin of an assembly.
-
-    Notes
-    -----
-    Just a helper for ``buildEqRingSchedule()``
-
-    Parameters
-    ----------
-    a: Assembly
-        Fully initialize Assembly object; already part of a reactor core.
-
-    Returns
-    -------
-    float: Distance from reactor center
-    """
-    origin = numpy.array([0.0, 0.0, 0.0])
-    p = numpy.array(a.spatialLocator.getLocalCoordinates())
-    return ((p - origin) ** 2).sum()
-
-
-def _assemAngle(a):
-    """Get the angle of the Assembly, in the reactor core.
-
-    Notes
-    -----
-    Just a helper for ``buildEqRingSchedule()``
-
-    Parameters
-    ----------
-    a: Assembly
-        Fully initialize Assembly object; already part of a reactor core.
-
-    Returns
-    -------
-    float: Angle position of assembly around the reactor core
-    """
-    x, y, _ = a.spatialLocator.getLocalCoordinates()
-    return math.atan2(y, x)
-
-
-def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
-    r"""
-    Expands simple ``ringSchedule`` input into full-on location schedule.
-
-    Parameters
-    ----------
-    core : Core object
-        Fully initialized Core object, for a hex assembly reactor.
-
-    ringSchedule : list
-        List of ring bounds that is required to be an even number of entries.  These
-        entries then are used in a from - to approach to add the rings.  The from ring will
-        always be included.
-
-    circularRingOrder : str
-        From the circularRingOrder setting. Valid values include angle and distanceSmart,
-        anything else will
-
-    Returns
-    -------
-    list: location schedule
-    """
-    # start by expanding the user-input eqRingSchedule list into a list containing
-    # all the rings as it goes.
-    ringList = _buildEqRingScheduleHelper(ringSchedule, core.getNumRings())
-
-    # now build the locationSchedule ring by ring using this ringSchedule
-    lastRing = 0
-    locationSchedule = []
-    for ring in ringList:
-        assemsInRing = core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
-        if circularRingOrder == "angle":
-            sorter = lambda a: _assemAngle(a)
-        elif circularRingOrder == "distanceSmart":
-            if lastRing == ring + 1:
-                # converging. Put things on the outside first.
-                sorter = lambda a: -_squaredDistanceFromOrigin(a)
-            else:
-                # diverging. Put things on the inside first.
-                sorter = _squaredDistanceFromOrigin
-        else:
-            # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-            sorter = _squaredDistanceFromOrigin
-
-        assemsInRing = sorted(assemsInRing, key=sorter)
-        for a in assemsInRing:
-            locationSchedule.append(a.getLocation())
-        lastRing = ring
-
-    return locationSchedule

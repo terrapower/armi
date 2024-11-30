@@ -18,32 +18,21 @@ Lattice Physics Interface.
 Parent classes for codes responsible for generating broad-group cross sections
 """
 import os
-import shutil
 
-from armi import nuclearDataIO
-from armi import interfaces, runLog
-from armi.utils import codeTiming
+from armi import interfaces, nuclearDataIO, runLog
 from armi.physics import neutronics
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
-    CONF_GEN_XS,
     CONF_CLEAR_XS,
+    CONF_GEN_XS,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
-    CONF_LATTICE_PHYSICS_FREQUENCY,
 )
-from armi.utils.customExceptions import important
-from armi.physics.neutronics import LatticePhysicsFrequency
-
+from armi.utils import codeTiming, safeCopy
 
 LATTICE_PHYSICS = "latticePhysics"
-
-
-@important
-def SkippingXsGen_BuChangedLessThanTolerance(tolerance):
-    return "Skipping XS Generation this cycle because median block burnups changes less than {}%".format(
-        tolerance
-    )
 
 
 def setBlockNeutronVelocities(r, neutronVelocities):
@@ -52,6 +41,8 @@ def setBlockNeutronVelocities(r, neutronVelocities):
 
     Parameters
     ----------
+    r : Reactor
+        A Reactor object, that we want to modify.
     neutronVelocities : dict
         Dictionary that is keyed with the ``representativeBlock`` XS IDs with values of multigroup neutron
         velocity data computed by MC2.
@@ -155,17 +146,17 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def _renameExistingLibrariesForStatepoint(self, cycle, node):
         """Copy the existing neutron and/or gamma libraries into cycle-dependent files."""
-        shutil.copy(
+        safeCopy(
             neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
         )
         if self.includeGammaXS:
-            shutil.copy(
+            safeCopy(
                 neutronics.GAMISO,
                 nuclearDataIO.getExpectedGAMISOFileName(
                     cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
-            shutil.copy(
+            safeCopy(
                 neutronics.PMATRX,
                 nuclearDataIO.getExpectedPMATRXFileName(
                     cycle=cycle, node=node, suffix=self._getSuffix(cycle)
@@ -201,7 +192,7 @@ class LatticePhysicsInterface(interfaces.Interface):
             else:
                 runLog.info("Using {} as an active library".format(baseName))
                 if cycleName != baseName:
-                    shutil.copy(cycleName, baseName)
+                    safeCopy(cycleName, baseName)
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
         raise NotImplementedError(
@@ -222,9 +213,19 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         Generate new cross sections based off the case settings and the current state
         of the reactor if the lattice physics frequency is at least everyNode.
+
+        If this is not a coupled calculation, or if cross sections are only being
+        generated at everyNode, then we want to regenerate all cross sections here.
+        If it _is_ a coupled calculation, and we are generating cross sections at
+        coupled iterations, then keep the existing XS lib for now, adding
+        any XS groups as necessary to ensure that all XS groups are covered.
         """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
-            self.r.core.lib = None
+            if (
+                not self.o.couplingIsActive()
+                or self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode
+            ):
+                self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
     def interactCoupled(self, iteration):
@@ -503,9 +504,6 @@ class LatticePhysicsInterface(interfaces.Interface):
                             "Burnup has changed in xsID {} from {} to {}. "
                             "Recalculating Cross-sections".format(xsID, buOld, buNow)
                         )
-
-            if not idsChangedBurnup:
-                SkippingXsGen_BuChangedLessThanTolerance(self._burnupTolerance)
 
         return idsChangedBurnup
 
