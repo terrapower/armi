@@ -394,6 +394,7 @@ class CustomIsotopic(yamlize.Map):
         material.massFrac = dict(self.massFracs)
         if self.density is not None:
             if not isinstance(material, materials.Custom):
+                # TODO I think this warning should go away?
                 runLog.important(
                     "A custom density or number densities has been specified for non-custom "
                     "material {}. The material object's density will not be updated to prevent unintentional "

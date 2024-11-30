@@ -312,6 +312,8 @@ class ComponentBlueprint(yamlize.Object):
             densityRatio = density / scaledDensity
             comp.changeNDensByFactor(densityRatio)
 
+            # TODO the density in this print is broken after #1852, see
+            # https://github.com/terrapower/armi/blob/8b9a693f9bc4030eaa3fbcaa394bb7af74ed10bf/armi/reactor/components/component.py#L1332-L1344
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
                 f"material {mat}. The component density has been altered to "
