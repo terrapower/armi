@@ -267,9 +267,7 @@ class ComponentBlueprint(yamlize.Object):
             runLog.error(
                 "A zero or negative density was specified in a custom isotopics input. "
                 "This is not permitted, if a 0 density material is needed, use 'Void'. "
-                "The component is {} and the isotopics entry is {}.".format(
-                    comp, self.isotopics
-                )
+                f"The component is {comp} and the isotopics entry is {self.isotopics}."
             )
             raise ValueError(
                 "A zero or negative density was specified in the custom isotopics for a component"
@@ -286,11 +284,9 @@ class ComponentBlueprint(yamlize.Object):
                 )
             if not mat.density(Tc=self.Tinput) > 0:
                 runLog.error(
-                    "A custom density has been assigned to material '{}', which has no baseline "
+                    f"A custom density has been assigned to material '{self.material}', which has no baseline "
                     "density. Only materials with a starting density may be assigned a density. "
-                    "This comes up e.g. if isotopics are assigned to 'Void'.".format(
-                        self.material
-                    )
+                    "This comes up e.g. if isotopics are assigned to 'Void'."
                 )
                 raise ValueError(
                     "Cannot apply custom densities to materials without density."
@@ -318,10 +314,8 @@ class ComponentBlueprint(yamlize.Object):
 
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
-                "material {}. The component density has been altered to "
-                "{} at temperature {} C".format(
-                    mat, scaledDensity, comp.temperatureInC
-                ),
+                f"material {mat}. The component density has been altered to "
+                f"{scaledDensity} at temperature {comp.temperatureInC} C",
                 single=True,
             )
 
