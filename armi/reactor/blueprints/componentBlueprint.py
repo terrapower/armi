@@ -226,7 +226,7 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = composites.Composite(self.name)
             for groupedComponent in group:
                 componentDesign = blueprint.componentDesigns[groupedComponent.name]
-                component = componentDesign.construct(blueprint, matMods=dict())
+                component = componentDesign.construct(cs, blueprint, matMods=dict())
                 # override free component multiplicity if it's set based on the group definition
                 component.setDimension("mult", groupedComponent.mult)
                 _setComponentFlags(component, self.flags, blueprint)
