@@ -247,8 +247,6 @@ class ComponentBlueprint(yamlize.Object):
             matMods,
             blockHeightsConsideredHot=cs[CONF_INPUT_HEIGHTS_HOT],
         )
-        # set the custom density for non-custom material components after construction
-        self.setCustomDensity(constructedObject, blueprint, matMods)
 
         return constructedObject
 
