@@ -27,7 +27,6 @@ from armi.reactor import composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
 from armi.nucDirectory import nuclideBases
-from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 COMPONENT_GROUP_SHAPE = "group"
 
@@ -187,7 +186,7 @@ class ComponentBlueprint(yamlize.Object):
     mergeWith = yamlize.Attribute(type=str, default=None)
     area = yamlize.Attribute(type=float, default=None)
 
-    def construct(self, cs, blueprint, matMods):
+    def construct(self, blueprint, matMods, inputHeightsConsideredHot):
         """Construct a component or group.
 
         .. impl:: User-defined on material alterations are applied here.
@@ -209,14 +208,14 @@ class ComponentBlueprint(yamlize.Object):
 
         Parameters
         ----------
-        cs : Settings
-            Settings object for the appropriate simulation.
-
         blueprint : Blueprints
             Blueprints object containing various detailed information, such as nuclides to model
 
         matMods : dict
             Material modifications to apply to the component.
+
+        inputHeightsConsideredHot : bool
+            See the case setting of the same name.
         """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
@@ -226,7 +225,9 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = composites.Composite(self.name)
             for groupedComponent in group:
                 componentDesign = blueprint.componentDesigns[groupedComponent.name]
-                component = componentDesign.construct(cs, blueprint, matMods=dict())
+                component = componentDesign.construct(
+                    blueprint, {}, inputHeightsConsideredHot
+                )
                 # override free component multiplicity if it's set based on the group definition
                 component.setDimension("mult", groupedComponent.mult)
                 _setComponentFlags(component, self.flags, blueprint)
@@ -245,13 +246,13 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject,
             blueprint,
             matMods,
-            blockHeightsConsideredHot=cs[CONF_INPUT_HEIGHTS_HOT],
+            inputHeightsConsideredHot,
         )
 
         return constructedObject
 
     def _setComponentCustomDensity(
-        self, comp, blueprint, matMods, blockHeightsConsideredHot
+        self, comp, blueprint, matMods, inputHeightsConsideredHot
     ):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
         if self.isotopics is None:

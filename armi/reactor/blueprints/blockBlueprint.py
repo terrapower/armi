@@ -28,6 +28,7 @@ from armi.reactor.components.component import Component
 from armi.reactor.composites import Composite
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 def _configureGeomOptions():
@@ -144,7 +145,11 @@ class BlockBlueprint(yamlize.KeyedList):
             filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
-            c = componentDesign.construct(cs, blueprint, filteredMaterialInput)
+            c = componentDesign.construct(
+                blueprint,
+                filteredMaterialInput,
+                cs[CONF_INPUT_HEIGHTS_HOT],
+            )
             components[c.name] = c
 
             # check that the mat mods for this component are valid options
