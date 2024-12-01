@@ -397,7 +397,11 @@ assemblies:
 
             # Check for log messages
             streamVal = mockLog.getStdout()
-            self.assertIn("Both TD_frac and a custom density", streamVal, msg=streamVal)
+            self.assertIn(
+                "Both TD_frac and a custom isotopic with density",
+                streamVal,
+                msg=streamVal,
+            )
             self.assertIn(
                 "A custom material density was specified", streamVal, msg=streamVal
             )
