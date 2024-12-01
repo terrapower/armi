@@ -311,7 +311,7 @@ class ComponentBlueprint(yamlize.Object):
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
                 f"material {mat}. The component density has been altered to "
-                f"{comp.density() * scaledDensity} at temperature {comp.temperatureInC} C",
+                f"{comp.density()} at temperature {comp.temperatureInC} C",
                 single=True,
             )
 
