@@ -278,10 +278,9 @@ class ComponentBlueprint(yamlize.Object):
         if not isinstance(mat, materials.Custom):
             # check for some problem cases
             if "TD_frac" in matMods.keys():
-                runLog.warning(
-                    "Both TD_frac and a custom density (custom isotopics) has been specified for "
-                    "material {}. The custom density will override the density calculated using "
-                    "TD_frac.".format(self.material)
+                runLog.error(
+                    f"Both TD_frac and a custom isotopic with density {blueprint.customIsotopics[self.isotopics]} "
+                    f"has been specified for material {self.material}. This is an overspecification."
                 )
             if not mat.density(Tc=self.Tinput) > 0:
                 runLog.error(
