@@ -259,12 +259,12 @@ class ComponentBlueprint(yamlize.Object):
             # No custom isotopics specified
             return
 
-        density = blueprint.customIsotopics[self.isotopics].density
-        if density is None:
+        densityFromCustomIsotopic = blueprint.customIsotopics[self.isotopics].density
+        if densityFromCustomIsotopic is None:
             # Nothing to do
             return
 
-        if density <= 0:
+        if densityFromCustomIsotopic <= 0:
             runLog.error(
                 "A zero or negative density was specified in a custom isotopics input. "
                 "This is not permitted, if a 0 density material is needed, use 'Void'. "
@@ -293,32 +293,26 @@ class ComponentBlueprint(yamlize.Object):
                     "Cannot apply custom densities to materials without density."
                 )
 
-            # Apply a density scaling to account for the temperature change between the input
-            # temperature `Tinput` and the hot temperature `Thot`. There may be a better place to
-            # in the initialization to determine if the block height will be interpreted as hot dimensions
-            # already.
-            #
-            # - Apply additional density scaling when the component is added to a block?
-            # - Apply here? Not great since this requires a case settings to be applied or some pre-knowledge
-            #   of where the component is going to live?
+            # Apply a density scaling to account for the temperature change between Tinput
+            # Thot. There may be a better place in the initialization to determine
+            # if the block height will be interpreted as hot dimensions, which would
+            # allow us to not have to pass the case settings down this far
             dLL = comp.material.linearExpansionFactor(
                 Tc=comp.temperatureInC, T0=comp.inputTemperatureInC
             )
-            if blockHeightsConsideredHot:
+            if inputHeightsConsideredHot:
                 f = 1.0 / (1 + dLL) ** 2
             else:
                 f = 1.0 / (1 + dLL) ** 3
 
             scaledDensity = comp.density() / f
-            densityRatio = density / scaledDensity
+            densityRatio = densityFromCustomIsotopic / scaledDensity
             comp.changeNDensByFactor(densityRatio)
 
-            # TODO the density in this print is broken after #1852, see
-            # https://github.com/terrapower/armi/blob/8b9a693f9bc4030eaa3fbcaa394bb7af74ed10bf/armi/reactor/components/component.py#L1332-L1344
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
                 f"material {mat}. The component density has been altered to "
-                f"{scaledDensity} at temperature {comp.temperatureInC} C",
+                f"{comp.density() * scaledDensity} at temperature {comp.temperatureInC} C",
                 single=True,
             )
 
