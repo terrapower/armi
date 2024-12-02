@@ -69,9 +69,11 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     1. Get all the pin powers and ``IndexLocation``s from the block at the previous location/timenode.
     2. Obtain the ``IndexLocation`` of the pin with the highest burnup in the current assembly.
     3. For each possible rotation,
+
         - Find the new location with ``HexGrid.rotateIndex``
         - Find the index where that location occurs in previous locations
         - Find the previous power at that location
+
     4. Return the rotation with the lowest previous power
 
     This algorithm assumes a few things.
