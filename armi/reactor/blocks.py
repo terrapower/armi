@@ -67,8 +67,8 @@ class Block(composites.Composite):
     """
     An axial slice of an assembly.
 
-    Blocks are Composite objects with extra parameter bindings, utility functions, and other
-    details that let them play nicely with their containing Assembly.
+    Blocks are Composite objects with extra parameter bindings, and utility methods that let them
+    play nicely with their containing Assembly.
     """
 
     uniqID = 0
