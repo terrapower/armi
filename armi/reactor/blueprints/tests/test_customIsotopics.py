@@ -406,7 +406,7 @@ assemblies:
                 "A custom material density was specified", streamVal, msg=streamVal
             )
             self.assertIn(
-                "A custom density or number densities has been specified",
+                "A custom isotopic with associated density has been specified for non-`Custom`",
                 streamVal,
                 msg=streamVal,
             )
