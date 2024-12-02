@@ -31,8 +31,7 @@ from typing import Dict, Union
 
 import voluptuous as vol
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.physics.neutronics.crossSectionGroupManager import BLOCK_COLLECTIONS
 from armi.settings import Setting

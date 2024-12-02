@@ -51,8 +51,10 @@ import signal
 import subprocess
 import sys
 import traceback
-from typing import Optional, List, Type
 import warnings
+from typing import List, Optional, Type
+
+import __main__ as main
 
 # The _bootstrap module performs operations that may need to occur before it is
 # necessarily safe to import the rest of the ARMI system. Things like:
@@ -60,35 +62,26 @@ import warnings
 # - detect the nature of interaction with the user (terminal UI, GUI, unsupervized, etc)
 # - Initialize the nuclide database
 import armi._bootstrap
-from armi import context
+from armi import apps, cli, context, pluginManager, plugins, runLog
 from armi.context import (
-    ROOT,
-    RES,
-    DOC,
-    USER,
-    START_TIME,
+    APP_DATA,
     CURRENT_MODE,
+    DOC,
     MPI_COMM,
-    MPI_RANK,
+    MPI_DISTRIBUTABLE,
     MPI_NODENAME,
     MPI_NODENAMES,
-    MPI_DISTRIBUTABLE,
+    MPI_RANK,
     MPI_SIZE,
-    APP_DATA,
+    RES,
+    ROOT,
+    START_TIME,
+    USER,
+    Mode,
 )
-from armi.context import Mode
-
-from armi import cli
 from armi.meta import __version__
-from armi import apps
-from armi import pluginManager
-from armi import plugins
-from armi import runLog
-from armi.reactor import flags
-from armi.reactor import parameters
 from armi.nucDirectory import nuclideBases
-
-import __main__ as main
+from armi.reactor import flags, parameters
 
 # ARMI does not configure its own application by default. This is mostly to catch issues
 # involving calling code that requires the framework to be configured before that has
@@ -151,8 +144,7 @@ def init(choice=None, fName=None, cs=None, skipInspection=False):
     --------
     >>> o = armi.init()
     """
-    from armi import cases
-    from armi import settings
+    from armi import cases, settings
 
     if cs is None:
         if fName is None:
@@ -178,12 +170,8 @@ def getDefaultPlugins() -> List[Type[plugins.ArmiPlugin]]:
     This is useful for an application to fold all of the ARMI Framework's capabilities
     into its own set of plugins.
     """
-    from armi import cli
-    from armi import bookkeeping
-    from armi.physics import fuelCycle
-    from armi.physics import neutronics
-    from armi.physics import safety
-    from armi import reactor
+    from armi import bookkeeping, cli, reactor
+    from armi.physics import fuelCycle, neutronics, safety
 
     defaultPlugins = [
         cli.EntryPointsPlugin,

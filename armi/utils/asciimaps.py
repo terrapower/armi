@@ -49,7 +49,6 @@ armi.reactor.geometry : a specific usage of lattices, for core maps
 
 """
 import re
-
 from typing import Union
 
 from armi import runLog

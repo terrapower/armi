@@ -20,12 +20,10 @@ import unittest
 import htmltree
 
 from armi import getPluginManagerOrFail
-from armi.bookkeeping.report import data
-from armi.bookkeeping.report import newReports
+from armi.bookkeeping.report import data, newReports
 from armi.physics.neutronics.reports import neutronicsPlotting
 from armi.reactor.tests import test_reactors
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 

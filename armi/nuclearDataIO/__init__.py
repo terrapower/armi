@@ -15,8 +15,6 @@
 """Read and/or write data files associated with nuclear data and reactor physics data."""
 # ruff: noqa: F401
 
-from armi.physics import neutronics
-
 # export the cccc modules here to keep external clients happy,
 # though prefer full imports in new code
 from armi.nuclearDataIO.cccc import (
@@ -34,6 +32,7 @@ from armi.nuclearDataIO.cccc import (
     rtflux,
     rzflux,
 )
+from armi.physics import neutronics
 
 
 def getExpectedISOTXSFileName(cycle=None, node=None, suffix=None, xsID=None):

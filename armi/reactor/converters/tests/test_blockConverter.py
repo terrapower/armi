@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Test block conversions."""
+import math
 import os
 import unittest
 
-import math
 import numpy as np
 
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (

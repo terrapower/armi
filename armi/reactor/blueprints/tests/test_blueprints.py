@@ -23,15 +23,13 @@ import yamlize
 from armi import settings
 from armi.nucDirectory.elements import bySymbol
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.reactor import blueprints
-from armi.reactor import parameters
+from armi.reactor import blueprints, parameters
 from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
-from armi.reactor.blueprints.isotopicOptions import NuclideFlags, CustomIsotopics
+from armi.reactor.blueprints.gridBlueprint import saveToStream
+from armi.reactor.blueprints.isotopicOptions import CustomIsotopics, NuclideFlags
 from armi.reactor.flags import Flags
 from armi.tests import TEST_ROOT
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-from armi.reactor.blueprints.gridBlueprint import saveToStream
+from armi.utils import directoryChangers, textProcessors
 
 
 class TestBlueprints(unittest.TestCase):

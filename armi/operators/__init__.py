@@ -39,11 +39,10 @@ armi.interfaces : Code that operators schedule to perform the real analysis or
     math on the reactor model
 """
 
-from armi import context
-from armi import getPluginManagerOrFail
-from armi.operators.runTypes import RunTypes
+from armi import context, getPluginManagerOrFail
 from armi.operators.operator import Operator
 from armi.operators.operatorMPI import OperatorMPI
+from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 
 

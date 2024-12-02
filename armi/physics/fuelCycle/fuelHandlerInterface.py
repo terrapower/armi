@@ -14,12 +14,13 @@
 
 """A place for the FuelHandler's Interface."""
 
-from armi import interfaces
-from armi import runLog
+from armi import interfaces, runLog
 from armi.physics.fuelCycle import fuelHandlerFactory
-from armi.physics.fuelCycle.settings import CONF_PLOT_SHUFFLE_ARROWS
-from armi.physics.fuelCycle.settings import CONF_RUN_LATTICE_BEFORE_SHUFFLING
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.settings import (
+    CONF_PLOT_SHUFFLE_ARROWS,
+    CONF_RUN_LATTICE_BEFORE_SHUFFLING,
+    CONF_SHUFFLE_LOGIC,
+)
 from armi.utils import plotting
 
 

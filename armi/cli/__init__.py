@@ -45,10 +45,7 @@ import re
 import textwrap
 from typing import Optional
 
-from armi import context
-from armi import meta
-from armi import plugins
-from armi import runLog
+from armi import context, meta, plugins, runLog
 
 
 class EntryPointsPlugin(plugins.ArmiPlugin):
@@ -57,16 +54,16 @@ class EntryPointsPlugin(plugins.ArmiPlugin):
     def defineEntryPoints():
         from armi.cli import (
             checkInputs,
-            clone,
-            compareCases,
-            migrateInputs,
-            modify,
-            run,
-            gridGui,
             # testing
             cleanTemps,
-            runSuite,
+            clone,
+            compareCases,
+            gridGui,
+            migrateInputs,
+            modify,
             reportsEntryPoint,
+            run,
+            runSuite,
         )
 
         entryPoints = []

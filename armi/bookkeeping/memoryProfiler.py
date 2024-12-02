@@ -36,15 +36,12 @@ See Also
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
-from os import cpu_count
-from typing import Optional
 import gc
 import sys
+from os import cpu_count
+from typing import Optional
 
-from armi import context
-from armi import interfaces
-from armi import mpiActions
-from armi import runLog
+from armi import context, interfaces, mpiActions, runLog
 from armi.reactor.composites import ArmiObject
 from armi.utils import tabulate
 from armi.utils.customExceptions import NonexistentSetting

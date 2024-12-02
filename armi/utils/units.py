@@ -16,7 +16,6 @@ import math
 
 import scipy.constants
 
-
 # Units (misc)
 DPA = "dpa"
 FIMA = "FIMA"

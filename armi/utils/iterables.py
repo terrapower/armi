@@ -13,12 +13,11 @@
 # limitations under the License.
 
 """Module of utilities to help dealing with iterable objects in Python."""
-from itertools import tee, chain
 import struct
-
-from six.moves import filterfalse, map, xrange, filter
+from itertools import chain, tee
 
 import numpy as np
+from six.moves import filter, filterfalse, map, xrange
 
 
 def flatten(lst):
