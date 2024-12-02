@@ -25,9 +25,9 @@ the particular shuffling of a case.
 This module also handles repeat shuffles when doing a restart.
 """
 # ruff: noqa: F401
+import inspect
 import os
 import re
-import warnings
 
 import numpy as np
 
@@ -114,10 +114,7 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                try:
-                    rotationMethod()
-                except TypeError:
-                    rotationMethod(self)
+                rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
