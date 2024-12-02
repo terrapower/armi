@@ -47,7 +47,7 @@ class MockFuelHandler(fuelHandlers.FuelHandler):
         pass
 
 
-class PinLocations(enum.IntEnum):
+class _PinLocations(enum.IntEnum):
     """Zero-indexed locations for specific points of interest.
 
     If a data vector has an entry to all ``self.N_PINS=169`` pins in the test model,
@@ -130,7 +130,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
 
     def test_flatPowerNoRotation(self):
         """If all pin powers are identical, no rotation is suggested."""
-        burnups = self.burnupWithMaxValue(PinLocations.UPPER_LEFT_VERTEX)
+        burnups = self.burnupWithMaxValue(_PinLocations.UPPER_LEFT_VERTEX)
         powers = np.ones_like(burnups)
         self.setAssemblyPinBurnups(self.assembly, burnups)
         self.setAssemblyPinPowers(self.assembly, powers)
@@ -139,7 +139,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
 
     def test_maxBurnupAtCenterNoRotation(self):
         """If max burnup pin is at the center, no rotation is suggested."""
-        burnups = self.burnupWithMaxValue(PinLocations.CENTER)
+        burnups = self.burnupWithMaxValue(_PinLocations.CENTER)
         powers = np.zeros_like(burnups)
         self.setAssemblyPinBurnups(self.assembly, burnups)
         self.setAssemblyPinPowers(self.assembly, powers)
@@ -166,12 +166,12 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
         shuffledAssembly = self.assembly
         previousAssembly = copy.deepcopy(shuffledAssembly)
         pairs = (
-            (PinLocations.DUE_RIGHT_VERTEX, PinLocations.DUE_LEFT_VERTEX),
-            (PinLocations.UPPER_LEFT_VERTEX, PinLocations.LOWER_RIGHT_VERTEX),
-            (PinLocations.UPPER_RIGHT_VERTEX, PinLocations.LOWER_LEFT_VERTEX),
-            (PinLocations.DUE_LEFT_VERTEX, PinLocations.DUE_RIGHT_VERTEX),
-            (PinLocations.LOWER_RIGHT_VERTEX, PinLocations.UPPER_LEFT_VERTEX),
-            (PinLocations.LOWER_LEFT_VERTEX, PinLocations.UPPER_RIGHT_VERTEX),
+            (_PinLocations.DUE_RIGHT_VERTEX, _PinLocations.DUE_LEFT_VERTEX),
+            (_PinLocations.UPPER_LEFT_VERTEX, _PinLocations.LOWER_RIGHT_VERTEX),
+            (_PinLocations.UPPER_RIGHT_VERTEX, _PinLocations.LOWER_LEFT_VERTEX),
+            (_PinLocations.DUE_LEFT_VERTEX, _PinLocations.DUE_RIGHT_VERTEX),
+            (_PinLocations.LOWER_RIGHT_VERTEX, _PinLocations.UPPER_LEFT_VERTEX),
+            (_PinLocations.LOWER_LEFT_VERTEX, _PinLocations.UPPER_RIGHT_VERTEX),
         )
         for startPin, oppositePin in pairs:
             powers = self.powerWithMinValue(oppositePin)
@@ -288,16 +288,16 @@ class TestFuelHandlerMgmtTools(ShuffleAndRotateTestHelper):
 
         first, second, third = self.r.core.getChildrenWithFlags(Flags.FUEL)[:3]
 
-        firstBurnups = self.burnupWithMaxValue(PinLocations.UPPER_LEFT_VERTEX)
+        firstBurnups = self.burnupWithMaxValue(_PinLocations.UPPER_LEFT_VERTEX)
         self.setAssemblyPinBurnups(first, firstBurnups)
 
-        secondPowers = self.powerWithMinValue(PinLocations.LOWER_LEFT_VERTEX)
+        secondPowers = self.powerWithMinValue(_PinLocations.LOWER_LEFT_VERTEX)
         self.setAssemblyPinPowers(second, pinPowers=secondPowers)
 
-        secondBurnups = self.burnupWithMaxValue(PinLocations.UPPER_RIGHT_VERTEX)
+        secondBurnups = self.burnupWithMaxValue(_PinLocations.UPPER_RIGHT_VERTEX)
         self.setAssemblyPinBurnups(second, burnups=secondBurnups)
 
-        thirdPowers = self.powerWithMinValue(PinLocations.DUE_RIGHT_VERTEX)
+        thirdPowers = self.powerWithMinValue(_PinLocations.DUE_RIGHT_VERTEX)
         self.setAssemblyPinPowers(third, thirdPowers)
 
         # Set the shuffling sequence
