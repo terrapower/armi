@@ -34,9 +34,9 @@ if typing.TYPE_CHECKING:
 
 def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int:
     """
-    Get optimal assembly orientation/rotation to minimize peak burnup.
+    Get optimal hex assembly orientation/rotation to minimize peak burnup.
 
-    .. impl:: Provide an algoritm for rotating hexagonal assemblies to equalize burnup
+    .. impl:: Provide an algorithm for rotating hexagonal assemblies to equalize burnup
         :id: I_ARMI_ROTATE_HEX_BURNUP
         :implements: R_ARMI_ROTATE_HEX_BURNUP
 
@@ -66,7 +66,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     expected pin power. We evaluated "expected pin power" based on the power distribution in
     ``aPrev``, the previous assembly located where ``a`` is going. The algorithm goes as follows.
 
-    1. Get all the pin powers and ``IndexLocation``s from the block at the previous location.
+    1. Get all the pin powers and ``IndexLocation``s from the block at the previous location/timenode.
     2. Obtain the ``IndexLocation`` of the pin with the highest burnup in the current assembly.
     3. For each possible rotation,
         - Find the new location with ``HexGrid.rotateIndex``
