@@ -40,7 +40,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     expected pin power. We evaluated "expected pin power" based on the power distribution in
     ``aPrev``, the previous assembly located where ``a`` is going. The algorithm goes as follows.
 
-    1. Get all the pin powers and ``IndexLocation``s from the block at the previous location/timenode.
+    1. Get all the pin powers and ``IndexLocation`` s from the block at the previous location/timenode.
     2. Obtain the ``IndexLocation`` of the pin with the highest burnup in the current assembly.
     3. For each possible rotation,
 
