@@ -36,32 +36,6 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     """
     Get optimal hex assembly orientation/rotation to minimize peak burnup.
 
-    .. impl:: Provide an algorithm for rotating hexagonal assemblies to equalize burnup
-        :id: I_ARMI_ROTATE_HEX_BURNUP
-        :implements: R_ARMI_ROTATE_HEX_BURNUP
-
-    Parameters
-    ----------
-    a : Assembly object
-        The assembly that is being rotated.
-    aPrev : Assembly object
-        The assembly that previously occupied this location (before the last shuffle).
-        If the assembly "a" was not shuffled, it's sufficient to pass ``a``.
-
-    Returns
-    -------
-    int
-        An integer from 0 to 5 representing the number of pi/3 (60 degree) counterclockwise
-        rotations from where ``a`` is currently oriented to the "optimal" orientation
-
-    Raises
-    ------
-    ValueError
-        If there is insufficient information to determine the rotation of ``a``. This could
-        be due to a lack of fuel blocks or parameters like ``linPowByPin``.
-
-    Notes
-    -----
     Works by placing the highest-burnup pin in the location (of 6 possible locations) with lowest
     expected pin power. We evaluated "expected pin power" based on the power distribution in
     ``aPrev``, the previous assembly located where ``a`` is going. The algorithm goes as follows.
@@ -88,6 +62,30 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
     3. Fuel pins in ``a`` have similar locations in ``aPrev``. This is mostly a safe
        assumption in that most fuel assemblies have similar layouts so it's plausible
        that if ``a`` has a fuel pin at ``(1, 0, 0)``, so does ``aPrev``.
+
+    .. impl:: Provide an algorithm for rotating hexagonal assemblies to equalize burnup
+        :id: I_ARMI_ROTATE_HEX_BURNUP
+        :implements: R_ARMI_ROTATE_HEX_BURNUP
+
+    Parameters
+    ----------
+    a : Assembly object
+        The assembly that is being rotated.
+    aPrev : Assembly object
+        The assembly that previously occupied this location (before the last shuffle).
+        If the assembly "a" was not shuffled, it's sufficient to pass ``a``.
+
+    Returns
+    -------
+    int
+        An integer from 0 to 5 representing the number of pi/3 (60 degree) counterclockwise
+        rotations from where ``a`` is currently oriented to the "optimal" orientation
+
+    Raises
+    ------
+    ValueError
+        If there is insufficient information to determine the rotation of ``a``. This could
+        be due to a lack of fuel blocks or parameters like ``linPowByPin``.
     """
     maxBuBlock = maxBurnupBlock(a)
     if maxBuBlock.spatialGrid is None:
