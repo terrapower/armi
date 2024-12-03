@@ -421,7 +421,9 @@ def _getPhysicalVals(r):
     avgHeight = 0
     for a in fuelA:
         for b in a.getBlocks(Flags.FUEL):
-            avgHeight += b.getInputHeight()
+            try:
+                avgHeight += b.getInputHeight()
+            except AttributeError:
                 avgHeight += b.getHeight()
     avgHeight /= len(fuelA)
 
