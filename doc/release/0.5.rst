@@ -98,7 +98,7 @@ Bug Fixes
 #. Fixed hex block rotation in ``plotBlockDiagram``. (`PR#1926 <https://github.com/terrapower/armi/pull/1926>`_)
 #. Fixed edge case in ``assemblyBlueprint._checkParamConsistency()``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
 #. Fixed wetted perimeter for hex inner ducts. (`PR#1985 <https://github.com/terrapower/armi/pull/1985>`_)
-#. Fixed number densities when custom isotopics and material classes are combined on a component (`PR#1822 <https://github.com/terrapower/armi/pull/1822>`_)
+#. Fixing number densities when custom isotopics and material properties are combined. (`PR#1822 <https://github.com/terrapower/armi/pull/1822>`_)
 
 Quality Work
 ------------
