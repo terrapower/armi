@@ -431,7 +431,7 @@ def _getPhysicalVals(r):
     labels, vals = list(
         zip(
             *[
-                ("Fuel height", avgHeight),
+                ("Cold fuel height", avgHeight),
                 ("Fuel assems", len(fuelA)),
                 ("Assem weight", r.core.getFirstAssembly(Flags.FUEL).getMass()),
                 ("Core radius", radius),
