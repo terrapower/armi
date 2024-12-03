@@ -41,9 +41,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
-from armi.tests import ArmiTestHelper
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
 
 
@@ -121,6 +119,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         self.refAssembly = copy.deepcopy(self.assembly)
         self.directoryChanger.open()
+        self.r.core.locateAllAssemblies()
 
     def tearDown(self):
         # clean up the test
@@ -222,6 +221,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(len(fh.moved), 0)
 
     def test_outageEdgeCase(self):
+        """Check that an error is raised if the list of moved assemblies is invalid."""
+
         class MockFH(fuelHandlers.FuelHandler):
             def chooseSwaps(self, factor=1.0):
                 self.moved = [None]
@@ -481,7 +482,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles
-        fh = self.r.o.getInterface("fuelHandler")
+        fh = self.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
         # Make sure the generated shuffles file matches the tracked one.  This will need to be
@@ -504,7 +505,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
-        fh = self.r.o.getInterface("fuelHandler")
+        fh = self.o.getInterface("fuelHandler")
 
         self.runShuffling(fh)
 

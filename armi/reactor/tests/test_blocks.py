@@ -40,7 +40,7 @@ from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.reactor.tests.test_reactors import TEST_ROOT
 from armi.tests import ISOAA_PATH
-from armi.utils import hexagon, units
+from armi.utils import hexagon, units, densityTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
@@ -1199,7 +1199,19 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
-    def test_completeInitialLoading(self):
+    @patch.object(blocks.HexBlock, "getSymmetryFactor")
+    def test_completeInitialLoading(self, mock_sf):
+        """Ensure that some BOL block and component params are populated properly.
+
+        Notes
+        -----
+        - When checking component-level BOL params, puFrac is skipped due to 1) there's no Pu in the block, and 2)
+          getPuMoles is functionally identical to getHMMoles (just limits nuclides from heavy metal to just Pu).
+        - getSymmetryFactor is mocked to return 3. This indicates that the block is in the center-most assembly.
+          Providing this mock ensures that symmetry factors are tested as well (otherwise it's just a factor of 1
+          and it is a less robust test).
+        """
+        mock_sf.return_value = 3
         area = self.block.getArea()
         height = 2.0
         self.block.setHeight(height)
@@ -1216,10 +1228,43 @@ class Block_TestCase(unittest.TestCase):
 
         self.block.completeInitialLoading()
 
+        sf = self.block.getSymmetryFactor()
         cur = self.block.p.molesHmBOL
-        ref = self.block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        ref = (
+            self.block.getHMDens()
+            / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+            * height
+            * area
+            * sf
+        )
+        self.assertAlmostEqual(cur, ref, places=12)
+
+        totalHMMass = 0.0
+        for c in self.block:
+            nucs = c.getNuclides()
+            hmNucs = [nuc for nuc in nucs if nucDir.isHeavyMetal(nuc)]
+            hmNDens = {hmNuc: c.getNumberDensity(hmNuc) for hmNuc in hmNucs}
+            hmMass = densityTools.calculateMassDensity(hmNDens) * c.getVolume()
+            totalHMMass += hmMass
+            if hmMass:
+                # hmMass does not need to account for sf since what's calculated in blocks.completeInitialLoading
+                # ends up cancelling out sf
+                self.assertAlmostEqual(c.p.massHmBOL, hmMass, places=12)
+                # since sf is cancelled out in massHmBOL, there needs to be a factor 1/sf here to cancel out the
+                # factor of sf in getHMMoles.
+                self.assertAlmostEqual(
+                    c.p.molesHmBOL,
+                    sum(ndens for ndens in hmNDens.values())
+                    / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+                    * c.getVolume()
+                    / sf,
+                    places=12,
+                )
+            else:
+                self.assertEqual(c.p.massHmBOL, 0.0)
+                self.assertEqual(c.p.molesHmBOL, 0.0)
+
+        self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
@@ -1766,14 +1811,6 @@ class Block_TestCase(unittest.TestCase):
             self.block.getComponent(Flags.DUCT).getDimension("op"),
             self.block.getComponent(Flags.INTERCOOLANT).getDimension("ip"),
         )
-
-    def test_breakFuelComponentsIntoIndividuals(self):
-        fuel = self.block.getComponent(Flags.FUEL)
-        mult = fuel.getDimension("mult")
-        self.assertGreater(mult, 1.0)
-        self.block.completeInitialLoading()
-        self.block.breakFuelComponentsIntoIndividuals()
-        self.assertEqual(fuel.getDimension("mult"), 1.0)
 
     def test_pinMgFluxes(self):
         """

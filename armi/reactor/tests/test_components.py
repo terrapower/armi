@@ -17,34 +17,38 @@ import copy
 import math
 import unittest
 
+import numpy as np
+from numpy.testing import assert_equal
+
 from armi.materials import air, alloy200
 from armi.materials.material import Material
 from armi.reactor import components
 from armi.reactor import flags
+from armi.reactor.blocks import Block
 from armi.reactor.components import (
-    Component,
-    UnshapedComponent,
-    NullComponent,
     Circle,
+    Component,
+    ComponentType,
+    Cube,
+    DerivedShape,
+    DifferentialRadialSegment,
+    Helix,
     Hexagon,
-    HoledHexagon,
     HexHoledCircle,
+    HoledHexagon,
     HoledRectangle,
     HoledSquare,
-    Helix,
-    Sphere,
-    Cube,
+    NullComponent,
+    RadialSegment,
     Rectangle,
     SolidRectangle,
+    Sphere,
     Square,
     Triangle,
-    RadialSegment,
-    DifferentialRadialSegment,
-    DerivedShape,
+    UnshapedComponent,
     UnshapedVolumetricComponent,
-    ComponentType,
+    materials,
 )
-from armi.reactor.components import materials
 from armi.reactor.tests.test_reactors import loadTestReactor
 
 
@@ -698,10 +702,12 @@ class TestCircle(TestShapedComponent):
         """Test that demonstates that the number densities on a component can be modified."""
         self.component.p.numberDensities = {"NA23": 1.0}
         self.component.p.detailedNDens = [1.0]
+        self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
         self.assertEqual(self.component.p.detailedNDens[0], 3.0)
+        self.assertEqual(self.component.p.pinNDens[0], 3.0)
 
     def test_fuelMass(self):
         nominalMass = self.component.getMass()
@@ -1814,3 +1820,61 @@ class TestMaterialAdjustments(unittest.TestCase):
         comp.p.theoreticalDensityFrac = tdFrac
         comp.finalizeLoadingFromDB()
         self.assertEqual(comp.material.getTD(), tdFrac)
+
+
+class TestPinQuantities(unittest.TestCase):
+    """Test methods that involve retrieval of pin quantities."""
+
+    def setUp(self):
+        self.r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[1]
+
+    def test_getPinMgFluxes(self):
+        """Test proper retrieval of pin multigroup flux for fuel component."""
+        # Get a fuel block and its fuel component from the core
+        fuelBlock: Block = self.r.core.getFirstBlock(flags.Flags.FUEL)
+        fuelComponent: Component = fuelBlock.getComponent(flags.Flags.FUEL)
+        numPins = int(fuelComponent.p.mult)
+        self.assertEqual(numPins, 169)
+
+        # Set pin fluxes at block level
+        fuelBlock.initializePinLocations()
+        pinMgFluxes = np.random.rand(numPins, 33)
+        pinMgFluxesAdj = np.random.rand(numPins, 33)
+        pinMgFluxesGamma = np.random.rand(numPins, 33)
+        fuelBlock.setPinMgFluxes(pinMgFluxes)
+        fuelBlock.setPinMgFluxes(pinMgFluxesAdj, adjoint=True)
+        fuelBlock.setPinMgFluxes(pinMgFluxesGamma, gamma=True)
+
+        # Retrieve from component to ensure they match
+        simPinMgFluxes = fuelComponent.getPinMgFluxes()
+        simPinMgFluxesAdj = fuelComponent.getPinMgFluxes(adjoint=True)
+        simPinMgFluxesGamma = fuelComponent.getPinMgFluxes(gamma=True)
+        assert_equal(pinMgFluxes, simPinMgFluxes)
+        assert_equal(pinMgFluxesAdj, simPinMgFluxesAdj)
+        assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
+
+        # Mock the spatial locator of the component to raise error
+        with unittest.mock.patch.object(fuelComponent, "spatialLocator") as mockLocator:
+            mockLocator.i = 111
+            mockLocator.j = 111
+            with self.assertRaisesRegex(
+                ValueError,
+                f"Failed to retrieve pin indices for component {fuelComponent}",
+            ):
+                fuelComponent.getPinMgFluxes()
+
+        # Check assertion for adjoint gamma flux
+        with self.assertRaisesRegex(
+            ValueError, "Adjoint gamma flux is currently unsupported."
+        ):
+            fuelComponent.getPinMgFluxes(adjoint=True, gamma=True)
+
+        # Check assertion for not-found parameter
+        fuelBlock.p.pinMgFluxes = None
+        with self.assertRaisesRegex(
+            ValueError,
+            f"Failure getting pinMgFluxes from {fuelComponent} via parent {fuelBlock}",
+        ):
+            fuelComponent.getPinMgFluxes()
