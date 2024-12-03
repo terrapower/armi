@@ -55,7 +55,7 @@ class TestRadar(unittest.TestCase):
         dims, labels, vals = _getPhysicalVals(self.r)
         self.assertEqual(dims, "Dimensions")
 
-        self.assertEqual(labels[0], "Fuel height")
+        self.assertEqual(labels[0], "Cold fuel height")
         self.assertEqual(labels[1], "Fuel assems")
         self.assertEqual(labels[2], "Assem weight")
         self.assertEqual(labels[3], "Core radius")
