@@ -123,7 +123,7 @@ Note that we can assign the same component to multiple lattice sites with multip
 Also note that we do not need to assign a ``mult`` entry to these components. Their multiplicity will be determined
 based on the number of lattice sites they occupy!
 
-.. seelso::
+.. seealso::
 
     The :ref:`LWR tutorial <walkthrough-lwr>` contains additional examples for working with sub-block grids.
 

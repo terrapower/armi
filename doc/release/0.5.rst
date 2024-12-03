@@ -81,6 +81,7 @@ API Changes
 #. History Tracker: "detail assemblies" are now fuel and control assemblies. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. Removing ``Block.breakFuelComponentsIntoIndividuals()``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 #. Moving ``getPuMoles`` from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Requiring ``buReducingAssemblyRotation`` and ``getOptimalAssemblyOrientation`` to have pin-level burnup. (`PR#2019 <https://github.com/terrapower/armi/pull/2019>`_)
 
 Bug Fixes
 ---------
