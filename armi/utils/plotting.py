@@ -868,6 +868,7 @@ def _plotBlocksInAssembly(
         try:
             blockHeight = b.getInputHeight()
         except AttributeError:
+            runLog.debug(f"No ancestor of {b} has blueprints", single=True)
             blockHeight = b.getHeight()
 
         # Get the basic text label for the block
