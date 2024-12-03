@@ -67,7 +67,7 @@ Specifying blocks and assemblies to track
 See :ref:`detail-assems`.
 
 """
-from typing import Tuple
+from typing import TYPE_CHECKING
 import traceback
 
 from armi import interfaces
@@ -78,6 +78,10 @@ from armi.reactor import grids
 from armi.utils import tabulate
 
 ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
+
+if TYPE_CHECKING:
+    from armi.reactor.blocks import Block
+    from armi.reactor.assemblies import Assembly
 
 
 def describeInterfaces(cs):
@@ -120,6 +124,8 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     name = "history"
 
+    DETAILED_ASSEMBLY_FLAGS = [Flags.FUEL, Flags.CONTROL]
+
     def __init__(self, r, cs):
         """
         HistoryTracker that uses the database to look up parameter history rather than
@@ -146,7 +152,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Look for any new assemblies that are asked for and add them to tracking."""
         self.addDetailAssemsByAssemNums()
         if self.cs["detailAllAssems"]:
-            self.addAllFuelAssems()
+            self.addAllDetailedAssems()
 
     def interactEOL(self):
         """Generate the history reports."""
@@ -171,16 +177,16 @@ class HistoryTrackerInterface(interfaces.Interface):
                 self.addDetailAssembly(a)
 
         if self.cs["detailAllAssems"]:
-            self.addAllFuelAssems()
+            self.addAllDetailedAssems()
 
         # This also gets called at BOC but we still
         # do it here for operators that do not call BOC.
         self.addDetailAssemsByAssemNums()
 
-    def addAllFuelAssems(self):
-        """Add all fuel assems as detail assems."""
+    def addAllDetailedAssems(self):
+        """Add all assems who have the DETAILED_ASSEMBLY_FLAGS as detail assems."""
         for a in self.r.core:
-            if a.hasFlags(Flags.FUEL):
+            if a.hasFlags(self.DETAILED_ASSEMBLY_FLAGS):
                 self.addDetailAssembly(a)
 
     def addDetailAssemsByAssemNums(self):
@@ -236,13 +242,13 @@ class HistoryTrackerInterface(interfaces.Interface):
                     trackedParams.add(newParam)
         return sorted(trackedParams)
 
-    def addDetailAssembly(self, a):
+    def addDetailAssembly(self, a: "Assembly"):
         """Track the name of assemblies that are flagged for detailed treatment."""
         aName = a.getName()
         if aName not in self.detailAssemblyNames:
             self.detailAssemblyNames.append(aName)
 
-    def getDetailAssemblies(self):
+    def getDetailAssemblies(self) -> list["Assembly"]:
         """Returns the assemblies that have been signaled as detail assemblies."""
         assems = []
         if not self.detailAssemblyNames:
@@ -259,7 +265,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 )
         return assems
 
-    def getDetailBlocks(self):
+    def getDetailBlocks(self) -> list["Block"]:
         """Get all blocks in all detail assemblies."""
         return [block for a in self.getDetailAssemblies() for block in a]
 
@@ -281,7 +287,7 @@ class HistoryTrackerInterface(interfaces.Interface):
 
         return filtered
 
-    def writeAssemHistory(self, a, fName=""):
+    def writeAssemHistory(self, a: "Assembly", fName: str = ""):
         """Write the assembly history report to a text file."""
         fName = fName or self._getAssemHistoryFileName(a)
         dbi = self.getInterface("database")
@@ -373,7 +379,7 @@ class HistoryTrackerInterface(interfaces.Interface):
         """Remove all cached db reads."""
         self._preloadedBlockHistory = None
 
-    def getBlockHistoryVal(self, name: str, paramName: str, ts: Tuple[int, int]):
+    def getBlockHistoryVal(self, name: str, paramName: str, ts: tuple[int, int]):
         """
         Use the database interface to return the parameter values for the supplied block
         names, and timesteps.
@@ -422,28 +428,28 @@ class HistoryTrackerInterface(interfaces.Interface):
                 raise
         return val
 
-    def _isCurrentTimeStep(self, ts: Tuple[int, int]):
+    def _isCurrentTimeStep(self, ts: tuple[int, int]) -> bool:
         """Return True if the timestep requested is the current time step."""
         return ts == (self.r.p.cycle, self.r.p.timeNode)
 
-    def _databaseHasDataForTimeStep(self, ts):
+    def _databaseHasDataForTimeStep(self, ts) -> bool:
         """Return True if the database has data for the requested time step."""
         dbi = self.getInterface("database")
         return ts in dbi.database.genTimeSteps()
 
-    def getTimeSteps(self, a=None):
-        r"""
-        Return list of time steps values (in years) that are available.
+    def getTimeSteps(self, a: "Assembly" = None) -> list[float]:
+        """
+        Given a fuel assembly, return list of time steps values (in years) that are available.
 
         Parameters
         ----------
-        a : Assembly object, optional
-            An assembly object designated a detail assem. If passed, only timesteps
+        a
+            A fuel assembly that has been designated a detail assem. If passed, only timesteps
             where this assembly is in the core will be tracked.
 
         Returns
         -------
-        timeSteps : list
+        timeSteps
             times in years that are available in the history
 
         See Also
@@ -462,15 +468,13 @@ class HistoryTrackerInterface(interfaces.Interface):
         return timeInYears
 
     @staticmethod
-    def _getBlockInAssembly(a):
-        """Get a representative fuel block from an assembly."""
+    def _getBlockInAssembly(a: "Assembly") -> "Block":
+        """Get a representative fuel block from a fuel assembly."""
         b = a.getFirstBlock(Flags.FUEL)
         if not b:
-            # there is a problem, it doesn't look like we have a fueled assembly
-            # but that is all we track... what is it? Throw an error
-            runLog.warning("Assembly {} does not contain fuel".format(a))
+            runLog.error("Assembly {} does not contain fuel".format(a))
             for b in a:
-                runLog.warning("Block {}".format(b))
+                runLog.error("Block {}".format(b))
             raise RuntimeError(
                 "A tracked assembly does not contain fuel and has caused this error, see the details in stdout."
             )
