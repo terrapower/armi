@@ -98,7 +98,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "initialB10ComponentVol",
             units=f"{units.CM}^3",
-            description="cc's of un-irradiated, cold B10 containing component (includes full volume of any components with B10)",
+            description=(
+                "cc's of un-irradiated, cold B10 containing component "
+                "(includes full volume of any components with B10)"
+            ),
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
