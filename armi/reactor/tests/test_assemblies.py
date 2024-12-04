@@ -23,6 +23,7 @@ from numpy.testing import assert_allclose
 
 from armi import settings
 from armi import tests
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
@@ -34,6 +35,7 @@ from armi.reactor import components
 from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
+from armi.reactor.cores import Core
 from armi.reactor.assemblies import (
     copy,
     Flags,
@@ -59,6 +61,13 @@ def buildTestAssemblies():
         * One with all UThZr pins
     """
     settings.Settings()
+
+    #r = reactors.Reactor("testReactor456", None)
+    #r.core = Core("testCore456")
+    #r.core.parent = r
+    #r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
+    #r.spatialGrid = grids.HexGrid.fromPitch(1.0)
+    #r.nuclidesBases = NuclideBases()
 
     temperature = 273.0
     fuelID = 0.0
@@ -140,7 +149,18 @@ def buildTestAssemblies():
             assembly.add(newBlock)
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
+        #assembly.parent = r
+        #assembly.parent = r.core
         assemblieObjs.append(assembly)
+
+    """
+    r = reactors.Reactor("testReactor456", None)
+    r.core = Core("testCore456")
+    r.core.parent = r
+    r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
+    for a in assemblieObjs:
+        r.core.add(a)
+    """
 
     return assemblieObjs
 

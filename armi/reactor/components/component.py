@@ -29,7 +29,6 @@ from armi.bookkeeping import report
 from armi.materials import custom
 from armi.materials import material
 from armi.materials import void
-from armi.nucDirectory import nuclideBases
 from armi.reactor import composites
 from armi.reactor import flags
 from armi.reactor import grids
@@ -786,7 +785,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "Cannot get enrichment of {} because `enrichedNuclide` is not defined."
                 "".format(self.material)
             )
-        enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
+        enrichedNuclide = self.nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracs = self.getMassFracs()
         massFracEnrichedElement = sum(
@@ -1197,7 +1196,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 "Cannot adjust enrichment of {} because `enrichedNuclide` is not defined."
                 "".format(self.material)
             )
-        enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
+
+        enrichedNuclide = self.nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracsBefore = self.getMassFracs()
         massFracEnrichedElement = sum(
