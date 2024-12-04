@@ -62,9 +62,10 @@ _PitchDefiningComponent = Optional[Tuple[Type[components.Component], ...]]
 
 class Block(composites.Composite):
     """
-    A homogenized axial slab of material.
+    An axial slice of an assembly.
 
-    Blocks are stacked together to form assemblies.
+    Blocks are Composite objects with extra parameter bindings, and utility methods that let them
+    play nicely with their containing Assembly.
     """
 
     uniqID = 0
@@ -83,14 +84,12 @@ class Block(composites.Composite):
 
         name : str
             The name of this block
-
         height : float, optional
             The height of the block in cm. Defaults to 1.0 so that ``getVolume`` assumes unit height.
         """
         composites.Composite.__init__(self, name)
         self.p.height = height
         self.p.heightBOL = height
-
         self.p.orientation = np.array((0.0, 0.0, 0.0))
 
         self.points = []

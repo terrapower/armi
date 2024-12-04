@@ -28,6 +28,7 @@ from armi.reactor.blueprints.componentBlueprint import ComponentBlueprint
 from armi.reactor.blueprints.gridBlueprint import saveToStream
 from armi.reactor.blueprints.isotopicOptions import CustomIsotopics, NuclideFlags
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers, textProcessors
 
@@ -610,7 +611,7 @@ assemblies:
         # which is required during construction of a component
         design._resolveNuclides(cs)
         componentDesign = design.componentDesigns["freefuel"]
-        topComponent = componentDesign.construct(design, matMods=dict())
+        topComponent = componentDesign.construct(design, {}, cs[CONF_INPUT_HEIGHTS_HOT])
         self.assertEqual(topComponent.getDimension("od", cold=True), 4.0)
         self.assertGreater(topComponent.getVolume(), 0.0)
         self.assertGreater(topComponent.getMass("U235"), 0.0)

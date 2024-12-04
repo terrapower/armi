@@ -391,10 +391,10 @@ class CustomIsotopic(yamlize.Map):
         if self.density is not None:
             if not isinstance(material, materials.Custom):
                 runLog.important(
-                    "A custom density or number densities has been specified for non-custom "
-                    "material {}. The material object's density will not be updated to prevent unintentional "
-                    "density changes across the model. Only custom materials may have a density "
-                    "specified.".format(material),
+                    "A custom isotopic with associated density has been specified for non-`Custom` "
+                    f"material {material}. The reference density of materials in the materials library "
+                    "will not be changed, but the associated components will use the density "
+                    "implied by the custom isotopics.",
                     single=True,
                 )
                 # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
