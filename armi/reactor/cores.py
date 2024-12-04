@@ -18,24 +18,25 @@ Core is a high-level object in the data model in ARMI.
 A Core frequently contain assemblies which in turn contain more refinement in representing the
 physical reactor.
 """
-from typing import Optional
 import collections
 import copy
 import itertools
 import os
 import time
+from typing import Optional
 
 import numpy as np
 
-from armi import getPluginManagerOrFail, nuclearDataIO
-from armi import runLog
+from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor import reactorParameters
-from armi.reactor import zones
+from armi.reactor import (
+    composites,
+    geometry,
+    grids,
+    parameters,
+    reactorParameters,
+    zones,
+)
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import (
     CONF_AUTOMATIC_VARIABLE_MESH,
@@ -48,8 +49,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_TRACK_ASSEMS,
     CONF_ZONE_DEFINITIONS,
 )
-from armi.utils import createFormattedStrWithDelimiter, units
-from armi.utils import tabulate
+from armi.utils import createFormattedStrWithDelimiter, tabulate, units
 from armi.utils.iterables import Sequence
 from armi.utils.mathematics import average1DWithinTolerance
 
@@ -124,8 +124,8 @@ class Core(composites.Composite):
 
     def setOptionsFromCs(self, cs):
         from armi.physics.fuelCycle.settings import (
-            CONF_JUMP_RING_NUM,
             CONF_CIRCULAR_RING_MODE,
+            CONF_JUMP_RING_NUM,
         )
 
         # these are really "user modifiable modeling constants"

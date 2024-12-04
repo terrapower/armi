@@ -39,8 +39,8 @@ armi.interfaces : Code that operators schedule to perform the real analysis or
     math on the reactor model
 """
 
-from armi import context
-from armi import getPluginManagerOrFail
+# ruff: noqa: I001
+from armi import context, getPluginManagerOrFail
 from armi.operators.runTypes import RunTypes
 from armi.operators.operator import Operator
 from armi.operators.operatorMPI import OperatorMPI

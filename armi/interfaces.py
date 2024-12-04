@@ -24,16 +24,12 @@ armi.operators : Schedule calls to various interfaces
 armi.plugins : Register various interfaces
 """
 import copy
-from typing import Union
-from typing import NamedTuple
-from typing import List
-from typing import Dict
+from typing import Dict, List, NamedTuple, Union
 
 import numpy as np
 from numpy.linalg import norm
 
-from armi import getPluginManagerOrFail, settings, utils
-from armi import runLog
+from armi import getPluginManagerOrFail, runLog, settings, utils
 from armi.reactor import parameters
 from armi.utils import textProcessors
 

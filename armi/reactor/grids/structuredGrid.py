@@ -10,10 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
 import collections
 import itertools
-from typing import Tuple, Union, List, Iterable, Optional, Sequence
+from abc import abstractmethod
+from typing import Iterable, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 

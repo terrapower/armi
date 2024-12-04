@@ -31,9 +31,7 @@ _ISOTXS_EXT = "ISO"
 
 def compare(lib1, lib2):
     """Compare two XSLibraries, and return True if equal, or False if not."""
-    from armi.nuclearDataIO.cccc import isotxs
-    from armi.nuclearDataIO.cccc import gamiso
-    from armi.nuclearDataIO.cccc import pmatrx
+    from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 
     equal = True
     # check the nuclides
@@ -177,10 +175,8 @@ def mergeXSLibrariesInWorkingDirectory(
         An alternate directory in which to search for files other than the working directory. The main purpose
         of this is for testing, but it could also be useful to users.
     """
-    from armi.nuclearDataIO.cccc import isotxs
-    from armi.nuclearDataIO.cccc import gamiso
-    from armi.nuclearDataIO.cccc import pmatrx
     from armi import nuclearDataIO
+    from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 
     baseDir = alternateDirectory or os.getcwd()
     globPath = os.path.join(baseDir, _ISOTXS_EXT + "*")

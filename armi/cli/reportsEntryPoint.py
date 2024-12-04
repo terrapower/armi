@@ -17,8 +17,7 @@ from armi import getPluginManagerOrFail
 from armi.bookkeeping.db import databaseFactory
 from armi.bookkeeping.report import newReports as reports
 from armi.cli import entryPoint
-from armi.reactor import blueprints
-from armi.reactor import reactors
+from armi.reactor import blueprints, reactors
 from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
 
 

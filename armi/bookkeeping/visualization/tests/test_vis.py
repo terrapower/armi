@@ -20,11 +20,8 @@ from pyevtk.vtk import VtkTetra
 
 from armi import settings
 from armi.bookkeeping.db import Database
-from armi.bookkeeping.visualization import utils
-from armi.bookkeeping.visualization import vtk
-from armi.bookkeeping.visualization import xdmf
-from armi.reactor import blocks
-from armi.reactor import components
+from armi.bookkeeping.visualization import utils, vtk, xdmf
+from armi.reactor import blocks, components
 from armi.reactor.tests import test_reactors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

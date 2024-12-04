@@ -20,13 +20,11 @@ These are generally managed by the
 """
 import os
 
-from armi.nucDirectory import nuclideBases
 from armi import runLog
-from armi.nucDirectory import elements
-
+from armi.nucDirectory import elements, nuclideBases
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_LFP_COMPOSITION_FILE_PATH,
     CONF_FP_MODEL,
+    CONF_LFP_COMPOSITION_FILE_PATH,
 )
 
 

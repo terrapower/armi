@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """Testing some utility functions."""
-from collections import defaultdict
 import os
 import unittest
+from collections import defaultdict
 
 import numpy as np
 

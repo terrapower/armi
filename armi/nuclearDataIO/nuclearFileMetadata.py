@@ -24,7 +24,6 @@ and it is always necessary to retain this type of data while reading the file.
 from armi import runLog
 from armi.utils import properties
 
-
 COMPXS_POWER_CONVERSION_FACTORS = ["fissionWattSeconds", "captureWattSeconds"]
 REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF = [
     "powerConvMult",

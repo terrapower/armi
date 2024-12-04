@@ -22,11 +22,8 @@ constructed, or a geometry file (but uses contained Block geometry type as a sur
 """
 import yamlize
 
-from armi import getPluginManagerOrFail
-from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi import getPluginManagerOrFail, runLog
+from armi.reactor import assemblies, grids, parameters
 from armi.reactor.blueprints import blockBlueprint
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT

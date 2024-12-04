@@ -16,15 +16,17 @@
 import copy
 import unittest
 
-from armi import configure
-from armi import context
-from armi import getApp
-from armi import getDefaultPluginManager
-from armi import isStableReleaseVersion
-from armi import meta
-from armi import plugins
-from armi.reactor.flags import Flags
+from armi import (
+    configure,
+    context,
+    getApp,
+    getDefaultPluginManager,
+    isStableReleaseVersion,
+    meta,
+    plugins,
+)
 from armi.__main__ import main
+from armi.reactor.flags import Flags
 
 
 class TestPlugin1(plugins.ArmiPlugin):

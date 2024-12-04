@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """Tests for simplified UZr material."""
-from unittest import TestCase
 import pickle
+from unittest import TestCase
 
 from armi.materials.uZr import UZr
 

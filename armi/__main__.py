@@ -20,9 +20,7 @@ This invokes them according to command-line user input.
 """
 import sys
 
-from armi import apps
-from armi import configure, isConfigured
-from armi import context
+from armi import apps, configure, context, isConfigured
 from armi.cli import ArmiCLI
 
 

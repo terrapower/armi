@@ -28,14 +28,12 @@ See Also
 armi.cases.case : An individual item of a case suite.
 """
 import os
-from typing import Optional, Sequence
 import traceback
+from typing import Optional, Sequence
 
-from armi import runLog
-from armi import settings
+from armi import runLog, settings
 from armi.cases import case as armicase
-from armi.utils import directoryChangers
-from armi.utils import tabulate
+from armi.utils import directoryChangers, tabulate
 
 
 class CaseSuite:

@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for C5G7 input files."""
-from logging import WARNING
 import os
 import unittest
+from logging import WARNING
 
 from armi import runLog
 from armi.reactor.flags import Flags
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
-from armi.utils import directoryChangers
 from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT, mockRunLogs
+from armi.utils import directoryChangers
 
 TEST_INPUT_TITLE = "c5g7-settings.yaml"
 

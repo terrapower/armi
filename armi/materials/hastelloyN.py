@@ -15,7 +15,7 @@
 """Hastelloy-N is a high-nickel structural material invented by ORNL for handling molten fluoride salts."""
 
 from armi.materials.material import Material
-from armi.utils.units import getTk, getTc
+from armi.utils.units import getTc, getTk
 
 
 class HastelloyN(Material):

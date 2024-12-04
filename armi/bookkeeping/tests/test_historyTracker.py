@@ -24,14 +24,12 @@ import pathlib
 import shutil
 import unittest
 
-from armi import settings
-from armi import utils
+from armi import settings, utils
 from armi.bookkeeping import historyTracker
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
 from armi.cases import case
 from armi.context import ROOT
-from armi.reactor import blocks
-from armi.reactor import grids
+from armi.reactor import blocks, grids
 from armi.reactor.flags import Flags
 from armi.tests import ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger

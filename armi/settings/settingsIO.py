@@ -16,19 +16,18 @@
 :py:class:`~armi.settings.caseSettings.Settings`, and the contained
 :py:class:`~armi.settings.setting.Setting`.
 """
-from typing import Dict, Tuple, Set
 import collections
 import datetime
 import enum
 import os
 import sys
+from typing import Dict, Set, Tuple
 
-from ruamel.yaml import YAML
 import ruamel.yaml.comments
+from ruamel.yaml import YAML
 
-from armi import runLog
+from armi import context, runLog
 from armi.meta import __version__ as version
-from armi import context
 from armi.settings.setting import Setting
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,

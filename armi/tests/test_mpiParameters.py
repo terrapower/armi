@@ -16,8 +16,7 @@ import shutil
 import unittest
 
 from armi import context
-from armi.reactor import composites
-from armi.reactor import parameters
+from armi.reactor import composites, parameters
 
 # determine if this is a parallel run, and MPI is installed
 MPI_EXE = None

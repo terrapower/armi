@@ -19,21 +19,15 @@ This module contains the abstract definition of a Component.
 """
 import copy
 import re
-
-import numpy as np
 from typing import Optional
 
-from armi import materials
-from armi import runLog
+import numpy as np
+
+from armi import materials, runLog
 from armi.bookkeeping import report
-from armi.materials import custom
-from armi.materials import material
-from armi.materials import void
+from armi.materials import custom, material, void
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites
-from armi.reactor import flags
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import composites, flags, grids, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K

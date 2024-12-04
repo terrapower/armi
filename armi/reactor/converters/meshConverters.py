@@ -15,8 +15,8 @@
 """Mesh specifiers update the mesh structure of a reactor by increasing or decreasing the number of mesh coordinates."""
 
 import collections
-import math
 import itertools
+import math
 
 import numpy as np
 

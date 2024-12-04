@@ -37,12 +37,14 @@ configure(permissive=True)
 
 from armi import cases
 from armi.reactor import blueprints
-from armi.reactor.blueprints import assemblyBlueprint
-from armi.reactor.blueprints import blockBlueprint
-from armi.reactor.blueprints import componentBlueprint
-from armi.reactor.blueprints import gridBlueprint
-from armi.reactor.blueprints import isotopicOptions
-from armi.reactor.blueprints import reactorBlueprint
+from armi.reactor.blueprints import (
+    assemblyBlueprint,
+    blockBlueprint,
+    componentBlueprint,
+    gridBlueprint,
+    isotopicOptions,
+    reactorBlueprint,
+)
 from armi.settings import caseSettings
 from armi.utils import plotting
 

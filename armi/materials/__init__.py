@@ -32,10 +32,10 @@ hard-coded into the app.
 
 The base class for all materials is in :py:mod:`armi.materials.material`.
 """
-from typing import List
 import importlib
 import inspect
 import pkgutil
+from typing import List
 
 from armi.materials.material import Material
 

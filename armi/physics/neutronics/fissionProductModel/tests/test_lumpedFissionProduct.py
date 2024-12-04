@@ -13,24 +13,24 @@
 # limitations under the License.
 
 """Tests for lumpedFissionProduce module."""
-import unittest
 import io
 import math
 import os
+import unittest
 
-from armi.physics.neutronics.fissionProductModel import (
-    lumpedFissionProduct,
-    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
-)
 from armi.context import RES
-from armi.settings import Settings
-from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
-from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.fissionProductModel import (
+    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
+    lumpedFissionProduct,
+)
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_LFP_COMPOSITION_FILE_PATH,
 )
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
+from armi.settings import Settings
 
 LFP_TEXT = """LFP35 GE73   5.9000E-06
 LFP35 GE74    1.4000E-05

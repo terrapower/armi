@@ -25,12 +25,13 @@ This module contains a variety of ``InputModifier`` objects as well, which are e
 of how you can modify inputs for parameter sweeping. Power-users will generally make
 their own ``Modifier``\ s that are design-specific.
 """
-from collections import Counter
-from pyDOE import lhs
-from typing import List
 import copy
 import os
 import random
+from collections import Counter
+from typing import List
+
+from pyDOE import lhs
 
 from armi.cases import suite
 
