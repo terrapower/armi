@@ -32,6 +32,7 @@ from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils import textProcessors
 from armi.reactor.blueprints.gridBlueprint import saveToStream
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 class TestBlueprints(unittest.TestCase):
@@ -612,7 +613,7 @@ assemblies:
         # which is required during construction of a component
         design._resolveNuclides(cs)
         componentDesign = design.componentDesigns["freefuel"]
-        topComponent = componentDesign.construct(design, matMods=dict())
+        topComponent = componentDesign.construct(design, {}, cs[CONF_INPUT_HEIGHTS_HOT])
         self.assertEqual(topComponent.getDimension("od", cold=True), 4.0)
         self.assertGreater(topComponent.getVolume(), 0.0)
         self.assertGreater(topComponent.getMass("U235"), 0.0)

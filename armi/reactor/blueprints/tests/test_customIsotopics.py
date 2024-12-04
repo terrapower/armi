@@ -309,7 +309,12 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
+        cs = cs.modified(
+            newSettings={
+                CONF_XS_KERNEL: "MC2v2",
+                "inputHeightsConsideredHot": False,
+            }
+        )
 
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
@@ -356,14 +361,19 @@ assemblies:
         # A block with custom density set via number density
         fuel8 = self.a[8].getComponent(Flags.FUEL)
 
+        dLL = fuel2.material.linearExpansionFactor(Tc=600, T0=25)
+        # the exponent here is 3 because inputHeightsConsideredHot = False.
+        # if inputHeightsConsideredHot were True, then we would use a factor of 2 instead
+        f = 1 / ((1 + dLL) ** 3)
+
         # Check that the density is set correctly on the custom density block,
         # and that it is not the same as the original
-        self.assertAlmostEqual(19.1, fuel2.density())
+        self.assertAlmostEqual(19.1 * f, fuel2.density())
         self.assertNotAlmostEqual(fuel0.density(), fuel2.density(), places=2)
         # Check that the custom density block has the correct material
         self.assertEqual("UZr", fuel2.material.name)
         # Check that the block with only number densities set has a new density
-        self.assertAlmostEqual(19.1, fuel8.density())
+        self.assertAlmostEqual(19.1 * f, fuel8.density())
         # original material density should not be changed after setting a custom density component,
         # so a new block without custom isotopics and density should have the same density as the original
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
@@ -387,12 +397,16 @@ assemblies:
 
             # Check for log messages
             streamVal = mockLog.getStdout()
-            self.assertIn("Both TD_frac and a custom density", streamVal, msg=streamVal)
+            self.assertIn(
+                "Both TD_frac and a custom isotopic with density",
+                streamVal,
+                msg=streamVal,
+            )
             self.assertIn(
                 "A custom material density was specified", streamVal, msg=streamVal
             )
             self.assertIn(
-                "A custom density or number densities has been specified",
+                "A custom isotopic with associated density has been specified for non-`Custom`",
                 streamVal,
                 msg=streamVal,
             )
