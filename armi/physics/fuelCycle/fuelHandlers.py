@@ -213,10 +213,6 @@ class FuelHandler:
     @staticmethod
     def _getParamMax(a, paramName, blockLevelMax=True):
         """Get parameter with Block-level maximum."""
-        print(
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-            a.getBlocks()[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED),
-        )
         volIntegratedParamNames = [
             p.name
             for p in a.getBlocks()[0].p.paramDefs.atLocation(

@@ -168,12 +168,6 @@ class TestHistoryTracker(ArmiTestHelper):
         )
         b.getVolume()
         bName = b.name
-        print(
-            "XXXXXXXXXXXXXXXXXXXXXXXXXX",
-            b.getLocation(),
-            b.getSymmetryFactor(),
-            b.p.power,
-        )
 
         # duration is None in this DB
         hti = o.getInterface("history")
@@ -190,12 +184,6 @@ class TestHistoryTracker(ArmiTestHelper):
             params[param] = []
             for ts, years in enumerate(timesInYears):
                 cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-                print(
-                    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                    hti.getBlockHistoryVal(bName, param, (cycle, node)),
-                    bName,
-                )
-                print(cycle, node)
                 params[param].append(
                     hti.getBlockHistoryVal(bName, param, (cycle, node))
                 )
