@@ -221,6 +221,8 @@ class Assembly(composites.Composite):
             ParamLocation.VOLUME_INTEGRATED
         )
         scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
+        if scalingFactor == 1:
+            return  # noop
         for b in self.getBlocks():
             for param in volIntegratedParamsToScale:
                 name = param.name
