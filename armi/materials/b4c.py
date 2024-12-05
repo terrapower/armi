@@ -15,13 +15,12 @@
 """
 Boron carbide; a very typical reactor control material.
 
-Note that this material defaults to a theoretical density fraction of 0.9, reflecting
-the difficulty of producing B4C at 100% theoretical density in real life. To get
-different fraction, use the `TD_frac` material modification in your assembly definition.
+Note that this material defaults to a theoretical density fraction of 0.9, reflectingthe difficulty
+of producing B4C at 100% theoretical density in real life. To get different fraction, use the
+`TD_frac` material modification in your assembly definition.
 """
 from armi import runLog
 from armi.materials import material
-from armi.nucDirectory import nuclideBases
 from armi.utils.units import getTc
 
 DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
@@ -36,19 +35,19 @@ class B4C(material.Material):
         self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs
     ):
         if B10_wt_frac is not None:
-            # we can't just use the generic enrichment adjustment here because the
-            # carbon has to change with enrich.
+            # we can't just use the generic enrichment adjustment here because the carbon has to
+            # change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
         if theoretical_density is not None:
             runLog.warning(
-                "The 'threoretical_density' material modification for B4C will be "
-                "deprecated. Update your inputs to use 'TD_frac' instead.",
+                "The 'threoretical_density' material modification for B4C will be deprecated. "
+                "Update your inputs to use 'TD_frac' instead.",
                 single=True,
             )
             if TD_frac is not None:
                 runLog.warning(
-                    "Both 'theoretical_density' and 'TD_frac' are specified "
-                    f"for {self}. 'TD_frac' will be used."
+                    f"Both 'theoretical_density' and 'TD_frac' are specified for {self}. 'TD_frac' "
+                    "will be used."
                 )
             else:
                 self.updateTD(theoretical_density)
@@ -89,22 +88,18 @@ class B4C(material.Material):
         mB10 = nB10*AB10 /(nB10*AB10 + nB11*AB11)
         """
         if massEnrichment < 0 or massEnrichment > 1:
-            raise ValueError(
-                "massEnrichment {} is unphysical for B4C".format(massEnrichment)
-            )
+            raise ValueError(f"massEnrichment {massEnrichment} is unphysical for B4C")
 
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
+        b10AtomicMass = 10.01293728
+        b11AtomicMass = 11.0093054803
         b10NumEnrich = (massEnrichment / b10AtomicMass) / (
             massEnrichment / b10AtomicMass + (1 - massEnrichment) / b11AtomicMass
         )
         b11NumEnrich = 1.0 - b10NumEnrich
 
-        cAtomicMass = nuclideBases.byName["C"].weight
-
         boron10MassGrams = b10AtomicMass * b10NumEnrich * 4.0
         boron11MassGrams = b11AtomicMass * b11NumEnrich * 4.0
-        carbonMassGrams = cAtomicMass
+        carbonMassGrams = 12.011137118560828
 
         gTotal = boron10MassGrams + boron11MassGrams + carbonMassGrams
 
@@ -149,8 +144,8 @@ class B4C(material.Material):
 
     @staticmethod
     def getMassEnrichmentFromNumEnrich(naturalB10NumberFraction: float) -> float:
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
+        b10AtomicMass = 10.01293728
+        b11AtomicMass = 11.0093054803
         return (
             naturalB10NumberFraction
             * b10AtomicMass
@@ -166,7 +161,7 @@ class B4C(material.Material):
 
         Notes
         -----
-        - applies theoretical density of B4C to parent method
+        Applies theoretical density of B4C to parent method
         """
         return (
             material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
@@ -178,7 +173,7 @@ class B4C(material.Material):
 
         Notes
         -----
-        - applies theoretical density of B4C to parent method
+        Applies theoretical density of B4C to parent method
         """
         return material.Material.density(self, Tk, Tc) * self.theoreticalDensityFrac
 
