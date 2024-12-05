@@ -1725,15 +1725,15 @@ class Core(composites.Composite):
         ----------
         assemType : str
             The assembly type to create
-        enrichList : list
+        enrichList : list or float
             weight percent enrichments of each block
         cs : Settings
             Global settings for the case
 
         Returns
         -------
-        a : Assembly
-            A new assembly
+        Assembly
+            A new Assembly
 
         Notes
         -----
@@ -1758,9 +1758,7 @@ class Core(composites.Composite):
                 enrichList = itertools.cycle([enrichList])
             elif len(a) != len(enrichList):
                 raise RuntimeError(
-                    "{0} and enrichment list do not have the same number of blocks.".format(
-                        a
-                    )
+                    f"{a} and enrichment list do not have the same number of blocks."
                 )
 
             for b, enrich in zip(a, enrichList):
@@ -1769,15 +1767,16 @@ class Core(composites.Composite):
                     continue
                 if abs(b.getUraniumMassEnrich() - enrich) > 1e-10:
                     # only adjust block enrichment if it's different.
-                    # WARNING: If this is not fresh fuel, this messes up the number of moles of HM at BOL and
-                    # therefore breaks the burnup metric.
+                    # WARNING: If this is not fresh fuel, this messes up the number of moles of HM
+                    # at BOL and therefore breaks the burnup metric.
+                    a.parent = self
                     b.adjustUEnrich(enrich)
+                    a.parent = None
 
         if not self._detailedAxialExpansion:
             # if detailedAxialExpansion: False, make sure that the assembly being created has the correct core mesh
-            a.setBlockMesh(
-                self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto"
-            )  # pass [1:] to skip 0.0
+            # (pass [1:] to skip 0.0)
+            a.setBlockMesh(self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto")
 
         return a
 

@@ -1075,7 +1075,10 @@ class HexReactorTests(ReactorTests):
         """Test creation of new assemblies."""
         # basic creation
         aOld = self.r.core.getFirstAssembly(Flags.FUEL)
+        aOldLen = len(aOld)
+        aOld.parent = self.r.core
         aNew = self.r.core.createAssemblyOfType(aOld.getType(), cs=self.o.cs)
+        aNew.parent = self.r.core
         self.assertAlmostEqual(aOld.getMass(), aNew.getMass())
 
         # test axial mesh alignment
@@ -1086,7 +1089,10 @@ class HexReactorTests(ReactorTests):
             )  # use i+1 to skip 0.0
 
         # creation with modified enrichment
-        aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
+        aNew2 = self.r.core.createAssemblyOfType(
+            aOld.getType(), [0.195] * aOldLen, self.o.cs
+        )
+        aNew2.parent = self.r.core
         fuelBlock = aNew2.getFirstBlock(Flags.FUEL)
         self.assertAlmostEqual(fuelBlock.getUraniumMassEnrich(), 0.195)
 
@@ -1095,7 +1101,9 @@ class HexReactorTests(ReactorTests):
         bol = self.r.blueprints.assemblies[aOld.getType()]
         changer = AxialExpansionChanger()
         changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
-        aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
+        aNew3 = self.r.core.createAssemblyOfType(
+            aOld.getType(), [0.195] * aOldLen, self.o.cs
+        )
         self.assertAlmostEqual(
             aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
         )

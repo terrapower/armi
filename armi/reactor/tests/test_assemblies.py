@@ -17,6 +17,7 @@ import math
 import pathlib
 import random
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -35,7 +36,6 @@ from armi.reactor import components
 from armi.reactor import geometry
 from armi.reactor import parameters
 from armi.reactor import reactors
-from armi.reactor.cores import Core
 from armi.reactor.assemblies import (
     copy,
     Flags,
@@ -57,17 +57,11 @@ def buildTestAssemblies():
     Build some assembly objects that will be used in testing.
 
     This builds 2 HexBlocks:
-        * One with half UZr pins and half UTh pins
-        * One with all UThZr pins
+
+    * One with half UZr pins and half UTh pins
+    * One with all UThZr pins
     """
     settings.Settings()
-
-    #r = reactors.Reactor("testReactor456", None)
-    #r.core = Core("testCore456")
-    #r.core.parent = r
-    #r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    #r.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    #r.nuclidesBases = NuclideBases()
 
     temperature = 273.0
     fuelID = 0.0
@@ -149,18 +143,7 @@ def buildTestAssemblies():
             assembly.add(newBlock)
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
-        #assembly.parent = r
-        #assembly.parent = r.core
         assemblieObjs.append(assembly)
-
-    """
-    r = reactors.Reactor("testReactor456", None)
-    r.core = Core("testCore456")
-    r.core.parent = r
-    r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    for a in assemblieObjs:
-        r.core.add(a)
-    """
 
     return assemblieObjs
 
@@ -185,16 +168,17 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         self.assertTrue(self.assembly < self.assembly2)
         self.assertFalse(self.assembly2 < self.assembly)
 
-    def test_UThZrMaterial(self):
+    @patch("armi.reactor.components.Component.nuclideBases")
+    def test_UThZrMaterial(self, mockNuclides):
         """Test the ternary UThZr material."""
+        mockNuclides.return_value = NuclideBases()
+
         b2 = self.assembly2[0]
         uThZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
-        mat = uThZrFuel.getProperties()
-        mat.applyInputParams(0.1, 0.0)
         self.assertAlmostEqual(
             uThZrFuel.getMass("U235")
             / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
-            0.1,
+            11.0 / 99,
         )
 
 
