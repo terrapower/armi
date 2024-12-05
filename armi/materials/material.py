@@ -343,6 +343,7 @@ class Material:
         """
         self.adjustMassFrac(self.enrichedNuclide, massEnrichment)
 
+    # TODO: JOHN: We will have to pass in, or somehow reference, nuclideBases here.
     def adjustMassFrac(self, nuclideName: str, massFraction: float) -> None:
         """
         Change the mass fraction of the specified nuclide.
@@ -359,7 +360,6 @@ class Material:
         ----------
         nuclideName : str
             Name of nuclide to enrich.
-
         massFraction : float
             New mass fraction to achieve.
         """
@@ -375,9 +375,8 @@ class Material:
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
         massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
-        atomicMasses = np.array(
-            [nuclideBases.byName[nuc].weight for nuc in nucsNames]
-        )  # in AMU
+        # in AMU
+        atomicMasses = np.array([nuclideBases.byName[nuc].weight for nuc in nucsNames])
         molesPerCC = massDensities / atomicMasses  # item-wise division
 
         enrichedIndex = nucsNames.index(nuclideName)

@@ -15,12 +15,13 @@
 """
 Lithium.
 
-.. WARNING:: Whenever you irradiate lithium you will get tritium.
+Warning
+-------
+Whenever you irradiate lithium you will get tritium.
 """
 
 from armi import runLog
 from armi.materials import material
-from armi.nucDirectory import nuclideBases as nb
 from armi.utils.mathematics import getFloat
 
 
@@ -52,7 +53,7 @@ class Lithium(material.Fluid):
             self.adjustMassEnrichment(LI6_wt_frac)
 
     def pseudoDensity(self, Tk=None, Tc=None):
-        r"""Density (g/cc) from Wikipedia.
+        """Density (g/cc) from Wikipedia.
 
         Will be liquid above 180C.
 
@@ -63,8 +64,8 @@ class Lithium(material.Fluid):
         return 0.512
 
     def setDefaultMassFracs(self):
-        self.setMassFrac("LI6", nb.byName["LI6"].abundance)
-        self.setMassFrac("LI7", nb.byName["LI7"].abundance)
+        self.setMassFrac("LI6", 0.0759)
+        self.setMassFrac("LI7", 0.92410004)
 
     def meltingPoint(self):
         return 453.69  # K
@@ -73,7 +74,7 @@ class Lithium(material.Fluid):
         return 1615.0  # K
 
     def thermalConductivity(self, Tk=None, Tc=None):
-        r"""Wikipedia."""
+        """Wikipedia."""
         return 84.8  # W/m-K
 
     def heatCapacity(self, Tk=None, Tc=None):

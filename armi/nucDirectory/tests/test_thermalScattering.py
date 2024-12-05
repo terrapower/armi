@@ -114,8 +114,8 @@ class TestThermalScattering(unittest.TestCase):
         and hydrogen in concrete in the same armiObj). While this could conceptually be handled
         somehow, we simply error out at this time.
 
-        Warnings
-        --------
+        Warning
+        -------
         This code only works for the couple of unit tests in this file. This is not general code
         that should be used anywhere else.
 
@@ -127,8 +127,8 @@ class TestThermalScattering(unittest.TestCase):
         Raises
         ------
         RuntimeError
-            When a armiObj has nuclides subject to more than one TSL, or subject to a TLS in one case
-            and no TSL in another.
+            When a armiObj has nuclides subject to more than one TSL, or subject to a TLS in one
+            case and no TSL in another.
 
         Examples
         --------
