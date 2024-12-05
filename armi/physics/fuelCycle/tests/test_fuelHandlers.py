@@ -261,8 +261,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for ring, power in zip(range(1, 8), range(10, 80, 10)):
             aList = assemsByRing[ring]
             for a in aList:
+                sf = a.getSymmetryFactor()  # center assembly is only 1/3rd in the core
                 for b in a:
-                    b.p.power = power
+                    b.p.power = power / sf
 
         paramName = "power"
         # 1 ring outer and inner from ring 3
