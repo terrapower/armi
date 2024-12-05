@@ -466,6 +466,7 @@ class _IsotxsNuclideIO:
     def _getMicros(self):
         return self._nuclide.micros
 
+    # TODO: JOHN: This will need a reference to the r.baseNuclides object
     def rwNuclide(self):
         """Read nuclide name, other global stuff from the ISOTXS library."""
         properties.unlockImmutableProperties(self._nuclide)

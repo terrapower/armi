@@ -17,10 +17,13 @@ import unittest
 from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as ts
 from armi.reactor import blocks, components
+from armi.reactor.tests.test_reactors import loadTestReactor
 
 
 def buildBlockWithTSL():
     """Return a simple block containing something with a TSL (graphite)."""
+    _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
     b = blocks.HexBlock("fuel", height=10.0)
 
     fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
@@ -35,6 +38,9 @@ def buildBlockWithTSL():
     b.add(clad)
     b.add(coolant)
 
+    a = r.core.getFirstAssembly()
+    a.add(b)
+
     return b
 
 
@@ -43,7 +49,7 @@ class TestThermalScattering(unittest.TestCase):
 
     def test_graphiteOnReactor(self):
         b = buildBlockWithTSL()
-        tsl = getNuclideThermalScatteringData(b)
+        tsl = self._getNuclideThermalScatteringData(b)
         carbon = nb.byName["C"]
         carbon12 = nb.byName["C12"]
 
@@ -53,7 +59,7 @@ class TestThermalScattering(unittest.TestCase):
 
         b.expandElementalToIsotopics(carbon)
 
-        tsl = getNuclideThermalScatteringData(b)
+        tsl = self._getNuclideThermalScatteringData(b)
         self.assertNotIn(carbon, tsl)
         self.assertIn(carbon12, tsl)
 
@@ -98,64 +104,73 @@ class TestThermalScattering(unittest.TestCase):
         clad2 = components.Circle("clad", "HT9", **cladDims)
         b.add(clad2)
         with self.assertRaises(RuntimeError):
-            getNuclideThermalScatteringData(b)
+            self._getNuclideThermalScatteringData(b)
 
+    def _getNuclideThermalScatteringData(self, armiObj):
+        """
+        Make a mapping between nuclideBases in an armiObj and relevant thermal scattering laws.
 
-def getNuclideThermalScatteringData(armiObj):
-    """
-    Make a mapping between nuclideBases in an armiObj and relevant thermal scattering laws.
+        In some cases, a nuclide will be present both with a TSL and without (e.g. hydrogen in water
+        and hydrogen in concrete in the same armiObj). While this could conceptually be handled
+        somehow, we simply error out at this time.
 
-    In some cases, a nuclide will be present both with a TSL and without (e.g. hydrogen in water
-    and hydrogen in concrete in the same armiObj). While this could conceptually be handled
-    somehow, we simply error out at this time.
+        Warnings
+        --------
+        This code only works for the couple of unit tests in this file. This is not general code
+        that should be used anywhere else.
 
-    Notes
-    -----
-    Clients can use code like this to access TSL data. This is not an official framework
-    method because it's not general enough to cover all use cases in all reactors.
+        Returns
+        -------
+        tslByNuclideBase : dict
+            A dictionary with NuclideBase keys and ThermalScattering values
 
-    Returns
-    -------
-    tslByNuclideBase : dict
-        A dictionary with NuclideBase keys and ThermalScattering values
+        Raises
+        ------
+        RuntimeError
+            When a armiObj has nuclides subject to more than one TSL, or subject to a TLS in one case
+            and no TSL in another.
 
-    Raises
-    ------
-    RuntimeError
-        When a armiObj has nuclides subject to more than one TSL, or subject to a TLS
-        in one case and no TSL in another.
+        Examples
+        --------
+        >>> tslInfo = getNuclideThermalScatteringData(armiObj)
+        >>> if nucBase in tslInfo:
+        >>>     aceLabel = tslInfo[nucBase].aceLabel
+        """
+        nb = armiObj.nuclideBases
 
-    Examples
-    --------
-    >>> tslInfo = getNuclideThermalScatteringData(armiObj)
-    >>> if nucBase in tslInfo:
-    >>>     aceLabel = tslInfo[nucBase].aceLabel
-    """
-    tslByNuclideBase = {}
-    freeNuclideBases = set()
-    for c in armiObj.iterComponents():
-        nucs = {nb.byName[nn] for nn in c.getNuclides()}
-        freeNucsHere = set()
-        freeNucsHere.update(nucs)
-        for tsl in c.material.thermalScatteringLaws:
-            for subjectNb in tsl.getSubjectNuclideBases():
-                if subjectNb in nucs:
-                    if (
-                        subjectNb in tslByNuclideBase
-                        and tslByNuclideBase[subjectNb] is not tsl
-                    ):
-                        raise RuntimeError(
-                            f"{subjectNb} in {armiObj} is subject to more than 1 different TSL: "
-                            f"{tsl} and {tslByNuclideBase[subjectNb]}"
-                        )
-                    tslByNuclideBase[subjectNb] = tsl
-                    freeNucsHere.remove(subjectNb)
-        freeNuclideBases.update(freeNucsHere)
+        tslByNuclideBase = {}
+        freeNuclideBases = set()
+        for c in armiObj.iterComponents():
+            nucs = {nb.byName[nn] for nn in c.getNuclides()}
+            freeNucsHere = set()
+            freeNucsHere.update(nucs)
 
-    freeAndBound = freeNuclideBases.intersection(set(tslByNuclideBase.keys()))
-    if freeAndBound:
-        raise RuntimeError(
-            f"{freeAndBound} is/are present in both bound and free forms in {armiObj}"
-        )
+            # This test only bothers with modeling Graphite
+            thermalScatteringLaws = []
+            if c.material.name == "Graphite":
+                thermalScatteringLaws = [
+                    ts.byNbAndCompound[nb.byName["C"], ts.GRAPHITE_10P]
+                ]
 
-    return tslByNuclideBase
+            for tsl in thermalScatteringLaws:
+                for subjectNb in tsl.getSubjectNuclideBases():
+                    if subjectNb in nucs:
+                        if (
+                            subjectNb in tslByNuclideBase
+                            and tslByNuclideBase[subjectNb] is not tsl
+                        ):
+                            raise RuntimeError(
+                                f"{subjectNb} in {armiObj} is subject to more than 1 different "
+                                f"TSL: {tsl} and {tslByNuclideBase[subjectNb]}"
+                            )
+                        tslByNuclideBase[subjectNb] = tsl
+                        freeNucsHere.remove(subjectNb)
+            freeNuclideBases.update(freeNucsHere)
+
+        freeAndBound = freeNuclideBases.intersection(set(tslByNuclideBase.keys()))
+        if freeAndBound:
+            raise RuntimeError(
+                f"{freeAndBound} is/are present in both bound and free forms in {armiObj}"
+            )
+
+        return tslByNuclideBase

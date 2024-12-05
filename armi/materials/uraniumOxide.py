@@ -29,7 +29,6 @@ from numpy import interp
 from armi import runLog
 from armi.materials import material
 from armi.nucDirectory import nuclideBases as nb
-from armi.nucDirectory import thermalScattering as tsl
 from armi.utils.units import getTk
 
 
@@ -68,11 +67,6 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         + "S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
         "heat capacity": "ORNL/TM-2000/351",
     }
-
-    thermalScatteringLaws = (
-        tsl.byNbAndCompound[nb.byName["U"], tsl.UO2],
-        tsl.byNbAndCompound[nb.byName["O"], tsl.UO2],
-    )
 
     # Thermal conductivity values taken from:
     # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama.

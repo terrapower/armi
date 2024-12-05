@@ -125,10 +125,6 @@ class Material:
     """Dictionary of valid temperatures over which the property models are valid in the format
     'Property Name': ((Temperature_Lower_Limit, Temperature_Upper_Limit), Temperature_Units)"""
 
-    thermalScatteringLaws = ()
-    """A tuple of :py:class:`~armi.nucDirectory.thermalScattering.ThermalScattering` instances
-    with information about thermal scattering."""
-
     def __init__(self):
         self.parent = None
         self.massFrac = {}

@@ -74,9 +74,10 @@ class UZr(material.FuelMaterial):
         """
         Calculates the reference mass density in g/cc of a U-Pu-Zr alloy at 293K with Vergard's law.
 
-        .. warning:: the zrFrac, uFrac, etc. may seem redundant with massFrac data.
-            But it's complicated to update material fractions one at a time when density
-            is changing on the fly.
+        Warning
+        -------
+        The zrFrac, uFrac, etc. may seem redundant with massFrac data. But it's complicated to
+        update material fractions one at a time when density is changing on the fly.
         """
         zrFrac = self.zrFrac
         uFrac = self.uFrac

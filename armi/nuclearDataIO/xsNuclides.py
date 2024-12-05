@@ -20,10 +20,11 @@ contain cross section information from a specific calculation (e.g. neutron, or 
 :py:class:`XSNuclide` objects also contain meta data from the original file, so that another file
 can be reconstructed.
 
-.. warning::
-    :py:class:`XSNuclide` objects should only be created by reading data into
-    :py:class:`~armi.nuclearDataIO.xsLibrary.XSLibrary` objects, and then retrieving them through their label
-    index (i.e. "PU39AA").
+Warning
+
+:py:class:`XSNuclide` objects should only be created by reading data into
+:py:class:`~armi.nuclearDataIO.xsLibrary.XSLibrary` objects, and then retrieving them through their
+label index (i.e. "PU39AA").
 """
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import xsCollections
@@ -65,6 +66,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         self.linearAnisotropicProduction = None
         self.nOrderProductionMatrix = {}
 
+    # TODO: JOHN: This will need a reference to the r.baseNuclides object
     def updateBaseNuclide(self):
         """
         Update which nuclide base this :py:class:`XSNuclide` points to.
@@ -73,10 +75,10 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         -----
         During instantiation, not everything is available, only they user-supplied nuclide label,
         i.e. :py:class:`~armi.nucDirectory.nuclideBases.NuclideWrapper.containerKey`.
-        During the read operation,
         """
         if self._base is not None:
             return
+
         # most nuclides have the correct NuclideBase ID
         nuclideId = self.isotxsMetadata["nuclideId"]
         nuclideBase = nuclideBases.byName.get(nuclideId, None)
@@ -87,11 +89,13 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             nuclideBase = nuclideBases.byLabel.get(self.nucLabel, None)
             if nuclideBase is None:
                 raise OSError(
-                    "Could not determine NuclideBase for label {}".format(self.nucLabel)
+                    f"Could not determine NuclideBase for label {self.nucLabel}"
                 )
+
         if self.nucLabel != nuclideBase.label:
             NuclideLabelDoesNotMatchNuclideLabel(nuclideBase, self.nucLabel, self.xsId)
             nuclideBases.changeLabel(nuclideBase, self.nucLabel)
+
         self._base = nuclideBase
 
     def getMicroXS(self, interaction, group):

@@ -286,6 +286,7 @@ class PmatrxIO(cccc.Stream):
                     self._metadata["numGammaGroups"],
                 )
 
+    # TODO: JOHN: This will need a reference to the r.baseNuclides object
     def _rwIsotopes(self, numNucs):
         with self.createRecord() as record:
             nuclideLabels = record.rwList(self._lib.nuclideLabels, "string", numNucs, 8)
