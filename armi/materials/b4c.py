@@ -23,8 +23,8 @@ from armi import runLog
 from armi.materials import material
 from armi.utils.units import getTc
 
-DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
 DEFAULT_MASS_DENSITY = 2.52
+DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
 
 
 class B4C(material.Material):
@@ -38,6 +38,7 @@ class B4C(material.Material):
             # we can't just use the generic enrichment adjustment here because the carbon has to
             # change with enrich.
             self.adjustMassEnrichment(B10_wt_frac)
+
         if theoretical_density is not None:
             runLog.warning(
                 "The 'threoretical_density' material modification for B4C will be deprecated. "
@@ -51,6 +52,7 @@ class B4C(material.Material):
                 )
             else:
                 self.updateTD(theoretical_density)
+
         if TD_frac is not None:
             self.updateTD(TD_frac)
 
@@ -120,8 +122,8 @@ class B4C(material.Material):
 
         4 moles of boron/1 mole of carbon
 
-        grams of boron-10 = 10.01 g/mol* 4 mol * 0.199   =  7.96796 g
-        grams of boron-11 = 11.01 g/mol* 4 mol * 0.801   = 35.27604 g
+        grams of boron-10 = 10.01 g/mol* 4 mol * 0.199 =  7.96796 g
+        grams of boron-11 = 11.01 g/mol* 4 mol * 0.801 = 35.27604 g
         grams of carbon= 12.0107 g/mol * 1 mol = 12.0107 g
 
         total=55.2547 g.

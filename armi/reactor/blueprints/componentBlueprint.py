@@ -39,7 +39,7 @@ class ComponentDimension(yamlize.Object):
     """
 
     def __init__(self, value):
-        # note: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
+        # NOTE: yamlizable does not call an __init__ method, instead it uses __new__ and setattr
         self.value = value
         if isinstance(value, str):
             if not components.COMPONENT_LINK_REGEX.search(value):

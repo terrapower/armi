@@ -317,9 +317,8 @@ class Material:
             massFrac = float(massFrac)
         except Exception as ee:
             raise TypeError(
-                f"Error in converting the mass fraction of {massFrac} "
-                f"for nuclide {nucName} in {self} to a float. "
-                f"Exception: {ee}"
+                f"Error in converting the mass fraction of {massFrac} for nuclide {nucName} in "
+                f"{self} to a float. Exception: {ee}"
             )
 
         if massFrac < 0.0 or massFrac > 1.0:
@@ -333,18 +332,13 @@ class Material:
         """Apply material-specific material input parameters."""
         pass
 
-    def adjustMassEnrichment(self, massEnrichment: float) -> None:
-        """
-        Adjust the enrichment of the material.
-
-        See Also
-        --------
-        adjustMassFrac
-        """
+    def adjustMassEnrichment(self, nb: nuclideBases.NuclideBases, massEnrichment: float) -> None:
+        """Adjust the enrichment of the material."""
         self.adjustMassFrac(self.enrichedNuclide, massEnrichment)
 
-    # TODO: JOHN: We will have to pass in, or somehow reference, nuclideBases here.
-    def adjustMassFrac(self, nuclideName: str, massFraction: float) -> None:
+    def adjustMassFrac(
+        self, nb: nuclideBases.NuclideBases, nuclideName: str, massFraction: float
+    ) -> None:
         """
         Change the mass fraction of the specified nuclide.
 
@@ -365,30 +359,27 @@ class Material:
         """
         if massFraction > 1.0 or massFraction < 0.0:
             raise ValueError(
-                "Cannot enrich to massFraction of {}, must be between 0 and 1".format(
-                    massFraction
-                )
+                f"Cannot enrich to massFraction of {massFraction}, must be between 0 and 1"
             )
-
-        nucsNames = list(self.massFrac)
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
+        nucsNames = list(self.massFrac)
         massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
         # in AMU
-        atomicMasses = np.array([nuclideBases.byName[nuc].weight for nuc in nucsNames])
+        atomicMasses = np.array([nb.byName[nuc].weight for nuc in nucsNames])
         molesPerCC = massDensities / atomicMasses  # item-wise division
 
         enrichedIndex = nucsNames.index(nuclideName)
-        isoAndEles = nuclideBases.byName[nuclideName].element.nuclides
+        isoAndEles = nb.byName[nuclideName].element.nuclides
         allIndicesUpdated = [
             nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac
         ]
 
         if len(allIndicesUpdated) == 1:
             if isinstance(
-                nuclideBases.byName[nuclideName], nuclideBases.NaturalNuclideBase
-            ) or nuclideBases.isMonoIsotopicElement(nuclideName):
+                nb.byName[nuclideName], nuclideBases.NaturalNuclideBase
+            ) or nb.isMonoIsotopicElement(nuclideName):
                 # If there are not any other nuclides, assume we are enriching an entire element.
                 # Consequently, allIndicesUpdated is no longer the element's indices, but the
                 # materials indices
@@ -428,8 +419,8 @@ class Material:
                 massDensities[enrichedIndex] = (
                     massFraction * balanceWeight / (1 - massFraction)
                 )
-        # ratio is set by here but atoms not conserved yet
 
+        # ratio is set by here but atoms not conserved yet
         updatedNucsMolesPerCC = (
             massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
         )
@@ -491,7 +482,6 @@ class Material:
 
         See Also
         --------
-        density
         armi.reactor.components.component.Component.density
         """
         Tk = getTk(Tc, Tk)
@@ -513,8 +503,7 @@ class Material:
 
         See Also
         --------
-        density:
-            Arguments are forwarded to the g/cc version
+        density : Arguments are forwarded to the g/cc version
         """
         return self.pseudoDensity(Tk, Tc) * 1000.0
 
@@ -543,13 +532,7 @@ class Material:
         return refD / f
 
     def densityKgM3(self, Tk: float = None, Tc: float = None) -> float:
-        """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3.
-
-        See Also
-        --------
-        density:
-            Arguments are forwarded to the g/cc version
-        """
+        """Return density that preserves mass when thermally expanded in 3D in units of kg/m^3."""
         return self.density(Tk, Tc) * 1000.0
 
     def getCorrosionRate(self, Tk: float = None, Tc: float = None) -> float:
@@ -581,12 +564,7 @@ class Material:
             self._setCache(propName, (Tk, val))
             return val
 
-    def getMassFrac(
-        self,
-        nucName=None,
-        normalized=True,
-        expandFissionProducts=False,
-    ):
+    def getMassFrac(self, nucName=None, normalized=True, expandFissionProducts=False):
         """
         Return mass fraction of nucName.
 
@@ -594,7 +572,6 @@ class Material:
         ----------
         nucName : str, optional
             Nuclide name to return ('ZR','PU239',etc.)
-
         normalized : bool, optional
             Return the mass fraction such that the sum of all nuclides is sum to 1.0. Default True
 
@@ -693,8 +670,7 @@ class Material:
         Returns
         -------
         rhoCP : float
-            Calculated value for the HT9 density* heat capacity
-            unit (J/m^3-K)
+            Calculated value for the HT9 density* heat capacity unit (J/m^3-K)
         """
         Tc = getTc(Tc, Tk)
 
@@ -731,6 +707,7 @@ class Material:
                 "at would require a change in temperature of {deltaT} C.",
                 single=True,
             )
+
         return deltaT
 
     def heatCapacity(self, Tk=None, Tc=None):
@@ -763,8 +740,8 @@ class Fluid(Material):
         return rho1 / rho0
 
     def linearExpansion(self, Tk=None, Tc=None):
-        """For void, lets just not allow temperature changes to change dimensions
-        since it is a liquid it will fill its space.
+        """For void, lets just not allow temperature changes to change dimensions since it is a
+        liquid it will fill its space.
 
         .. impl:: Fluid materials are not thermally expandable.
             :id: I_ARMI_MAT_FLUID
@@ -812,8 +789,8 @@ class SimpleSolid(Material):
 
     See Also
     --------
-    armi.materials.pseudoDensity:
-    armi.materials.density:
+    armi.materials.Material.density
+    armi.materials.Material.pseudoDensity
     """
 
     refTempK = 300
