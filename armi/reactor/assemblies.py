@@ -22,6 +22,7 @@ import math
 import pickle
 from random import randint
 from typing import ClassVar, Optional, Type
+from collections.abc import Iterable
 
 import numpy as np
 from scipy import interpolate
@@ -226,8 +227,14 @@ class Assembly(composites.Composite):
         for b in self.getBlocks():
             for param in volIntegratedParamsToScale:
                 name = param.name
-                if b.p[name] is None:
+                if b.p[name] is None or isinstance(b.p[name], str):
                     continue
+                elif isinstance(b.p[name], np.ndarray):
+                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", b.p[name])
+                    b.p[name] = b.p[name] * scalingFactor
+                    print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", b.p[name])
+                elif isinstance(b.p[name], Iterable):
+                    b.p[name] = [value * scalingFactor for value in b.p[name]]
                 else:
                     b.p[name] = b.p[name] * scalingFactor
 
