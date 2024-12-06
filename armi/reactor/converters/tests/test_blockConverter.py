@@ -26,7 +26,7 @@ from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.testing import TEST_ROOT, loadTestReactor
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
