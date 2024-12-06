@@ -112,7 +112,7 @@ class NuclideFlag(yamlize.Object):
     expandTo = yamlize.Attribute(type=yamlize.StrList, default=None)
 
     def __init__(self, nuclideName, burn, xs, expandTo):
-        # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
+        # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
         self.nuclideName = nuclideName
         self.burn = burn
         self.xs = xs
@@ -250,8 +250,8 @@ class CustomIsotopic(yamlize.Map):
     @classmethod
     def from_yaml(cls, loader, node, rtd):
         """
-        Override the ``Yamlizable.from_yaml`` to inject custom data validation logic, and complete initialization of the
-        object.
+        Override the ``Yamlizable.from_yaml`` to inject custom data validation logic, and complete
+        initialization of the object.
         """
         self = yamlize.Map.from_yaml.__func__(cls, loader, node, rtd)
 
@@ -400,7 +400,8 @@ class CustomIsotopic(yamlize.Map):
                     "implied by the custom isotopics.",
                     single=True,
                 )
-                # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
+                # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity
+                # has no effect
                 return
 
             material.customDensity = self.density
@@ -504,8 +505,7 @@ def eleExpandInfoBasedOnCodeENDF(cs):
     Returns
     -------
     elementalsToKeep : set
-        Set of NaturalNuclideBase instances to not expand into
-        natural isotopics.
+        Set of NaturalNuclideBase instances to not expand into natural isotopics.
     expansions : dict
         Element to list of nuclides for expansion.
         For example: {oxygen: [oxygen16]} indicates that all
@@ -647,8 +647,8 @@ def getAllNuclideBasesByLibrary(cs):
             nbs = nuclideBases.byMcc3Id.values()  # TODO: JOHN
         else:
             raise ValueError(
-                "An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
-                f"set to `{cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]}` has not been "
-                "implemented."
+                "An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` set to "
+                f"`{cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]}` has not been implemented."
             )
+
     return nbs
