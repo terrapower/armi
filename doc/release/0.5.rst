@@ -32,6 +32,7 @@ New Features
 #. Supporting Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Supporting Python 3.13. (`PR#1996 <https://github.com/terrapower/armi/pull/1996>`_)
 #. Adding data models for ex-core structures in ARMI. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
+#. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
 #. Opening some DBs without the ``App`` that created them. (`PR#1917 <https://github.com/terrapower/armi/pull/1917>`_)
 #. Adding support for ENDF/B-VII.1-based MC2-3 libraries. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. Adding setting ``mcnpLibraryVersion`` to chosen ENDF library for MCNP. (`PR#1989 <https://github.com/terrapower/armi/pull/1989>`_)
