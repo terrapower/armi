@@ -31,7 +31,7 @@ from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 

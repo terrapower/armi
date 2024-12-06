@@ -31,7 +31,8 @@ from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
+from armi.testing import loadTestReactor
+from armi.tests import TEST_ROOT
 
 
 class PluginFlags1(plugins.ArmiPlugin):
