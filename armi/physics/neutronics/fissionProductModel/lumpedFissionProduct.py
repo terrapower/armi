@@ -20,13 +20,12 @@ These are generally managed by the
 """
 import os
 
-from armi.nucDirectory import nuclideBases
 from armi import runLog
 from armi.nucDirectory import elements
-
+from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_LFP_COMPOSITION_FILE_PATH,
     CONF_FP_MODEL,
+    CONF_LFP_COMPOSITION_FILE_PATH,
 )
 
 
@@ -166,7 +165,7 @@ class LumpedFissionProduct:
         """
         massFracDenom = self.getMassFracDenom()
         if not nuclideBase:
-            nuclideBase = nuclideBases.byName[nucName]
+            nuclideBase = nuclideBases.byName[nucName]  # TODO: JOHN make non-optional
         return self.__getitem__(nuclideBase) * (nuclideBase.weight / massFracDenom)
 
     def getMassFracDenom(self):
@@ -349,15 +348,14 @@ class FissionProductDefinitionFile:
             data = line.split()
             parent = data[0]
             nucLibId = data[1]
-            nuc = nuclideBases.byName[nucLibId]
+            nuc = nuclideBases.byName[nucLibId]  # TODO: JOHN
             yld = float(data[2])
             lfp.yld[nuc] = yld
             totalYield += yld
 
         lfp.name = parent  # e.g. LFP38
         runLog.debug(
-            "Loaded {0} {1} nuclides for a total yield of {2}"
-            "".format(len(lfp.yld), lfp.name, totalYield)
+            f"Loaded {len(lfp.yld)} {lfp.name} nuclides for a total yield of {totalYield}"
         )
         return lfp
 
@@ -381,6 +379,7 @@ def lumpedFissionProductFactory(cs):
     with open(lfpPath) as lfpStream:
         lfpFile = FissionProductDefinitionFile(lfpStream)
         lfps = lfpFile.createLFPsFromFile()
+
     return lfps
 
 
@@ -391,9 +390,9 @@ def _buildMo99LumpedFissionProduct():
     This is a very bad FP approximation from a physics standpoint but can be very useful
     for rapid-running test cases.
     """
-    mo99 = nuclideBases.byName["MO99"]
+    mo99 = nuclideBases.byName["MO99"]  # TODO: JOHN
     mo99LFPs = LumpedFissionProductCollection()
-    for lfp in nuclideBases.where(
+    for lfp in nuclideBases.where(  # TODO: JOHN
         lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)
     ):
         # Not all lump nuclides bases defined are fission products, so ensure that only fission
@@ -412,4 +411,5 @@ def isGas(nuc):
     for element in elements.getElementsByChemicalPhase(elements.ChemicalPhase.GAS):
         if element == nuc.element:
             return True
+
     return False

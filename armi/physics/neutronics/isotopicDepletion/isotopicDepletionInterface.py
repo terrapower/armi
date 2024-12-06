@@ -182,7 +182,7 @@ def makeXsecTable(
         if xsType != xsLibraries.getSuffixFromNuclideLabel(nucLabel):
             continue
         nucName = nuc.name
-        nb = nuclideBases.byName[nucName]
+        nb = nuclideBases.byName[nucName]  # TODO: JOHN
         if isinstance(
             nb, (nuclideBases.LumpNuclideBase, nuclideBases.DummyNuclideBase)
         ):
