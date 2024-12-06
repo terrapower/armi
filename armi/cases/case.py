@@ -514,7 +514,7 @@ class Case:
     def initializeOperator(self, r=None):
         """Creates and returns an Operator."""
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
-            self._initBurnChain()
+            self._initBurnChain(r)
             o = operators.factory(self.cs)
             if not r:
                 r = reactors.factory(self.cs, self.bp)
@@ -524,16 +524,15 @@ class Case:
             r.core.timeOfStart = self._startTime
             return o
 
-    def _initBurnChain(self):
+    def _initBurnChain(self, r):
         """
         Apply the burn chain setting to the nucDir.
 
         Notes
         -----
-        This is admittedly an odd place for this but the burn chain info must be
-        applied sometime after user-input has been loaded (for custom burn chains)
-        but not long after (because nucDir is framework-level and expected to be
-        up-to-date by lots of modules).
+        This is admittedly an odd place for this but the burn chain info must be applied sometime
+        after user-input has been loaded (for custom burn chains) but not long after (because nucDir
+        is framework-level and expected to be up-to-date by lots of modules).
         """
         if not self.cs["initializeBurnChain"]:
             runLog.info(
@@ -549,7 +548,9 @@ class Case:
             )
 
         with open(self.cs["burnChainFileName"]) as burnChainStream:
-            nuclideBases.imposeBurnChain(burnChainStream)
+            nuclideBases.imposeBurnChain(burnChainStream)  # TODO: JOHN, to be removed
+            if r:
+                r.nuclideBases.imposeBurnChain(burnChainStream)
 
     def checkInputs(self):
         """
