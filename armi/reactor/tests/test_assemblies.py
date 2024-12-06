@@ -204,7 +204,6 @@ class Assembly_TestCase(unittest.TestCase):
         )
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
-        self.r.core.add(self.assembly)
 
         # Use these if they are needed
         self.blockParams = {
@@ -267,6 +266,7 @@ class Assembly_TestCase(unittest.TestCase):
             self.assembly.add(b)
             self.blockList.append(b)
 
+        self.r.core.add(self.assembly)
         self.assembly.calculateZCoords()
 
     def test_isOnWhichSymmetryLine(self):
@@ -344,6 +344,35 @@ class Assembly_TestCase(unittest.TestCase):
 
         cur = self.assembly.spatialLocator
         self.assertEqual(cur, ref)
+
+    def test_scaleParamsWhenMoved(self):
+        """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
+        blockParams = {
+            # volume integrated parameters
+            "massHmBOL": 9.0,
+            "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
+            "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
+            "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
+        }
+        for b in self.assembly.getBlocks(Flags.FUEL):
+            b.p.update(blockParams)
+
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
+        locator = self.r.core.spatialGrid[i, j, 0]
+        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+        self.assembly.moveTo(locator)
+        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+        for b in self.assembly.getBlocks(Flags.FUEL):
+            # float
+            assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
+            # np.ndarray
+            assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
+            # list
+            assert_allclose(
+                np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3
+            )
+            # string
+            self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
 
     def test_getName(self):
         cur = self.assembly.getName()
