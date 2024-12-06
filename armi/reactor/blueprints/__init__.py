@@ -389,7 +389,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         # Flag all elementals for expansion unless they've been flagged otherwise by
         # user input or automatic lattice/datalib rules.
-        for nucBase in nuclideBases.instances:
+        for nucBase in nuclideBases.instances:  # TODO: JOHN
             isAlreadyIsotopic = not isinstance(nucBase, nuclideBases.NaturalNuclideBase)
             if isAlreadyIsotopic:
                 # `elemental` may be a NaturalNuclideBase or a NuclideBase
@@ -421,7 +421,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             ):
                 # user-input expandTo has precedence
                 newNuclides = [
-                    nuclideBases.byName[nn]
+                    nuclideBases.byName[nn]  # TODO: JOHN
                     for nn in nuclideFlags[elemental.element.symbol].expandTo
                 ]
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
@@ -470,7 +470,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         self.nucsToForceInXsGen = ordered_set.OrderedSet(sorted(nucsToForceInXsGen))
 
         # Inform user which nuclides are truncating the burn chain.
-        if undefBurnChainActiveNuclides and nuclideBases.burnChainImposed:
+        if undefBurnChainActiveNuclides and nuclideBases.burnChainImposed:  # TODO: JOHN
             runLog.info(
                 tabulate.tabulate(
                     [

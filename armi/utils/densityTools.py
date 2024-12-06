@@ -51,7 +51,7 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     numberDensities = {}
     rho = rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
     for nucName, massFrac in massFracs.items():
-        atomicWeight = nuclideBases.byName[nucName].weight
+        atomicWeight = nuclideBases.byName[nucName].weight  # TODO: JOHN
         numberDensities[nucName] = massFrac * rho / atomicWeight
     return numberDensities
 
@@ -68,8 +68,7 @@ def getMassFractions(numberDensities):
     Returns
     -------
     massFracs : dict
-        mass fractions -- normalized to 1 -- keyed by their nuclide
-        name
+        mass fractions -- normalized to 1 -- keyed by their nuclide name
     """
     nucMassFracs = {}
     totalWeight = 0.0
@@ -104,7 +103,7 @@ def calculateMassDensity(numberDensities):
     """
     rho = 0
     for nucName, nDensity in numberDensities.items():
-        atomicWeight = nuclideBases.byName[nucName].weight
+        atomicWeight = nuclideBases.byName[nucName].weight  # TODO: JOHN
         rho += nDensity * atomicWeight / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
     return rho
 
@@ -192,8 +191,7 @@ def formatMaterialCard(
         The boolean ``mcnp6Compatible`` may optionally be provided to include the nuclide library at
         the end of the vector of individual nuclides using the "nlib=" syntax leveraged by MCNP. If
         this boolean is turned on, the associated value ``mcnpLibrary`` should generally also be
-        provided, as otherwise, the library will be left blank in the resulting material card
-        string.
+        provided, as otherwise the library will be left blank in the resulting material card string.
 
     Parameters
     ----------
@@ -211,7 +209,7 @@ def formatMaterialCard(
 
     Returns
     -------
-    mCard : list
+    list
         list of material card strings
     """
     if all(
@@ -285,19 +283,20 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
         :id: I_ARMI_UTIL_DENS_TOOLS
         :implements: R_ARMI_UTIL_DENS_TOOLS
 
-        Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nucNames`` or ``nuclideBases``),
-        normalizes to the provided ``normalization`` value.
+        Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nucNames`` or
+        ``nuclideBases``), normalizes to the provided ``normalization`` value.
 
     Parameters
     ----------
     nuclideVector : dict
-        dictionary of values -- e.g. floats, ints -- indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
+        dictionary of values -- e.g. floats, ints -- indexed by nuclide identifiers -- e.g. nucNames
+        or nuclideBases
 
     normalization : float
 
     Returns
     -------
-    nuclideVector : dict
+    dict
         dictionary of values indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
     """
     normalizationFactor = sum(nuclideVector.values()) / normalization
@@ -419,6 +418,7 @@ def getChemicals(nuclideInventory):
     """
     chemicals = {}
     for nuc, N in nuclideInventory.items():
+        # TODO: JOHN
         nb = nuc if isinstance(nuc, nuclideBases.INuclide) else nuclideBases.byName[nuc]
 
         if nb.element.symbol in chemicals:
@@ -458,9 +458,10 @@ def applyIsotopicsMix(
     total = sum(material.massFrac.values())
     hm = 0.0
     for nucName, massFrac in material.massFrac.items():
-        nb = nuclideBases.byName[nucName]
+        nb = nuclideBases.byName[nucName]  # TODO: JOHN
         if nb.isHeavyMetal():
             hm += massFrac
+
     hmFrac = hm / total
     hmEnrich = material.class1_wt_frac
     for nucName in (
@@ -468,7 +469,7 @@ def applyIsotopicsMix(
         .union(set(fertileMassFracs.keys()))
         .union(set(material.massFrac.keys()))
     ):
-        nb = nuclideBases.byName[nucName]
+        nb = nuclideBases.byName[nucName]  # TODO: JOHN
         if nb.isHeavyMetal():
             material.massFrac[nucName] = hmFrac * (
                 hmEnrich * enrichedMassFracs.get(nucName, 0.0)

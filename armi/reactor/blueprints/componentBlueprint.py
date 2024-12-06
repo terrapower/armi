@@ -409,7 +409,7 @@ def expandElementals(mat, blueprint):
             continue
         nucFlags = blueprint.nuclideFlags.get(elementToExpand.symbol)
         nuclidesToBecome = (
-            [nuclideBases.byName[nn] for nn in nucFlags.expandTo]
+            [nuclideBases.byName[nn] for nn in nucFlags.expandTo]  # TODO: JOHN
             if (nucFlags and nucFlags.expandTo)
             else None
         )
@@ -452,7 +452,7 @@ def insertDepletableNuclideKeys(c, blueprint):
     """
     if c.hasFlags(Flags.DEPLETABLE):
         # depletable components, whether auto-derived or explicitly flagged need expanded nucs
-        nuclideBases.initReachableActiveNuclidesThroughBurnChain(
+        nuclideBases.initReachableActiveNuclidesThroughBurnChain(  # TODO: JOHN
             c.p.numberDensities,
             blueprint.activeNuclides,
         )

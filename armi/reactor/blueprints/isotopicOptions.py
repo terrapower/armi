@@ -38,6 +38,7 @@ from armi.physics.neutronics.settings import (
     CONF_XS_KERNEL,
 )
 
+# TODO: JOHN
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
 
@@ -103,9 +104,7 @@ class NuclideFlag(yamlize.Object):
     def nuclideName(self, value):
         if value not in ALLOWED_KEYS:
             raise ValueError(
-                "`{}` is not a valid nuclide name, must be one of: {}".format(
-                    value, ALLOWED_KEYS
-                )
+                f"`{value}` is not a valid nuclide name, must be one of: {ALLOWED_KEYS}"
             )
 
     burn = yamlize.Attribute(type=bool)
@@ -133,9 +132,9 @@ class NuclideFlag(yamlize.Object):
         occur in such a problem.
         """
         undefBurnChainActiveNuclides = set()
-        nb = nuclideBases.byName[self.nuclideName]
+        nb = nuclideBases.byName[self.nuclideName]  # TODO: JOHN
         if self.expandTo:
-            nucBases = [nuclideBases.byName[nn] for nn in self.expandTo]
+            nucBases = [nuclideBases.byName[nn] for nn in self.expandTo]  # TODO: JOHN
             expanded = [nb.element]  # error to expand non-elements
         else:
             nucBases = [nb]
@@ -358,7 +357,7 @@ class CustomIsotopic(yamlize.Map):
         """
         elementsToExpand = []
         for nucName in self.massFracs:
-            if nucName not in nuclideBases.byName:
+            if nucName not in nuclideBases.byName:  # TODO: JOHN
                 element = elements.bySymbol.get(nucName)
                 if element is not None:
                     runLog.info(
@@ -486,6 +485,7 @@ def getDefaultNuclideFlags():
     return nuclideFlags
 
 
+# TODO: JOHN
 def eleExpandInfoBasedOnCodeENDF(cs):
     """
     Intelligently choose elements to expand based on code and ENDF version.
@@ -636,15 +636,15 @@ def autoUpdateNuclideFlags(cs, nuclideFlags, inerts):
 
 def getAllNuclideBasesByLibrary(cs):
     """
-    Return a list of nuclide bases available for cross section modeling
-    based on the ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
+    Return a list of nuclide bases available for cross section modeling based on the
+    ``CONF_FISSION_PRODUCT_LIBRARY_NAME`` setting.
     """
     nbs = []
     if cs[CONF_FP_MODEL] == "explicitFissionProducts":
         if not cs[CONF_FISSION_PRODUCT_LIBRARY_NAME]:
             nbs = []
         if cs[CONF_FISSION_PRODUCT_LIBRARY_NAME] == "MC2-3":
-            nbs = nuclideBases.byMcc3Id.values()
+            nbs = nuclideBases.byMcc3Id.values()  # TODO: JOHN
         else:
             raise ValueError(
                 "An option to handle the `CONF_FISSION_PRODUCT_LIBRARY_NAME` "
