@@ -225,7 +225,7 @@ class FuelHandler:
         if blockLevelMax:
             return a.getChildParamValues(paramName).max() * multiplier
 
-        return a.p[paramName]
+        return a.p[paramName] * multiplier
 
     def findAssembly(
         self,
