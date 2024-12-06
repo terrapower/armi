@@ -216,13 +216,13 @@ class Assembly(composites.Composite):
         self.clearCache()
         self.scaleParamsToNewSymmetryFactor(oldSymmetryFactor)
 
-    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor=1.0):
-        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
-            ParamLocation.VOLUME_INTEGRATED
-        )
+    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor):
         scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
         if scalingFactor == 1:
             return  # noop
+        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+            ParamLocation.VOLUME_INTEGRATED
+        )
         for b in self.getBlocks():
             for param in volIntegratedParamsToScale:
                 name = param.name
