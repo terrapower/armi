@@ -66,7 +66,6 @@ from armi.bookkeeping.db.layout import (
     replaceNonsenseWithNones,
 )
 from armi.bookkeeping.db.typedefs import Histories, History
-from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids, parameters, systemLayoutInput
 from armi.reactor.assemblies import Assembly
@@ -1772,8 +1771,11 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     Remove this once a better viz tool can view composition distributions. Also remove
     the try/except in ``_readParams``
     """
+    assert len(blocks) > 0
+    nb = blocks[0].nuclideBases
+
     nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
-    nucBases = [nuclideBases.byName[nn] for nn in nucNames]
+    nucBases = [nb.byName[nn] for nn in nucNames]
     # it's faster to loop over blocks first and get all number densities from each
     # than it is to get one nuclide at a time from each block because of area fraction
     # calculations. So we use some RAM here instead.
