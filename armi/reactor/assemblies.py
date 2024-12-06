@@ -230,9 +230,7 @@ class Assembly(composites.Composite):
                 if b.p[name] is None or isinstance(b.p[name], str):
                     continue
                 elif isinstance(b.p[name], np.ndarray):
-                    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", b.p[name])
                     b.p[name] = b.p[name] * scalingFactor
-                    print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", b.p[name])
                 elif isinstance(b.p[name], Iterable):
                     b.p[name] = [value * scalingFactor for value in b.p[name]]
                 else:
