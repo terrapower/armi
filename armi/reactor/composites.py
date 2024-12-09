@@ -3118,12 +3118,7 @@ class Composite(ArmiObject):
         nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
         puN = sum(self.getNuclideNumberDensities(nucNames))
 
-        return (
-            puN
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
+        return puN / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
 
 
 class StateRetainer:
