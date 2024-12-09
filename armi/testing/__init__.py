@@ -26,9 +26,7 @@ import os
 
 from six.moves import cPickle
 
-from armi import operators
-from armi import runLog
-from armi import settings
+from armi import operators, runLog, settings
 from armi.reactor import reactors
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 
