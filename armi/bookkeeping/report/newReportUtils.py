@@ -628,9 +628,17 @@ def insertCoreAndAssemblyMaps(
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-    assemPrototypes = set()
+    assemPrototypes = []
     for aKey in blueprint.assemDesigns.keys():
-        assemPrototypes.add(blueprint.constructAssem(cs, name=aKey))
+        a = blueprint.constructAssem(cs, name=aKey)
+        # since we will be plotting cold input heights, we need to make sure that
+        # that these new assemblies have access to a blueprints somewhere up the
+        # composite chain. normally this would happen through an assembly's parent
+        # reactor, but because these newly created assemblies are in the load queue,
+        # they will not have a parent reactor. to get around this, we just attach
+        # the blueprints to the assembly directly.
+        a.blueprints = blueprint
+        assemPrototypes.append(a)
 
     counts = {
         assemDesign.name: len(r.core.getChildrenOfType(assemDesign.name))
@@ -648,7 +656,7 @@ def insertCoreAndAssemblyMaps(
     report[DESIGN]["Assembly Designs"] = newReports.Section("Assembly Designs")
     currentSection = report[DESIGN]["Assembly Designs"]
     for plotNum, assemBatch in enumerate(
-        iterables.chunk(list(assemPrototypes), MAX_ASSEMS_PER_ASSEM_PLOT), start=1
+        iterables.chunk(assemPrototypes, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
         assemPlotImage = newReports.Image(
             imageCaption,
@@ -656,11 +664,11 @@ def insertCoreAndAssemblyMaps(
         )
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
         plotting.plotAssemblyTypes(
-            blueprint,
-            assemPlotName,
             assemBatch,
+            assemPlotName,
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
+            hot=False,
         )
         currentSection.addChildElement(assemPlotImage, assemPlotName)
 
