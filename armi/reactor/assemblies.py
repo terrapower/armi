@@ -326,10 +326,8 @@ class Assembly(composites.Composite):
         -------
         This is a bit design-specific for pinned assemblies
         """
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
-
         plenumVolume = 0.0
-        for b in plenumBlocks:
+        for b in self.iterBlocks(Flags.PLENUM):
             cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
             plenumVolume += (
@@ -339,7 +337,7 @@ class Assembly(composites.Composite):
 
     def getAveragePlenumTemperature(self):
         """Return the average of the plenum block outlet temperatures."""
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
+        plenumBlocks = self.iterBlocks(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
         # no plenum blocks, use the top block of the assembly for plenum temperature
@@ -814,6 +812,31 @@ class Assembly(composites.Composite):
         with open(fName, "w") as pkl:
             pickle.dump(self, pkl)
 
+    def iterBlocks(self, typeSpec=None, exact=False):
+        """Produce an iterator over all blocks in this assembly from bottom to top.
+
+        Parameters
+        ----------
+        typeSpec : Flags or list of Flags, optional
+            Restrict returned blocks to have these flags.
+        exact : bool, optional
+            If true, only produce blocks that have those exact flags.
+
+        Returns
+        -------
+        iterable of Block
+
+        See also
+        --------
+        * :meth:`__iter__` - if no type spec provided, assemblies can be
+          naturally iterated upon.
+        * :meth:`iterChildrenWithFlags` - alternative if you know you have
+           a type spec that isn't ``None``.
+        """
+        if typeSpec is None:
+            return iter(self)
+        return self.iterChildrenWithFlags(typeSpec, exact)
+
     def getBlocks(self, typeSpec=None, exact=False):
         """
         Get blocks in an assembly from bottom to top.
@@ -830,10 +853,7 @@ class Assembly(composites.Composite):
         blocks : list
             List of blocks.
         """
-        if typeSpec is None:
-            return self.getChildren()
-        else:
-            return self.getChildrenWithFlags(typeSpec, exactMatch=exact)
+        return list(self.iterBlocks(typeSpec, exact))
 
     def getBlocksAndZ(self, typeSpec=None, returnBottomZ=False, returnTopZ=False):
         """
@@ -1191,7 +1211,7 @@ class Assembly(composites.Composite):
         blockCounter : int
             number of blocks of this type
         """
-        return len(self.getBlocks(blockTypeSpec))
+        return sum(1 for _ in self.iterBlocks(blockTypeSpec))
 
     def getDim(self, typeSpec, dimName):
         """
