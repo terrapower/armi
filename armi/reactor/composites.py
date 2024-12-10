@@ -36,7 +36,7 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union, Iterator, Callable
 
 import numpy as np
 import six
@@ -2520,6 +2520,8 @@ class Composite(ArmiObject):
 
     """
 
+    _children: list["Composite"]
+
     def __init__(self, name):
         ArmiObject.__init__(self, name)
         self.childrenByLocator = {}
@@ -2616,6 +2618,72 @@ class Composite(ArmiObject):
         self.removeAll()
         for c in items:
             self.add(c)
+
+    def iterChildren(
+        self,
+        deep=False,
+        generationNum=1,
+        predicate: Optional[Callable[["Composite"], bool]] = None,
+    ) -> Iterator["Composite"]:
+        """Iterate over children objects of this composite.
+        
+        Parameters
+        ----------
+        deep : bool, optional
+        generationNum: int, optional
+        predicate: f(Composite) -> bool, optional,
+        
+        Returns
+        -------
+        iterator of Composite
+        
+        See Also
+        --------
+        :meth:`getChildren` produces a list for situations where you need to perform
+        multiple iterations or do list operations (append, indexing, sorting, containment, etc.)
+        
+        Composites are naturally iterable. The following are identical::
+
+            >>> for child in c.getChildren():
+            ...     pass
+            >>> for child in c.iterChildren():
+            ...     pass
+            >>> for child in c:
+            ...     pass
+
+        If you do not need any depth-traversal, natural iteration should be sufficient.
+        
+        The :func:`filter` command may be sufficient if you do not wish to pass a predicate. The following
+        are identical::
+            >>> checker = lambda c: len(c.name) % 3
+            >>> for child in c.getChildren(predicate=checker):
+            ...     pass
+            >>> for child in c.iterChildren(predicate=checker):
+            ...     pass
+            >>> for child in filter(checker, c):
+            ...     pass
+
+        If you're going to be doing traversal beyond the first generation, this method will help you.
+        
+        """
+        if deep and generationNum > 1:
+            raise RuntimeError(
+                "Cannot get children with a generation number set and the deep flag set"
+            )
+        if predicate is None:
+            checker = lambda _: True
+        else:
+            checker = predicate
+        yield from self._iterChildren(deep, generationNum, checker)
+
+    def _iterChildren(
+        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
+    ) -> Iterator["Composite"]:
+        if deep or generationNum == 1:
+            yield from filter(checker, self)
+        if deep or generationNum > 1:
+            for c in self:
+                yield from c._iterChildren(deep, generationNum - 1, checker)
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None

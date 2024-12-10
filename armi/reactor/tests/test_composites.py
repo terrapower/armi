@@ -191,6 +191,48 @@ class TestCompositePattern(unittest.TestCase):
         else:
             raise RuntimeError("No materials found with includeMaterials=True")
 
+    def test_iterChildren(self):
+        """Detailed testing on Composite.iterChildren."""
+
+        def compareIterables(actual, expected: list[composites.Composite]):
+            for e in expected:
+                a = next(actual)
+                self.assertIs(a, e)
+            # Ensure we've consumed the actual iterator and there's nothing left
+            with self.assertRaises(StopIteration):
+                next(actual)
+
+        compareIterables(self.container.iterChildren(), self.tree[1])
+        compareIterables(self.container.iterChildren(generationNum=2), self.tree[2])
+        compareIterables(self.container.iterChildren(generationNum=3), self.tree[3])
+        compareIterables(
+            self.container.iterChildren(deep=True),
+            self.tree[1] + self.tree[2] + self.tree[3],
+        )
+
+    def test_iterAndGetChildren(self):
+        """Compare that iter children and get children are consistent."""
+        self._compareIterGetChildren()
+        self._compareIterGetChildren(deep=True)
+        self._compareIterGetChildren(generationNum=2)
+        # Some wacky predicate just to check we can use that too
+        self._compareIterGetChildren(deep=True, predicate=lambda c: len(c.name) % 3)
+
+    def _compareIterGetChildren(self, **kwargs):
+        fromIter = self.container.iterChildren(**kwargs)
+        fromGetter = self.container.getChildren(**kwargs)
+        msg = repr(kwargs)
+        # Use zip longest just in case one iterator comes up short
+        for count, (it, gt) in enumerate(itertools.zip_longest(fromIter, fromGetter)):
+            self.assertIs(it, gt, msg=f"{count=} :: {msg}")
+
+    def test_simpleIterChildren(self):
+        """Test that C.iterChildren() is identical to iter(C)."""
+        for count, (fromNative, fromIterChildren) in enumerate(
+            itertools.zip_longest(self.container, self.container.iterChildren())
+        ):
+            self.assertIs(fromIterChildren, fromNative, msg=count)
+
     def test_getName(self):
         """Test the getName method.
 
