@@ -195,9 +195,8 @@ class TestHistoryTracker(ArmiTestHelper):
         # verify the power parameter is retrievable from the history
         self.assertEqual(o.cs["power"], 1000000000.0)
         self.assertAlmostEqual(params["power"][0], 360, delta=0.1)
-        self.assertEqual(
-            params["power"][0] / 3, params["power"][1]
-        )  # assembly was moved to the central location with 1/3rd symmetry
+        # assembly was moved to the central location with 1/3rd symmetry
+        self.assertEqual(params["power"][0] / 3, params["power"][1])
 
         # verify the power density parameter is retrievable from the history
         self.assertAlmostEqual(params["pdens"][0], 0.0785, delta=0.001)

@@ -229,11 +229,10 @@ class Assembly(composites.Composite):
                 name = param.name
                 if b.p[name] is None or isinstance(b.p[name], str):
                     continue
-                elif isinstance(b.p[name], np.ndarray):
-                    b.p[name] = b.p[name] * scalingFactor
                 elif isinstance(b.p[name], Iterable):
                     b.p[name] = [value * scalingFactor for value in b.p[name]]
                 else:
+                    # numpy array or other
                     b.p[name] = b.p[name] * scalingFactor
 
     def getNum(self):
