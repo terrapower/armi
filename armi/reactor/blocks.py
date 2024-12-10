@@ -930,7 +930,7 @@ class Block(composites.Composite):
         self._updatePitchComponent(c)
 
     def removeAll(self, recomputeAreaFractions=True):
-        for c in self.getChildren():
+        for c in list(self):
             self.remove(c, recomputeAreaFractions=False)
         if recomputeAreaFractions:  # only do this once
             self.getVolumeFractions()
