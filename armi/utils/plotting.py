@@ -706,27 +706,24 @@ class DepthSlider(Slider):
 
 
 def plotAssemblyTypes(
-    blueprints=None,
-    fileName=None,
     assems=None,
+    fileName=None,
     maxAssems=None,
     showBlockAxMesh=True,
     yAxisLabel=None,
     title=None,
+    hot=True,
 ) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
 
     Parameters
     ----------
-    blueprints: Blueprints
-        The blueprints to plot assembly types of. (Either this or ``assems`` must be non-None.)
+    assems: list
+        list of assembly objects to be plotted.
 
     fileName : str or None
         Base for filename to write, or None for just returning the fig
-
-    assems: list
-        list of assembly objects to be plotted. (Either this or ``blueprints`` must be non-None.)
 
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
@@ -740,24 +737,14 @@ def plotAssemblyTypes(
     title: str
         Optionally, provide a title for the plot.
 
+    hot : bool, optional
+        If True, plot the hot block heights. If False, use cold heights from the inputs.
+
     Returns
     -------
     fig : plt.Figure
         The figure object created
     """
-    # input validation
-    if assems is None and blueprints is None:
-        raise ValueError(
-            "At least one of these inputs must be non-None: blueprints, assems"
-        )
-
-    # handle defaults
-    if assems is None:
-        assems = list(blueprints.assemblies.values())
-
-    if not isinstance(assems, (list, set, tuple)):
-        assems = [assems]
-
     if maxAssems is not None and not isinstance(maxAssems, int):
         raise TypeError("Maximum assemblies should be an integer")
 
@@ -792,6 +779,7 @@ def plotAssemblyTypes(
             xAssemLoc,
             xAssemEndLoc,
             showBlockAxMesh,
+            hot,
         )
         xAxisLabel = re.sub(" ", "\n", assem.getType().upper())
         ax.text(
@@ -840,6 +828,7 @@ def _plotBlocksInAssembly(
     xAssemLoc,
     xAssemEndLoc,
     showBlockAxMesh,
+    hot,
 ):
     # Set dictionary of pre-defined block types and colors for the plot
     lightsage = "xkcd:light sage"
@@ -865,11 +854,18 @@ def _plotBlocksInAssembly(
     xTextLoc = xBlockLoc + blockWidth / 20.0
     for b in assem:
         # get block height
-        try:
-            blockHeight = b.getInputHeight()
-        except AttributeError:
-            runLog.debug(f"No ancestor of {b} has blueprints", single=True)
+        if hot:
             blockHeight = b.getHeight()
+        else:
+            try:
+                blockHeight = b.getInputHeight()
+            except AttributeError:
+                raise ValueError(
+                    f"Cannot plot cold height for block {b} in assembly {assem} "
+                    "because it does not have access to a blueprints through any "
+                    "of its parents. Either make sure that a blueprints is accessible "
+                    " or plot the hot heights instead."
+                )
 
         # Get the basic text label for the block
         try:
