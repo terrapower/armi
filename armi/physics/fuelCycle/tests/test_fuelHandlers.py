@@ -811,7 +811,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
+        a2 = self.r.excore["sfp"].getChildrenWithFlags(Flags.FUEL)[0]
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
