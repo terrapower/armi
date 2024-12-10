@@ -525,6 +525,10 @@ class ArmiObject(metaclass=CompositeModelType):
         """Return the children of this object."""
         raise NotImplementedError
 
+    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
+        """Produce an iterator of children that have given flags."""
+        raise NotImplementedError()
+
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
         """Get all children that have given flags."""
         raise NotImplementedError
@@ -2701,13 +2705,14 @@ class Composite(ArmiObject):
 
         return children
 
+    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
+        """Produce an iterator over all children of a specific type."""
+        checker = operator.methodcaller("hasFlags", typeSpec, exactMatch)
+        return filter(checker, self)
+
     def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
         """Get all children of a specific type."""
-        children = []
-        for child in self:
-            if child.hasFlags(typeSpec, exact=exactMatch):
-                children.append(child)
-        return children
+        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
 
     def getChildrenOfType(self, typeName):
         """Get children that have a specific input type name."""

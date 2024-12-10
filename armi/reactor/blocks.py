@@ -1532,7 +1532,7 @@ class Block(composites.Composite):
         :meth:`getPinCoordinates` - companion for this method.
         """
         items = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
+        for clad in self.iterChildrenWithFlags(Flags.CLAD):
             if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
                 items.extend(clad.spatialLocator)
             else:
