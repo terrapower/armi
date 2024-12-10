@@ -95,17 +95,10 @@ class VtkDumper(dumper.VisFileDumper):
                 "includeParams and excludeParams can not both be used at the same time"
             )
 
-        blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
-        assems = r.getChildren(
-            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-        )
-
         blockMesh = utils.createReactorBlockMesh(r)
-        assemMesh = utils.createReactorAssemMesh(r)
-
-        # collect param data
+        # Use r.getChildren here because we need to iterate over the blocks twice
+        blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
         blockData = _collectObjectData(blks, includeParams, excludeParams)
-        assemData = _collectObjectData(assems, includeParams, excludeParams)
         # block number densities are special, since they arent stored as params
         blockNdens = database.collectBlockNumberDensities(blks)
         # we need to copy the number density vectors to guarantee unit stride, which
@@ -116,6 +109,11 @@ class VtkDumper(dumper.VisFileDumper):
         fullPath = blockMesh.write(blockPath, blockData)
         self._blockFiles.append((fullPath, r.p.time))
 
+        assems = r.iterChildren(
+            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
+        )
+        assemMesh = utils.createReactorAssemMesh(r)
+        assemData = _collectObjectData(assems, includeParams, excludeParams)
         fullPath = assemMesh.write(assemPath, assemData)
         self._assemFiles.append((fullPath, r.p.time))
 
