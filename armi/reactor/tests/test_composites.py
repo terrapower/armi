@@ -478,6 +478,17 @@ class TestCompositePattern(unittest.TestCase):
         for child in self.tree[1]:
             self.assertIsNone(child.parent)
 
+    def test_setChildren(self):
+        """Test the ability to override children on a composite."""
+        newChildren = self.tree[2] + self.tree[3]
+        oldChildren = list(self.container)
+        self.container.setChildren(newChildren)
+        self.assertEqual(len(self.container), len(newChildren))
+        for old in oldChildren:
+            self.assertIsNone(old.parent)
+        for actualNew, expectedNew in zip(newChildren, self.container):
+            self.assertIs(actualNew, expectedNew)
+
 
 class TestCompositeTree(unittest.TestCase):
     blueprintYaml = """
