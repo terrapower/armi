@@ -467,6 +467,17 @@ class TestCompositePattern(unittest.TestCase):
         with self.assertRaises(StopIteration):
             next(clads)
 
+    def test_removeAll(self):
+        """Test the ability to remove all children of a composite."""
+        self.container.removeAll()
+        self.assertEqual(len(self.container), 0)
+        # Nothing to iterate over
+        items = iter(self.container)
+        with self.assertRaises(StopIteration):
+            next(items)
+        for child in self.tree[1]:
+            self.assertIsNone(child.parent)
+
 
 class TestCompositeTree(unittest.TestCase):
     blueprintYaml = """
