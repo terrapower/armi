@@ -94,6 +94,7 @@ class TestPlotting(unittest.TestCase):
             0.5,
             5.6,
             True,
+            hot=True,
         )
         self.assertEqual(xBlockLoc, 0.5)
         self.assertEqual(yBlockHeights[0], 25.0)
