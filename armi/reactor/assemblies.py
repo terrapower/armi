@@ -220,7 +220,8 @@ class Assembly(composites.Composite):
     def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor):
         scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
         if scalingFactor == 1:
-            return  # noop
+            return
+
         volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
             ParamLocation.VOLUME_INTEGRATED
         )
