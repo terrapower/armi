@@ -222,7 +222,7 @@ class Assembly(composites.Composite):
         volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
             ParamLocation.VOLUME_INTEGRATED
         )
-        for b in self.getBlocks():
+        for b in self:
             for param in volIntegratedParamsToScale:
                 name = param.name
                 if b.p[name] is None or isinstance(b.p[name], str):
