@@ -904,10 +904,25 @@ class Assembly(composites.Composite):
         return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
     def getFirstBlock(self, typeSpec=None, exact=False):
-        bs = self.getBlocks(typeSpec, exact=exact)
-        if bs:
-            return bs[0]
-        else:
+        """Find the first block that matches the spec.
+
+        Parameters
+        ----------
+        typeSpec : flag or list of flags, optional
+            Specification to require on the returned block.
+        exact : bool, optional
+            Require block to exactly match ``typeSpec``
+
+        Returns
+        -------
+        Block or None
+            First block that matches if such a block could be found.
+        """
+        try:
+            # Create an iterator and attempt to advance it to the first value.
+            return next(self.iterBlocks(typeSpec, exact))
+        except StopIteration:
+            # No items found in the iteration -> no blocks match the request
             return None
 
     def getFirstBlockByType(self, typeName):
