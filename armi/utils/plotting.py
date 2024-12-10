@@ -24,6 +24,7 @@ generating.
 """
 
 import collections
+import copy
 import itertools
 import math
 import os
@@ -713,32 +714,37 @@ def plotAssemblyTypes(
     showBlockAxMesh=True,
     yAxisLabel=None,
     title=None,
+    hot=True,
 ) -> plt.Figure:
     """
-    Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
+    Generate a plot showing the axial block and enrichment distributions of each
+    assembly in either `blueprints` or `assems`.
 
     Parameters
     ----------
-    blueprints: Blueprints
+    blueprints: Blueprints, optional
         The blueprints to plot assembly types of. (Either this or ``assems`` must be non-None.)
 
-    fileName : str or None
+    fileName : str, optional
         Base for filename to write, or None for just returning the fig
 
-    assems: list
+    assems: list, optional
         list of assembly objects to be plotted. (Either this or ``blueprints`` must be non-None.)
 
-    maxAssems: integer
-        maximum number of assemblies to plot in the assems list.
+    maxAssems: int, optional
+        Maximum number of assemblies to plot in the assems list.
 
-    showBlockAxMesh: bool
-        if true, the axial mesh information will be displayed on the right side of the assembly plot.
+    showBlockAxMesh: bool, optional
+        If true, the axial mesh information will be displayed on the right side of the assembly plot.
 
-    yAxisLabel: str
-        Optionally, provide a label for the Y-axis.
+    yAxisLabel: str, optional
+        Provide a label for the Y-axis.
 
-    title: str
-        Optionally, provide a title for the plot.
+    title: str, optional
+        Provide a title for the plot.
+
+    hot : bool, optional
+        If True, plot the hot heights. If False, plot cold heights.
 
     Returns
     -------
@@ -750,20 +756,26 @@ def plotAssemblyTypes(
         raise ValueError(
             "At least one of these inputs must be non-None: blueprints, assems"
         )
-
-    # handle defaults
-    if assems is None:
-        assems = list(blueprints.assemblies.values())
-
-    if not isinstance(assems, (list, set, tuple)):
-        assems = [assems]
-
-    if maxAssems is not None and not isinstance(maxAssems, int):
-        raise TypeError("Maximum assemblies should be an integer")
+    elif assems and blueprints:
+        raise ValueError(
+            "Only one of `assems` or `blueprints` may be specified for plotting. "
+            "This is probably a developer error."
+        )
+    elif blueprints:
+        assems = []
+        for aOriginal in list(blueprints.assemblies.values()):
+            # this weird little hack is needed to make the blueprints available
+            # on assemblies that are in the load queue. techinically this is not
+            # required if hot heights are desired
+            aNew = copy.deepcopy(aOriginal)
+            aNew.blueprints = blueprints
+            assems.append(aNew)
 
     numAssems = len(assems)
     if maxAssems is None:
         maxAssems = numAssems
+    elif not isinstance(maxAssems, int):
+        raise TypeError("Maximum assemblies should be an integer")
 
     if yAxisLabel is None:
         yAxisLabel = "Axial Heights (cm)"
@@ -792,6 +804,7 @@ def plotAssemblyTypes(
             xAssemLoc,
             xAssemEndLoc,
             showBlockAxMesh,
+            hot,
         )
         xAxisLabel = re.sub(" ", "\n", assem.getType().upper())
         ax.text(
@@ -840,6 +853,7 @@ def _plotBlocksInAssembly(
     xAssemLoc,
     xAssemEndLoc,
     showBlockAxMesh,
+    hot,
 ):
     # Set dictionary of pre-defined block types and colors for the plot
     lightsage = "xkcd:light sage"
@@ -865,11 +879,10 @@ def _plotBlocksInAssembly(
     xTextLoc = xBlockLoc + blockWidth / 20.0
     for b in assem:
         # get block height
-        try:
-            blockHeight = b.getInputHeight()
-        except AttributeError:
-            runLog.debug(f"No ancestor of {b} has blueprints", single=True)
+        if hot:
             blockHeight = b.getHeight()
+        else:
+            blockHeight = b.getInputHeight()
 
         # Get the basic text label for the block
         try:

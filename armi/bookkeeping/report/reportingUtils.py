@@ -1073,11 +1073,10 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
         plotting.plotAssemblyTypes(
-            core.parent.blueprints,
-            assemPlotName,
-            assemBatch,
-            maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
+            blueprints=core.parent.blueprints,
+            fileName=assemPlotName,
             showBlockAxMesh=showBlockAxMesh,
+            hot=False,
         )
 
     # Create radial core map
