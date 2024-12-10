@@ -417,6 +417,14 @@ class TestCompositePattern(unittest.TestCase):
         numSynced = self.container._syncParameters(data, {})
         self.assertEqual(numSynced, 2)
 
+    def test_iterChildrenWithFlags(self):
+        expectedChildren = {c for c in self.container if c.hasFlags(Flags.DUCT)}
+        found = set()
+        for c in self.container.iterChildrenWithFlags(Flags.DUCT):
+            self.assertIn(c, expectedChildren)
+            found.add(c)
+        self.assertSetEqual(found, expectedChildren)
+
 
 class TestCompositeTree(unittest.TestCase):
     blueprintYaml = """
