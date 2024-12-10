@@ -77,6 +77,8 @@ class DummyLeaf(composites.Composite):
         composites.Composite.__init__(self, name)
         self.p.type = name
         self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
+        # Some special material attribute for testing getChildren(includeMaterials=True)
+        self.material = ("hello", "world")
 
     def getChildren(
         self, deep=False, generationNum=1, includeMaterials=False, predicate=None
@@ -172,6 +174,22 @@ class TestCompositePattern(unittest.TestCase):
         )
         self.assertEqual(len(onlyLiner), 1)
         self.assertIs(onlyLiner[0], self.secondGen)
+
+    def test_getChildrenWithMaterials(self):
+        """Test the ability for getChildren to place the material after the object."""
+        withMaterials = self.container.getChildren(deep=True, includeMaterials=True)
+        # Grab the iterable so we can control the progression
+        items = iter(withMaterials)
+        for item in items:
+            expectedMat = getattr(item, "material", None)
+            if expectedMat is None:
+                continue
+            # Material should be the next item in the list
+            actualMat = next(items)
+            self.assertIs(actualMat, expectedMat)
+            break
+        else:
+            raise RuntimeError("No materials found with includeMaterials=True")
 
     def test_getName(self):
         """Test the getName method.
