@@ -277,7 +277,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
             scaledCorePowerDistribution = []
-            for a in self.r.core.getChildren():
+            for a in self.r.core:
                 scaledPower = []
                 assemPower = sum(b.p.power for b in a)
                 for b in a:

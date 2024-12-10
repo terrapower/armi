@@ -627,7 +627,7 @@ class Block(composites.Composite):
             return area
 
         a = 0.0
-        for c in self.getChildren():
+        for c in self:
             myArea = c.getArea(cold=cold)
             a += myArea
         fullArea = a
@@ -1283,7 +1283,7 @@ class Block(composites.Composite):
     def getDimensions(self, dimension):
         """Return dimensional values of the specified dimension."""
         dimVals = set()
-        for c in self.getChildren():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:

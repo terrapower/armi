@@ -471,7 +471,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def clearCache(self):
         """Clear the cache so all new values are recomputed."""
         self.cached = {}
-        for child in self.getChildren():
+        for child in self:
             child.clearCache()
 
     def _getCached(self, name):  # TODO: stop the "returns None" nonsense?
@@ -617,7 +617,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         for paramName in paramNames:
             myVal = self.p[paramName]
-            for c in self.getChildren():
+            for c in self:
                 c.p[paramName] = myVal
 
     @classmethod
@@ -1631,7 +1631,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self._lumpedFissionProducts = lfpCollection
 
     def setChildrenLumpedFissionProducts(self, lfpCollection):
-        for c in self.getChildren():
+        for c in self:
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
@@ -1932,7 +1932,7 @@ class ArmiObject(metaclass=CompositeModelType):
             List of nuclide names that exist in this
         """
         nucs = set()
-        for child in self.getChildren():
+        for child in self:
             nucs.update(child.getNuclides())
         return nucs
 
@@ -3027,7 +3027,7 @@ class Composite(ArmiObject):
         """
         lfps = ArmiObject.getLumpedFissionProductCollection(self)
         if lfps is None:
-            for c in self.getChildren():
+            for c in self:
                 lfps = c.getLumpedFissionProductCollection()
                 if lfps is not None:
                     break
@@ -3165,7 +3165,7 @@ class Composite(ArmiObject):
     def printContents(self, includeNuclides=True):
         """Display information about all the comprising children in this object."""
         runLog.important(self)
-        for c in self.getChildren():
+        for c in self:
             c.printContents(includeNuclides=includeNuclides)
 
     def _genChildByLocationLookupTable(self):

@@ -468,7 +468,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
-            for a in self.r.excore["sfp"].getChildren():
+            for a in self.r.excore["sfp"]:
                 self.assertEqual(a.getLocation(), "SFP")
             for b in self.r.core.getBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
@@ -498,7 +498,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         ensure repeatability.
         """
         # check labels before shuffling:
-        for a in self.r.excore["sfp"].getChildren():
+        for a in self.r.excore["sfp"]:
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles
@@ -532,7 +532,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # make sure the shuffle was repeated perfectly.
         for a in self.r.core.getAssemblies():
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
-        for a in self.r.excore["sfp"].getChildren():
+        for a in self.r.excore["sfp"]:
             self.assertEqual(a.getLocation(), "SFP")
 
         # Do some cleanup, since the fuelHandler Interface has code that gets

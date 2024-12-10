@@ -286,7 +286,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"
-        for a in self.r.core.getChildren():
+        for a in self.r.core:
             for b in a:
                 b.p.power = 10.0
         self.assertEqual(
