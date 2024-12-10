@@ -2686,8 +2686,12 @@ class Composite(ArmiObject):
                 yield from c._iterChildren(deep, generationNum - 1, checker)
 
     def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
+        self,
+        deep=False,
+        generationNum=1,
+        includeMaterials=False,
+        predicate: Optional[Callable[["Composite"], bool]] = None,
+    ) -> list["Composite"]:
         """
         Return the children objects of this composite.
 
@@ -2729,6 +2733,11 @@ class Composite(ArmiObject):
             to meet the predicate only affects the object in question; children will
             still be considered.
 
+        See Also
+        --------
+        :meth:`iterChildren` if you do not need to produce a full list, e.g., just iterating
+        over objects.
+
         Examples
         --------
         >>> obj.getChildren()
@@ -2745,33 +2754,22 @@ class Composite(ArmiObject):
         [grandchild1, grandchild3]
 
         """
-        _pred = predicate or (lambda x: True)
-        if deep and generationNum > 1:
-            raise RuntimeError(
-                "Cannot get children with a generation number set and the deep flag set"
-            )
-
-        children = []
-        for child in self._children:
-            if generationNum == 1 or deep:
-                if _pred(child):
-                    children.append(child)
-
-            if generationNum > 1 or deep:
-                children.extend(
-                    child.getChildren(
-                        deep=deep,
-                        generationNum=generationNum - 1,
-                        includeMaterials=includeMaterials,
-                        predicate=predicate,
-                    )
-                )
-        if includeMaterials:
-            material = getattr(self, "material", None)
-            if material:
-                children.append(material)
-
-        return children
+        children = self.iterChildren(
+            deep=deep, generationNum=generationNum, predicate=predicate
+        )
+        if not includeMaterials:
+            return list(children)
+        # Each entry is either (c, ) or (c, c.material) if the child has a material attribute
+        stitched = map(
+            lambda c: (
+                (c, ) if getattr(c, "material", None) is None else (c, c.material)
+            ),
+            children,
+        )
+        # Iterator that iterates over each "sub" iterator. If we have ((c0, ), (c1, m1)), this produces a single
+        # iterator of (c0, c1, m1)
+        flattened = itertools.chain.from_iterable(stitched)
+        return list(flattened)
 
     def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
         """Produce an iterator over all children of a specific type."""
