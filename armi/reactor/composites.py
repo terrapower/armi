@@ -2626,22 +2626,27 @@ class Composite(ArmiObject):
         predicate: Optional[Callable[["Composite"], bool]] = None,
     ) -> Iterator["Composite"]:
         """Iterate over children objects of this composite.
-        
+
         Parameters
         ----------
         deep : bool, optional
+            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
         generationNum: int, optional
-        predicate: f(Composite) -> bool, optional,
-        
+            Produce composites at this depth. A depth of ``1`` includes children of ``self``, ``2``
+            is children of children, and so on.
+        predicate: f(Composite) -> bool, optional
+            Function to check on a composite before producing it. All items in the iteration
+            will pass this check.
+
         Returns
         -------
         iterator of Composite
-        
+
         See Also
         --------
         :meth:`getChildren` produces a list for situations where you need to perform
         multiple iterations or do list operations (append, indexing, sorting, containment, etc.)
-        
+
         Composites are naturally iterable. The following are identical::
 
             >>> for child in c.getChildren():
@@ -2652,7 +2657,7 @@ class Composite(ArmiObject):
             ...     pass
 
         If you do not need any depth-traversal, natural iteration should be sufficient.
-        
+
         The :func:`filter` command may be sufficient if you do not wish to pass a predicate. The following
         are identical::
             >>> checker = lambda c: len(c.name) % 3
@@ -2664,7 +2669,7 @@ class Composite(ArmiObject):
             ...     pass
 
         If you're going to be doing traversal beyond the first generation, this method will help you.
-        
+
         """
         if deep and generationNum > 1:
             raise RuntimeError(
