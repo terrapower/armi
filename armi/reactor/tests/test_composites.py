@@ -15,6 +15,7 @@
 """Tests for the composite pattern."""
 from copy import deepcopy
 import logging
+import itertools
 import unittest
 
 from armi import nuclearDataIO
@@ -113,6 +114,14 @@ class TestCompositePattern(unittest.TestCase):
         nested.add(self.secondGen)
         container.add(nested)
         self.container = container
+        # Composite tree structure in list of lists for testing
+        # tree[i] contains the children at "generation" or "depth" i
+        self.tree: list[list[composites.Composite]] = [
+            [self.container],
+            list(self.container),
+            [self.secondGen],
+            [self.thirdGen],
+        ]
 
     def test_composite(self):
         """Test basic Composite things.
@@ -140,22 +149,29 @@ class TestCompositePattern(unittest.TestCase):
             :id: T_ARMI_CMP1
             :tests: R_ARMI_CMP
         """
-        # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
-        self.assertEqual(len(firstGen), 6)
+        self.assertEqual(firstGen, self.tree[1])
+
         secondGen = self.container.getChildren(generationNum=2)
-        self.assertEqual(len(secondGen), 1)
+        self.assertEqual(secondGen, self.tree[2])
+
         self.assertIs(secondGen[0], self.secondGen)
         third = self.container.getChildren(generationNum=3)
-        self.assertEqual(len(third), 1)
+        self.assertEqual(third, self.tree[3])
         self.assertIs(third[0], self.thirdGen)
+
         allC = self.container.getChildren(deep=True)
-        self.assertEqual(len(allC), 8)
+        expected = self.tree[1] + self.tree[2] + self.tree[3]
+        self.assertTrue(
+            all(a is e for a, e in itertools.zip_longest(allC, expected)),
+            msg=f"Deep traversal differs: {allC=} != {expected=}",
+        )
 
         onlyLiner = self.container.getChildren(
             deep=True, predicate=lambda o: o.p.type == "liner"
         )
         self.assertEqual(len(onlyLiner), 1)
+        self.assertIs(onlyLiner[0], self.secondGen)
 
     def test_getName(self):
         """Test the getName method.
