@@ -898,7 +898,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMass(self, nuclideNames=None):
+    def getMass(self, nuclideNames=None) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -921,7 +921,7 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum([c.getMass(nuclideNames=nuclideNames) for c in self])
+        return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
 
     def getMassFrac(self, nucName):
         """
