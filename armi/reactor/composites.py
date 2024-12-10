@@ -2714,13 +2714,13 @@ class Composite(ArmiObject):
         """Get all children of a specific type."""
         return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
 
-    def getChildrenOfType(self, typeName):
+    def iterChildrenOfType(self, typeName: str):
+        """Produce an iterator over all children with a specific input type name"""
+        return filter(lambda c: c.getType() == typeName, self)
+
+    def getChildrenOfType(self, typeName: str):
         """Get children that have a specific input type name."""
-        children = []
-        for child in self:
-            if child.getType() == typeName:
-                children.append(child)
-        return children
+        return list(self.iterChildrenOfType(typeName))
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         return list(self.iterComponents(typeSpec, exact))

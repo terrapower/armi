@@ -106,6 +106,7 @@ class TestCompositePattern(unittest.TestCase):
             container.add(leaf)
         nested = DummyComposite("clad", 98)
         nested.setType("clad")
+        self.cladChild = nested
         self.secondGen = DummyComposite("liner", 97)
         self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
@@ -424,6 +425,13 @@ class TestCompositePattern(unittest.TestCase):
             self.assertIn(c, expectedChildren)
             found.add(c)
         self.assertSetEqual(found, expectedChildren)
+
+    def test_iterChildrenOfType(self):
+        clads = self.container.iterChildrenOfType("clad")
+        first = next(clads)
+        self.assertIs(first, self.cladChild)
+        with self.assertRaises(StopIteration):
+            next(clads)
 
 
 class TestCompositeTree(unittest.TestCase):
