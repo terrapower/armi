@@ -247,26 +247,26 @@ class TestCompositePattern(unittest.TestCase):
 
     def test_sort(self):
         # in this case, the children should start sorted
-        c0 = [c.name for c in self.container.getChildren()]
+        c0 = [c.name for c in self.container]
         self.container.sort()
-        c1 = [c.name for c in self.container.getChildren()]
+        c1 = [c.name for c in self.container]
         self.assertNotEqual(c0, c1)
 
         # verify repeated sortings behave
         for _ in range(3):
             self.container.sort()
-            ci = [c.name for c in self.container.getChildren()]
+            ci = [c.name for c in self.container]
             self.assertEqual(c1, ci)
 
         # break the order
         children = self.container.getChildren()
         self.container._children = children[2:] + children[:2]
-        c2 = [c.name for c in self.container.getChildren()]
+        c2 = [c.name for c in self.container]
         self.assertNotEqual(c1, c2)
 
         # verify the sort order
         self.container.sort()
-        c3 = [c.name for c in self.container.getChildren()]
+        c3 = [c.name for c in self.container]
         self.assertEqual(c1, c3)
 
     def test_areChildernOfType(self):
@@ -397,12 +397,12 @@ class TestCompositePattern(unittest.TestCase):
 
         # validate that the LFP collection is None
         self.container.setChildrenLumpedFissionProducts(None)
-        for c in self.container.getChildren():
+        for c in self.container:
             self.assertIsNone(c._lumpedFissionProducts)
 
         # validate that the LFP collection is not None
         self.container.setChildrenLumpedFissionProducts(lfps)
-        for c in self.container.getChildren():
+        for c in self.container:
             self.assertIsNotNone(c._lumpedFissionProducts)
 
     def test_requiresLumpedFissionProducts(self):
@@ -900,7 +900,7 @@ class TestMiscMethods(unittest.TestCase):
         # sum nuc densities from children components
         totalVolume = self.obj.getVolume()
         childDensities = {}
-        for o in self.obj.getChildren():
+        for o in self.obj:
             m = o.getVolume()
             d = o.getNumberDensities()
             for nuc, val in d.items():
@@ -938,7 +938,7 @@ class TestMiscMethods(unittest.TestCase):
         # sum nuc densities from children components
         totalVolume = self.obj.getVolume()
         childDensities = {}
-        for o in self.obj.getChildren():
+        for o in self.obj:
             # get the number densities with and without fission products
             d0 = o.getNumberDensities(expandFissionProducts=False)
             d = o.getNumberDensities(expandFissionProducts=True)
