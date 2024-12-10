@@ -208,13 +208,13 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def countAssembliesSFP(sfp):
         """Report on the count of assemblies in the SFP at each timestep."""
-        if not sfp.getChildren():
+        if not len(sfp):
             return
 
         runLog.important("Count:")
         totCount = 0
         thisTimeCount = 0
-        a = sfp.getChildren()[0]
+        a = sfp[0]
         lastTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
         for a in sfp:
