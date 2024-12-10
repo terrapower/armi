@@ -926,14 +926,11 @@ class Assembly(composites.Composite):
             return None
 
     def getFirstBlockByType(self, typeName):
-        bs = [
-            b
-            for b in self.getChildren(deep=False)
-            if isinstance(b, blocks.Block) and b.getType() == typeName
-        ]
-        if bs:
-            return bs[0]
-        return None
+        blocks = filter(lambda b: b.getType() == typeName, self)
+        try:
+            return next(blocks)
+        except StopIteration:
+            return None
 
     def getBlockAtElevation(self, elevation):
         """
