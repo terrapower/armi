@@ -38,6 +38,7 @@ from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
 from armi.reactor.flags import Flags
 from armi.utils.customExceptions import InputError
+from armi.reactor.parameters import ParamLocation
 
 
 class FuelHandler:
@@ -212,10 +213,18 @@ class FuelHandler:
     @staticmethod
     def _getParamMax(a, paramName, blockLevelMax=True):
         """Get parameter with Block-level maximum."""
+        multiplier = a.getSymmetryFactor()
+        if multiplier != 1:
+            # handle special case: volume-integrated parameters where symmetry factor is not 1
+            isVolumeIntegrated = (
+                a.getBlocks()[0].p.paramDefs[paramName].location
+                == ParamLocation.VOLUME_INTEGRATED
+            )
+            multiplier = a.getSymmetryFactor() if isVolumeIntegrated else 1.0
         if blockLevelMax:
-            return a.getChildParamValues(paramName).max()
+            return a.getChildParamValues(paramName).max() * multiplier
 
-        return a.p[paramName]
+        return a.p[paramName] * multiplier
 
     def findAssembly(
         self,

@@ -1947,29 +1947,18 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getHMMoles(self):
         """
-        Get the number of moles of heavy metal in this object in full symmetry.
+        Get the number of moles of heavy metal in this object.
 
         Notes
         -----
-        If an object is on a symmetry line, the number of moles will be scaled up by the
-        symmetry factor. This is done because this is typically used for tracking
-        burnup, and BOL moles are computed in full objects too so there are no
-        complications as things move on and off of symmetry lines.
-
-        Warning
-        -------
-        getHMMoles is different than every other get mass call since it multiplies by
-        symmetry factor but getVolume() on the block level divides by symmetry factor
-        causing them to cancel out.
-
-        This was needed so that HM moles mass did not change based on if the
-        block/assembly was on a symmetry line or not.
+        If an object is on a symmetry line, the volume reported by getVolume
+        is reduced to reflect that the block is not wholly within the reactor. This
+        reduction in volume reduces the reported HM moles.
         """
         return (
             self.getHMDens()
             / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
             * self.getVolume()
-            * self.getSymmetryFactor()
         )
 
     def getHMDens(self):
@@ -3129,12 +3118,7 @@ class Composite(ArmiObject):
         nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
         puN = sum(self.getNuclideNumberDensities(nucNames))
 
-        return (
-            puN
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
+        return puN / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
 
 
 class StateRetainer:
