@@ -214,8 +214,8 @@ class FuelHandler:
     def _getParamMax(a, paramName, blockLevelMax=True):
         """Get parameter with Block-level maximum."""
         multiplier = a.getSymmetryFactor()
-        # handle special case: volume-integrated parameters where symmetry factor is 1.0
         if multiplier != 1:
+            # handle special case: volume-integrated parameters where symmetry factor is not 1
             isVolumeIntegrated = (
                 a.getBlocks()[0].p.paramDefs[paramName].location
                 == ParamLocation.VOLUME_INTEGRATED
