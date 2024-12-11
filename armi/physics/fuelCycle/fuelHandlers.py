@@ -212,7 +212,7 @@ class FuelHandler:
 
     @staticmethod
     def _getParamMax(a, paramName, blockLevelMax=True):
-        """Get parameter with Block-level maximum."""
+        """Get assembly/block-level maximum parameter value in assembly."""
         multiplier = a.getSymmetryFactor()
         if multiplier != 1:
             # handle special case: volume-integrated parameters where symmetry factor is not 1
