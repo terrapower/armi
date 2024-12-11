@@ -43,6 +43,7 @@ from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
+from armi.reactor.parameters import ParamLocation
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -153,14 +154,32 @@ class MockXSGM(CrossSectionGroupManager):
 
 
 class TestFuelHandler(FuelHandlerTestHelper):
-    def test_getParamMax(self):
-        a = self.assembly
+    @patch("armi.reactor.assemblies.Assembly.getSymmetryFactor")
+    def test_getParamMax(self, mockGetSymmetry):
 
+        a = self.assembly
+        mockGetSymmetry.return_value = 1
+        expectedValue = 0.5
+        a.p["kInf"] = expectedValue
+        for b in a:
+            b.p["kInf"] = expectedValue
+
+        # symmetry factor == 1
         res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
-        self.assertEqual(res, 0.0)
+        self.assertEqual(res, expectedValue)
 
         res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
-        self.assertEqual(res, 0.0)
+        self.assertEqual(res, expectedValue)
+
+        # symmetry factor == 3
+        mockGetSymmetry.return_value = 3
+        a.p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
+        a.getBlocks()[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+        self.assertAlmostEqual(res, expectedValue * 3)
+
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+        self.assertAlmostEqual(res, expectedValue * 3)
 
     def test_interactBOC(self):
         # set up mock interface
