@@ -216,15 +216,20 @@ class FuelHandler:
         multiplier = a.getSymmetryFactor()
         if multiplier != 1:
             # handle special case: volume-integrated parameters where symmetry factor is not 1
+            if blockLevelMax:
+                paramCollection = a.getBlocks()[0].p
+            else:
+                paramCollection = a.p
             isVolumeIntegrated = (
-                a.getBlocks()[0].p.paramDefs[paramName].location
+                paramCollection.paramDefs[paramName].location
                 == ParamLocation.VOLUME_INTEGRATED
             )
             multiplier = a.getSymmetryFactor() if isVolumeIntegrated else 1.0
+
         if blockLevelMax:
             return a.getChildParamValues(paramName).max() * multiplier
-
-        return a.p[paramName] * multiplier
+        else:
+            return a.p[paramName] * multiplier
 
     def findAssembly(
         self,
