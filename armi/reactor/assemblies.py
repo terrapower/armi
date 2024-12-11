@@ -826,7 +826,7 @@ class Assembly(composites.Composite):
         -------
         iterable of Block
 
-        See also
+        See Also
         --------
         * :meth:`__iter__` - if no type spec provided, assemblies can be
           naturally iterated upon.

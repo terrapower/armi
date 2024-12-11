@@ -2801,7 +2801,7 @@ class Composite(ArmiObject):
         return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
 
     def iterChildrenOfType(self, typeName: str):
-        """Produce an iterator over all children with a specific input type name"""
+        """Produce an iterator over all children with a specific input type name."""
         return filter(lambda c: c.getType() == typeName, self)
 
     def getChildrenOfType(self, typeName: str):
