@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """Tests for memoryProfiler."""
-from unittest.mock import MagicMock, patch
 import logging
 import unittest
+from unittest.mock import MagicMock, patch
 
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
@@ -24,7 +24,7 @@ from armi.bookkeeping.memoryProfiler import (
     getTotalJobMemory,
 )
 from armi.reactor.tests import test_reactors
-from armi.tests import mockRunLogs, TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 
 
 class TestMemoryProfiler(unittest.TestCase):

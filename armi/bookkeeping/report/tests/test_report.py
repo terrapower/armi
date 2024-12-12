@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """Really basic tests of the report Utils."""
-from glob import glob
-from unittest.mock import patch
 import logging
 import os
 import subprocess
 import sys
 import unittest
+from glob import glob
+from unittest.mock import patch
 
 from armi import runLog, settings
 from armi.bookkeeping import report

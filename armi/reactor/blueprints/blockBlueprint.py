@@ -15,14 +15,13 @@
 """This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 import collections
 from inspect import signature
-from typing import Iterable, Set, Iterator
+from typing import Iterable, Iterator, Set
 
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
-from armi.reactor import blocks
-from armi.reactor import parameters
+from armi.reactor import blocks, parameters
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.components.component import Component
 from armi.reactor.composites import Composite

@@ -15,8 +15,7 @@
 """Tests the Interface."""
 import unittest
 
-from armi import interfaces
-from armi import settings
+from armi import interfaces, settings
 
 
 class DummyInterface(interfaces.Interface):

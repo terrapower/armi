@@ -13,8 +13,8 @@
 # limitations under the License.
 """Parameter definitions for fuel performance plugins."""
 from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation
 from armi.reactor.blocks import Block
+from armi.reactor.parameters import ParamLocation
 from armi.utils import units
 
 

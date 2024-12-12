@@ -12,9 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from armi.utils import units
-
 from armi.physics.fuelCycle.fuelHandlers import FuelHandler
+from armi.utils import units
 
 
 class SampleShuffler(FuelHandler):

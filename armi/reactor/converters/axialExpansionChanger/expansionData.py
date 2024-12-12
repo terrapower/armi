@@ -14,7 +14,7 @@
 """Data container for axial expansion."""
 
 from statistics import mean
-from typing import TYPE_CHECKING, Optional, Iterable
+from typing import TYPE_CHECKING, Iterable, Optional
 
 from armi import runLog
 from armi.materials import material
@@ -29,9 +29,9 @@ TARGET_FLAGS_IN_PREFERRED_ORDER = [
 ]
 
 if TYPE_CHECKING:
-    from armi.reactor.components import Component
-    from armi.reactor.blocks import Block
     from armi.reactor.assemblies import Assembly
+    from armi.reactor.blocks import Block
+    from armi.reactor.components import Component
 
 
 def iterSolidComponents(b: "Block") -> Iterable["Component"]:

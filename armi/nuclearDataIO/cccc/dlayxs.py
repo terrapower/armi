@@ -27,9 +27,7 @@ import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import nuclearFileMetadata
-
+from armi.nuclearDataIO import cccc, nuclearFileMetadata
 
 ALLOWED_NUCLIDE_CONTRIBUTION_ERROR = 1e-5
 

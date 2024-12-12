@@ -17,7 +17,7 @@ import unittest
 
 from armi.migration.m0_1_6 import ConvertAlphanumLocationSettingsToNum
 from armi.settings import caseSettings
-from armi.settings.settingsIO import SettingsWriter, SettingsReader
+from armi.settings.settingsIO import SettingsReader, SettingsWriter
 
 
 class TestMigration(unittest.TestCase):

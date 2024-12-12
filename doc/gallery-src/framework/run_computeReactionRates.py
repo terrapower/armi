@@ -26,19 +26,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from armi import configure, nuclideBases, settings
-from armi.materials import ht9
-from armi.materials import sodium
-from armi.materials import uZr
+from armi.materials import ht9, sodium, uZr
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor.components import Circle
-from armi.reactor.components import DerivedShape
-from armi.reactor.components import Hexagon
+from armi.reactor import assemblies, blocks, blueprints, geometry, grids, reactors
+from armi.reactor.components import Circle, DerivedShape, Hexagon
 from armi.reactor.flags import Flags
 from armi.tests import ISOAA_PATH
 

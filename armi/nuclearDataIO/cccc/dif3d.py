@@ -20,7 +20,6 @@ binary inputs for the DIF3D code.
 from armi import runLog
 from armi.nuclearDataIO import cccc
 
-
 FILE_SPEC_2D_PARAMS = (
     [
         "IPROBT",

@@ -110,7 +110,6 @@ from typing import Optional, Sequence, Union
 
 from armi.utils.flags import Flag, FlagType, auto
 
-
 # Type alias used for passing type specifications to many of the composite methods. See
 # Composite::hasFlags() to understand the semantics for how TypeSpecs are interpreted.
 # Anything that interprets a TypeSpec should apply the same semantics.

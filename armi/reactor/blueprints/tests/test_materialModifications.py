@@ -16,8 +16,7 @@ import unittest
 
 from numpy.testing import assert_allclose
 
-from armi import materials
-from armi import settings
+from armi import materials, settings
 from armi.reactor import blueprints
 from armi.reactor.blueprints.blockBlueprint import BlockBlueprint
 

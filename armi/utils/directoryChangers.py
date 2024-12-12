@@ -19,10 +19,8 @@ import random
 import shutil
 import string
 
-from armi import context
-from armi import runLog
-from armi.utils import pathTools
-from armi.utils import safeCopy, safeMove
+from armi import context, runLog
+from armi.utils import pathTools, safeCopy, safeMove
 
 
 def _changeDirectory(destination):

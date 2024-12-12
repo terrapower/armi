@@ -118,7 +118,7 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
       replaced with plugin-based fuel handler logic.
 
 """
-from typing import Callable, Dict, List, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 import pluggy
 

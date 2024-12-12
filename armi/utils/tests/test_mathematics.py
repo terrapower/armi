@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Testing mathematics utilities."""
-from math import sqrt
 import unittest
+from math import sqrt
 
 import numpy as np
 

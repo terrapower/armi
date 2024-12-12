@@ -17,7 +17,7 @@ This module contains constants and enumerations that are useful for describing s
 geometry.
 """
 import enum
-from typing import Union, Optional
+from typing import Optional, Union
 
 
 class GeomType(enum.Enum):

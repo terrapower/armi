@@ -13,15 +13,15 @@
 # limitations under the License.
 from collections import deque
 from math import sqrt
-from typing import Tuple, List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 
 from armi.reactor import geometry
 from armi.reactor.grids.constants import (
     BOUNDARY_0_DEGREES,
-    BOUNDARY_120_DEGREES,
     BOUNDARY_60_DEGREES,
+    BOUNDARY_120_DEGREES,
     BOUNDARY_CENTER,
 )
 from armi.reactor.grids.locations import IJKType, IJType, IndexLocation

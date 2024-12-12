@@ -32,7 +32,6 @@ from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils.units import getTk
 
-
 HeatCapacityConstants = collections.namedtuple(
     "HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"]
 )

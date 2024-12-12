@@ -30,7 +30,6 @@ demonstration purposes.
 # sphinx_gallery_thumbnail_number = 2
 import math
 
-
 from armi import configure
 from armi.physics.fuelCycle import fuelHandlers
 from armi.reactor.flags import Flags

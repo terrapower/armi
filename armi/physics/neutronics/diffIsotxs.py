@@ -52,8 +52,7 @@ class CompareIsotxsLibraries(EntryPoint):
         )
 
     def invoke(self):
-        from armi.nuclearDataIO import isotxs
-        from armi.nuclearDataIO import xsLibraries
+        from armi.nuclearDataIO import isotxs, xsLibraries
 
         runLog.setVerbosity(0)
         refIsotxs = isotxs.readBinary(self.args.reference)

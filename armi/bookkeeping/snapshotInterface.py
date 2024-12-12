@@ -27,11 +27,8 @@ What in particular is done is dependent on the case settings and the collection 
 
 Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defaultSnapshots``.
 """
-from armi import interfaces
-from armi import operators
-from armi import runLog
+from armi import interfaces, operators, runLog
 from armi.utils import getStepLengths
-
 
 ORDER = interfaces.STACK_ORDER.POSTPROCESSING
 

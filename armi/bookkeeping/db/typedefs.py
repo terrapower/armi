@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Dict, Tuple, Any
+from typing import Any, Dict, Tuple
 
 from armi.reactor.composites import ArmiObject
 from armi.reactor.grids import LocationBase
-
 
 # Return type for the getHistories() method
 #              param       time node      value

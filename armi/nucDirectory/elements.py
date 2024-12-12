@@ -130,8 +130,8 @@ Retrieve elements that are classified as actinides:
 """
 
 import os
-from typing import List
 from enum import Enum
+from typing import List
 
 from armi import context
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z

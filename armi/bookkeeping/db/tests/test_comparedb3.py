@@ -19,17 +19,17 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db.compareDB3 import (
-    _compareSets,
+    DiffResults,
+    OutputWriter,
     _compareAuxData,
+    _compareSets,
     _diffSimpleData,
     _diffSpecialData,
     compareDatabases,
-    DiffResults,
-    OutputWriter,
 )
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor.tests import test_reactors
-from armi.tests import mockRunLogs, TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
