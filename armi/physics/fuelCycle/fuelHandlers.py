@@ -654,7 +654,7 @@ class FuelHandler:
                 f"or otherwise instantiate a SpentFuelPool object as r.excore['sfp']"
             )
         else:
-            sfpAssems = self.r.excore["sfp"].getChildren()
+            sfpAssems = list(self.r.excore["sfp"])
 
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
