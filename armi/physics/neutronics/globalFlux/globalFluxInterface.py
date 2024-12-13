@@ -33,7 +33,7 @@ from armi.reactor.converters import geometryConverters
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import units, codeTiming, getMaxBurnSteps, getBurnSteps
+from armi.utils import units, codeTiming, getMaxBurnSteps
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -112,17 +112,15 @@ class GlobalFluxInterface(interfaces.Interface):
             # track boc uncontrolled keff for rxSwing param.
             self._bocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
 
-        # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
-        lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
-        if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
+        if self._bocKeff is not None:
 
             eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
             swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
             self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
             runLog.info(
                 f"BOC Uncontrolled keff: {self._bocKeff},  "
-                f"EOC Uncontrolled keff: {self.r.core.p.keffUnc}, "
-                f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
+                f"Current Uncontrolled keff: {self.r.core.p.keffUnc}, "
+                f"Cycle Reactivity Swing (so far): {self.r.core.p.rxSwing} pcm"
             )
 
     def checkEnergyBalance(self):
