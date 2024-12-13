@@ -18,6 +18,7 @@ import unittest
 from unittest import mock
 
 from armi.reactor.assemblies import HexAssembly
+from armi.reactor.blocks import Block
 from armi.reactor.cores import Core
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
@@ -94,3 +95,36 @@ class HexCoreTests(unittest.TestCase):
             blocks.extend(filter(lambda b: b.hasFlags(Flags.FUEL), a))
         actual = self.core.getBlocks(Flags.FUEL)
         self.assertAllIs(actual, blocks)
+
+    def test_traverseAllBlocks(self):
+        """Test the ability to iterate over all blocks in the core."""
+        blocks = []
+        for a in self.core:
+            blocks.extend(a)
+        actual = self.core.iterBlocks()
+        self.assertAllIs(actual, blocks)
+
+    def test_traverseAllBlocksWithFlag(self):
+        """Test the ability to traverse blocks in the core with a flag."""
+        blocks: list[Block] = []
+        for a in self.core:
+            blocks.extend(a)
+        for spec in (Flags.FUEL, Flags.CONTROL, Flags.FUEL | Flags.CONTROL):
+            expected = list(filter(lambda b: b.hasFlags(spec), blocks))
+            actual = self.core.iterBlocks(spec)
+            self.assertAllIs(actual, expected)
+            # Fake the flag check with hasFlags as predicate
+            actual = self.core.iterBlocks(predicate=lambda b: b.hasFlags(spec))
+            self.assertAllIs(actual, expected)
+
+    def test_traverseBlocksWithPredicate(self):
+        """Test the ability to traverse blocks that meet some criteria with a flag."""
+        fuelBlocks: list[Block] = []
+        for a in self.core:
+            fuelBlocks.extend(filter(lambda b: b.hasFlags(Flags.FUEL), a))
+        # Make some contrived condition to exclude some blocks
+        meanElevation = sum(b.p.z for b in fuelBlocks) / len(fuelBlocks)
+        checker = lambda b: b.p.z >= meanElevation
+        expected = list(filter(checker, fuelBlocks))
+        actual = self.core.iterBlocks(Flags.FUEL, predicate=checker)
+        self.assertAllIs(actual, expected)

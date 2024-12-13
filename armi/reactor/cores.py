@@ -23,7 +23,7 @@ import copy
 import itertools
 import os
 import time
-from typing import Optional
+from typing import Optional, Callable, Iterator
 
 import numpy as np
 
@@ -33,6 +33,7 @@ from armi.reactor import (
     assemblies,
     blocks,
     composites,
+    flags,
     geometry,
     grids,
     parameters,
@@ -1116,7 +1117,7 @@ class Core(composites.Composite):
 
         See Also
         --------
-        * :meth:`traverseBlocks`: iterator over blocks with limited filtering.
+        * :meth:`iterBlocks`: iterator over blocks with limited filtering.
         * :meth:`getAssemblies` : locates the assemblies in the search
         """
         blocks = [b for a in self.getAssemblies(**kwargs) for b in a]
@@ -2315,3 +2316,59 @@ class Core(composites.Composite):
 
         if not len(self.zones):
             runLog.debug("No manual zones defined in `zoneDefinitions` setting")
+
+    def iterBlocks(
+        self,
+        typeSpec: Optional[flags.TypeSpec] = None,
+        exact=False,
+        predicate: Callable[[blocks.Block], bool] = None,
+    ) -> Iterator[blocks.Block]:
+        """Iterate over the blocks in the core.
+
+        Useful for operations that just want to find all the blocks in the core
+        with light filtering.
+
+        Parameters
+        ----------
+        typeSpec: armi.reactor.flags.TypeSpec, optional
+            Limit the traversal to blocks that have these flags.
+        exact: bool, optional
+            Strictness on the usage of ``typeSpec`` used in :meth:`armi.reactor.composites.hasFlags`
+        predicate: f(block) -> bool, optional
+            Limit the traversal to blocks that pass this predicate. Can be used in addition to ``typeSpec``
+            to perform more advanced filtering.
+
+        Returns
+        -------
+        iterator[Block]
+            Iterator over blocks in the core that meet the conditions provided.
+
+        Examples
+        --------
+        Iterate over all fuel blocks::
+
+        >>> for b in r.core.iterBlocks(Flags.FUEL):
+        ...     pass
+
+        See Also
+        --------
+        :meth:`getBlocks` has more control over what is included in the returned list
+        including looking at the spent fuel pool and assemblies that may not exist now
+        but existed at BOL (via :meth:`getAssemblies`). But if you're just interested in
+        the blocks in the core now, maybe with a flag attached to that block, this is what
+        you should use.
+
+        Notes
+        -----
+        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If
+        this is not the case, consider using :meth:`iterChildren`.
+        """
+        if typeSpec is not None:
+            typeChecker = lambda b: b.hasFlags(typeSpec, exact=exact)
+        else:
+            typeChecker = lambda _: True
+        if predicate is not None:
+            blockChecker = lambda b: typeChecker(b) and predicate(b)
+        else:
+            blockChecker = typeChecker
+        return self.iterChildren(generationNum=2, predicate=blockChecker)
