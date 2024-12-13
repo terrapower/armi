@@ -114,8 +114,8 @@ class GlobalFluxInterface(interfaces.Interface):
 
         if self._bocKeff is not None:
 
-            eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
-            swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
+            currentKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+            swing = (currentKeff - self._bocKeff) / (currentKeff * self._bocKeff)
             self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
             runLog.info(
                 f"BOC Uncontrolled keff: {self._bocKeff},  "
