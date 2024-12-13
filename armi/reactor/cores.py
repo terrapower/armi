@@ -1108,7 +1108,7 @@ class Core(composites.Composite):
             assemblies will be returned as well as the ones in the reactor.
 
         kwargs : dict
-            Any keyword argument from R.getAssemblies()
+            Any keyword argument from :meth:`getAssemblies`
 
         Returns
         -------
