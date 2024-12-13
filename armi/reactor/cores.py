@@ -30,6 +30,8 @@ import numpy as np
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import (
+    assemblies,
+    blocks,
     composites,
     geometry,
     grids,
@@ -705,7 +707,7 @@ class Core(composites.Composite):
         exactType=False,
         exclusions=None,
         overrideCircularRingMode=False,
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Returns the assemblies in a specified ring. Definitions of rings can change
         with problem parameters.
@@ -771,7 +773,7 @@ class Core(composites.Composite):
 
     def getAssembliesInSquareOrHexRing(
         self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Returns the assemblies in a specified ring. Definitions of rings can change with problem
         parameters.
@@ -819,7 +821,7 @@ class Core(composites.Composite):
 
     def getAssembliesInCircularRing(
         self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Gets an assemblies within a circular range of the center of the core. This function allows
         for more circular styled assembly shuffling instead of the current hex approach.
@@ -926,7 +928,7 @@ class Core(composites.Composite):
 
             assymap[aName] = assem
 
-    def getAssemblyByName(self, name):
+    def getAssemblyByName(self, name: str) -> assemblies.Assembly:
         """
         Find the assembly that has this name.
 
@@ -962,7 +964,7 @@ class Core(composites.Composite):
         includeAll=False,
         zones=None,
         exact=False,
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Return a list of all the assemblies in the reactor.
 
@@ -1044,7 +1046,7 @@ class Core(composites.Composite):
         )
         return {nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList))}
 
-    def getBlockByName(self, name):
+    def getBlockByName(self, name: str) -> blocks.Block:
         """
         Finds a block based on its name.
 
@@ -1067,7 +1069,7 @@ class Core(composites.Composite):
             self._genBlocksByName()
             return self.blocksByName[name]
 
-    def getBlocksByIndices(self, indices):
+    def getBlocksByIndices(self, indices) -> list[blocks.Block]:
         """Get blocks in assemblies by block indices."""
         blocks = []
         for i, j, k in indices:
@@ -1090,7 +1092,7 @@ class Core(composites.Composite):
             block.getLocation(): block for block in self.getBlocks(includeAll=True)
         }
 
-    def getBlocks(self, bType=None, **kwargs):
+    def getBlocks(self, bType=None, **kwargs) -> list[blocks.Block]:
         """
         Returns an iterator over all blocks in the reactor in order.
 
@@ -1114,14 +1116,15 @@ class Core(composites.Composite):
 
         See Also
         --------
-        getAssemblies : locates the assemblies in the search
+        * :meth:`traverseBlocks`: iterator over blocks with limited filtering.
+        * :meth:`getAssemblies` : locates the assemblies in the search
         """
         blocks = [b for a in self.getAssemblies(**kwargs) for b in a]
         if bType:
             blocks = [b for b in blocks if b.hasFlags(bType)]
         return blocks
 
-    def getFirstBlock(self, blockType=None, exact=False):
+    def getFirstBlock(self, blockType=None, exact=False) -> blocks.Block:
         """
         Return the first block of the requested type in the reactor, or return first block.
         exact=True will only match fuel, not testfuel, for example.
@@ -1145,7 +1148,7 @@ class Core(composites.Composite):
 
         return None
 
-    def getFirstAssembly(self, typeSpec=None, exact=False):
+    def getFirstAssembly(self, typeSpec=None, exact=False) -> assemblies.Assembly:
         """
         Gets the first assembly in the reactor.
 
