@@ -78,3 +78,19 @@ class HexCoreTests(unittest.TestCase):
             actuals = self.core.getAssemblies(zones=fakeZones)
         for a in actuals:
             self.assertIn(a.getLocation(), locations, msg=str(a))
+
+    def test_getBlocks(self):
+        """Test the ability to get all blocks in the core."""
+        blocks = []
+        for a in self.core:
+            blocks.extend(a)
+        actual = self.core.getBlocks()
+        self.assertAllIs(actual, blocks)
+
+    def test_getBlocksWithFlag(self):
+        """Test the ability to get all blocks with a flag in the core."""
+        blocks = []
+        for a in self.core:
+            blocks.extend(filter(lambda b: b.hasFlags(Flags.FUEL), a))
+        actual = self.core.getBlocks(Flags.FUEL)
+        self.assertAllIs(actual, blocks)
