@@ -30,7 +30,7 @@ from armi.physics.neutronics.settings import (
     CONF_XS_BLOCK_REPRESENTATION,
     CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 
 

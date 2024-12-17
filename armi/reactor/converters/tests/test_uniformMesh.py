@@ -25,7 +25,7 @@ from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_assemblies
 from armi.reactor.tests import test_blocks
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, ISOAA_PATH
 
 
