@@ -84,7 +84,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
 
         prevB = None
-        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
+        for newB, sourceB in zip(newAssem, sourceAssem):
             if newB.isFuel() and sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif not newB.isFuel() and not sourceB.isFuel():

@@ -940,7 +940,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         blocks = []
         for a in assems:
-            blocks.extend(a.getBlocks())
+            blocks.extend(a)
         firstBlock = blocks[0]
         for paramName in blockParamNames:
             defaultValue = firstBlock.p.pDefs[paramName].default

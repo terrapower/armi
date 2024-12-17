@@ -219,7 +219,7 @@ class Assembly(composites.Composite):
         if scalingFactor == 1:
             return
 
-        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(
             ParamLocation.VOLUME_INTEGRATED
         )
         for b in self:
