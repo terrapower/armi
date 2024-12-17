@@ -416,7 +416,7 @@ def _getPhysicalVals(r):
     avgHeight = 0.0
     fuelA = r.core.getAssemblies(Flags.FUEL)
     avgHeight = sum(
-        b.getHeight() for a in fuelA for b in a.getBlocks(Flags.FUEL)
+        b.getHeight() for a in fuelA for b in a.iterBlocks(Flags.FUEL)
     ) / len(fuelA)
     radius = r.core.getCoreRadius()
 
@@ -439,7 +439,7 @@ def _getPhysicalVals(r):
 def _getFuelVals(r):
     tOverD = 0.0
     numClad = 0.0
-    for b in r.core.getBlocks(Flags.FUEL):
+    for b in r.core.iterBlocks(Flags.FUEL):
         clad = b.getComponent(Flags.CLAD)
         if clad:
             cladOD = clad.getDimension("od")

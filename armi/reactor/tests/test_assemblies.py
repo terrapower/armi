@@ -353,7 +353,7 @@ class Assembly_TestCase(unittest.TestCase):
             "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
             "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
         }
-        for b in self.assembly.getBlocks(Flags.FUEL):
+        for b in self.assembly.iterBlocks(Flags.FUEL):
             b.p.update(blockParams)
 
         i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
@@ -361,7 +361,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(self.assembly.getSymmetryFactor(), 1)
         self.assembly.moveTo(locator)
         self.assertEqual(self.assembly.getSymmetryFactor(), 3)
-        for b in self.assembly.getBlocks(Flags.FUEL):
+        for b in self.assembly.iterBlocks(Flags.FUEL):
             # float
             assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
             # np.ndarray
@@ -496,7 +496,7 @@ class Assembly_TestCase(unittest.TestCase):
         mass1 = sum(bi.getMass("U235") for bi in self.assembly)
         self.assertAlmostEqual(mass0, mass1)
 
-        fuelBlock = self.assembly.getBlocks(Flags.FUEL)[0]
+        fuelBlock = next(self.assembly.iterBlocks(Flags.FUEL))
         blockU35Mass = fuelBlock.getMass("U235")
         fuelBlock.setMass("U235", 2 * blockU35Mass)
         self.assertAlmostEqual(fuelBlock.getMass("U235"), blockU35Mass * 2)

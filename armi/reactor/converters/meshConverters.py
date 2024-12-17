@@ -275,7 +275,7 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
             blockFlags = set([(b.p.flags, b.getMicroSuffix()) for b in a])
             for flags, xsID in blockFlags:
                 meshes = []
-                for b in a.getBlocks(flags):
+                for b in a.iterBlocks(flags):
                     # Skip this block if it has a different XS ID than the
                     # current target.
                     if b.getMicroSuffix() != xsID:
