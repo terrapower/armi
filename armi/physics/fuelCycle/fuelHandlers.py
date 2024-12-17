@@ -217,7 +217,7 @@ class FuelHandler:
         if multiplier != 1:
             # handle special case: volume-integrated parameters where symmetry factor is not 1
             if blockLevelMax:
-                paramCollection = a.getBlocks()[0].p
+                paramCollection = a[0].p
             else:
                 paramCollection = a.p
             isVolumeIntegrated = (

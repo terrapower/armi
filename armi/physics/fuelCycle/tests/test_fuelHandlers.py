@@ -175,7 +175,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # symmetry factor == 3
         mockGetSymmetry.return_value = 3
         a.p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
-        a.getBlocks()[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
+        a[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
         res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
         self.assertAlmostEqual(res, expectedValue * 3)
 
