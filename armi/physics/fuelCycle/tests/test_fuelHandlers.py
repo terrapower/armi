@@ -71,11 +71,12 @@ class FuelHandlerTestHelper(ArmiTestHelper):
             customSettings={"nCycles": 3, "trackAssems": True},
         )
 
-        blockList = self.r.core.getBlocks()
-        for bi, b in enumerate(blockList):
+        allBlocks = self.r.core.getBlocks()
+        fakeBu = 30.0 / len(allBlocks)
+        for bi, b in enumerate(allBlocks):
             b.p.flux = 5e10
             if b.isFuel():
-                b.p.percentBu = 30.0 * bi / len(blockList)
+                b.p.percentBu = fakeBu * bi
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
         self.nSfp = len(self.r.excore["sfp"])
