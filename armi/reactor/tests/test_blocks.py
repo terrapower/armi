@@ -1229,13 +1229,7 @@ class Block_TestCase(unittest.TestCase):
 
         sf = self.block.getSymmetryFactor()
         cur = self.block.p.molesHmBOL
-        ref = (
-            self.block.getHMDens()
-            / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * height
-            * area
-            * sf
-        )
+        ref = self.block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area
         self.assertAlmostEqual(cur, ref, places=12)
 
         totalHMMass = 0.0
@@ -1243,20 +1237,16 @@ class Block_TestCase(unittest.TestCase):
             nucs = c.getNuclides()
             hmNucs = [nuc for nuc in nucs if nucDir.isHeavyMetal(nuc)]
             hmNDens = {hmNuc: c.getNumberDensity(hmNuc) for hmNuc in hmNucs}
-            hmMass = densityTools.calculateMassDensity(hmNDens) * c.getVolume()
+            # use sf to account for only a 1/sf portion of the component being in the block
+            hmMass = densityTools.calculateMassDensity(hmNDens) * c.getVolume() / sf
             totalHMMass += hmMass
             if hmMass:
-                # hmMass does not need to account for sf since what's calculated in blocks.completeInitialLoading
-                # ends up cancelling out sf
                 self.assertAlmostEqual(c.p.massHmBOL, hmMass, places=12)
-                # since sf is cancelled out in massHmBOL, there needs to be a factor 1/sf here to cancel out the
-                # factor of sf in getHMMoles.
                 self.assertAlmostEqual(
                     c.p.molesHmBOL,
                     sum(ndens for ndens in hmNDens.values())
                     / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-                    * c.getVolume()
-                    / sf,
+                    * c.getVolume(),
                     places=12,
                 )
             else:
