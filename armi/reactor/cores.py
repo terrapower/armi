@@ -2027,7 +2027,7 @@ class Core(composites.Composite):
         fluxFraction = 0
         targetRing = numRings
 
-        allFuelBlocks = list(self.getBlocks(Flags.FUEL))
+        allFuelBlocks = self.getBlocks(Flags.FUEL)
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
@@ -2036,7 +2036,7 @@ class Core(composites.Composite):
             blocksInRing = list(
                 itertools.chain(
                     *[
-                        a.getBlocks(Flags.FUEL)
+                        a.iterBlocks(Flags.FUEL)
                         for a in self.getAssembliesInRing(ringNumber)
                     ]
                 )

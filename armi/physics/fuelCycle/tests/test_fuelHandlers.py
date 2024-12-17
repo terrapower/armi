@@ -595,7 +595,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-        b = assem.getBlocks(Flags.FUEL)[0]
+        b = next(assem.iterBlocks(Flags.FUEL))
 
         b.p.linPowByPin = [1, 2, 3]
         self.assertEqual(type(b.p.linPowByPin), np.ndarray)
@@ -609,7 +609,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-        b = assem.getBlocks(Flags.FUEL)[0]
+        b = next(assem.iterBlocks(Flags.FUEL))
 
         b.p.linPowByPinNeutron = [1, 2, 3]
         self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
@@ -623,7 +623,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-        b = assem.getBlocks(Flags.FUEL)[0]
+        b = next(assem.iterBlocks(Flags.FUEL))
 
         b.p.linPowByPinGamma = [1, 2, 3]
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
