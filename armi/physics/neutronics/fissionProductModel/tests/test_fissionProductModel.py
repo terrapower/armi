@@ -72,7 +72,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         # Set up the global LFPs and check that they are setup.
         self.assertTrue(fpModel._useGlobalLFPs)
         fpModel.interactBOL()
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             if b.isFuel():
                 self.assertTrue(b._lumpedFissionProducts is not None)
             else:
@@ -82,7 +82,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         fpModel.allBlocksNeedAllNucs = False
         fpModel.interactBOL()
         allNucsInProblem = set(r.blueprints.allNuclidesInProblem)
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             if isDepletable(b):
                 if len(allNucsInProblem - set(b.getNuclides())) > 0:
                     break
@@ -193,7 +193,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
 
         # Check that the depletable blocks have all explicit
         # fission products in them.
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             nuclideList = b.getNuclides()
             if isDepletable(b):
                 for nb in nuclideBases.byMcc3Id.values():

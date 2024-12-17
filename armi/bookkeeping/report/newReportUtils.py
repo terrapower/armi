@@ -456,7 +456,7 @@ def getPinDesignTable(core):
 
     tableRows = newReports.Table("Pin Design", header=None)
     try:
-        for b in core.getBlocks(Flags.FUEL):
+        for b in core.iterBlocks(Flags.FUEL):
             fuel = b.getComponent(Flags.FUEL)
             duct = b.getComponent(Flags.DUCT)
             clad = b.getComponent(Flags.CLAD)

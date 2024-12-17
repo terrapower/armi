@@ -52,7 +52,7 @@ def setBlockNeutronVelocities(r, neutronVelocities):
     ValueError
         Multi-group neutron velocities was not computed during the cross section calculation.
     """
-    for b in r.core.getBlocks():
+    for b in r.core.iterBlocks():
         xsID = b.getMicroSuffix()
         if xsID not in neutronVelocities:
             raise ValueError(

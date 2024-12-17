@@ -274,12 +274,13 @@ class Core(composites.Composite):
         fissileMass = 0.0
         heavyMetalMass = 0.0
         totalVolume = 0.0
-        numBlocks = len(self.getBlocks())
-        for block in self.getBlocks():
+        numBlocks = 0
+        for block in self.iterBlocks():
             totalMass += block.getMass()
             fissileMass += block.getFissileMass()
             heavyMetalMass += block.getHMMass()
             totalVolume += block.getVolume()
+            numBlocks += 1
         totalMass = totalMass * self.powerMultiplier / 1000.0
         fissileMass = fissileMass * self.powerMultiplier / 1000.0
         heavyMetalMass = heavyMetalMass * self.powerMultiplier / 1000.0
@@ -313,7 +314,7 @@ class Core(composites.Composite):
 
     def setBlockMassParams(self):
         """Set the parameters kgHM and kgFis for each block and calculate Pu fraction."""
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
             b.p.puFrac = (
@@ -1187,7 +1188,7 @@ class Core(composites.Composite):
 
     def getAllXsSuffixes(self):
         """Return all XS suffices (e.g. AA, AB, etc.) in the core."""
-        return sorted(set(b.getMicroSuffix() for b in self.getBlocks()))
+        return sorted(set(b.getMicroSuffix() for b in self.iterBlocks()))
 
     def getNuclideCategories(self):
         """
@@ -1370,11 +1371,10 @@ class Core(composites.Composite):
             The values you requested. length is NxG.
         """
         flux = []
-        blocks = list(self.getBlocks())
         groups = range(self.lib.numGroups)
 
         # build in order 0
-        for b in blocks:
+        for b in self.iterBlocks():
             if adjoint:
                 vals = b.p.adjMgFlux
             elif extSrc:
@@ -1739,10 +1739,9 @@ class Core(composites.Composite):
 
     def saveAllFlux(self, fName="allFlux.txt"):
         """Dump all flux to file for debugging purposes."""
-        blocks = list(self.getBlocks())
         groups = range(self.lib.numGroups)
         with open(fName, "w") as f:
-            for block in blocks:
+            for block in self.iterBlocks():
                 for gi in groups:
                     f.write(
                         "{:10s} {:10d} {:12.5E} {:12.5E} {:12.5E}\n"
@@ -2003,7 +2002,7 @@ class Core(composites.Composite):
 
     def getMaxNumPins(self):
         """Find max number of pins of any block in the reactor."""
-        return max(b.getNumPins() for b in self.getBlocks())
+        return max(b.getNumPins() for b in self.iterBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
@@ -2087,7 +2086,7 @@ class Core(composites.Composite):
         num = 0.0
         denom = 0.0
         if not blockList:
-            blockList = list(self.getBlocks())
+            blockList = self.getBlocks()
 
         for b in blockList:
             if flux2Weight:
@@ -2123,7 +2122,7 @@ class Core(composites.Composite):
 
     def setPitchUniform(self, pitchInCm):
         """Set the pitch in all blocks."""
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             b.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
@@ -2217,7 +2216,7 @@ class Core(composites.Composite):
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
 
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             if b.p.molesHmBOL > 0.0:
                 break
         else:

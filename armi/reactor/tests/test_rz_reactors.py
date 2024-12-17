@@ -65,7 +65,7 @@ class TestRZTReactorModern(unittest.TestCase):
 
         reactorVolumes = []
         fuelVolumes = []
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             reactorVolumes.append(b.getVolume())
             for c in b:
                 if "godiva" in c.name:

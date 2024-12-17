@@ -48,7 +48,7 @@ class TestPlotting(unittest.TestCase):
     def test_plotDepthMap(self):  # indirectly tests plot face map
         with TemporaryDirectoryChanger():
             # set some params to visualize
-            for i, b in enumerate(self.o.r.core.getBlocks()):
+            for i, b in enumerate(self.o.r.core.iterBlocks()):
                 b.p.percentBu = i / 100
             fName = plotting.plotBlockDepthMap(
                 self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
