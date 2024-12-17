@@ -1096,7 +1096,7 @@ class Assembly_TestCase(unittest.TestCase):
             :tests: R_ARMI_ASSEM_BLOCKS
         """
         coords = []
-        for b in self.assembly.getBlocks():
+        for b in self.assembly.iterBlocks():
             # Confirm children are blocks
             self.assertIsInstance(b, blocks.Block)
 

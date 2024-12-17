@@ -437,9 +437,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # the burnup should be the maximum bu within
         # up to a burnup of 20%, which by the simple
         # dummy data layout should be the 2/3rd block in the blocklist
-        bs = self.r.core.getBlocks(Flags.FUEL)
         lastB = None
-        for b in bs:
+        for b in self.r.core.iterBlocks(Flags.FUEL):
             if b.p.percentBu > 20:
                 break
             lastB = b
@@ -470,7 +469,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             fh.manageFuel(cycle)
             for a in self.r.excore["sfp"]:
                 self.assertEqual(a.getLocation(), "SFP")
-            for b in self.r.core.getBlocks(Flags.FUEL):
+            for b in self.r.core.iterBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
                 self.assertGreater(b.p.kgFis, 0.0, "b.p.kgFis not populated!")
 

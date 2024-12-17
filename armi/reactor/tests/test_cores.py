@@ -85,7 +85,7 @@ class HexCoreTests(unittest.TestCase):
         blocks = []
         for a in self.core:
             blocks.extend(a)
-        actual = self.core.getBlocks()
+        actual = self.core.iterBlocks()
         self.assertAllIs(actual, blocks)
 
     def test_getBlocksWithFlag(self):
