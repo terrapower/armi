@@ -310,8 +310,8 @@ class ComponentBlueprint(yamlize.Object):
 
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
-                f"material {mat}. The component density has been altered to "
-                f"{comp.density()} at temperature {comp.temperatureInC} C",
+                f"material {mat}. The component density has been altered to {comp.density()} at "
+                f"temperature {comp.temperatureInC} C",
                 single=True,
             )
 
@@ -332,8 +332,8 @@ class ComponentBlueprint(yamlize.Object):
                 # They're applied during block construction.
                 continue
             elif attr.name == "flags":
-                # Don't pass these to the component constructor. These are used to
-                # override the flags derived from the type, if present.
+                # Don't pass these to the component constructor. These are used to override the
+                # flags derived from the type, if present.
                 continue
             else:
                 value = attr.get_value(self)
@@ -353,8 +353,7 @@ class ComponentBlueprint(yamlize.Object):
         mat = materials.resolveMaterialClassByName(self.material)()
 
         if self.isotopics is not None:
-            # Apply custom isotopics before processing input mods so
-            # the input mods have the final word
+            # Apply custom isotopics before processing input mods so they have the final world
             blueprint.customIsotopics.apply(mat, self.isotopics)
 
         # add mass fraction custom isotopics info, since some material modifications need
@@ -382,11 +381,9 @@ class ComponentBlueprint(yamlize.Object):
 
         if missing:
             raise ValueError(
-                "The nuclides {} are present in material {} by compositions, but are not "
-                "specified in the `nuclide flags` section of the input file. "
-                "They need to be added, or custom isotopics need to be applied.".format(
-                    missing, mat
-                )
+                f"The nuclides {missing} are present in material {mat} by compositions, but are "
+                "not specified in the `nuclide flags` section of the input file. They need to be "
+                "added, or custom isotopics need to be applied."
             )
 
         return mat
