@@ -39,7 +39,6 @@ import timeit
 from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
-import six
 
 from armi import context, runLog, utils
 from armi.nucDirectory import elements, nucDir, nuclideBases
@@ -759,10 +758,9 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         if not typeID:
             return not exact
-        if isinstance(typeID, six.string_types):
+        if isinstance(typeID, str):
             raise TypeError(
-                "Must pass Flags, or an iterable of Flags; Strings are no longer "
-                "supported"
+                "Must pass Flags, or an iterable of Flags; Strings are no longer supported"
             )
 
         elif not isinstance(typeID, Flags):

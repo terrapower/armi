@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any, Optional, List, Set, Iterator, Callable
 import copy
 import pickle
-from typing import Any, Optional, List, Set, Iterator, Callable
 import sys
 
 import numpy as np
-import six
 
 from armi import runLog
 from armi.reactor.parameters import parameterDefinitions, exceptions
@@ -38,10 +37,10 @@ The serial number for all ParameterCollections
 This is a counter of the number of instances of all types. They are useful for tracking items
 through the history of a database.
 
-.. warning::
-
-    This is not MPI safe. We also have not done anything to make it thread safe,
-    except that the GIL exists.
+Warning
+-------
+This is not MPI safe. We also have not done anything to make it thread safe, except that the GIL
+exists.
 """
 
 
@@ -365,7 +364,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             )
 
     def __delitem__(self, name):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             pd = self.paramDefs[name]
             if hasattr(self, pd.fieldName):
                 pd.assigned = SINCE_ANYTHING
@@ -374,7 +373,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             del self._hist[name]
 
     def __contains__(self, name):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             return hasattr(self, "_p_" + name)
         else:
             return name in self._hist
