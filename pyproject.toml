@@ -35,7 +35,6 @@ dependencies = [
     "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
-    "mpl_toolkits", # For adjusting matplotlib sub-plots
     "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
