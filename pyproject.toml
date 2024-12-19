@@ -31,17 +31,19 @@ authors = [
 ]
 dependencies = [
     "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
-    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
+    "dateutil>=2.2", # To read a datetime string more easily.
     "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
+    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
     "htmltree>=0.7.6", # Our reports have HTML output
     "matplotlib>=3.5.3,<3.8.0", # Important plotting library
+    "mpl_toolkits", # For adjusting matplotlib sub-plots
     "numpy>=1.21", # Important math library
     "ordered-set>=3.1.1", # A useful data structure
     "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
     "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
     "pyevtk>=1.2.0", # Handles binary VTK visualization files
-    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
     "scipy>=1.7.0", # Used for curve-fitting and matrix math
@@ -81,9 +83,10 @@ test = [
     "ipykernel>=6.0.0", # IPython Kernel (We run test notebooks from the doc tutorials.)
     "jupyter_client>=7.0.0", # Reference implementation of the Jupyter protocol
     "nbconvert>=7.0.0", # Converting Jupyter Notebooks to other formats
-    "pytest>=7.0.0", # Our primary test tooling
+    "nbformat>=5.5.0", # Jupyter Notebook reader
     "pytest-cov>=4.0.0", # coverage plugin
     "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
+    "pytest>=7.0.0", # Our primary test tooling
     "ruff==0.5.1", # Linting and code formatting (version-pinned)
 ]
 docs = [
