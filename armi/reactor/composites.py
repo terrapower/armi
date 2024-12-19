@@ -521,17 +521,40 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
-        """Return the children of this object."""
-        raise NotImplementedError
-
-    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
-        """Produce an iterator of children that have given flags."""
+    def iterChildren(
+        self,
+        deep=False,
+        generationNum=1,
+        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
+    ) -> Iterator["ArmiObject"]:
+        """Iterate over children of this object."""
         raise NotImplementedError()
 
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False
+    ) -> list["ArmiObject"]:
+        """Return the children of this object."""
+        raise NotImplementedError()
+
+    def iterChildrenWithFlags(
+        self, typeSpec: TypeSpec, exactMatch=False
+    ) -> Iterator["ArmiObject"]:
+        """Produce an iterator of children that have given flags."""
+        return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
+
+    def getChildrenWithFlags(
+        self, typeSpec: TypeSpec, exactMatch=False
+    ) -> list["ArmiObject"]:
         """Get all children that have given flags."""
-        raise NotImplementedError
+        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
+
+    def iterChildrenOfType(self, typeName: str) -> Iterator["ArmiObject"]:
+        """Iterate over children that have a specific input type name."""
+        return self.iterChildren(predicate=lambda o: o.getType() == typeName)
+
+    def getChildrenOfType(self, typeName: str) -> list["ArmiObject"]:
+        """Produce a list of children that have a specific input type name."""
+        return list(self.iterChildrenOfType(typeName))
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
@@ -2790,23 +2813,6 @@ class Composite(ArmiObject):
                 deep=deep, generationNum=generationNum, predicate=predicate
             )
         return list(items)
-
-    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
-        """Produce an iterator over all children of a specific type."""
-        checker = operator.methodcaller("hasFlags", typeSpec, exactMatch)
-        return filter(checker, self)
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
-        """Get all children of a specific type."""
-        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
-
-    def iterChildrenOfType(self, typeName: str):
-        """Produce an iterator over all children with a specific input type name."""
-        return filter(lambda c: c.getType() == typeName, self)
-
-    def getChildrenOfType(self, typeName: str):
-        """Get children that have a specific input type name."""
-        return list(self.iterChildrenOfType(typeName))
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         return list(self.iterComponents(typeSpec, exact))
