@@ -22,6 +22,7 @@ import math
 import pickle
 from random import randint
 from typing import ClassVar, Optional, Type
+from collections.abc import Iterable
 
 import numpy as np
 from scipy import interpolate
@@ -206,6 +207,7 @@ class Assembly(composites.Composite):
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
+        oldSymmetryFactor = self.getSymmetryFactor()
         composites.Composite.moveTo(self, locator)
         if self.lastLocationLabel != self.DATABASE:
             self.p.numMoves += 1
@@ -213,6 +215,26 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
+        self.scaleParamsToNewSymmetryFactor(oldSymmetryFactor)
+
+    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor):
+        scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
+        if scalingFactor == 1:
+            return
+
+        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+            ParamLocation.VOLUME_INTEGRATED
+        )
+        for b in self.getBlocks():
+            for param in volIntegratedParamsToScale:
+                name = param.name
+                if b.p[name] is None or isinstance(b.p[name], str):
+                    continue
+                elif isinstance(b.p[name], Iterable):
+                    b.p[name] = [value * scalingFactor for value in b.p[name]]
+                else:
+                    # numpy array or other
+                    b.p[name] = b.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
