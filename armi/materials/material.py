@@ -332,7 +332,9 @@ class Material:
         """Apply material-specific material input parameters."""
         pass
 
-    def adjustMassEnrichment(self, nb: nuclideBases.NuclideBases, massEnrichment: float) -> None:
+    def adjustMassEnrichment(
+        self, nb: nuclideBases.NuclideBases, massEnrichment: float
+    ) -> None:
         """Adjust the enrichment of the material."""
         self.adjustMassFrac(self.enrichedNuclide, massEnrichment)
 

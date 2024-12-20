@@ -22,7 +22,7 @@ import os
 
 from armi import runLog
 from armi.nucDirectory import elements
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import LumpNuclideBase
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_LFP_COMPOSITION_FILE_PATH,
@@ -33,18 +33,18 @@ class LumpedFissionProduct:
     r"""
     Lumped fission product.
 
-    The yields are in number fraction and they sum to 2.0 in general so a
-    fission of an actinide results in one LFP, which represents 2 real FPs.
+    The yields are in number fraction and they sum to 2.0 in general so a fission of an actinide
+    results in one LFP, which represents 2 real FPs.
 
-    This object is a data structure and works a lot like a dictionary in terms
-    of accessing and modifying the data.
+    This object is a data structure and works a lot like a dictionary in terms of accessing and
+    modifying the data.
 
-    The yields are indexed by nuclideBase -- in self.yld the yield fraction is
-    indexed by nuclideBases of the individual fission product isotopes
+    The yields are indexed by nuclideBase; in self.yld the yield fraction is indexed by nuclideBases
+    of the individual fission product isotopes
 
     Examples
     --------
-    >>> fpd = FissionProductDefinitionFile(stream)
+    >>> fpd = FissionProductDefinitionFile(stream, r.nuclideBases)
     >>> lfp = fpd.createSingleLFPFromFile('LFP39')
     >>> lfp[<nuclidebase for EU151>]
     2.9773e-05
@@ -54,17 +54,18 @@ class LumpedFissionProduct:
     armi.reactor.blocks.Block.getLumpedFissionProductCollection : how you should access these.
     """
 
-    def __init__(self, name=None):
+    def __init__(self, nuclideBases, name=None):
         """
         Make an LFP.
 
         Parameters
         ----------
         name : str, optional
-            A name for the LFP. Will be overwritten if you load from file. Provide only
-            if you are spinning your own custom LFPs.
+            A name for the LFP. Will be overwritten if you load from file. Provide only if you are
+            spinning your own custom LFPs.
         """
         self.name = name
+        self.nuclideBases = nuclideBases
         self.yld = {}
 
     def duplicate(self):
@@ -165,7 +166,7 @@ class LumpedFissionProduct:
         """
         massFracDenom = self.getMassFracDenom()
         if not nuclideBase:
-            nuclideBase = nuclideBases.byName[nucName]  # TODO: JOHN make non-optional
+            nuclideBase = self.nuclideBases.byName[nucName]
         return self.__getitem__(nuclideBase) * (nuclideBase.weight / massFracDenom)
 
     def getMassFracDenom(self):
@@ -222,7 +223,8 @@ class LumpedFissionProductCollection(dict):
         Parameters
         ----------
         objectWithParentDensities : ArmiObject
-            object (probably block) that can be called with getNumberDensity('LFP35'), etc. to get densities of LFPs.
+            object (probably block) that can be called with getNumberDensity('LFP35'), etc. to get
+            densities of LFPs.
         densFunc : function, optional
             Optional method to extract LFP densities
 
@@ -275,14 +277,15 @@ class FissionProductDefinitionFile:
 
     Examples
     --------
-    >>> fpd = FissionProductDefinitionFile(stream)
+    >>> fpd = FissionProductDefinitionFile(stream, nuclideBases)
     >>> lfps = fpd.createLFPsFromFile()
 
     The path to this file is specified by the `lfpCompositionFilePath` user setting.
     """
 
-    def __init__(self, stream):
+    def __init__(self, stream, nuclideBases):
         self.stream = stream
+        self.nuclideBases = nuclideBases
 
     def createLFPsFromFile(self):
         """
@@ -342,13 +345,13 @@ class FissionProductDefinitionFile:
         return allLFPLines
 
     def _readOneLFP(self, linesOfOneLFP):
-        lfp = LumpedFissionProduct()
+        lfp = LumpedFissionProduct(self.nuclideBases)
         totalYield = 0.0
         for line in linesOfOneLFP:
             data = line.split()
             parent = data[0]
             nucLibId = data[1]
-            nuc = nuclideBases.byName[nucLibId]  # TODO: JOHN
+            nuc = self.nuclideBases.byName[nucLibId]
             yld = float(data[2])
             lfp.yld[nuc] = yld
             totalYield += yld
@@ -360,41 +363,39 @@ class FissionProductDefinitionFile:
         return lfp
 
 
-def lumpedFissionProductFactory(cs):
+def lumpedFissionProductFactory(cs, nuclideBases):
     """Build lumped fission products."""
     if cs[CONF_FP_MODEL] == "explicitFissionProducts":
         return None
 
     if cs[CONF_FP_MODEL] == "MO99":
-        return _buildMo99LumpedFissionProduct()
+        return _buildMo99LumpedFissionProduct(nuclideBases)
 
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]
     if not lfpPath or not os.path.exists(lfpPath):
         raise ValueError(
-            "The fission product reference file does "
-            f"not exist or is not a valid path. Path provided: {lfpPath}"
+            "The fission product reference file does not exist or is not a valid path. Path "
+            f"provided: {lfpPath}"
         )
 
     runLog.extra(f"Loading global lumped fission products (LFPs) from {lfpPath}")
     with open(lfpPath) as lfpStream:
-        lfpFile = FissionProductDefinitionFile(lfpStream)
+        lfpFile = FissionProductDefinitionFile(lfpStream, nuclideBases)
         lfps = lfpFile.createLFPsFromFile()
 
     return lfps
 
 
-def _buildMo99LumpedFissionProduct():
+def _buildMo99LumpedFissionProduct(nuclideBases):
     """
     Build a dummy MO-99 LFP collection.
 
-    This is a very bad FP approximation from a physics standpoint but can be very useful
-    for rapid-running test cases.
+    This is a very bad FP approximation from a physics standpoint but can be very useful for
+    rapid-running test cases.
     """
-    mo99 = nuclideBases.byName["MO99"]  # TODO: JOHN
+    mo99 = nuclideBases.byName["MO99"]
     mo99LFPs = LumpedFissionProductCollection()
-    for lfp in nuclideBases.where(  # TODO: JOHN
-        lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)
-    ):
+    for lfp in nuclideBases.where(lambda nb: isinstance(nb, LumpNuclideBase)):
         # Not all lump nuclides bases defined are fission products, so ensure that only fission
         # products are considered.
         if not ("FP" in lfp.name or "REGN" in lfp.name):
@@ -402,6 +403,7 @@ def _buildMo99LumpedFissionProduct():
         mo99FP = LumpedFissionProduct(lfp.name)
         mo99FP[mo99] = 2.0
         mo99LFPs[lfp.name] = mo99FP
+
     return mo99LFPs
 
 

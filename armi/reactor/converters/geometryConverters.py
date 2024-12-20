@@ -37,7 +37,9 @@ import numpy as np
 
 from armi import materials
 from armi import runLog
-from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.physics.neutronics.fissionProductModel.lumpedFissionProduct import (
+    lumpedFissionProductFactory,
+)
 from armi.reactor import assemblies
 from armi.reactor import blocks
 from armi.reactor import components
@@ -56,9 +58,8 @@ from armi.utils import hexagon
 from armi.utils import plotting
 from armi.utils import units
 
-BLOCK_AXIAL_MESH_SPACING = (
-    20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
-)
+# Block axial mesh spacing set for nodal diffusion calculation (cm)
+BLOCK_AXIAL_MESH_SPACING = 20
 STR_SPACE = " "
 
 
@@ -733,22 +734,18 @@ class HexToRZThetaConverter(GeometryConverter):
         ----------
         innerDiameter : float
             The current innerDiameter of the radial-theta zone
-
         thetaIndex : float
             The theta index of the radial-theta zone
-
         radialIndex : float
             The radial index of the radial-theta zone
-
         lowerTheta : float
             The lower theta bound for the radial-theta zone
-
         upperTheta : float
             The upper theta bound for the radial-theta zone
 
         Returns
         -------
-        outerDiameter : float
+        float
             The outer diameter (in cm) of the radial zone just added
         """
         newAssembly = assemblies.ThRZAssembly("mixtureAssem")
@@ -760,7 +757,7 @@ class HexToRZThetaConverter(GeometryConverter):
             len(self.meshConverter.axialMesh), armiObject=newAssembly
         )
 
-        lfp = lumpedFissionProduct.lumpedFissionProductFactory(self._cs)
+        lfp = lumpedFissionProductFactory(self._cs, self._sourceReactor.nuclideBases)
 
         lowerAxialZ = 0.0
         for axialIndex, upperAxialZ in enumerate(self.meshConverter.axialMesh):

@@ -99,7 +99,9 @@ option, the user should look to set the ``fpModelLibrary`` setting.
 from armi import runLog
 from armi import interfaces
 from armi.reactor.flags import Flags
-from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
+from armi.physics.neutronics.fissionProductModel.lumpedFissionProduct import (
+    lumpedFissionProductFactory,
+)
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
@@ -123,7 +125,7 @@ class FissionProductModel(interfaces.Interface):
 
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
-        self._globalLFPs = lumpedFissionProduct.lumpedFissionProductFactory(self.cs)
+        self._globalLFPs = lumpedFissionProductFactory(self.cs, r.nuclideBases)
 
     @property
     def _explicitFissionProducts(self):
