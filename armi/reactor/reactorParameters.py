@@ -433,7 +433,11 @@ def defineCoreParameters():
             description="Max percent burnup on any block in the problem",
         )
 
-        pb.defParam("rxSwing", units=units.PCM, description="Reactivity swing")
+        pb.defParam(
+            "rxSwing",
+            units=units.PCM,
+            description="Current Reactivity swing from BOC reactivity",
+        )
 
         pb.defParam(
             "maxBuF",

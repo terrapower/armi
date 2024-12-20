@@ -9,6 +9,7 @@ Release Date: TBD
 New Features
 ------------
 #. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
+#. `rXSwing`` is now calculated for all time nodes making snapshots less failure prone due to non-relevant  inputs. (`PR#2035 <https://github.com/terrapower/armi/pull/2035>`_)
 
 API Changes
 -----------
