@@ -186,7 +186,7 @@ class ComponentBlueprint(yamlize.Object):
     mergeWith = yamlize.Attribute(type=str, default=None)
     area = yamlize.Attribute(type=float, default=None)
 
-    def construct(self, blueprint, matMods):
+    def construct(self, blueprint, matMods, inputHeightsConsideredHot):
         """Construct a component or group.
 
         .. impl:: User-defined on material alterations are applied here.
@@ -205,6 +205,17 @@ class ComponentBlueprint(yamlize.Object):
             The ``applyInputParams()`` method of that material class is then called,
             passing in the associated material modifications data, which the material
             class can then use to modify the isotopics as necessary.
+
+        Parameters
+        ----------
+        blueprint : Blueprints
+            Blueprints object containing various detailed information, such as nuclides to model
+
+        matMods : dict
+            Material modifications to apply to the component.
+
+        inputHeightsConsideredHot : bool
+            See the case setting of the same name.
         """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
@@ -214,7 +225,9 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = composites.Composite(self.name)
             for groupedComponent in group:
                 componentDesign = blueprint.componentDesigns[groupedComponent.name]
-                component = componentDesign.construct(blueprint, matMods=dict())
+                component = componentDesign.construct(
+                    blueprint, {}, inputHeightsConsideredHot
+                )
                 # override free component multiplicity if it's set based on the group definition
                 component.setDimension("mult", groupedComponent.mult)
                 _setComponentFlags(component, self.flags, blueprint)
@@ -229,29 +242,33 @@ class ComponentBlueprint(yamlize.Object):
                 constructedObject.material.getTD()
             )
 
-        # set the custom density for non-custom material components after construction
-        self.setCustomDensity(constructedObject, blueprint, matMods)
+        self._setComponentCustomDensity(
+            constructedObject,
+            blueprint,
+            matMods,
+            inputHeightsConsideredHot,
+        )
 
         return constructedObject
 
-    def setCustomDensity(self, constructedComponent, blueprint, matMods):
+    def _setComponentCustomDensity(
+        self, comp, blueprint, matMods, inputHeightsConsideredHot
+    ):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
         if self.isotopics is None:
             # No custom isotopics specified
             return
 
-        density = blueprint.customIsotopics[self.isotopics].density
-        if density is None:
+        densityFromCustomIsotopic = blueprint.customIsotopics[self.isotopics].density
+        if densityFromCustomIsotopic is None:
             # Nothing to do
             return
 
-        if density <= 0:
+        if densityFromCustomIsotopic <= 0:
             runLog.error(
                 "A zero or negative density was specified in a custom isotopics input. "
                 "This is not permitted, if a 0 density material is needed, use 'Void'. "
-                "The component is {} and the isotopics entry is {}.".format(
-                    constructedComponent, self.isotopics
-                )
+                f"The component is {comp} and the isotopics entry is {self.isotopics}."
             )
             raise ValueError(
                 "A zero or negative density was specified in the custom isotopics for a component"
@@ -261,30 +278,40 @@ class ComponentBlueprint(yamlize.Object):
         if not isinstance(mat, materials.Custom):
             # check for some problem cases
             if "TD_frac" in matMods.keys():
-                runLog.warning(
-                    "Both TD_frac and a custom density (custom isotopics) has been specified for "
-                    "material {}. The custom density will override the density calculated using "
-                    "TD_frac.".format(self.material)
+                runLog.error(
+                    f"Both TD_frac and a custom isotopic with density {blueprint.customIsotopics[self.isotopics]} "
+                    f"has been specified for material {self.material}. This is an overspecification."
                 )
             if not mat.density(Tc=self.Tinput) > 0:
                 runLog.error(
-                    "A custom density has been assigned to material '{}', which has no baseline "
+                    f"A custom density has been assigned to material '{self.material}', which has no baseline "
                     "density. Only materials with a starting density may be assigned a density. "
-                    "This comes up e.g. if isotopics are assigned to 'Void'.".format(
-                        self.material
-                    )
+                    "This comes up e.g. if isotopics are assigned to 'Void'."
                 )
                 raise ValueError(
                     "Cannot apply custom densities to materials without density."
                 )
 
-            densityRatio = density / constructedComponent.density()
-            constructedComponent.changeNDensByFactor(densityRatio)
+            # Apply a density scaling to account for the temperature change between Tinput
+            # Thot. There may be a better place in the initialization to determine
+            # if the block height will be interpreted as hot dimensions, which would
+            # allow us to not have to pass the case settings down this far
+            dLL = comp.material.linearExpansionFactor(
+                Tc=comp.temperatureInC, T0=comp.inputTemperatureInC
+            )
+            if inputHeightsConsideredHot:
+                f = 1.0 / (1 + dLL) ** 2
+            else:
+                f = 1.0 / (1 + dLL) ** 3
+
+            scaledDensity = comp.density() / f
+            densityRatio = densityFromCustomIsotopic / scaledDensity
+            comp.changeNDensByFactor(densityRatio)
 
             runLog.important(
                 "A custom material density was specified in the custom isotopics for non-custom "
-                "material {}. The component density has been altered to "
-                "{}.".format(mat, constructedComponent.density()),
+                f"material {mat}. The component density has been altered to "
+                f"{comp.density()} at temperature {comp.temperatureInC} C",
                 single=True,
             )
 

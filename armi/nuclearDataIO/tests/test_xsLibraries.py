@@ -15,11 +15,11 @@
 import copy
 import filecmp
 import os
+import pickle
 import traceback
 import unittest
 
 import numpy as np
-from six.moves import cPickle
 
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import xsLibraries
@@ -87,15 +87,15 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
             cls.xsLibGenerationErrorStack = traceback.format_exc()
 
     def test_canPickleAndUnpickleISOTXS(self):
-        pikAA = cPickle.loads(cPickle.dumps(self.isotxsAA))
+        pikAA = pickle.loads(pickle.dumps(self.isotxsAA))
         self.assertTrue(xsLibraries.compare(pikAA, self.isotxsAA))
 
     def test_canPickleAndUnpickleGAMISO(self):
-        pikAA = cPickle.loads(cPickle.dumps(self.gamisoAA))
+        pikAA = pickle.loads(pickle.dumps(self.gamisoAA))
         self.assertTrue(xsLibraries.compare(pikAA, self.gamisoAA))
 
     def test_canPickleAndUnpicklePMATRX(self):
-        pikAA = cPickle.loads(cPickle.dumps(self.pmatrxAA))
+        pikAA = pickle.loads(pickle.dumps(self.pmatrxAA))
         self.assertTrue(xsLibraries.compare(pikAA, self.pmatrxAA))
 
     def test_compareWorks(self):
