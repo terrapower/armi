@@ -40,7 +40,7 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import units
 
