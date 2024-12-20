@@ -13,11 +13,11 @@
 # limitations under the License.
 
 """Assorted utilities to help with basic density calculations."""
-from typing import Tuple, List, Dict
+from typing import Dict, List, Tuple
 
-from armi.nucDirectory import nucDir, nuclideBases, elements
-from armi.utils import units
 from armi import runLog
+from armi.nucDirectory import elements, nucDir, nuclideBases
+from armi.utils import units
 
 
 def getNDensFromMasses(rho, massFracs, normalize=False):

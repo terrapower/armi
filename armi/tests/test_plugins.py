@@ -19,19 +19,21 @@ from typing import Optional
 
 import yamlize
 
-from armi import context
-from armi import getApp
-from armi import getPluginManagerOrFail
-from armi import interfaces
-from armi import plugins
-from armi import settings
-from armi import utils
+from armi import (
+    context,
+    getApp,
+    getPluginManagerOrFail,
+    interfaces,
+    plugins,
+    settings,
+    utils,
+)
 from armi.bookkeeping.db.passiveDBLoadPlugin import PassiveDBLoadPlugin
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
+from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
 
 
 class PluginFlags1(plugins.ArmiPlugin):

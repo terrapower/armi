@@ -28,8 +28,8 @@ and also for inputModifiers that change inputs for parameter sweeping.
 """
 import math
 
-from armi.reactor.flags import Flags
 from armi import runLog
+from armi.reactor.flags import Flags
 
 
 def adjustSmearDensity(obj, value, bolBlock=None):

@@ -25,20 +25,18 @@ reactor.blueprints.reactorBlueprint
 reactor.blueprints.gridBlueprint
 """
 
-from collections import OrderedDict
-from copy import copy
 import os
 import sys
 import xml.etree.ElementTree as ET
+from collections import OrderedDict
+from copy import copy
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
 from armi import runLog
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.utils import asciimaps
-from armi.utils import directoryChangers
+from armi.reactor import geometry, grids
+from armi.utils import asciimaps, directoryChangers
 
 INP_SYSTEMS = "reactor"
 INP_SYMMETRY = "symmetry"

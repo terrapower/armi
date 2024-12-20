@@ -14,12 +14,11 @@
 """Utility classes and functions for manipulating text files."""
 import io
 import os
-import re
 import pathlib
-from typing import List, Tuple, Union, Optional, TextIO
+import re
+from typing import List, Optional, TextIO, Tuple, Union
 
 from armi import runLog
-
 
 _INCLUDE_CTOR = False
 _INCLUDE_RE = re.compile(r"^([^#]*\s+)?!include\s+(.*)\n?$")

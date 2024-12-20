@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Hashable, TYPE_CHECKING, Dict, Iterable, Tuple, List
+from typing import TYPE_CHECKING, Dict, Hashable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 
 from armi.reactor import geometry
-from armi.reactor.grids.locations import LocationBase, IndexLocation, IJType, IJKType
+from armi.reactor.grids.locations import IJKType, IJType, IndexLocation, LocationBase
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject

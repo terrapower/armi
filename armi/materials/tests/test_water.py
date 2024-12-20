@@ -15,7 +15,7 @@
 """Unit tests for water materials."""
 import unittest
 
-from armi.materials.water import SaturatedWater, SaturatedSteam, Water
+from armi.materials.water import SaturatedSteam, SaturatedWater, Water
 
 
 class Test_Water(unittest.TestCase):

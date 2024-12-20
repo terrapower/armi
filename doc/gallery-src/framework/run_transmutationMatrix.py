@@ -29,12 +29,12 @@ Users can input their own transmutation matrix or use this one.
 A Bateman equation/matrix exponential solver is required to actually *solve* transmutation and
 decay problems, which can be provided via a plugin.
 """
-import os
 import math
+import os
 
 import matplotlib.patches as mpatch
-from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
+from matplotlib.collections import PatchCollection
 
 from armi.context import RES
 from armi.nucDirectory import nuclideBases

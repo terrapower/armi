@@ -19,32 +19,31 @@ many arbitrary changes as we need. Thanks to the tabulate team.
 
 https://github.com/astanin/python-tabulate
 """
-from collections import defaultdict
-from collections import namedtuple
-from collections import OrderedDict
-from collections import UserDict
+import unittest
+from collections import OrderedDict, UserDict, defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime
-import unittest
 
 import numpy as np
 
-from armi.utils.tabulate import _alignCellVeritically
-from armi.utils.tabulate import _alignColumn
-from armi.utils.tabulate import _bool
-from armi.utils.tabulate import _buildLine
-from armi.utils.tabulate import _buildRow
-from armi.utils.tabulate import _format
-from armi.utils.tabulate import _isMultiline
-from armi.utils.tabulate import _multilineWidth
-from armi.utils.tabulate import _normalizeTabularData
-from armi.utils.tabulate import _tableFormats
-from armi.utils.tabulate import _type
-from armi.utils.tabulate import _visibleWidth
-from armi.utils.tabulate import _wrapTextToColWidths
-from armi.utils.tabulate import SEPARATING_LINE
-from armi.utils.tabulate import tabulate
-from armi.utils.tabulate import tabulateFormats
+from armi.utils.tabulate import (
+    SEPARATING_LINE,
+    _alignCellVeritically,
+    _alignColumn,
+    _bool,
+    _buildLine,
+    _buildRow,
+    _format,
+    _isMultiline,
+    _multilineWidth,
+    _normalizeTabularData,
+    _tableFormats,
+    _type,
+    _visibleWidth,
+    _wrapTextToColWidths,
+    tabulate,
+    tabulateFormats,
+)
 
 
 class TestTabulateAPI(unittest.TestCase):
@@ -543,9 +542,11 @@ class TestTabulateInternal(unittest.TestCase):
 
     def test_assortedRareEdgeCases(self):
         """Test some of the more rare edge cases in the purely internal functions."""
-        from armi.utils.tabulate import _alignHeader
-        from armi.utils.tabulate import _prependRowIndex
-        from armi.utils.tabulate import _removeSeparatingLines
+        from armi.utils.tabulate import (
+            _alignHeader,
+            _prependRowIndex,
+            _removeSeparatingLines,
+        )
 
         self.assertEqual(_alignHeader("123", False, 3, 3, False, None), "123")
 

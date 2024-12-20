@@ -23,7 +23,7 @@ from ruamel.yaml import YAML
 from armi.context import RES
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
-from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
+from armi.utils.units import AVOGADROS_NUMBER, CURIE_PER_BECQUEREL, SECONDS_PER_HOUR
 
 
 class TestNuclide(unittest.TestCase):

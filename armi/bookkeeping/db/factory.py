@@ -17,8 +17,8 @@ from typing import Optional
 
 import h5py
 
-from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db import permissions
+from armi.bookkeeping.db.database import Database
 
 
 def databaseFactory(dbName: str, permission: str, version: Optional[str] = None):

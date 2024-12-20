@@ -74,18 +74,18 @@ additive terms, respectively.
 """
 from traceback import format_exc
 
-from scipy.sparse import csc_matrix
 import numpy as np
+from scipy.sparse import csc_matrix
 
 from armi import runLog
 from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.nuclearDataIO.nuclearFileMetadata import (
-    RegionXSMetadata,
     COMPXS_POWER_CONVERSION_FACTORS,
     REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF,
+    RegionXSMetadata,
 )
-from armi.utils.properties import unlockImmutableProperties, lockImmutableProperties
+from armi.nuclearDataIO.xsCollections import XSCollection
+from armi.utils.properties import lockImmutableProperties, unlockImmutableProperties
 
 
 def _getRegionIO():

@@ -29,16 +29,15 @@ state. The ARMI Framework has historically made heavy use of global state (e.g.,
 code to access such things through an App object.
 """
 # ruff: noqa: E402
-from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
 import sys
+from typing import Dict, List, Optional, Tuple
 
-from armi import context, plugins, pluginManager, meta, settings
+from armi import context, meta, pluginManager, plugins, settings
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
-from armi.settings import fwSettings
-from armi.settings import Setting
+from armi.settings import Setting, fwSettings
 
 
 class App:
@@ -85,14 +84,14 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        from armi import cli
-        from armi import bookkeeping
-        from armi.physics import fuelCycle
-        from armi.physics import fuelPerformance
-        from armi.physics import neutronics
-        from armi.physics import safety
-        from armi.physics import thermalHydraulics
-        from armi import reactor
+        from armi import bookkeeping, cli, reactor
+        from armi.physics import (
+            fuelCycle,
+            fuelPerformance,
+            neutronics,
+            safety,
+            thermalHydraulics,
+        )
 
         self._pm = plugins.getNewPluginManager()
         for plugin in (

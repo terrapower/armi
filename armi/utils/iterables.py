@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """Module of utilities to help dealing with iterable objects in Python."""
-from itertools import chain, filterfalse, tee
 import struct
+from itertools import chain, filterfalse, tee
 
 import numpy as np
 

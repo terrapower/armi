@@ -42,8 +42,7 @@ import numpy as np
 from scipy import sparse
 
 from armi import runLog
-from armi.utils import properties
-from armi.utils import units
+from armi.utils import properties, units
 
 # Basic cross-section types that are represented by a 1-D vector in the multigroup approximation
 # No one is particularly proud of these names...we can claim

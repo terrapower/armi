@@ -14,16 +14,16 @@
 """Tests for MPI actions."""
 import unittest
 
+from armi import context
 from armi.mpiActions import (
-    _diagnosePickleError,
     DistributeStateAction,
     DistributionAction,
     MpiAction,
-    runActions,
+    _diagnosePickleError,
     _disableForExclusiveTasks,
     _makeQueue,
+    runActions,
 )
-from armi import context
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 from armi.utils import iterables

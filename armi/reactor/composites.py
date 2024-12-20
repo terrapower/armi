@@ -46,9 +46,7 @@ from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
-from armi.utils import densityTools
-from armi.utils import tabulate
-from armi.utils import units
+from armi.utils import densityTools, tabulate, units
 from armi.utils.densityTools import calculateNumberDensity
 from armi.utils.flags import auto
 

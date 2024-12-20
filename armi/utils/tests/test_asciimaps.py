@@ -17,7 +17,6 @@ import unittest
 
 from armi.utils import asciimaps
 
-
 CARTESIAN_MAP = """2 2 2 2 2
 2 2 2 2 2
 2 1 1 1 2

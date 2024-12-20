@@ -13,6 +13,7 @@
 # limitations under the License.
 import collections
 import os
+
 import numpy as np
 
 from armi import runLog
@@ -22,12 +23,12 @@ from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor.components import component
 from armi.reactor.flags import Flags
 from armi.utils import (
-    units,
-    plotting,
-    iterables,
     getAvailabilityFactors,
     getCycleLengths,
     getStepLengths,
+    iterables,
+    plotting,
+    units,
 )
 
 
@@ -294,8 +295,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_GEN_XS
-    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+    from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
@@ -411,8 +411,7 @@ def insertSettingsData(cs, report):
     report: ReportContent
         The report to be added to
     """
-    from armi.physics.neutronics.settings import CONF_GEN_XS
-    from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
+    from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_NEUTRONICS_KERNEL
 
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
     report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(

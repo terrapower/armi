@@ -21,14 +21,14 @@ import functools
 import traceback
 import warnings
 
-from scipy.optimize import fsolve
 import numpy as np
+from scipy.optimize import fsolve
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
-from armi.utils.units import getTk, getTc
+from armi.utils.units import getTc, getTk
 
 # globals
 FAIL_ON_RANGE = False

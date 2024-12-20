@@ -16,16 +16,13 @@
 Reactor objects represent the highest level in the hierarchy of structures that compose the system
 to be modeled.
 """
-from typing import Optional
 import copy
+from typing import Optional
 
-from armi import getPluginManagerOrFail
-from armi import runLog
-from armi.reactor import composites
-from armi.reactor import reactorParameters
+from armi import getPluginManagerOrFail, runLog
+from armi.reactor import composites, reactorParameters
 from armi.reactor.cores import Core
-from armi.reactor.excoreStructure import ExcoreCollection
-from armi.reactor.excoreStructure import ExcoreStructure
+from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import (
     CONF_GEOM_FILE,
