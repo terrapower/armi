@@ -28,6 +28,7 @@ from typing import Dict, Optional, Sequence, Set, Union
 import ast
 import cProfile
 import glob
+import io
 import os
 import pathlib
 import pstats
@@ -38,7 +39,6 @@ import time
 import trace
 
 import coverage
-import six
 
 from armi import context
 from armi import getPluginManager
@@ -492,7 +492,7 @@ class Case:
 
         profiler.disable()
         profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
-        statsStream = six.StringIO()
+        statsStream = io.StringIO()
         summary = pstats.Stats(profiler, stream=statsStream).sort_stats("cumulative")
         summary.print_stats()
         if context.MPI_SIZE > 0 and context.MPI_COMM is not None:

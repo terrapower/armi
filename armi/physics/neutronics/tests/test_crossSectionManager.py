@@ -19,11 +19,10 @@ Test the cross section manager.
 """
 import copy
 import os
+import pickle
 import unittest
 from io import BytesIO
 from unittest.mock import MagicMock
-
-from six.moves import cPickle
 
 from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
@@ -73,9 +72,9 @@ class TestBlockCollection(unittest.TestCase):
     def test_is_pickleable(self):
         self.bc.weightingParam = "test"
         buf = BytesIO()
-        cPickle.dump(self.bc, buf)
+        pickle.dump(self.bc, buf)
         buf.seek(0)
-        newBc = cPickle.load(buf)
+        newBc = pickle.load(buf)
         self.assertEqual(self.bc.weightingParam, newBc.weightingParam)
 
 
@@ -85,6 +84,7 @@ class TestBlockCollectionMedian(unittest.TestCase):
         for bi, b in enumerate(self.blockList):
             b.setType("fuel")
             b.p.percentBu = bi / 4.0 * 100
+
         self.blockList[0], self.blockList[2] = self.blockList[2], self.blockList[0]
         self.bc = MedianBlockCollection(
             self.blockList[0].core.r.blueprints.allNuclidesInProblem

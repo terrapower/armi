@@ -20,8 +20,6 @@ See :doc:`/developer/entrypoints`.
 import argparse
 from typing import Optional, Union
 
-import six
-
 from armi import context, runLog, settings
 
 
@@ -46,8 +44,7 @@ class _EntryPointEnforcer(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-@six.add_metaclass(_EntryPointEnforcer)
-class EntryPoint:
+class EntryPoint(metaclass=_EntryPointEnforcer):
     """
     Generic command line entry point.
 
