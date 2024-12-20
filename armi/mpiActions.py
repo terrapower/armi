@@ -56,9 +56,8 @@ and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
 import collections
 import gc
 import math
+import pickle
 import timeit
-
-from six.moves import cPickle
 
 from armi import context, interfaces, runLog, settings, utils
 from armi.reactor import reactors
@@ -133,7 +132,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except cPickle.PicklingError as error:
+        except pickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise
@@ -534,7 +533,7 @@ class DistributeStateAction(MpiAction):
             # or how the interfaces are distributed.
             self.r._markSynchronized()
 
-        except (cPickle.PicklingError, TypeError) as error:
+        except (pickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
             runLog.error(error)
             # workers are still waiting for a reactor object

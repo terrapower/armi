@@ -787,21 +787,16 @@ class Block(composites.Composite):
 
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
-        sf = self.getSymmetryFactor()
         for child in self:
-            # multiplying by sf ends up cancelling out the symmetry factor used in
-            # Component.getMass(). So massHmBOL does not respect the symmetry factor.
-            hmMass = child.getHMMass() * sf
+            hmMass = child.getHMMass()
             massHmBOL += hmMass
             # Components have the following parameters but not every composite will
             # massHmBOL, molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
-                # to stay consistent with massHmBOL, molesHmBOL and puFrac should be
-                # independent of sf. As such, the need to be scaled by 1/sf.
-                child.p.molesHmBOL = child.getHMMoles() / sf
+                child.p.molesHmBOL = child.getHMMoles()
                 child.p.puFrac = (
-                    self.getPuMoles() / sf / child.p.molesHmBOL
+                    self.getPuMoles() / child.p.molesHmBOL
                     if child.p.molesHmBOL > 0.0
                     else 0.0
                 )

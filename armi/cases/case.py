@@ -27,6 +27,7 @@ armi.cases.suite : A collection of Cases
 import ast
 import cProfile
 import glob
+import io
 import os
 import pathlib
 import pstats
@@ -38,7 +39,6 @@ import trace
 from typing import Dict, Optional, Sequence, Set, Union
 
 import coverage
-import six
 
 from armi import context, getPluginManager, interfaces, operators, runLog, settings
 from armi.bookkeeping.db import compareDatabases
@@ -485,7 +485,7 @@ class Case:
 
         profiler.disable()
         profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
-        statsStream = six.StringIO()
+        statsStream = io.StringIO()
         summary = pstats.Stats(profiler, stream=statsStream).sort_stats("cumulative")
         summary.print_stats()
         if context.MPI_SIZE > 0 and context.MPI_COMM is not None:

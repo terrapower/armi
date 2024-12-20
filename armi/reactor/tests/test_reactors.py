@@ -15,12 +15,12 @@
 import copy
 import logging
 import os
+import pickle
 import unittest
 from math import sqrt
 from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
-from six.moves import cPickle
 
 from armi import operators, runLog, settings, tests
 from armi.materials import uZr
@@ -165,7 +165,7 @@ def loadTestReactor(
 
     if isPickeledReactor and TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
-        o, r, assemNum = cPickle.loads(TEST_REACTOR)
+        o, r, assemNum = pickle.loads(TEST_REACTOR)
         o.reattach(r, o.cs)
         return o, r
 
@@ -191,7 +191,7 @@ def loadTestReactor(
     if isPickeledReactor:
         # cache it for fast load for other future tests
         # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
-        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
+        TEST_REACTOR = pickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
 
     return o, o.r
 
@@ -929,7 +929,7 @@ class HexReactorTests(ReactorTests):
         assert_allclose(mass1, mass2)
 
     def test_isPickleable(self):
-        loaded = cPickle.loads(cPickle.dumps(self.r))
+        loaded = pickle.loads(pickle.dumps(self.r))
 
         # ensure we didn't break the current reactor
         self.assertIs(self.r.core.spatialGrid.armiObject, self.r.core)
