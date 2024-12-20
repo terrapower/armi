@@ -146,7 +146,7 @@ class FissionProductModel(interfaces.Interface):
         Notes
         -----
         Some Monte Carlo codes require all nuclides to be consistent in all
-        materials when assemblies are shuffled.  This requires that fission
+        materials when assemblies are shuffled. This requires that fission
         products be consistent across all blocks, even if fission products are
         not generated when the block is depleted.
         """
