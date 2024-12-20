@@ -23,8 +23,7 @@ Notes
 This will not be a catch-all for random unit test functions. Be very sparing here.
 """
 import os
-
-from six.moves import cPickle
+import pickle
 
 from armi import operators, runLog, settings
 from armi.reactor import reactors
@@ -72,7 +71,7 @@ def loadTestReactor(
 
     if isPickeledReactor and _TEST_REACTOR:
         # return test reactor only if no custom settings are needed.
-        o, r, assemNum = cPickle.loads(_TEST_REACTOR)
+        o, r, assemNum = pickle.loads(_TEST_REACTOR)
         o.reattach(r, o.cs)
         return o, r
 
@@ -95,7 +94,7 @@ def loadTestReactor(
     if isPickeledReactor:
         # cache it for fast load for other future tests protocol=2 allows for classes with __slots__
         # but not __getstate__ to be pickled
-        _TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
+        _TEST_REACTOR = pickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
 
     return o, o.r
 

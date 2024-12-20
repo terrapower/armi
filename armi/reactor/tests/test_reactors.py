@@ -15,12 +15,12 @@
 import copy
 import logging
 import os
+import pickle
 import unittest
 from math import sqrt
 from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
-from six.moves import cPickle
 
 from armi import operators
 from armi import runLog
@@ -846,7 +846,7 @@ class HexReactorTests(ReactorTests):
         assert_allclose(mass1, mass2)
 
     def test_isPickleable(self):
-        loaded = cPickle.loads(cPickle.dumps(self.r))
+        loaded = pickle.loads(pickle.dumps(self.r))
 
         # ensure we didn't break the current reactor
         self.assertIs(self.r.core.spatialGrid.armiObject, self.r.core)
