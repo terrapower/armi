@@ -360,7 +360,7 @@ class HexReactorTests(ReactorTests):
         self.assertFalse(self.r.core.isFullCore)
         self.r.core.growToFullCore(self.o.cs)
         aNums = []
-        for a in self.r.core.getChildren():
+        for a in self.r.core:
             self.assertNotIn(a.getNum(), aNums)
             aNums.append(a.getNum())
 
