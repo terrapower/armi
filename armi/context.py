@@ -18,7 +18,6 @@ Module containing global constants that reflect the executing context of ARMI.
 ARMI's global state information: operating system information, environment data, user data, memory
 parallelism, temporary storage locations, and if operational mode (interactive, gui, or batch).
 """
-from logging import DEBUG
 import datetime
 import enum
 import gc
@@ -26,6 +25,7 @@ import getpass
 import os
 import sys
 import time
+from logging import DEBUG
 
 # h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound to atexit
 # below doesn't lead to a segfault on python exit.
@@ -38,9 +38,7 @@ import time
 # >>>     import h5py
 #
 # >>> atexit.register(willSegFault)
-
 import h5py  # noqa: F401
-
 
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""

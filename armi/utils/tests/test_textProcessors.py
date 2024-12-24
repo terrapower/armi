@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for functions in textProcessors.py."""
-from io import StringIO
 import logging
 import os
 import pathlib
-import ruamel
 import unittest
+from io import StringIO
+
+import ruamel
 
 from armi import runLog
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import textProcessors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

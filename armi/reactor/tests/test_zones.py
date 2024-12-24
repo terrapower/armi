@@ -18,13 +18,15 @@ import os
 import unittest
 
 from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor import zones
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    geometry,
+    grids,
+    reactors,
+    zones,
+)
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 

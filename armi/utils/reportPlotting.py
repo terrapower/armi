@@ -28,16 +28,15 @@ import itertools
 import math
 import os
 
-from matplotlib import colormaps
-from matplotlib import colors as mpltcolors
 import matplotlib.path
 import matplotlib.projections.polar
 import matplotlib.pyplot as plt
 import matplotlib.spines
 import numpy as np
+from matplotlib import colormaps
+from matplotlib import colors as mpltcolors
 
-from armi import runLog
-from armi import settings
+from armi import runLog, settings
 from armi.bookkeeping import report
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor.flags import Flags

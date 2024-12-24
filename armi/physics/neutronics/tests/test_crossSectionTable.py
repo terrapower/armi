@@ -17,6 +17,8 @@ import unittest
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.isotopicDepletion import (
     crossSectionTable,
+)
+from armi.physics.neutronics.isotopicDepletion import (
     isotopicDepletionInterface as idi,
 )
 from armi.physics.neutronics.latticePhysics import ORDER

@@ -22,12 +22,12 @@ import numpy as np
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component
 from armi.reactor.grids import (
-    MultiIndexLocation,
     CoordinateLocation,
-    IndexLocation,
     HexGrid,
+    IndexLocation,
+    MultiIndexLocation,
 )
-from armi.reactor.tests.test_blocks import loadTestBlock, NUM_PINS_IN_TEST_BLOCK
+from armi.reactor.tests.test_blocks import NUM_PINS_IN_TEST_BLOCK, loadTestBlock
 from armi.utils import iterables
 
 

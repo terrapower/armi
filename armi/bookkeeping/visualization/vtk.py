@@ -28,20 +28,15 @@ that can be improved upon. For instance:
   wouldn't be too difficult to do here either. Also future work, but probably not super
   important unless dealing with really big meshes.
 """
-from typing import Dict, Any, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 from pyevtk.vtk import VtkGroup
 
 from armi import runLog
 from armi.bookkeeping.db import database
-from armi.bookkeeping.visualization import dumper
-from armi.bookkeeping.visualization import utils
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import composites
-from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.bookkeeping.visualization import dumper, utils
+from armi.reactor import assemblies, blocks, composites, parameters, reactors
 
 
 class VtkDumper(dumper.VisFileDumper):

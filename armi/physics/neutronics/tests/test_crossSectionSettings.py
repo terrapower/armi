@@ -15,22 +15,24 @@
 import io
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
 from armi import settings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.crossSectionSettings import CONF_BLOCK_REPRESENTATION
-from armi.physics.neutronics.crossSectionSettings import CONF_GEOM
-from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
-from armi.physics.neutronics.crossSectionSettings import XSSettingDef
-from armi.physics.neutronics.crossSectionSettings import XSSettings
-from armi.physics.neutronics.crossSectionSettings import xsSettingsValidator
-from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
-from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
-    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+from armi.physics.neutronics.crossSectionSettings import (
+    CONF_BLOCK_REPRESENTATION,
+    CONF_GEOM,
+    XSModelingOptions,
+    XSSettingDef,
+    XSSettings,
+    xsSettingsValidator,
 )
+from armi.physics.neutronics.settings import (
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+    CONF_XS_BLOCK_REPRESENTATION,
+)
+from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
 from armi.settings import caseSettings
 
 

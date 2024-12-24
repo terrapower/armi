@@ -21,31 +21,30 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings
-from armi import tests
+from armi import settings, tests
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    components,
+    geometry,
+    parameters,
+    reactors,
+)
 from armi.reactor.assemblies import (
-    copy,
     Flags,
-    grids,
     HexAssembly,
+    copy,
+    grids,
     runLog,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-
+from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 

@@ -22,23 +22,13 @@ import unittest
 
 import h5py
 
-from armi import cases
-from armi import context
-from armi import getApp
-from armi import interfaces
-from armi import plugins
-from armi import runLog
-from armi import settings
+from armi import cases, context, getApp, interfaces, plugins, runLog, settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-from armi.reactor import blueprints
-from armi.reactor import systemLayoutInput
+from armi.reactor import blueprints, systemLayoutInput
 from armi.reactor.tests import test_reactors
-from armi.tests import ARMI_RUN_PATH
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
-
 
 GEOM_INPUT = """<?xml version="1.0" ?>
 <reactor geom="hex" symmetry="third core periodic">

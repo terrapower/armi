@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests materials.py."""
-from copy import deepcopy
 import math
 import pickle
 import unittest
+from copy import deepcopy
 
 from numpy import testing
 

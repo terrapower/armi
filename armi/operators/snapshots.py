@@ -14,8 +14,8 @@
 
 """Snapshot Operator."""
 
-from armi.operators import operatorMPI
 from armi import runLog
+from armi.operators import operatorMPI
 
 
 class OperatorSnapshots(operatorMPI.OperatorMPI):
