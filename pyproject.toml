@@ -46,7 +46,8 @@ dependencies = [
     "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
     "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
-    "scipy>=1.7.0", # Used for curve-fitting and matrix math
+    "scipy<1.14.0 ; python_version <= '3.10.0'",
+    "scipy>=1.7.0 ; python_version > '3.10.0'", # Used for curve-fitting and matrix math
     "toml>0.9.5", # Needed to parse the pyproject.toml file
     "voluptuous>=0.12.1", # Used to validate YAML data files
     "yamlize==0.7.1", # Custom YAML-to-object library
