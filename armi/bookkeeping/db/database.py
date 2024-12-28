@@ -1097,7 +1097,7 @@ class Database:
                     )
                 )
 
-            if data.dtype.type is np.string_:
+            if data.dtype.type is np.bytes_:
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
@@ -1291,7 +1291,7 @@ class Database:
                         )
                         raise
 
-                    if data.dtype.type is np.string_:
+                    if data.dtype.type is np.bytes_:
                         data = np.char.decode(data)
 
                     if dataSet.attrs.get("specialFormatting", False):
@@ -1450,7 +1450,7 @@ class Database:
                             )
                             raise
 
-                        if data.dtype.type is np.string_:
+                        if data.dtype.type is np.bytes_:
                             data = np.char.decode(data)
 
                         if dataSet.attrs.get("specialFormatting", False):
