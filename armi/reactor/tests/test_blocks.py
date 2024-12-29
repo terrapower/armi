@@ -39,11 +39,14 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import loadTestReactor
 from armi.tests import ISOAA_PATH, TEST_ROOT
-from armi.utils import hexagon, units, densityTools
+from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
-from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-
+from armi.utils.units import (
+    ASCII_LETTER_A,
+    ASCII_LETTER_Z,
+    MOLES_PER_CC_TO_ATOMS_PER_BARN_CM,
+    ASCII_LETTER_a,
+)
 
 NUM_PINS_IN_TEST_BLOCK = 217
 

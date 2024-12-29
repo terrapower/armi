@@ -13,31 +13,23 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-from copy import deepcopy
 import logging
 import unittest
+from copy import deepcopy
 
-from armi import nuclearDataIO
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.testing import loadTestReactor
-from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
+from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:

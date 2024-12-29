@@ -14,8 +14,8 @@
 
 """Settings related to the fission product model."""
 
-from armi.settings import setting
 from armi.physics.neutronics import fissionProductModel
+from armi.settings import setting
 
 CONF_FP_MODEL = "fpModel"
 CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT = "makeAllBlockLFPsIndependent"

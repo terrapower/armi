@@ -12,23 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Optional, List, Set, Iterator, Callable
 import copy
 import pickle
 import sys
+from typing import Any, Callable, Iterator, List, Optional, Set
 
 import numpy as np
 
 from armi import runLog
-from armi.reactor.parameters import parameterDefinitions, exceptions
+from armi.reactor.parameters import exceptions, parameterDefinitions
 from armi.reactor.parameters.parameterDefinitions import (
-    SINCE_LAST_DISTRIBUTE_STATE,
-    SINCE_BACKUP,
-    SINCE_ANYTHING,
     NEVER,
+    SINCE_ANYTHING,
+    SINCE_BACKUP,
+    SINCE_LAST_DISTRIBUTE_STATE,
 )
 from armi.utils import units
-
 
 GLOBAL_SERIAL_NUM = -1
 """

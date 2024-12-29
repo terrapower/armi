@@ -19,15 +19,13 @@ from armi import runLog
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import NEUTRON
 from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
-from armi.settings import setting
-from armi.settings import settingsValidation
-from armi.utils import directoryChangers
+from armi.settings import setting, settingsValidation
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
     CONF_RUN_TYPE,
 )
-
+from armi.utils import directoryChangers
 
 CONF_BC_COEFFICIENT = "bcCoefficient"
 CONF_BOUNDARIES = "boundaries"

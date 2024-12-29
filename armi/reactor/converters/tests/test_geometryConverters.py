@@ -16,19 +16,16 @@
 import math
 import os
 import unittest
+
 from numpy.testing import assert_allclose
 
 from armi import runLog
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor.converters import geometryConverters
-from armi.reactor.converters import uniformMesh
+from armi.reactor import blocks, geometry, grids
+from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
-
 
 THIS_DIR = os.path.dirname(__file__)
 

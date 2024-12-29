@@ -13,20 +13,19 @@
 # limitations under the License.
 """Tests for the uniform mesh geometry converter."""
 import collections
+import copy
 import os
 import random
 import unittest
-import copy
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_assemblies
-from armi.reactor.tests import test_blocks
+from armi.reactor.tests import test_assemblies, test_blocks
+from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.testing import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT, ISOAA_PATH
+from armi.tests import ISOAA_PATH, TEST_ROOT
 
 
 class DummyFluxOptions:

@@ -25,7 +25,6 @@ from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters imp
 from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 
-
 THIS_DIR = os.path.dirname(__file__)
 
 

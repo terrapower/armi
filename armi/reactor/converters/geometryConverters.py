@@ -35,26 +35,26 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from armi import materials
-from armi import runLog
+from armi import materials, runLog
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor import reactors
-from armi.reactor.converters import blockConverters
-from armi.reactor.converters import meshConverters
+from armi.reactor import (
+    assemblies,
+    blocks,
+    components,
+    geometry,
+    grids,
+    parameters,
+    reactors,
+)
+from armi.reactor.converters import blockConverters, meshConverters
 from armi.reactor.flags import Flags
-from armi.reactor.parameters import Category
-from armi.reactor.parameters import NEVER
-from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters import SINCE_LAST_GEOMETRY_TRANSFORMATION
-from armi.utils import hexagon
-from armi.utils import plotting
-from armi.utils import units
+from armi.reactor.parameters import (
+    NEVER,
+    SINCE_LAST_GEOMETRY_TRANSFORMATION,
+    Category,
+    ParamLocation,
+)
+from armi.utils import hexagon, plotting, units
 
 BLOCK_AXIAL_MESH_SPACING = (
     20  # Block axial mesh spacing set for nodal diffusion calculation (cm)

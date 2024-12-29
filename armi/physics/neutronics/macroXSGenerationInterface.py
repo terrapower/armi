@@ -20,10 +20,7 @@ Converts microscopic cross sections to macroscopic cross sections by multiplying
     \Sigma_i = N_i \sigma_i
 
 """
-from armi import context
-from armi import interfaces
-from armi import mpiActions
-from armi import runLog
+from armi import context, interfaces, mpiActions, runLog
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics.settings import CONF_MINIMUM_NUCLIDE_DENSITY
 from armi.utils import getBurnSteps, iterables

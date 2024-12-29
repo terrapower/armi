@@ -21,25 +21,22 @@ import os
 import pathlib
 import time
 from typing import (
-    Optional,
-    Tuple,
-    Sequence,
     MutableSequence,
+    Optional,
+    Sequence,
+    Tuple,
 )
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
 from armi.bookkeeping.db.database import Database, getH5GroupName
-from armi.reactor.parameters import parameterDefinitions
+from armi.bookkeeping.db.typedefs import Histories, History
 from armi.reactor.composites import ArmiObject
-from armi.bookkeeping.db.typedefs import History, Histories
-from armi.utils import getPreviousTimeNode, getStepLengths
+from armi.reactor.parameters import parameterDefinitions
 from armi.settings.fwSettings.databaseSettings import (
-    CONF_SYNC_AFTER_WRITE,
     CONF_FORCE_DB_PARAMS,
+    CONF_SYNC_AFTER_WRITE,
 )
-
+from armi.utils import getPreviousTimeNode, getStepLengths
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 

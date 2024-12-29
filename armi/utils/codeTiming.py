@@ -14,9 +14,9 @@
 """Utilities related to profiling code."""
 
 import copy
+import functools
 import os
 import time
-import functools
 
 
 def timed(*args):
