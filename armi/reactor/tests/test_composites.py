@@ -28,7 +28,7 @@ from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import ISOAA_PATH, mockRunLogs
 
 

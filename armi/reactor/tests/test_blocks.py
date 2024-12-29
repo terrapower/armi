@@ -37,8 +37,8 @@ from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
-from armi.tests import ISOAA_PATH
+from armi.testing import loadTestReactor
+from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import (

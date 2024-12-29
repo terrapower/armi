@@ -22,7 +22,7 @@ from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters imp
     ParameterSweepConverter,
     SettingsModifier,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 
 THIS_DIR = os.path.dirname(__file__)

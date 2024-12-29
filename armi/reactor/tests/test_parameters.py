@@ -20,7 +20,7 @@ from shutil import copyfile
 
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

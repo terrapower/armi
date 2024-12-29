@@ -97,12 +97,7 @@ MPI_NODENAMES = [LOCAL]
 
 
 try:
-    # Check for MPI. The mpi4py module uses cPickle to serialize python objects in preparation for
-    # network transmission. Sometimes, when cPickle fails, it gives very cryptic error messages that
-    # do not help much. If you uncomment th following line, you can trick mpi4py into using the
-    # pure-python pickle module in place of cPickle and now you will generally get much more
-    # meaningful and useful error messages Then comment it back out because it's slow.
-    # import sys, pickle; sys.modules['cPickle'] = pickle
+    # Check for MPI
     from mpi4py import MPI
 
     MPI_COMM = MPI.COMM_WORLD
