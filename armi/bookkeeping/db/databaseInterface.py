@@ -390,7 +390,8 @@ class DatabaseInterface(interfaces.Interface):
         if nowRequested:
             for param in params or history.keys():
                 if param == "location":
-                    history[param][now] = tuple(comp.spatialLocator.indices)
+                    # might save as int or np.int64, so forcing int keeps things predictable
+                    history[param][now] = tuple(int(i) for i in comp.spatialLocator.indices)
                 else:
                     history[param][now] = comp.p[param]
 

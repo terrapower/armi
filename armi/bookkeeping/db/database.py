@@ -1394,8 +1394,9 @@ class Database:
                 # current time step and something has created the group to store aux data
                 continue
 
-            cycle = h5TimeNodeGroup.attrs["cycle"]
-            timeNode = h5TimeNodeGroup.attrs["timeNode"]
+            # might save as int or np.int64, so forcing int keeps things predictable
+            cycle = int(h5TimeNodeGroup.attrs["cycle"])
+            timeNode = int(h5TimeNodeGroup.attrs["timeNode"])
             layout = Layout(
                 (self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup
             )
