@@ -1,5 +1,5 @@
-  (np.int64(0),np.int64(0))        (0,1)
-                0.00000E+00  0.00000E+00
+      (0,0)        (0,1)
+0.00000E+00  0.00000E+00
 
 
 key: residence
@@ -33,7 +33,7 @@ key: ztop
 
 
 key: location
-(7,-1,0)  (np.int64(0),np.int64(0),np.int64(0))
+(7,-1,0)  (0,0,0)
 
 
 EOL        bottom         top      center
