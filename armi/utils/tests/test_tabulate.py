@@ -213,7 +213,7 @@ class TestTabulateInputs(unittest.TestCase):
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
-                "formats": ["a32", "uint8", "float32"],
+                "formats": ["S", "uint8", "float32"],
             },
         )
         expected = "\n".join(
@@ -233,7 +233,7 @@ class TestTabulateInputs(unittest.TestCase):
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
-                "formats": ["a32", "uint8", "float32"],
+                "formats": ["S", "uint8", "float32"],
             },
         )
         expected = "\n".join(
@@ -253,7 +253,7 @@ class TestTabulateInputs(unittest.TestCase):
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
-                "formats": ["a32", "uint8", "float32"],
+                "formats": ["S", "uint8", "float32"],
             },
         )
         expected = "\n".join(

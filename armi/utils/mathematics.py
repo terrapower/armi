@@ -411,7 +411,8 @@ def minimizeScalarFunc(
         tol=tol,
         options={"maxiter": maxIterations},
     )
-    ans = float(X["x"])
+
+    ans = float(X["x"][0])
     if positiveGuesses is True:
         ans = abs(ans)
 
@@ -515,7 +516,7 @@ def parabolaFromPoints(p1, p2, p3):
         print("Error in parabola {} {}".format(A, b))
         raise
 
-    return float(x[0]), float(x[1]), float(x[2])
+    return float(x[0][0]), float(x[1][0]), float(x[2][0])
 
 
 def parabolicInterpolation(ap, bp, cp, targetY):
