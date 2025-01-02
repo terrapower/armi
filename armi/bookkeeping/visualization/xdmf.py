@@ -39,22 +39,17 @@ visualization tool that supports XDMF.
 import io
 import math
 import pathlib
-from typing import Optional, Set, List, Tuple, Dict
-import xml.etree.ElementTree as ET
 import xml.dom.minidom
+import xml.etree.ElementTree as ET
+from typing import Dict, List, Optional, Set, Tuple
 
-import numpy as np
 import h5py
+import numpy as np
 
 from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import composites
-from armi.reactor import reactors
-from armi.reactor import blocks
 from armi.bookkeeping.db import database
-from armi.bookkeeping.visualization import dumper
-from armi.bookkeeping.visualization import utils
-
+from armi.bookkeeping.visualization import dumper, utils
+from armi.reactor import assemblies, blocks, composites, reactors
 
 _VTK_TO_XDMF_CELLS = {16: 16}
 

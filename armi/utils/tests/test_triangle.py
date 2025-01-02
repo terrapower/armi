@@ -13,6 +13,7 @@
 # limitations under the License.
 """Test the basic triangle math."""
 import unittest
+
 from armi.utils import triangle
 
 

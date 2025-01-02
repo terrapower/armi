@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, TYPE_CHECKING, Union, Hashable, Tuple, List, Iterator
-from abc import ABC, abstractmethod
 import math
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Hashable, Iterator, List, Optional, Tuple, Union
 
 import numpy as np
 

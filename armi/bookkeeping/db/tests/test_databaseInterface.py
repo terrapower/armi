@@ -21,9 +21,7 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
 from armi import __version__ as version
-from armi import interfaces
-from armi import runLog
-from armi import settings
+from armi import interfaces, runLog, settings
 from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
@@ -31,7 +29,7 @@ from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 

@@ -17,9 +17,8 @@ import os
 import unittest
 
 from armi import settings
+from armi.nuclearDataIO import isotxs, xsCollections
 from armi.reactor.blocks import HexBlock
-from armi.nuclearDataIO import isotxs
-from armi.nuclearDataIO import xsCollections
 from armi.tests import ISOAA_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.plotting import plotNucXs

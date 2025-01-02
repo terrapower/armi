@@ -13,13 +13,12 @@
 # limitations under the License.
 
 """Module for testing directoryChangers."""
-from pathlib import Path
 import os
 import shutil
 import unittest
+from pathlib import Path
 
-from armi.utils import directoryChangers
-from armi.utils import directoryChangersMpi
+from armi.utils import directoryChangers, directoryChangersMpi
 
 
 class ExpectedException(Exception):

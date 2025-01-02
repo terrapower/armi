@@ -20,13 +20,13 @@ import unittest
 
 from armi.context import RES
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.fissionProductModel import (
+    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
+    lumpedFissionProduct,
+)
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_LFP_COMPOSITION_FILE_PATH,
-)
-from armi.physics.neutronics.fissionProductModel import (
-    lumpedFissionProduct,
-    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks

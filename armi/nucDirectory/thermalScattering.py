@@ -54,9 +54,8 @@ Thus, in practice, users should rarely instantiate these on their own.
 """
 from typing import Tuple, Union
 
-from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import elements
-
+from armi.nucDirectory import nuclideBases as nb
 
 BE_METAL = "Be-metal"
 BEO = "BeO"

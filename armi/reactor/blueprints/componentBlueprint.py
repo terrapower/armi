@@ -20,13 +20,11 @@ Special logic is required for handling component links.
 """
 import yamlize
 
-from armi import runLog
-from armi import materials
-from armi.reactor import components
-from armi.reactor import composites
+from armi import materials, runLog
+from armi.nucDirectory import nuclideBases
+from armi.reactor import components, composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
-from armi.nucDirectory import nuclideBases
 
 COMPONENT_GROUP_SHAPE = "group"
 

@@ -21,8 +21,8 @@ Data is from [IAEA-TECDOC-1450]_.
     https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 from armi import runLog
+from armi.materials.material import FuelMaterial, Material, SimpleSolid
 from armi.utils.units import getTk
-from armi.materials.material import Material, FuelMaterial, SimpleSolid
 
 
 class ThoriumOxide(FuelMaterial, SimpleSolid):

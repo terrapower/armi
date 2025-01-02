@@ -23,16 +23,15 @@ these types with schema validation. This also allows for more
 complex schema validation for settings that are more complex
 dictionaries (e.g. XS, rx coeffs).
 """
-from collections import namedtuple
-from typing import List, Optional, Tuple
 import copy
 import datetime
+from collections import namedtuple
+from typing import List, Optional, Tuple
 
 import voluptuous as vol
 
 from armi import runLog
 from armi.reactor.flags import Flags
-
 
 # Options are used to imbue existing settings with new Options. This allows a setting
 # like `neutronicsKernel` to strictly enforce options, even though the plugin that

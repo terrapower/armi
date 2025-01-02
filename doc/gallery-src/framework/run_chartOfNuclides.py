@@ -25,8 +25,8 @@ coloring the squares with the natural abundance.
 """
 import matplotlib.pyplot as plt
 
-from armi.nucDirectory import nuclideBases
 from armi import configure
+from armi.nucDirectory import nuclideBases
 
 configure(permissive=True)
 

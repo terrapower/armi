@@ -43,11 +43,11 @@ the parameters are expected to be different. Specifically the following:
   even if the code hasn't changed.
 
 """
-from typing import Sequence, Optional, Pattern, Tuple
 import collections
 import os
 import re
 import traceback
+from typing import Optional, Pattern, Sequence, Tuple
 
 import h5py
 import numpy as np

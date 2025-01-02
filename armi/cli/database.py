@@ -16,8 +16,7 @@
 import os
 import pathlib
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.cli.entryPoint import EntryPoint
 from armi.utils.textProcessors import resolveMarkupInclusions
 

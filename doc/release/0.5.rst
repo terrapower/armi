@@ -4,11 +4,13 @@ ARMI v0.5 Release Notes
 
 ARMI v0.5.1
 ===========
-Release Date: TBD
+Release Date: TBD (March-ish, 2025)
 
 New Features
 ------------
 #. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
+#. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
+#. TBD
 
 API Changes
 -----------

@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for run cli entry point."""
-from glob import glob
-from shutil import copyfile
 import logging
 import os
 import sys
 import unittest
+from glob import glob
+from shutil import copyfile
 
 from armi import runLog
 from armi.__main__ import main
@@ -34,8 +34,8 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
+from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
 

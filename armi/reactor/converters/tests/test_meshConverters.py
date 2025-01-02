@@ -16,8 +16,8 @@
 import math
 import unittest
 
-from armi.reactor.converters import meshConverters, geometryConverters
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.reactor.converters import geometryConverters, meshConverters
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 
 

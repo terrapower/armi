@@ -20,19 +20,16 @@ Generally, Blocks are stacked from bottom to top.
 import copy
 import math
 import pickle
+from collections.abc import Iterable
 from random import randint
 from typing import ClassVar, Optional, Type
-from collections.abc import Iterable
 
 import numpy as np
 from scipy import interpolate
 
 from armi import runLog
 from armi.materials.material import Fluid
-from armi.reactor import assemblyParameters
-from armi.reactor import blocks
-from armi.reactor import composites
-from armi.reactor import grids
+from armi.reactor import assemblyParameters, blocks, composites, grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool

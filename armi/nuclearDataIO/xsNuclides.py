@@ -27,9 +27,7 @@ Warning
 label index (i.e. "PU39AA").
 """
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import xsCollections
-from armi.nuclearDataIO import xsLibraries
-from armi.nuclearDataIO import nuclearFileMetadata
+from armi.nuclearDataIO import nuclearFileMetadata, xsCollections, xsLibraries
 from armi.utils.customExceptions import warn_when_root
 
 

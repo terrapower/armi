@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import typing
 import dataclasses
 import functools
 import itertools
+import typing
 
 from armi import runLog
 from armi.reactor.blocks import Block
@@ -23,7 +23,6 @@ from armi.reactor.components import Component, UnshapedComponent
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
-
 
 if typing.TYPE_CHECKING:
     from armi.reactor.assemblies import Assembly

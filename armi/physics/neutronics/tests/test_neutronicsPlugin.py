@@ -22,26 +22,23 @@ from armi import getPluginManagerOrFail, settings, tests
 from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
+    CONF_BOUNDARIES,
+    CONF_DPA_XS_SET,
     CONF_GEN_XS,
     CONF_GLOBAL_FLUX_ACTIVE,
+    CONF_GRID_PLATE_DPA_XS_SET,
     CONF_GROUP_STRUCTURE,
-    CONF_DPA_XS_SET,
-    CONF_OUTERS_,
     CONF_INNERS_,
-    CONF_NEUTRONICS_KERNEL,
     CONF_LATTICE_PHYSICS_FREQUENCY,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_OUTERS_,
     getNeutronicsSettingValidators,
 )
-from armi.settings import caseSettings
-from armi.settings import settingsValidation
+from armi.settings import caseSettings, settingsValidation
 from armi.settings.fwSettings.globalSettings import CONF_RUN_TYPE
 from armi.tests import TEST_ROOT
 from armi.tests.test_plugins import TestPlugin
 from armi.utils import directoryChangers
-from armi.physics.neutronics.settings import (
-    CONF_BOUNDARIES,
-    CONF_GRID_PLATE_DPA_XS_SET,
-)
 
 XS_EXAMPLE = """AA:
     geometry: 0D

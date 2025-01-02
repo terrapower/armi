@@ -13,15 +13,15 @@
 # limitations under the License.
 
 """Testing some utility functions."""
-from collections import defaultdict
 import os
 import unittest
+from collections import defaultdict
 
 import numpy as np
 
 from armi import utils
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils import (
     codeTiming,

@@ -28,12 +28,9 @@ There is one included fuel cycle plugin: The Fuel Handler.
 
 The fuel handler plugin moves fuel around in a reactor.
 """
-from armi import interfaces
-from armi import operators
-from armi import plugins
+from armi import interfaces, operators, plugins
 from armi.operators import RunTypes
-from armi.physics.fuelCycle import fuelHandlers
-from armi.physics.fuelCycle import settings
+from armi.physics.fuelCycle import fuelHandlers, settings
 
 ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
 

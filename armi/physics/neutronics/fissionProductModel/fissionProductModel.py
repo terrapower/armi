@@ -96,17 +96,15 @@ option, the user should look to set the ``fpModelLibrary`` setting.
     is initialized and may not be an out-of-the-box general solution.
 """
 
-from armi import runLog
-from armi import interfaces
-from armi.reactor.flags import Flags
-from armi.physics.neutronics.fissionProductModel.lumpedFissionProduct import (
-    lumpedFissionProductFactory,
-)
+from armi import interfaces, runLog
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT,
 )
-
+from armi.physics.neutronics.fissionProductModel.lumpedFissionProduct import (
+    lumpedFissionProductFactory,
+)
+from armi.reactor.flags import Flags
 
 NUM_FISSION_PRODUCTS_PER_LFP = 2.0
 

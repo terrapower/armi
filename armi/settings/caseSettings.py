@@ -25,10 +25,10 @@ import io
 import logging
 import os
 from copy import copy, deepcopy
+
 from ruamel.yaml import YAML
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.settings import settingsIO
 from armi.settings.setting import Setting
 from armi.utils import pathTools

@@ -38,12 +38,12 @@ from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
 )
 from armi.reactor import assemblies, blocks, components, grids
 from armi.reactor.flags import Flags
+from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
-from armi.reactor.parameters import ParamLocation
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):

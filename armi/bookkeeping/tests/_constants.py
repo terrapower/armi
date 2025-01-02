@@ -22,7 +22,6 @@ import os
 
 from armi.tests import TEST_ROOT
 
-
 # These files are needed to run the data_model ipython notebook, which is done in
 # test_historyTracker, and when building the docs.
 TUTORIAL_FILES = [

@@ -21,11 +21,11 @@ Unit testing for tight coupling settings.
 import io
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
-from armi.settings.fwSettings.tightCouplingSettings import TightCouplingSettingDef
 from armi.settings.fwSettings.tightCouplingSettings import (
+    TightCouplingSettingDef,
     tightCouplingSettingsValidator,
 )
 

@@ -23,8 +23,8 @@ A definitive source for these properties is [#ornltm20002]_.
 
 """
 from armi import runLog
-from armi.materials.uraniumOxide import UraniumOxide
 from armi.materials import material
+from armi.materials.uraniumOxide import UraniumOxide
 from armi.nucDirectory import nucDir
 
 

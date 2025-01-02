@@ -17,7 +17,7 @@ import unittest
 from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as ts
 from armi.reactor import blocks, components
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 
 
 def buildBlockWithTSL():

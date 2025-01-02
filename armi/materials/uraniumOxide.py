@@ -30,7 +30,6 @@ from armi import runLog
 from armi.materials import material
 from armi.utils.units import getTk
 
-
 HeatCapacityConstants = collections.namedtuple(
     "HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"]
 )
