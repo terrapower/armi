@@ -109,8 +109,8 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
             return chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
         elif xsTypeNumber < ord("A"):
             raise ValueError(
-                f"Cannot convert invalid xsTypeNumber `{xsTypeNumber}` to char "
-                "The number must be >= 65 (corresponding to 'A')"
+                f"Cannot convert invalid xsTypeNumber `{xsTypeNumber}` to char. "
+                "The number must be >= 65 (corresponding to 'A')."
             )
         else:
             return chr(xsTypeNumber)
