@@ -60,7 +60,9 @@ class TestPlotting(unittest.TestCase):
     def test_plotAssemblyTypes(self):
         with TemporaryDirectoryChanger():
             plotPath = "coreAssemblyTypes1.png"
-            plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
+            plotting.plotAssemblyTypes(
+                list(self.r.core.parent.blueprints.assemblies.values()), plotPath
+            )
             self._checkFileExists(plotPath)
 
             if os.path.exists(plotPath):
@@ -68,7 +70,7 @@ class TestPlotting(unittest.TestCase):
 
             plotPath = "coreAssemblyTypes2.png"
             plotting.plotAssemblyTypes(
-                self.r.core.parent.blueprints,
+                list(self.r.core.parent.blueprints.assemblies.values()),
                 plotPath,
                 yAxisLabel="y axis",
                 title="title",
@@ -77,9 +79,6 @@ class TestPlotting(unittest.TestCase):
 
             if os.path.exists(plotPath):
                 os.remove(plotPath)
-
-            with self.assertRaises(ValueError):
-                plotting.plotAssemblyTypes(None, plotPath, None)
 
             if os.path.exists(plotPath):
                 os.remove(plotPath)
@@ -95,6 +94,7 @@ class TestPlotting(unittest.TestCase):
             0.5,
             5.6,
             True,
+            hot=True,
         )
         self.assertEqual(xBlockLoc, 0.5)
         self.assertEqual(yBlockHeights[0], 25.0)
