@@ -36,7 +36,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from armi import materials, runLog
-from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
 from armi.physics.neutronics.fissionProductModel.lumpedFissionProduct import (
     lumpedFissionProductFactory,
 )

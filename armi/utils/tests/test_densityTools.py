@@ -128,7 +128,9 @@ class TestDensityTools(unittest.TestCase):
             :id: T_ARMI_UTIL_MASS2N_DENS
             :tests: R_ARMI_UTIL_MASS2N_DENS
         """
-        nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2}, nuclideBases.NuclideBases())
+        nDens = densityTools.getNDensFromMasses(
+            1, {"O": 1, "H": 2}, nuclideBases.NuclideBases()
+        )
 
         self.assertAlmostEqual(nDens["O"], 0.03764, 5)
         self.assertAlmostEqual(nDens["H"], 1.19490, 5)

@@ -44,7 +44,8 @@ from armi.reactor.assemblies import (
     runLog,
 )
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.settings import Settings
+from armi.tests import TEST_ROOT, getEmptyHexReactor, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
@@ -59,7 +60,7 @@ def buildTestAssemblies():
     * One with half UZr pins and half UTh pins
     * One with all UThZr pins
     """
-    settings.Settings()
+    Settings()
 
     temperature = 273.0
     fuelID = 0.0
@@ -196,11 +197,11 @@ class Assembly_TestCase(unittest.TestCase):
         self.name = "A0015"
         self.assemNum = 15
         self.height = 10
-        self.cs = settings.Settings()
+        self.cs = Settings()
         # Print nothing to the screen that would normally go to the log.
         runLog.setVerbosity("error")
 
-        self.r = tests.getEmptyHexReactor()
+        self.r = getEmptyHexReactor()
         self.r.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
         )
@@ -1387,7 +1388,7 @@ class AnnularFuelTestCase(unittest.TestCase):
     """Test fuel with a whole in the center."""
 
     def setUp(self):
-        self.cs = settings.Settings()
+        self.cs = Settings()
         newSettings = {CONF_XS_KERNEL: "MC2v2"}  # don't try to expand elementals
         self.cs = self.cs.modified(newSettings=newSettings)
 

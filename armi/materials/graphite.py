@@ -15,8 +15,6 @@
 """Graphite is often used as a moderator in gas-cooled nuclear reactors."""
 
 from armi.materials.material import Material
-from armi.nucDirectory import nuclideBases as nb
-from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 
 

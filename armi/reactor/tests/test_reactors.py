@@ -54,7 +54,7 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     customSettings : dict
         Dictionary of off-default settings to update
     """
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     cs = settings.Settings()  # fetch new
     if customSettings is None:
         customSettings = {}
@@ -63,7 +63,9 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     cs = cs.modified(newSettings=customSettings)
 
     r = tests.getEmptyHexReactor()
-    print(f"YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY  r.nuclideBases: {r.nuclideBases}")  # TODO: JOHN
+    print(
+        f"YYYYYYYYYYYYYYYYYYYYYYYYYYYYYY  r.nuclideBases: {r.nuclideBases}"
+    )  # TODO: JOHN
     r.core.setOptionsFromCs(cs)
     o = operators.Operator(cs)
     o.initializeInterfaces(r)
@@ -73,9 +75,13 @@ def buildOperatorOfEmptyHexBlocks(customSettings=None):
     b = blocks.HexBlock("TestBlock")
     b.setType("fuel")
     dims = {"Tinput": 600, "Thot": 600, "op": 16.0, "ip": 1, "mult": 1}
-    print(f"ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ  r.nuclideBases: {r.nuclideBases}")  # TODO: JOHN
+    print(
+        f"ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ  r.nuclideBases: {r.nuclideBases}"
+    )  # TODO: JOHN
     c = Hexagon("fuel", uZr.UZr(), **dims)
-    print(f"111111111111111111111111111111  r.nuclideBases: {r.nuclideBases}")  # TODO: JOHN
+    print(
+        f"111111111111111111111111111111  r.nuclideBases: {r.nuclideBases}"
+    )  # TODO: JOHN
     b.add(c)
     a.add(b)
     a.spatialLocator = r.core.spatialGrid[1, 0, 0]

@@ -26,7 +26,7 @@ from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases, runLog
+from armi import runLog
 from armi.bookkeeping import report
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
