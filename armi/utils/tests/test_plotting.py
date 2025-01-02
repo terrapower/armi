@@ -21,8 +21,7 @@ import numpy as np
 
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import blueprints
-from armi.reactor import reactors
+from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH, TEST_ROOT

@@ -20,13 +20,13 @@ import math
 import numpy as np
 
 from armi import runLog
-from armi.utils.mathematics import findNearestValue
 from armi.physics.neutronics.const import (
     FAST_FLUX_THRESHOLD_EV,
+    HIGH_ENERGY_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,
-    HIGH_ENERGY_EV,
 )
+from armi.utils.mathematics import findNearestValue
 
 
 def getFastFluxGroupCutoff(eGrpStruc):

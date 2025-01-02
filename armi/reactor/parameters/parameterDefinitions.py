@@ -25,15 +25,15 @@ See Also
 --------
 armi.reactor.parameters
 """
-from typing import Any, Dict, Optional, Sequence, Tuple, Type
 import enum
 import functools
 import re
+from typing import Any, Dict, Optional, Sequence, Tuple, Type
 
 import numpy as np
 
 from armi.reactor.flags import Flags
-from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
+from armi.reactor.parameters.exceptions import ParameterDefinitionError, ParameterError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
 # see: https://web.archive.org/web/20120225043338/http://www.vipan.com/htdocs/bitwisehelp.html

@@ -59,15 +59,10 @@ import math
 import pickle
 import timeit
 
-from armi import context
-from armi import interfaces
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import context, interfaces, runLog, settings, utils
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
-from armi.utils import iterables
-from armi.utils import tabulate
+from armi.utils import iterables, tabulate
 
 
 class MpiAction:

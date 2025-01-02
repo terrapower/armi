@@ -26,7 +26,7 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 
     Class inheritance diagram for :py:mod:`armi.reactor.components`.
 """
-# ruff: noqa: F405
+# ruff: noqa: F405, I001
 import math
 
 import numpy as np

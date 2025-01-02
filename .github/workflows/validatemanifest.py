@@ -18,8 +18,9 @@ Validating the package-data in the pyproject.toml.
 Validate that we aren't trying to include files that don't exist.
 """
 
-from glob import glob
 import os
+from glob import glob
+
 import toml
 
 # CONSTANTS

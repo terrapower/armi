@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """Module for general core parameter sweeps."""
-from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.physics.neutronics.settings import (
     CONF_EPS_EIG,
     CONF_EPS_FSAVG,
     CONF_EPS_FSPOINT,
 )
+from armi.reactor.converters.geometryConverters import GeometryConverter
 
 
 class ParameterSweepConverter(GeometryConverter):
