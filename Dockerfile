@@ -10,6 +10,6 @@ COPY . .
 RUN pip install --upgrade pip
 RUN pip install -e ".[test]"
 
-RUN pip instal ruamel.yaml
+RUN pip install ruamel.yaml
 
 CMD ["armi"]
