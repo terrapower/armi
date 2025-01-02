@@ -18,6 +18,7 @@ import math
 import unittest
 
 from armi.materials.air import Air
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.utils import densityTools
 
 """
@@ -240,7 +241,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
+        nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac, NuclideBases())
 
         error = math.fabs(nDens["C"] / sum(nDens.values()) - refC)
         self.assertLess(error, 1e-4)

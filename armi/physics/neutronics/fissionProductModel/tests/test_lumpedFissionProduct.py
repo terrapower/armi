@@ -46,8 +46,7 @@ LFP38 XE135   8.9000E-05
 
 
 def getDummyLFPFile():
-    o = buildOperatorOfEmptyHexBlocks()
-    nb = o.r.nuclideBases
+    nb = nuclideBases.NuclideBases()
     return lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT), nb)
 
 
@@ -105,8 +104,7 @@ class TestLumpedFissionProduct(unittest.TestCase):
     """Test of the lumped fission product yields."""
 
     def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
-        self.nuclideBases = o.r.nuclideBases
+        self.nuclideBases = nuclideBases.NuclideBases()
         self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(
             io.StringIO(LFP_TEXT), self.nuclideBases
         )
@@ -149,8 +147,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
     """Test of the fission product collection."""
 
     def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
-        self.nuclideBases = o.r.nuclideBases
+        self.nuclideBases = nuclideBases.NuclideBases()
         fpd = lumpedFissionProduct.FissionProductDefinitionFile(
             io.StringIO(LFP_TEXT), self.nuclideBases
         )
@@ -218,8 +215,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
     """Tests loading from the `referenceFissionProducts.dat` file."""
 
     def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
-        self.nuclideBases = o.r.nuclideBases
+        self.nuclideBases = nuclideBases.NuclideBases()
 
     def test_fissionProductYields(self):
         """Test that the fission product yields for the lumped fission products sums to 2.0."""
@@ -239,8 +235,7 @@ class TestLumpedFissionProductsExplicit(unittest.TestCase):
     """Tests loading fission products with explicit modeling."""
 
     def setUp(self):
-        o = buildOperatorOfEmptyHexBlocks()
-        self.nuclideBases = o.r.nuclideBases
+        self.nuclideBases = nuclideBases.NuclideBases()
 
     def test_explicitFissionProducts(self):
         """Tests that there are no lumped fission products added when the `explicitFissionProducts`

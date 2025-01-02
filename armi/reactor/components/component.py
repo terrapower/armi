@@ -29,6 +29,7 @@ from armi.bookkeeping import report
 from armi.materials import custom
 from armi.materials import material
 from armi.materials import void
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.reactor import composites
 from armi.reactor import flags
 from armi.reactor import grids
@@ -365,18 +366,15 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        - the density returned accounts for the expansion of the component
-          due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - After the expansion, the density of the component should reflect the 3d
-          density of the material
+        - the density returned accounts for the expansion of the component due to the difference in
+          self.inputTemperatureInC and self.temperatureInC
+        - After expansion, the density of the component reflects the 3D density of the material
         """
-        # note, that this is not the actual material density, but rather 2D expanded
-        # `density` is 3D density
         # call getProperty to cache and improve speed
         density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
 
         self.p.numberDensities = densityTools.getNDensFromMasses(
-            density, self.material.massFrac
+            density, self.material.massFrac, self.nuclideBases
         )
 
         # material needs to be expanded from the material's cold temp to hot,
@@ -758,8 +756,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Parameters
         ----------
         numberDensities : dict
-            nucName: ndens pairs.
-
+            nucName: ndens pairs
         """
         self.p.numberDensities.update(numberDensities)
         # since we're updating the object the param points to but not the param itself, we have to inform

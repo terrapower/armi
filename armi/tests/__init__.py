@@ -50,6 +50,7 @@ def getEmptyHexReactor():
     )
     reactor.core.spatialGrid.geomType = geometry.HEX
     reactor.core.spatialGrid.armiObject = reactor.core
+    print(f"XXXXXXXXXXXXXXXXXXXXXXX  reactor.nuclideBases: {reactor.nuclideBases}")  # TODO: JOHN
     return reactor
 
 

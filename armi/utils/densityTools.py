@@ -20,7 +20,7 @@ from armi.utils import units
 from armi import runLog
 
 
-def getNDensFromMasses(rho, massFracs, normalize=False):
+def getNDensFromMasses(rho, massFracs, nuclideBases, normalize=False):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
 
@@ -37,12 +37,14 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     ----------
     rho : float
         density in (g/cc)
+    nuclideBases : NuclideBases
+        collection of nuclides defined for this run
     massFracs : dict
-        vector of mass fractions -- normalized to 1 -- keyed by their nuclide name
+        vector of mass fractions (normalized to 1) keyed by their nuclide name
 
     Returns
     -------
-    numberDensities : dict
+    dict
         vector of number densities (#/bn-cm) keyed by their nuclide name
     """
     if normalize:
@@ -51,8 +53,9 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     numberDensities = {}
     rho = rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
     for nucName, massFrac in massFracs.items():
-        atomicWeight = nuclideBases.byName[nucName].weight  # TODO: JOHN
+        atomicWeight = nuclideBases.byName[nucName].weight
         numberDensities[nucName] = massFrac * rho / atomicWeight
+
     return numberDensities
 
 
@@ -67,8 +70,8 @@ def getMassFractions(numberDensities):
 
     Returns
     -------
-    massFracs : dict
-        mass fractions -- normalized to 1 -- keyed by their nuclide name
+    dict
+        mass fractions (normalized to 1) keyed by their nuclide name
     """
     nucMassFracs = {}
     totalWeight = 0.0
@@ -98,8 +101,8 @@ def calculateMassDensity(numberDensities):
 
     Returns
     -------
-    rho : float
-        density in (g/cc)
+    float
+        rho, density in (g/cc)
     """
     rho = 0
     for nucName, nDensity in numberDensities.items():
@@ -115,12 +118,13 @@ def calculateNumberDensity(nucName, mass, volume):
     Parameters
     ----------
     mass : float
-    volume : volume
-    nucName : armi nuclide name -- e.g. 'U235'
+    volume : float
+    nucName : str
+        armi nuclide name -- e.g. 'U235'
 
     Returns
     -------
-    number density : float
+    float
         number density (#/bn-cm)
 
     See Also
@@ -155,7 +159,7 @@ def getMassInGrams(nucName, volume, numberDensity=None):
 
     Returns
     -------
-    mass : float
+    float
         mass of nuclide (g)
     """
     if not numberDensity:
@@ -197,13 +201,10 @@ def formatMaterialCard(
     ----------
     densities : dict
         number densities indexed by nuclideBase
-
     matNum : int
         mcnp material number
-
     minDens : float
         minimum density
-
     sigFigs : int
         significant figures for the material card
 
@@ -252,13 +253,12 @@ def filterNuclideList(nuclideVector, nuclides):
     ----------
     nuclideVector : dict
         dictionary of values indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
-
     nuclides : list
         list of nuclide identifiers
 
     Returns
     -------
-    nuclideVector : dict
+    dict
         dictionary of values indexed by nuclide identifiers -- e.g. nucNames or nuclideBases
     """
     if not isinstance(list(nuclideVector.keys())[0], nuclides[0].__class__):
@@ -291,7 +291,6 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     nuclideVector : dict
         dictionary of values -- e.g. floats, ints -- indexed by nuclide identifiers -- e.g. nucNames
         or nuclideBases
-
     normalization : float
 
     Returns
@@ -339,7 +338,6 @@ def expandElementalMassFracsToNuclides(
     massFracs : dict(str, float)
         dictionary of nuclide or element names with mass fractions. Elements will be expanded in
         place using natural isotopics.
-
     elementExpansionPairs : (Element, [NuclideBase]) pairs
         element objects to expand (from nuclidBase.element) and list of NuclideBases to expand into
         (or None for all natural)
@@ -413,7 +411,7 @@ def getChemicals(nuclideInventory):
 
     Returns
     -------
-    chemicals : dict
+    dict
         inventory of elements indexed by element symbol -- e.g. 'U' or 'PU'
     """
     chemicals = {}
