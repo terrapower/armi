@@ -412,6 +412,7 @@ def minimizeScalarFunc(
         options={"maxiter": maxIterations},
     )
 
+    # X returns `[num]` instead of `num`, so we have to grab the first/only element in that list
     ans = float(X["x"][0])
     if positiveGuesses is True:
         ans = abs(ans)
@@ -516,6 +517,7 @@ def parabolaFromPoints(p1, p2, p3):
         print("Error in parabola {} {}".format(A, b))
         raise
 
+    # x[#] returns `[num]` instead of `num`, so we have to grab the first/only element in that list
     return float(x[0][0]), float(x[1][0]), float(x[2][0])
 
 
