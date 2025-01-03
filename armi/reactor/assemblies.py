@@ -1021,7 +1021,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=np.NaN
+        self, param, elevations, interpType="linear", fillValue=np.nan
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -1070,7 +1070,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.nan):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
