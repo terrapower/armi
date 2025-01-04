@@ -136,6 +136,20 @@ grids:
 
 """
 
+FULL_BP_WRONG_LATTICE_MAP = (
+    FULL_BP.split("lattice map:")[0]
+    + """lattice map: |
+         - - -  1 1 1 1
+           - - 1 1 2 1 1
+            - 1 1 1 1 1 1
+             1 0 1 2 1 0 1
+              1 1 1 1 1 1
+               1 1 2 1 1
+                1 1 1 1
+
+"""
+)
+
 FULL_BP_GRID = (
     FULL_BP.split("lattice map:")[0]
     + """grid contents:
@@ -296,6 +310,15 @@ class TestGriddedBlock(unittest.TestCase):
             if locator == (1, 0, 0):
                 seen = True
         self.assertTrue(seen)
+
+    def test_componentsNotInLattice(self):
+        """
+        Ensure that we catch cases when a component is supposed to be in the grid,
+        but is not.
+        """
+        with io.StringIO(FULL_BP_WRONG_LATTICE_MAP) as stream:
+            self.blueprints = blueprints.Blueprints.load(stream)
+            self.blueprints._prepConstruction(self.cs)
 
     def test_nonLatticeComponentHasRightMult(self):
         """Make sure non-grid components in blocks with grids get the right multiplicity."""
