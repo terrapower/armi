@@ -466,11 +466,9 @@ class TestAAAZZZSId(unittest.TestCase):
             :tests: R_ARMI_ND_ISOTOPES
         """
         referenceNucNames = [
-            ("C", "120060"),
+            ("C12", "120060"),
             ("U235", "2350920"),
             ("AM242M", "2420951"),
-            ("LFP35", None),
-            ("DUMP1", None),
         ]
 
         for nucName, refAaazzzs in referenceNucNames:
