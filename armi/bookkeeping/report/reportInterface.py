@@ -20,16 +20,13 @@ others this is the place to do it.
 """
 import re
 
-from armi import interfaces
-from armi import runLog
+from armi import interfaces, runLog
 from armi.bookkeeping import report
 from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
-from armi.utils import directoryChangers
-from armi.utils import reportPlotting
-from armi.utils import units
+from armi.utils import directoryChangers, reportPlotting, units
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 

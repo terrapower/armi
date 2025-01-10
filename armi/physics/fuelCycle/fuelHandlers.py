@@ -37,8 +37,8 @@ from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
 from armi.reactor.flags import Flags
-from armi.utils.customExceptions import InputError
 from armi.reactor.parameters import ParamLocation
+from armi.utils.customExceptions import InputError
 
 
 class FuelHandler:

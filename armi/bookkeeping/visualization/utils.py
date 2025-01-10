@@ -26,11 +26,8 @@ import numpy as np
 from pyevtk.hl import unstructuredGridToVTK
 from pyevtk.vtk import VtkHexahedron, VtkQuadraticHexahedron
 
-from armi.reactor import assemblies
-from armi.reactor import reactors
-from armi.reactor import blocks
+from armi.reactor import assemblies, blocks, reactors
 from armi.utils import hexagon
-
 
 # The hex prism cell type is not very well-documented, and so is not described in
 # pyevtk. Digging into the header reveals that `16` does the trick.

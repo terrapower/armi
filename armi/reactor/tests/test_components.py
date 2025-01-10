@@ -22,8 +22,7 @@ from numpy.testing import assert_equal
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
-from armi.reactor import components
-from armi.reactor import flags
+from armi.reactor import components, flags
 from armi.reactor.blocks import Block
 from armi.reactor.components import (
     Circle,
@@ -49,7 +48,7 @@ from armi.reactor.components import (
     UnshapedVolumetricComponent,
     materials,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 
 
 class TestComponentFactory(unittest.TestCase):

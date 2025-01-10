@@ -18,35 +18,32 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import functools
 import math
+from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases
-from armi import runLog
+from armi import nuclideBases, runLog
 from armi.bookkeeping import report
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA
-from armi.physics.neutronics import NEUTRON
-from armi.reactor import blockParameters
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.reactor import (
+    blockParameters,
+    components,
+    composites,
+    geometry,
+    grids,
+    parameters,
+)
 from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools
-from armi.utils import hexagon
-from armi.utils import iterables
-from armi.utils import units
+from armi.utils import densityTools, hexagon, iterables, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 

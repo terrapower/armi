@@ -20,11 +20,13 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        from armi.bookkeeping import (
+            historyTracker,
+            mainInterface,
+            memoryProfiler,
+            snapshotInterface,
+        )
         from armi.bookkeeping.db import databaseInterface
-        from armi.bookkeeping import historyTracker
-        from armi.bookkeeping import memoryProfiler
-        from armi.bookkeeping import mainInterface
-        from armi.bookkeeping import snapshotInterface
         from armi.bookkeeping.report import reportInterface
 
         interfaceInfo = []
@@ -75,8 +77,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate
         """
-        from armi.bookkeeping import memoryProfiler
         from armi import mpiActions
+        from armi.bookkeeping import memoryProfiler
 
         if isinstance(cmd, mpiActions.MpiAction):
             for donotReset in (

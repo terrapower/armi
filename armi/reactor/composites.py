@@ -39,7 +39,6 @@ import timeit
 from typing import Dict, List, Optional, Tuple, Type, Union, Iterator, Callable
 
 import numpy as np
-import six
 
 from armi import context, runLog, utils
 from armi.nucDirectory import elements, nucDir, nuclideBases
@@ -47,9 +46,7 @@ from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
-from armi.utils import densityTools
-from armi.utils import tabulate
-from armi.utils import units
+from armi.utils import densityTools, tabulate, units
 from armi.utils.densityTools import calculateNumberDensity
 from armi.utils.flags import auto
 
@@ -786,10 +783,9 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         if not typeID:
             return not exact
-        if isinstance(typeID, six.string_types):
+        if isinstance(typeID, str):
             raise TypeError(
-                "Must pass Flags, or an iterable of Flags; Strings are no longer "
-                "supported"
+                "Must pass Flags, or an iterable of Flags; Strings are no longer supported"
             )
 
         elif not isinstance(typeID, Flags):

@@ -35,11 +35,8 @@ face-map xml files.
 """
 import yamlize
 
-from armi import context
-from armi import getPluginManagerOrFail
-from armi import runLog
-from armi.reactor import geometry
-from armi.reactor import grids
+from armi import context, getPluginManagerOrFail, runLog
+from armi.reactor import geometry, grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
 from armi.utils import tabulate
 
@@ -236,7 +233,7 @@ class SystemBlueprint(yamlize.Object):
         # all cases should have no edge assemblies. They are added ephemerally when needed
         from armi.reactor.converters import (
             geometryConverters,
-        )  # preventing circular imports
+        )
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()

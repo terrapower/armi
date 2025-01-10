@@ -21,31 +21,30 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings
-from armi import tests
+from armi import settings, tests
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    components,
+    geometry,
+    parameters,
+    reactors,
+)
 from armi.reactor.assemblies import (
-    copy,
     Flags,
-    grids,
     HexAssembly,
+    copy,
+    grids,
     runLog,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-
+from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 
@@ -220,7 +219,7 @@ class Assembly_TestCase(unittest.TestCase):
             "residence": 4.0,
             "smearDensity": 0.6996721711791459,
             "timeToLimit": 2.7e5,
-            "xsTypeNum": 40,
+            "xsTypeNum": 65,
             "zbottom": 97.3521,
             "ztop": 111.80279999999999,
         }
@@ -777,9 +776,9 @@ class Assembly_TestCase(unittest.TestCase):
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
             for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = (
-                    val * i
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                if key != "xsTypeNum":  # must keep valid
+                    b.p[key] = self.blockParamsTemp[key] = val * i
 
             b.setHeight(self.height)
             b.setType("fuel")

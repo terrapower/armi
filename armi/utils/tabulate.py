@@ -210,14 +210,14 @@ single line, tabulate can help automate word wrapping long fields for you. Use t
 
 Header column width can be specified in a similar way using `maxheadercolwidth`.
 """
-from collections import namedtuple
-from collections.abc import Iterable, Sized
-from functools import reduce, partial
-from itertools import chain, zip_longest
-from textwrap import TextWrapper
 import dataclasses
 import math
 import re
+from collections import namedtuple
+from collections.abc import Iterable, Sized
+from functools import partial, reduce
+from itertools import chain, zip_longest
+from textwrap import TextWrapper
 
 from armi import runLog
 

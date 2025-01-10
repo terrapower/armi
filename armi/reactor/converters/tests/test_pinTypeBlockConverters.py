@@ -15,14 +15,13 @@
 import copy
 import unittest
 
-from armi.reactor.flags import Flags
-
-from armi.reactor.tests.test_blocks import loadTestBlock, buildSimpleFuelBlock
 from armi.reactor.converters.pinTypeBlockConverters import (
-    adjustCladThicknessByOD,
     adjustCladThicknessByID,
+    adjustCladThicknessByOD,
     adjustSmearDensity,
 )
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_blocks import buildSimpleFuelBlock, loadTestBlock
 
 
 class TestPinTypeConverters(unittest.TestCase):

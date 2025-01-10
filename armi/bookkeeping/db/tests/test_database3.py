@@ -29,8 +29,8 @@ from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
 from armi.utils.directoryChangers import TemporaryDirectoryChanger

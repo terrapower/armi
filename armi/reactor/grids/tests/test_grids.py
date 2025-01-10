@@ -13,17 +13,16 @@
 # limitations under the License.
 
 """Tests for grids."""
-from io import BytesIO
-from random import randint
 import math
 import pickle
 import unittest
+from io import BytesIO
+from random import randint
 
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
-from armi.reactor import geometry
-from armi.reactor import grids
+from armi.reactor import geometry, grids
 from armi.utils import hexagon
 
 
