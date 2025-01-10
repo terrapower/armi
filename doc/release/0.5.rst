@@ -22,6 +22,7 @@ Bug Fixes
 
 Quality Work
 ------------
+#. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
 #. TBD
 
 
