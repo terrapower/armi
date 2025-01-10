@@ -96,17 +96,15 @@ class ExecDirective(Directive):
 
     def run(self):
         try:
-            code = inspect.cleandoc(
-                """
-            def usermethod():
-                {}
-            """
-            ).format("\n    ".join(self.content))
-            exec(code)
-            result = locals()["usermethod"]()
+            # clean the content, then put back into a list
+            cleancode = inspect.cleandoc("\n".join(self.content)).split("\n")
+            code = "def usermethod():\n    " + "\n    ".join(cleancode)
+            globals = {}
+            exec(code, globals)
+
+            result = globals["usermethod"]()
 
             if result is None:
-
                 raise self.error(
                     "Return value needed! The body of your `.. exec::` is used as a "
                     "function call that must return a value."
@@ -119,9 +117,7 @@ class ExecDirective(Directive):
         except Exception as e:
             docname = self.state.document.settings.env.docname
             raise self.error(
-                "Unable to execute embedded doc code at {}:{} ... {}\n{}".format(
-                    docname, self.lineno, datetime.datetime.now(), str(e)
-                )
+                f"Unable to execute embedded doc code at {docname}:{self.lineno}\n{str(e)}"
             )
 
 
