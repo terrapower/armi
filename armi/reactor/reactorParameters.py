@@ -789,5 +789,5 @@ def makeParametersReadOnly(r):
     Once you make one Reactor read-only, you cannot make it writeable again.
     """
     r.p.readOnly = True
-    for child in r.getChildren(deep=True):
+    for child in r.iterChildren(deep=True):
         child.p.readOnly = True
