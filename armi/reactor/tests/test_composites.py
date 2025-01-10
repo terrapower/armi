@@ -13,8 +13,8 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-import logging
 import itertools
+import logging
 import unittest
 from copy import deepcopy
 

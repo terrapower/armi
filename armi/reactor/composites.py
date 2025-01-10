@@ -36,7 +36,7 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Dict, List, Optional, Tuple, Type, Union, Iterator, Callable
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import numpy as np
 
