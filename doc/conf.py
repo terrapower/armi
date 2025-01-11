@@ -405,9 +405,6 @@ html_theme_options = {
     "titles_only": False,
 }
 
-# Add any paths that contain custom themes here, relative to this directory.
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
-
 # as long as this file @import's the theme's main css it won't break anything
 html_style = "css/theme_fixes.css"
 
