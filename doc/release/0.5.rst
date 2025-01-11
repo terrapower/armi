@@ -18,6 +18,7 @@ API Changes
 
 Bug Fixes
 ---------
+#. Fix database class bug in check for jagged arrays. (`PR#XXXX <https://github.com/terrapower/armi/pull/XXXX>`_)
 #. TBD
 
 Quality Work
