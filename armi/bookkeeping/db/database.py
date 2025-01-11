@@ -922,7 +922,8 @@ class Database:
             elif isinstance(arr, (list, tuple)):
                 return (len(arr),)
             else:
-                return (1,)
+                # not a list, tuple, or array (likely int, float, or None)
+                return 1
 
         c = comps[0]
         groupName = c.__class__.__name__
@@ -970,12 +971,6 @@ class Database:
                     # check if temp is a jagged array
                     if any(isinstance(x, (np.ndarray, list)) for x in temp):
                         jagged = len(set([_getShape(x) for x in temp])) != 1
-                        # Sometimes temp is a list of single-element np.arrays mixed with
-                        # other items and when np.array(temp) is called: FAIL.
-                        temp = [
-                            t.item() if isinstance(t, np.ndarray) and len(t) == 1 else t
-                            for t in temp
-                        ]
                     else:
                         jagged = False
                     data = (
