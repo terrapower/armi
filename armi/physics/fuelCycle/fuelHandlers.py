@@ -278,12 +278,11 @@ class FuelHandler:
             multiplier. For example, if you wanted an assembly that had a bu close to half of
             assembly bob, you'd give param='percentBu', compareTo=(bob,0.5) If you want one with a
             bu close to 0.3, you'd do param='percentBu',compareTo=0.3. Yes, if you give a (float,
-            multiplier) tuple, the code will make fun of you for not doing your own math, but will
-            still operate as expected.
+            multiplier) tuple the code will still work as expected.
 
         forceSide : bool, optional
             requires the found assembly to have either 1: higher, -1: lower, None: any param than
-             compareTo
+            compareTo
 
         exclusions : list, optional
             List of assemblies that will be excluded from the search

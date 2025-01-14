@@ -95,7 +95,7 @@ def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
     return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
 
 
-def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
+def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
     """
     Convert a XSID label (e.g. 65) to an XS label (e.g. 'A').
 
@@ -107,6 +107,11 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
         if xsTypeNumber > ord("Z"):
             # two digit. Parse
             return chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+        elif xsTypeNumber < ord("A"):
+            raise ValueError(
+                f"Cannot convert invalid xsTypeNumber `{xsTypeNumber}` to char. "
+                "The number must be >= 65 (corresponding to 'A')."
+            )
         else:
             return chr(xsTypeNumber)
     except ValueError:

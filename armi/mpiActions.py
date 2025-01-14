@@ -469,7 +469,7 @@ class DistributionAction(MpiAction):
         actionResult = None
         try:
             action = mpiComm.scatter(self._actions, root=0)
-            # create a new communicator that only has these specific dudes running
+            # create a new communicator that only has these specific processes running
             hasAction = action is not None
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()

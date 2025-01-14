@@ -69,13 +69,4 @@ and::
 And then the associated ARMI-based app could import both ``IAEA.physics.neutronics.superSourceTerm`` and
 ``IAEA.physics.economics.magwoodsbrain``. Having a consistency in namespace along these lines is
 quite nice.
-
-If you want to propose a new namespace root folder here, we recommend making a ticket to aid in the discussion.
-
-
-.. admonition:: Historical fun fact
-
-    **All** physics modules once actually lived in this package,
-    before the age of Plugins began. The current state is transient, and will
-    converge as the framework matures.
 """

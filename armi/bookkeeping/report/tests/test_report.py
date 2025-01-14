@@ -261,6 +261,7 @@ class TestReport(unittest.TestCase):
             self.assertIn("Case Info", mock.getStdout())
             self.assertIn("Input File Info", mock.getStdout())
             self.assertIn("crossSectionControl-DA", mock.getStdout())
+            self.assertIn("Python Executable", mock.getStdout())
             self.assertIn(randoFile, mock.getStdout())
 
 

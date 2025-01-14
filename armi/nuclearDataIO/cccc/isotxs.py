@@ -754,8 +754,9 @@ class _IsotxsNuclideIO:
         """
         Get the scatter matrix for a particular blockNum.
 
-        Note: This is stupid and the logic should be combined with _setScatterMatrix.
-        Please recommend a better way to do it during code review.
+        Notes
+        -----
+        This logic could be combined with _setScatterMatrix.
         """
         if blockNumIndex == self._getElasticScatterBlockNumIndex():
             scatterMatrix = self._getMicros().elasticScatter

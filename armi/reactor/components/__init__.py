@@ -132,7 +132,7 @@ class UnshapedComponent(Component):
         material,
         Tinput,
         Thot,
-        area=np.NaN,
+        area=np.nan,
         modArea=None,
         isotopics=None,
         mergeWith=None,
@@ -224,12 +224,12 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         material,
         Tinput,
         Thot,
-        area=np.NaN,
+        area=np.nan,
         op=None,
         isotopics=None,
         mergeWith=None,
         components=None,
-        volume=np.NaN,
+        volume=np.nan,
     ):
         Component.__init__(
             self,

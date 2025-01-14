@@ -51,8 +51,7 @@ as the first argument and the system will load up the associated grid, e.g.::
   between asemblies of different design, but the same flags.
 
 * No proper zoom support, and object sizes are fixed and don't accommodate long
-  specifiers. Adding zoom would make for a fun first task to a new developer interested
-  in computer graphics.
+  specifiers.
 """
 
 import colorsys
