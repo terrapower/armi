@@ -136,15 +136,32 @@ class TestPassiveDBLoadPlugin(unittest.TestCase):
 class TestPassThroughYamlize(unittest.TestCase):
     def test_passThroughYamlizeExample1(self):
         # create node from known BP-style YAML object
+        node = MappingNode(
+            "test1", ScalarNode(tag="tag:yaml.org,2002:str", value="core-wide")
+        )
+        # node = MappingNode("test1", _TEST_BP_YAML)
+
+        # test that node is non-zero and has the "core-wide" section
+        self.assertEqual(node.value.value, "core-wide")
+
+        # pass the YAML string through the known YAML
+        pty = PassThroughYamlize()
+        loader = CLoader(StringIO(""))
+        _p = pty.from_yaml(loader, node)
+
+        # prove the section has been cleared
+        self.assertEqual(len(node.value), 0)
+
+    def test_passThroughYamlizeExample2(self):
+        # create node from known BP-style YAML object
         node = MappingNode("test1", _TEST_NODE)
 
         # test that node is non-zero and has the "core-wide" section
         self.assertEqual(node.value[0][0].value, "core-wide")
-        self.assertGreater(len(node.value), 0)
 
         # pass the YAML string through the known YAML
         pty = PassThroughYamlize()
-        loader = CLoader(StringIO(_TEST_BP_YAML))
+        loader = CLoader(StringIO(""))
         _p = pty.from_yaml(loader, node)
 
         # prove the section has been cleared
