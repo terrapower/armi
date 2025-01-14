@@ -18,7 +18,7 @@ from copy import deepcopy
 from io import StringIO
 
 from ruamel.yaml.cyaml import CLoader
-from ruamel.yaml.nodes import MappingNode, ScalarNode, SequenceNode
+from ruamel.yaml.nodes import MappingNode, ScalarNode
 
 from armi import getApp
 from armi.bookkeeping.db.passiveDBLoadPlugin import (
@@ -26,76 +26,6 @@ from armi.bookkeeping.db.passiveDBLoadPlugin import (
     PassThroughYamlize,
 )
 from armi.reactor.blocks import Block
-
-_TEST_BP_YAML = """
-core-wide:
-    fuel axial expansion: False
-    grid plate radial expansion: False
-    fuel:
-        coefficients: Doppler,Voided Doppler
-        assembly flags: Fuel
-"""
-
-_TEST_NODE = [
-    (
-        ScalarNode(tag="tag:yaml.org,2002:str", value="core-wide"),
-        MappingNode(
-            tag="tag:yaml.org,2002:map",
-            value=[
-                (
-                    ScalarNode(
-                        tag="tag:yaml.org,2002:str", value="fuel axial expansion"
-                    ),
-                    ScalarNode(tag="tag:yaml.org,2002:bool", value="False"),
-                ),
-                (
-                    ScalarNode(
-                        tag="tag:yaml.org,2002:str", value="grid plate radial expansion"
-                    ),
-                    ScalarNode(tag="tag:yaml.org,2002:bool", value="True"),
-                ),
-                (
-                    ScalarNode(tag="tag:yaml.org,2002:str", value="fuel"),
-                    MappingNode(
-                        tag="tag:yaml.org,2002:map",
-                        value=[
-                            (
-                                ScalarNode(
-                                    tag="tag:yaml.org,2002:str", value="coefficients"
-                                ),
-                                SequenceNode(
-                                    tag="tag:yaml.org,2002:seq",
-                                    value=[
-                                        ScalarNode(
-                                            tag="tag:yaml.org,2002:str", value="Doppler"
-                                        ),
-                                        ScalarNode(
-                                            tag="tag:yaml.org,2002:str",
-                                            value="Voided Doppler",
-                                        ),
-                                    ],
-                                ),
-                            ),
-                            (
-                                ScalarNode(
-                                    tag="tag:yaml.org,2002:str", value="assembly flags"
-                                ),
-                                SequenceNode(
-                                    tag="tag:yaml.org,2002:seq",
-                                    value=[
-                                        ScalarNode(
-                                            tag="tag:yaml.org,2002:str", value="Fuel"
-                                        )
-                                    ],
-                                ),
-                            ),
-                        ],
-                    ),
-                ),
-            ],
-        ),
-    ),
-]
 
 
 class TestPassiveDBLoadPlugin(unittest.TestCase):
@@ -134,27 +64,32 @@ class TestPassThroughYamlize(unittest.TestCase):
     def test_passThroughYamlizeExample1(self):
         # create node from known BP-style YAML object
         node = MappingNode(
-            "test1", ScalarNode(tag="tag:yaml.org,2002:str", value="core-wide")
+            "test_passThroughYamlizeExample1",
+            [
+                (
+                    ScalarNode(tag="tag:yaml.org,2002:str", value="core-wide"),
+                    MappingNode(
+                        tag="tag:yaml.org,2002:map",
+                        value=[
+                            (
+                                ScalarNode(
+                                    tag="tag:yaml.org,2002:str",
+                                    value="fuel axial expansion",
+                                ),
+                                ScalarNode(tag="tag:yaml.org,2002:bool", value="False"),
+                            ),
+                            (
+                                ScalarNode(
+                                    tag="tag:yaml.org,2002:str",
+                                    value="grid plate radial expansion",
+                                ),
+                                ScalarNode(tag="tag:yaml.org,2002:bool", value="True"),
+                            ),
+                        ],
+                    ),
+                )
+            ],
         )
-
-        # test that node is non-zero and has the "core-wide" section
-        self.assertEqual(node.value.value, "core-wide")
-
-        # pass the YAML string through the known YAML
-        pty = PassThroughYamlize()
-        loader = CLoader(StringIO(""))
-        _p = pty.from_yaml(loader, node)
-
-        # prove the section has been cleared
-        self.assertEqual(len(node.value), 0)
-
-    def test_passThroughYamlizeExample2(self):
-        # create node from known BP-style YAML object
-        #node = MappingNode("test1", _TEST_NODE)
-        from ruaml.yaml import YAML
-        y = YAML()
-        node = y.load(_TEST_BP_YAML)
-        print(node)
 
         # test that node is non-zero and has the "core-wide" section
         self.assertEqual(node.value[0][0].value, "core-wide")
