@@ -15,9 +15,11 @@ New Features
 API Changes
 -----------
 #. Removing ``Database3`` from the API, use ``Database``. (`PR#2052 <https://github.com/terrapower/armi/pull/2052>`_)
+#. TBD
 
 Bug Fixes
 ---------
+#. Fixing BP-section ignoring tool in ``PassiveDBLoadPlugin``. (`PR#2055 <https://github.com/terrapower/armi/pull/2055>`_)
 #. TBD
 
 Quality Work
