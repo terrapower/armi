@@ -28,15 +28,12 @@ from armi.bookkeeping.db.passiveDBLoadPlugin import (
 from armi.reactor.blocks import Block
 
 _TEST_BP_YAML = """
-grids:
-    !include path/to/fake/grid.yaml
-reactivity coefficients:
-    core-wide:
-        fuel axial expansion: False
-        grid plate radial expansion: False
-        fuel:
-            coefficients: Doppler,Voided Doppler
-            assembly flags: Fuel
+core-wide:
+    fuel axial expansion: False
+    grid plate radial expansion: False
+    fuel:
+        coefficients: Doppler,Voided Doppler
+        assembly flags: Fuel
 """
 
 _TEST_NODE = [
@@ -139,7 +136,6 @@ class TestPassThroughYamlize(unittest.TestCase):
         node = MappingNode(
             "test1", ScalarNode(tag="tag:yaml.org,2002:str", value="core-wide")
         )
-        # node = MappingNode("test1", _TEST_BP_YAML)
 
         # test that node is non-zero and has the "core-wide" section
         self.assertEqual(node.value.value, "core-wide")
@@ -154,7 +150,11 @@ class TestPassThroughYamlize(unittest.TestCase):
 
     def test_passThroughYamlizeExample2(self):
         # create node from known BP-style YAML object
-        node = MappingNode("test1", _TEST_NODE)
+        #node = MappingNode("test1", _TEST_NODE)
+        from ruaml.yaml import YAML
+        y = YAML()
+        node = y.load(_TEST_BP_YAML)
+        print(node)
 
         # test that node is non-zero and has the "core-wide" section
         self.assertEqual(node.value[0][0].value, "core-wide")
