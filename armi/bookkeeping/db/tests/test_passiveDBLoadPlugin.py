@@ -20,7 +20,7 @@ from io import StringIO
 from ruamel.yaml.cyaml import CLoader
 from ruamel.yaml.nodes import MappingNode, ScalarNode
 
-from armi import getApp
+from armi import context, getApp
 from armi.bookkeeping.db.passiveDBLoadPlugin import (
     PassiveDBLoadPlugin,
     PassThroughYamlize,
@@ -36,6 +36,13 @@ class TestPassiveDBLoadPlugin(unittest.TestCase):
         """
         self.app = getApp()
         self._backupApp = deepcopy(self.app)
+
+    def tearDown(self):
+        """Restore the App to its original state."""
+        import armi
+
+        armi._app = self._backupApp
+        context.APP_NAME = "armi"
 
     def test_passiveDBLoadPlugin(self):
         plug = PassiveDBLoadPlugin()
