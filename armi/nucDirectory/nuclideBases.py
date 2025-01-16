@@ -1444,7 +1444,8 @@ def addGlobalNuclide(nuclide: NuclideBase):
                 f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added and cannot be duplicated."
             )
         byMcnpId[nuclide.getMcnpId()] = nuclide
-        byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
+        if nuclide.getAAAZZZSId() not in byAAAZZZSId:
+            byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
 
 def destroyGlobalNuclides():
