@@ -80,7 +80,7 @@ def describeInterfaces(cs):
     return None
 
 
-_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase)
+_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase + string.ascii_lowercase)
 
 
 def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
