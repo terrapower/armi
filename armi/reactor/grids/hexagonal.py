@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import deque
-from math import sqrt
+from math import sqrt, isclose
 from typing import Tuple, List, Optional
 
 import numpy as np
@@ -631,14 +631,15 @@ class HexGrid(StructuredGrid):
         )
 
     def _roughlyEqual(self, other) -> bool:
-        """Check that two hex grids are nearly identical.
+        """Check that two hex grids are similar
 
-        Would the same ``(i, j, k)`` index in ``self`` be the same location in ``other``?
+        - Would the same ``(i, j, k)`` index in ``self`` be the same location in ``other``?
+        - Are the pin pitches roughly the same?
         """
         if other is self:
             return True
         return (
             isinstance(other, HexGrid)
-            and other.pitch == self.pitch
+            and isclose(other.pitch, self.pitch, rel_tol=1.0e-3)
             and other.cornersUp == self.cornersUp
         )
