@@ -49,7 +49,7 @@ The process for opening a PR against ARMI goes something like this:
     b. See ARMIs specific guidance on what makes a "good" Pull Request: :ref:`armi-tooling`.
 5. Actively engage with your PR reviewer's questions and comments.
 
-> Note that a bot will require that you sign our `Contributor License Agreement <https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a>`_
+> Note that a bot will require that you sign our `Contributor License Agreement <https://github.com/terrapower/armi/blob/main/CONTRIBUTING.md>`_
 before we can accept a pull request from you.
 
 See our published documentation for a complete guide to our coding standards and practices: :ref:`armi-stds`.
