@@ -1517,7 +1517,6 @@ class EdgeAssemblyChanger(GeometryChanger):
         # assems.
         edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
 
-        self.scaleParamsRelatedToSymmetry(core.parent)
         for a in edgeAssemblies:
             runLog.debug(
                 "Removing edge assembly {} from {} from the reactor without discharging".format(
