@@ -54,7 +54,7 @@ You agree that contributions to Projects and information about contributions may
 
 ## 9. Governing Law/Jurisdiction.
 
-This Agreement is governed by the laws of the State of Washington, USA and the parties consent to exclusive jurisdiction and venue in the federal courts   located in King County, Washington, USA unless no federal subject matter jurisdiction exists, in which case the parties consent to exclusive jurisdiction and venue in the Superior Court of King County, Washington, USA. The parties waive all defenses of lack of personal jurisdiction and forum non-conveniens.
+This Agreement is governed by the laws of the State of Washington, USA and the parties consent to exclusive jurisdiction and venue in the federal courts located in King County, Washington, USA unless no federal subject matter jurisdiction exists, in which case the parties consent to exclusive jurisdiction and venue in the Superior Court of King County, Washington, USA. The parties waive all defenses of lack of personal jurisdiction and forum non-conveniens.
 
 ## 10. Entire Agreement/Assignment.
 
