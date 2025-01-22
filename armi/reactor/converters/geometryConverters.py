@@ -1360,7 +1360,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                         self.listOfVolIntegratedParamsToScale,
                         _,
                     ) = _generateListOfParamsToScale(
-                        self._sourceReactor, paramsToScaleSubset=[]
+                        self._sourceReactor.core, paramsToScaleSubset=[]
                     )
 
                 for b in a:
