@@ -237,6 +237,7 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()
+        converter.scaleParamsRelatedToSymmetry(container)
         converter.removeEdgeAssemblies(container)
 
         # now update the spatial grid dimensions based on the populated children
