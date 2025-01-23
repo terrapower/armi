@@ -23,6 +23,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db import _getH5File, database, loadOperator
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -282,6 +283,19 @@ class TestDatabaseSmaller(unittest.TestCase):
         packed, attrs = database.packSpecialData(data, "testing")
         roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
+
+    def test_getArrayShape(self):
+        """Tests a helper method for ``_writeParams``."""
+        base = [1, 2, 3, 4]
+        self.assertEqual(Database._getArrayShape(base), (4,))
+        self.assertEqual(Database._getArrayShape(tuple(base)), (4,))
+        arr = np.array(base)
+        self.assertEqual(Database._getArrayShape(arr), (4,))
+        arr = np.array([base])
+        self.assertEqual(Database._getArrayShape(arr), (1, 4))
+        # not array type
+        self.assertEqual(Database._getArrayShape(1), 1)
+        self.assertEqual(Database._getArrayShape(None), 1)
 
     def test_writeToDB(self):
         """Test writing to the database.
