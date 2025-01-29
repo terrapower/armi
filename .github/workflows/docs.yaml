@@ -37,19 +37,20 @@ jobs:
           git submodule init
           git submodule update
           make html
-      - name: deploy
-        if: github.ref == 'refs/heads/main'
-        uses: JamesIves/github-pages-deploy-action@v4.6.1
-        with:
-          token: ${{ secrets.ACCESS_TOKEN }}
-          repository-name: ${{ github.repository_owner }}/terrapower.github.io
-          branch: main
-          folder: doc/_build/html
-          target-folder: armi
-      - name: Archive Docs from PR
+          make simplepdf
+      #- name: deploy
+      #  if: github.ref == 'refs/heads/main'
+      #  uses: JamesIves/github-pages-deploy-action@v4.6.1
+      #  with:
+      #    token: ${{ secrets.ACCESS_TOKEN }}
+      #    repository-name: ${{ github.repository_owner }}/terrapower.github.io
+      #    branch: main
+      #    folder: doc/_build/html
+      #    target-folder: armi
+      - name: Archive PDF Docs
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: pr-docs
-          path: doc/_build/html
+          name: pdf-docs
+          path: doc/_build/simplepdf
           retention-days: 5
