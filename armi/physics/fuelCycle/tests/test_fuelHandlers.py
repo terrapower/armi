@@ -41,10 +41,9 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
-from armi.tests import ArmiTestHelper
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
+from armi.reactor.parameters import ParamLocation
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -121,6 +120,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
 
         self.refAssembly = copy.deepcopy(self.assembly)
         self.directoryChanger.open()
+        self.r.core.locateAllAssemblies()
 
     def tearDown(self):
         # clean up the test
@@ -154,14 +154,32 @@ class MockXSGM(CrossSectionGroupManager):
 
 
 class TestFuelHandler(FuelHandlerTestHelper):
-    def test_getParamMax(self):
-        a = self.assembly
+    @patch("armi.reactor.assemblies.Assembly.getSymmetryFactor")
+    def test_getParamMax(self, mockGetSymmetry):
 
+        a = self.assembly
+        mockGetSymmetry.return_value = 1
+        expectedValue = 0.5
+        a.p["kInf"] = expectedValue
+        for b in a:
+            b.p["kInf"] = expectedValue
+
+        # symmetry factor == 1
         res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
-        self.assertEqual(res, 0.0)
+        self.assertEqual(res, expectedValue)
 
         res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
-        self.assertEqual(res, 0.0)
+        self.assertEqual(res, expectedValue)
+
+        # symmetry factor == 3
+        mockGetSymmetry.return_value = 3
+        a.p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
+        a.getBlocks()[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+        self.assertAlmostEqual(res, expectedValue * 3)
+
+        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+        self.assertAlmostEqual(res, expectedValue * 3)
 
     def test_interactBOC(self):
         # set up mock interface
@@ -222,6 +240,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(len(fh.moved), 0)
 
     def test_outageEdgeCase(self):
+        """Check that an error is raised if the list of moved assemblies is invalid."""
+
         class MockFH(fuelHandlers.FuelHandler):
             def chooseSwaps(self, factor=1.0):
                 self.moved = [None]
@@ -260,8 +280,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for ring, power in zip(range(1, 8), range(10, 80, 10)):
             aList = assemsByRing[ring]
             for a in aList:
+                sf = a.getSymmetryFactor()  # center assembly is only 1/3rd in the core
                 for b in a:
-                    b.p.power = power
+                    b.p.power = power / sf
 
         paramName = "power"
         # 1 ring outer and inner from ring 3
@@ -481,7 +502,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles
-        fh = self.r.o.getInterface("fuelHandler")
+        fh = self.o.getInterface("fuelHandler")
         self.runShuffling(fh)  # changes caseTitle
 
         # Make sure the generated shuffles file matches the tracked one.  This will need to be
@@ -504,7 +525,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings["explicitRepeatShuffles"] = "armiRun-SHUFFLES.txt"
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
 
-        fh = self.r.o.getInterface("fuelHandler")
+        fh = self.o.getInterface("fuelHandler")
 
         self.runShuffling(fh)
 

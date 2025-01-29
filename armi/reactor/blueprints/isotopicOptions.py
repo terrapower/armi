@@ -33,6 +33,7 @@ from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings imp
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
 from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
     CONF_NEUTRONICS_KERNEL,
     CONF_XS_KERNEL,
 )
@@ -394,10 +395,10 @@ class CustomIsotopic(yamlize.Map):
         if self.density is not None:
             if not isinstance(material, materials.Custom):
                 runLog.important(
-                    "A custom density or number densities has been specified for non-custom "
-                    "material {}. The material object's density will not be updated to prevent unintentional "
-                    "density changes across the model. Only custom materials may have a density "
-                    "specified.".format(material),
+                    "A custom isotopic with associated density has been specified for non-`Custom` "
+                    f"material {material}. The reference density of materials in the materials library "
+                    "will not be changed, but the associated components will use the density "
+                    "implied by the custom isotopics.",
                     single=True,
                 )
                 # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
@@ -456,7 +457,6 @@ def getDefaultNuclideFlags():
     We will include B10 and B11 without depletion, sodium, and structural elements.
 
     We will include LFPs with depletion.
-
     """
     nuclideFlags = {}
     actinides = {
@@ -511,7 +511,6 @@ def eleExpandInfoBasedOnCodeENDF(cs):
         For example: {oxygen: [oxygen16]} indicates that all
         oxygen should be expanded to O16, ignoring natural
         O17 and O18. (variables are Natural/NuclideBases)
-
     """
     elementalsToKeep = set()
     oxygenElementals = [nuclideBases.byName["O"]]
@@ -536,20 +535,22 @@ def eleExpandInfoBasedOnCodeENDF(cs):
 
     if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
-        if int(cs["mcnpLibrary"]) == 50:
+        if cs[CONF_MCNP_LIB_BASE] == "ENDF/B-V.0":
+            # ENDF/B V.0
             elementalsToKeep.update(nuclideBases.instances)  # skip expansion
-        # ENDF/B VII.0
-        elif 70 <= int(cs["mcnpLibrary"]) <= 79:
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.0":
+            # ENDF/B VII.0
             elementalsToKeep.update(endf70Elementals)
-        # ENDF/B VII.1
-        elif 80 <= int(cs["mcnpLibrary"]) <= 89:
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.1":
+            # ENDF/B VII.1
             elementalsToKeep.update(endf71Elementals)
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VIII.0":
+            # ENDF/B VIII.0
+            elementalsToKeep.update(endf80Elementals)
         else:
             raise InputError(
-                "Failed to determine nuclides for modeling. "
-                "The `mcnpLibrary` setting value ({}) is not supported.".format(
-                    cs["mcnpLibrary"]
-                )
+                "Failed to determine nuclides for modeling. The `mcnpLibraryVersion` "
+                f"setting value ({cs[CONF_MCNP_LIB_BASE]}) is not supported."
             )
 
     elif cs[CONF_XS_KERNEL] == "SERPENT":

@@ -184,7 +184,6 @@ class TestHistoryTracker(ArmiTestHelper):
             params[param] = []
             for ts, years in enumerate(timesInYears):
                 cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-
                 params[param].append(
                     hti.getBlockHistoryVal(bName, param, (cycle, node))
                 )
@@ -196,7 +195,8 @@ class TestHistoryTracker(ArmiTestHelper):
         # verify the power parameter is retrievable from the history
         self.assertEqual(o.cs["power"], 1000000000.0)
         self.assertAlmostEqual(params["power"][0], 360, delta=0.1)
-        self.assertEqual(params["power"][0], params["power"][1])
+        # assembly was moved to the central location with 1/3rd symmetry
+        self.assertEqual(params["power"][0] / 3, params["power"][1])
 
         # verify the power density parameter is retrievable from the history
         self.assertAlmostEqual(params["pdens"][0], 0.0785, delta=0.001)
@@ -231,8 +231,8 @@ class TestHistoryTracker(ArmiTestHelper):
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
-        history.addAllFuelAssems()
-        self.assertEqual(len(history.detailAssemblyNames), 51)
+        history.addAllDetailedAssems()
+        self.assertEqual(len(history.detailAssemblyNames), 54)
 
     def test_getBlockInAssembly(self):
         history = self.o.getInterface("history")
