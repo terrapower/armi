@@ -1591,9 +1591,9 @@ through ``self.cs``.
 
 
 .. exec::
-    from armi import settings
     import textwrap
     from dochelpers import escapeSpecialCharacters
+    from armi import settings
 
     def looks_like_path(s):
         """Super quick, not robust, check if a string looks like a file path."""
@@ -1607,8 +1607,12 @@ through ``self.cs``.
     # User textwrap to split up long words that mess up the table.
     wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
-    content = '\n.. rst-class:: break_before, ssp-landscape, break_after\n\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n   :class: ssp-tiny\n    \n'
-    content += '   * - Name\n     - Description\n     - Default\n     - Options\n'
+    content = '\n.. rst-class:: break_before, ssp-landscape, break_after\n\n'
+    content += '.. list-table:: ARMI Settings\n'
+    content += '   :widths: 25 25 10 25\n'
+    content += '   :class: ssp-tinier \n'
+    content += '   :header-rows: 1\n'
+    content += '    \n   * - Name\n     - Description\n     - Default\n     - Options\n'
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
         content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
