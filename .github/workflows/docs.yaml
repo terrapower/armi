@@ -52,5 +52,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pdf-docs
-          path: doc/_build/simplepdf
+          path: doc/_build/simplepdf/ARMI.pdf
           retention-days: 5
