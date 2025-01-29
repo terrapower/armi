@@ -1607,7 +1607,7 @@ through ``self.cs``.
     # User textwrap to split up long words that mess up the table.
     wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
-    content = '\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n   :class: ssp-tiny\n    \n'
+    content = '\n.. rst-class:: break_before, ssp-landscape, break_after\n\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n   :class: ssp-tiny\n    \n'
     content += '   * - Name\n     - Description\n     - Default\n     - Options\n'
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
