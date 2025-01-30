@@ -526,6 +526,6 @@ if "win32" in sys.platform:
     image_converter_args = ["convert"]
 
 simplepdf_vars = {
-    'links': '#FF3333',
-    'primary': '#333333',
+    "links": "#FF3333",
+    "primary": "#333333",
 }
