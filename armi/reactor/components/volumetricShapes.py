@@ -16,8 +16,7 @@
 
 import math
 
-from armi.reactor.components import componentParameters
-from armi.reactor.components import ShapedComponent
+from armi.reactor.components import ShapedComponent, componentParameters
 
 
 class Sphere(ShapedComponent):

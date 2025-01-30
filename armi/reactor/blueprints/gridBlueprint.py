@@ -100,18 +100,17 @@ Examples
                          IC   IC   MC   PC   RR   SH
 
 """
-from io import StringIO
-from typing import Tuple
 import copy
 import itertools
+from io import StringIO
+from typing import Tuple
 
 import numpy as np
 import yamlize
 from ruamel.yaml import scalarstring
 
 from armi import runLog
-from armi.reactor import blueprints
-from armi.reactor import geometry, grids
+from armi.reactor import blueprints, geometry, grids
 from armi.utils import asciimaps
 from armi.utils.customExceptions import InputError
 from armi.utils.mathematics import isMonotonic

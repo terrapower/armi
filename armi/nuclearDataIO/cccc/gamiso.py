@@ -37,9 +37,8 @@ See [GAMSOR]_.
 """
 
 from armi import runLog
+from armi.nuclearDataIO import xsLibraries, xsNuclides
 from armi.nuclearDataIO.cccc import isotxs
-from armi.nuclearDataIO import xsLibraries
-from armi.nuclearDataIO import xsNuclides
 
 
 def compare(lib1, lib2):

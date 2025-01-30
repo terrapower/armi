@@ -18,23 +18,17 @@ import logging
 import os
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
-from armi import configure
-from armi import getApp
-from armi import getPluginManagerOrFail
-from armi import plugins
-from armi import settings
+from armi import configure, getApp, getPluginManagerOrFail, plugins, settings
 from armi.physics.fuelCycle import FuelHandlerPlugin
-from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER, CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
-from armi.settings import caseSettings
-from armi.settings import setting
+from armi.settings import caseSettings, setting
 from armi.settings.settingsValidation import Inspector, validateVersion
-from armi.tests import TEST_ROOT, ARMI_RUN_PATH
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 

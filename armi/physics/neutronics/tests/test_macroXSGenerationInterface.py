@@ -20,8 +20,8 @@ from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.physics.neutronics.macroXSGenerationInterface import (
     MacroXSGenerationInterface,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import ISOAA_PATH
 
 

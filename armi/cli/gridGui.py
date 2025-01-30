@@ -38,6 +38,7 @@ class GridGuiEntryPoint(entryPoint.EntryPoint):
         # invoking the entry point
         try:
             import wx
+
             from armi.utils import gridEditor
         except ImportError:
             raise RuntimeError(

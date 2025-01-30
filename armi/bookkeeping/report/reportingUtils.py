@@ -16,7 +16,6 @@
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports.
 """
-from copy import copy
 import collections
 import os
 import pathlib
@@ -25,23 +24,23 @@ import subprocess
 import sys
 import textwrap
 import time
+from copy import copy
 
 import numpy as np
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
-from armi.utils import getFileSHA1Hash
-from armi.utils import iterables
-from armi.utils import plotting
-from armi.utils import tabulate
-from armi.utils import textProcessors
-from armi.utils import units
-
+from armi.utils import (
+    getFileSHA1Hash,
+    iterables,
+    plotting,
+    tabulate,
+    textProcessors,
+    units,
+)
 
 # Set to prevent the image and text from being too small to read.
 MAX_ASSEMS_PER_ASSEM_PLOT = 6
@@ -53,6 +52,7 @@ Operator_NumProcessors = "Number of Processors:"
 Operator_WorkingDirectory = "Working Directory:"
 Operator_CurrentUser = "Current User:"
 Operator_PythonInterperter = "Python Interpreter:"
+Operator_PythonExecutable = "Python Executable:"
 Operator_ArmiCodebase = "ARMI Location:"
 Operator_MasterMachine = "Master Machine:"
 Operator_Date = "Date and Time:"
@@ -78,6 +78,7 @@ def writeWelcomeHeaders(o, cs):
             (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
+            (Operator_PythonExecutable, sys.executable),
             (Operator_MasterMachine, getNodeName()),
             (Operator_NumProcessors, context.MPI_SIZE),
             (Operator_Date, context.START_TIME),
@@ -970,8 +971,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_GEN_XS
-    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+    from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(

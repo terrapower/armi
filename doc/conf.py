@@ -35,10 +35,10 @@ import subprocess
 import sys
 import warnings
 
+import sphinx_rtd_theme
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
-import sphinx_rtd_theme
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
@@ -48,11 +48,8 @@ os.environ["PYTHONPATH"] = PYTHONPATH
 # Add dochelpers.py from doc/.static/ directory
 sys.path.insert(0, ".static")
 
-from armi import apps
+from armi import apps, context, disableFutureConfigures, meta
 from armi import configure as armi_configure
-from armi import context
-from armi import disableFutureConfigures
-from armi import meta
 from armi.bookkeeping import tests as bookkeepingTests
 from armi.utils import safeCopy
 

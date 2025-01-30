@@ -24,24 +24,20 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-from unittest.mock import patch
 import os
 import shutil
 import unittest
+from unittest.mock import patch
 
-from armi import context
-from armi import mpiActions
-from armi import settings
+from armi import context, mpiActions, settings
 from armi.interfaces import Interface
 from armi.mpiActions import DistributeStateAction
 from armi.operators import OperatorMPI
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.reactor import blueprints
-from armi.reactor import reactors
+from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
-from armi.tests import mockRunLogs
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

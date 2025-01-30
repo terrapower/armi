@@ -18,11 +18,12 @@ from logging import DEBUG
 
 import yamlize
 
-from armi import runLog
-from armi import settings
-from armi.physics.neutronics.settings import CONF_MCNP_LIB_BASE
-from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
-from armi.physics.neutronics.settings import CONF_XS_KERNEL
+from armi import runLog, settings
+from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags

@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for assorted Parameters tools."""
-from glob import glob
-from shutil import copyfile
 import copy
 import os
 import unittest
+from glob import glob
+from shutil import copyfile
 
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

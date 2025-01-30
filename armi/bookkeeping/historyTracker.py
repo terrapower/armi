@@ -67,21 +67,19 @@ Specifying blocks and assemblies to track
 See :ref:`detail-assems`.
 
 """
-from typing import TYPE_CHECKING
 import traceback
+from typing import TYPE_CHECKING
 
-from armi import interfaces
-from armi import runLog
-from armi import operators
-from armi.reactor.flags import Flags
+from armi import interfaces, operators, runLog
 from armi.reactor import grids
+from armi.reactor.flags import Flags
 from armi.utils import tabulate
 
 ORDER = 2 * interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
 if TYPE_CHECKING:
-    from armi.reactor.blocks import Block
     from armi.reactor.assemblies import Assembly
+    from armi.reactor.blocks import Block
 
 
 def describeInterfaces(cs):

@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Parameter definitions for Blocks."""
-import six
-
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
@@ -207,7 +205,7 @@ def getBlockParameterDefinitions():
                 )
                 self.envGroupNum = intValue
                 return
-            elif not isinstance(envGroupChar, six.string_types):
+            elif not isinstance(envGroupChar, str):
                 raise Exception(
                     f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}"
                 )

@@ -27,8 +27,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests import test_blocks, test_reactors
 from armi.tests import ISOAA_PATH
 
 

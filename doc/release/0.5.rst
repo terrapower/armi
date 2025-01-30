@@ -4,18 +4,24 @@ ARMI v0.5 Release Notes
 
 ARMI v0.5.1
 ===========
-Release Date: TBD
+Release Date: TBD (March-ish, 2025)
 
 New Features
 ------------
 #. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
+#. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
+#. TBD
 
 API Changes
 -----------
+#. Removing ``Database3`` from the API, use ``Database``. (`PR#2052 <https://github.com/terrapower/armi/pull/2052>`_)
 #. TBD
 
 Bug Fixes
 ---------
+#. Fixing check for jagged arrays during ``_writeParams``. (`PR#2051 <https://github.com/terrapower/armi/pull/2051>`_)
+#. Fixing BP-section ignoring tool in ``PassiveDBLoadPlugin``. (`PR#2055 <https://github.com/terrapower/armi/pull/2055>`_)
+#. Fixing scaling of volume-integrated parameters on edge assembleis. (`PR#2060 <https://github.com/terrapower/armi/pull/2060>`_)
 #. TBD
 
 Quality Work
