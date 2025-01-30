@@ -1607,7 +1607,7 @@ through ``self.cs``.
     # User textwrap to split up long words that mess up the table.
     ws = "    "
     ws2 = ws + "    "
-    ws3 = ws2 + " "
+    ws3 = ws2 + "  "
     wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
     content = '\n.. container:: break_before ssp-landscape\n\n'
