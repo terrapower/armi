@@ -142,15 +142,15 @@ def generateParamTable(klass, fwParams, app=None):
                 defs[plugin] = pDefs
 
     headerContent = """
-.. container:: break_before ssp-landscape
-    .. list-table:: {} Parameters from {{}}
-       :widths: 25 50 25
-       :class: ssp-tiny
-       :header-rows: 1
+    .. container:: break_before ssp-landscape
+        .. list-table:: {} Parameters from {{}}
+           :widths: 25 50 25
+           :class: ssp-tiny
+           :header-rows: 1
 
-       * - Name
-         - Description
-         - Units
+           * - Name
+             - Description
+             - Units
     """.format(
         klass.__name__
     )

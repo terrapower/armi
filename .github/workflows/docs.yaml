@@ -55,7 +55,6 @@ jobs:
           path: doc/_build/html
           retention-days: 5
       - name: Archive PDF Docs
-        if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: pdf-docs
