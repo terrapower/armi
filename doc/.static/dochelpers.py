@@ -142,9 +142,11 @@ def generateParamTable(klass, fwParams, app=None):
                 defs[plugin] = pDefs
 
     headerContent = """
+.. container:: break_before ssp-landscape
     .. list-table:: {} Parameters from {{}}
+       :widths: 25 50 25
+       :class: ssp-tiny
        :header-rows: 1
-       :widths: 30 40 30
 
        * - Name
          - Description
@@ -160,10 +162,12 @@ def generateParamTable(klass, fwParams, app=None):
         content.append(f".. _{srcName}-{klass.__name__}-param-table:")
         pluginContent = headerContent.format(srcName)
         for pd in pdefs:
-            pluginContent += f"""   * - {pd.name}
-         - {escapeSpecialCharacters(str(pd.description))}
-         - {escapeSpecialCharacters(pd.units)}
-    """
+            pluginContent += f"       * - {pd.name}\n"
+            pluginContent += (
+                f"         - {escapeSpecialCharacters(str(pd.description))}\n"
+            )
+            pluginContent += f"         - {escapeSpecialCharacters(pd.units)}\n"
+
         content.append(pluginContent + "\n")
 
     return "\n".join(content)
