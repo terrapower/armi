@@ -2,8 +2,8 @@ name: Documentation
 
 on:
   push:
-    #  branches:
-    #  - main
+    branches:
+      - main
   pull_request:
 
 concurrency:
@@ -38,26 +38,26 @@ jobs:
           git submodule update
           make html
           make simplepdf
-      #- name: deploy
-      #  if: github.ref == 'refs/heads/main'
-      #  uses: JamesIves/github-pages-deploy-action@v4.6.1
-      #  with:
-      #    token: ${{ secrets.ACCESS_TOKEN }}
-      #    repository-name: ${{ github.repository_owner }}/terrapower.github.io
-      #    branch: main
-      #    folder: doc/_build/html
-      #    target-folder: armi
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          repository-name: ${{ github.repository_owner }}/terrapower.github.io
+          branch: main
+          folder: doc/_build/html
+          target-folder: armi
       - name: Archive HTML Docs
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: html-docs
           path: doc/_build/html
-          retention-days: 3
+          retention-days: 5
       - name: Archive PDF Docs
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: pdf-docs
           path: doc/_build/simplepdf/ARMI.pdf
-          retention-days: 3
+          retention-days: 5
