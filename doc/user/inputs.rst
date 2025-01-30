@@ -1613,7 +1613,7 @@ through ``self.cs``.
     content = '\n.. container:: break_before ssp-landscape\n\n'
     content += ws + '.. list-table:: ARMI Settings\n'
     content += ws2 + ':widths: 25 25 10 25\n'
-    content += ws2 + ':class: ssp-tinier \n'
+    content += ws2 + ':class: ssp-tiny \n'
     content += ws2 + ':header-rows: 1\n\n'
     content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'
 
