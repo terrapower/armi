@@ -1202,6 +1202,20 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
+    def test_getMgFlux(self, mock_sf):
+        mock_sf.return_value = 3
+        self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
+        self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
+        fuel = self.block.getComponent(Flags.FUEL)
+        blockVol = self.block.getVolume()
+        fuelVol = fuel.getVolume()
+        volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
+        neutronFlux = fuel.getIntegratedMgFlux()
+        gammaFlux = fuel.getIntegratedMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * volFrac)
+        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * volFrac * 2.0)
+
+    @patch.object(blocks.HexBlock, "getSymmetryFactor")
     def test_completeInitialLoading(self, mock_sf):
         """Ensure that some BOL block and component params are populated properly.
 
