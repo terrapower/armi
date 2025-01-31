@@ -35,7 +35,7 @@ import subprocess
 import sys
 import warnings
 
-import sphinx_rtd_theme
+import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
