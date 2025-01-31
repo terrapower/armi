@@ -1632,7 +1632,4 @@ through ``self.cs``.
 
     content += '\n'
 
-    print("ARMI Settings")
-    print(content)
-
     return content
