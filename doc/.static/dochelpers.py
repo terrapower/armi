@@ -147,6 +147,7 @@ def generateParamTable(klass, fwParams, app=None):
 
     headerContent = """
 .. container:: break_before ssp-landscape
+
     .. list-table:: {} Parameters from {{}}
         :class: ssp-tiny
         :widths: 30 40 30
