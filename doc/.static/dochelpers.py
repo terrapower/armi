@@ -172,4 +172,6 @@ def generateParamTable(klass, fwParams, app=None):
     """
         content.append(pluginContent + "\n")
 
+    print("\n".join(content))
+
     return "\n".join(content)
