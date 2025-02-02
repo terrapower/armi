@@ -515,7 +515,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Invalidate the volume so that it will be recomputed from current dimensions upon next access.
 
         The updated value will be based on its shape and current dimensions.
-        If there is a parent container and that container contains a DerivedShape, then that must be
+        If there is a parent container and that container contains a erivedShape, then that must be
         updated as well since its volume may be changing.
 
         See Also
@@ -657,6 +657,44 @@ class Component(composites.Composite, metaclass=ComponentType):
         f = self.material.getThermalExpansionDensityReduction(
             prevTemp, self.temperatureInC
         )
+        self.changeNDensByFactor(f)
+        self.clearLinkedCache()
+
+    def setPuFrac(self, prevPuFrac):
+        r"""
+        Adjust puFrac of this component.
+
+        This will cause effective expansion or contraction of solid components similar to thermal 
+        expansion but at a constant temperature. If the thermal expansion coefficient is dependent 
+        on composition (like puFrac), then changing the puFrac at a constant temperature will 
+        effectively expand/contract the material. When this happens, number densities need to be 
+        adjusted to conserve mass.
+
+        Since some composites have multiple materials in them that thermally expand differently,
+        the axial dimension is generally left unchanged. Hence, this a 2-D thermal expansion.
+
+        Number density change is proportional to mass density change :math:`\frac{d\rho}{\rho}`.
+        A multiplicative factor :math:`f_N` to apply to number densities when going from T to T'
+        is as follows:
+
+        .. math::
+
+            N^{\prime} = N \cdot f_N \\
+            \frac{dN}{N} = f_N - 1
+
+        Since :math:`\frac{dN}{N} \sim\frac{d\rho}{\rho}`, we have:
+
+        .. math::
+
+            f_N  = \frac{d\rho}{\rho} + 1 = \frac{\rho^{\prime}}{\rho}
+
+        """
+        prevMaterial = self.material.__class__()
+        prevMaterial.puFrac = prevPuFrac
+        dLLprev = prevMaterial.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        expansionRatio = (1.0 + dLLnew) / (1.0 + dLLprev)
+        f = 1.0 / expansionRatio ** 2
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
