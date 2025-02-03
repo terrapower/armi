@@ -37,7 +37,8 @@ jobs:
           git submodule init
           git submodule update
           make html
-      - name: deploy
+          make simplepdf
+      - name: Deploy
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
@@ -46,10 +47,16 @@ jobs:
           branch: main
           folder: doc/_build/html
           target-folder: armi
-      - name: Archive Docs from PR
+      - name: Archive HTML Docs
         if: github.ref != 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
-          name: pr-docs
+          name: html-docs
           path: doc/_build/html
+          retention-days: 5
+      - name: Archive PDF Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-docs
+          path: doc/_build/simplepdf/ARMI.pdf
           retention-days: 5

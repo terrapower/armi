@@ -18,15 +18,6 @@ The base ARMI App class.
 This module defines the :py:class:`App` class, which is used to configure the ARMI
 Framework for a specific application. An ``App`` implements a simple interface for
 customizing much of the Framework's behavior.
-
-Notes
------
-Historical Fun Fact
-
-This pattern is used by many frameworks as a way of encapsulating what would otherwise be global
-state. The ARMI Framework has historically made heavy use of global state (e.g.,
-:py:mod:`armi.nucDirectory.nuclideBases`), and it will take quite a bit of effort to refactor the
-code to access such things through an App object.
 """
 # ruff: noqa: E402
 import collections
