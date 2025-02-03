@@ -1591,9 +1591,9 @@ through ``self.cs``.
 
 
 .. exec::
-    from armi import settings
     import textwrap
     from dochelpers import escapeSpecialCharacters
+    from armi import settings
 
     def looks_like_path(s):
         """Super quick, not robust, check if a string looks like a file path."""
@@ -1605,23 +1605,30 @@ through ``self.cs``.
     cs = settings.Settings()
 
     # User textwrap to split up long words that mess up the table.
+    ws = "    "
+    ws2 = ws + "    "
+    ws3 = ws2 + "  "
     wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
-    content = '\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n    \n'
-    content += '   * - Name\n     - Description\n     - Default\n     - Options\n'
+    content = '\n.. container:: break_before ssp-landscape\n\n'
+    content += ws + '.. list-table:: ARMI Settings\n'
+    content += ws2 + ':widths: 25 25 10 25\n'
+    content += ws2 + ':class: ssp-tiny\n'
+    content += ws2 + ':header-rows: 1\n\n'
+    content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
-        content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
+        content += ws2 + '* - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
         description = escapeSpecialCharacters(str(setting.description) or "")
-        content += "     - {}\n".format(" ".join(wrapper.wrap(description)))
+        content += ws3 + "- {}\n".format(" ".join(wrapper.wrap(description)))
         default = str(getattr(setting, 'default', None)).split("/")[-1]
         options = str(getattr(setting,'options','') or '')
         if looks_like_path(default):
             # We don't want to display default file paths in this table.
             default = ""
             options = ""
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(options)]))
+        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
+        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(options)]))
 
     content += '\n'
 

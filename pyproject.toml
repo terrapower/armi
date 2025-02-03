@@ -116,6 +116,7 @@ docs = [
     "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
     "jupyter-contrib-nbextensions", # A collections of JS extensions for jupyter notebooks
     "lxml<5.0.0", # Needed because the dep above is no longer an active project
+    "sphinx-simplepdf==1.6.0", # Used to make PDF versions of the docs
 ]
 
 [project.scripts]
