@@ -354,7 +354,7 @@ def _getSystemInfoLinux():
         return ""
 
     # get processor information
-    linuxProcCommands = ["cat /proc/cpuinfo", "lscpu", "lshw -class CPU"]
+    linuxProcCommands = ["lscpu", "cat /proc/cpuinfo", "lshw -class CPU"]
     procInfo = ""
     for cmd in linuxProcCommands:
         procInfo = subprocess.run(

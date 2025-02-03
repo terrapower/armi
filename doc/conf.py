@@ -293,6 +293,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
+    "sphinx_simplepdf",
     "sphinxcontrib.apidoc",
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
     "sphinxcontrib.plantuml",
@@ -395,17 +396,17 @@ html_logo = os.path.join(".static", "armiicon_24x24.ico")
 
 # Theme options are theme-specific and customize the look and feel of a theme further.
 html_theme_options = {
+    "display_version": True,
+    "logo_only": False,
+    "prev_next_buttons_location": "bottom",
     "style_external_links": True,
     "style_nav_header_background": "#233C5B",  # TP blue looks better than green
-    "logo_only": False,
-    "display_version": True,
-    "prev_next_buttons_location": "bottom",
     "vcs_pageview_mode": "",
     # Toc options
     "collapse_navigation": True,
-    "sticky_navigation": True,
-    "navigation_depth": 4,
     "includehidden": True,
+    "navigation_depth": 4,
+    "sticky_navigation": True,
     "titles_only": False,
 }
 
@@ -432,11 +433,11 @@ html_last_updated_fmt = "%Y-%m-%d"
 htmlhelp_basename = "ARMIdoc"
 
 html_context = {
-    "display_github": True,  # Integrate GitHub
-    "github_user": "terrapower",  # Username
-    "github_repo": "armi",  # Repo name
-    "github_version": "main",  # Version
     "conf_py_path": "/doc/",  # Path in the checkout to the docs root
+    "display_github": True,  # Integrate GitHub
+    "github_repo": "armi",  # Repo name
+    "github_user": "terrapower",  # Username
+    "github_version": "main",  # Version
 }
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -523,3 +524,8 @@ intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
 if "win32" in sys.platform:
     image_converter = "magick"
     image_converter_args = ["convert"]
+
+simplepdf_vars = {
+    "links": "#FF3333",
+    "primary": "#333333",
+}
