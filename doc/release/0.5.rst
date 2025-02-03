@@ -10,6 +10,7 @@ New Features
 ------------
 #. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
 #. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
+#. Use inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
 #. TBD
 
 API Changes
@@ -53,7 +54,6 @@ New Features
 #. New plugin hook ``beforeReactorConstruction`` to process settings before reactor init. (`PR#1945 <https://github.com/terrapower/armi/pull/1945>`_)
 #. Improving performance in the lattice physics interface by not updating cross sections at ``everyNode`` during coupled calculations. (`PR#1963 <https://github.com/terrapower/armi/pull/1963>`_)
 #. Allow merging a component with zero area into another component. (`PR#1858 <https://github.com/terrapower/armi/pull/1858>`_)
-#. Use inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
 #. Updating ``copyOrWarn`` and ``getFileSHA1Hash`` to support directories. (`PR#1984 <https://github.com/terrapower/armi/pull/1984>`_)
 #. Improve efficiency of reaction rate calculations. (`PR#1887 <https://github.com/terrapower/armi/pull/1887>`_)
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
