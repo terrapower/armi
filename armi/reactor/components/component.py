@@ -691,8 +691,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         prevMaterial = self.material.__class__()
         prevMaterial.puFrac = prevPuFrac
-        dLLprev = prevMaterial.linearExpansionPercent(Tc=self.temperatureInC)
-        dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC)
+        dLLprev = prevMaterial.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
         expansionRatio = (1.0 + dLLnew) / (1.0 + dLLprev)
         f = 1.0 / expansionRatio ** 2
         self.changeNDensByFactor(f)
