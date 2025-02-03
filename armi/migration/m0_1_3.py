@@ -15,8 +15,8 @@
 import io
 import re
 
-from armi.migration.base import BlueprintsMigration
 from armi import runLog
+from armi.migration.base import BlueprintsMigration
 
 
 class RemoveCentersFromBlueprints(BlueprintsMigration):

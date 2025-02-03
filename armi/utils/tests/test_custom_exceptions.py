@@ -15,8 +15,7 @@
 import unittest
 
 from armi.tests import mockRunLogs
-from armi.utils.customExceptions import info, important
-from armi.utils.customExceptions import warn, warn_when_root
+from armi.utils.customExceptions import important, info, warn, warn_when_root
 
 
 class CustomExceptionTests(unittest.TestCase):

@@ -15,8 +15,7 @@
 import os
 import unittest
 
-from armi.migration.base import Migration
-from armi.migration.base import SettingsMigration
+from armi.migration.base import Migration, SettingsMigration
 from armi.tests import TEST_ROOT
 
 

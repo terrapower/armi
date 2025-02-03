@@ -17,7 +17,6 @@
 from armi.settings import setting
 from armi.settings.settingsValidation import Query
 
-
 CONF_AXIAL_EXPANSION = "axialExpansion"
 CONF_BOND_REMOVAL = "bondRemoval"
 CONF_CLADDING_STRAIN = "claddingStrain"

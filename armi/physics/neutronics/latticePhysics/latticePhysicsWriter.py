@@ -21,30 +21,28 @@ Seeks to provide access to common methods used by general lattice
 physics codes.
 """
 
-import math
 import collections
+import math
 
 import numpy as np
 import ordered_set
 
-from armi import runLog
-from armi import interfaces
-from armi.physics import neutronics
-from armi.reactor import components
+from armi import interfaces, runLog
 from armi.nucDirectory import nuclideBases
-from armi.reactor.flags import Flags
-from armi.utils.customExceptions import warn_when_root
+from armi.physics import neutronics
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
 )
 from armi.physics.neutronics.settings import (
+    CONF_GEN_XS,
     CONF_MINIMUM_FISSILE_FRACTION,
     CONF_MINIMUM_NUCLIDE_DENSITY,
 )
-from armi.physics.neutronics.settings import CONF_GEN_XS
+from armi.reactor import components
+from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_DETAILED_AXIAL_EXPANSION
-
+from armi.utils.customExceptions import warn_when_root
 
 # number of decimal places to round temperatures to in _groupNuclidesByTemperature
 _NUM_DIGITS_ROUND_TEMPERATURE = 3

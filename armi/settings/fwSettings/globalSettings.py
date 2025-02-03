@@ -29,7 +29,6 @@ from armi.settings import setting
 from armi.settings.fwSettings import tightCouplingSettings
 from armi.utils.mathematics import isMonotonic
 
-
 # Framework settings
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP = "assemFlagsToSkipAxialExpansion"

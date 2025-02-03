@@ -25,8 +25,7 @@ make our own. This is a much simplified version of what comes with ``aenum``, bu
 provides most of the safety and functionality.
 """
 import math
-
-from typing import Dict, Union, Sequence, List, Tuple
+from typing import Dict, List, Sequence, Tuple, Union
 
 
 class auto:  # noqa: N801

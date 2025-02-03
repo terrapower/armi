@@ -51,8 +51,7 @@ as the first argument and the system will load up the associated grid, e.g.::
   between asemblies of different design, but the same flags.
 
 * No proper zoom support, and object sizes are fixed and don't accommodate long
-  specifiers. Adding zoom would make for a fun first task to a new developer interested
-  in computer graphics.
+  specifiers.
 """
 
 import colorsys
@@ -63,21 +62,18 @@ import pathlib
 import sys
 from typing import Dict, Optional, Sequence, Tuple, Union
 
-import wx
-import wx.adv
 import numpy as np
 import numpy.linalg
+import wx
+import wx.adv
 
-from armi.utils import hexagon
-from armi.utils import textProcessors
-from armi.settings.caseSettings import Settings
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor.flags import Flags
+from armi.reactor import geometry, grids
 from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
-from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
-
+from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
+from armi.reactor.flags import Flags
+from armi.settings.caseSettings import Settings
+from armi.utils import hexagon, textProcessors
 
 UNIT_SIZE = 50  # pixels per assembly
 UNIT_MARGIN = 40  # offset applied to the draw area margins

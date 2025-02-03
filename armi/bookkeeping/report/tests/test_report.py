@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """Really basic tests of the report Utils."""
-from glob import glob
-from unittest.mock import patch
 import logging
 import os
 import subprocess
 import sys
 import unittest
+from glob import glob
+from unittest.mock import patch
 
 from armi import runLog, settings
 from armi.bookkeeping import report
@@ -40,7 +40,7 @@ from armi.bookkeeping.report.reportingUtils import (
     writeCycleSummary,
     writeWelcomeHeaders,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -261,6 +261,7 @@ class TestReport(unittest.TestCase):
             self.assertIn("Case Info", mock.getStdout())
             self.assertIn("Input File Info", mock.getStdout())
             self.assertIn("crossSectionControl-DA", mock.getStdout())
+            self.assertIn("Python Executable", mock.getStdout())
             self.assertIn(randoFile, mock.getStdout())
 
 

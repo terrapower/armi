@@ -26,12 +26,12 @@ versioning information.
 
 import collections
 from typing import (
+    Any,
+    Dict,
+    List,
     Optional,
     Tuple,
     Type,
-    Dict,
-    Any,
-    List,
 )
 
 import numpy as np
@@ -41,8 +41,7 @@ from armi.reactor import grids
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor.excoreStructure import ExcoreStructure
-from armi.reactor.reactors import Core
-from armi.reactor.reactors import Reactor
+from armi.reactor.reactors import Core, Reactor
 
 # Here we store the Database version information.
 DB_MAJOR = 3

@@ -62,18 +62,15 @@ Database revision changelog
 import os
 
 from armi import runLog
+from armi.bookkeeping.db.compareDB3 import compareDatabases
 
 # re-export package components for easier import
 from armi.bookkeeping.db.database import Database
-from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.bookkeeping.db.compareDB3 import compareDatabases
 from armi.bookkeeping.db.factory import databaseFactory
-
 
 __all__ = [
     "Database",
-    "Database3",
     "DatabaseInterface",
     "compareDatabases",
     "databaseFactory",

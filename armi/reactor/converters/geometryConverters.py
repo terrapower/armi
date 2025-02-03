@@ -35,26 +35,26 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from armi import materials
-from armi import runLog
+from armi import materials, runLog
 from armi.physics.neutronics.fissionProductModel import lumpedFissionProduct
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
-from armi.reactor import reactors
-from armi.reactor.converters import blockConverters
-from armi.reactor.converters import meshConverters
+from armi.reactor import (
+    assemblies,
+    blocks,
+    components,
+    geometry,
+    grids,
+    parameters,
+    reactors,
+)
+from armi.reactor.converters import blockConverters, meshConverters
 from armi.reactor.flags import Flags
-from armi.reactor.parameters import Category
-from armi.reactor.parameters import NEVER
-from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters import SINCE_LAST_GEOMETRY_TRANSFORMATION
-from armi.utils import hexagon
-from armi.utils import plotting
-from armi.utils import units
+from armi.reactor.parameters import (
+    NEVER,
+    SINCE_LAST_GEOMETRY_TRANSFORMATION,
+    Category,
+    ParamLocation,
+)
+from armi.utils import hexagon, plotting, units
 
 BLOCK_AXIAL_MESH_SPACING = (
     20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
@@ -1360,7 +1360,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                         self.listOfVolIntegratedParamsToScale,
                         _,
                     ) = _generateListOfParamsToScale(
-                        self._sourceReactor, paramsToScaleSubset=[]
+                        self._sourceReactor.core, paramsToScaleSubset=[]
                     )
 
                 for b in a:
@@ -1516,6 +1516,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         # Don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh case that has edge
         # assems.
         edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
+
         for a in edgeAssemblies:
             runLog.debug(
                 "Removing edge assembly {} from {} from the reactor without discharging".format(
@@ -1538,7 +1539,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         self.reset()
 
     @staticmethod
-    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
+    def scaleParamsRelatedToSymmetry(core, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges.
 
@@ -1555,11 +1556,11 @@ class EdgeAssemblyChanger(GeometryChanger):
             "Scaling edge-assembly parameters to account for full hexes instead of two halves"
         )
         completeListOfParamsToScale = _generateListOfParamsToScale(
-            reactor, paramsToScaleSubset
+            core, paramsToScaleSubset
         )
         symmetricAssems = (
-            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
-            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
+            core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
+            core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
         )
         if not all(symmetricAssems):
             runLog.extra("No edge-assemblies found to scale parameters for.")
@@ -1569,15 +1570,15 @@ class EdgeAssemblyChanger(GeometryChanger):
                 _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale)
 
 
-def _generateListOfParamsToScale(r, paramsToScaleSubset):
+def _generateListOfParamsToScale(core, paramsToScaleSubset):
     fluxParamsToScale = (
-        r.core.getFirstBlock()
+        core.getFirstBlock()
         .p.paramDefs.inCategory(Category.fluxQuantities)
         .inCategory(Category.multiGroupQuantities)
         .names
     )
     listOfVolumeIntegratedParamsToScale = (
-        r.core.getFirstBlock()
+        core.getFirstBlock()
         .p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         .since(SINCE_LAST_GEOMETRY_TRANSFORMATION)
     )

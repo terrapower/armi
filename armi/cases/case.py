@@ -24,10 +24,10 @@ See Also
 --------
 armi.cases.suite : A collection of Cases
 """
-from typing import Dict, Optional, Sequence, Set, Union
 import ast
 import cProfile
 import glob
+import io
 import os
 import pathlib
 import pstats
@@ -36,29 +36,22 @@ import sys
 import textwrap
 import time
 import trace
+from typing import Dict, Optional, Sequence, Set, Union
 
 import coverage
-import six
 
-from armi import context
-from armi import getPluginManager
-from armi import interfaces
-from armi import operators
-from armi import runLog
-from armi import settings
+from armi import context, getPluginManager, interfaces, operators, runLog, settings
 from armi.bookkeeping.db import compareDatabases
 from armi.cli import reportsEntryPoint
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import blueprints
-from armi.reactor import reactors
-from armi.reactor import systemLayoutInput
-from armi.utils import pathTools
-from armi.utils import tabulate
-from armi.utils import textProcessors
+from armi.reactor import blueprints, reactors, systemLayoutInput
+from armi.utils import pathTools, tabulate, textProcessors
 from armi.utils.customExceptions import NonexistentSetting
-from armi.utils.directoryChangers import DirectoryChanger
-from armi.utils.directoryChangers import ForcedCreationDirectoryChanger
+from armi.utils.directoryChangers import (
+    DirectoryChanger,
+    ForcedCreationDirectoryChanger,
+)
 
 # Change from default .coverage to help with Windows dotfile issues.
 # Must correspond with data_file entry in `pyproject.toml`!
@@ -492,7 +485,7 @@ class Case:
 
         profiler.disable()
         profiler.dump_stats("profiler.{:0>3}.stats".format(context.MPI_RANK))
-        statsStream = six.StringIO()
+        statsStream = io.StringIO()
         summary = pstats.Stats(profiler, stream=statsStream).sort_stats("cumulative")
         summary.print_stats()
         if context.MPI_SIZE > 0 and context.MPI_COMM is not None:

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, NoReturn, Tuple
+from typing import NoReturn, Optional, Tuple
 
 import numpy as np
 

@@ -22,15 +22,14 @@ Fuel performance is described in the
 """
 
 from armi.physics import executers
-
 from armi.physics.fuelPerformance.settings import (
-    CONF_FUEL_PERFORMANCE_ENGINE,
     CONF_AXIAL_EXPANSION,
     CONF_BOND_REMOVAL,
-    CONF_FGR_REMOVAL,
-    CONF_CLADDING_WASTAGE,
     CONF_CLADDING_STRAIN,
+    CONF_CLADDING_WASTAGE,
+    CONF_FGR_REMOVAL,
     CONF_FGYF,
+    CONF_FUEL_PERFORMANCE_ENGINE,
 )
 
 

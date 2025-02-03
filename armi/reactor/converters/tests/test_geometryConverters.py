@@ -16,19 +16,16 @@
 import math
 import os
 import unittest
+
 from numpy.testing import assert_allclose
 
 from armi import runLog
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor.converters import geometryConverters
-from armi.reactor.converters import uniformMesh
+from armi.reactor import blocks, geometry, grids
+from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
-
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -320,7 +317,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         # must be added after geom transform
         for b in self.o.r.core.getBlocks():
             b.p.power = 1.0
-        converter.scaleParamsRelatedToSymmetry(self.r)
+        converter.scaleParamsRelatedToSymmetry(self.r.core)
         a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]
         self.assertTrue(all(b.p.power == 2.0 for b in a), "Powers were not scaled")
 

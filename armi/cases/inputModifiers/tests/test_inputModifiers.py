@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers."""
-from ruamel import yaml
 import io
 import os
 import unittest
 
-from armi import cases
-from armi import settings
+from ruamel import yaml
+
+from armi import cases, settings
 from armi.cases import suiteBuilder
-from armi.reactor import blueprints
-from armi.reactor import systemLayoutInput
-from armi.utils import directoryChangers
 from armi.cases.inputModifiers import (
-    neutronicsModifiers,
     inputModifiers,
+    neutronicsModifiers,
     pinTypeInputModifiers,
 )
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
@@ -36,7 +33,9 @@ from armi.physics.neutronics.settings import (
     CONF_EPS_FSAVG,
     CONF_EPS_FSPOINT,
 )
+from armi.reactor import blueprints, systemLayoutInput
 from armi.reactor.tests import test_reactors
+from armi.utils import directoryChangers
 
 
 class MockGeom:

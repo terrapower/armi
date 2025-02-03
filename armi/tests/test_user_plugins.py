@@ -16,11 +16,7 @@ import copy
 import os
 import unittest
 
-from armi import context
-from armi import getApp
-from armi import interfaces
-from armi import plugins
-from armi import utils
+from armi import context, getApp, interfaces, plugins, utils
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.settings import caseSettings
