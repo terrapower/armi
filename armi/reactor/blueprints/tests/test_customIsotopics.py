@@ -433,7 +433,7 @@ assemblies:
         s = Sodium()
         self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
         self.assertAlmostEqual(
-            sodium2.density(), s.density(Tc=600) * (666 / Sodium().density(Tc=25))
+            sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25))
         )
 
     def test_customDensityLogsAndErrors(self):
