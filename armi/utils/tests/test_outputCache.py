@@ -16,8 +16,7 @@ import os
 import time
 import unittest
 
-from armi.utils import directoryChangers
-from armi.utils import outputCache
+from armi.utils import directoryChangers, outputCache
 
 
 class TestOutputCache(unittest.TestCase):

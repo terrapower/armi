@@ -25,9 +25,9 @@ the particular shuffling of a case.
 This module also handles repeat shuffles when doing a restart.
 """
 # ruff: noqa: F401
+import inspect
 import os
 import re
-import warnings
 
 import numpy as np
 
@@ -37,6 +37,7 @@ from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
 from armi.reactor.flags import Flags
+from armi.reactor.parameters import ParamLocation
 from armi.utils.customExceptions import InputError
 
 
@@ -114,10 +115,7 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                try:
-                    rotationMethod()
-                except TypeError:
-                    rotationMethod(self)
+                rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
@@ -214,11 +212,24 @@ class FuelHandler:
 
     @staticmethod
     def _getParamMax(a, paramName, blockLevelMax=True):
-        """Get parameter with Block-level maximum."""
-        if blockLevelMax:
-            return a.getChildParamValues(paramName).max()
+        """Get assembly/block-level maximum parameter value in assembly."""
+        multiplier = a.getSymmetryFactor()
+        if multiplier != 1:
+            # handle special case: volume-integrated parameters where symmetry factor is not 1
+            if blockLevelMax:
+                paramCollection = a.getBlocks()[0].p
+            else:
+                paramCollection = a.p
+            isVolumeIntegrated = (
+                paramCollection.paramDefs[paramName].location
+                == ParamLocation.VOLUME_INTEGRATED
+            )
+            multiplier = a.getSymmetryFactor() if isVolumeIntegrated else 1.0
 
-        return a.p[paramName]
+        if blockLevelMax:
+            return a.getChildParamValues(paramName).max() * multiplier
+        else:
+            return a.p[paramName] * multiplier
 
     def findAssembly(
         self,
@@ -267,12 +278,11 @@ class FuelHandler:
             multiplier. For example, if you wanted an assembly that had a bu close to half of
             assembly bob, you'd give param='percentBu', compareTo=(bob,0.5) If you want one with a
             bu close to 0.3, you'd do param='percentBu',compareTo=0.3. Yes, if you give a (float,
-            multiplier) tuple, the code will make fun of you for not doing your own math, but will
-            still operate as expected.
+            multiplier) tuple the code will still work as expected.
 
         forceSide : bool, optional
             requires the found assembly to have either 1: higher, -1: lower, None: any param than
-             compareTo
+            compareTo
 
         exclusions : list, optional
             List of assemblies that will be excluded from the search

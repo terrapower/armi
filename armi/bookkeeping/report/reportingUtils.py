@@ -16,7 +16,6 @@
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports.
 """
-from copy import copy
 import collections
 import os
 import pathlib
@@ -25,23 +24,23 @@ import subprocess
 import sys
 import textwrap
 import time
+from copy import copy
 
 import numpy as np
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
-from armi.utils import getFileSHA1Hash
-from armi.utils import iterables
-from armi.utils import plotting
-from armi.utils import tabulate
-from armi.utils import textProcessors
-from armi.utils import units
-
+from armi.utils import (
+    getFileSHA1Hash,
+    iterables,
+    plotting,
+    tabulate,
+    textProcessors,
+    units,
+)
 
 # Set to prevent the image and text from being too small to read.
 MAX_ASSEMS_PER_ASSEM_PLOT = 6
@@ -53,6 +52,7 @@ Operator_NumProcessors = "Number of Processors:"
 Operator_WorkingDirectory = "Working Directory:"
 Operator_CurrentUser = "Current User:"
 Operator_PythonInterperter = "Python Interpreter:"
+Operator_PythonExecutable = "Python Executable:"
 Operator_ArmiCodebase = "ARMI Location:"
 Operator_MasterMachine = "Master Machine:"
 Operator_Date = "Date and Time:"
@@ -78,6 +78,7 @@ def writeWelcomeHeaders(o, cs):
             (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
+            (Operator_PythonExecutable, sys.executable),
             (Operator_MasterMachine, getNodeName()),
             (Operator_NumProcessors, context.MPI_SIZE),
             (Operator_Date, context.START_TIME),
@@ -176,36 +177,35 @@ def writeWelcomeHeaders(o, cs):
 
     def _writeMachineInformation():
         """Create a table that contains basic machine and rank information."""
-        if context.MPI_SIZE > 1:
-            processorNames = context.MPI_NODENAMES
-            uniqueNames = set(processorNames)
-            nodeMappingData = []
-            sysInfo = ""
-            for uniqueName in uniqueNames:
-                matchingProcs = [
-                    str(rank)
-                    for rank, procName in enumerate(processorNames)
-                    if procName == uniqueName
-                ]
-                numProcessors = str(len(matchingProcs))
-                nodeMappingData.append(
-                    (uniqueName, numProcessors, ", ".join(matchingProcs))
-                )
-
-                sysInfo += getSystemInfo()
-
-            runLog.header("=========== Machine Information ===========")
-            runLog.info(
-                tabulate.tabulate(
-                    nodeMappingData,
-                    headers=["Machine", "Number of Processors", "Ranks"],
-                    tableFmt="armi",
-                )
+        processorNames = context.MPI_NODENAMES
+        uniqueNames = set(processorNames)
+        nodeMappingData = []
+        sysInfo = ""
+        for uniqueName in uniqueNames:
+            matchingProcs = [
+                str(rank)
+                for rank, procName in enumerate(processorNames)
+                if procName == uniqueName
+            ]
+            numProcessors = str(len(matchingProcs))
+            nodeMappingData.append(
+                (uniqueName, numProcessors, ", ".join(matchingProcs))
             )
 
-            if sysInfo:
-                runLog.header("=========== System Information ===========")
-                runLog.info(sysInfo)
+            sysInfo += getSystemInfo()
+
+        runLog.header("=========== Machine Information ===========")
+        runLog.info(
+            tabulate.tabulate(
+                nodeMappingData,
+                headers=["Machine", "Number of Processors", "Ranks"],
+                tableFmt="armi",
+            )
+        )
+
+        if sysInfo:
+            runLog.header("=========== System Information ===========")
+            runLog.info(sysInfo)
 
     def _writeReactorCycleInformation(o, cs):
         """Verify that all the operating parameters are defined for the same number of cycles."""
@@ -378,28 +378,28 @@ def _getSystemInfoLinux():
 
 
 def getSystemInfo():
-    """Get system information, assuming the system is Windows or Linux.
+    """Get system information, assuming the system is Linux, MacOS, and Windows.
 
     Notes
     -----
-    The format of the system information will be different on Windows vs Linux.
+    The format of the system information will be different on Linux, MacOS, and Windows.
 
     Returns
     -------
     str
         Basic system information: OS name, OS version, basic processor information
     """
-    # Get basic system information (on Windows and Linux)
-    if "win" in sys.platform:
+    # Get basic system information (on Linux, MacOS, and Windows)
+    if "darwin" in sys.platform:
+        return _getSystemInfoMac()
+    elif "win" in sys.platform:
         return _getSystemInfoWindows()
     elif "linux" in sys.platform:
         return _getSystemInfoLinux()
-    elif "darwin" in sys.platform:
-        return _getSystemInfoMac()
     else:
         runLog.warning(
             f"Cannot get system information for {sys.platform} because ARMI only "
-            + "supports Linux, Windows, and MacOS."
+            + "supports Linux, MacOS, and Windows."
         )
         return ""
 
@@ -971,8 +971,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_GEN_XS
-    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+    from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(

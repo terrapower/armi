@@ -41,10 +41,7 @@ import re
 import time
 import traceback
 
-from armi import context
-from armi import getPluginManager
-from armi import mpiActions
-from armi import runLog
+from armi import context, getPluginManager, mpiActions, runLog
 from armi.operators.operator import Operator
 from armi.reactor import reactors
 

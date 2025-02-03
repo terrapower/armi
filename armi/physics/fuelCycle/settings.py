@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Settings for generic fuel cycle code."""
-from armi.settings import setting
-from armi.settings import settingsValidation
+from armi.settings import setting, settingsValidation
 
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
 CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"

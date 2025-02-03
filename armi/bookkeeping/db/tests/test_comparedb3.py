@@ -19,17 +19,17 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db.compareDB3 import (
-    _compareSets,
+    DiffResults,
+    OutputWriter,
     _compareAuxData,
+    _compareSets,
     _diffSimpleData,
     _diffSpecialData,
     compareDatabases,
-    DiffResults,
-    OutputWriter,
 )
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor.tests import test_reactors
-from armi.tests import mockRunLogs, TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -181,7 +181,7 @@ class TestCompareDB3(unittest.TestCase):
             dbs[1]._fullPath,
             timestepCompare=[(0, 0), (0, 1)],
         )
-        self.assertEqual(len(diffs.diffs), 480)
+        self.assertEqual(len(diffs.diffs), 504)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
 

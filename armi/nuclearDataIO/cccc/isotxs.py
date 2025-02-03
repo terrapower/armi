@@ -37,16 +37,14 @@ Examples
 
 """
 
-import traceback
 import itertools
+import traceback
 
 import numpy as np
 from scipy import sparse
 
 from armi import runLog
-from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import xsNuclides
-from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import cccc, xsLibraries, xsNuclides
 from armi.utils import properties
 
 # scattering block definitions from ISOTXS
@@ -123,13 +121,14 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
                 runLog.warning(warning.format(nuc2, 2, 1))
             equal = False
             continue
-        equal &= compareNuclideXS(nuc1, nuc2, tolerance, verbose)
+        nucEqual = compareNuclideXS(nuc1, nuc2, tolerance, verbose, nucName)
+        equal &= nucEqual
     return equal
 
 
-def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
+def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False, nucName=""):
     equal = nuc1.isotxsMetadata.compare(nuc2.isotxsMetadata, nuc1, nuc2)
-    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose)
+    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose, nucName=nucName)
     return equal
 
 
@@ -754,8 +753,9 @@ class _IsotxsNuclideIO:
         """
         Get the scatter matrix for a particular blockNum.
 
-        Note: This is stupid and the logic should be combined with _setScatterMatrix.
-        Please recommend a better way to do it during code review.
+        Notes
+        -----
+        This logic could be combined with _setScatterMatrix.
         """
         if blockNumIndex == self._getElasticScatterBlockNumIndex():
             scatterMatrix = self._getMicros().elasticScatter

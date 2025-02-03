@@ -20,6 +20,7 @@ Generally, Blocks are stacked from bottom to top.
 import copy
 import math
 import pickle
+from collections.abc import Iterable
 from random import randint
 from typing import ClassVar, Optional, Type
 
@@ -28,10 +29,7 @@ from scipy import interpolate
 
 from armi import runLog
 from armi.materials.material import Fluid
-from armi.reactor import assemblyParameters
-from armi.reactor import blocks
-from armi.reactor import composites
-from armi.reactor import grids
+from armi.reactor import assemblyParameters, blocks, composites, grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -206,6 +204,7 @@ class Assembly(composites.Composite):
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
+        oldSymmetryFactor = self.getSymmetryFactor()
         composites.Composite.moveTo(self, locator)
         if self.lastLocationLabel != self.DATABASE:
             self.p.numMoves += 1
@@ -213,6 +212,26 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
+        self.scaleParamsToNewSymmetryFactor(oldSymmetryFactor)
+
+    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor):
+        scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
+        if scalingFactor == 1:
+            return
+
+        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+            ParamLocation.VOLUME_INTEGRATED
+        )
+        for b in self.getBlocks():
+            for param in volIntegratedParamsToScale:
+                name = param.name
+                if b.p[name] is None or isinstance(b.p[name], str):
+                    continue
+                elif isinstance(b.p[name], Iterable):
+                    b.p[name] = [value * scalingFactor for value in b.p[name]]
+                else:
+                    # numpy array or other
+                    b.p[name] = b.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
@@ -1002,7 +1021,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=np.NaN
+        self, param, elevations, interpType="linear", fillValue=np.nan
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -1018,28 +1037,24 @@ class Assembly(composites.Composite):
         This caches interpolators for each param and must be cleared if new params are
         set or new heights are set.
 
-        WARNING:
-        Fails when requested to extrapolate.With higher order splines it is possible
-        to interpolate non-physical values, for example a negative flux or dpa. Please
-        use caution when going off default in interpType and be certain that
-        interpolated values are physical.
+        Warning
+        -------
+        Fails when requested to extrapolate. With higher order splines it is possible to interpolate
+        non-physical values, for example, a negative flux or dpa. Please use caution when going off
+        default in interpType and be certain that interpolated values are physical.
 
         Parameters
         ----------
         param : str
             the parameter to interpolate
-
         elevations : array of float
-            the elevations from the bottom of the assembly in cm at which you want the
-            point.
-
+            the elevations from the bottom of the assembly in cm at which you want the point.
         interpType: str or int
             used in interp1d. interp1d documention: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
             spline interpolator to use. Default is 'linear'.
-
         fillValue: str
             Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
             lower and upper bounds are used as the extended value. If 'extrapolate',
@@ -1055,7 +1070,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.nan):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
@@ -1070,23 +1085,22 @@ class Assembly(composites.Composite):
         This caches interpolators for each param and must be cleared if new params are
         set or new heights are set.
 
-        WARNING: Fails when requested to extrapololate. With higher order splines it is
-        possible to interpolate nonphysical values, for example a negative flux or dpa.
-        Please use caution when going off default in interpType and be certain that
-        interpolated values are physical.
+        Warning
+        -------
+        Fails when requested to extrapololate. With higher order splines it is possible to
+        interpolate nonphysical values, for example, a negative flux or dpa. Please use caution when
+        going off default in interpType and be certain that interpolated values are physical.
 
         Parameters
         ----------
         param : str
             the parameter to interpolate
-
         interpType: str or int
             used in interp1d. interp1d documention: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
             spline interpolator to use. Default is 'linear'.
-
         fillValue: float
             Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
             lower and upper bounds are used as the extended value. If 'extrapolate',
@@ -1254,7 +1268,7 @@ class HexAssembly(Assembly):
         """Rotate an assembly and its children.
 
         .. impl:: A hexagonal assembly shall support rotating around the z-axis in 60 degree increments.
-            :id: I_ARMI_ROTATE_HEX
+            :id: I_ARMI_ROTATE_HEX_ASSEM
             :implements: R_ARMI_ROTATE_HEX
 
             This method loops through every ``Block`` in this ``HexAssembly`` and rotates

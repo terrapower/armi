@@ -18,10 +18,10 @@ Beryllium is a lightweight metal with lots of interesting nuclear use-cases.
 It has a nice (n,2n) reaction and is an inhalation hazard.
 """
 
-from armi.utils.units import getTk
 from armi.materials.material import Material
-from armi.nucDirectory import thermalScattering as tsl
 from armi.nucDirectory import nuclideBases as nb
+from armi.nucDirectory import thermalScattering as tsl
+from armi.utils.units import getTk
 
 
 class Be9(Material):

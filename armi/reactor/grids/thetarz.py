@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import TYPE_CHECKING, Optional, NoReturn
+from typing import TYPE_CHECKING, NoReturn, Optional
 
 import numpy as np
 
-from armi.reactor.grids.locations import IJType, IJKType
+from armi.reactor.grids.locations import IJKType, IJType
 from armi.reactor.grids.structuredGrid import StructuredGrid
 
 if TYPE_CHECKING:

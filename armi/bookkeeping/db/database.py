@@ -77,7 +77,7 @@ from armi.reactor.parameters import parameterCollections
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
-from armi.utils import getNodesPerCycle
+from armi.utils import getNodesPerCycle, safeCopy, safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 # CONSTANTS
@@ -312,7 +312,7 @@ class Database:
 
         if self._permission == "w":
             # move out of the FAST_PATH and into the working directory
-            newPath = shutil.move(self._fullPath, self._fileName)
+            newPath = safeMove(self._fullPath, self._fileName)
             self._fullPath = os.path.abspath(newPath)
 
     def splitDatabase(
@@ -351,7 +351,7 @@ class Database:
         backupDBPath = os.path.abspath(label.join(os.path.splitext(self._fileName)))
         runLog.info("Retaining full database history in {}".format(backupDBPath))
         if self._fullPath is not None:
-            shutil.move(self._fullPath, backupDBPath)
+            safeMove(self._fullPath, backupDBPath)
 
         self.h5db = h5py.File(self._fullPath, self._permission)
         dbOut = self.h5db
@@ -393,8 +393,13 @@ class Database:
             raise RuntimeError("Cannot change Database file name while it's opened!")
         self._fileName = fName
 
-    def loadCS(self):
+    def loadCS(self, handleInvalids=True):
         """Attempt to load settings from the database file.
+
+        Parameters
+        ----------
+        handleInvalids : bool
+            Whether to check for invalid settings. Default True.
 
         Notes
         -----
@@ -405,7 +410,9 @@ class Database:
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
         try:
-            cs.loadFromString(self.h5db["inputs/settings"].asstr()[()])
+            cs.loadFromString(
+                self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids
+            )
         except KeyError:
             # not all paths to writing a database require inputs to be written to the
             # database. Technically, settings do affect some of the behavior of database
@@ -692,7 +699,7 @@ class Database:
         # Close the h5 file so it can be copied
         self.h5db.close()
         self.h5db = None
-        shutil.copy(self._fullPath, self._fileName)
+        safeCopy(self._fullPath, self._fileName)
 
         # Garbage collect so we don't have multiple databases hanging around in memory
         gc.collect()
@@ -708,6 +715,7 @@ class Database:
         bp=None,
         statePointName=None,
         allowMissing=False,
+        handleInvalids=True,
     ):
         """Load a new reactor from a DB at (cycle, node).
 
@@ -743,6 +751,8 @@ class Database:
         allowMissing : bool, optional
             Whether to emit a warning, rather than crash if reading a database
             with undefined parameters. Default False.
+        handleInvalids : bool
+            Whether to check for invalid settings. Default True.
 
         Returns
         -------
@@ -751,7 +761,7 @@ class Database:
         """
         runLog.info("Loading reactor state for time node ({}, {})".format(cycle, node))
 
-        cs = cs or self.loadCS()
+        cs = cs or self.loadCS(handleInvalids=handleInvalids)
         bp = bp or self.loadBlueprints()
 
         if node < 0:
@@ -904,16 +914,18 @@ class Database:
 
         return comp
 
-    def _writeParams(self, h5group, comps) -> tuple:
-        def _getShape(arr: [np.ndarray, List, Tuple]):
-            """Get the shape of a np.ndarray, list, or tuple."""
-            if isinstance(arr, np.ndarray):
-                return arr.shape
-            elif isinstance(arr, (list, tuple)):
-                return (len(arr),)
-            else:
-                return (1,)
+    @staticmethod
+    def _getArrayShape(arr: [np.ndarray, List, Tuple]):
+        """Get the shape of a np.ndarray, list, or tuple."""
+        if isinstance(arr, np.ndarray):
+            return arr.shape
+        elif isinstance(arr, (list, tuple)):
+            return (len(arr),)
+        else:
+            # not a list, tuple, or array (likely int, float, or None)
+            return 1
 
+    def _writeParams(self, h5group, comps) -> tuple:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
@@ -959,7 +971,7 @@ class Database:
                 else:
                     # check if temp is a jagged array
                     if any(isinstance(x, (np.ndarray, list)) for x in temp):
-                        jagged = len(set([_getShape(x) for x in temp])) != 1
+                        jagged = len(set([self._getArrayShape(x) for x in temp])) != 1
                     else:
                         jagged = False
                     data = (
@@ -1087,7 +1099,7 @@ class Database:
                     )
                 )
 
-            if data.dtype.type is np.string_:
+            if data.dtype.type is np.bytes_:
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
@@ -1281,7 +1293,7 @@ class Database:
                         )
                         raise
 
-                    if data.dtype.type is np.string_:
+                    if data.dtype.type is np.bytes_:
                         data = np.char.decode(data)
 
                     if dataSet.attrs.get("specialFormatting", False):
@@ -1384,8 +1396,9 @@ class Database:
                 # current time step and something has created the group to store aux data
                 continue
 
-            cycle = h5TimeNodeGroup.attrs["cycle"]
-            timeNode = h5TimeNodeGroup.attrs["timeNode"]
+            # might save as int or np.int64, so forcing int keeps things predictable
+            cycle = int(h5TimeNodeGroup.attrs["cycle"])
+            timeNode = int(h5TimeNodeGroup.attrs["timeNode"])
             layout = Layout(
                 (self.versionMajor, self.versionMinor), h5group=h5TimeNodeGroup
             )
@@ -1440,7 +1453,7 @@ class Database:
                             )
                             raise
 
-                        if data.dtype.type is np.string_:
+                        if data.dtype.type is np.bytes_:
                             data = np.char.decode(data)
 
                         if dataSet.attrs.get("specialFormatting", False):

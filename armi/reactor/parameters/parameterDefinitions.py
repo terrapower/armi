@@ -25,15 +25,15 @@ See Also
 --------
 armi.reactor.parameters
 """
-from typing import Any, Dict, Optional, Sequence, Tuple, Type
 import enum
 import functools
 import re
+from typing import Any, Dict, Optional, Sequence, Tuple, Type
 
 import numpy as np
 
 from armi.reactor.flags import Flags
-from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
+from armi.reactor.parameters.exceptions import ParameterDefinitionError, ParameterError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
 # see: https://web.archive.org/web/20120225043338/http://www.vipan.com/htdocs/bitwisehelp.html
@@ -220,6 +220,31 @@ def isNumpyArray(paramStr):
             setattr(selfObj, "_p_" + paramStr, value)
         else:
             setattr(selfObj, "_p_" + paramStr, np.array(value))
+
+    return setParameter
+
+
+def isNumpyF32Array(paramStr: str):
+    """Helper meta-function to create a method that sets a Parameter value to a 32 bit float NumPy array.
+
+    Parameters
+    ----------
+    paramStr
+        Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a 32 bit NumPy array.
+    """
+
+    def setParameter(selfObj, value):
+        if value is None:
+            # allow default of None to exist
+            setattr(selfObj, "_p_" + paramStr, value)
+        else:
+            # force to 32 bit
+            setattr(selfObj, "_p_" + paramStr, np.array(value, dtype=np.float32))
 
     return setParameter
 

@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """Module for general core parameter sweeps."""
-from armi.reactor.converters.geometryConverters import GeometryConverter
 from armi.physics.neutronics.settings import (
     CONF_EPS_EIG,
     CONF_EPS_FSAVG,
     CONF_EPS_FSPOINT,
 )
+from armi.reactor.converters.geometryConverters import GeometryConverter
 
 
 class ParameterSweepConverter(GeometryConverter):
@@ -50,15 +50,6 @@ class SettingsModifier(ParameterSweepConverter):
             self._cs = self._cs.modified(
                 newSettings={self.modifier: sType(self._parameter)}
             )
-
-
-class CustomModifier(ParameterSweepConverter):
-    """Invoke the shuffle logic `applyCustomPerturbation` method to make a custom setting."""
-
-    def convert(self, r=None):
-        ParameterSweepConverter.convert(self, r)
-        fh = r.o.getInterface("fuelHandler")
-        fh.applyCustomPerturbation(self._parameter)
 
 
 class NeutronicConvergenceModifier(ParameterSweepConverter):

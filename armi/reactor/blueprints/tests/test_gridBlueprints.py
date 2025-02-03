@@ -25,7 +25,6 @@ from armi.reactor.blueprints import Blueprints
 from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
-
 LATTICE_BLUEPRINT = """
 control:
     geom: hex_corners_up

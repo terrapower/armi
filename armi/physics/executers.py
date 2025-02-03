@@ -21,7 +21,7 @@ import hashlib
 import os
 
 from armi import runLog
-from armi.context import getFastPath, MPI_RANK
+from armi.context import MPI_RANK, getFastPath
 from armi.utils import directoryChangers, pathTools
 
 

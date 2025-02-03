@@ -18,22 +18,19 @@ Lattice Physics Interface.
 Parent classes for codes responsible for generating broad-group cross sections
 """
 import os
-import shutil
 
-from armi import interfaces
-from armi import nuclearDataIO
-from armi import runLog
+from armi import interfaces, nuclearDataIO, runLog
 from armi.physics import neutronics
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.settings import (
-    CONF_GEN_XS,
     CONF_CLEAR_XS,
+    CONF_GEN_XS,
+    CONF_LATTICE_PHYSICS_FREQUENCY,
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
-    CONF_LATTICE_PHYSICS_FREQUENCY,
 )
-from armi.physics.neutronics import LatticePhysicsFrequency
-from armi.utils import codeTiming
+from armi.utils import codeTiming, safeCopy
 
 LATTICE_PHYSICS = "latticePhysics"
 
@@ -149,17 +146,17 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def _renameExistingLibrariesForStatepoint(self, cycle, node):
         """Copy the existing neutron and/or gamma libraries into cycle-dependent files."""
-        shutil.copy(
+        safeCopy(
             neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
         )
         if self.includeGammaXS:
-            shutil.copy(
+            safeCopy(
                 neutronics.GAMISO,
                 nuclearDataIO.getExpectedGAMISOFileName(
                     cycle=cycle, node=node, suffix=self._getSuffix(cycle)
                 ),
             )
-            shutil.copy(
+            safeCopy(
                 neutronics.PMATRX,
                 nuclearDataIO.getExpectedPMATRXFileName(
                     cycle=cycle, node=node, suffix=self._getSuffix(cycle)
@@ -195,7 +192,7 @@ class LatticePhysicsInterface(interfaces.Interface):
             else:
                 runLog.info("Using {} as an active library".format(baseName))
                 if cycleName != baseName:
-                    shutil.copy(cycleName, baseName)
+                    safeCopy(cycleName, baseName)
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
         raise NotImplementedError(

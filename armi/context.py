@@ -18,7 +18,6 @@ Module containing global constants that reflect the executing context of ARMI.
 ARMI's global state information: operating system information, environment data, user data, memory
 parallelism, temporary storage locations, and if operational mode (interactive, gui, or batch).
 """
-from logging import DEBUG
 import datetime
 import enum
 import gc
@@ -26,6 +25,7 @@ import getpass
 import os
 import sys
 import time
+from logging import DEBUG
 
 # h5py needs to be imported here, so that the disconnectAllHdfDBs() call that gets bound to atexit
 # below doesn't lead to a segfault on python exit.
@@ -38,9 +38,7 @@ import time
 # >>>     import h5py
 #
 # >>> atexit.register(willSegFault)
-
 import h5py  # noqa: F401
-
 
 BLUEPRINTS_IMPORTED = False
 BLUEPRINTS_IMPORT_CONTEXT = ""
@@ -82,7 +80,8 @@ START_TIME = time.ctime()
 # Set batch mode if not a TTY, which means you're on a cluster writing to a stdout file. In this
 # mode you cannot respond to prompts. (This does not work reliably for both Windows and Linux so an
 # os-specific solution is applied.)
-isatty = sys.stdout.isatty() if "win" in sys.platform else sys.stdin.isatty()
+IS_WINDOWS = ("win" in sys.platform) and ("darwin" not in sys.platform)
+isatty = sys.stdout.isatty() if IS_WINDOWS else sys.stdin.isatty()
 CURRENT_MODE = Mode.INTERACTIVE if isatty else Mode.BATCH
 Mode.setMode(CURRENT_MODE)
 
@@ -98,12 +97,7 @@ MPI_NODENAMES = [LOCAL]
 
 
 try:
-    # Check for MPI. The mpi4py module uses cPickle to serialize python objects in preparation for
-    # network transmission. Sometimes, when cPickle fails, it gives very cryptic error messages that
-    # do not help much. If you uncomment th following line, you can trick mpi4py into using the
-    # pure-python pickle module in place of cPickle and now you will generally get much more
-    # meaningful and useful error messages Then comment it back out because it's slow.
-    # import sys, pickle; sys.modules['cPickle'] = pickle
+    # Check for MPI
     from mpi4py import MPI
 
     MPI_COMM = MPI.COMM_WORLD

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """Tests for memoryProfiler."""
-from unittest.mock import MagicMock, patch
 import logging
 import unittest
+from unittest.mock import MagicMock, patch
 
 from armi import runLog
 from armi.bookkeeping import memoryProfiler
@@ -24,7 +24,7 @@ from armi.bookkeeping.memoryProfiler import (
     getTotalJobMemory,
 )
 from armi.reactor.tests import test_reactors
-from armi.tests import mockRunLogs, TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 
 
 class TestMemoryProfiler(unittest.TestCase):
@@ -139,9 +139,18 @@ class TestMemoryProfiler(unittest.TestCase):
         vMem.total = (1024**3) * 50
         mockVMem.return_value = vMem
 
-        expectedArrangement = {0: 50, 1: 50, 2: 50, 3: 45, 4: 40, 5: 50}
-        for nTasksPerNode, jobMemory in expectedArrangement.items():
-            self.assertEqual(getTotalJobMemory(nTasksPerNode), jobMemory)
+        expectedArrangement = {
+            (10, 1): 50,
+            (1, 10): 50,
+            (2, 5): 50,
+            (3, 3): 45,
+            (4, 1): 20,
+            (2, 4): 40,
+            (5, 2): 50,
+        }
+        for compReq, jobMemory in expectedArrangement.items():
+            # compReq[0] is nTasks and compReq[1] is cpusPerTask
+            self.assertEqual(getTotalJobMemory(compReq[0], compReq[1]), jobMemory)
 
     @patch("armi.bookkeeping.memoryProfiler.PrintSystemMemoryUsageAction")
     @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
@@ -166,20 +175,26 @@ class TestMemoryProfiler(unittest.TestCase):
         mockVMem.return_value = vMem
         self._setMemUseMock(mockPrintSysMemUseAction)
         with mockRunLogs.BufferLog() as mockLogs:
-            csMock = MagicMock()
-            csMock.__getitem__.return_value = 2
-            self.memPro.cs = csMock
+            self.memPro.cs = {"cpusPerTask": 1, "nTasks": 10}
             self.memPro.printCurrentMemoryState()
             stdOut = mockLogs.getStdout()
             self.assertIn("Currently using 6.0 GB of memory.", stdOut)
             self.assertIn("There is 44.0 GB of memory left.", stdOut)
             self.assertIn("There is a total allocation of 50.0 GB", stdOut)
+            # Try another for funzies where we only use half the available resources on the node
+            mockLogs.emptyStdout()
+            self.memPro.cs = {"cpusPerTask": 5, "nTasks": 1}
+            self.memPro.printCurrentMemoryState()
+            stdOut = mockLogs.getStdout()
+            self.assertIn("Currently using 6.0 GB of memory.", stdOut)
+            self.assertIn("There is 19.0 GB of memory left.", stdOut)
+            self.assertIn("There is a total allocation of 25.0 GB", stdOut)
 
     def test_printCurrentMemoryState_noSetting(self):
         """Test that the try/except works as it should."""
         expectedStr = (
             "To view memory consumed, remaining available, and total allocated for a case, "
-            "add the setting 'nTasksPerNode' to your application."
+            "add the setting 'cpusPerTask' to your application."
         )
         with mockRunLogs.BufferLog() as mockLogs:
             self.memPro.printCurrentMemoryState()

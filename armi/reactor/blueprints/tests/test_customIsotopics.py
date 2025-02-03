@@ -18,13 +18,18 @@ from logging import DEBUG
 
 import yamlize
 
-from armi import settings
-from armi.physics.neutronics.settings import CONF_XS_KERNEL
+from armi import runLog, settings
+from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
-from armi import runLog
 from armi.tests import mockRunLogs
+from armi.utils.customExceptions import InputError
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCustomIsotopics(unittest.TestCase):
@@ -305,7 +310,12 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
+        cs = cs.modified(
+            newSettings={
+                CONF_XS_KERNEL: "MC2v2",
+                "inputHeightsConsideredHot": False,
+            }
+        )
 
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
@@ -352,14 +362,19 @@ assemblies:
         # A block with custom density set via number density
         fuel8 = self.a[8].getComponent(Flags.FUEL)
 
+        dLL = fuel2.material.linearExpansionFactor(Tc=600, T0=25)
+        # the exponent here is 3 because inputHeightsConsideredHot = False.
+        # if inputHeightsConsideredHot were True, then we would use a factor of 2 instead
+        f = 1 / ((1 + dLL) ** 3)
+
         # Check that the density is set correctly on the custom density block,
         # and that it is not the same as the original
-        self.assertAlmostEqual(19.1, fuel2.density())
+        self.assertAlmostEqual(19.1 * f, fuel2.density())
         self.assertNotAlmostEqual(fuel0.density(), fuel2.density(), places=2)
         # Check that the custom density block has the correct material
         self.assertEqual("UZr", fuel2.material.name)
         # Check that the block with only number densities set has a new density
-        self.assertAlmostEqual(19.1, fuel8.density())
+        self.assertAlmostEqual(19.1 * f, fuel8.density())
         # original material density should not be changed after setting a custom density component,
         # so a new block without custom isotopics and density should have the same density as the original
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
@@ -383,12 +398,16 @@ assemblies:
 
             # Check for log messages
             streamVal = mockLog.getStdout()
-            self.assertIn("Both TD_frac and a custom density", streamVal, msg=streamVal)
+            self.assertIn(
+                "Both TD_frac and a custom isotopic with density",
+                streamVal,
+                msg=streamVal,
+            )
             self.assertIn(
                 "A custom material density was specified", streamVal, msg=streamVal
             )
             self.assertIn(
-                "A custom density or number densities has been specified",
+                "A custom isotopic with associated density has been specified for non-`Custom`",
                 streamVal,
                 msg=streamVal,
             )
@@ -529,6 +548,8 @@ nuclide flags:
     SI: {burn: true, xs: true}
     MO: {burn: true, xs: true}
     W: {burn: true, xs: true}
+    ZN: {burn: true, xs: true}
+    O: {burn: true, xs: true}
 blocks:
     uzr fuel: &block_0
         fuel:
@@ -541,6 +562,14 @@ blocks:
         clad:
             shape: Circle
             material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 1.0
+            od: 10.0
+        dummy:
+            shape: Circle
+            material: ZnO
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
@@ -568,3 +597,47 @@ assemblies:
         self.assertNotIn("FE56", nd)  # natural isotopic not requested
         self.assertNotIn("FE51", nd)  # un-natural
         self.assertNotIn("FE", nd)
+
+    def test_eleExpandInfoBasedOnCodeENDF(self):
+        with TemporaryDirectoryChanger():
+            # Reference elements to expand by library
+            ref_E70_elem = ["C", "V", "ZN"]
+            ref_E71_elem = ["C"]
+            ref_E80_elem = []
+
+            # Load settings and set neutronics kernel to MCNP
+            cs = settings.Settings()
+            cs = cs.modified(newSettings={CONF_NEUTRONICS_KERNEL: "MCNP"})
+
+            # Set ENDF/B-VII.0 as MCNP cross section library base
+            cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: "ENDF/B-VII.0"})
+            eleToKeep, expansions = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+            E70_elem = [x.label for x in eleToKeep]
+
+            # Set ENDF/B-VII.1 as MCNP cross section library base
+            cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: "ENDF/B-VII.1"})
+            eleToKeep, expansions = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+            E71_elem = [x.label for x in eleToKeep]
+
+            # Set ENDF/B-VIII.0 as MCNP cross section library base
+            cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: "ENDF/B-VIII.0"})
+            eleToKeep, expansions = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+            E80_elem = [x.label for x in eleToKeep]
+
+            # Assert equality of returned elements to reference elements
+            self.assertEqual(sorted(E70_elem), sorted(ref_E70_elem))
+            self.assertEqual(sorted(E71_elem), sorted(ref_E71_elem))
+            self.assertEqual(sorted(E80_elem), sorted(ref_E80_elem))
+
+            # Disallowed inputs
+            not_allowed = ["ENDF/B-VIIII.0", "ENDF/B-VI.0", "JEFF-3.3"]
+            # Assert raise InputError in case of invalid library setting
+            for x in not_allowed:
+                with self.assertRaises(InputError) as context:
+                    cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: x})
+                    _ = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+
+                self.assertTrue(
+                    "Failed to determine nuclides for modeling"
+                    in str(context.exception)
+                )
