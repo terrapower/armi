@@ -190,17 +190,16 @@ class BlockBlueprint(yamlize.KeyedList):
                     # it is in the grid the correct number of times, otherwise
                     # their blueprints are probably wrong
                     idsInGrid = list(gridDesign.gridContents.values())
-                    totalInstancesOfComponentInGrid = 0
+                    numInstances = 0
                     for latticeID in componentDesign.latticeIDs:
                         nInstances = len([i for i in idsInGrid if i == str(latticeID)])
-                        totalInstancesOfComponentInGrid += nInstances
+                        numInstances += nInstances
 
-                    expectedNumberOfInstances = c.getDimension("mult")
-                    if totalInstancesOfComponentInGrid != expectedNumberOfInstances:
+                    mult = c.getDimension("mult")
+                    if numInstances != mult:
                         raise ValueError(
                             f"Component {c} in block blueprint '{self.name}' is expected to be present in the "
-                            f"associated block grid {expectedNumberOfInstances} times, but it "
-                            f"is found {totalInstancesOfComponentInGrid} times. "
+                            f"associated block grid {mult} times, but it is found {numInstances} times. "
                             "Check that the component's latticeIDs align with the block's grid."
                         )
 
