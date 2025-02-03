@@ -112,6 +112,7 @@ docs = [
     "Jinja2", # Used in numpydoc and nbconvert
     "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
     "sphinx-simplepdf==1.6.0", # Used to make PDF versions of the docs
+    "setuptools",
 ]
 
 [project.scripts]
