@@ -640,7 +640,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         geomConverter = self.geomConverters.get("edgeAssems")
         if geomConverter:
             geomConverter.scaleParamsRelatedToSymmetry(
-                self.r, paramsToScaleSubset=self.options.paramsToScaleSubset
+                self.r.core, paramsToScaleSubset=self.options.paramsToScaleSubset
             )
 
             # Resets the reactor core model to the correct symmetry and removes
