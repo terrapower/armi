@@ -52,6 +52,7 @@ Operator_NumProcessors = "Number of Processors:"
 Operator_WorkingDirectory = "Working Directory:"
 Operator_CurrentUser = "Current User:"
 Operator_PythonInterperter = "Python Interpreter:"
+Operator_PythonExecutable = "Python Executable:"
 Operator_ArmiCodebase = "ARMI Location:"
 Operator_MasterMachine = "Master Machine:"
 Operator_Date = "Date and Time:"
@@ -77,6 +78,7 @@ def writeWelcomeHeaders(o, cs):
             (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
+            (Operator_PythonExecutable, sys.executable),
             (Operator_MasterMachine, getNodeName()),
             (Operator_NumProcessors, context.MPI_SIZE),
             (Operator_Date, context.START_TIME),
@@ -352,7 +354,7 @@ def _getSystemInfoLinux():
         return ""
 
     # get processor information
-    linuxProcCommands = ["cat /proc/cpuinfo", "lscpu", "lshw -class CPU"]
+    linuxProcCommands = ["lscpu", "cat /proc/cpuinfo", "lshw -class CPU"]
     procInfo = ""
     for cmd in linuxProcCommands:
         procInfo = subprocess.run(

@@ -914,16 +914,18 @@ class Database:
 
         return comp
 
-    def _writeParams(self, h5group, comps) -> tuple:
-        def _getShape(arr: [np.ndarray, List, Tuple]):
-            """Get the shape of a np.ndarray, list, or tuple."""
-            if isinstance(arr, np.ndarray):
-                return arr.shape
-            elif isinstance(arr, (list, tuple)):
-                return (len(arr),)
-            else:
-                return (1,)
+    @staticmethod
+    def _getArrayShape(arr: [np.ndarray, List, Tuple]):
+        """Get the shape of a np.ndarray, list, or tuple."""
+        if isinstance(arr, np.ndarray):
+            return arr.shape
+        elif isinstance(arr, (list, tuple)):
+            return (len(arr),)
+        else:
+            # not a list, tuple, or array (likely int, float, or None)
+            return 1
 
+    def _writeParams(self, h5group, comps) -> tuple:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
@@ -969,7 +971,7 @@ class Database:
                 else:
                     # check if temp is a jagged array
                     if any(isinstance(x, (np.ndarray, list)) for x in temp):
-                        jagged = len(set([_getShape(x) for x in temp])) != 1
+                        jagged = len(set([self._getArrayShape(x) for x in temp])) != 1
                     else:
                         jagged = False
                     data = (
