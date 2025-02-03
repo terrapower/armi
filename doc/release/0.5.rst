@@ -26,6 +26,7 @@ Bug Fixes
 
 Quality Work
 ------------
+#. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. TBD
 
 
