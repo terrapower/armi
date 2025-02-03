@@ -660,9 +660,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
-    def setPuFrac(self, prevPuFrac):
+    def expandForPuFrac(self, prevPuFrac):
         r"""
-        Adjust puFrac of this component.
+        Adjust density of this component according to expansion from puFrac changes.
 
         This will cause effective expansion or contraction of solid components similar to thermal 
         expansion but at a constant temperature. If the thermal expansion coefficient is dependent 
@@ -694,7 +694,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLLprev = prevMaterial.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
         expansionRatio = (1.0 + dLLnew) / (1.0 + dLLprev)
-        f = 1.0 / expansionRatio ** 2
+        f = 1.0 / expansionRatio**2
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
