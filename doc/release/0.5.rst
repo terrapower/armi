@@ -22,6 +22,7 @@ Bug Fixes
 #. Fixing check for jagged arrays during ``_writeParams``. (`PR#2051 <https://github.com/terrapower/armi/pull/2051>`_)
 #. Fixing BP-section ignoring tool in ``PassiveDBLoadPlugin``. (`PR#2055 <https://github.com/terrapower/armi/pull/2055>`_)
 #. Fixing scaling of volume-integrated parameters on edge assembleis. (`PR#2060 <https://github.com/terrapower/armi/pull/2060>`_)
+#. Fixing number densities when custom isotopics are combined with Fluid components. (`PR#2071 <https://github.com/terrapower/armi/pull/2071>`_)
 #. TBD
 
 Quality Work
