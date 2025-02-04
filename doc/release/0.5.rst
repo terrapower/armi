@@ -28,6 +28,7 @@ Bug Fixes
 
 Quality Work
 ------------
+#. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. TBD
 
