@@ -1568,6 +1568,7 @@ class EdgeAssemblyChanger(GeometryChanger):
             for b, bSymmetric in zip(a, aSymmetric):
                 _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale)
 
+
 def _generateListOfParamsToScale(core, paramsToScaleSubset):
     fluxParamsToScale = (
         core.getFirstBlock()

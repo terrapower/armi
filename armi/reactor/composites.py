@@ -1575,6 +1575,10 @@ class ArmiObject(metaclass=CompositeModelType):
             nuc: val * factor for nuc, val in self.getNumberDensities().items()
         }
         self.setNumberDensities(densitiesScaled)
+        self._changeOtherDensParamsByFactor(factor)
+
+    def _changeOtherDensParamsByFactor(self, factor):
+        """Change the other density storage params by factor."""
         # Update detailedNDens
         if self.p.detailedNDens is not None:
             self.p.detailedNDens *= factor
