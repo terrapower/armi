@@ -96,8 +96,12 @@ class _Material_Test:
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_wrappedDensity(self):
-        """Test that the density decorator is applied."""
-        self.assertTrue(hasattr(self.mat.density, "__wrapped__"))
+        """Test that the density decorator is applied to non-fluids."""
+        self.assertEqual(
+            hasattr(self.mat.density, "__wrapped__"),
+            not isinstance(self.mat, materials.Fluid),
+            msg=self.mat,
+        )
 
 
 class MaterialConstructionTests(unittest.TestCase):
