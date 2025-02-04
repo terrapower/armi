@@ -184,25 +184,18 @@ class BlockBlueprint(yamlize.KeyedList):
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
 
+                idsInGrid = list(gridDesign.gridContents.values())
                 if componentDesign.latticeIDs:
-                    # the user has given this component latticeIDs, implying that it
-                    # should be present in the blocks associated grid. check that
-                    # it is in the grid the correct number of times, otherwise
-                    # their blueprints are probably wrong
-                    idsInGrid = list(gridDesign.gridContents.values())
-                    totalInstancesOfComponentInGrid = 0
                     for latticeID in componentDesign.latticeIDs:
-                        nInstances = len([i for i in idsInGrid if i == str(latticeID)])
-                        totalInstancesOfComponentInGrid += nInstances
-
-                    expectedNumberOfInstances = c.getDimension("mult")
-                    if totalInstancesOfComponentInGrid != expectedNumberOfInstances:
-                        raise ValueError(
-                            f"Component {c} in block blueprint '{self.name}' is expected to be present in the "
-                            f"associated block grid {expectedNumberOfInstances} times, but it "
-                            f"is found {totalInstancesOfComponentInGrid} times. "
-                            "Check that the component's latticeIDs align with the block's grid."
-                        )
+                        # the user has given this component latticeIDs. check that
+                        # each of the ids appears in the grid, otherwise
+                        # their blueprints are probably wrong
+                        if len([i for i in idsInGrid if i == str(latticeID)]) == 0:
+                            raise ValueError(
+                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected to be present in the "
+                                "associated block grid. "
+                                "Check that the component's latticeIDs align with the block's grid."
+                            )
 
         # check that the block level mat mods use valid options in the same way
         # as we did for the by-component mods above
