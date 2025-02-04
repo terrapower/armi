@@ -741,10 +741,18 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        We don't just call setNumberDensity for each nuclide because we don't want to call ``getVolumeFractions``
-        for each nuclide (it's inefficient).
+        Note that sometimes volume/dimensions can change due to the number density change when the material thermal
+        expansion depends on the component's composition (eg its plutonium fraction). In this case, changing the
+        density will implicitly change the area/volume. Since it its very difficult to predict the new dims ahead of time,
+        and perturbation/depletion calculations are almost exclusively done assuming constant volume,
+        the densities sent are automatically perturbed to conserve mass with the original dimensions.
+        That is, the components densities are not exactly as passed, but whatever they would need to be to preserve volume
+        integrated number densities (moles) from the pre-perturbed components volume/dims.
+        Note this has no effect if the material thermal expansion has no dependence on component composition fracs.
+        If this is not desired, `self.p.numberDensities` can be set directly.
         """
-        self.p.numberDensities = numberDensities
+        self.p.numberDensities = {}  # clear things not passed
+        self.updateNumberDensities(numberDensities)
 
     def updateNumberDensities(self, numberDensities):
         """
@@ -755,8 +763,45 @@ class Component(composites.Composite, metaclass=ComponentType):
         numberDensities : dict
             nucName: ndens pairs.
 
+        Notes
+        -----
+        Note that sometimes volume/dimensions can change due to the number density change when the material thermal
+        expansion depends on the component's composition (eg its plutonium fraction). In this case, changing the
+        density will implicitly change the area/volume. Since it its very difficult to predict the new dims ahead of time,
+        and perturbation/depletion calculations are almost exclusively done assuming constant volume,
+        the densities sent are automatically perturbed to conserve mass with the original dimensions.
+        That is, the components densities are not exactly as passed, but whatever they would need to be to preserve volume
+        integrated number densities (moles) from the pre-perturbed components volume/dims.
+        Note this has no effect if the material thermal expansion has no dependence on component composition fracs.
+        If this is not desired, `self.p.numberDensities` can be set directly.
         """
+        # prepare to change the densities with knowledge that dims could change due to
+        # material thermal expansion dependence on composition
+        dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        try:
+            vol = self.getVolume()
+        except:
+            # either no parent to get height or parent's height is None
+            # which would be AttributeError and TypeError respectively, but other errors could be possible
+            vol = None
+            area = self.getArea()
+
+        # change the densities
         self.p.numberDensities.update(numberDensities)
+
+        # check if thermal expansion changed
+        dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        if dLLprev != dLLnew:
+            # the thermal expansion changed so the volume change is happening at same time as
+            # density change was requested. Attempt to make mass consistent with old dims
+            # (since the density change was for the old volume and otherwise mass wouldn't be conserved)
+            if vol is not None:
+                factor = vol / self.getVolume()
+            else:
+                factor = area / self.getArea()
+            self.changeNDensByFactor(factor)
+            self.clearLinkedCache()
+
         # since we're updating the object the param points to but not the param itself, we have to inform
         # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
         self.p.assigned = parameters.SINCE_ANYTHING
