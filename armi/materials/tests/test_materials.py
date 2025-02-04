@@ -116,10 +116,6 @@ class MaterialFindingTests(unittest.TestCase):
         .. test:: Materials can be grabbed from a list of namespaces.
             :id: T_ARMI_MAT_NAMESPACE0
             :tests: R_ARMI_MAT_NAMESPACE
-
-        .. test:: You can find a material by name.
-            :id: T_ARMI_MAT_NAME
-            :tests: R_ARMI_MAT_NAME
         """
         self.assertIs(
             materials.resolveMaterialClassByName(

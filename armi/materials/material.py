@@ -146,18 +146,7 @@ class Material:
 
     @property
     def name(self):
-        """
-        Getter for the private name attribute of this Material.
-
-        .. impl:: The name of a material is accessible.
-            :id: I_ARMI_MAT_NAME
-            :implements: R_ARMI_MAT_NAME
-
-            Every instance of an ARMI material must have a simple, human-readable string name. And,
-            if possible, we want this string to match the class name. (This, of course, puts some
-            limits on both the string and the class name.) These names are easily retrievable as a
-            class property.
-        """
+        """Getter for the private name attribute of this Material."""
         return self._name
 
     @name.setter
