@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for functions in textProcessors.py."""
-from io import StringIO
 import logging
 import os
 import pathlib
-import ruamel
 import unittest
+from io import StringIO
+
+import ruamel
 
 from armi import runLog
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import textProcessors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -145,7 +145,7 @@ X  Y  0.0"""
 
     def test_readFileWithPattern(self):
         with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
-            self.assertTrue(sr.searchForPattern("(X\s+Y\s+\d+\.\d+)"))
+            self.assertTrue(sr.searchForPattern(r"(X\s+Y\s+\d+\.\d+)"))
             self.assertEqual(float(sr.line.split()[2]), 3.5)
 
     def test_issueWarningOnFindingText(self):

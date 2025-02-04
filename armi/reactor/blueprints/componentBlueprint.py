@@ -20,13 +20,11 @@ Special logic is required for handling component links.
 """
 import yamlize
 
-from armi import runLog
-from armi import materials
-from armi.reactor import components
-from armi.reactor import composites
+from armi import materials, runLog
+from armi.nucDirectory import nuclideBases
+from armi.reactor import components, composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
-from armi.nucDirectory import nuclideBases
 
 COMPONENT_GROUP_SHAPE = "group"
 
@@ -292,20 +290,29 @@ class ComponentBlueprint(yamlize.Object):
                     "Cannot apply custom densities to materials without density."
                 )
 
-            # Apply a density scaling to account for the temperature change between Tinput
-            # Thot. There may be a better place in the initialization to determine
-            # if the block height will be interpreted as hot dimensions, which would
-            # allow us to not have to pass the case settings down this far
-            dLL = comp.material.linearExpansionFactor(
-                Tc=comp.temperatureInC, T0=comp.inputTemperatureInC
-            )
-            if inputHeightsConsideredHot:
-                f = 1.0 / (1 + dLL) ** 2
+            # Apply a density scaling to account for the temperature change between
+            # Tinput and Thot
+            if isinstance(mat, materials.Fluid):
+                densityRatio = densityFromCustomIsotopic / mat.density(
+                    Tc=comp.inputTemperatureInC
+                )
             else:
-                f = 1.0 / (1 + dLL) ** 3
+                # for solids we need to consider if the input heights are hot or
+                # cold, in order to get the density correct.
+                # There may be a better place in the initialization to determine
+                # if the block height will be interpreted as hot dimensions, which would
+                # allow us to not have to pass the case settings down this far
+                dLL = mat.linearExpansionFactor(
+                    Tc=comp.temperatureInC, T0=comp.inputTemperatureInC
+                )
+                if inputHeightsConsideredHot:
+                    f = 1.0 / (1 + dLL) ** 2
+                else:
+                    f = 1.0 / (1 + dLL) ** 3
 
-            scaledDensity = comp.density() / f
-            densityRatio = densityFromCustomIsotopic / scaledDensity
+                scaledDensity = comp.density() / f
+                densityRatio = densityFromCustomIsotopic / scaledDensity
+
             comp.changeNDensByFactor(densityRatio)
 
             runLog.important(

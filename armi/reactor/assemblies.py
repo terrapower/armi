@@ -20,6 +20,7 @@ Generally, Blocks are stacked from bottom to top.
 import copy
 import math
 import pickle
+from collections.abc import Iterable
 from random import randint
 from typing import ClassVar, Optional, Type
 
@@ -28,10 +29,7 @@ from scipy import interpolate
 
 from armi import runLog
 from armi.materials.material import Fluid
-from armi.reactor import assemblyParameters
-from armi.reactor import blocks
-from armi.reactor import composites
-from armi.reactor import grids
+from armi.reactor import assemblyParameters, blocks, composites, grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool
@@ -206,6 +204,7 @@ class Assembly(composites.Composite):
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
+        oldSymmetryFactor = self.getSymmetryFactor()
         composites.Composite.moveTo(self, locator)
         if self.lastLocationLabel != self.DATABASE:
             self.p.numMoves += 1
@@ -213,6 +212,26 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
+        self.scaleParamsToNewSymmetryFactor(oldSymmetryFactor)
+
+    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor):
+        scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
+        if scalingFactor == 1:
+            return
+
+        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+            ParamLocation.VOLUME_INTEGRATED
+        )
+        for b in self.getBlocks():
+            for param in volIntegratedParamsToScale:
+                name = param.name
+                if b.p[name] is None or isinstance(b.p[name], str):
+                    continue
+                elif isinstance(b.p[name], Iterable):
+                    b.p[name] = [value * scalingFactor for value in b.p[name]]
+                else:
+                    # numpy array or other
+                    b.p[name] = b.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
@@ -1002,7 +1021,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=np.NaN
+        self, param, elevations, interpType="linear", fillValue=np.nan
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -1051,7 +1070,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.nan):
         """
         Interpolates a param axially to find it at any value of elevation z.
 

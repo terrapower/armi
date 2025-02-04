@@ -16,8 +16,7 @@
 # ruff: noqa: F401
 import os
 
-from armi import interfaces
-from armi import settings
+from armi import interfaces, settings
 from armi.physics import neutronics
 from armi.utils import pathTools
 

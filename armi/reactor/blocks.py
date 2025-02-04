@@ -18,35 +18,32 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import functools
 import math
+from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases
-from armi import runLog
+from armi import nuclideBases, runLog
 from armi.bookkeeping import report
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA
-from armi.physics.neutronics import NEUTRON
-from armi.reactor import blockParameters
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.reactor import (
+    blockParameters,
+    components,
+    composites,
+    geometry,
+    grids,
+    parameters,
+)
 from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools
-from armi.utils import hexagon
-from armi.utils import iterables
-from armi.utils import units
+from armi.utils import densityTools, hexagon, iterables, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -790,21 +787,16 @@ class Block(composites.Composite):
 
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
-        sf = self.getSymmetryFactor()
         for child in self:
-            # multiplying by sf ends up cancelling out the symmetry factor used in
-            # Component.getMass(). So massHmBOL does not respect the symmetry factor.
-            hmMass = child.getHMMass() * sf
+            hmMass = child.getHMMass()
             massHmBOL += hmMass
             # Components have the following parameters but not every composite will
             # massHmBOL, molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
-                # to stay consistent with massHmBOL, molesHmBOL and puFrac should be
-                # independent of sf. As such, the need to be scaled by 1/sf.
-                child.p.molesHmBOL = child.getHMMoles() / sf
+                child.p.molesHmBOL = child.getHMMoles()
                 child.p.puFrac = (
-                    self.getPuMoles() / sf / child.p.molesHmBOL
+                    self.getPuMoles() / child.p.molesHmBOL
                     if child.p.molesHmBOL > 0.0
                     else 0.0
                 )

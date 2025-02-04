@@ -17,19 +17,16 @@ General framework-wide testing functions and files.
 This package contains some input files that can be used across
 a wide variety of unit tests in other lower-level subpackages.
 """
-from typing import Optional
 import datetime
 import itertools
 import os
 import re
 import shutil
 import unittest
+from typing import Optional
 
-from armi import context
-from armi import runLog
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
+from armi import context, runLog
+from armi.reactor import geometry, grids, reactors
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
 ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")

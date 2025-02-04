@@ -16,8 +16,9 @@
 Globally accessible exception definitions for better granularity on exception behavior and
 exception handling behavior.
 """
+from inspect import getframeinfo, stack
+
 from armi import runLog
-from inspect import stack, getframeinfo
 
 
 def info(func):

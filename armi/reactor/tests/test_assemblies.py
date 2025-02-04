@@ -21,31 +21,30 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings
-from armi import tests
+from armi import settings, tests
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    components,
+    geometry,
+    parameters,
+    reactors,
+)
 from armi.reactor.assemblies import (
-    copy,
     Flags,
-    grids,
     HexAssembly,
+    copy,
+    grids,
     runLog,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-
+from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 
@@ -204,7 +203,6 @@ class Assembly_TestCase(unittest.TestCase):
         )
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
-        self.r.core.add(self.assembly)
 
         # Use these if they are needed
         self.blockParams = {
@@ -221,7 +219,7 @@ class Assembly_TestCase(unittest.TestCase):
             "residence": 4.0,
             "smearDensity": 0.6996721711791459,
             "timeToLimit": 2.7e5,
-            "xsTypeNum": 40,
+            "xsTypeNum": 65,
             "zbottom": 97.3521,
             "ztop": 111.80279999999999,
         }
@@ -267,6 +265,7 @@ class Assembly_TestCase(unittest.TestCase):
             self.assembly.add(b)
             self.blockList.append(b)
 
+        self.r.core.add(self.assembly)
         self.assembly.calculateZCoords()
 
     def test_isOnWhichSymmetryLine(self):
@@ -344,6 +343,35 @@ class Assembly_TestCase(unittest.TestCase):
 
         cur = self.assembly.spatialLocator
         self.assertEqual(cur, ref)
+
+    def test_scaleParamsWhenMoved(self):
+        """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
+        blockParams = {
+            # volume integrated parameters
+            "massHmBOL": 9.0,
+            "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
+            "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
+            "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
+        }
+        for b in self.assembly.getBlocks(Flags.FUEL):
+            b.p.update(blockParams)
+
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
+        locator = self.r.core.spatialGrid[i, j, 0]
+        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+        self.assembly.moveTo(locator)
+        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+        for b in self.assembly.getBlocks(Flags.FUEL):
+            # float
+            assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
+            # np.ndarray
+            assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
+            # list
+            assert_allclose(
+                np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3
+            )
+            # string
+            self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
 
     def test_getName(self):
         cur = self.assembly.getName()
@@ -748,9 +776,9 @@ class Assembly_TestCase(unittest.TestCase):
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
             for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = (
-                    val * i
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                if key != "xsTypeNum":  # must keep valid
+                    b.p[key] = self.blockParamsTemp[key] = val * i
 
             b.setHeight(self.height)
             b.setType("fuel")

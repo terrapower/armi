@@ -13,12 +13,12 @@
 # limitations under the License.
 
 """Tests for operators."""
-from unittest.mock import patch
 import collections
 import io
 import os
 import sys
 import unittest
+from unittest.mock import patch
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
@@ -27,16 +27,16 @@ from armi.operators.operator import Operator
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
-from armi.reactor.reactors import Reactor, Core
+from armi.reactor.reactors import Core, Reactor
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
 from armi.settings.fwSettings.globalSettings import (
-    CONF_RUN_TYPE,
-    CONF_TIGHT_COUPLING,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
-    CONF_TIGHT_COUPLING_SETTINGS,
     CONF_DEFERRED_INTERFACE_NAMES,
     CONF_DEFERRED_INTERFACES_CYCLE,
+    CONF_RUN_TYPE,
+    CONF_TIGHT_COUPLING,
+    CONF_TIGHT_COUPLING_SETTINGS,
 )
 from armi.tests import mockRunLogs
 from armi.utils import directoryChangers

@@ -37,16 +37,14 @@ Examples
 
 """
 
-import traceback
 import itertools
+import traceback
 
 import numpy as np
 from scipy import sparse
 
 from armi import runLog
-from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import xsNuclides
-from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import cccc, xsLibraries, xsNuclides
 from armi.utils import properties
 
 # scattering block definitions from ISOTXS
@@ -755,8 +753,9 @@ class _IsotxsNuclideIO:
         """
         Get the scatter matrix for a particular blockNum.
 
-        Note: This is stupid and the logic should be combined with _setScatterMatrix.
-        Please recommend a better way to do it during code review.
+        Notes
+        -----
+        This logic could be combined with _setScatterMatrix.
         """
         if blockNumIndex == self._getElasticScatterBlockNumIndex():
             scatterMatrix = self._getMicros().elasticScatter

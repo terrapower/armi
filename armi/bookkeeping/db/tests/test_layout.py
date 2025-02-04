@@ -16,8 +16,7 @@ import os
 import unittest
 
 from armi import context
-from armi.bookkeeping.db import database
-from armi.bookkeeping.db import layout
+from armi.bookkeeping.db import database, layout
 from armi.reactor import grids
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 

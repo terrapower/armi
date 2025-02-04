@@ -18,11 +18,13 @@ from logging import DEBUG
 
 import yamlize
 
-from armi import runLog
-from armi import settings
-from armi.physics.neutronics.settings import CONF_MCNP_LIB_BASE
-from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
-from armi.physics.neutronics.settings import CONF_XS_KERNEL
+from armi import runLog, settings
+from armi.materials import Fluid, Sodium
+from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
@@ -41,6 +43,7 @@ nuclide flags:
     AL: {burn: false, xs: true}
     FE: {burn: false, xs: true}
     C: {burn: false, xs: true}
+    NA: {burn: false, xs: true}
     DUMP2: {burn: true, xs: true}
     DUMP1: {burn: true, xs: true}
     LFP35: {burn: true, xs: true}
@@ -117,6 +120,11 @@ custom isotopics:
         C: 0.3
         density: 7.0
 
+    sodium custom isotopics:
+        input format: mass fractions
+        NA: 1
+        density: 666
+
 """
 
     yamlGoodBlocks = r"""
@@ -139,6 +147,25 @@ blocks:
             id: 0.0
             mult: 1.0
             od: 10.0
+
+        sodium1:
+            shape: Circle
+            material: Sodium
+            Tinput: 25
+            Thot: 600
+            id: 0
+            mult: 1
+            od: 1
+
+        sodium2:
+            shape: Circle
+            material: Sodium
+            isotopics: sodium custom isotopics
+            Tinput: 25
+            Thot: 600
+            id: 0
+            mult: 1
+            od: 1
 
     uranium fuel from isotopic mass fractions : &block_1
         fuel:
@@ -379,6 +406,35 @@ assemblies:
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
         self.assertEqual(fuel6.material.name, fuel0.material.name)
         self.assertEqual("UZr", fuel0.material.name)
+
+    def test_densitiesAppliedToNonCustomMaterialsFluid(self):
+        """
+        Ensure that a density can be set in custom isotopics for components using library materials,
+        specifically in the case of a fluid component. In this case, inputHeightsConsideredHot
+        does not matter, and the material has a zero dLL value.
+        """
+        # The template block
+        sodium1 = self.a[0].getComponentByName("sodium1")
+        sodium2 = self.a[0].getComponentByName("sodium2")
+
+        self.assertEqual(sodium1.material.name, "Sodium")
+        self.assertEqual(sodium2.material.name, "Sodium")
+        self.assertTrue(isinstance(sodium1.material, Fluid))
+        self.assertTrue(isinstance(sodium2.material, Fluid))
+        self.assertEqual(sodium1.p.customIsotopicsName, "")
+        self.assertEqual(sodium2.p.customIsotopicsName, "sodium custom isotopics")
+
+        # show that, even though the two components have the same material class
+        # and the same temperatures, their densities are different
+        self.assertNotEqual(sodium1.density(), sodium2.density())
+
+        # show that sodium1 has a density from the material class, while sodium2
+        # has a density from the blueprint and adjusted from Tinput -> Thot
+        s = Sodium()
+        self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
+        self.assertAlmostEqual(
+            sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25))
+        )
 
     def test_customDensityLogsAndErrors(self):
         """Test that the right warning messages and errors are emitted when applying custom densities."""
