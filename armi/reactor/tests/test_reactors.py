@@ -159,13 +159,7 @@ class HexReactorTests(ReactorTests):
         self.assertTrue(isinstance(self.r.excore["sfp"], Composite))
 
     def test_factorySortSetting(self):
-        """
-        Create a core object from an input yaml.
-
-        .. test:: Create core object from input yaml.
-            :id: T_ARMI_R_CORE
-            :tests: R_ARMI_R_CORE
-        """
+        """Create a core object from an input yaml."""
         # get a sorted Reactor (the default)
         cs = settings.Settings(fName="armiRun.yaml")
         r0 = reactors.loadFromCs(cs)

@@ -55,24 +55,10 @@ from armi.utils.mathematics import average1DWithinTolerance
 
 
 class Core(composites.Composite):
-    r"""
+    """
     Reactor structure made up of assemblies. Could be a Core, spent fuel pool, reactor head, etc.
 
     This has the bulk of the data management operations.
-
-    .. impl:: Represent a reactor core as a composite object.
-        :id: I_ARMI_R_CORE
-        :implements: R_ARMI_R_CORE
-
-        A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a child of a
-        :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor should only contain
-        one object of the Core type. The instance attribute name ``r.core`` is reserved for the
-        object representating the active core.
-
-        Most of the operations to retrieve information from the ARMI reactor data model are mediated
-        through Core objects. For example,
-        :py:meth:`getAssemblies() <armi.reactor.reactors.Core.getAssemblies>` is used to get a list
-        of all assemblies in the Core.
 
     Attributes
     ----------
@@ -157,13 +143,7 @@ class Core(composites.Composite):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
 
     def __iter__(self):
-        """
-        Override the base Composite __iter__ to produce stable sort order.
-
-        See Also
-        --------
-        getAssemblies()
-        """
+        """Override the base Composite __iter__ to produce stable sort order."""
         return iter(self._children)
 
     @property
