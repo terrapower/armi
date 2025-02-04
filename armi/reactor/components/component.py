@@ -795,12 +795,14 @@ class Component(composites.Composite, metaclass=ComponentType):
             # the thermal expansion changed so the volume change is happening at same time as
             # density change was requested. Attempt to make mass consistent with old dims
             # (since the density change was for the old volume and otherwise mass wouldn't be conserved)
+
+            # enable recalculation of volume, otherwise it uses stored.
+            self.clearLinkedCache()
             if vol is not None:
                 factor = vol / self.getVolume()
             else:
                 factor = area / self.getArea()
             self.changeNDensByFactor(factor)
-            self.clearLinkedCache()
 
         # since we're updating the object the param points to but not the param itself, we have to inform
         # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
