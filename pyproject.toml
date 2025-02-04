@@ -107,7 +107,7 @@ docs = [
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
     "sphinxcontrib-apidoc==0.3.0", # More easily document our API
     "sphinxext-opengraph==0.8.2", # Generates OpenGraph metadata to make good-looking cards on social media
-    "sphinx-needs==1.2.2", # Requirements traceability matrices for QA
+    "sphinx-needs==2.1.0", # Requirements traceability matrices for QA
     "sphinxcontrib-plantuml==0.25", # UML support in sphinx-needs
     "pandoc", # Must be in the path (to convert file formats)
     "ipykernel==6.25.1", # iPython kernel to run Jupyter notebooks
@@ -244,9 +244,9 @@ data_file = "coverage_results.cov"
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 omit = [
+    "*/tests/*",
     "armi/cli/gridGui.py",
     "armi/utils/gridEditor.py",
-    "*/tests/*",
     ]
 
 exclude_also = [
@@ -254,18 +254,18 @@ exclude_also = [
     "def __repr__",
     "if self\\.debug",
 
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+
     # Don't complain about missing type checking-only code:
     "if TYPE_CHECKING",
 
     # Don't complain if tests don't hit defensive assertion code:
+    "except ImportError",
+    "pass",
     "raise AssertionError",
     "raise KeyboardInterrupt",
     "raise NotImplementedError",
-    "except ImportError",
-    "pass",
-
-    # Don't complain if non-runnable code isn't run:
-    "if __name__ == .__main__.:",
     ]
 
 ignore_errors = true
