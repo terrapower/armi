@@ -574,8 +574,7 @@ class Core(composites.Composite):
         """
         Yield the assemblies that have been added in the current cycle.
 
-        This uses the reactor's cycle parameter and the assemblies' chargeCycle
-        parameters.
+        This uses the reactor's cycle parameter and the assemblies' chargeCycle parameters.
         """
         for a in self:
             if a.p.chargeCycle == self.r.p.cycle:
@@ -583,21 +582,9 @@ class Core(composites.Composite):
 
     def getNumRings(self, indexBased=False):
         """
-        Returns the number of rings in this reactor. Based on location so indexing will start at 1.
+        Returns the number of rings in this reactor. Based on location, so indexing will start at 1.
 
         Circular ring shuffling changes the interpretation of this result.
-
-        .. impl:: Retrieve number of rings in core.
-            :id: I_ARMI_R_NUM_RINGS
-            :implements: R_ARMI_R_NUM_RINGS
-
-            This method determines the number of rings in the reactor. If the
-            setting ``circularRingMode`` is enabled (by default it is false), the
-            assemblies will be grouped into roughly circular rings based on
-            their positions and the number of circular rings is returned.
-            Otherwise, the number of hex rings is returned. This parameter is
-            mostly used to facilitate certain fuel management strategies where
-            the fuel is categorized and moved based on ring indexing.
 
         Warning
         -------
@@ -614,7 +601,7 @@ class Core(composites.Composite):
             return self.getNumHexRings()
 
     def getNumHexRings(self):
-        """Returns the number of hex rings in this reactor. Based on location so indexing will start at 1."""
+        """Return the number of hex rings in the core. Based on location so indexing starts at 1."""
         maxRing = 0
         for a in self.getAssemblies():
             ring, _pos = self.spatialGrid.getRingPos(a.spatialLocator)
@@ -628,14 +615,13 @@ class Core(composites.Composite):
         Parameters
         ----------
         nRings : int
-            The number of hex assembly rings in this core, including
-            partially-complete (non-full) rings.
+            The number of hex assembly rings in this core, including non-ful) rings.
 
         Returns
         -------
         nAssmWithBlanks: int
-            The number of assemblies that WOULD exist in this core if
-            all outer assembly hex rings were "filled out".
+            The number of assemblies that WOULD exist in this core if all outer assembly hex rings
+            were "filled out".
         """
         if self.powerMultiplier == 1:
             return 3 * nRings * (nRings - 1) + 1
@@ -661,7 +647,6 @@ class Core(composites.Composite):
         ----------
         blockTypeSpec : Flags or list of Flags
             The types of blocks to be counted in a single assembly
-
         assemTypeSpec : Flags or list of Flags
             The types of assemblies that are to be examine for the blockTypes of interest. None is
             every assembly.
@@ -669,8 +654,7 @@ class Core(composites.Composite):
         Returns
         -------
         maxBlocks : int
-            The maximum number of blocks of the specified types in a single assembly in the entire
-            core.
+            The maximum number of blocks of the specified types in a single assembly in the core.
         """
         assems = self.getAssemblies(typeSpec=assemTypeSpec)
         try:
@@ -697,11 +681,11 @@ class Core(composites.Composite):
 
     def getFirstFuelBlockAxialNode(self):
         """
-        Determine the offset of the fuel from the grid plate in the assembly
-        with the lowest fuel block.
+        Determine the offset of the fuel from the grid plate in the assembly with the lowest fuel
+        block.
 
-        This assembly will dictate at what block level the SASSYS reactivity
-        coefficients will start to be generated
+        This assembly will dictate at what block level the SASSYS reactivity coefficients will start
+        to be generated
         """
         try:
             return min(
@@ -711,13 +695,7 @@ class Core(composites.Composite):
                 if b.hasFlags(Flags.FUEL)
             )
         except ValueError:
-            """ValueError is thrown if min is called on an empty sequence.
-            Since this is expected to be a rare case, try/except is more
-            efficient than an if/else condition that checks whether the
-            iterator is empty (the latter would require generating a list
-            or tuple, which further adds to the inefficiency). Hence Python's
-            mantra, "It's easier to ask forgiveness than permission." In fact
-            it's quicker to ask forgiveness than permission."""
+            # ValueError is thrown if min is called on an empty sequence.
             return float("inf")
 
     def getAssembliesInRing(

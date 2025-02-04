@@ -925,12 +925,7 @@ class HexReactorTests(ReactorTests):
             self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
-        """Tests retrieving ring numbers and removing a ring.
-
-        .. test:: Retrieve number of rings in core.
-            :id: T_ARMI_R_NUM_RINGS
-            :tests: R_ARMI_R_NUM_RINGS
-        """
+        """Tests retrieving ring numbers and removing a ring."""
         self.assertEqual(self.r.core.getNumRings(), 9)
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)
