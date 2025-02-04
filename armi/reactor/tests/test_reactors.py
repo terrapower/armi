@@ -643,8 +643,8 @@ class HexReactorTests(ReactorTests):
         Get assembly by location, in a couple different ways to ensure they all work.
 
         .. test:: Get assembly by location.
-            :id: T_ARMI_R_GET_ASSEM_LOC
-            :tests: R_ARMI_R_GET_ASSEM_LOC
+            :id: T_ARMI_R_GET_ASSEM0
+            :tests: R_ARMI_R_GET_ASSEM
         """
         a0 = self.r.core.getAssemblyWithStringLocation("003-001")
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
@@ -659,8 +659,8 @@ class HexReactorTests(ReactorTests):
         Get assembly by name.
 
         .. test:: Get assembly by name.
-            :id: T_ARMI_R_GET_ASSEM_NAME
-            :tests: R_ARMI_R_GET_ASSEM_NAME
+            :id: T_ARMI_R_GET_ASSEM1
+            :tests: R_ARMI_R_GET_ASSEM
         """
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(assemblyName="A0010")

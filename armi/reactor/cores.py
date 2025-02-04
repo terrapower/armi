@@ -931,13 +931,12 @@ class Core(composites.Composite):
         Find the assembly that has this name.
 
         .. impl:: Get assembly by name.
-            :id: I_ARMI_R_GET_ASSEM_NAME
-            :implements: R_ARMI_R_GET_ASSEM_NAME
+            :id: I_ARMI_R_GET_ASSEM0
+            :implements: R_ARMI_R_GET_ASSEM
 
             This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
-            with a name matching the
-            value provided as an input parameter to this function. The ``name`` of
-            an assembly is based on the ``assemNum`` parameter.
+            with a name matching the value provided as an input parameter to this function. The
+            ``name`` of an assembly is based on the ``assemNum`` parameter.
 
         Parameters
         ----------
@@ -946,7 +945,7 @@ class Core(composites.Composite):
 
         Returns
         -------
-        assembly
+        Assembly
 
         See Also
         --------
@@ -1457,20 +1456,17 @@ class Core(composites.Composite):
         """Returns an assembly or none if given a location string like '001-001'.
 
         .. impl:: Get assembly by location.
-            :id: I_ARMI_R_GET_ASSEM_LOC
-            :implements: R_ARMI_R_GET_ASSEM_LOC
+            :id: I_ARMI_R_GET_ASSEM1
+            :implements: R_ARMI_R_GET_ASSEM
 
-            This method returns the :py:class:`assembly
-            <armi.reactor.core.assemblies.Assembly>` located in the requested
-            location. The location is provided to this method as an input
+            This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
+            located in the requested location. The location is provided to this method as an input
             parameter in a string with the format "001-001". For a :py:class:`HexGrid
-            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates
-            the hexagonal ring and the second number indicates the position
-            within that ring. For a :py:class:`CartesianGrid
-            <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
-            represents the x index and the second number represents the y index.
-            If there is no assembly in the grid at the requested location, this
-            method returns None.
+            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates the hexagonal ring
+            and the second number indicates the position within that ring. For a
+            :py:class:`CartesianGrid <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
+            represents the x index and the second number represents the y index. If there is no
+            assembly in the grid at the requested location, this method returns None.
         """
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
@@ -1481,9 +1477,8 @@ class Core(composites.Composite):
         """
         Find the assembly pitch for the whole core.
 
-        This returns the pitch according to the spatialGrid.
-        To capture any thermal/hydraulic feedback of the core pitch,
-        T/H modules will need to modify the grid pitch directly based
+        This returns the pitch according to the spatialGrid. To capture any thermal/hydraulic
+        feedback of the core pitch, T/H modules will need to modify the grid pitch directly based
         on the relevant mechanical assumptions.
 
         Returns
@@ -1501,11 +1496,10 @@ class Core(composites.Composite):
 
         Return a list of neighboring assemblies.
 
-        For a hexagonal grid, the list begins from the 30 degree point (point 1)
-        then moves counterclockwise around.
+        For a hexagonal grid, the list begins from the 30 degree point (point 1) then moves
+        counterclockwise around.
 
-        For a Cartesian grid, the order of the neighbors is east, north, west,
-        south.
+        For a Cartesian grid, the order of the neighbors is east, north, west, south.
 
         .. impl:: Retrieve neighboring assemblies of a given assembly.
             :id: I_ARMI_R_FIND_NEIGHBORS
