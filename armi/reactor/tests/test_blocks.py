@@ -1370,12 +1370,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur[0], ref)
 
     def test_getComponentByName(self):
-        """Test children by name.
-
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME0
-            :tests: R_ARMI_CMP_BY_NAME
-        """
+        """Test children by name."""
         self.assertIsNone(
             self.block.getComponentByName("not the droid youre looking for")
         )
@@ -1385,10 +1380,6 @@ class Block_TestCase(unittest.TestCase):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
-
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME1
-            :tests: R_ARMI_CMP_BY_NAME
         """
         expected = [
             self.block.getComponentByName(c)

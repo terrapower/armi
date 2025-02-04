@@ -663,14 +663,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return s.lower() in name
 
     def getName(self):
-        """Get composite name.
-
-        .. impl:: Composite name is accessible.
-            :id: I_ARMI_CMP_GET_NAME
-            :implements: R_ARMI_CMP_GET_NAME
-
-            This method returns the name of a Composite.
-        """
+        """Get composite name."""
         return self.name
 
     def setName(self, name):
@@ -2286,16 +2279,6 @@ class ArmiObject(metaclass=CompositeModelType):
     def getComponentByName(self, name):
         """
         Gets a particular component from this object, based on its name.
-
-        .. impl:: Get child component by name.
-            :id: I_ARMI_CMP_BY_NAME
-            :implements: R_ARMI_CMP_BY_NAME
-
-            Each Composite has a name, and some Composites are made up
-            of collections of child Composites. This method retrieves a child
-            Component from this Composite by searching for it by name. If more than
-            one Component shares the same name, it raises a ``ValueError``. If no
-            Components are found by the input name then ``None`` is returned.
 
         Parameters
         ----------
