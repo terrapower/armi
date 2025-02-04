@@ -2121,13 +2121,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(self.hexBlock.getNumPins(), 169)
 
     def test_block_dims(self):
-        """
-        Tests that the block class can provide basic dimensionality information about itself.
-
-        .. test:: Important block dimensions are retrievable.
-            :id: T_ARMI_BLOCK_DIMS
-            :tests: R_ARMI_BLOCK_DIMS
-        """
+        """Tests that the block class can provide basic dimensionality information about itself."""
         self.assertAlmostEqual(4316.582, self.hexBlock.getVolume(), 3)
         self.assertAlmostEqual(70.6, self.hexBlock.getPitch(), 1)
         self.assertAlmostEqual(4316.582, self.hexBlock.getMaxArea(), 3)

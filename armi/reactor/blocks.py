@@ -629,8 +629,8 @@ class Block(composites.Composite):
             a += myArea
         fullArea = a
 
-        # correct the fullHexArea by the symmetry factor
-        # this factor determines if the hex has been clipped by symmetry lines
+        # correct the fullHexArea by the symmetry factor this factor determines if the hex has been
+        # clipped by symmetry lines
         area = fullArea / self.getSymmetryFactor()
 
         self._setCache("area", area)
@@ -639,16 +639,6 @@ class Block(composites.Composite):
     def getVolume(self):
         """
         Return the volume of a block.
-
-        .. impl:: Volume of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS0
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Loops over all the components in the block, calling
-            :py:meth:`~armi.reactor.components.component.Component.getVolume` on
-            each and summing the result. The summed value is then divided by
-            the symmetry factor of the block to account for reduced volumes of
-            blocks in certain symmetric representations.
 
         Returns
         -------
@@ -1214,21 +1204,6 @@ class Block(composites.Composite):
     def getPitch(self, returnComp=False):
         """
         Return the center-to-center hex pitch of this block.
-
-        .. impl:: Pitch of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS1
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Uses the block's ``_pitchDefiningComponent`` to identify the component
-            in the block that defines the pitch. Then uses the
-            :py:meth:`~armi.reactor.components.component.Component.getPitchData`
-            method of that component to return the pitch for the block, accounting
-            for the component's current temperature.
-
-            The ``_pitchDefiningComponent`` attribute can be set by
-            :py:meth:`~armi.reactor.blocks.Block.setPitch`, but is typically
-            set via a calls to :py:meth:`~armi.reactor.blocks.Block._updatePitchComponent`
-            as components are added to the block with :py:meth:`~armi.reactor.blocks.Block.add`.
 
         Parameters
         ----------
@@ -1863,50 +1838,19 @@ class HexBlock(Block):
         return b
 
     def getMaxArea(self):
-        """
-        Compute the max area of this block if it was totally full.
-
-        .. impl:: Area of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS2
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method first retrieves the pitch of the hexagonal Block
-            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
-            area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
-
-        """
+        """Compute the max area of this block if it was totally full."""
         pitch = self.getPitch()
         if not pitch:
             return 0.0
         return hexagon.area(pitch)
 
     def getDuctIP(self):
-        """
-        Returns the duct IP dimension.
-
-        .. impl:: IP dimension is retrievable.
-            :id: I_ARMI_BLOCK_DIMS3
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method retrieves the duct Component and quieries
-            it's inner pitch directly. If the duct is missing or if there
-            are multiple duct Components, an error will be raised.
-        """
+        """Returns the duct IP dimension."""
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("ip")
 
     def getDuctOP(self):
-        """
-        Returns the duct OP dimension.
-
-        .. impl:: OP dimension is retrievable.
-            :id: I_ARMI_BLOCK_DIMS4
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method retrieves the duct Component and quieries
-            its outer pitch directly. If the duct is missing or if there
-            are multiple duct Components, an error will be raised.
-        """
+        """Returns the duct OP dimension."""
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
@@ -2140,18 +2084,6 @@ class HexBlock(Block):
         """
         Returns the distance in cm between the outer most pin and the duct in a block.
 
-        .. impl:: Pin to duct gap of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS5
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Requires that the outer most duct be Hexagonal and wire and clad Components
-            be present. The flat-to-flat distance between the radial exterior of opposing
-            pins in the outermost ring is computed by computing the distance between
-            pin centers (``getPinCenterFlatToFlat``) and adding the outer diameter of
-            the clad Component and the outer diameter of the wire Component twice. The
-            total margin between the inner pitch of the duct Component and the wire is then
-            computed. The pin to duct gap is then half this distance.
-
         Parameters
         ----------
         cold : boolean
@@ -2349,15 +2281,6 @@ class HexBlock(Block):
         Assumes that the pin pitch is defined entirely by contacting cladding tubes and wire wraps.
         Grid spacers not yet supported.
 
-        .. impl:: Pin pitch within block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS6
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This implementation requires that clad and wire Components are present.
-            If not, an error is raised. If present, the pin pitch is calculated
-            as the sum of the outer diameter of the clad and outer diameter of
-            the wire.
-
         Parameters
         ----------
         cold : boolean
@@ -2389,42 +2312,7 @@ class HexBlock(Block):
             )
 
     def getWettedPerimeter(self):
-        r"""Return the total wetted perimeter of the block in cm.
-
-        .. impl:: Wetted perimeter of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS7
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This implementation computes wetted perimeters for specific Components, as specified
-            by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
-            are supported. The latter supports both instances where the exterior is wetted
-            (e.g., clad, wire) as well as when the interior and exterior are wetted (hollow circle).
-
-            Hollow hexagons are calculated via,
-
-            .. math::
-
-                \frac{6 \times \text{ip}}{\sqrt{3}},
-
-            where :math:`\text{ip}` is the inner pitch of the hollow hexagon. Circular pin Components
-            where the exterior is wetted is calculated via,
-
-            .. math::
-
-                N \pi \left( \text{OD}_c + \text{OD}_w \right),
-
-            where :math:`N` is the total number of pins, :math:`\text{OD}_c` is the outer diameter
-            of the clad, and :math:`\text{OD}_w` is the outer diameter of the wire, respectively.
-            When both the interior and exterior are wetted, the wetted perimeter is calculated as
-
-            .. math::
-
-                \pi \left( \text{OD} + \text{ID} \right),
-
-            where :math:`\text{OD}` and :math:`\text{ID}` are the outer and inner diameters of the pin
-            Component, respectively.
-
-        """
+        """Return the total wetted perimeter of the block in cm."""
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
@@ -2507,15 +2395,7 @@ class HexBlock(Block):
         )
 
     def getFlowArea(self):
-        """Return the total flowing coolant area of the block in cm^2.
-
-        .. impl:: Flow area of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS8
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Retrieving the flow area requires that there be a single coolant Component.
-            If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
-        """
+        """Return the total flowing coolant area of the block in cm^2."""
         return self.getComponent(Flags.COOLANT, exact=True).getArea()
 
     def getHydraulicDiameter(self):
@@ -2526,19 +2406,6 @@ class HexBlock(Block):
         In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
         inside of the duct. The flow area is the inner area of the duct minus the area of the
         pins and the wire.
-
-        .. impl:: Hydraulic diameter of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS9
-            :implements: R_ARMI_BLOCK_DIMS
-
-            The hydraulic diamter is calculated via
-
-            .. math::
-
-                4\frac{A}{P},
-
-            where :math:`A` is the flow area (:need:`I_ARMI_BLOCK_DIMS8`) and :math:`P` is the
-            wetted perimeter (:need:`I_ARMI_BLOCK_DIMS7`).
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
