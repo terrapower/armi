@@ -295,8 +295,8 @@ class ArmiObject(metaclass=CompositeModelType):
     next step. As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters are accessible throughout the armi tree.
-        :id: I_ARMI_PARAM_PART
-        :implements: R_ARMI_PARAM_PART
+        :id: I_ARMI_PARAM_PART1
+        :implements: R_ARMI_PARAM
 
         An ARMI reactor model is composed of collections of ARMIObject objects. These
         objects are combined in a hierarchical manner. Each level of the composite tree

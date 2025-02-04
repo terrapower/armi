@@ -187,8 +187,8 @@ class HexReactorTests(ReactorTests):
         modify parameters at different levels.
 
         .. test:: Parameters are accessible throughout the armi tree.
-            :id: T_ARMI_PARAM_PART
-            :tests: R_ARMI_PARAM_PART
+            :id: T_ARMI_PARAM1
+            :tests: R_ARMI_PARAM
 
         .. test:: Ensure there is a setting for total core power.
             :id: T_ARMI_SETTINGS_POWER0

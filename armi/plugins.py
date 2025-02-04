@@ -200,7 +200,7 @@ class ArmiPlugin:
             of the reactor they want to calculate, track, and store to the database.
 
         .. impl:: Define an arbitrary physical parameter.
-            :id: I_ARMI_PARAM
+            :id: I_ARMI_PARAM0
             :implements: R_ARMI_PARAM
 
             Through this method, plugin developers can create new Parameters. A
@@ -215,9 +215,8 @@ class ArmiPlugin:
         Returns
         -------
         dict
-            Keys should be subclasses of ArmiObject, values being a
-            ParameterDefinitionCollection should be added to the key's parameter
-            definitions.
+            Keys should be subclasses of ArmiObject, values being a ParameterDefinitionCollection
+            should be added to the key's parameter definitions.
 
         Example
         -------
