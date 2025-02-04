@@ -885,23 +885,13 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
-        """This material has a no pseudo-density.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID0
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material has a no pseudo-density."""
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity()
         self.assertEqual(cur, 0.0)
 
     def test_density(self):
-        """This material has no density.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID1
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material has no density."""
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
@@ -909,23 +899,13 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
-        """This material does not expand linearly.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID2
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material does not expand linearly."""
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_propertyValidTemperature(self):
-        """This material has no valid temperatures.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID3
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material has no valid temperatures."""
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
