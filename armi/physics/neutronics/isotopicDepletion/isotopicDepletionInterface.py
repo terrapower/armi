@@ -29,29 +29,20 @@ def isDepletable(obj: composites.ArmiObject):
     """
     Return True if obj or any child is flagged as DEPLETABLE.
 
-    The DEPLETABLE flag is automatically set to true if any composition contains
-    nuclides that are in the active nuclides list, unless flags are specifically
-    set and DEPLETABLE is left out.
+    The DEPLETABLE flag is automatically set to True if any composition contains nuclides that are
+    in the active nuclides list, unless flags are specifically set and DEPLETABLE is left out.
 
-    This is often interpreted by depletion plugins as indicating which parts of the
-    problem to apply depletion to. Analysts may want to turn on and off depletion
-    in certain problems.
+    This is often interpreted by depletion plugins as indicating which parts of the problem to apply
+    depletion to. Analysts may want to turn on and off depletion in certain problems.
 
-    For example, sometimes they want the control rods to deplete
-    to figure out how often to replace them. But in conceptual design, they may want to just
-    leave them as they are as an approximation.
+    For example, sometimes they want the control rods to deplete to figure out how often to replace
+    them.
 
-    .. impl:: Determine if any component is depletable.
-        :id: I_ARMI_DEPL_DEPLETABLE
-        :implements: R_ARMI_DEPL_DEPLETABLE
-
-        Uses :py:meth:`~armi.reactor.composite.ArmiObject.hasFlags` or
-        :py:meth:`~armi.reactor.composite.ArmiObject.containsAtLeastOneChildWithFlags`
-        to determine if the "depletable" flag is in the ``obj``. If so, returns True.
-
-    .. warning:: The ``DEPLETABLE`` flag is automatically added to compositions that have
-        active nuclides. If you explicitly define any flags at all, you must also
-        manually include ``DEPLETABLE`` or else the objects will silently not deplete.
+    Warning
+    -------
+    The ``DEPLETABLE`` flag is automatically added to compositions that have active nuclides. If you
+    explicitly define any flags at all, you must also manually include ``DEPLETABLE`` or else the
+    objects will silently not deplete.
 
     Notes
     -----
