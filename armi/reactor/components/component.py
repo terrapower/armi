@@ -669,6 +669,20 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
+    def changeNDensByFactor(self, factor):
+        """
+        Change the number density of all nuclides within the object by a multiplicative factor.
+        Don't call `updateNumberDensities` to avoid a circular call stack.
+        """
+        for nuc, val in self.getNumberDensities().items():
+            self.p.numberDensities[nuc] = val * factor
+
+        if self.p.detailedNDens is not None:
+            self.p.detailedNDens *= factor
+        # Update pinNDens
+        if self.p.pinNDens is not None:
+            self.p.pinNDens *= factor
+
     def getNuclides(self):
         """
         Return nuclides in this component.
@@ -779,14 +793,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # prepare to change the densities with knowledge that dims could change due to
         # material thermal expansion dependence on composition
-        dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
-        try:
-            vol = self.getVolume()
-        except:
-            # either no parent to get height or parent's height is None
-            # which would be AttributeError and TypeError respectively, but other errors could be possible
-            vol = None
-            area = self.getArea()
+        if len(self.p.numberDensities) > 0:
+            dLLprev = (
+                self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+            )
+        else:
+            dLLprev = 0.0
 
         # change the densities
         self.p.numberDensities.update(numberDensities)
@@ -799,12 +811,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             # (since the density change was for the old volume and otherwise mass wouldn't be conserved)
 
             # enable recalculation of volume, otherwise it uses stored.
-            self.clearLinkedCache()
-            if vol is not None:
-                factor = vol / self.getVolume()
-            else:
-                factor = area / self.getArea()
+            factor = (1.0 + dLLprev) ** 2 / (1.0 + dLLnew) ** 2
             self.changeNDensByFactor(factor)
+            self.clearLinkedCache()
 
         # since we're calling update on the object the param points to, but not the param itself, we have to inform
         # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
