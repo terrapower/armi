@@ -351,6 +351,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx_gallery.gen_gallery",
     "sphinx_needs",  # needed for requirements tracking
+    "sphinxcontrib.test_reports",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
     "sphinx_simplepdf",
     "sphinxcontrib.apidoc",
@@ -614,8 +615,8 @@ needs_extra_links = [
     dict(option="implements", incoming="implementations", outgoing="requirements"),
 ]
 
+# TODO: JOHN Do I need or like these templates and layouts?
 needs_template_folder = os.path.join(STATIC_DIR, "needs_templates")
-
 needs_layouts = {
     "test_layout": {
         "grid": "simple",

@@ -33,6 +33,7 @@ jobs:
       - name: Make HTML Docs
         run: |
           pip install -e .[memprof,mpi,test,docs]
+          pytest --junit-xml=test_results.xml -n 4 armi
           cd doc
           git submodule init
           git submodule update

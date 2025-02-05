@@ -108,7 +108,9 @@ docs = [
     "sphinxcontrib-apidoc==0.3.0", # More easily document our API
     "sphinxext-opengraph==0.8.2", # Generates OpenGraph metadata to make good-looking cards on social media
     "sphinx-needs==2.1.0", # Requirements traceability matrices for QA
+    "sphinx-test-reports",
     "sphinxcontrib-plantuml==0.25", # UML support in sphinx-needs
+    "unittest-xml-reporting",
     "pandoc", # Must be in the path (to convert file formats)
     "ipykernel==6.25.1", # iPython kernel to run Jupyter notebooks
     "pylint==2.17.5", # Generates UML diagrams
