@@ -2434,10 +2434,18 @@ class HexBlock(Block):
         )
 
         # flags pertaining to circular pin components where the exterior of the circle is wetted
-        wettedPinComponentFlags = (Flags.CLAD, Flags.WIRE)
+        wettedPinComponentFlags = (
+            Flags.CLAD,
+            Flags.WIRE,
+            Flags.CLAD | Flags.DEPLETABLE,
+            Flags.WIRE | Flags.DEPLETABLE,
+        )
 
         # flags pertaining to components where both the interior and exterior are wetted
-        wettedHollowComponentFlags = (Flags.DUCT | Flags.INNER,)
+        wettedHollowComponentFlags = (
+            Flags.DUCT | Flags.INNER,
+            Flags.DUCT | Flags.INNER | Flags.DEPLETABLE,
+        )
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []
