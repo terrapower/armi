@@ -369,9 +369,18 @@ class Component(composites.Composite, metaclass=ComponentType):
         # `density` is 3D density
         # call getProperty to cache and improve speed
         density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.massFrac
+        )
+
+        # Sometimes the material thermal expansion depends on its parents composition (eg Pu frac) so
+        # setting number densities can sometimes change thermal expansion behavior.
+        # so call again so that the material has access to its parents comp when providing the reference initial density.
+        densityBasedOnParentComposition = self.material.getProperty(
+            "pseudoDensity", Tc=self.temperatureInC
+        )
+        self.p.numberDensities = densityTools.getNDensFromMasses(
+            densityBasedOnParentComposition, self.material.massFrac
         )
 
         # material needs to be expanded from the material's cold temp to hot,
@@ -715,12 +724,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             Number density to set in atoms/bn-cm (heterogeneous)
         """
-        self.p.numberDensities[nucName] = val
-        self.p.assigned = parameters.SINCE_ANYTHING
-        # necessary for syncMpiState
-        parameters.ALL_DEFINITIONS[
-            "numberDensities"
-        ].assigned = parameters.SINCE_ANYTHING
+        self.updateNumberDensities({nucName: val})
 
     def setNumberDensities(self, numberDensities):
         """
@@ -804,7 +808,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 factor = area / self.getArea()
             self.changeNDensByFactor(factor)
 
-        # since we're updating the object the param points to but not the param itself, we have to inform
+        # since we're calling update on the object the param points to, but not the param itself, we have to inform
         # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
         self.p.assigned = parameters.SINCE_ANYTHING
         self.p.paramDefs["numberDensities"].assigned = parameters.SINCE_ANYTHING
