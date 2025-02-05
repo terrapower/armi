@@ -369,9 +369,18 @@ class Component(composites.Composite, metaclass=ComponentType):
         # `density` is 3D density
         # call getProperty to cache and improve speed
         density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-
         self.p.numberDensities = densityTools.getNDensFromMasses(
             density, self.material.massFrac
+        )
+
+        # Sometimes the material thermal expansion depends on its parents composition (eg Pu frac) so
+        # setting number densities can sometimes change thermal expansion behavior.
+        # so call again so that the material has access to its parents comp when providing the reference initial density.
+        densityBasedOnParentComposition = self.material.getProperty(
+            "pseudoDensity", Tc=self.temperatureInC
+        )
+        self.p.numberDensities = densityTools.getNDensFromMasses(
+            densityBasedOnParentComposition, self.material.massFrac
         )
 
         # material needs to be expanded from the material's cold temp to hot,
@@ -694,7 +703,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLLprev = prevMaterial.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
         expansionRatio = (1.0 + dLLnew) / (1.0 + dLLprev)
-        f = 1.0 / expansionRatio ** 2
+        f = 1.0 / expansionRatio**2
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
@@ -753,12 +762,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             Number density to set in atoms/bn-cm (heterogeneous)
         """
-        self.p.numberDensities[nucName] = val
-        self.p.assigned = parameters.SINCE_ANYTHING
-        # necessary for syncMpiState
-        parameters.ALL_DEFINITIONS[
-            "numberDensities"
-        ].assigned = parameters.SINCE_ANYTHING
+        self.updateNumberDensities({nucName: val})
 
     def setNumberDensities(self, numberDensities):
         """
@@ -777,12 +781,18 @@ class Component(composites.Composite, metaclass=ComponentType):
         numberDensities : dict
             nucName: ndens pairs.
 
-        Notes
-        -----
-        We don't just call setNumberDensity for each nuclide because we don't want to call ``getVolumeFractions``
-        for each nuclide (it's inefficient).
+        Note that sometimes volume/dimensions can change due to the number density change when the material thermal
+        expansion depends on the component's composition (eg its plutonium fraction). In this case, changing the
+        density will implicitly change the area/volume. Since it its very difficult to predict the new dims ahead of time,
+        and perturbation/depletion calculations are almost exclusively done assuming constant volume,
+        the densities sent are automatically perturbed to conserve mass with the original dimensions.
+        That is, the components densities are not exactly as passed, but whatever they would need to be to preserve volume
+        integrated number densities (moles) from the pre-perturbed components volume/dims.
+        Note this has no effect if the material thermal expansion has no dependence on component composition fracs.
+        If this is not desired, `self.p.numberDensities` can be set directly.
         """
-        self.p.numberDensities = numberDensities
+        self.p.numberDensities = {}  # clear things not passed
+        self.updateNumberDensities(numberDensities)
 
     def updateNumberDensities(self, numberDensities):
         """
@@ -793,9 +803,48 @@ class Component(composites.Composite, metaclass=ComponentType):
         numberDensities : dict
             nucName: ndens pairs.
 
+        Notes
+        -----
+        Note that sometimes volume/dimensions can change due to the number density change when the material thermal
+        expansion depends on the component's composition (eg its plutonium fraction). In this case, changing the
+        density will implicitly change the area/volume. Since it its very difficult to predict the new dims ahead of time,
+        and perturbation/depletion calculations are almost exclusively done assuming constant volume,
+        the densities sent are automatically perturbed to conserve mass with the original dimensions.
+        That is, the components densities are not exactly as passed, but whatever they would need to be to preserve volume
+        integrated number densities (moles) from the pre-perturbed components volume/dims.
+        Note this has no effect if the material thermal expansion has no dependence on component composition fracs.
+        If this is not desired, `self.p.numberDensities` can be set directly.
         """
+        # prepare to change the densities with knowledge that dims could change due to
+        # material thermal expansion dependence on composition
+        dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        try:
+            vol = self.getVolume()
+        except:
+            # either no parent to get height or parent's height is None
+            # which would be AttributeError and TypeError respectively, but other errors could be possible
+            vol = None
+            area = self.getArea()
+
+        # change the densities
         self.p.numberDensities.update(numberDensities)
-        # since we're updating the object the param points to but not the param itself, we have to inform
+
+        # check if thermal expansion changed
+        dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
+        if dLLprev != dLLnew:
+            # the thermal expansion changed so the volume change is happening at same time as
+            # density change was requested. Attempt to make mass consistent with old dims
+            # (since the density change was for the old volume and otherwise mass wouldn't be conserved)
+
+            # enable recalculation of volume, otherwise it uses stored.
+            self.clearLinkedCache()
+            if vol is not None:
+                factor = vol / self.getVolume()
+            else:
+                factor = area / self.getArea()
+            self.changeNDensByFactor(factor)
+
+        # since we're calling update on the object the param points to, but not the param itself, we have to inform
         # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
         self.p.assigned = parameters.SINCE_ANYTHING
         self.p.paramDefs["numberDensities"].assigned = parameters.SINCE_ANYTHING
