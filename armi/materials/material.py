@@ -757,6 +757,12 @@ class Material:
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
+    def __init_subclass__(cls):
+        # Undo the parent-aware density wrapping. Fluids do not expand in the same way solids, so
+        # Fluid.density(T) is correct. This does not hold for solids because they thermally expand.
+        if hasattr(cls.density, "__wrapped__"):
+            cls.density = cls.density.__wrapped__
+
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from one temperature (in
         Celcius) to a new temperature.
