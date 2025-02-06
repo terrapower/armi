@@ -758,11 +758,8 @@ class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
     def __init_subclass__(cls):
-        # Undo the parent-aware density wrapping
-        # Justification: fluids do not expand in the same way solids expand so
-        # fluid.density(T) is an appropriate representation of the density of
-        # the fluid. This does not hold for solids because of the thermal expansion
-        # mechanics imposed by the rest of the framework
+        # Undo the parent-aware density wrapping. Fluids do not expand in the same way solids, so
+        # Fluid.density(T) is correct. This does not hold for solids because they thermalaly expand.
         if hasattr(cls.density, "__wrapped__"):
             cls.density = cls.density.__wrapped__
 
