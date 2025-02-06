@@ -49,6 +49,18 @@ from armi.reactor.components import (
     materials,
 )
 from armi.testing import loadTestReactor
+from armi.utils.units import getTc
+
+
+class CompositionDependentExpander(materials.Material):
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Dummy material that has a composition-dependent thermal expansion coefficient
+        """
+        alpha = 1.0e-5
+        beta = 1.0e-5 * self.parent.getMassFrac("C")
+        refTemp = 20
+        return (alpha + beta) * getTc(Tc=Tc, Tk=Tk) * (Tc - refTemp)
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -222,6 +234,26 @@ class TestComponent(TestGeneralComponents):
         component.setNumberDensities({"C": 1, "MN": 0.58})
         self.assertEqual(component.getNumberDensity("C"), 1.0)
         self.assertEqual(component.getNumberDensity("MN"), 0.58)
+
+    def test_setNumberDensitiesWithExpansion(self):
+        expansionMaterial = CompositionDependentExpander()
+        expansionMaterial.parent = self.component
+        self.component.material = expansionMaterial
+        component = self.component
+        component.temperatureInC = 50
+        self.assertAlmostEqual(component.getNumberDensity("MN"), 0.000426, 6)
+        dLLprev = (
+            component.material.linearExpansionPercent(Tc=component.temperatureInC)
+            / 100.0
+        )
+        component.setNumberDensities({"C": 1, "MN": 0.58})
+        dLLnew = (
+            component.material.linearExpansionPercent(Tc=component.temperatureInC)
+            / 100.0
+        )
+        expansionFactor = (1.0 + dLLprev) ** 2 / (1.0 + dLLnew) ** 2
+        self.assertEqual(component.getNumberDensity("C"), 1.0 * expansionFactor)
+        self.assertEqual(component.getNumberDensity("MN"), 0.58 * expansionFactor)
 
     def test_solid_material(self):
         """Determine if material is solid.

@@ -758,10 +758,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         numberDensities : dict
             nucName: ndens pairs.
         """
-        self.p.numberDensities = {}  # clear things not passed
-        self.updateNumberDensities(numberDensities)
+        self.updateNumberDensities(numberDensities, wipe=True)
 
-    def updateNumberDensities(self, numberDensities):
+    def updateNumberDensities(self, numberDensities, wipe=False):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
 
@@ -769,6 +768,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         ----------
         numberDensities : dict
             nucName: ndens pairs.
+        wipe : bool, optional
+            Controls whether the old number densities are wiped. Any nuclide densities not
+            provided in numberDensities will be effectively set to 0.0.
 
         Notes
         -----
@@ -788,15 +790,19 @@ class Component(composites.Composite, metaclass=ComponentType):
             dLLprev = (
                 self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             )
+            materialExpansion = True
         else:
             dLLprev = 0.0
+            materialExpansion = False
 
         # change the densities
+        if wipe:
+            self.p.numberDensities = {}  # clear things not passed
         self.p.numberDensities.update(numberDensities)
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
-        if dLLprev != dLLnew:
+        if dLLprev != dLLnew and materialExpansion:
             # the thermal expansion changed so the volume change is happening at same time as
             # density change was requested. Attempt to make mass consistent with old dims
             # (since the density change was for the old volume and otherwise mass wouldn't be conserved)
