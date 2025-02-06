@@ -33,7 +33,7 @@ jobs:
       - name: Make HTML Docs
         run: |
           pip install -e .[memprof,mpi,test,docs]
-          python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo()) > system_info.log
+          python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
           date > python_details.log
           python --version >> python_details.log
           pip freeze >> python_details.log
