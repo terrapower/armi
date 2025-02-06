@@ -40,8 +40,6 @@ from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
 
-# from sphinx_needs.api import add_dynamic_function  # TODO: JOHN
-
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
@@ -67,66 +65,6 @@ STATIC_DIR = ".static"
 _TUTORIAL_FILES = [
     fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName
 ]
-TEST_RESULTS = []
-
-
-def getTestResult(app, need, needs):
-    """Dynamic function used by sphinx-needs to gather the result of a test tag."""
-    if not need["signature"]:
-        return "none"
-
-    # Get all the tests that match the method signature
-    results = [
-        test_case["result"]
-        for test_case in TEST_RESULTS
-        if need["signature"] == test_case["method"]
-    ]
-    # Logic is as follows if there are multiple matches:
-    #   - If one is a "failure", then return "failure"
-    #   - If all are "skipped", then return "skipped"
-    #   - Otherwise, return "passed"
-    if results:
-        if "failure" in results:
-            return "failure"
-        elif "passed" in results:
-            return "passed"
-        else:
-            return "skipped"
-
-    # Things get a little more complicated when the test tag has a class-level signature.
-    # Basically we have to determine if all the methods in the class passed or if any of skipped/failed.
-    # First, gather all the results related to the class signature from the tag and categorize by method
-    results = {}
-    for test_case in TEST_RESULTS:
-        if need["signature"] == test_case["class"]:
-            if test_case["method"] in results:
-                results[test_case["method"]].append(test_case["result"])
-            else:
-                results[test_case["method"]] = [test_case["result"]]
-
-    # If we haven't found the test by now, we never will
-    if not results:
-        return "none"
-
-    # Apply logic from before for each method in the class
-    for m, r in results.items():
-        if "failure" in r:
-            results[m] = "failure"
-        elif "passed" in r:
-            results[m] = "passed"
-        else:
-            results[m] = "skipped"
-
-    # Now for the class logic
-    #  - If any of the methods failed, return "failure"
-    #  - If any of the methods skipped, return "skipped"
-    #  - If all of the methods passed, return "passed"
-    if "failure" in results.values():
-        return "failure"
-    elif "skipped" in results.values():
-        return "skipped"
-    else:
-        return "passed"
 
 
 class PatchedPythonDomain(PythonDomain):
@@ -287,31 +225,12 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     return name.startswith("_") or name in excludes
 
 
-def getTestAcceptanceCriteria(app, need, needs):
-    # Return title if there is not just one requirement or the linked requirement doesn't exist
-    if len(need.get("tests", [])) != 1 or need["tests"][0] not in needs:
-        ac = need["title"].strip()
-
-    req = needs[need["tests"][0]]
-    # Return title if there is not just one test in the requirement
-    if len(req.get("tests_back", [])) != 1:
-        ac = need["title"].strip()
-    else:
-        ac = req["acceptance_criteria"].strip()
-
-    # For some reason sphinx is adding another period at the end of this, so we'll just remove it
-    return ac[:-1] if ac[-1] == "." else ac
-
-
 def setup(app):
     """Method to make `make html` generate api documentation."""
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
-    # add_dynamic_function(app, getTestAcceptanceCriteria, "get_test_acceptance_criteria")  # TODO: JOHN
-    # add_dynamic_function(app, getTestResult, "get_test_result")
-    # add_dynamic_function(app, getTestAcceptanceCriteria, "get_test_acceptance_criteria")
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
@@ -644,20 +563,6 @@ needs_layouts = {
         },
     },
 }
-
-# TODO: JOHN
-"""
-needs_global_options = {
-    # Defaults for test tags
-    "acceptance_criteria": (
-        ":ndf:`get_test_acceptance_criteria()`.",
-        "type=='test'",
-    ),
-    "template": ("test", "type=='test'"),
-    "layout": ("test_layout", "type=='test'"),
-    "result": ("[[get_test_result()]]", "type=='test'"),
-}
-"""
 
 
 # Formats need roles (reference to a req in text) as just the req ID

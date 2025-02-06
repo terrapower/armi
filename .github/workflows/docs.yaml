@@ -33,7 +33,11 @@ jobs:
       - name: Make HTML Docs
         run: |
           pip install -e .[memprof,mpi,test,docs]
-          pytest --junit-xml=test_results.xml -n 4 armi
+          python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo()) > system_info.log
+          date > python_details.log
+          python --version >> python_details.log
+          pip freeze >> python_details.log
+          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
           cd doc
           git submodule init
           git submodule update
