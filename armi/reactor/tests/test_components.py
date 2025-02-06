@@ -53,9 +53,18 @@ from armi.utils.units import getTc
 
 
 class CompositionDependentExpander(materials.Material):
+    """Dummy material that has a composition-dependent thermal expansion coefficient."""
+
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
-        Dummy material that has a composition-dependent thermal expansion coefficient
+        Composition-dependent linear expansion coefficient.
+
+        Parameters
+        ----------
+        Tk : float, optional
+            Temperature in Kelvin.
+        Tc : float, optional
+            Temperature in Celsius.
         """
         alpha = 1.0e-5
         beta = 1.0e-5 * self.parent.getMassFrac("C")
