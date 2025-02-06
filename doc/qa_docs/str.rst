@@ -181,7 +181,7 @@ Here are some quick metrics for the requirement tests in ARMI:
 
 * :need_count:`type=='req' and status=='accepted'` Accepted Requirements in ARMI
 
-  * :need_count:`type=='req' and status=='accepted' and (len(tests_back)>0` Accepted Requirements with tests
+  * :need_count:`type=='req' and status=='accepted' and len(tests_back)>0` Accepted Requirements with tests
   * :need_count:`type=='test' and id.startswith('T_ARMI')` tests linked to Requirements
 
 And here is a full listing of all the tests in ARMI, that are tied to requirements:
