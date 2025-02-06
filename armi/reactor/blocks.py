@@ -2437,7 +2437,7 @@ class HexBlock(Block):
         wettedPinComponentFlags = (Flags.CLAD, Flags.WIRE)
 
         # flags pertaining to components where both the interior and exterior are wetted
-        wettedHollowComponentFlags = Flags.DUCT | Flags.INNER
+        wettedHollowComponentFlags = (Flags.DUCT | Flags.INNER,)
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []
