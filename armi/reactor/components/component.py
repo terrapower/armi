@@ -373,9 +373,10 @@ class Component(composites.Composite, metaclass=ComponentType):
             density, self.material.massFrac
         )
 
-        # Sometimes the material thermal expansion depends on its parents composition (eg Pu frac) so
-        # setting number densities can sometimes change thermal expansion behavior.
-        # so call again so that the material has access to its parents comp when providing the reference initial density.
+        # Sometimes the material thermal expansion depends on its parent's composition (e.g. Pu frac)
+        # so setting number densities can sometimes change thermal expansion behavior.
+        # Call again so that the material has access to its parent's comp when providing the reference
+        # initial density.
         densityBasedOnParentComposition = self.material.getProperty(
             "pseudoDensity", Tc=self.temperatureInC
         )
@@ -756,16 +757,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         ----------
         numberDensities : dict
             nucName: ndens pairs.
-
-        Note that sometimes volume/dimensions can change due to the number density change when the material thermal
-        expansion depends on the component's composition (eg its plutonium fraction). In this case, changing the
-        density will implicitly change the area/volume. Since it its very difficult to predict the new dims ahead of time,
-        and perturbation/depletion calculations are almost exclusively done assuming constant volume,
-        the densities sent are automatically perturbed to conserve mass with the original dimensions.
-        That is, the components densities are not exactly as passed, but whatever they would need to be to preserve volume
-        integrated number densities (moles) from the pre-perturbed components volume/dims.
-        Note this has no effect if the material thermal expansion has no dependence on component composition fracs.
-        If this is not desired, `self.p.numberDensities` can be set directly.
         """
         self.p.numberDensities = {}  # clear things not passed
         self.updateNumberDensities(numberDensities)
@@ -781,14 +772,14 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Note that sometimes volume/dimensions can change due to the number density change when the material thermal
-        expansion depends on the component's composition (eg its plutonium fraction). In this case, changing the
-        density will implicitly change the area/volume. Since it its very difficult to predict the new dims ahead of time,
-        and perturbation/depletion calculations are almost exclusively done assuming constant volume,
-        the densities sent are automatically perturbed to conserve mass with the original dimensions.
-        That is, the components densities are not exactly as passed, but whatever they would need to be to preserve volume
-        integrated number densities (moles) from the pre-perturbed components volume/dims.
-        Note this has no effect if the material thermal expansion has no dependence on component composition fracs.
+        Sometimes volume/dimensions can change due to the number density change when the material thermal
+        expansion depends on the component's composition (e.g. its plutonium fraction). In this case, changing the
+        density will implicitly change the area/volume. Since it is very difficult to predict the new dimensions
+        ahead of time, and perturbation/depletion calculations are almost exclusively done assuming constant volume,
+        the densities sent are automatically adjusted to conserve mass with the original dimensions. That is, the
+        component's densities are not exactly as passed, but whatever they would need to be to preserve volume
+        integrated number densities (moles) from the pre-perturbed component's volume/dimensions.
+        Note this has no effect if the material thermal expansion has no dependence on component composition.
         If this is not desired, `self.p.numberDensities` can be set directly.
         """
         # prepare to change the densities with knowledge that dims could change due to
