@@ -29,6 +29,7 @@ Bug Fixes
 Quality Work
 ------------
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
+#. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
 #. TBD
 
 
