@@ -27,7 +27,7 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import custom, material, void
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites, flags, grids, parameters
+from armi.reactor import composites, flags, grids
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -796,6 +796,14 @@ class Component(composites.Composite, metaclass=ComponentType):
             dLLprev = 0.0
             materialExpansion = False
 
+        try:
+            vol = self.getVolume()
+        except:
+            # either no parent to get height or parent's height is None
+            # which would be AttributeError and TypeError respectively, but other errors could be possible
+            vol = None
+            area = self.getArea()
+
         # change the densities
         if wipe:
             self.p.numberDensities = {}  # clear things not passed
@@ -808,15 +816,12 @@ class Component(composites.Composite, metaclass=ComponentType):
             # density change was requested. Attempt to make mass consistent with old dims (since the
             # density change was for the old volume and otherwise mass wouldn't be conserved).
 
-            # enable recalculation of volume, otherwise it uses stored
-            factor = (1.0 + dLLprev) ** 2 / (1.0 + dLLnew) ** 2
+            self.clearLinkedCache()  # enable recalculation of volume, otherwise it uses cached
+            if vol is not None:
+                factor = vol / self.getVolume()
+            else:
+                factor = area / self.getArea()
             self.changeNDensByFactor(factor)
-            self.clearLinkedCache()
-
-        # since we're calling update on the object the param points to, but not the param itself, we have to inform
-        # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
-        self.p.assigned = parameters.SINCE_ANYTHING
-        self.p.paramDefs["numberDensities"].assigned = parameters.SINCE_ANYTHING
 
     def getEnrichment(self):
         """Get the mass enrichment of this component, as defined by the material."""
