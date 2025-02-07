@@ -113,8 +113,8 @@ class TestDatabase(unittest.TestCase):
         """Load a reactor at different time steps, from the database.
 
         .. test:: Load the reactor from the database.
-            :id: T_ARMI_DB_R_LOAD
-            :tests: R_ARMI_DB_R_LOAD
+            :id: T_ARMI_DB_TIME1
+            :tests: R_ARMI_DB_TIME
         """
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
@@ -301,7 +301,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         """Test writing to the database.
 
         .. test:: Write a single time step of data to the database.
-            :id: T_ARMI_DB_TIME
+            :id: T_ARMI_DB_TIME0
             :tests: R_ARMI_DB_TIME
         """
         self.r.p.cycle = 0
