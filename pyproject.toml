@@ -99,7 +99,7 @@ docs = [
     "ipykernel", # iPython kernel to run Jupyter notebooks
     "Jinja2", # Used in numpydoc and nbconvert
     "nbsphinx", # Parses Jupyter notebooks
-    "nbsphinx-link==1.3.0", # Adds Jupyter NBs to Sphinx source root
+    "nbsphinx-link", # Adds Jupyter NBs to Sphinx source root
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
     "setuptools",  # needed for conf.py tooling
