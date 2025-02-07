@@ -251,23 +251,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        """Return the parameter value.
-
-        .. impl:: Return k-eff or assembly-wise power distribution for coupled interactions.
-            :id: I_ARMI_FLUX_COUPLING_VALUE
-            :implements: R_ARMI_FLUX_COUPLING_VALUE
-
-            This method either returns the k-eff or assembly-wise power
-            distribution. If the :py:class:`coupler
-            <armi.interfaces.TightCoupler>` ``parameter`` member is ``"keff"``,
-            then this method returns the computed k-eff from the global flux
-            evaluation. If the ``parameter`` value is ``"power"``, then it
-            returns a list of power distributions in each assembly. The assembly
-            power distributions are lists of values representing the block
-            powers that are normalized to unity based on the assembly total
-            power. If the value is neither ``"keff"`` or ``"power"``, then this
-            method returns ``None``.
-        """
+        """Return the parameter value."""
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
         if self.coupler.parameter == "power":

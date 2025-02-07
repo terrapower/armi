@@ -724,8 +724,8 @@ class Database:
         is read from the database.
 
         .. impl:: Users can load a reactor from a DB.
-            :id: I_ARMI_DB_R_LOAD
-            :implements: R_ARMI_DB_R_LOAD
+            :id: I_ARMI_DB_TIME1
+            :implements: R_ARMI_DB_TIME
 
             This method creates a ``Reactor`` object by reading the reactor state out
             of an ARMI database file. This is done by passing in mandatory arguements
@@ -733,8 +733,7 @@ class Database:
             (That is, the cycle and node numbers.) Users can either pass the settings
             and blueprints directly into this method, or it will attempt to read them
             from the database file. The primary work done here is to read the hierarchy
-            of reactor objects from the data file, then reconstruct them in the correct
-            order.
+            of reactor objects from the data file, then reconstruct them in the correct order.
 
         Parameters
         ----------

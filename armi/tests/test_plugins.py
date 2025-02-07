@@ -131,12 +131,7 @@ class TestPluginRegistration(unittest.TestCase):
         self.assertIs(second, SillyAxialExpansionChanger)
 
     def test_beforeReactorConstructionHook(self):
-        """Test that plugin hook successfully injects code before reactor initialization.
-
-        .. test:: Capture code in the beforeReactorConstruction hook from reactor construction being carried out.
-            :id: T_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
-            :tests: R_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
-        """
+        """Test that plugin hook successfully injects code before reactor initialization."""
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
         o = loadTestReactor(

@@ -82,17 +82,7 @@ CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
-    """Standard function to define settings; for neutronics.
-
-    .. impl:: Users to select if gamma cross sections are generated.
-        :id: I_ARMI_GAMMA_XS
-        :implements: R_ARMI_GAMMA_XS
-
-        A single boolean setting can be used to turn on/off the calculation of gamma
-        cross sections. This is implemented with the usual boolean ``Setting`` logic.
-        The goal here is performance; save the compute time if the analyst doesn't need
-        those cross sections.
-    """
+    """Standard function to define settings; for neutronics."""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
