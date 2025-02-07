@@ -90,13 +90,12 @@ test = [
     "ruff==0.5.1", # Linting and code formatting (version-pinned)
 ]
 docs = [
-#######################################################################
-# These are most specified that usual, because Sphinx docs seem to be
-# quite fragile.
-#
-# We are only building our docs with Python 3.13.
-#######################################################################
-    "docutils==0.21.2", # Needed by sphinx-rtd-them
+######################################################################################
+# These are most specified that usual, because Sphinx docs seem to be quite fragile. #
+#                                                                                    #
+# We are only building our docs with Python 3.13.                                    #
+######################################################################################
+    "docutils", # Needed by sphinx-rtd-them
     "ipykernel", # iPython kernel to run Jupyter notebooks
     "Jinja2", # Used in numpydoc and nbconvert
     "nbsphinx", # Parses Jupyter notebooks
@@ -106,16 +105,16 @@ docs = [
     "pylint", # Generates UML diagrams
     "setuptools",  # needed for conf.py tooling
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
-    "sphinx-needs==4.1.0", # Requirements traceability matrices for QA
+    "sphinx-needs", # Requirements traceability matrices for QA
     "sphinx-rtd-theme==3.0.2", # Read-The-Docs theme for Sphinx
-    "sphinx-simplepdf==1.6.0", # Used to make PDF versions of the docs
-    "sphinx-test-reports",
+    "sphinx-simplepdf", # Used to make PDF versions of the docs
+    "sphinx-test-reports", # sphinx-needs test reports in the STR
     "Sphinx==8.1.3", # central library used to build our docs
     "sphinxcontrib-apidoc==0.5.0", # More easily document our API
     "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
     "sphinxcontrib-plantuml==0.30", # UML support in sphinx-needs
-    "sphinxext-opengraph==0.8.2", # Generates OpenGraph metadata to make cards for social media
-    "unittest-xml-reporting",
+    "sphinxext-opengraph", # Generates OpenGraph metadata to make cards for social media
+    "unittest-xml-reporting", # Allows us to generate junit XML test reports
 ]
 
 [project.scripts]
@@ -132,8 +131,8 @@ find = {}
 # This is the exact version of Ruff we use.
 required-version = "0.5.1"
 
-# Assume Python 3.9
-target-version = "py39"
+# Assume Python 3.13
+target-version = "py313"
 
 # Setting line-length to 120 (though blacks default is 88)
 line-length = 120
