@@ -648,13 +648,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertEqual(newSettings[testSetting], fakeShuffle)
 
     def test_failOnDuplicateSetting(self):
-        """
-        That that if a plugin attempts to add a duplicate setting, it raises an error.
-
-        .. test:: Plugins cannot register duplicate settings.
-            :id: T_ARMI_SETTINGS_UNIQUE
-            :tests: R_ARMI_SETTINGS_UNIQUE
-        """
+        """That that if a plugin attempts to add a duplicate setting, it raises an error."""
         # register the new Plugin
         app = getApp()
         app.pluginManager.register(TestPluginWithDuplicateSetting)
