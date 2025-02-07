@@ -373,10 +373,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             density, self.material.massFrac
         )
 
-        # Sometimes the material thermal expansion depends on its parent's composition (e.g. Pu frac)
-        # so setting number densities can sometimes change thermal expansion behavior.
-        # Call again so that the material has access to its parent's comp when providing the reference
-        # initial density.
+        # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
+        # setting number densities can sometimes change thermal expansion behavior. Call again so
+        # the material has access to its parent's comp when providing the reference initial density.
         densityBasedOnParentComposition = self.material.getProperty(
             "pseudoDensity", Tc=self.temperatureInC
         )
@@ -774,15 +773,17 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Sometimes volume/dimensions can change due to the number density change when the material thermal
-        expansion depends on the component's composition (e.g. its plutonium fraction). In this case, changing the
-        density will implicitly change the area/volume. Since it is very difficult to predict the new dimensions
-        ahead of time, and perturbation/depletion calculations are almost exclusively done assuming constant volume,
-        the densities sent are automatically adjusted to conserve mass with the original dimensions. That is, the
-        component's densities are not exactly as passed, but whatever they would need to be to preserve volume
-        integrated number densities (moles) from the pre-perturbed component's volume/dimensions.
-        Note this has no effect if the material thermal expansion has no dependence on component composition.
-        If this is not desired, `self.p.numberDensities` can be set directly.
+        Sometimes volume/dimensions change due to number density change when the material thermal
+        expansion depends on the component's composition (e.g. its plutonium fraction). In this
+        case, changing the density will implicitly change the area/volume. Since it is difficult to
+        predict the new dimensions, and perturbation/depletion calculations almost exclusively
+        assume constant volume, the densities sent are automatically adjusted to conserve mass with
+        the original dimensions. That is, the component's densities are not exactly as passed, but
+        whatever they would need to be to preserve volume integrated number densities (moles) from
+        the pre-perturbed component's volume/dimensions.
+
+        This has no effect if the material thermal expansion has no dependence on component
+        composition. If this is not desired, `self.p.numberDensities` can be set directly.
         """
         # prepare to change the densities with knowledge that dims could change due to
         # material thermal expansion dependence on composition
@@ -804,10 +805,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
         if dLLprev != dLLnew and materialExpansion:
             # the thermal expansion changed so the volume change is happening at same time as
-            # density change was requested. Attempt to make mass consistent with old dims
-            # (since the density change was for the old volume and otherwise mass wouldn't be conserved)
+            # density change was requested. Attempt to make mass consistent with old dims (since the
+            # density change was for the old volume and otherwise mass wouldn't be conserved).
 
-            # enable recalculation of volume, otherwise it uses stored.
+            # enable recalculation of volume, otherwise it uses stored
             factor = (1.0 + dLLprev) ** 2 / (1.0 + dLLnew) ** 2
             self.changeNDensByFactor(factor)
             self.clearLinkedCache()
