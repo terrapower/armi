@@ -235,7 +235,7 @@ This section includes the resulting test record for each test which together wit
 :numref:`Section %s <ref_armi_test_env>` satisfies the criteria necessary for the creation of the
 test record defined in :numref:`Section %s <ref_armi_record_criteria>`.
 
-.. test-results:: ../../test_results.xml
+.. test-results:: ../test_results.xml
 
 
 Appendix A Pytest Verbose Output 
