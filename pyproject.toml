@@ -95,7 +95,7 @@ docs = [
 #                                                                                    #
 # We are only building our docs with Python 3.13.                                    #
 ######################################################################################
-    "docutils", # Needed by sphinx-rtd-them
+    "docutils==0.21.2", # Needed by sphinx-rtd-them
     "ipykernel", # iPython kernel to run Jupyter notebooks
     "Jinja2", # Used in numpydoc and nbconvert
     "nbsphinx", # Parses Jupyter notebooks

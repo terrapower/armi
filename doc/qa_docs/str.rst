@@ -211,12 +211,12 @@ System Information
 The logged operating system and processor information proves what environment the software was
 tested on:
 
-.. literalinclude:: ../system_info.log
+.. literalinclude:: ../../system_info.log
 
 Python Version and Packages
 +++++++++++++++++++++++++++
 
-.. literalinclude:: ../python_details.log
+.. literalinclude:: ../../python_details.log
 
 .. _ref_armi_software_date:
 
@@ -225,7 +225,7 @@ Software Tested and Date
 
 The software tested and date of testing are below: 
 
-.. literalinclude:: ../python_details.log
+.. literalinclude:: ../../python_details.log
    :lines: 1-2
 
 Record of Test Cases
@@ -235,7 +235,7 @@ This section includes the resulting test record for each test which together wit
 :numref:`Section %s <ref_armi_test_env>` satisfies the criteria necessary for the creation of the
 test record defined in :numref:`Section %s <ref_armi_record_criteria>`.
 
-.. test-results:: ../test_results.xml
+.. test-results:: ../../test_results.xml
 
 
 Appendix A Pytest Verbose Output 
@@ -243,4 +243,4 @@ Appendix A Pytest Verbose Output
 
 Below is the verbose output of the pytest run for armi.
 
-.. literalinclude:: ../pytest_verbose.log
+.. literalinclude:: ../../pytest_verbose.log
