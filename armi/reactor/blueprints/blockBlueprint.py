@@ -140,6 +140,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
         self._checkByComponentMaterialInput(materialInput)
 
+        allLatticeIds = set()
         for componentDesign in self:
             filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
@@ -187,6 +188,7 @@ class BlockBlueprint(yamlize.KeyedList):
                 idsInGrid = list(gridDesign.gridContents.values())
                 if componentDesign.latticeIDs:
                     for latticeID in componentDesign.latticeIDs:
+                        allLatticeIds.add(str(latticeID))
                         # the user has given this component latticeIDs. check that
                         # each of the ids appears in the grid, otherwise
                         # their blueprints are probably wrong
@@ -196,6 +198,16 @@ class BlockBlueprint(yamlize.KeyedList):
                                 "associated block grid. "
                                 "Check that the component's latticeIDs align with the block's grid."
                             )
+
+        # for every id in grid, confirm that at least one component had it
+        if gridDesign:
+            idsInGrid = list(gridDesign.gridContents.values())
+            for idInGrid in idsInGrid:
+                if str(idInGrid) not in allLatticeIds:
+                    raise ValueError(
+                        f"ID {idInGrid} in grid {gridDesign.name} is not in any components of block {self.name}. "
+                        "All IDs in the grid must appear in at least one component."
+                    )
 
         # check that the block level mat mods use valid options in the same way
         # as we did for the by-component mods above
