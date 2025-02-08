@@ -1360,7 +1360,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                         self.listOfVolIntegratedParamsToScale,
                         _,
                     ) = _generateListOfParamsToScale(
-                        self._sourceReactor, paramsToScaleSubset=[]
+                        self._sourceReactor.core, paramsToScaleSubset=[]
                     )
 
                 for b in a:
@@ -1516,6 +1516,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         # Don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh case that has edge
         # assems.
         edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
+
         for a in edgeAssemblies:
             runLog.debug(
                 "Removing edge assembly {} from {} from the reactor without discharging".format(
@@ -1538,7 +1539,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         self.reset()
 
     @staticmethod
-    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
+    def scaleParamsRelatedToSymmetry(core, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges.
 
@@ -1555,11 +1556,11 @@ class EdgeAssemblyChanger(GeometryChanger):
             "Scaling edge-assembly parameters to account for full hexes instead of two halves"
         )
         completeListOfParamsToScale = _generateListOfParamsToScale(
-            reactor, paramsToScaleSubset
+            core, paramsToScaleSubset
         )
         symmetricAssems = (
-            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
-            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
+            core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
+            core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
         )
         if not all(symmetricAssems):
             runLog.extra("No edge-assemblies found to scale parameters for.")
@@ -1569,15 +1570,15 @@ class EdgeAssemblyChanger(GeometryChanger):
                 _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale)
 
 
-def _generateListOfParamsToScale(r, paramsToScaleSubset):
+def _generateListOfParamsToScale(core, paramsToScaleSubset):
     fluxParamsToScale = (
-        r.core.getFirstBlock()
+        core.getFirstBlock()
         .p.paramDefs.inCategory(Category.fluxQuantities)
         .inCategory(Category.multiGroupQuantities)
         .names
     )
     listOfVolumeIntegratedParamsToScale = (
-        r.core.getFirstBlock()
+        core.getFirstBlock()
         .p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         .since(SINCE_LAST_GEOMETRY_TRANSFORMATION)
     )

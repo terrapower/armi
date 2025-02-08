@@ -724,8 +724,8 @@ class Database:
         is read from the database.
 
         .. impl:: Users can load a reactor from a DB.
-            :id: I_ARMI_DB_R_LOAD
-            :implements: R_ARMI_DB_R_LOAD
+            :id: I_ARMI_DB_TIME1
+            :implements: R_ARMI_DB_TIME
 
             This method creates a ``Reactor`` object by reading the reactor state out
             of an ARMI database file. This is done by passing in mandatory arguements
@@ -733,8 +733,7 @@ class Database:
             (That is, the cycle and node numbers.) Users can either pass the settings
             and blueprints directly into this method, or it will attempt to read them
             from the database file. The primary work done here is to read the hierarchy
-            of reactor objects from the data file, then reconstruct them in the correct
-            order.
+            of reactor objects from the data file, then reconstruct them in the correct order.
 
         Parameters
         ----------
@@ -914,16 +913,18 @@ class Database:
 
         return comp
 
-    def _writeParams(self, h5group, comps) -> tuple:
-        def _getShape(arr: [np.ndarray, List, Tuple]):
-            """Get the shape of a np.ndarray, list, or tuple."""
-            if isinstance(arr, np.ndarray):
-                return arr.shape
-            elif isinstance(arr, (list, tuple)):
-                return (len(arr),)
-            else:
-                return (1,)
+    @staticmethod
+    def _getArrayShape(arr: [np.ndarray, List, Tuple]):
+        """Get the shape of a np.ndarray, list, or tuple."""
+        if isinstance(arr, np.ndarray):
+            return arr.shape
+        elif isinstance(arr, (list, tuple)):
+            return (len(arr),)
+        else:
+            # not a list, tuple, or array (likely int, float, or None)
+            return 1
 
+    def _writeParams(self, h5group, comps) -> tuple:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
@@ -969,7 +970,7 @@ class Database:
                 else:
                     # check if temp is a jagged array
                     if any(isinstance(x, (np.ndarray, list)) for x in temp):
-                        jagged = len(set([_getShape(x) for x in temp])) != 1
+                        jagged = len(set([self._getArrayShape(x) for x in temp])) != 1
                     else:
                         jagged = False
                     data = (

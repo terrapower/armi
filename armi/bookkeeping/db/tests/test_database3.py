@@ -23,6 +23,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db import _getH5File, database, loadOperator
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -112,8 +113,8 @@ class TestDatabase(unittest.TestCase):
         """Load a reactor at different time steps, from the database.
 
         .. test:: Load the reactor from the database.
-            :id: T_ARMI_DB_R_LOAD
-            :tests: R_ARMI_DB_R_LOAD
+            :id: T_ARMI_DB_TIME1
+            :tests: R_ARMI_DB_TIME
         """
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
@@ -283,11 +284,24 @@ class TestDatabaseSmaller(unittest.TestCase):
         roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
+    def test_getArrayShape(self):
+        """Tests a helper method for ``_writeParams``."""
+        base = [1, 2, 3, 4]
+        self.assertEqual(Database._getArrayShape(base), (4,))
+        self.assertEqual(Database._getArrayShape(tuple(base)), (4,))
+        arr = np.array(base)
+        self.assertEqual(Database._getArrayShape(arr), (4,))
+        arr = np.array([base])
+        self.assertEqual(Database._getArrayShape(arr), (1, 4))
+        # not array type
+        self.assertEqual(Database._getArrayShape(1), 1)
+        self.assertEqual(Database._getArrayShape(None), 1)
+
     def test_writeToDB(self):
         """Test writing to the database.
 
         .. test:: Write a single time step of data to the database.
-            :id: T_ARMI_DB_TIME
+            :id: T_ARMI_DB_TIME0
             :tests: R_ARMI_DB_TIME
         """
         self.r.p.cycle = 0

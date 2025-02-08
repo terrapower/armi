@@ -484,10 +484,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
             :id: T_ARMI_SHUFFLE
             :tests: R_ARMI_SHUFFLE
 
-        .. test:: Move an assembly from one position in the core to another.
-            :id: T_ARMI_SHUFFLE_MOVE0
-            :tests: R_ARMI_SHUFFLE_MOVE
-
         Notes
         -----
         The custom shuffle logic is executed by
@@ -797,10 +793,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_dischargeSwap(self):
         """Remove an assembly from the core and replace it with one from the SFP.
-
-        .. test:: Move an assembly from one position in the core to another.
-            :id: T_ARMI_SHUFFLE_MOVE1
-            :tests: R_ARMI_SHUFFLE_MOVE
 
         .. test:: User-specified blocks can remain in place during shuffling
             :id: T_ARMI_SHUFFLE_STATIONARY1

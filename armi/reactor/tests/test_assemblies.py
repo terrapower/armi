@@ -396,12 +396,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
-        """Tests area calculation for hex assembly.
-
-        .. test:: Assembly area is retrievable.
-            :id: T_ARMI_ASSEM_DIMS0
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests area calculation for hex assembly."""
         # Default case: for assemblies with no blocks
         a = HexAssembly("TestAssem", assemNum=10)
         self.assertEqual(a.getArea(), 1)
@@ -412,12 +407,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getVolume(self):
-        """Tests volume calculation for hex assembly.
-
-        .. test:: Assembly volume is retrievable.
-            :id: T_ARMI_ASSEM_DIMS1
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests volume calculation for hex assembly."""
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
@@ -481,14 +471,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHeight(self):
-        """
-        Test height of assembly calculation.
-
-        .. test:: Assembly height is retrievable.
-            :id: T_ARMI_ASSEM_DIMS2
-            :tests: R_ARMI_ASSEM_DIMS
-
-        """
+        """Test height of assembly calculation."""
         cur = self.assembly.getHeight()
         ref = self.height * NUM_BLOCKS
         places = 6
@@ -867,12 +850,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_getDim(self):
-        """Tests dimensions are retrievable.
-
-        .. test:: Assembly dimensions are retrievable.
-            :id: T_ARMI_ASSEM_DIMS3
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests dimensions are retrievable."""
         # quick test, if there are no blocks
         a = HexAssembly("TestAssem", assemNum=10)
         self.assertIsNone(a.getDim(Flags.FUEL, "op"))
