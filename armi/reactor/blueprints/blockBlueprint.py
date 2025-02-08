@@ -194,8 +194,8 @@ class BlockBlueprint(yamlize.KeyedList):
                         # their blueprints are probably wrong
                         if len([i for i in idsInGrid if i == str(latticeID)]) == 0:
                             raise ValueError(
-                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected to be present in the "
-                                "associated block grid. "
+                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected "
+                                "to be present in the associated block grid. "
                                 "Check that the component's latticeIDs align with the block's grid."
                             )
 
