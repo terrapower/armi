@@ -33,6 +33,7 @@ Quality Work
 #. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
+#. Removing silent overwrite of ``shutil.copy``. (`PR#2081 <https://github.com/terrapower/armi/pull/2081>`_)
 #. TBD
 
 
