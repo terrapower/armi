@@ -13,7 +13,7 @@
 ## Checklist
 
 <!--
-    You (the pull requester) should put an `x` in the condition is met.
+    You (the pull requester) should put an `x` if the condition is met.
 
     (If a checkbox doesn't apply to your PR, check it anyway.)
 -->
