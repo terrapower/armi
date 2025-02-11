@@ -800,7 +800,7 @@ class MergeableDict(dict):
 
 
 def safeCopy(src: str, dst: str) -> None:
-    """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
+    """Check that copy operation is truly completed before continuing."""
     # Convert files to OS-independence
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
@@ -882,8 +882,3 @@ def safeMove(src: str, dst: str) -> None:
 
     runLog.extra("Moved {} -> {}".format(src, dst))
     return dst
-
-
-# Allow us to check the copy operation is complete before continuing
-shutil_copy = shutil.copy
-shutil.copy = safeCopy

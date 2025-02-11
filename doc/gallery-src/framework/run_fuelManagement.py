@@ -13,6 +13,7 @@
 # limitations under the License.
 """
 Fuel management in a LWR.
+=========================
 
 Demo of locating and swapping assemblies in a core with Cartesian geometry. Given a burnup
 distribution, this swaps high burnup assemblies with low ones.
@@ -26,6 +27,7 @@ flux/depletion results would need to be provided by a physics plugin before actu
 ARMI to do fuel management. Thus, this example applies a dummy burnup distribution for
 demonstration purposes.
 """
+
 # Tell the gallery to feature the 2nd image
 # sphinx_gallery_thumbnail_number = 2
 import math

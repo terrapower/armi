@@ -276,10 +276,6 @@ class TestComponent(TestGeneralComponents):
     def test_solid_material(self):
         """Determine if material is solid.
 
-        .. test:: Determine if material is solid.
-            :id: T_ARMI_COMP_SOLID
-            :tests: R_ARMI_COMP_SOLID
-
         .. test:: Components have material properties.
             :id: T_ARMI_COMP_MAT
             :tests: R_ARMI_COMP_MAT
