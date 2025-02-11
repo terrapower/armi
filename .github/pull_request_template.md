@@ -13,21 +13,14 @@
 ## Checklist
 
 <!--
-    You (the pull requester) should put an `x` in the boxes below you have completed.
+    You (the pull requester) should put an `x` if the condition is met.
 
     (If a checkbox doesn't apply to your PR, check it anyway.)
 -->
 
 - [ ] This PR has only [one purpose or idea](https://terrapower.github.io/armi/developer/tooling.html#one-idea-one-pr).
 - [ ] [Tests](https://terrapower.github.io/armi/developer/tooling.html#test-it) have been added/updated to verify any new/changed code.
-
-<!-- Check the code quality -->
-
 - [ ] The code style follows [good practices](https://terrapower.github.io/armi/developer/standards_and_practices.html).
-- [ ] The commit message(s) follow [good practices](https://terrapower.github.io/armi/developer/tooling.html).
-
-<!-- Check the project-level cruft -->
-
 - [ ] The [release notes](https://terrapower.github.io/armi/developer/tooling.html#add-release-notes) have been updated if necessary.
 - [ ] The [documentation](https://terrapower.github.io/armi/developer/tooling.html#document-it) is still up-to-date in the `doc` folder.
 - [ ] The dependencies are still up-to-date in `pyproject.toml`.

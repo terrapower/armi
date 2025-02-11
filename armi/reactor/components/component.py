@@ -601,16 +601,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         return isinstance(self.material, void.Void)
 
     def containsSolidMaterial(self):
-        """Returns True if the component material is a solid.
-
-        .. impl:: Determine if a material is solid.
-            :id: I_ARMI_COMP_SOLID
-            :implements: R_ARMI_COMP_SOLID
-
-            For certain operations it is important to know if a Component is a solid or
-            fluid material. This method will return a boolean indicating if the material
-            is solid or not by checking if the material is an instance of the ``material.Fluid`` class.
-        """
+        """Returns True if the component material is a solid."""
         return not isinstance(self.material, material.Fluid)
 
     def getComponentArea(self, cold=False):
@@ -748,14 +739,18 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_NUCLIDE_FRACS1
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
-            The method allows a user or plugin to set the number densities of a
-            Component. In contrast to the ``setNumberDensity`` method, it sets all
-            densities within a Component.
+            The method allows a user or plugin to set the number densities of a Component. In
+            contrast to the ``setNumberDensity`` method, it sets all densities within a Component.
 
         Parameters
         ----------
         numberDensities : dict
             nucName: ndens pairs.
+
+        Notes
+        -----
+        We don't just call setNumberDensity for each nuclide because we don't want to call
+        ``getVolumeFractions`` for each nuclide (it's inefficient).
         """
         self.updateNumberDensities(numberDensities, wipe=True)
 
@@ -833,8 +828,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Getting mass enrichment on any level higher than this is ambiguous because you may
-        have enriched boron in one pin and enriched uranium in another and blending those doesn't make sense.
+        Getting mass enrichment on any level higher than this is ambiguous because you may have
+        enriched boron in one pin and enriched uranium in another and blending those doesn't make
+        sense.
         """
         if self.material.enrichedNuclide is None:
             raise ValueError(

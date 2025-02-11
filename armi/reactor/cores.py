@@ -55,24 +55,10 @@ from armi.utils.mathematics import average1DWithinTolerance
 
 
 class Core(composites.Composite):
-    r"""
+    """
     Reactor structure made up of assemblies. Could be a Core, spent fuel pool, reactor head, etc.
 
     This has the bulk of the data management operations.
-
-    .. impl:: Represent a reactor core as a composite object.
-        :id: I_ARMI_R_CORE
-        :implements: R_ARMI_R_CORE
-
-        A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a child of a
-        :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor should only contain
-        one object of the Core type. The instance attribute name ``r.core`` is reserved for the
-        object representating the active core.
-
-        Most of the operations to retrieve information from the ARMI reactor data model are mediated
-        through Core objects. For example,
-        :py:meth:`getAssemblies() <armi.reactor.reactors.Core.getAssemblies>` is used to get a list
-        of all assemblies in the Core.
 
     Attributes
     ----------
@@ -157,13 +143,7 @@ class Core(composites.Composite):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
 
     def __iter__(self):
-        """
-        Override the base Composite __iter__ to produce stable sort order.
-
-        See Also
-        --------
-        getAssemblies()
-        """
+        """Override the base Composite __iter__ to produce stable sort order."""
         return iter(self._children)
 
     @property
@@ -594,8 +574,7 @@ class Core(composites.Composite):
         """
         Yield the assemblies that have been added in the current cycle.
 
-        This uses the reactor's cycle parameter and the assemblies' chargeCycle
-        parameters.
+        This uses the reactor's cycle parameter and the assemblies' chargeCycle parameters.
         """
         for a in self:
             if a.p.chargeCycle == self.r.p.cycle:
@@ -603,21 +582,9 @@ class Core(composites.Composite):
 
     def getNumRings(self, indexBased=False):
         """
-        Returns the number of rings in this reactor. Based on location so indexing will start at 1.
+        Returns the number of rings in this reactor. Based on location, so indexing will start at 1.
 
         Circular ring shuffling changes the interpretation of this result.
-
-        .. impl:: Retrieve number of rings in core.
-            :id: I_ARMI_R_NUM_RINGS
-            :implements: R_ARMI_R_NUM_RINGS
-
-            This method determines the number of rings in the reactor. If the
-            setting ``circularRingMode`` is enabled (by default it is false), the
-            assemblies will be grouped into roughly circular rings based on
-            their positions and the number of circular rings is returned.
-            Otherwise, the number of hex rings is returned. This parameter is
-            mostly used to facilitate certain fuel management strategies where
-            the fuel is categorized and moved based on ring indexing.
 
         Warning
         -------
@@ -634,7 +601,7 @@ class Core(composites.Composite):
             return self.getNumHexRings()
 
     def getNumHexRings(self):
-        """Returns the number of hex rings in this reactor. Based on location so indexing will start at 1."""
+        """Return the number of hex rings in the core. Based on location so indexing starts at 1."""
         maxRing = 0
         for a in self.getAssemblies():
             ring, _pos = self.spatialGrid.getRingPos(a.spatialLocator)
@@ -648,14 +615,13 @@ class Core(composites.Composite):
         Parameters
         ----------
         nRings : int
-            The number of hex assembly rings in this core, including
-            partially-complete (non-full) rings.
+            The number of hex assembly rings in this core, including non-ful) rings.
 
         Returns
         -------
         nAssmWithBlanks: int
-            The number of assemblies that WOULD exist in this core if
-            all outer assembly hex rings were "filled out".
+            The number of assemblies that WOULD exist in this core if all outer assembly hex rings
+            were "filled out".
         """
         if self.powerMultiplier == 1:
             return 3 * nRings * (nRings - 1) + 1
@@ -681,7 +647,6 @@ class Core(composites.Composite):
         ----------
         blockTypeSpec : Flags or list of Flags
             The types of blocks to be counted in a single assembly
-
         assemTypeSpec : Flags or list of Flags
             The types of assemblies that are to be examine for the blockTypes of interest. None is
             every assembly.
@@ -689,8 +654,7 @@ class Core(composites.Composite):
         Returns
         -------
         maxBlocks : int
-            The maximum number of blocks of the specified types in a single assembly in the entire
-            core.
+            The maximum number of blocks of the specified types in a single assembly in the core.
         """
         assems = self.getAssemblies(typeSpec=assemTypeSpec)
         try:
@@ -717,11 +681,11 @@ class Core(composites.Composite):
 
     def getFirstFuelBlockAxialNode(self):
         """
-        Determine the offset of the fuel from the grid plate in the assembly
-        with the lowest fuel block.
+        Determine the offset of the fuel from the grid plate in the assembly with the lowest fuel
+        block.
 
-        This assembly will dictate at what block level the SASSYS reactivity
-        coefficients will start to be generated
+        This assembly will dictate at what block level the SASSYS reactivity coefficients will start
+        to be generated
         """
         try:
             return min(
@@ -731,13 +695,7 @@ class Core(composites.Composite):
                 if b.hasFlags(Flags.FUEL)
             )
         except ValueError:
-            """ValueError is thrown if min is called on an empty sequence.
-            Since this is expected to be a rare case, try/except is more
-            efficient than an if/else condition that checks whether the
-            iterator is empty (the latter would require generating a list
-            or tuple, which further adds to the inefficiency). Hence Python's
-            mantra, "It's easier to ask forgiveness than permission." In fact
-            it's quicker to ask forgiveness than permission."""
+            # ValueError is thrown if min is called on an empty sequence.
             return float("inf")
 
     def getAssembliesInRing(
@@ -973,13 +931,12 @@ class Core(composites.Composite):
         Find the assembly that has this name.
 
         .. impl:: Get assembly by name.
-            :id: I_ARMI_R_GET_ASSEM_NAME
-            :implements: R_ARMI_R_GET_ASSEM_NAME
+            :id: I_ARMI_R_GET_ASSEM0
+            :implements: R_ARMI_R_GET_ASSEM
 
             This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
-            with a name matching the
-            value provided as an input parameter to this function. The ``name`` of
-            an assembly is based on the ``assemNum`` parameter.
+            with a name matching the value provided as an input parameter to this function. The
+            ``name`` of an assembly is based on the ``assemNum`` parameter.
 
         Parameters
         ----------
@@ -988,7 +945,7 @@ class Core(composites.Composite):
 
         Returns
         -------
-        assembly
+        Assembly
 
         See Also
         --------
@@ -1499,20 +1456,17 @@ class Core(composites.Composite):
         """Returns an assembly or none if given a location string like '001-001'.
 
         .. impl:: Get assembly by location.
-            :id: I_ARMI_R_GET_ASSEM_LOC
-            :implements: R_ARMI_R_GET_ASSEM_LOC
+            :id: I_ARMI_R_GET_ASSEM1
+            :implements: R_ARMI_R_GET_ASSEM
 
-            This method returns the :py:class:`assembly
-            <armi.reactor.core.assemblies.Assembly>` located in the requested
-            location. The location is provided to this method as an input
+            This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
+            located in the requested location. The location is provided to this method as an input
             parameter in a string with the format "001-001". For a :py:class:`HexGrid
-            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates
-            the hexagonal ring and the second number indicates the position
-            within that ring. For a :py:class:`CartesianGrid
-            <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
-            represents the x index and the second number represents the y index.
-            If there is no assembly in the grid at the requested location, this
-            method returns None.
+            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates the hexagonal ring
+            and the second number indicates the position within that ring. For a
+            :py:class:`CartesianGrid <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
+            represents the x index and the second number represents the y index. If there is no
+            assembly in the grid at the requested location, this method returns None.
         """
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
@@ -1523,9 +1477,8 @@ class Core(composites.Composite):
         """
         Find the assembly pitch for the whole core.
 
-        This returns the pitch according to the spatialGrid.
-        To capture any thermal/hydraulic feedback of the core pitch,
-        T/H modules will need to modify the grid pitch directly based
+        This returns the pitch according to the spatialGrid. To capture any thermal/hydraulic
+        feedback of the core pitch, T/H modules will need to modify the grid pitch directly based
         on the relevant mechanical assumptions.
 
         Returns
@@ -1543,11 +1496,10 @@ class Core(composites.Composite):
 
         Return a list of neighboring assemblies.
 
-        For a hexagonal grid, the list begins from the 30 degree point (point 1)
-        then moves counterclockwise around.
+        For a hexagonal grid, the list begins from the 30 degree point (point 1) then moves
+        counterclockwise around.
 
-        For a Cartesian grid, the order of the neighbors is east, north, west,
-        south.
+        For a Cartesian grid, the order of the neighbors is east, north, west, south.
 
         .. impl:: Retrieve neighboring assemblies of a given assembly.
             :id: I_ARMI_R_FIND_NEIGHBORS
