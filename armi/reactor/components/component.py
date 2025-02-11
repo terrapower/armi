@@ -798,7 +798,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         try:
             vol = self.getVolume()
-        except:
+        except (AttributeError, TypeError):
             # either no parent to get height or parent's height is None
             # which would be AttributeError and TypeError respectively, but other errors could be possible
             vol = None

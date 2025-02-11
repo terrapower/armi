@@ -239,15 +239,7 @@ class TestComponentNDens(TestGeneralComponents):
         initialVolume = component.getVolume()
         component.temperatureInC = 50
         self.assertAlmostEqual(component.getNumberDensity("MN"), 0.000426, 6)
-        dLLprev = (
-            component.material.linearExpansionPercent(Tc=component.temperatureInC)
-            / 100.0
-        )
         component.setNumberDensities({"C": 1, "MN": 0.58})
-        dLLnew = (
-            component.material.linearExpansionPercent(Tc=component.temperatureInC)
-            / 100.0
-        )
         newVolume = component.getVolume()
         expansionFactor = initialVolume / newVolume
         self.assertEqual(component.getNumberDensity("C"), 1.0 * expansionFactor)
