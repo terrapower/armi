@@ -335,6 +335,16 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
+class TestValidateSFPSpatialGrids(unittest.TestCase):
+    def test_validateSFPSpatialGrid(self):
+        """Validate the spatial grid for a new SFP is not None."""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+        self.assertIsNotNone(r.excore.sfp.spatialGrid)
+
+
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()

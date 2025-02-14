@@ -195,7 +195,9 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             )
 
         for structure in bp.systemDesigns:
-            bpGeom = geom if structure.name.lower() == "core" else None
+            bpGeom = (
+                geom if structure.name.lower() in ("core", "spent fuel pool") else None
+            )
             structure.construct(cs, bp, r, geom=bpGeom)
 
     runLog.debug(f"Reactor: {r}")
