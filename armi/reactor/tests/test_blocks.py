@@ -1203,6 +1203,7 @@ class Block_TestCase(unittest.TestCase):
 
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
     def test_getMgFlux(self, mock_sf):
+        # calculate Mg Flux with a Symmetry Factor of 3
         mock_sf.return_value = 3
         self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
         self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
@@ -1215,6 +1216,7 @@ class Block_TestCase(unittest.TestCase):
         np.testing.assert_almost_equal(neutronFlux, np.ones(5) * volFrac)
         np.testing.assert_almost_equal(gammaFlux, np.ones(4) * volFrac * 2.0)
 
+        # calculate Mg Flux with a Symmetry Factor of 1
         mock_sf.return_value = 1
         self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
         self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
