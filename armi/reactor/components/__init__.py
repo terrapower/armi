@@ -196,10 +196,6 @@ class UnshapedComponent(Component):
             Ignored for this component
         cold : bool, optional
             Ignored for this component
-
-        Notes
-        -----
-        Tc is not used in this method for this particular component.
         """
         return 0.0
 
