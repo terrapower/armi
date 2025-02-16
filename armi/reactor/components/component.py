@@ -27,7 +27,7 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import custom, material, void
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites, flags, grids
+from armi.reactor import composites, flags, grids, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -817,6 +817,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 factor = area / self.getArea()
             self.changeNDensByFactor(factor)
+
+        # since we're updating the object the param points to but not the param itself, we have to inform
+        # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
+        self.p.assigned = parameters.SINCE_ANYTHING
+        self.p.paramDefs["numberDensities"].assigned = parameters.SINCE_ANYTHING
 
     def getEnrichment(self):
         """Get the mass enrichment of this component, as defined by the material."""
