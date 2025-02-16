@@ -49,6 +49,27 @@ from armi.reactor.components import (
     materials,
 )
 from armi.testing import loadTestReactor
+from armi.utils.units import getTc
+
+
+class CompositionDependentExpander(materials.Material):
+    """Dummy material that has a composition-dependent thermal expansion coefficient."""
+
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Composition-dependent linear expansion coefficient.
+
+        Parameters
+        ----------
+        Tk : float, optional
+            Temperature in Kelvin.
+        Tc : float, optional
+            Temperature in Celsius.
+        """
+        alpha = 1.0e-5
+        beta = 1.0e-5 * self.parent.getMassFrac("C")
+        refTemp = 20
+        return (alpha + beta) * getTc(Tc=Tc, Tk=Tk) * (Tc - refTemp)
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -179,24 +200,11 @@ class TestGeneralComponents(unittest.TestCase):
             return component
 
 
-class TestComponent(TestGeneralComponents):
-    """Test the base component."""
+class TestComponentNDens(TestGeneralComponents):
+    """Test component number density setting."""
 
-    componentCls = Component
-
-    def test_initializeComponentMaterial(self):
-        """Creating component with single material.
-
-        .. test:: Components are made of one material.
-            :id: T_ARMI_COMP_1MAT0
-            :tests: R_ARMI_COMP_1MAT
-        """
-        expectedName = "TestComponent"
-        actualName = self.component.getName()
-        expectedMaterialName = "HT9"
-        actualMaterialName = self.component.material.getName()
-        self.assertEqual(expectedName, actualName)
-        self.assertEqual(expectedMaterialName, actualMaterialName)
+    componentCls = Circle
+    componentDims = {"Tinput": 25.0, "Thot": 25.0, "id": 0.0, "od": 0.5}
 
     def test_setNumberDensity(self):
         """Test setting a single number density.
@@ -222,6 +230,40 @@ class TestComponent(TestGeneralComponents):
         component.setNumberDensities({"C": 1, "MN": 0.58})
         self.assertEqual(component.getNumberDensity("C"), 1.0)
         self.assertEqual(component.getNumberDensity("MN"), 0.58)
+
+    def test_setNumberDensitiesWithExpansion(self):
+        expansionMaterial = CompositionDependentExpander()
+        expansionMaterial.parent = self.component
+        self.component.material = expansionMaterial
+        component = self.component
+        initialVolume = component.getVolume()
+        component.temperatureInC = 50
+        self.assertAlmostEqual(component.getNumberDensity("MN"), 0.000426, 6)
+        component.setNumberDensities({"C": 1, "MN": 0.58})
+        newVolume = component.getVolume()
+        expansionFactor = initialVolume / newVolume
+        self.assertEqual(component.getNumberDensity("C"), 1.0 * expansionFactor)
+        self.assertEqual(component.getNumberDensity("MN"), 0.58 * expansionFactor)
+
+
+class TestComponent(TestGeneralComponents):
+    """Test the base component."""
+
+    componentCls = Component
+
+    def test_initializeComponentMaterial(self):
+        """Creating component with single material.
+
+        .. test:: Components are made of one material.
+            :id: T_ARMI_COMP_1MAT0
+            :tests: R_ARMI_COMP_1MAT
+        """
+        expectedName = "TestComponent"
+        actualName = self.component.getName()
+        expectedMaterialName = "HT9"
+        actualMaterialName = self.component.material.getName()
+        self.assertEqual(expectedName, actualName)
+        self.assertEqual(expectedMaterialName, actualMaterialName)
 
     def test_solid_material(self):
         """Determine if material is solid.
