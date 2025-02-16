@@ -820,6 +820,11 @@ class Component(composites.Composite, metaclass=ComponentType):
                 factor = area / self.getArea()
             self.changeNDensByFactor(factor)
 
+        # since we're updating the object the param points to but not the param itself, we have to inform
+        # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
+        self.p.assigned = parameters.SINCE_ANYTHING
+        self.p.paramDefs["numberDensities"].assigned = parameters.SINCE_ANYTHING
+
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
         newDensities = {
