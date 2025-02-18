@@ -20,6 +20,7 @@ Test the cross section manager.
 import copy
 import os
 import pickle
+import sys
 import unittest
 from io import BytesIO
 from unittest.mock import MagicMock
@@ -874,6 +875,12 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("a", xsTypes[-3])
         self.assertEqual("b", xsTypes[-2])
         self.assertEqual("c", xsTypes[-1])
+
+        # verify that we can get lowercase letters
+        if sys.platform.startswith("win"):
+            with mockRunLogs.BufferLog() as mock:
+                xsTypes = self.csm.getNextAvailableXsTypes(27)
+                self.assertIn("Mixing upper and lower-case XS", mock.getStdout())
 
     def test_getRepresentativeBlocks(self):
         """Test that we can create the representative blocks for a reactor.

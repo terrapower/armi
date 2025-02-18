@@ -1469,11 +1469,13 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         # check for lower-case on case-insensitive file system
         if sys.platform.startswith("win"):
-            if any(x.islower() for x in availableXsTypes[:howMany]):
+            allXSTypes = allocatedXSTypes.union(set(availableXsTypes[:howMany]))
+            allCaps = {c.capitalize() for c in allXSTypes}
+            if len(allCaps) != len(allXSTypes):
                 runLog.warning(
-                    "Using lower-case XS group types on a Windows system, which is not case-sensitive. "
-                    "There is a chance that ARMI could overwrite previously generated XS files, which "
-                    "could cause mysterious and/or unpredictable errors."
+                    "Mixing upper and lower-case XS group types on a Windows system, which is not "
+                    "case-sensitive. There is a chance that ARMI could overwrite previously "
+                    "generated XS files, which could cause mysterious and/or unpredictable errors."
                 )
         return availableXsTypes[:howMany]
 
