@@ -55,6 +55,7 @@ import collections
 import copy
 import os
 import string
+import sys
 
 import numpy as np
 
@@ -1464,6 +1465,15 @@ class CrossSectionGroupManager(interfaces.Interface):
                     len(allocatedXSTypes), len(availableXsTypes), howMany
                 )
             )
+
+        # check for lower-case on case-insensitive file system
+        if sys.platform.startswith("win"):
+            if any(x.islower() for x in availableXsTypes[:howMany]):
+                runLog.warning(
+                    "Using lower-case XS group types on a Windows system, which is not case-sensitive. "
+                    "There is a chance that ARMI could overwrite previously generated XS files, which "
+                    "could cause mysterious and/or unpredictable errors."
+                )
         return availableXsTypes[:howMany]
 
     def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):
