@@ -354,7 +354,7 @@ def _getSystemInfoLinux():
         return ""
 
     # get processor information
-    linuxProcCommands = ["cat /proc/cpuinfo", "lscpu", "lshw -class CPU"]
+    linuxProcCommands = ["lscpu", "cat /proc/cpuinfo", "lshw -class CPU"]
     procInfo = ""
     for cmd in linuxProcCommands:
         procInfo = subprocess.run(
@@ -476,8 +476,8 @@ def writeAssemblyMassSummary(r):
             blockType = b.getType()
             if blockType not in types:
                 types.append(blockType)
-        # if the BOL fuel assem is in the center of the core, its area is 1/3 of the full area b/c it's a sliced assem.
-        # bug: mass came out way high for a case once. 265 MT vs. 92 MT hm.
+        # If the BOL fuel assem is in the center of the core, its area is 1/3 of the full area b/c
+        # its a sliced assem.
 
         # count assemblies
         core = r.core

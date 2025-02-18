@@ -64,7 +64,6 @@ from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import flags
 from armi.reactor.components import basicShapes
-from armi.reactor.converters.blockConverters import stripComponents
 from armi.reactor.flags import Flags
 from armi.utils import safeCopy
 from armi.utils.units import C_TO_K, TRACE_NUMBER_DENSITY
@@ -711,6 +710,8 @@ class CylindricalComponentsDuctHetAverageBlockCollection(
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
+        from armi.reactor.converters.blockConverters import stripComponents
+
         nvt = np.zeros(len(self.allNuclidesInProblem))
         nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():

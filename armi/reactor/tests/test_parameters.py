@@ -82,7 +82,7 @@ class ParameterTests(unittest.TestCase):
             :tests: R_ARMI_PARAM_DB
 
         .. test:: Ensure that new parameters can be defined.
-            :id: T_ARMI_PARAM
+            :id: T_ARMI_PARAM0
             :tests: R_ARMI_PARAM
         """
         pDefs = parameters.ParameterDefinitionCollection()
