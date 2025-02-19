@@ -22,6 +22,7 @@ Bug Fixes
 #. Fixing check for jagged arrays during ``_writeParams``. (`PR#2051 <https://github.com/terrapower/armi/pull/2051>`_)
 #. Fixing BP-section ignoring tool in ``PassiveDBLoadPlugin``. (`PR#2055 <https://github.com/terrapower/armi/pull/2055>`_)
 #. Fixing scaling of volume-integrated parameters on edge assembleis. (`PR#2060 <https://github.com/terrapower/armi/pull/2060>`_)
+#  Fixing treatment of symmetry factors when calculating component flux and reaction rates. (`PR#2068 <https://github.com/terrapower/armi/pull/2068>`_)
 #. TBD
 
 Quality Work
