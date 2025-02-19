@@ -335,6 +335,34 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
+class TestValidateSFPSpatialGrids(unittest.TestCase):
+    def test_noSFPExists(self):
+        """Validate the spatial grid for a new SFP is None if it was not provided."""
+        # copy the inputs, so we can modify them
+        with TemporaryDirectoryChanger() as newDir:
+            oldDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+            newDir2 = os.path.join(newDir.destination, "smallestTestReactor")
+            shutil.copytree(oldDir, newDir2)
+
+            # cut out the SFP grid in the input file
+            testFile = os.path.join(newDir2, "refSmallestReactor.yaml")
+            txt = open(testFile, "r").read()
+            txt = txt.split("symmetry: full")[0]
+            open(testFile, "w").write(txt)
+
+            # verify there is no spatial grid defined
+            _o, r = loadTestReactor(newDir2, inputFileName="armiRunSmallest.yaml")
+            self.assertIsNone(r.excore.sfp.spatialGrid)
+
+    def test_SFPSpatialGridExists(self):
+        """Validate the spatial grid for a new SFP is not None if it was provided."""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+        self.assertIsNotNone(r.excore.sfp.spatialGrid)
+
+
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
@@ -1398,12 +1426,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur[0], ref)
 
     def test_getComponentByName(self):
-        """Test children by name.
-
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME0
-            :tests: R_ARMI_CMP_BY_NAME
-        """
+        """Test children by name."""
         self.assertIsNone(
             self.block.getComponentByName("not the droid youre looking for")
         )
@@ -1413,10 +1436,6 @@ class Block_TestCase(unittest.TestCase):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
-
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME1
-            :tests: R_ARMI_CMP_BY_NAME
         """
         expected = [
             self.block.getComponentByName(c)
@@ -2158,13 +2177,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(self.hexBlock.getNumPins(), 169)
 
     def test_block_dims(self):
-        """
-        Tests that the block class can provide basic dimensionality information about itself.
-
-        .. test:: Important block dimensions are retrievable.
-            :id: T_ARMI_BLOCK_DIMS
-            :tests: R_ARMI_BLOCK_DIMS
-        """
+        """Tests that the block class can provide basic dimensionality information about itself."""
         self.assertAlmostEqual(4316.582, self.hexBlock.getVolume(), 3)
         self.assertAlmostEqual(70.6, self.hexBlock.getPitch(), 1)
         self.assertAlmostEqual(4316.582, self.hexBlock.getMaxArea(), 3)

@@ -146,18 +146,7 @@ class Material:
 
     @property
     def name(self):
-        """
-        Getter for the private name attribute of this Material.
-
-        .. impl:: The name of a material is accessible.
-            :id: I_ARMI_MAT_NAME
-            :implements: R_ARMI_MAT_NAME
-
-            Every instance of an ARMI material must have a simple, human-readable string name. And,
-            if possible, we want this string to match the class name. (This, of course, puts some
-            limits on both the string and the class name.) These names are easily retrievable as a
-            class property.
-        """
+        """Getter for the private name attribute of this Material."""
         return self._name
 
     @name.setter
@@ -756,6 +745,12 @@ class Material:
 
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
+
+    def __init_subclass__(cls):
+        # Undo the parent-aware density wrapping. Fluids do not expand in the same way solids, so
+        # Fluid.density(T) is correct. This does not hold for solids because they thermally expand.
+        if hasattr(cls.density, "__wrapped__"):
+            cls.density = cls.density.__wrapped__
 
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from one temperature (in

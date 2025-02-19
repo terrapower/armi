@@ -259,7 +259,7 @@ assemblies:
 
     def test_invalidMatModName(self):
         """
-        This test shows proves that we can detect invalid material modification
+        This test shows that we can detect invalid material modification
         names when they are specified on an assembly blueprint. We happen to know
         that ZR_wt_frac is a valid modification for the UZr material class, so we
         use that in the first call to prove that things initially work fine.
@@ -297,6 +297,35 @@ assemblies:
                 fuel2:
                     this_is_a_fake_name: [0]
         """
+            )
+
+    def test_invalidMatModType(self):
+        """
+        This test shows that we can detect material modifications that are invalid
+        because of their values, not just their names.
+        We happen to know that ZR_wt_frac is a valid modification for UZr, so we
+        use that in the first call to prove that things initially work fine.
+        """
+        a = self.loadUZrAssembly(
+            """
+        material modifications:
+            ZR_wt_frac: [1]
+        """
+        )
+        # just to prove that the above works fine before we modify it
+        self.assertAlmostEqual(a[0][0].getMassFrac("ZR"), 1)
+
+        with self.assertRaises(ValueError) as ee:
+            a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [this_is_a_value_of_incompatible_type]
+        """
+            )
+
+            self.assertIn(
+                "Something went wrong in applying the material modifications",
+                ee.args[0],
             )
 
     def test_matModsUpTheMRO(self):
