@@ -27,7 +27,7 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import custom, material, void
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites, flags, grids
+from armi.reactor import composites, flags, grids, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -660,20 +660,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
-    def changeNDensByFactor(self, factor):
-        """
-        Change the number density of all nuclides within the object by a multiplicative factor.
-        Don't call `updateNumberDensities` to avoid a circular call stack.
-        """
-        for nuc, val in self.getNumberDensities().items():
-            self.p.numberDensities[nuc] = val * factor
-
-        if self.p.detailedNDens is not None:
-            self.p.detailedNDens *= factor
-        # Update pinNDens
-        if self.p.pinNDens is not None:
-            self.p.pinNDens *= factor
-
     def getNuclides(self):
         """
         Return nuclides in this component.
@@ -830,6 +816,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         }
         self.p.numberDensities = newDensities
         self._changeOtherDensParamsByFactor(factor)
+
+    def _changeOtherDensParamsByFactor(self, factor):
+        """Change the number density of all nuclides within the object by a multiplicative factor."""
+        if self.p.detailedNDens is not None:
+            self.p.detailedNDens *= factor
+        # Update pinNDens
+        if self.p.pinNDens is not None:
+            self.p.pinNDens *= factor
 
     def getEnrichment(self):
         """Get the mass enrichment of this component, as defined by the material."""
