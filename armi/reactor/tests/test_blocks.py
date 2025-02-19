@@ -335,6 +335,34 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
+class TestValidateSFPSpatialGrids(unittest.TestCase):
+    def test_noSFPExists(self):
+        """Validate the spatial grid for a new SFP is None if it was not provided."""
+        # copy the inputs, so we can modify them
+        with TemporaryDirectoryChanger() as newDir:
+            oldDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+            newDir2 = os.path.join(newDir.destination, "smallestTestReactor")
+            shutil.copytree(oldDir, newDir2)
+
+            # cut out the SFP grid in the input file
+            testFile = os.path.join(newDir2, "refSmallestReactor.yaml")
+            txt = open(testFile, "r").read()
+            txt = txt.split("symmetry: full")[0]
+            open(testFile, "w").write(txt)
+
+            # verify there is no spatial grid defined
+            _o, r = loadTestReactor(newDir2, inputFileName="armiRunSmallest.yaml")
+            self.assertIsNone(r.excore.sfp.spatialGrid)
+
+    def test_SFPSpatialGridExists(self):
+        """Validate the spatial grid for a new SFP is not None if it was provided."""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+        self.assertIsNotNone(r.excore.sfp.spatialGrid)
+
+
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
