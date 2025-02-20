@@ -260,7 +260,7 @@ class Block(composites.Composite):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
-            elif c.hasFlags(Flags.SLUG):
+            elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
                 # this flag designates that this clad/slug combination isn't fuel and shouldn't be
                 # counted in the average
                 pass
