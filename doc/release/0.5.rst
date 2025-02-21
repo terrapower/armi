@@ -10,8 +10,8 @@ New Features
 ------------
 #. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
 #. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
-#. Invoking ``component.material.density()``  does not log an expensive stack trace if the material
-   is a fluid. (`PR#2075 <https://github.com/terrapower/armi/pull/2075>`_)
+#. Using inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
+#. Invoking ``component.material.density()`` does not log an expensive stack tracefor fluids. (`PR#2075 <https://github.com/terrapower/armi/pull/2075>`_)
 #. TBD
 
 API Changes
