@@ -475,14 +475,14 @@ class DerivedShape(UnshapedComponent):
         """
         if cold:
             # At cold temp, the DerivedShape has the area of the parent minus the other siblings
-            parentArea = self.parent.getArea()
+            parentArea = self.parent.getArea() * self.parent.getSymmetryFactor()
             # NOTE: the assumption is there is only one DerivedShape in each Component
             siblings = sum(
-                [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
+                [c.getComponentArea(cold=True) for c in self.parent if type(c) != DerivedShape]
             )
-            return parentArea - siblings
+            return (parentArea - siblings) * self.parent.getSymmetryFactor()
 
         if self.parent.derivedMustUpdate:
             self.computeVolume()
 
-        return self.p.area
+        return self.p.area * self.parent.getSymmetryFactor()

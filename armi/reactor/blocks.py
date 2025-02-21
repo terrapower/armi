@@ -1842,7 +1842,7 @@ class HexBlock(Block):
         pitch = self.getPitch()
         if not pitch:
             return 0.0
-        return hexagon.area(pitch)
+        return hexagon.area(pitch) / self.getSymmetryFactor()
 
     def getDuctIP(self):
         """Returns the duct IP dimension."""
