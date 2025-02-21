@@ -496,6 +496,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 raise ValueError("Option {} does not exist".format(arg))
 
+        area /= self.parent.getSymmetryFactor()
         self._checkNegativeArea(area, cold)
         return area
 
@@ -827,9 +828,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         mass : float
             The mass in grams.
         """
-        volume = self.getVolume() / (
-            self.parent.getSymmetryFactor() if self.parent else 1.0
-        )
+        volume = self.getVolume()
         nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         # densities comes from self.p.numberDensities
         densities = self.getNuclideNumberDensities(nuclideNames)
@@ -1244,9 +1243,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             if not self.parent:
                 return np.zeros(1)
 
-            volumeFraction = (
-                self.getVolume() / self.parent.getSymmetryFactor()
-            ) / self.parent.getVolume()
+            volumeFraction = self.getVolume() / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
         # pin-level flux is available. Note that it is NOT integrated on the param level.
@@ -1261,11 +1258,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
 
-        return (
-            pinFluxes[self.p.pinNum - 1]
-            * self.getVolume()
-            / self.parent.getSymmetryFactor()
-        )
+        return pinFluxes[self.p.pinNum - 1] * self.getVolume()
 
     def getPinMgFluxes(
         self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False
