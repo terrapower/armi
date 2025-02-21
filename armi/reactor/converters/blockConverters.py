@@ -88,6 +88,7 @@ class BlockConverter:
         runLog.debug("removing {}".format(solute))
         # skip recomputation of area fractions because the blocks still have 0 height at this stage and derived
         # shape volume computations will fail
+        soluteArea = solute.getArea()
         newBlock.remove(solute, recomputeAreaFractions=False)
         self._sourceBlock = newBlock
 
@@ -122,7 +123,7 @@ class BlockConverter:
             self._verifyExpansion(solute, solvent)
 
         solvent.changeNDensByFactor(oldArea / solvent.getArea())
-        solute.mergeNuclidesInto(solvent)
+        solute.mergeNuclidesInto(solvent, soluteArea)
 
     def _checkInputs(self, soluteName, solventName, solute, solvent):
         if solute is None or solvent is None:

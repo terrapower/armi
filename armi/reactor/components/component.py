@@ -1093,7 +1093,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def updateDims(self, key="", val=None):
         self.setDimension(key, val)
 
-    def mergeNuclidesInto(self, compToMergeWith):
+    def mergeNuclidesInto(self, compToMergeWith, area):
         """
         Set another component's number densities to reflect this one merged into it.
 
@@ -1101,10 +1101,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         conserve atoms.
         """
         # record pre-merged number densities and areas
-        aMe = self.getArea()
         aMerge = compToMergeWith.getArea()
         meNDens = {
-            nucName: aMe / aMerge * self.getNumberDensity(nucName)
+            nucName: area / aMerge * self.getNumberDensity(nucName)
             for nucName in self.getNuclides()
         }
         mergeNDens = {
