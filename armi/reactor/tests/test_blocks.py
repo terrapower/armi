@@ -82,7 +82,7 @@ def buildSimpleFuelBlock():
     return b
 
 
-def loadTestBlock(cold=True) -> blocks.HexBlock:
+def loadTestBlock(cold=True, depletable=False) -> blocks.HexBlock:
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
     caseSetting[CONF_XS_KERNEL] = "MC2v2"
@@ -110,6 +110,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     fuel = components.Circle("fuel", "UZr", **fuelDims)
+    if depletable:
+        fuel.p.flags = Flags.fromString("fuel depletable")
 
     bondDims = {
         "Tinput": coldTemp,
@@ -180,6 +182,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     cladding = components.Circle("clad", "HT9", **claddingDims)
+    if depletable:
+        cladding.p.flags = Flags.fromString("clad depletable")
 
     linerCladGapDims = {
         "Tinput": hotTempStructure,
@@ -201,6 +205,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     wire = components.Helix("wire", "HT9", **wireDims)
+    if depletable:
+        wire.p.flags = Flags.fromString("wire depletable")
 
     coolantDims = {"Tinput": hotTempCoolant, "Thot": hotTempCoolant}
     coolant = components.DerivedShape("coolant", "Sodium", **coolantDims)
@@ -213,6 +219,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": 1,
     }
     duct = components.Hexagon("duct", "HT9", **ductDims)
+    if depletable:
+        duct.p.flags = Flags.fromString("duct depletable")
 
     interDims = {
         "Tinput": hotTempCoolant,
@@ -335,10 +343,39 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
+class TestValidateSFPSpatialGrids(unittest.TestCase):
+    def test_noSFPExists(self):
+        """Validate the spatial grid for a new SFP is None if it was not provided."""
+        # copy the inputs, so we can modify them
+        with TemporaryDirectoryChanger() as newDir:
+            oldDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+            newDir2 = os.path.join(newDir.destination, "smallestTestReactor")
+            shutil.copytree(oldDir, newDir2)
+
+            # cut out the SFP grid in the input file
+            testFile = os.path.join(newDir2, "refSmallestReactor.yaml")
+            txt = open(testFile, "r").read()
+            txt = txt.split("symmetry: full")[0]
+            open(testFile, "w").write(txt)
+
+            # verify there is no spatial grid defined
+            _o, r = loadTestReactor(newDir2, inputFileName="armiRunSmallest.yaml")
+            self.assertIsNone(r.excore.sfp.spatialGrid)
+
+    def test_SFPSpatialGridExists(self):
+        """Validate the spatial grid for a new SFP is not None if it was provided."""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+        self.assertIsNotNone(r.excore.sfp.spatialGrid)
+
+
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
         self._hotBlock = loadTestBlock(cold=False)
+        self._deplBlock = loadTestBlock(depletable=True)
 
     def test_getSmearDensity(self):
         cur = self.block.getSmearDensity()
@@ -844,6 +881,26 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(refName, block.name)
         self.assertEqual(3, len(block))
         self.assertEqual(block.p.height, refHeight)
+
+    def test_getWettedPerimeterDepletable(self):
+        # calculate the reference value
+        wire = self._deplBlock.getComponent(Flags.WIRE)
+        correctionFactor = np.hypot(
+            1.0,
+            math.pi
+            * wire.getDimension("helixDiameter")
+            / wire.getDimension("axialPitch"),
+        )
+        wireDiam = wire.getDimension("od") * correctionFactor
+
+        ipDim = self.block.getDim(Flags.DUCT, "ip")
+        odDim = self.block.getDim(Flags.CLAD, "od")
+        mult = self.block.getDim(Flags.CLAD, "mult")
+        ref = math.pi * (odDim + wireDiam) * mult + 6 * ipDim / math.sqrt(3)
+
+        # test getWettedPerimeter
+        cur = self._deplBlock.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
 
     def test_getWettedPerimeter(self):
         # calculate the reference value

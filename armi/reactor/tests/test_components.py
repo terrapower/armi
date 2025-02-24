@@ -549,6 +549,52 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         self.assertAlmostEqual(totalAreaCold, totalAreaHot, delta=1e-10)
 
 
+class TestComponentSort(unittest.TestCase):
+    def setUp(self):
+        self.components = []
+        pinComp = components.Circle(
+            "pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0
+        )
+        gapComp = components.Circle(
+            "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
+        )
+        ductComp = components.Hexagon(
+            "duct", "HT9", Tinput=273.0, Thot=273.0, op=2.6, ip=2.0, mult=1.0
+        )
+        cladComp = components.Circle(
+            "clad", "HT9", Tinput=273.0, Thot=273.0, id=0.08, od=0.1, mult=169.0
+        )
+        wireComp = components.Helix(
+            "wire",
+            "HT9",
+            Tinput=273.0,
+            Thot=273.0,
+            axialPitch=10.0,
+            helixDiameter=0.11,
+            od=0.01,
+            mult=169.0,
+        )
+        self.components = [
+            wireComp,
+            cladComp,
+            ductComp,
+            pinComp,
+            gapComp,
+        ]
+
+    def test_sorting(self):
+        """Test that components are sorted as expected."""
+        sortedComps = sorted(self.components)
+        currentMaxOd = 0.0
+        for c in sortedComps:
+            self.assertGreaterEqual(
+                c.getBoundingCircleOuterDiameter(cold=True), currentMaxOd
+            )
+            currentMaxOd = c.getBoundingCircleOuterDiameter(cold=True)
+        self.assertEqual(sortedComps[1].name, "gap")
+        self.assertEqual(sortedComps[2].name, "clad")
+
+
 class TestCircle(TestShapedComponent):
     """Test circle shaped component."""
 
@@ -1674,7 +1720,7 @@ class TestRadialSegment(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         self.assertEqual(
-            self.component.getBoundingCircleOuterDiameter(cold=True), 170.0
+            self.component.getBoundingCircleOuterDiameter(cold=True), 340.0
         )
 
 
@@ -1721,7 +1767,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_getBoundingCircleOuterDiameter(self):
-        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 170)
+        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 340)
 
 
 class TestMaterialAdjustments(unittest.TestCase):
