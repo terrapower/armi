@@ -1943,7 +1943,7 @@ class HexBlock(Block):
         ----------
         rad: float, required
             Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
-            increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, and 2 * PI)
+            increments (i.e., PI/3, 2 * PI/3, PI, 4 * PI/3, 5 * PI/3, and 2 * PI).
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
