@@ -1298,7 +1298,6 @@ class Block_TestCase(unittest.TestCase):
         np.testing.assert_almost_equal(neutronFlux, np.ones(5) * normalization)
         np.testing.assert_almost_equal(gammaFlux, np.ones(4) * normalization * 2.0)
 
-
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
     def test_completeInitialLoading(self, mock_sf):
         """Ensure that some BOL block and component params are populated properly.
