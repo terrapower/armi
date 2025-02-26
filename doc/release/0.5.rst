@@ -31,6 +31,7 @@ Bug Fixes
 
 Quality Work
 ------------
+#. Dropping ``black`` formatter for ``ruff format``. (`PR#2085 <https://github.com/terrapower/armi/pull/2085>`_)
 #. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
