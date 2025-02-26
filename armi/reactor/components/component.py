@@ -1228,8 +1228,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         The first entry is the first energy group (fastest neutrons). Each additional
         group is the next energy group, as set in the ISOTXS library.
 
-        On blocks, it is stored integrated over volume on <block>.p.mgFlux
-
         Parameters
         ----------
         adjoint : bool, optional
@@ -1240,9 +1238,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             for pin detailed yet
 
         volume: float, optional
-            If average=True, the volume-integrated flux is divided by volume before
-            being returned. The user may specify a volume here, or the function will
-            obtain the block volume directly.
+            The volume-integrated flux is divided by volume before
+            being returned. The user may specify a volume here, or the function
+            will obtain the block volume directly.
 
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
@@ -1254,8 +1252,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         if average:
             raise NotImplementedError(
-                "{} class has no method for producing average MG flux -- try"
-                "using blocks".format(self.__class__)
+                "Component has no method for producing average MG flux -- try"
+                "using blocks"
             )
 
         volume = volume or self.getVolume() / self.parent.getSymmetryFactor()
