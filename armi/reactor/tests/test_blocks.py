@@ -1268,10 +1268,16 @@ class Block_TestCase(unittest.TestCase):
         blockVol = self.block.getVolume()
         fuelVol = fuel.getVolume()
         volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
-        neutronFlux = fuel.getIntegratedMgFlux()
-        gammaFlux = fuel.getIntegratedMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * volFrac)
-        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * volFrac * 2.0)
+        neutronFluxInt = fuel.getIntegratedMgFlux()
+        gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronFluxInt, np.ones(5) * volFrac)
+        np.testing.assert_almost_equal(gammaFluxInt, np.ones(4) * volFrac * 2.0)
+
+        neutronFlux = fuel.getMgFlux()
+        gammaFlux = fuel.getMgFlux(gamma=True)
+        normalization = volFrac / fuelVol * self.block.getSymmetryFactor()
+        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * normalization)
+        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * normalization * 2.0)
 
         # calculate Mg Flux with a Symmetry Factor of 1
         mock_sf.return_value = 1
@@ -1281,10 +1287,17 @@ class Block_TestCase(unittest.TestCase):
         blockVol = self.block.getVolume()
         fuelVol = fuel.getVolume()
         volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
-        neutronFlux = fuel.getIntegratedMgFlux()
-        gammaFlux = fuel.getIntegratedMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * volFrac)
-        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * volFrac * 2.0)
+        neutronFluxInt = fuel.getIntegratedMgFlux()
+        gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronFluxInt, np.ones(5) * volFrac)
+        np.testing.assert_almost_equal(gammaFluxInt, np.ones(4) * volFrac * 2.0)
+
+        neutronFlux = fuel.getMgFlux()
+        gammaFlux = fuel.getMgFlux(gamma=True)
+        normalization = volFrac / fuelVol * self.block.getSymmetryFactor()
+        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * normalization)
+        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * normalization * 2.0)
+
 
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
     def test_completeInitialLoading(self, mock_sf):
