@@ -25,21 +25,22 @@ Just try to be as clear as possible, while using as few words as possible.
     consistency. Code reviewers should make sure to be familiar with the standards, so that their comments are
     consistent with other reviewers.
 
-Code formatting with Black
-==========================
-ARMI uses the Python code formatter `black <https://pypi.org/project/black/>`_. So while developing code in ARMI
-it is important to remember to us the ``black`` formatter before pushing any code to the repo. All changes pushed
-to ARMI on github.com will be automatically checked to see if they conform to the ``black`` code formatter standards.
+Format code with ruff
+=====================
+ARMI uses the Python code formatter `ruff <https://docs.astral.sh/ruff/>`_. So while developing code
+in ARMI it is important to remember to us the ``ruff`` formatter before pushing any code to the
+repo. All changes pushed to ARMI on github.com will be automatically checked to see if they conform
+to the ``ruff`` code formatter standards.
 
-The ``black`` formatter provides 100% consistency in ARMI for: whitespace, line length, trailing commas, and string
-formatting. And it is easy to run on the command line::
+The ``ruff`` formatter provides 100% consistency in ARMI for: whitespace, line length, trailing
+commas, and string formatting. And it is easy to run on the command line::
 
-    black .
+    ruff format .
 
-Address the ruff warnings
-=========================
-ARMI also uses the amazing Python linter `ruff <https://docs.astral.sh/ruff/>`_. Again, any new code you add must have
-zero ``ruff`` warnings or errors.
+Lint code with ruff
+===================
+ARMI also uses the amazing Python linter `ruff <https://docs.astral.sh/ruff/>`_. Again, any new code
+you add must have zero ``ruff`` warnings or errors.
 
 This is very easy to run on the command line::
 
