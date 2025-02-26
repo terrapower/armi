@@ -105,6 +105,7 @@ True
 [<component fuel1>, <component fuel2>, ...]
 
 """
+
 import re
 from typing import Optional, Sequence, Union
 
@@ -173,8 +174,7 @@ def _fromString(cls, typeSpec):
             return cls[typeSpec]
         except KeyError:
             raise InvalidFlagsError(
-                f"The requested type specification `{typeSpec}` is invalid. "
-                "See armi.reactor.flags documentation."
+                f"The requested type specification `{typeSpec}` is invalid. See armi.reactor.flags documentation."
             )
 
     return __fromStringGeneral(cls, typeSpec, updateMethod)

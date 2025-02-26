@@ -27,6 +27,7 @@ programmatically (e.g. for parameter sweeps).
 This example shows how to make Blueprints objects programmatically completely
 from scratch.
 """
+
 # ruff: noqa: E402
 import matplotlib.pyplot as plt
 
@@ -140,9 +141,7 @@ def buildComponents():
     coolant.Tinput = ISOTHERMAL_TEMPERATURE_IN_C
     coolant.Thot = ISOTHERMAL_TEMPERATURE_IN_C
 
-    componentBlueprints = {
-        c.name: c for c in [fuel, gap, clad, wire, duct, intercoolant, coolant]
-    }
+    componentBlueprints = {c.name: c for c in [fuel, gap, clad, wire, duct, intercoolant, coolant]}
 
     return componentBlueprints
 
@@ -176,9 +175,7 @@ def buildAssemblies(blockDesigns):
     fuelAssem.specifier = "IC"
 
     fuelAssem.blocks = blockBlueprint.BlockList()
-    fuelAssem.blocks.extend(
-        [reflectorBlock, fuelBock, fuelBock, fuelBock, reflectorBlock]
-    )
+    fuelAssem.blocks.extend([reflectorBlock, fuelBock, fuelBock, fuelBock, reflectorBlock])
     fuelAssem.height = [10, 20, 20, 20, 10]
     fuelAssem.xsTypes = ["A"] * 5
     fuelAssem.axialMeshPoints = [1] * 5

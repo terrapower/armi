@@ -61,9 +61,7 @@ class HoledHexagon(basicShapes.Hexagon):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False):
         r"""Computes the area for the hexagon with n number of circular holes in cm^2."""
@@ -121,9 +119,7 @@ class HexHoledCircle(basicShapes.Circle):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, od=od, holeOP=holeOP, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, od=od, holeOP=holeOP, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False):
         r"""Computes the area for the circle with one hexagonal hole."""
@@ -239,9 +235,7 @@ class HoledSquare(basicShapes.Square):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, widthOuter=widthOuter, holeOD=holeOD, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, widthOuter=widthOuter, holeOD=holeOD, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False):
         r"""Computes the area (in cm^2) for the the square with one hole in it."""
@@ -330,18 +324,14 @@ class Helix(ShapedComponent):
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the exterior of the wire-wrap."""
-        return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension(
-            "od", Tc, cold
-        )
+        return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension("od", Tc, cold)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the interior of the wire-wrap.
 
         - should be equal to the outer diameter of the pin in which the wire is wrapped around
         """
-        return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension(
-            "od", Tc, cold
-        )
+        return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension("od", Tc, cold)
 
     def getComponentArea(self, cold=False):
         """Computes the area for the helix in cm^2."""

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests for code timing."""
+
 import time
 import unittest
 

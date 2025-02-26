@@ -43,6 +43,7 @@ the parameters are expected to be different. Specifically the following:
   even if the code hasn't changed.
 
 """
+
 import collections
 import os
 import re
@@ -111,9 +112,7 @@ class DiffResults:
         # diff doesn't exceed the tolerance, a None is inserted instead.
         self.diffs = collections.defaultdict(self._getDefault)
 
-    def addDiff(
-        self, compType: str, paramName: str, absMean: float, mean: float, absMax: float
-    ) -> None:
+    def addDiff(self, compType: str, paramName: str, absMean: float, mean: float, absMax: float) -> None:
         """Add a collection of diffs to the diff dictionary if they exceed the tolerance."""
         absMean = absMean if absMean > self.tolerance else None
         self.diffs["{}/{} mean(abs(diff))".format(compType, paramName)].append(absMean)
@@ -140,11 +139,7 @@ class DiffResults:
     def reportDiffs(self, stream: OutputWriter) -> None:
         """Print out a well-formatted table of the non-zero diffs."""
         # filter out empty rows
-        diffsToPrint = {
-            key: value
-            for key, value in self.diffs.items()
-            if not all(v is None for v in value)
-        }
+        diffsToPrint = {key: value for key, value in self.diffs.items() if not all(v is None for v in value)}
         stream.writeln(
             tabulate(
                 [k.split() + val for k, val in sorted(diffsToPrint.items())],
@@ -154,9 +149,9 @@ class DiffResults:
 
     def nDiffs(self) -> int:
         """Return the number of differences that exceeded the tolerance."""
-        return sum(
-            1 for _, value in self.diffs.items() if any(v is not None for v in value)
-        ) + sum(self._structureDiffs)
+        return sum(1 for _, value in self.diffs.items() if any(v is not None for v in value)) + sum(
+            self._structureDiffs
+        )
 
 
 def compareDatabases(
@@ -171,9 +166,7 @@ def compareDatabases(
     if exclusions is not None:
         compiledExclusions = [re.compile(ex) for ex in exclusions]
 
-    outputName = (
-        os.path.basename(refFileName) + "_vs_" + os.path.basename(srcFileName) + ".txt"
-    )
+    outputName = os.path.basename(refFileName) + "_vs_" + os.path.basename(srcFileName) + ".txt"
 
     diffResults = DiffResults(tolerance)
     with OutputWriter(outputName) as out:
@@ -181,8 +174,9 @@ def compareDatabases(
         src = databaseFactory(srcFileName, Permissions.READ_ONLY_FME)
         if not isinstance(ref, Database) or not isinstance(src, Database):
             raise TypeError(
-                "This database comparer only knows how to deal with database version "
-                "3; received {} and {}".format(type(ref), type(src))
+                "This database comparer only knows how to deal with database version 3; received {} and {}".format(
+                    type(ref), type(src)
+                )
             )
 
         with ref, src:
@@ -206,18 +200,14 @@ def compareDatabases(
                     f"step {srcGroup.name.split('/')[1]}"
                 )
                 diffResults.addTimeStep(refGroup.name)
-                _compareTimeStep(
-                    out, refGroup, srcGroup, diffResults, exclusions=compiledExclusions
-                )
+                _compareTimeStep(out, refGroup, srcGroup, diffResults, exclusions=compiledExclusions)
 
         diffResults.reportDiffs(out)
 
     return diffResults
 
 
-def _compareH5Groups(
-    out: OutputWriter, ref: h5py.Group, src: h5py.Group, name: str
-) -> Tuple[Sequence[str], int]:
+def _compareH5Groups(out: OutputWriter, ref: h5py.Group, src: h5py.Group, name: str) -> Tuple[Sequence[str], int]:
     refGroups = set(ref.keys())
     srcGroups = set(src.keys())
 
@@ -233,9 +223,7 @@ def _compareTimeStep(
     diffResults: DiffResults,
     exclusions: Optional[Sequence[Pattern]] = None,
 ):
-    groupNames, structDiffs = _compareH5Groups(
-        out, refGroup, srcGroup, "composite objects/auxiliary data"
-    )
+    groupNames, structDiffs = _compareH5Groups(out, refGroup, srcGroup, "composite objects/auxiliary data")
     diffResults.addStructureDiffs(structDiffs)
 
     componentTypes = {gn for gn in groupNames if gn in ArmiObject.TYPES}
@@ -246,9 +234,7 @@ def _compareTimeStep(
         refTypeGroup = refGroup[componentType]
         srcTypeGroup = srcGroup[componentType]
 
-        _compareComponentData(
-            out, refTypeGroup, srcTypeGroup, diffResults, exclusions=exclusions
-        )
+        _compareComponentData(out, refTypeGroup, srcTypeGroup, diffResults, exclusions=exclusions)
 
     for aux in auxData:
         _compareAuxData(out, refGroup[aux], srcGroup[aux], diffResults)
@@ -280,18 +266,14 @@ def _compareAuxData(
     srcGroup.visititems(visitor)
     srcData = data
 
-    n = _compareSets(
-        set(srcData.keys()), set(refData.keys()), out, name="auxiliary dataset"
-    )
+    n = _compareSets(set(srcData.keys()), set(refData.keys()), out, name="auxiliary dataset")
     diffResults.addStructureDiffs(n)
     matchedSets = set(srcData.keys()) & set(refData.keys())
     for name in matchedSets:
         _diffSimpleData(refData[name], srcData[name], diffResults)
 
 
-def _compareSets(
-    src: set, ref: set, out: OutputWriter, name: Optional[str] = None
-) -> int:
+def _compareSets(src: set, ref: set, out: OutputWriter, name: Optional[str] = None) -> int:
     nDiffs = 0
     printName = "" if name is None else name + " "
     if ref - src:
@@ -322,9 +304,7 @@ def _diffSpecialData(
     paramName = refData.name.split("/")[-1]
     compName = refData.name.split("/")[-2]
 
-    nDiffs = _compareSets(
-        set(srcData.attrs.keys()), set(refData.attrs.keys()), out, "formatting data"
-    )
+    nDiffs = _compareSets(set(srcData.attrs.keys()), set(refData.attrs.keys()), out, "formatting data")
     keysMatch = nDiffs == 0
     diffResults.addStructureDiffs(nDiffs)
 
@@ -354,8 +334,9 @@ def _diffSpecialData(
         if not same:
             attrsMatch = False
             out.writeln(
-                "Special formatting parameters for {} do not match for {}. Src: {} "
-                "Ref: {}".format(name, k, srcData.attrs[k], refData.attrs[k])
+                "Special formatting parameters for {} do not match for {}. Src: {} Ref: {}".format(
+                    name, k, srcData.attrs[k], refData.attrs[k]
+                )
             )
             break
 
@@ -367,8 +348,7 @@ def _diffSpecialData(
         ref = database.unpackSpecialData(refData[()], refData.attrs, paramName)
     except Exception:
         runLog.error(
-            f"Unable to unpack special data for paramName {paramName}. "
-            f"{traceback.format_exc()}",
+            f"Unable to unpack special data for paramName {paramName}. {traceback.format_exc()}",
         )
         return
 
@@ -414,11 +394,7 @@ def _diffSpecialData(
             diff = [np.array(d).flatten() for d in diff]
             diff = np.concatenate(diff)
         except ValueError as e:
-            out.writeln(
-                "Failed to concatenate diff data for {} in {}: {}".format(
-                    paramName, compName, diff
-                )
-            )
+            out.writeln("Failed to concatenate diff data for {} in {}: {}".format(paramName, compName, diff))
             out.writeln("Because: {}".format(e))
             return
         absDiff = np.abs(diff)
@@ -473,17 +449,13 @@ def _compareComponentData(
 ):
     exclusions = exclusions or []
     compName = refGroup.name
-    paramNames, nDiff = _compareH5Groups(
-        out, refGroup, srcGroup, "{} parameters".format(compName)
-    )
+    paramNames, nDiff = _compareH5Groups(out, refGroup, srcGroup, "{} parameters".format(compName))
     diffResults.addStructureDiffs(nDiff)
 
     for paramName in paramNames:
         fullName = "/".join((refGroup.name, paramName))
         if any(pattern.match(fullName) for pattern in exclusions):
-            runLog.debug(
-                "Skipping comparison of {} since it is being ignored.".format(fullName)
-            )
+            runLog.debug("Skipping comparison of {} since it is being ignored.".format(fullName))
             continue
         refDataset = refGroup[paramName]
         srcDataset = srcGroup[paramName]
@@ -494,9 +466,7 @@ def _compareComponentData(
         if srcSpecial ^ refSpecial:
             out.writeln(
                 "Could not compare data for parameter {} because one uses special "
-                "formatting, and the other does not. Ref: {} Src: {}".format(
-                    paramName, refSpecial, srcSpecial
-                )
+                "formatting, and the other does not. Ref: {} Src: {}".format(paramName, refSpecial, srcSpecial)
             )
             diffResults.addDiff(refGroup.name, paramName, np.inf, np.inf, np.inf)
             continue

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """factory for the FuelHandler."""
+
 from armi.physics.fuelCycle import fuelHandlers
 from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME, CONF_SHUFFLE_LOGIC
 from armi.utils import directoryChangers, pathTools
@@ -47,9 +48,7 @@ def fuelHandlerFactory(operator):
                     "The requested fuel handler object {0} is not "
                     "found in the fuel management input file {1} from CWD {2}. "
                     "Check input"
-                    "".format(
-                        fuelHandlerClassName, fuelHandlerModulePath, cs.inputDirectory
-                    )
+                    "".format(fuelHandlerClassName, fuelHandlerModulePath, cs.inputDirectory)
                 )
             # instantiate the custom object
             fuelHandlerCls = getattr(module, fuelHandlerClassName)
@@ -62,9 +61,7 @@ def fuelHandlerFactory(operator):
                 # staticmethod binds the provided getFactorList function to the
                 # fuelHandler object without passing the implicit self argument.
                 # The __get__ pulls the actual function out from the descriptor.
-                fuelHandler.getFactorList = staticmethod(module.getFactorList).__get__(
-                    fuelHandlerCls
-                )
+                fuelHandler.getFactorList = staticmethod(module.getFactorList).__get__(fuelHandlerCls)
 
         except IOError:
             raise ValueError(

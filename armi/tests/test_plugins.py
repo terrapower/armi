@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Provides functionality for testing implementations of plugins."""
+
 import unittest
 from copy import deepcopy
 from typing import Optional
@@ -134,9 +135,7 @@ class TestPluginRegistration(unittest.TestCase):
         """Test that plugin hook successfully injects code before reactor initialization."""
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
-        o = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )[0]
+        o = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")[0]
         self.assertTrue(o.cs.beforeReactorConstructionFlag)
 
 
@@ -200,9 +199,7 @@ class TestPluginBasics(unittest.TestCase):
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         # generate a test operator, with a full set of interfaces from plugsin
-        o = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )[0]
+        o = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")[0]
         pm = getPluginManagerOrFail()
 
         # test the plugins were generated

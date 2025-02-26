@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic fuel performance executers."""
+
 import unittest
 
 from armi.physics.fuelPerformance.executers import (

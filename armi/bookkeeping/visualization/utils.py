@@ -92,9 +92,7 @@ class VtkMesh:
         offsetOffset = self.offsets[-1] if self.offsets.size > 0 else 0
 
         self.vertices = np.vstack((self.vertices, other.vertices))
-        self.connectivity = np.append(
-            self.connectivity, other.connectivity + connectOffset
-        )
+        self.connectivity = np.append(self.connectivity, other.connectivity + connectOffset)
         self.offsets = np.append(self.offsets, other.offsets + offsetOffset)
         self.cellTypes = np.append(self.cellTypes, other.cellTypes)
 
@@ -127,9 +125,7 @@ def createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
 
 def createReactorAssemMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
-    assems = r.getChildren(
-        deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-    )
+    assems = r.getChildren(deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly))
     for a in assems:
         mesh.append(createAssemMesh(a))
 
@@ -147,10 +143,7 @@ def createBlockMesh(b: blocks.Block) -> VtkMesh:
         raise TypeError(
             "Unsupported block type `{}`. Supported types are: {}".format(
                 type(b).__name__,
-                {
-                    t.__name__
-                    for t in {blocks.CartesianBlock, blocks.HexBlock, blocks.ThRZBlock}
-                },
+                {t.__name__ for t in {blocks.CartesianBlock, blocks.HexBlock, blocks.ThRZBlock}},
             )
         )
 
@@ -278,9 +271,7 @@ def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
         (rOut, thIn, (zIn + zOut) * 0.5),
         (rOut, thOut, (zIn + zOut) * 0.5),
     ]
-    vertsXYZ = np.array(
-        [[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ]
-    )
+    vertsXYZ = np.array([[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ])
 
     return VtkMesh(
         vertsXYZ,

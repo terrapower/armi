@@ -19,6 +19,7 @@ Note that this material defaults to a theoretical density fraction of 0.9, refle
 the difficulty of producing B4C at 100% theoretical density in real life. To get
 different fraction, use the `TD_frac` material modification in your assembly definition.
 """
+
 from armi import runLog
 from armi.materials import material
 from armi.nucDirectory import nuclideBases
@@ -32,9 +33,7 @@ class B4C(material.Material):
     enrichedNuclide = "B10"
     propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
 
-    def applyInputParams(
-        self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs
-    ):
+    def applyInputParams(self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs):
         if B10_wt_frac is not None:
             # we can't just use the generic enrichment adjustment here because the
             # carbon has to change with enrich.
@@ -47,8 +46,7 @@ class B4C(material.Material):
             )
             if TD_frac is not None:
                 runLog.warning(
-                    "Both 'theoretical_density' and 'TD_frac' are specified "
-                    f"for {self}. 'TD_frac' will be used."
+                    f"Both 'theoretical_density' and 'TD_frac' are specified for {self}. 'TD_frac' will be used."
                 )
             else:
                 self.updateTD(theoretical_density)
@@ -89,9 +87,7 @@ class B4C(material.Material):
         mB10 = nB10*AB10 /(nB10*AB10 + nB11*AB11)
         """
         if massEnrichment < 0 or massEnrichment > 1:
-            raise ValueError(
-                "massEnrichment {} is unphysical for B4C".format(massEnrichment)
-            )
+            raise ValueError("massEnrichment {} is unphysical for B4C".format(massEnrichment))
 
         b10AtomicMass = nuclideBases.byName["B10"].weight
         b11AtomicMass = nuclideBases.byName["B11"].weight
@@ -112,9 +108,7 @@ class B4C(material.Material):
         boron11MassGrams /= gTotal
         carbonMassGrams /= gTotal
         if self.parent:
-            self.parent.setMassFracs(
-                {"B10": boron10MassGrams, "B11": boron11MassGrams, "C": carbonMassGrams}
-            )
+            self.parent.setMassFracs({"B10": boron10MassGrams, "B11": boron11MassGrams, "C": carbonMassGrams})
 
         return boron10MassGrams, boron11MassGrams, carbonMassGrams
 
@@ -134,18 +128,14 @@ class B4C(material.Material):
         """
         massEnrich = self.getMassEnrichmentFromNumEnrich(naturalB10NumberFraction=0.199)
 
-        gBoron10, gBoron11, gCarbon = self.setNewMassFracsFromMassEnrich(
-            massEnrichment=massEnrich
-        )
+        gBoron10, gBoron11, gCarbon = self.setNewMassFracsFromMassEnrich(massEnrichment=massEnrich)
         self.setMassFrac("B10", gBoron10)
         self.setMassFrac("B11", gBoron11)
         self.setMassFrac("C", gCarbon)
         self.refDens = DEFAULT_MASS_DENSITY
         # TD reference : Dunner, Heuvel, "Absorber Materials for control rod systems of fast breeder reactors"
         # Journal of nuclear materials, 124, 185-194, (1984)."
-        self.theoreticalDensityFrac = (
-            DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
-        )
+        self.theoreticalDensityFrac = DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
 
     @staticmethod
     def getMassEnrichmentFromNumEnrich(naturalB10NumberFraction: float) -> float:
@@ -154,10 +144,7 @@ class B4C(material.Material):
         return (
             naturalB10NumberFraction
             * b10AtomicMass
-            / (
-                naturalB10NumberFraction * b10AtomicMass
-                + (1.0 - naturalB10NumberFraction) * b11AtomicMass
-            )
+            / (naturalB10NumberFraction * b10AtomicMass + (1.0 - naturalB10NumberFraction) * b11AtomicMass)
         )
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
@@ -168,9 +155,7 @@ class B4C(material.Material):
         -----
         - applies theoretical density of B4C to parent method
         """
-        return (
-            material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
-        )
+        return material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
 
     def density(self, Tk: float = None, Tc: float = None) -> float:
         """

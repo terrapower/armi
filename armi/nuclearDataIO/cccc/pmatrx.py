@@ -34,16 +34,10 @@ def compare(lib1, lib2):
     """Compare two XSLibraries, and return True if equal, or False if not."""
     equal = True
     # first check the lib properties (also need to unlock to prevent from getting an exception).
-    equal &= xsLibraries.compareXSLibraryAttribute(
-        lib1, lib2, "neutronEnergyUpperBounds"
-    )
+    equal &= xsLibraries.compareXSLibraryAttribute(lib1, lib2, "neutronEnergyUpperBounds")
     equal &= xsLibraries.compareXSLibraryAttribute(lib1, lib2, "gammaEnergyUpperBounds")
-    equal &= xsLibraries.compareXSLibraryAttribute(
-        lib1, lib2, "neutronDoseConversionFactors"
-    )
-    equal &= xsLibraries.compareXSLibraryAttribute(
-        lib1, lib2, "gammaDoseConversionFactors"
-    )
+    equal &= xsLibraries.compareXSLibraryAttribute(lib1, lib2, "neutronDoseConversionFactors")
+    equal &= xsLibraries.compareXSLibraryAttribute(lib1, lib2, "gammaDoseConversionFactors")
     # compare the meta data
     equal &= lib1.pmatrxMetadata.compare(lib2.pmatrxMetadata, lib1, lib2)
     # check the nuclides
@@ -57,9 +51,7 @@ def compare(lib1, lib2):
 
 
 def compareNuclideXS(nuc1, nuc2):
-    equal = nuc1.pmatrxMetadata.compare(
-        nuc2.pmatrxMetadata, nuc1.container, nuc2.container
-    )
+    equal = nuc1.pmatrxMetadata.compare(nuc2.pmatrxMetadata, nuc1.container, nuc2.container)
     for attrName in [
         "neutronHeating",
         "neutronDamage",
@@ -72,9 +64,7 @@ def compareNuclideXS(nuc1, nuc2):
         val2 = getattr(nuc2, attrName)
         if not properties.numpyHackForEqual(val1, val2):
             runLog.important(
-                "{} and {} have different `{}` attributes:\n{}\n{}".format(
-                    nuc1, nuc2, attrName, val1, val2
-                )
+                "{} and {} have different `{}` attributes:\n{}\n{}".format(nuc1, nuc2, attrName, val1, val2)
             )
             equal &= False
     return equal
@@ -103,9 +93,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
         return False
     if len(lib.xsIDs) > 1:
         runLog.warning(
-            "Cannot add dummy nuclide data to PMATRX library {} containing data for more than 1 XS ID.".format(
-                lib
-            )
+            "Cannot add dummy nuclide data to PMATRX library {} containing data for more than 1 XS ID.".format(lib)
         )
         return False
     dummyNuclideKeysAddedToLibrary = []
@@ -181,11 +169,7 @@ class PmatrxIO(cccc.Stream):
         self._dummyNuclideKeysAddedToLibrary = []
 
     def _rwMessage(self):
-        runLog.debug(
-            "{} PMATRX data {}".format(
-                "Reading" if "r" in self._fileMode else "Writing", self
-            )
-        )
+        runLog.debug("{} PMATRX data {}".format("Reading" if "r" in self._fileMode else "Writing", self))
 
     def readWrite(self):
         """Read and write PMATRX files.
@@ -234,13 +218,9 @@ class PmatrxIO(cccc.Stream):
                 "numNeutronGroups",
             ]:
                 self._metadata[name] = record.rwInt(self._metadata[name])
-            self._metadata["hasInPlateData"] = record.rwBool(
-                self._metadata["hasInPlateData"]
-            )
+            self._metadata["hasInPlateData"] = record.rwBool(self._metadata["hasInPlateData"])
             numNucs = record.rwInt(len(self._lib))
-            self._metadata["hasDoseConversionFactor"] = record.rwBool(
-                self._metadata["hasDoseConversionFactor"]
-            )
+            self._metadata["hasDoseConversionFactor"] = record.rwBool(self._metadata["hasDoseConversionFactor"])
             for name in [
                 "maxScatteringOrder",
                 "maxNumberOfCompositions",
@@ -258,17 +238,13 @@ class PmatrxIO(cccc.Stream):
             self._lib.neutronEnergyUpperBounds = record.rwMatrix(
                 self._lib.neutronEnergyUpperBounds, self._metadata["numNeutronGroups"]
             )
-            self._metadata["minimumNeutronEnergy"] = record.rwFloat(
-                self._metadata["minimumNeutronEnergy"]
-            )
+            self._metadata["minimumNeutronEnergy"] = record.rwFloat(self._metadata["minimumNeutronEnergy"])
             # The lower bound energy is included in this list. We'll drop it to maintain consistency with other
             # libs by holding only the upper bounds.
             self._lib.gammaEnergyUpperBounds = record.rwMatrix(
                 self._lib.gammaEnergyUpperBounds, self._metadata["numGammaGroups"]
             )
-            self._metadata["minimumGammaEnergy"] = record.rwFloat(
-                self._metadata["minimumGammaEnergy"]
-            )
+            self._metadata["minimumGammaEnergy"] = record.rwFloat(self._metadata["minimumGammaEnergy"])
 
     def _rwDoseConversionFactor(self):
         if self._metadata["hasDoseConversionFactor"]:
@@ -293,9 +269,7 @@ class PmatrxIO(cccc.Stream):
         for nucLabel in nuclideLabels:
             nuclide = self._getNuclide(nucLabel)
             nuclide.updateBaseNuclide()
-            nuclideReader = _PmatrxNuclideIO(
-                nuclide, self, numNeutronGroups, numGammaGroups
-            )
+            nuclideReader = _PmatrxNuclideIO(nuclide, self, numNeutronGroups, numGammaGroups)
             nuclideReader.rwNuclide()
             if "r" in self._fileMode:
                 # on add nuclides when reading
@@ -323,70 +297,42 @@ class _PmatrxNuclideIO:
 
     def _rwNuclideHeading(self):
         with self._pmatrixIO.createRecord() as record:
-            self._metadata["hasNeutronHeatingAndDamage"] = record.rwBool(
-                self._metadata["hasNeutronHeatingAndDamage"]
-            )
-            self._metadata["maxScatteringOrder"] = record.rwInt(
-                self._metadata["maxScatteringOrder"]
-            )
-            self._metadata["hasGammaHeating"] = record.rwBool(
-                self._metadata["hasGammaHeating"]
-            )
-            self._metadata["numberNeutronXS"] = record.rwInt(
-                self._metadata["numberNeutronXS"]
-            )
-            self._metadata["collapsingRegionNumber"] = record.rwInt(
-                self._metadata["collapsingRegionNumber"]
-            )
+            self._metadata["hasNeutronHeatingAndDamage"] = record.rwBool(self._metadata["hasNeutronHeatingAndDamage"])
+            self._metadata["maxScatteringOrder"] = record.rwInt(self._metadata["maxScatteringOrder"])
+            self._metadata["hasGammaHeating"] = record.rwBool(self._metadata["hasGammaHeating"])
+            self._metadata["numberNeutronXS"] = record.rwInt(self._metadata["numberNeutronXS"])
+            self._metadata["collapsingRegionNumber"] = record.rwInt(self._metadata["collapsingRegionNumber"])
 
     def _rwNeutronHeatingAndDamage(self):
         if not self._metadata["hasNeutronHeatingAndDamage"]:
             return
         with self._pmatrixIO.createRecord() as record:
-            self._nuclide.neutronHeating = record.rwMatrix(
-                self._nuclide.neutronHeating, self._numNeutronGroups
-            )
-            self._nuclide.neutronDamage = record.rwMatrix(
-                self._nuclide.neutronDamage, self._numNeutronGroups
-            )
+            self._nuclide.neutronHeating = record.rwMatrix(self._nuclide.neutronHeating, self._numNeutronGroups)
+            self._nuclide.neutronDamage = record.rwMatrix(self._nuclide.neutronDamage, self._numNeutronGroups)
 
     def _rwReactionXS(self):
         numActivationXS = self._metadata["numberNeutronXS"]
         pmatrixParams = self._metadata
-        activationXS = self._metadata["activationXS"] = (
-            self._metadata["activationXS"] or [None] * numActivationXS
-        )
-        activationMT = self._metadata["activationMT"] = (
-            self._metadata["activationMT"] or [None] * numActivationXS
-        )
-        activationMTU = self._metadata["activationMTU"] = (
-            self._metadata["activationMTU"] or [None] * numActivationXS
-        )
+        activationXS = self._metadata["activationXS"] = self._metadata["activationXS"] or [None] * numActivationXS
+        activationMT = self._metadata["activationMT"] = self._metadata["activationMT"] or [None] * numActivationXS
+        activationMTU = self._metadata["activationMTU"] = self._metadata["activationMTU"] or [None] * numActivationXS
         for xsNum in range(numActivationXS):
             with self._pmatrixIO.createRecord() as record:
-                pmatrixParams["activationXS"][xsNum] = record.rwList(
-                    activationXS[xsNum], self._numNeutronGroups
-                )
+                pmatrixParams["activationXS"][xsNum] = record.rwList(activationXS[xsNum], self._numNeutronGroups)
                 pmatrixParams["activationMT"][xsNum] = record.rwInt(activationMT[xsNum])
-                pmatrixParams["activationMTU"][xsNum] = record.rwInt(
-                    activationMTU[xsNum]
-                )
+                pmatrixParams["activationMTU"][xsNum] = record.rwInt(activationMTU[xsNum])
 
     def _rwGammaHeating(self):
         if not self._metadata["hasGammaHeating"]:
             return
         with self._pmatrixIO.createRecord() as record:
-            self._nuclide.gammaHeating = record.rwMatrix(
-                self._nuclide.gammaHeating, self._numGammaGroups
-            )
+            self._nuclide.gammaHeating = record.rwMatrix(self._nuclide.gammaHeating, self._numGammaGroups)
 
     def _rwCellAveragedProductionMatrix(self):
         for lrd in range(1, 1 + self._metadata["maxScatteringOrder"]):
             with self._pmatrixIO.createRecord() as record:
                 prodMatrix = self._getProductionMatrix(lrd)
-                prodMatrix = record.rwMatrix(
-                    prodMatrix, self._numNeutronGroups, self._numGammaGroups
-                )
+                prodMatrix = record.rwMatrix(prodMatrix, self._numNeutronGroups, self._numGammaGroups)
                 self._setProductionMatrix(lrd, prodMatrix)
 
     def _getProductionMatrix(self, order):

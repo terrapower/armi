@@ -59,6 +59,7 @@ Database revision changelog
        indices allows for more efficient means of extracting information based on
        location, without having to compose the full model.
 """
+
 import os
 
 from armi import runLog

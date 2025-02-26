@@ -63,13 +63,7 @@ LOC_KEYS = {
 DISCRETE_SCHEMA = vol.Schema(
     [
         {
-            INP_LOCATION: vol.Schema(
-                {
-                    vol.In(LOC_CARTESIAN + LOC_HEX + LOC_RZ + MESH_RZ): vol.Any(
-                        float, int
-                    )
-                }
-            ),
+            INP_LOCATION: vol.Schema({vol.In(LOC_CARTESIAN + LOC_HEX + LOC_RZ + MESH_RZ): vol.Any(float, int)}),
             INP_SPEC: str,
             vol.Inclusive(INP_FUEL_PATH, "eq shuffling"): int,
             vol.Inclusive(INP_FUEL_CYCLE, "eq shuffling"): int,
@@ -83,9 +77,7 @@ INPUT_SCHEMA = vol.Schema(
             {
                 str: vol.Schema(
                     {
-                        vol.Optional(INP_GEOM, default=geometry.HEX): vol.In(
-                            geometry.VALID_GEOMETRY_TYPE
-                        ),
+                        vol.Optional(INP_GEOM, default=geometry.HEX): vol.In(geometry.VALID_GEOMETRY_TYPE),
                         vol.Optional(
                             INP_SYMMETRY,
                             default=geometry.THIRD_CORE + " " + geometry.PERIODIC,
@@ -240,19 +232,15 @@ class SystemLayoutInput:
             eqPathIndex, eqPathCycle = None, None
 
             if self.geomType == geometry.GeomType.CARTESIAN:
-                indices = x, y = tuple(
-                    int(assemblyNode.attrib[key]) for key in LOC_CARTESIAN
-                )
+                indices = x, y = tuple(int(assemblyNode.attrib[key]) for key in LOC_CARTESIAN)
                 self.maxRings = max(x + 1, y + 1, self.maxRings)
             elif self.geomType == geometry.GeomType.RZT:
-                indices = tuple(
-                    float(assemblyNode.attrib[key]) for key in LOC_RZ
-                ) + tuple(int(assemblyNode.attrib[key]) for key in MESH_RZ)
+                indices = tuple(float(assemblyNode.attrib[key]) for key in LOC_RZ) + tuple(
+                    int(assemblyNode.attrib[key]) for key in MESH_RZ
+                )
             else:
                 # assume hex geom.
-                indices = ring, _pos = tuple(
-                    int(assemblyNode.attrib[key]) for key in LOC_HEX
-                )
+                indices = ring, _pos = tuple(int(assemblyNode.attrib[key]) for key in LOC_HEX)
                 self.maxRings = max(ring, self.maxRings)
 
                 if INP_FUEL_PATH in assemblyNode.attrib:
@@ -309,10 +297,7 @@ class SystemLayoutInput:
     def _read_yaml_lattice(self, system):
         """Read a ascii map string into this object."""
         mapTxt = system[INP_LATTICE]
-        if (
-            self.geomType == geometry.GeomType.HEX
-            and self.symmetry.domain == geometry.DomainType.THIRD_CORE
-        ):
+        if self.geomType == geometry.GeomType.HEX and self.symmetry.domain == geometry.DomainType.THIRD_CORE:
             asciimap = asciimaps.AsciiMapHexThirdFlatsUp()
             asciimap.readAscii(mapTxt)
             for (i, j), spec in asciimap.items():
@@ -324,8 +309,7 @@ class SystemLayoutInput:
                 self.maxRings = max(ring, self.maxRings)
         else:
             raise ValueError(
-                f"ASCII map reading from geom/domain: {self.geomType}/"
-                f"{self.symmetry.domain} not supported."
+                f"ASCII map reading from geom/domain: {self.geomType}/{self.symmetry.domain} not supported."
             )
 
     def modifyEqPaths(self, modifiedPaths):
@@ -458,9 +442,7 @@ class SystemLayoutInput:
         """
         if self.symmetry.domain == geometry.DomainType.FULL_CORE:
             # already full core from geometry file. No need to copy symmetry over.
-            runLog.important(
-                "Detected that full core geometry already exists. Cannot expand."
-            )
+            runLog.important("Detected that full core geometry already exists. Cannot expand.")
             return
         elif (
             self.symmetry.domain != geometry.DomainType.THIRD_CORE
@@ -485,9 +467,7 @@ class SystemLayoutInput:
         for (ring, pos), specifierID in list(self.assemTypeByIndices.items()):
             indices = grids.HexGrid.getIndicesFromRingAndPos(ring, pos)
             for symmetricI, symmetricJ in grid.getSymmetricEquivalents(indices):
-                symmetricRingPos = grids.HexGrid.indicesToRingPos(
-                    symmetricI, symmetricJ
-                )
+                symmetricRingPos = grids.HexGrid.indicesToRingPos(symmetricI, symmetricJ)
                 self.assemTypeByIndices[symmetricRingPos] = specifierID
 
         self.symmetry = geometry.SymmetryType(
@@ -498,14 +478,10 @@ class SystemLayoutInput:
     def _getGeomTypeAndSymmetryFromXml(self, root):
         """Read the geometry type and symmetry."""
         try:
-            self.geomType = geometry.GeomType.fromStr(
-                str(root.attrib[INP_GEOM]).lower()
-            )
+            self.geomType = geometry.GeomType.fromStr(str(root.attrib[INP_GEOM]).lower())
         except ValueError:
             # will not execute if the geom was specified as thetarz, cartesian or anything else specific
-            runLog.warning(
-                "Could not find geometry type. Assuming hex geometry with third core periodic symmetry."
-            )
+            runLog.warning("Could not find geometry type. Assuming hex geometry with third core periodic symmetry.")
             self.geomType = geometry.GeomType.HEX
             self.symmetry = geometry.SymmetryType(
                 geometry.DomainType.THIRD_CORE,
@@ -538,9 +514,7 @@ class SystemLayoutInput:
             if aType in assemDesigns:
                 aType = assemDesigns[aType].specifier
 
-            (x, _y) = indices = reactor.core.spatialGrid.getRingPos(
-                assembly.spatialLocator.getCompleteIndices()
-            )
+            (x, _y) = indices = reactor.core.spatialGrid.getRingPos(assembly.spatialLocator.getCompleteIndices())
             geom.maxRings = max(x, geom.maxRings)
 
             geom.assemTypeByIndices[indices] = aType

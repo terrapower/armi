@@ -24,6 +24,7 @@ Tests must be invoked via pytest for this to have any affect, for example::
     $ pytest -n 6 armi
 
 """
+
 import os
 
 import matplotlib

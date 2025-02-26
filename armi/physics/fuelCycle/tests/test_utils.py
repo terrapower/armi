@@ -73,9 +73,7 @@ class FuelCycleUtilsTests(TestCase):
 
     def test_singleLocatorWithBurnup(self):
         """Test that a single component with burnup can be used to find the highest burnup."""
-        freeComp = Circle(
-            "free fuel", material="UO2", Tinput=200, Thot=200, id=0, od=1, mult=1
-        )
+        freeComp = Circle("free fuel", material="UO2", Tinput=200, Thot=200, id=0, od=1, mult=1)
         freeComp.spatialLocator = IndexLocation(2, 4, 0, None)
         freeComp.p.pinPercentBu = [
             0.01,
@@ -90,9 +88,7 @@ class FuelCycleUtilsTests(TestCase):
 
     def test_maxBurnupLocatorMismatchedData(self):
         """Ensure pin burnup and locations must agree."""
-        freeComp = Circle(
-            "free fuel", material="UO2", Tinput=200, Thot=200, id=0, od=1, mult=1
-        )
+        freeComp = Circle("free fuel", material="UO2", Tinput=200, Thot=200, id=0, od=1, mult=1)
         freeComp.spatialLocator = IndexLocation(2, 4, 0, None)
         freeComp.p.pinPercentBu = [
             0.01,
@@ -152,9 +148,7 @@ class FuelCycleUtilsTests(TestCase):
         # add a new block with more burnup higher up the stack
         hotter = copy.deepcopy(self.block)
         hotter.p.percentBuPeak *= 2
-        expected = utils.maxBurnupBlock(
-            [reflector, self.block, hotter, self.block, reflector]
-        )
+        expected = utils.maxBurnupBlock([reflector, self.block, hotter, self.block, reflector])
         self.assertIs(expected, hotter)
 
     def test_maxBurnupBlockNoBlocks(self):

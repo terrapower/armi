@@ -62,9 +62,7 @@ def timed(*args):
         label = args[0]
         return time_decorator
     else:
-        raise ValueError(
-            "The timed decorator has been misused. Input args were {}".format(args)
-        )
+        raise ValueError("The timed decorator has been misused. Input args were {}".format(args))
 
 
 def getMasterTimer():
@@ -76,15 +74,12 @@ def getMasterTimer():
 
 
 class MasterTimer:
-
     _instance = None
 
     def __init__(self):
         if MasterTimer._instance:
             raise RuntimeError(
-                "{} is a pseudo singleton, do not attempt to make more than one.".format(
-                    self.__class__.__name__
-                )
+                "{} is a pseudo singleton, do not attempt to make more than one.".format(self.__class__.__name__)
             )
         MasterTimer._instance = self
 
@@ -271,14 +266,10 @@ class MasterTimer:
 
         # plot set up
         # might not be necessary to scale the width with the height like this
-        plt.figure(
-            figsize=(3 + len(master.timers.values()), (3 + len(master.timers.values())))
-        )
+        plt.figure(figsize=(3 + len(master.timers.values()), (3 + len(master.timers.values()))))
         plt.axis([0.0, cur_time, 0.0, y_level + 1])
         plt.xlabel("Time (s)")
-        plt.yticks(
-            np.arange(y_level + 1), [""] + names
-        )  # offset needed for some reason
+        plt.yticks(np.arange(y_level + 1), [""] + names)  # offset needed for some reason
         _loc, labels = plt.yticks()
         for tick in labels:
             tick.set_fontsize(40)
@@ -288,9 +279,7 @@ class MasterTimer:
         # plot content draw
         plt.hlines(y_values, x_starts, x_stops, colors)
 
-        def flatMerge(
-            l1, l2=None
-        ):  # duplicate a list flatly or merge them flatly (no tuples compared to zip)
+        def flatMerge(l1, l2=None):  # duplicate a list flatly or merge them flatly (no tuples compared to zip)
             return [item for sublist in zip(l1, l2 or l1) for item in sublist]
 
         ymin = [y - 0.3 for y in y_values]
@@ -325,9 +314,7 @@ class _Timer:
         self._active = False
         self._times = []  # [(start, end), (start, end)...]
         self.over_start = 0  # necessary for recursion tracking
-        self.reportedTotal = (
-            0.0  # time elapsed since last asked to report time in __str__
-        )
+        self.reportedTotal = 0.0  # time elapsed since last asked to report time in __str__
 
         if start:
             self.start()

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Energy group tests."""
+
 import unittest
 
 from armi.physics.neutronics import energyGroups
@@ -43,9 +44,7 @@ class TestEnergyGroups(unittest.TestCase):
         for groupStructureType in energyGroups.GROUP_STRUCTURE:
             self.assertEqual(
                 groupStructureType,
-                energyGroups.getGroupStructureType(
-                    energyGroups.getGroupStructure(groupStructureType)
-                ),
+                energyGroups.getGroupStructureType(energyGroups.getGroupStructure(groupStructureType)),
             )
 
     def test_getFastFluxGroupCutoff(self):
@@ -55,8 +54,6 @@ class TestEnergyGroups(unittest.TestCase):
             :id: T_ARMI_EG_FE
             :tests: R_ARMI_EG_FE
         """
-        group, frac = energyGroups.getFastFluxGroupCutoff(
-            [100002, 100001, 100000, 99999, 0]
-        )
+        group, frac = energyGroups.getFastFluxGroupCutoff([100002, 100001, 100000, 99999, 0])
 
         self.assertListEqual([group, frac], [2, 0])

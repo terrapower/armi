@@ -44,8 +44,7 @@ def defineSettings():
             default=0.25,
             label="Fission Gas Yield Fraction",
             description=(
-                "The fraction of gaseous atoms produced per fission event, assuming a "
-                "fission product yield of 2.0"
+                "The fraction of gaseous atoms produced per fission event, assuming a fission product yield of 2.0"
             ),
         ),
         setting.Setting(

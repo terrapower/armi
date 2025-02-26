@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Simple air material."""
+
 from armi.materials import material
 from armi.utils.units import G_PER_CM3_TO_KG_PER_M3, getTk
 
@@ -113,12 +114,7 @@ class Air(material.Fluid):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
-        thermalConductivity = (
-            2.13014e-08 * Tk**3
-            - 6.31916e-05 * Tk**2
-            + 1.11629e-01 * Tk
-            - 2.00043e00
-        )
+        thermalConductivity = 2.13014e-08 * Tk**3 - 6.31916e-05 * Tk**2 + 1.11629e-01 * Tk - 2.00043e00
         return thermalConductivity * 1e-3
 
     def heatCapacity(self, Tk=None, Tc=None):

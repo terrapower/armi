@@ -67,6 +67,7 @@ Specifying blocks and assemblies to track
 See :ref:`detail-assems`.
 
 """
+
 import traceback
 from typing import TYPE_CHECKING
 
@@ -217,14 +218,10 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def _getBlockHistoryFileName(self, block):
         """Get name for block."""
-        return self._getHistoryFileName(
-            block.getName() + "{}".format(block.spatialLocator.k), "b"
-        )
+        return self._getHistoryFileName(block.getName() + "{}".format(block.spatialLocator.k), "b")
 
     def _getLocationHistoryFileName(self, location):
-        return self._getHistoryFileName(
-            str(location) + "{}".format(location.axial), "l"
-        )
+        return self._getHistoryFileName(str(location) + "{}".format(location.axial), "l")
 
     def _getHistoryFileName(self, label, letter):
         return "{0}-{1}-{2}Hist.txt".format(self.cs.caseTitle, label, letter)
@@ -258,8 +255,9 @@ class HistoryTrackerInterface(interfaces.Interface):
                 if name in {a.name for a in self.r.core}:
                     raise Exception("Found it")
                 runLog.warning(
-                    "Cannot find detail assembly {} in assemblies-by-name lookup table, which has {} entries"
-                    "".format(name, len(self.r.core.assembliesByName))
+                    "Cannot find detail assembly {} in assemblies-by-name lookup table, which has {} entries".format(
+                        name, len(self.r.core.assembliesByName)
+                    )
                 )
         return assems
 
@@ -306,13 +304,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             out.write("\n")
 
             params = self.getTrackedParams()
-            blocks = [
-                b
-                for b in a
-                if not any(
-                    b.hasFlags(sbf) for sbf in self.r.core.stationaryBlockFlagsList
-                )
-            ]
+            blocks = [b for b in a if not any(b.hasFlags(sbf) for sbf in self.r.core.stationaryBlockFlagsList)]
             blockHistories = dbi.getHistories(blocks, params)
 
             for param in params:
@@ -324,21 +316,14 @@ class HistoryTrackerInterface(interfaces.Interface):
 
             # loc is a tuple, remove the spaces from the string representation so it is easy to load
             # into a spreadsheet or whatever
-            location = [
-                str(loc).replace(" ", "")
-                for loc in dbi.getHistory(a, ["location"])["location"].values()
-            ]
+            location = [str(loc).replace(" ", "") for loc in dbi.getHistory(a, ["location"])["location"].values()]
             out.write("\n\nkey: location\n")
             out.write(tabulate.tabulate((location,), tableFmt="plain"))
             out.write("\n\n\n")
 
             headers = "EOL bottom top center".split()
             data = [("", b.p.zbottom, b.p.ztop, b.p.z) for b in blocks]
-            out.write(
-                tabulate.tabulate(
-                    data, headers=headers, tableFmt="plain", floatFmt="10.3f"
-                )
-            )
+            out.write(tabulate.tabulate(data, headers=headers, tableFmt="plain", floatFmt="10.3f"))
 
             out.write("\n\n\nAssembly info\n")
             out.write("{0} {1}\n".format(a.getName(), a.getType()))
@@ -367,10 +352,7 @@ class HistoryTrackerInterface(interfaces.Interface):
             self._preloadedBlockHistory = data
         except Exception:
             # fails during the beginning of standard runs, but that's ok
-            runLog.info(
-                "Unable to pre-load block history values due to error:"
-                f"\n{traceback.format_exc()}"
-            )
+            runLog.info(f"Unable to pre-load block history values due to error:\n{traceback.format_exc()}")
             self.unloadBlockHistoryVals()
 
     def unloadBlockHistoryVals(self):
@@ -419,10 +401,7 @@ class HistoryTrackerInterface(interfaces.Interface):
                 data = dbi.database.getHistory(block, [paramName], [ts])
                 val = data[paramName][ts]
             except KeyError:
-                runLog.error(
-                    "No value in DB. param name: {} requested index: {}"
-                    "".format(paramName, ts)
-                )
+                runLog.error("No value in DB. param name: {} requested index: {}".format(paramName, ts))
                 raise
         return val
 

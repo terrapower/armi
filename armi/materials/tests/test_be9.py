@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit test for Beryllium."""
+
 import unittest
 
 from armi.materials.be9 import Be9

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for simplified UZr material."""
+
 import pickle
 from unittest import TestCase
 
@@ -20,7 +21,6 @@ from armi.materials.uZr import UZr
 
 
 class UZR_TestCase(TestCase):
-
     MAT_CLASS = UZr
 
     def setUp(self):
@@ -37,9 +37,7 @@ class UZR_TestCase(TestCase):
         mat = pickle.loads(stream)
 
         # check a property that is sometimes interpolated.
-        self.assertEqual(
-            self.mat.thermalConductivity(500), mat.thermalConductivity(500)
-        )
+        self.assertEqual(self.mat.thermalConductivity(500), mat.thermalConductivity(500))
 
     def test_TD(self):
         """Test the material theoretical density."""

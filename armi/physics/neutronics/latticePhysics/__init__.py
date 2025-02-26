@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Initialization of the interfaces for running lattice physics calculations."""
+
 # ruff: noqa: F401
 import os
 

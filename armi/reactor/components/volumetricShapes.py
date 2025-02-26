@@ -54,9 +54,7 @@ class Sphere(ShapedComponent):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, od=od, id=id, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, od=od, id=id, mult=mult, modArea=modArea)
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
@@ -223,10 +221,7 @@ class RadialSegment(ShapedComponent):
                         - self.getDimension("inner_radius", cold=cold) ** 2
                     )
                     * (
-                        (
-                            self.getDimension("outer_theta", cold=cold)
-                            - self.getDimension("inner_theta", cold=cold)
-                        )
+                        (self.getDimension("outer_theta", cold=cold) - self.getDimension("inner_theta", cold=cold))
                         / (math.pi * 2.0)
                     )
                 )
@@ -333,8 +328,7 @@ class DifferentialRadialSegment(RadialSegment):
         self.setDimension(key, val)
         self.setDimension(
             "outer_radius",
-            self.getDimension("inner_radius")
-            + self.getDimension("radius_differential"),
+            self.getDimension("inner_radius") + self.getDimension("radius_differential"),
         )
         self.setDimension(
             "outer_axial",
@@ -342,15 +336,12 @@ class DifferentialRadialSegment(RadialSegment):
         )
         self.setDimension(
             "outer_theta",
-            self.getDimension("inner_theta")
-            + self.getDimension("azimuthal_differential"),
+            self.getDimension("inner_theta") + self.getDimension("azimuthal_differential"),
         )
 
     def getComponentArea(self, refVolume=None, refHeight=None, cold=False):
         self.updateDims()
-        return RadialSegment.getComponentArea(
-            self, refVolume=None, refHeight=None, cold=False
-        )
+        return RadialSegment.getComponentArea(self, refVolume=None, refHeight=None, cold=False)
 
     def getComponentVolume(self):
         self.updateDims()

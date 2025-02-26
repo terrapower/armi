@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test loading Theta-RZ reactor models."""
+
 import math
 import os
 import unittest
@@ -51,9 +52,7 @@ class TestRZTReactorModern(unittest.TestCase):
         This tests loading and verifies the reactor is loaded correctly by comparing volumes against
         expected volumes for full core (including void boundary conditions) and just the fuel.
         """
-        cs = settings.Settings(
-            fName=os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml")
-        )
+        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml"))
         r = reactors.loadFromCs(cs)
 
         godivaRadius = 8.7407

@@ -42,9 +42,7 @@ class MpiDirectoryChanger(directoryChangers.DirectoryChanger):
         outputPath : str, optional
             directory for outputs
         """
-        directoryChangers.DirectoryChanger.__init__(
-            self, destination, outputPath=outputPath
-        )
+        directoryChangers.DirectoryChanger.__init__(self, destination, outputPath=outputPath)
 
     def open(self):
         cdma = _ChangeDirectoryMpiAction(self.destination)

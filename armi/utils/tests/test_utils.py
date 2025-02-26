@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Testing some utility functions."""
+
 import os
 import unittest
 from collections import defaultdict
@@ -69,9 +70,7 @@ class TestGeneralUtils(unittest.TestCase):
     def test_mergeableDictionary(self):
         mergeableDict = utils.MergeableDict()
         normalDict = {"luna": "thehusky", "isbegging": "fortreats", "right": "now"}
-        mergeableDict.merge(
-            {"luna": "thehusky"}, {"isbegging": "fortreats"}, {"right": "now"}
-        )
+        mergeableDict.merge({"luna": "thehusky"}, {"isbegging": "fortreats"}, {"right": "now"})
         self.assertEqual(mergeableDict, normalDict)
 
     def test_createFormattedStrWithDelimiter(self):
@@ -165,9 +164,7 @@ class TestGeneralUtils(unittest.TestCase):
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -355,13 +352,9 @@ settings:
         )
 
     def test_getCycleNames(self):
-        self.assertEqual(
-            getCycleNames(self.standaloneDetailedCS), self.cycleNamesDetailedSolution
-        )
+        self.assertEqual(getCycleNames(self.standaloneDetailedCS), self.cycleNamesDetailedSolution)
 
-        self.assertEqual(
-            getCycleNames(self.standaloneSimpleCS), self.cycleNamesSimpleSolution
-        )
+        self.assertEqual(getCycleNames(self.standaloneSimpleCS), self.cycleNamesSimpleSolution)
 
     def test_getAvailabilityFactors(self):
         self.assertEqual(
@@ -391,18 +384,12 @@ settings:
             self.cycleLengthsDetailedSolution,
         )
 
-        self.assertEqual(
-            getCycleLengths(self.standaloneSimpleCS), self.cycleLengthsSimpleSolution
-        )
+        self.assertEqual(getCycleLengths(self.standaloneSimpleCS), self.cycleLengthsSimpleSolution)
 
     def test_getBurnSteps(self):
-        self.assertEqual(
-            getBurnSteps(self.standaloneDetailedCS), self.burnStepsDetailedSolution
-        )
+        self.assertEqual(getBurnSteps(self.standaloneDetailedCS), self.burnStepsDetailedSolution)
 
-        self.assertEqual(
-            getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution
-        )
+        self.assertEqual(getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution)
 
     def test_hasBurnup(self):
         self.assertTrue(hasBurnup(self.standaloneDetailedCS))
@@ -413,9 +400,7 @@ settings:
             self.maxBurnStepsDetailedSolution,
         )
 
-        self.assertEqual(
-            getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution
-        )
+        self.assertEqual(getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution)
 
     def test_getNodesPerCycle(self):
         self.assertEqual(
@@ -423,39 +408,21 @@ settings:
             self.nodesPerCycleDetailedSolution,
         )
 
-        self.assertEqual(
-            getNodesPerCycle(self.standaloneSimpleCS), self.nodesPerCycleSimpleSolution
-        )
+        self.assertEqual(getNodesPerCycle(self.standaloneSimpleCS), self.nodesPerCycleSimpleSolution)
 
     def test_getCycleNodeFromCumulativeStep(self):
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(8, self.standaloneDetailedCS), (1, 4)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(12, self.standaloneDetailedCS), (2, 3)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeStep(8, self.standaloneDetailedCS), (1, 4))
+        self.assertEqual(getCycleNodeFromCumulativeStep(12, self.standaloneDetailedCS), (2, 3))
 
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(4, self.standaloneSimpleCS), (1, 0)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(8, self.standaloneSimpleCS), (2, 1)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeStep(4, self.standaloneSimpleCS), (1, 0))
+        self.assertEqual(getCycleNodeFromCumulativeStep(8, self.standaloneSimpleCS), (2, 1))
 
     def test_getCycleNodeFromCumulativeNode(self):
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(8, self.standaloneDetailedCS), (1, 4)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(12, self.standaloneDetailedCS), (2, 2)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeNode(8, self.standaloneDetailedCS), (1, 4))
+        self.assertEqual(getCycleNodeFromCumulativeNode(12, self.standaloneDetailedCS), (2, 2))
 
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(3, self.standaloneSimpleCS), (0, 3)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeNode(3, self.standaloneSimpleCS), (0, 3))
+        self.assertEqual(getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0))
 
         with self.assertRaises(ValueError):
             getCycleNodeFromCumulativeNode(-1, self.standaloneSimpleCS)

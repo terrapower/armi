@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the MPI portion of the Parameters class."""
+
 import shutil
 import unittest
 
@@ -28,9 +29,7 @@ elif shutil.which("mpiexec") is not None:
 
 class MockSyncPC(parameters.ParameterCollection):
     pDefs = parameters.ParameterDefinitionCollection()
-    with pDefs.createBuilder(
-        default=0.0, location=parameters.ParamLocation.AVERAGE
-    ) as pb:
+    with pDefs.createBuilder(default=0.0, location=parameters.ParamLocation.AVERAGE) as pb:
         pb.defParam("param1", "units", "p1 description", categories=["cat1"])
         pb.defParam("param2", "units", "p2 description", categories=["cat2"])
         pb.defParam("param3", "units", "p3 description", categories=["cat3"])

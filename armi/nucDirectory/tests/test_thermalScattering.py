@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for thermal scattering metadata."""
+
 import unittest
 
 from armi.nucDirectory import nuclideBases as nb
@@ -140,10 +141,7 @@ def getNuclideThermalScatteringData(armiObj):
         for tsl in c.material.thermalScatteringLaws:
             for subjectNb in tsl.getSubjectNuclideBases():
                 if subjectNb in nucs:
-                    if (
-                        subjectNb in tslByNuclideBase
-                        and tslByNuclideBase[subjectNb] is not tsl
-                    ):
+                    if subjectNb in tslByNuclideBase and tslByNuclideBase[subjectNb] is not tsl:
                         raise RuntimeError(
                             f"{subjectNb} in {armiObj} is subject to more than 1 different TSL: "
                             f"{tsl} and {tslByNuclideBase[subjectNb]}"
@@ -154,8 +152,6 @@ def getNuclideThermalScatteringData(armiObj):
 
     freeAndBound = freeNuclideBases.intersection(set(tslByNuclideBase.keys()))
     if freeAndBound:
-        raise RuntimeError(
-            f"{freeAndBound} is/are present in both bound and free forms in {armiObj}"
-        )
+        raise RuntimeError(f"{freeAndBound} is/are present in both bound and free forms in {armiObj}")
 
     return tslByNuclideBase

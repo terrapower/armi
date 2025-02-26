@@ -18,6 +18,7 @@ Parameter definitions for the Neutronics Plugin.
 We hope neutronics plugins that compute flux will use ``mgFlux``, etc., which will enable modular
 construction of apps.
 """
+
 from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
 from armi.reactor import parameters
 from armi.reactor.blocks import Block
@@ -35,7 +36,6 @@ def getNeutronicsParameterDefinitions():
 def _getNeutronicsBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "axMesh",
             units=units.UNITLESS,
@@ -145,8 +145,7 @@ def _getNeutronicsBlockParams():
             "mgFluxSK",
             units=f"n*{units.CM}/{units.SECONDS}",
             description=(
-                "multigroup volume-integrated flux stored for multiple time steps in "
-                "spatial kinetics (2-D array)"
+                "multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)"
             ),
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=False,
@@ -319,7 +318,6 @@ def _getNeutronicsBlockParams():
         location=ParamLocation.EDGES,
         categories=[parameters.Category.detailedAxialExpansion, "depletion"],
     ) as pb:
-
         pb.defParam(
             "pointsEdgeFastFluxFr",
             units=units.UNITLESS,
@@ -510,9 +508,7 @@ def _getNeutronicsBlockParams():
             description="Power divided by XY area",
         )
 
-        pb.defParam(
-            "fertileBonus", units=units.UNITLESS, description="The fertile bonus"
-        )
+        pb.defParam("fertileBonus", units=units.UNITLESS, description="The fertile bonus")
 
         pb.defParam(
             "fisDens",
@@ -552,9 +548,7 @@ def _getNeutronicsBlockParams():
             ),
         )
 
-        pb.defParam(
-            "medAbsE", units=units.EV, description="Median neutron absorption energy"
-        )
+        pb.defParam("medAbsE", units=units.EV, description="Median neutron absorption energy")
 
         pb.defParam(
             "medFisE",
@@ -697,8 +691,7 @@ def _getNeutronicsBlockParams():
             "dpaPeakFromFluence",
             units=units.DPA,
             description=(
-                "DPA approximation based on a fluence conversion factor set in the "
-                f"{CONF_DPA_PER_FLUENCE} setting"
+                f"DPA approximation based on a fluence conversion factor set in the {CONF_DPA_PER_FLUENCE} setting"
             ),
             location=ParamLocation.MAX,
             categories=[

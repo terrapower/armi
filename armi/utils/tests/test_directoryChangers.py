@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module for testing directoryChangers."""
+
 import os
 import shutil
 import unittest
@@ -29,9 +30,7 @@ class TestDirectoryChangers(unittest.TestCase):
     """Tests for directory changers."""
 
     def setUp(self):
-        self.temp_directory = (
-            self._testMethodName + "ThisIsATemporaryDirectory-AAZZ0099"
-        )
+        self.temp_directory = self._testMethodName + "ThisIsATemporaryDirectory-AAZZ0099"
         if os.path.exists(self.temp_directory):
             shutil.rmtree(self.temp_directory)
 
@@ -72,18 +71,14 @@ class TestDirectoryChangers(unittest.TestCase):
     def test_exception_disabled(self):
         """Make sure directory changers do not bring back full folder when handling is disabled."""
         try:
-            with directoryChangers.ForcedCreationDirectoryChanger(
-                self.temp_directory, dumpOnException=False
-            ):
+            with directoryChangers.ForcedCreationDirectoryChanger(self.temp_directory, dumpOnException=False):
                 Path("file1.txt").touch()
                 Path("file2.txt").touch()
                 raise ExpectedException("Ooops")
         except ExpectedException:
             pass
 
-        self.assertFalse(
-            os.path.exists(os.path.join(f"dump-{self.temp_directory}", "file1.txt"))
-        )
+        self.assertFalse(os.path.exists(os.path.join(f"dump-{self.temp_directory}", "file1.txt")))
 
     def test_change_to_nonexisting_fails(self):
         """Fail if destination doesn't exist."""
@@ -119,9 +114,7 @@ class TestDirectoryChangers(unittest.TestCase):
             """Utility to avoid test clashes during cleanups."""
             return self._testMethodName + name
 
-        with directoryChangers.TemporaryDirectoryChanger(
-            filesToRetrieve=[(f("file1.txt"), f("newfile1.txt"))]
-        ):
+        with directoryChangers.TemporaryDirectoryChanger(filesToRetrieve=[(f("file1.txt"), f("newfile1.txt"))]):
             Path(f("file1.txt")).touch()
             Path(f("file2.txt")).touch()
 
@@ -151,9 +144,7 @@ class TestDirectoryChangers(unittest.TestCase):
             """Utility to avoid test clashes during cleanups."""
             return self._testMethodName + name
 
-        with directoryChangers.TemporaryDirectoryChanger(
-            filesToRetrieve=[f("file1.txt"), f("file2.txt")]
-        ):
+        with directoryChangers.TemporaryDirectoryChanger(filesToRetrieve=[f("file1.txt"), f("file2.txt")]):
             Path(f("file1.txt")).touch()
 
         self.assertTrue(os.path.exists(f("file1.txt")))

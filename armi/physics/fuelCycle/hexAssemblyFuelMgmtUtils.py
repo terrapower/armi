@@ -19,6 +19,7 @@ Notes
 -----
 We are keeping these in ARMI even if they appear unused internally.
 """
+
 import math
 import typing
 
@@ -112,9 +113,7 @@ def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int
         runLog.error(msg)
         raise ValueError(msg)
 
-    ringPowers = {
-        (loc.i, loc.j): p for loc, p in zip(previousLocations, previousPowers)
-    }
+    ringPowers = {(loc.i, loc.j): p for loc, p in zip(previousLocations, previousPowers)}
 
     targetGrid = blockAtPreviousLocation.spatialGrid
     candidateRotation = 0
@@ -200,14 +199,12 @@ def buildRingSchedule(
     """
     if dischargeRing > maxRingInCore:
         runLog.warning(
-            f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). "
-            "Changing it to be the max ring"
+            f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). Changing it to be the max ring"
         )
         dischargeRing = maxRingInCore
     if chargeRing > maxRingInCore:
         runLog.warning(
-            f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). "
-            "Changing it to be the max ring."
+            f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). Changing it to be the max ring."
         )
         chargeRing = maxRingInCore
 
@@ -234,17 +231,9 @@ def buildRingSchedule(
         # divergent case. Disable jumpring by putting jumpring at periphery.
         jumpRingTo = maxRingInCore
 
-    if (
-        chargeRing > dischargeRing
-        and jumpRingFrom is not None
-        and jumpRingFrom < jumpRingTo
-    ):
+    if chargeRing > dischargeRing and jumpRingFrom is not None and jumpRingFrom < jumpRingTo:
         raise RuntimeError("Cannot have outward jumps in convergent cases.")
-    if (
-        chargeRing < dischargeRing
-        and jumpRingFrom is not None
-        and jumpRingFrom > jumpRingTo
-    ):
+    if chargeRing < dischargeRing and jumpRingFrom is not None and jumpRingFrom > jumpRingTo:
         raise RuntimeError("Cannot have inward jumps in divergent cases.")
 
     # step 1: build the base rings
@@ -270,9 +259,7 @@ def buildRingSchedule(
 
     # step 2: locate which rings should be reversed to give the jump-ring effect.
     if jumpRingFrom is not None:
-        _closestRingFrom, jumpRingFromIndex = findClosest(
-            baseRings, jumpRingFrom, indx=True
-        )
+        _closestRingFrom, jumpRingFromIndex = findClosest(baseRings, jumpRingFrom, indx=True)
         _closestRingTo, jumpRingToIndex = findClosest(baseRings, jumpRingTo, indx=True)
     else:
         jumpRingToIndex = 0
@@ -329,9 +316,7 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     numSteps = int((chargeRing - dischargeRing + 1) * (1.0 - coarseFactor))
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
-    convergent = [
-        int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)
-    ]
+    convergent = [int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)]
 
     # step 2. eliminate duplicates
     convergent = sorted(list(set(convergent)))

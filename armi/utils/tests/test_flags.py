@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Testing flags.py."""
+
 import unittest
 
 from armi.utils.flags import Flag, auto

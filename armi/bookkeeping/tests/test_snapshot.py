@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test Snapshots."""
+
 import unittest
 from unittest.mock import patch
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for boron carbide."""
+
 import unittest
 
 from armi.materials.b4c import B4C, DEFAULT_THEORETICAL_DENSITY_FRAC

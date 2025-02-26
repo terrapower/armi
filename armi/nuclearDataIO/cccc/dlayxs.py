@@ -21,6 +21,7 @@ used as input to a global flux solver such as DIF3D.
 
 This module implements reading and writing of the DLAYXS, consistent with [CCCC-IV]_.
 """
+
 import collections
 
 import numpy as np
@@ -175,15 +176,9 @@ class Dlayxs(collections.OrderedDict):
         self._checkContributions()
         for nucBase, nucDelayedNeutronConstants in self.items():
             contribution = self.nuclideContributionFractions[nucBase]
-            avg.precursorDecayConstants += (
-                contribution * nucDelayedNeutronConstants.precursorDecayConstants
-            )
-            avg.delayEmissionSpectrum += (
-                contribution * nucDelayedNeutronConstants.delayEmissionSpectrum
-            )
-            avg.delayNeutronsPerFission += (
-                contribution * nucDelayedNeutronConstants.delayNeutronsPerFission
-            )
+            avg.precursorDecayConstants += contribution * nucDelayedNeutronConstants.precursorDecayConstants
+            avg.delayEmissionSpectrum += contribution * nucDelayedNeutronConstants.delayEmissionSpectrum
+            avg.delayNeutronsPerFission += contribution * nucDelayedNeutronConstants.delayNeutronsPerFission
 
         return avg
 
@@ -191,13 +186,13 @@ class Dlayxs(collections.OrderedDict):
         totalContrib = sum(self.nuclideContributionFractions.values())
         if abs(totalContrib - 1.0) > ALLOWED_NUCLIDE_CONTRIBUTION_ERROR:
             raise RuntimeError(
-                "Cannot average delayed neutron fractions unless contributions sum to 1.0. "
-                "They sum to {:.4e}".format(totalContrib)
+                "Cannot average delayed neutron fractions unless contributions sum to 1.0. They sum to {:.4e}".format(
+                    totalContrib
+                )
             )
         if len(self.nuclideContributionFractions) != len(self):
             raise RuntimeError(
-                "Cannot average delayed neutron fractions with {} nuclides and {} "
-                "contribution fractions".format(
+                "Cannot average delayed neutron fractions with {} nuclides and {} contribution fractions".format(
                     len(self), len(self.nuclideContributionFractions)
                 )
             )
@@ -250,11 +245,7 @@ class DlayxsIO(cccc.Stream):
                indexed by nuclide, precursor family, and outgoing neutron energy
                group.
         """
-        runLog.info(
-            "{} DLAYXS library {}".format(
-                "Reading" if "r" in self._fileMode else "Writing", self
-            )
-        )
+        runLog.info("{} DLAYXS library {}".format("Reading" if "r" in self._fileMode else "Writing", self))
         self._rwFileID()
         numNuclides = self._rwFileControl()
         self._rwSpectra(numNuclides)
@@ -265,12 +256,8 @@ class DlayxsIO(cccc.Stream):
         if not np.any(list(self.dlayxs.values())[0].delayEmissionSpectrum):
             for nuc, dlayData in self.dlayxs.items():
                 for ii, family in enumerate(self.dlayxs.nuclideFamily[nuc]):
-                    dlayData.precursorDecayConstants[ii] = self.metadata[
-                        "precursorDecayConstants"
-                    ][family - 1]
-                    dlayData.delayEmissionSpectrum[ii, :] = self.metadata[
-                        "delayEmissionSpectrum"
-                    ][:, family - 1]
+                    dlayData.precursorDecayConstants[ii] = self.metadata["precursorDecayConstants"][family - 1]
+                    dlayData.delayEmissionSpectrum[ii, :] = self.metadata["delayEmissionSpectrum"][:, family - 1]
 
     def _rwFileID(self):
         with self.createRecord() as fileIdRecord:
@@ -282,13 +269,9 @@ class DlayxsIO(cccc.Stream):
 
     def _rwFileControl(self):
         with self.createRecord() as fileControl:
-            self.metadata["numEnergyGroups"] = fileControl.rwInt(
-                self.metadata["numEnergyGroups"]
-            )
+            self.metadata["numEnergyGroups"] = fileControl.rwInt(self.metadata["numEnergyGroups"])
             numNuclides = fileControl.rwInt(len(self.dlayxs))
-            self.metadata["numFamilies"] = fileControl.rwInt(
-                self.metadata["numFamilies"]
-            )
+            self.metadata["numFamilies"] = fileControl.rwInt(self.metadata["numFamilies"])
             self.metadata["dummy"] = fileControl.rwInt(self.metadata["dummy"])
         return numNuclides
 
@@ -299,16 +282,11 @@ class DlayxsIO(cccc.Stream):
         nkfam is the number of families to which fission in a given nuclide contributes delayed neutron precursors
         """
         with self.createRecord() as fileData:
-            self.metadata["nuclideIDs"] = fileData.rwList(
-                self.metadata["nuclideIDs"], "string", numNuclides, 8
-            )
+            self.metadata["nuclideIDs"] = fileData.rwList(self.metadata["nuclideIDs"], "string", numNuclides, 8)
 
             if len(self.dlayxs) == 0:
                 # create data structure if reading
-                nuclides = [
-                    nuclideBases.byMcc3Id[nucName]
-                    for nucName in self.metadata["nuclideIDs"]
-                ]
+                nuclides = [nuclideBases.byMcc3Id[nucName] for nucName in self.metadata["nuclideIDs"]]
                 for nuc in nuclides:
                     self.dlayxs[nuc] = DelayedNeutronData(
                         self.metadata["numEnergyGroups"], self.dlayxs.numPrecursorGroups
@@ -331,16 +309,10 @@ class DlayxsIO(cccc.Stream):
                 self.dlayxs.neutronEnergyUpperBounds, self.metadata["numEnergyGroups"]
             )
             self.metadata["minEnergy"] = fileData.rwFloat(self.metadata["minEnergy"])
-            self.metadata["nkfam"] = fileData.rwList(
-                self.metadata["nkfam"], "int", len(self.dlayxs)
-            )
-            self.metadata["recordsToSkip"] = fileData.rwList(
-                self.metadata["recordsToSkip"], "int", len(self.dlayxs)
-            )
+            self.metadata["nkfam"] = fileData.rwList(self.metadata["nkfam"], "int", len(self.dlayxs))
+            self.metadata["recordsToSkip"] = fileData.rwList(self.metadata["recordsToSkip"], "int", len(self.dlayxs))
             if self.metadata["dummy2"] is not None:
-                fileData.rwList(
-                    self.metadata["dummy2"], "string", len(self.metadata["dummy2"]), 4
-                )
+                fileData.rwList(self.metadata["dummy2"], "string", len(self.metadata["dummy2"]), 4)
             else:
                 self.metadata["dummy2"] = fileData.rwList(
                     None, "string", (fileData.numBytes - fileData.byteCount) // 4, 4
