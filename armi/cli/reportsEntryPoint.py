@@ -34,12 +34,8 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
 
     def addOptions(self):
         self.parser.add_argument("-h5db", help="Input database path", type=str)
-        self.parser.add_argument(
-            "--bp", help="Input blueprint (optional)", type=str, default=None
-        )
-        self.parser.add_argument(
-            "--settings", help="Settings File (optional)", type=str, default=None
-        )
+        self.parser.add_argument("--bp", help="Input blueprint (optional)", type=str, default=None)
+        self.parser.add_argument("--settings", help="Settings File (optional)", type=str, default=None)
         self.parser.add_argument(
             "--output-name",
             "-o",
@@ -49,22 +45,19 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
         )
         self.parser.add_argument(
             "--nodes",
-            help="An optional list of time nodes to include. Should look like "
-            "`(1,0)(1,1)(1,2)`, etc",
+            help="An optional list of time nodes to include. Should look like `(1,0)(1,1)(1,2)`, etc",
             type=str,
             default=None,
         )
         self.parser.add_argument(
             "--max-node",
-            help="An optional (cycle,timeNode) tuple to specify the latest time step that should "
-            "be included",
+            help="An optional (cycle,timeNode) tuple to specify the latest time step that should be included",
             type=str,
             default=None,
         )
         self.parser.add_argument(
             "--min-node",
-            help="An optional (cycle,timeNode) tuple to specify the earliest time step that should "
-            "be included",
+            help="An optional (cycle,timeNode) tuple to specify the earliest time step that should be included",
             type=str,
             default=None,
         )
@@ -112,16 +105,10 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
                         if nodes is not None and (cycle, node) not in nodes:
                             continue
 
-                        if (
-                            self.args.min_node is not None
-                            and (cycle, node) < self.args.min_node
-                        ):
+                        if self.args.min_node is not None and (cycle, node) < self.args.min_node:
                             continue
 
-                        if (
-                            self.args.max_node is not None
-                            and (cycle, node) > self.args.max_node
-                        ):
+                        if self.args.max_node is not None and (cycle, node) > self.args.max_node:
                             continue
 
                         r = db.load(cycle, node)
@@ -167,9 +154,7 @@ class ReportsEntryPoint(entryPoint.EntryPoint):
             self.args.max_node = ReportsEntryPoint.toTwoTuple(self.args.max_node)
 
         if self.args.nodes is not None and type(self.args.nodes) is str:
-            self.args.nodes = [
-                ReportsEntryPoint.toTwoTuple(n) for n in self.args.nodes.split(")")[:-1]
-            ]
+            self.args.nodes = [ReportsEntryPoint.toTwoTuple(n) for n in self.args.nodes.split(")")[:-1]]
 
 
 def createReportFromSettings(cs):
@@ -190,9 +175,7 @@ def createReportFromSettings(cs):
         A string representing the HTML for a web page.
     """
     if cs is None:
-        raise RuntimeError(
-            "No Settings with Blueprint or Database, cannot gerenate a report"
-        )
+        raise RuntimeError("No Settings with Blueprint or Database, cannot gerenate a report")
 
     blueprint = blueprints.loadFromCs(cs)
     r = reactors.factory(cs, blueprint)

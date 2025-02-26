@@ -18,6 +18,7 @@ Thorium Metal.
 Data is from [IAEA-TECDOC-1450]_.
 
 """
+
 from armi.materials.material import FuelMaterial
 from armi.utils.units import getTk
 

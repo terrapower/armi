@@ -41,9 +41,7 @@ def insertNeutronicsReport(r, cs, report, stage):
     if stage == newReports.ReportStage.Begin:
         insertNeutronicsBOLContent(r, cs, report)
 
-    elif (
-        stage == newReports.ReportStage.Standard or stage == newReports.ReportStage.End
-    ):
+    elif stage == newReports.ReportStage.Standard or stage == newReports.ReportStage.End:
         neutronicsPlotting(r, report, cs)
 
 
@@ -59,9 +57,7 @@ def insertNeutronicsBOLContent(r, cs, report):
     report: ReportContent
     """
     section = report[newReportUtils.COMPREHENSIVE_REPORT]
-    table = section.get(
-        newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run")
-    )
+    table = section.get(newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run"))
     for key in [
         CONF_BOUNDARIES,
         CONF_NEUTRONICS_KERNEL,
@@ -95,9 +91,7 @@ def neutronicsPlotting(r, report, cs):
         )
         # To create the keff section and start populating it's points...
     report[NEUTRONICS_SECTION][KEFF_PLOT].add(labels[0], r.p.time, r.core.p.keff, None)
-    report[NEUTRONICS_SECTION][KEFF_PLOT].add(
-        labels[1], r.p.time, r.core.p.keffUnc, None
-    )
+    report[NEUTRONICS_SECTION][KEFF_PLOT].add(labels[1], r.p.time, r.core.p.keffUnc, None)
 
     # Make PD-Plot
     if PD_PLOT not in neutronicsSection.childContents:
@@ -193,9 +187,7 @@ def generateLinePlot(subsectionHeading, r, report, yaxis, name, caption=""):
             maxValue[a.p.type] = max(maxValue[a.p.type], a.p.maxDpaPeak)
 
     for key in maxValue:
-        report[NEUTRONICS_SECTION][subsectionHeading].add(
-            key, r.p.time, maxValue[key], None
-        )
+        report[NEUTRONICS_SECTION][subsectionHeading].add(key, r.p.time, maxValue[key], None)
 
 
 """Subsections """

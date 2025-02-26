@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for basic plotting tools."""
+
 import os
 import unittest
 
@@ -41,18 +42,14 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        cls.o, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
     def test_plotDepthMap(self):  # indirectly tests plot face map
         with TemporaryDirectoryChanger():
             # set some params to visualize
             for i, b in enumerate(self.o.r.core.getBlocks()):
                 b.p.percentBu = i / 100
-            fName = plotting.plotBlockDepthMap(
-                self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
-            )
+            fName = plotting.plotBlockDepthMap(self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2)
             self._checkFileExists(fName)
 
     def test_plotAssemblyTypes(self):
@@ -93,9 +90,7 @@ class TestPlotting(unittest.TestCase):
 
             plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blockList)
             self.assertTrue(os.path.exists("flux.png"))
-            plotting.plotBlockFlux(
-                self.r.core, fName="peak.png", bList=blockList, peak=True
-            )
+            plotting.plotBlockFlux(self.r.core, fName="peak.png", bList=blockList, peak=True)
             self._checkFileExists("peak.png")
             plotting.plotBlockFlux(
                 self.r.core,
@@ -114,9 +109,7 @@ class TestPlotting(unittest.TestCase):
 
     def test_plotCartesianBlock(self):
         with TemporaryDirectoryChanger():
-            cs = settings.Settings(
-                os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml")
-            )
+            cs = settings.Settings(os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml"))
             blueprint = blueprints.loadFromCs(cs)
             _ = reactors.factory(cs, blueprint)
             for name, bDesign in blueprint.blockDesigns.items():
@@ -154,9 +147,7 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][1], 0)
 
         # this one is corners-up, with only a single assembly
-        _, rHexCornersUp = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _, rHexCornersUp = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         nAssems = len(rHexCornersUp.core)
         self.assertEqual(nAssems, 1)
@@ -169,9 +160,7 @@ class TestPatches(unittest.TestCase):
         self.assertAlmostEqual(vertices[0][0], 0)
 
         # this one is cartestian, with many assemblies in the core
-        _, rCartesian = test_reactors.loadTestReactor(
-            inputFileName="refTestCartesian.yaml"
-        )
+        _, rCartesian = test_reactors.loadTestReactor(inputFileName="refTestCartesian.yaml")
 
         nAssems = len(rCartesian.core)
         self.assertGreater(nAssems, 1)

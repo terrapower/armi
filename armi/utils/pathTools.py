@@ -16,6 +16,7 @@
 This module contains commonly used functions relating to directories, files and path
 manipulations.
 """
+
 import importlib
 import os
 import pathlib
@@ -58,18 +59,12 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
             shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
         else:
             safeCopy(sourcePath, destinationPath)
-        runLog.debug(
-            "Copied {}: {} -> {}".format(
-                filepathDescription, sourcePath, destinationPath
-            )
-        )
+        runLog.debug("Copied {}: {} -> {}".format(filepathDescription, sourcePath, destinationPath))
     except shutil.SameFileError:
         pass
     except Exception as e:
         runLog.warning(
-            "Could not copy {} from {} to {}\nError was: {}".format(
-                filepathDescription, sourcePath, destinationPath, e
-            )
+            "Could not copy {} from {} to {}\nError was: {}".format(filepathDescription, sourcePath, destinationPath, e)
         )
 
 
@@ -222,9 +217,7 @@ def cleanPath(path, mpiRank=0):
         valid = True
 
     if not valid:
-        raise Exception(
-            "You tried to delete {0}, but it does not seem safe to do so.".format(path)
-        )
+        raise Exception("You tried to delete {0}, but it does not seem safe to do so.".format(path))
 
     # delete the file/directory from only one process
     if mpiRank == context.MPI_RANK:

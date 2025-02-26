@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Really basic tests of the report Utils."""
+
 import logging
 import os
 import subprocess
@@ -147,18 +148,12 @@ class TestReport(unittest.TestCase):
     def test_setData(self):
         report.setData("banana_1", ["sundae", "plain"])
         report.setData("banana_2", ["sundae", "vanilla"], self.test_group)
-        report.setData(
-            "banana_3", ["sundae", "chocolate"], self.test_group, [report.ALL]
-        )
+        report.setData("banana_3", ["sundae", "chocolate"], self.test_group, [report.ALL])
 
         with self.assertRaises(AttributeError):
-            report.setData(
-                "banana_4", ["sundae", "strawberry"], "no_workie", [report.ALL]
-            )
+            report.setData("banana_4", ["sundae", "strawberry"], "no_workie", [report.ALL])
         with self.assertRaises(AttributeError):
-            report.setData(
-                "banana_5", ["sundae", "peanut_butter"], self.test_group, "no_workie"
-            )
+            report.setData("banana_5", ["sundae", "peanut_butter"], self.test_group, "no_workie")
 
         ungroup_instance = report.ALL[report.UNGROUPED]
         self.assertEqual(ungroup_instance["banana_1"], ["sundae", "plain"])

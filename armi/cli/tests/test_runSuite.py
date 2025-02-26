@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for runsuite cli entry point."""
+
 import io
 import sys
 import unittest

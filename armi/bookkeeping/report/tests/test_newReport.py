@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test new reports."""
+
 import collections
 import os
 import unittest
@@ -109,9 +110,7 @@ class TestReportContentCreation(unittest.TestCase):
 
         neutronicsPlotting(self.r, reportTest, self.o.cs)
         self.assertIn("Neutronics", reportTest.sections)
-        self.assertTrue(
-            isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries)
-        )
+        self.assertTrue(isinstance(reportTest["Neutronics"]["Keff-Plot"], newReports.TimeSeries))
 
     def test_writeReports(self):
         reportTest = newReports.ReportContent("Test")

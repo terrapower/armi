@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the App class."""
+
 import copy
 import unittest
 
@@ -116,9 +117,7 @@ class TestApps(unittest.TestCase):
         app.pluginManager.unregister(TestPlugin2)
 
         app.pluginManager.register(TestPlugin3)
-        with self.assertRaisesRegex(
-            plugins.PluginError, ".*currently-defined parameters.*"
-        ):
+        with self.assertRaisesRegex(plugins.PluginError, ".*currently-defined parameters.*"):
             app.getParamRenames()
 
     def test_registerPluginFlags(self):

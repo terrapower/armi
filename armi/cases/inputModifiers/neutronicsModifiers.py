@@ -42,8 +42,7 @@ class NeutronicConvergenceModifier(inputModifiers.InputModifier):
         self.value = value
         if value > 1e-2 or value <= 0.0:
             raise ValueError(
-                "Neutronic convergence modifier value must be greater than 0 and less "
-                "than 1e-2 (got {})".format(value)
+                "Neutronic convergence modifier value must be greater than 0 and less than 1e-2 (got {})".format(value)
             )
 
     def __call__(self, cs, bp, geom):
@@ -70,19 +69,13 @@ class NeutronicMeshsSizeModifier(inputModifiers.InputModifier):
     """
 
     def __init__(self, multFactor):
-        inputModifiers.InputModifier.__init__(
-            self, {self.__class__.__name__: multFactor}
-        )
+        inputModifiers.InputModifier.__init__(self, {self.__class__.__name__: multFactor})
         if not isinstance(multFactor, int):
-            raise TypeError(
-                "multFactor must be an integer, but got {}".format(multFactor)
-            )
+            raise TypeError("multFactor must be an integer, but got {}".format(multFactor))
         self.multFactor = multFactor
 
     def __call__(self, cs, bp, geom):
         for assemDesign in bp.assemDesigns:
-            assemDesign.axialMeshPoints = [
-                ax * self.multFactor for ax in assemDesign.axialMeshPoints
-            ]
+            assemDesign.axialMeshPoints = [ax * self.multFactor for ax in assemDesign.axialMeshPoints]
 
         return cs, bp, geom

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """HTML-formatted reports."""
+
 import base64
 import datetime
 import html
@@ -51,9 +52,7 @@ class Tag:
     def __enter__(self):
         attrs = ""
         if self.attrs:
-            attrs = " " + " ".join(
-                ['{}="{}"'.format(name, value) for name, value in self.attrs.items()]
-            )
+            attrs = " " + " ".join(['{}="{}"'.format(name, value) for name, value in self.attrs.items()])
         self.f.write(r"<{}{}>".format(self.tag, attrs))
         self.f.write("\n")
 
@@ -176,20 +175,13 @@ def encode64(file_path):
     if xtn == "pdf":
         from armi import runLog
 
-        runLog.warning(
-            (
-                f"'.pdf' images cannot be embedded into this HTML report. {file_path} will not be"
-                " inserted."
-            )
-        )
+        runLog.warning((f"'.pdf' images cannot be embedded into this HTML report. {file_path} will not be inserted."))
         return (
             f"Faulty PDF image inclusion: {file_path} attempted to be inserted but no support is "
             "currently offered for such."
         )
     with open(file_path, "rb") as img_src:
-        return r"data:image/{};base64,{}".format(
-            xtn, base64.b64encode(img_src.read()).decode()
-        )
+        return r"data:image/{};base64,{}".format(xtn, base64.b64encode(img_src.read()).decode())
 
 
 def writeStandardReportTemplate(f, report, caseTitle=""):
@@ -202,7 +194,6 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
                     f.write(caseTitle)
 
         with Body(f):
-
             with Div(
                 f,
                 attrs={
@@ -212,10 +203,7 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
             ):
                 with Div(f, attrs={"class": "container"}):
                     with Div(f, attrs={"class": "navbar-header"}):
-
-                        with Span(
-                            f, attrs={"class": "navbar-text navbar-version pull-left"}
-                        ):
+                        with Span(f, attrs={"class": "navbar-text navbar-version pull-left"}):
                             pass
 
                         with A(
@@ -230,20 +218,15 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
                                 with B(f):
                                     f.write(caseTitle)
 
-                        with Span(
-                            f, attrs={"class": "navbar-text navbar-version pull-left"}
-                        ):
+                        with Span(f, attrs={"class": "navbar-text navbar-version pull-left"}):
                             with B(f):
                                 f.write(context.USER)
 
-                        with Span(
-                            f, attrs={"class": "navbar-text navbar-version pull-left"}
-                        ):
+                        with Span(f, attrs={"class": "navbar-text navbar-version pull-left"}):
                             with B(f):
                                 f.write(datetime.datetime.now().isoformat())
 
             with Div(f, attrs={"class": "container", "style": "padding-top: 20px;"}):
-
                 with Div(f, attrs={"class": "page-header"}):
                     with H1(f):
                         f.write(report.title)
@@ -252,9 +235,7 @@ def writeStandardReportTemplate(f, report, caseTitle=""):
 
                 with Footer(
                     f,
-                    attrs={
-                        "style": "width: 100%; border-top: 1px solid #ccc; padding-top: 10px;"
-                    },
+                    attrs={"style": "width: 100%; border-top: 1px solid #ccc; padding-top: 10px;"},
                 ):
                     with UL(f, attrs={"class": "list-unstyled"}):
                         with LI(f, attrs={"class": "pull-right"}):

@@ -27,9 +27,7 @@ def _changeDirectory(destination):
     if os.path.exists(destination):
         os.chdir(destination)
     else:
-        raise IOError(
-            "Cannot change directory to non-existent location: {}".format(destination)
-        )
+        raise IOError("Cannot change directory to non-existent location: {}".format(destination))
 
 
 class DirectoryChanger:
@@ -93,10 +91,7 @@ class DirectoryChanger:
         runLog.debug("Returning to directory {}".format(self.initial))
         self._createOutputDirectory()
         if exc_type is not None and self._dumpOnException:
-            runLog.info(
-                "An exception was raised within a DirectoryChanger. "
-                "Retrieving entire folder for debugging."
-            )
+            runLog.info("An exception was raised within a DirectoryChanger. Retrieving entire folder for debugging.")
             self._retrieveEntireFolder()
         else:
             self.retrieveFiles()
@@ -104,9 +99,7 @@ class DirectoryChanger:
 
     def __repr__(self):
         """Print the initial and destination paths."""
-        return "<{} {} to {}>".format(
-            self.__class__.__name__, self.initial, self.destination
-        )
+        return "<{} {} to {}>".format(self.__class__.__name__, self.initial, self.destination)
 
     def open(self):
         """
@@ -127,14 +120,10 @@ class DirectoryChanger:
         """Copy ``filesToMove`` into the destination directory on entry."""
         initialPath = self.initial
         destinationPath = self.destination
-        self._transferFiles(
-            initialPath, destinationPath, self._filesToMove, moveFiles=False
-        )
+        self._transferFiles(initialPath, destinationPath, self._filesToMove, moveFiles=False)
         if self.outputPath != self.initial:
             destinationPath = self.outputPath
-            self._transferFiles(
-                initialPath, destinationPath, self._filesToMove, moveFiles=False
-            )
+            self._transferFiles(initialPath, destinationPath, self._filesToMove, moveFiles=False)
 
     def retrieveFiles(self):
         """Copy ``filesToRetrieve`` back into the initial directory on exit."""
@@ -145,9 +134,7 @@ class DirectoryChanger:
                 self._filesToRetrieve,
                 moveFiles=False,
             )
-        self._transferFiles(
-            self.destination, self.initial, self._filesToRetrieve, moveFiles=True
-        )
+        self._transferFiles(self.destination, self.initial, self._filesToRetrieve, moveFiles=True)
 
     def _retrieveEntireFolder(self):
         """
@@ -172,10 +159,7 @@ class DirectoryChanger:
                 # even though we checked exists, this still fails
                 # sometimes when multiple MPI nodes try
                 # to make the dirs due to I/O delays
-                runLog.error(
-                    f"Failed to make output folder: {self.outputPath}. "
-                    f"Exception: {ee}"
-                )
+                runLog.error(f"Failed to make output folder: {self.outputPath}. Exception: {ee}")
         else:
             runLog.extra(f"Output folder already exists: {self.outputPath}")
 
@@ -279,9 +263,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
             root = context.getFastPath()
             # ARMIs temp dirs are in an context.APP_DATA directory: validate this is a temp dir.
             if pathlib.Path(context.APP_DATA) not in pathlib.Path(root).parents:
-                raise ValueError(
-                    "Temporary directory not in a safe location for deletion."
-                )
+                raise ValueError("Temporary directory not in a safe location for deletion.")
 
         # make the tmp dir, if necessary
         if not os.path.exists(root):
@@ -301,10 +283,7 @@ class TemporaryDirectoryChanger(DirectoryChanger):
     def GetRandomDirectory(cls, root):
         return os.path.join(
             root,
-            "temp-"
-            + "".join(
-                random.choice(string.ascii_letters + string.digits) for _ in range(10)
-            ),
+            "temp-" + "".join(random.choice(string.ascii_letters + string.digits) for _ in range(10)),
         )
 
     def __enter__(self):
@@ -355,10 +334,7 @@ class ForcedCreationDirectoryChanger(DirectoryChanger):
                 # even though we checked exists, this still fails
                 # sometimes when multiple MPI nodes try
                 # to make the dirs due to I/O delays
-                runLog.error(
-                    f"Failed to make destination folder: {self.destination}. "
-                    f"Exception: {ee}"
-                )
+                runLog.error(f"Failed to make destination folder: {self.destination}. Exception: {ee}")
         else:
             runLog.extra(f"Destination folder already exists: {self.destination}")
         DirectoryChanger.__enter__(self)

@@ -20,6 +20,7 @@ provided explicitly. It is also offset in 3D space to X, Y, Z = 10, 5, 5 cm.
 
 Learn more about :py:mod:`grids <armi.reactor.grids>`.
 """
+
 import itertools
 
 import matplotlib.pyplot as plt

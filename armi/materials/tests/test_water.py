@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests for water materials."""
+
 import unittest
 
 from armi.materials.water import SaturatedSteam, SaturatedWater, Water
@@ -52,31 +53,17 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT, water.vaporPressurePrime(Tk=Tk), 3)
         self.assertAlmostEqual(ref_dp_dT, steam.vaporPressurePrime(Tk=Tk), 3)
 
-        self.assertAlmostEqual(
-            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
-        )
-        self.assertAlmostEqual(
-            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
-        )
+        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0)
 
-        self.assertAlmostEqual(
-            ref_alpha, water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3
-        )
-        self.assertAlmostEqual(
-            ref_alpha, steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3
-        )
+        self.assertAlmostEqual(ref_alpha, water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3)
+        self.assertAlmostEqual(ref_alpha, steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 3)
 
         self.assertAlmostEqual(ref_saturated_water_enthalpy, water.enthalpy(Tk=Tk), 2)
-        self.assertAlmostEqual(
-            ref_saturated_steam_enthalpy / steam.enthalpy(Tk=Tk), 1, 2
-        )
+        self.assertAlmostEqual(ref_saturated_steam_enthalpy / steam.enthalpy(Tk=Tk), 1, 2)
 
-        self.assertAlmostEqual(
-            ref_phi, water.auxiliaryQuantitySpecificEntropy(Tk=Tk), 2
-        )
-        self.assertAlmostEqual(
-            ref_phi, steam.auxiliaryQuantitySpecificEntropy(Tk=Tk), 2
-        )
+        self.assertAlmostEqual(ref_phi, water.auxiliaryQuantitySpecificEntropy(Tk=Tk), 2)
+        self.assertAlmostEqual(ref_phi, steam.auxiliaryQuantitySpecificEntropy(Tk=Tk), 2)
 
         self.assertAlmostEqual(ref_saturated_water_entropy, water.entropy(Tk=Tk), 3)
         self.assertAlmostEqual(ref_saturated_steam_entropy / steam.entropy(Tk=Tk), 1, 3)
@@ -108,33 +95,17 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(
-            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
-        )
-        self.assertAlmostEqual(
-            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
-        )
+        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0)
 
-        self.assertAlmostEqual(
-            ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
-        )
-        self.assertAlmostEqual(
-            ref_alpha / steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
-        )
+        self.assertAlmostEqual(ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
+        self.assertAlmostEqual(ref_alpha / steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(
-            ref_saturated_water_enthalpy / water.enthalpy(Tk=Tk), 1, 2
-        )
-        self.assertAlmostEqual(
-            ref_saturated_steam_enthalpy / steam.enthalpy(Tk=Tk), 1, 2
-        )
+        self.assertAlmostEqual(ref_saturated_water_enthalpy / water.enthalpy(Tk=Tk), 1, 2)
+        self.assertAlmostEqual(ref_saturated_steam_enthalpy / steam.enthalpy(Tk=Tk), 1, 2)
 
-        self.assertAlmostEqual(
-            ref_phi / water.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3
-        )
-        self.assertAlmostEqual(
-            ref_phi / steam.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3
-        )
+        self.assertAlmostEqual(ref_phi / water.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3)
+        self.assertAlmostEqual(ref_phi / steam.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3)
 
         self.assertAlmostEqual(ref_saturated_water_entropy / water.entropy(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_saturated_steam_entropy / steam.entropy(Tk=Tk), 1, 3)
@@ -166,33 +137,17 @@ class Test_Water(unittest.TestCase):
         self.assertAlmostEqual(ref_dp_dT / water.vaporPressurePrime(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_dp_dT / steam.vaporPressurePrime(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(
-            ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0
-        )
-        self.assertAlmostEqual(
-            ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0
-        )
+        self.assertAlmostEqual(ref_saturated_water_rho, water.pseudoDensityKgM3(Tk=Tk), 0)
+        self.assertAlmostEqual(ref_saturated_steam_rho, steam.pseudoDensityKgM3(Tk=Tk), 0)
 
-        self.assertAlmostEqual(
-            ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
-        )
-        self.assertAlmostEqual(
-            ref_alpha / steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3
-        )
+        self.assertAlmostEqual(ref_alpha / water.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
+        self.assertAlmostEqual(ref_alpha / steam.auxiliaryQuantitySpecificEnthalpy(Tk=Tk), 1, 3)
 
-        self.assertAlmostEqual(
-            ref_saturated_water_enthalpy / water.enthalpy(Tk=Tk), 1, 2
-        )
-        self.assertAlmostEqual(
-            ref_saturated_steam_enthalpy / steam.enthalpy(Tk=Tk), 1, 2
-        )
+        self.assertAlmostEqual(ref_saturated_water_enthalpy / water.enthalpy(Tk=Tk), 1, 2)
+        self.assertAlmostEqual(ref_saturated_steam_enthalpy / steam.enthalpy(Tk=Tk), 1, 2)
 
-        self.assertAlmostEqual(
-            ref_phi / water.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3
-        )
-        self.assertAlmostEqual(
-            ref_phi / steam.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3
-        )
+        self.assertAlmostEqual(ref_phi / water.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3)
+        self.assertAlmostEqual(ref_phi / steam.auxiliaryQuantitySpecificEntropy(Tk=Tk), 1, 3)
 
         self.assertAlmostEqual(ref_saturated_water_entropy / water.entropy(Tk=Tk), 1, 3)
         self.assertAlmostEqual(ref_saturated_steam_entropy / steam.entropy(Tk=Tk), 1, 3)

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Entry point for producing visualization files."""
+
 import pathlib
 import re
 import sys
@@ -38,8 +39,7 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         self.parser.add_argument(
             "--output-name",
             "-o",
-            help="Base name for output file(s). File extensions will be added as "
-            "appropriate",
+            help="Base name for output file(s). File extensions will be added as appropriate",
             type=str,
             default=None,
         )
@@ -51,22 +51,19 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         )
         self.parser.add_argument(
             "--nodes",
-            help="An optional list of time nodes to include. Should look like "
-            "`(1,0)(1,1)(1,2)`, etc",
+            help="An optional list of time nodes to include. Should look like `(1,0)(1,1)(1,2)`, etc",
             type=str,
             default=None,
         )
         self.parser.add_argument(
             "--max-node",
-            help="An optional (cycle,timeNode) tuple to specify the latest time step "
-            "that should be included",
+            help="An optional (cycle,timeNode) tuple to specify the latest time step that should be included",
             type=str,
             default=None,
         )
         self.parser.add_argument(
             "--min-node",
-            help="An optional (cycle,timeNode) tuple to specify the earliest time step "
-            "that should be included",
+            help="An optional (cycle,timeNode) tuple to specify the earliest time step that should be included",
             type=str,
             default=None,
         )
@@ -83,19 +80,12 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         cycleNodePattern = r"\((\d+),(\d+)\)"
 
         if self.args.nodes is not None:
-            self.args.nodes = [
-                (int(cycle), int(node))
-                for cycle, node in re.findall(cycleNodePattern, self.args.nodes)
-            ]
+            self.args.nodes = [(int(cycle), int(node)) for cycle, node in re.findall(cycleNodePattern, self.args.nodes)]
 
         if self.args.max_node is not None:
             nodes = re.findall(cycleNodePattern, self.args.max_node)
             if len(nodes) != 1:
-                runLog.error(
-                    "Bad --max-node: `{}`. Should look like (c,n).".format(
-                        self.args.max_node
-                    )
-                )
+                runLog.error("Bad --max-node: `{}`. Should look like (c,n).".format(self.args.max_node))
                 sys.exit(1)
             cycle, node = nodes[0]
             self.args.max_node = (int(cycle), int(node))
@@ -103,11 +93,7 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
         if self.args.min_node is not None:
             nodes = re.findall(cycleNodePattern, self.args.min_node)
             if len(nodes) != 1:
-                runLog.error(
-                    "Bad --min-node: `{}`. Should look like (c,n).".format(
-                        self.args.min_node
-                    )
-                )
+                runLog.error("Bad --min-node: `{}`. Should look like (c,n).".format(self.args.min_node))
                 sys.exit(1)
             cycle, node = nodes[0]
             self.args.min_node = (int(cycle), int(node))
@@ -145,9 +131,9 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
 
             if nodes is not None and any(node not in dbNodes for node in nodes):
                 raise RuntimeError(
-                    "Some of the requested nodes are not in the source database.\n"
-                    "Requested: {}\n"
-                    "Present: {}".format(nodes, dbNodes)
+                    "Some of the requested nodes are not in the source database.\nRequested: {}\nPresent: {}".format(
+                        nodes, dbNodes
+                    )
                 )
 
             with dumper:
@@ -155,22 +141,12 @@ class VisFileEntryPoint(entryPoint.EntryPoint):
                     if nodes is not None and (cycle, node) not in nodes:
                         continue
 
-                    if (
-                        self.args.min_node is not None
-                        and (cycle, node) < self.args.min_node
-                    ):
+                    if self.args.min_node is not None and (cycle, node) < self.args.min_node:
                         continue
 
-                    if (
-                        self.args.max_node is not None
-                        and (cycle, node) > self.args.max_node
-                    ):
+                    if self.args.max_node is not None and (cycle, node) > self.args.max_node:
                         continue
 
-                    runLog.info(
-                        "Creating visualization file for cycle {}, time node {}...".format(
-                            cycle, node
-                        )
-                    )
+                    runLog.info("Creating visualization file for cycle {}, time node {}...".format(cycle, node))
                     r = db.load(cycle, node)
                     dumper.dumpState(r)

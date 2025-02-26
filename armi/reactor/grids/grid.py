@@ -167,9 +167,7 @@ class Grid(ABC):
         """Return list of ((i, j, k), IndexLocation) tuples."""
 
     @abstractmethod
-    def locatorInDomain(
-        self, locator: LocationBase, symmetryOverlap: Optional[bool] = False
-    ) -> bool:
+    def locatorInDomain(self, locator: LocationBase, symmetryOverlap: Optional[bool] = False) -> bool:
         """
         Return whether the passed locator is in the domain represented by the Grid.
 

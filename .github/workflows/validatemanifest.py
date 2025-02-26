@@ -49,7 +49,7 @@ def main():
 
     # If there were any missing files, raise an Error.
     if errors:
-        for (i, line) in errors:
+        for i, line in errors:
             print("Nonexistant file on line {}: {}".format(i, line))
         raise ValueError("Package-data file is incorrect: includes non-existant files.")
 

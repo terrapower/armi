@@ -15,10 +15,11 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.9'
+          python-version: '3.13'
       - name: Update package index
         run: sudo apt-get update
-      - name: Run Linter
+      - name: Run Linter Checks
         run:  |
           pip install -e .[test]
+          ruff format --check .
           ruff check .

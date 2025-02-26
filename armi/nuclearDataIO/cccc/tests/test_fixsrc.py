@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test the reading and writing of the DIF3D FIXSRC file format."""
+
 import os
 import unittest
 

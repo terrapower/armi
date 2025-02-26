@@ -78,9 +78,7 @@ class Sodium(material.Fluid):
         h = 0.5
         Tcrit = 2503.7  # critical temperature
         return (
-            critDens
-            + f * (1 - (Tc + 273.15) / Tcrit)
-            + g * (1 - (Tc + 273.15) / Tcrit) ** h
+            critDens + f * (1 - (Tc + 273.15) / Tcrit) + g * (1 - (Tc + 273.15) / Tcrit) ** h
         ) / 1000.0  # convert from kg/m^3 to g/cc.
 
     def specificVolumeLiquid(self, Tk=None, Tc=None):
@@ -95,13 +93,7 @@ class Sodium(material.Fluid):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("enthalpy", Tk)
-        enthalpy = (
-            -365.77
-            + 1.6582 * Tk
-            - 4.2395e-4 * Tk**2
-            + 1.4847e-7 * Tk**3
-            + 2992.6 / Tk
-        )
+        enthalpy = -365.77 + 1.6582 * Tk - 4.2395e-4 * Tk**2 + 1.4847e-7 * Tk**3 + 2992.6 / Tk
         enthalpy = enthalpy * 1000  # convert from kJ/kg to kJ/kg
         return enthalpy
 
@@ -125,7 +117,5 @@ class Sodium(material.Fluid):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("thermal conductivity", Tk)
-        thermalConductivity = (
-            124.67 - 0.11381 * Tk + 5.5226e-5 * Tk**2 - 1.1842e-8 * Tk**3
-        )
+        thermalConductivity = 124.67 - 0.11381 * Tk + 5.5226e-5 * Tk**2 - 1.1842e-8 * Tk**3
         return thermalConductivity

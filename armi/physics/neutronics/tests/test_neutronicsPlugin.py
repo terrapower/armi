@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests for the neutronics plugin."""
+
 import io
 import unittest
 
@@ -133,9 +134,7 @@ class NeutronicsReactorTests(unittest.TestCase):
             }
         )
         dbLoad = False
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         r.core.setOptionsFromCs(cs)
         self.assertEqual(r.core.p.beta, sum(cs["beta"]))
         self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
@@ -146,9 +145,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = self.__getModifiedSettings(
             customSettings={"beta": 0.00670},
         )
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -161,9 +158,7 @@ class NeutronicsReactorTests(unittest.TestCase):
                 "beta": [0.0] * 6,
             },
         )
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -175,9 +170,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = self.__getModifiedSettings(
             customSettings={"beta": [0.0], "decayConstants": [1.0]},
         )
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertEqual(r.core.p.beta, sum(cs["beta"]))
         self.assertListEqual(list(r.core.p.betaComponents), cs["beta"])
         self.assertListEqual(list(r.core.p.betaDecayConstants), cs["decayConstants"])
@@ -188,9 +181,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = self.__getModifiedSettings(
             customSettings={"decayConstants": [1.0] * 6},
         )
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertIsNone(r.core.p.beta)
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -202,9 +193,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = self.__getModifiedSettings(
             customSettings={"decayConstants": [1.0] * 6, "beta": 0.0},
         )
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -215,9 +204,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         cs = self.__getModifiedSettings(
             customSettings={"decayConstants": None, "beta": None},
         )
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=r.core, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
         self.assertEqual(r.core.p.beta, cs["beta"])
         self.assertIsNone(r.core.p.betaComponents)
         self.assertIsNone(r.core.p.betaDecayConstants)
@@ -229,9 +216,7 @@ class NeutronicsReactorTests(unittest.TestCase):
             cs = self.__getModifiedSettings(
                 customSettings={"decayConstants": [1.0] * 6, "beta": [0.0]},
             )
-            getPluginManagerOrFail().hook.onProcessCoreLoading(
-                core=r.core, cs=cs, dbLoad=dbLoad
-            )
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
 
         # Test that an error is raised if the decay constants
         # and group-wise beta are inconsistent sizes
@@ -240,9 +225,7 @@ class NeutronicsReactorTests(unittest.TestCase):
             cs = self.__getModifiedSettings(
                 customSettings={"decayConstants": [1.0] * 6, "beta": [0.0] * 5},
             )
-            getPluginManagerOrFail().hook.onProcessCoreLoading(
-                core=r.core, cs=cs, dbLoad=dbLoad
-            )
+            getPluginManagerOrFail().hook.onProcessCoreLoading(core=r.core, cs=cs, dbLoad=dbLoad)
 
     @staticmethod
     def __autoCorrectAllQueries(settingsValidator):
@@ -327,9 +310,7 @@ class NeutronicsReactorTests(unittest.TestCase):
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(
-            inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol"
-        )
+        self.assertEqual(inspector.cs[CONF_GRID_PLATE_DPA_XS_SET], "dpaSS316_ANL33_TwrBol")
 
         cs = cs.modified(
             newSettings={
@@ -341,6 +322,4 @@ class NeutronicsReactorTests(unittest.TestCase):
         sv = getNeutronicsSettingValidators(inspector)
 
         self.__autoCorrectAllQueries(sv)
-        self.assertEqual(
-            inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration"
-        )
+        self.assertEqual(inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY], "firstCoupledIteration")

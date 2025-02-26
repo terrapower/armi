@@ -19,6 +19,7 @@ Notes
 These algorithms are defined in assemblyRotationAlgorithms.py, but they are used in:
 ``FuelHandler.outage()``.
 """
+
 import copy
 import enum
 import math
@@ -112,9 +113,7 @@ class ShuffleAndRotateTestHelper(TestCase):
         data[maxIndex] = 50
         return data
 
-    def compareMockedToExpectedRotation(
-        self, nRotations: int, mRotate: mock.Mock, msg: typing.Optional[str] = None
-    ):
+    def compareMockedToExpectedRotation(self, nRotations: int, mRotate: mock.Mock, msg: typing.Optional[str] = None):
         """Helper function to check the mocked rotate and compare against expected rotation."""
         expectedRadians = nRotations * math.pi / 3
         (actualRadians,) = mRotate.call_args.args
@@ -193,9 +192,7 @@ class TestOptimalAssemblyRotation(ShuffleAndRotateTestHelper):
         burnups = np.arange(self.N_PINS)
         self.setAssemblyPinBurnups(self.assembly, burnups)
         self.setAssemblyPinPowers(self.assembly, powers)
-        with self.assertRaisesRegex(
-            ValueError, "Inconsistent pin powers and number of pins"
-        ):
+        with self.assertRaisesRegex(ValueError, "Inconsistent pin powers and number of pins"):
             getOptimalAssemblyOrientation(self.assembly, self.assembly)
 
 
@@ -311,9 +308,7 @@ class TestFuelHandlerMgmtTools(ShuffleAndRotateTestHelper):
         third.rotate = mock.Mock()
 
         fh = MockFuelHandler(self.o)
-        fh.chooseSwaps = mock.Mock(
-            side_effect=lambda _: fh.moved.extend([second, third])
-        )
+        fh.chooseSwaps = mock.Mock(side_effect=lambda _: fh.moved.extend([second, third]))
         fh.outage()
 
         first.rotate.assert_called_once()

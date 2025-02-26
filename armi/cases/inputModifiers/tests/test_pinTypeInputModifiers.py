@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers."""
+
 import math
 import unittest
 
@@ -52,9 +53,7 @@ class TestBlueprintModifiers(unittest.TestCase):
         self.assertEqual(0.5, bp.blockDesigns["block 4"]["fuel"].od)
         self.assertEqual(0.5, bp.blockDesigns["block 5"]["fuel"].od)
 
-        pinTypeInputModifiers.SmearDensityModifier(0.5)(
-            settings.Settings(), bp, MockGeom
-        )
+        pinTypeInputModifiers.SmearDensityModifier(0.5)(settings.Settings(), bp, MockGeom)
 
         self.assertEqual(math.sqrt(0.5), bp.blockDesigns["fuel 1"]["fuel"].od)
         self.assertEqual(math.sqrt(0.5), bp.blockDesigns["fuel 2"]["fuel"].od)
@@ -85,17 +84,13 @@ class TestBlueprintModifiers(unittest.TestCase):
         self.assertEqual(1.1, bp.blockDesigns["block 4"]["clad"].od)
         self.assertEqual(1.1, bp.blockDesigns["block 5"]["clad"].od)
 
-        pinTypeInputModifiers.CladThicknessByODModifier(0.12)(
-            settings.Settings(), bp, MockGeom
-        )
+        pinTypeInputModifiers.CladThicknessByODModifier(0.12)(settings.Settings(), bp, MockGeom)
 
         self.assertEqual(1.24, bp.blockDesigns["fuel 1"]["clad"].od)
         self.assertEqual(1.24, bp.blockDesigns["fuel 2"]["clad"].od)
         self.assertEqual(1.24, bp.blockDesigns["block 3"]["clad"].od)
         self.assertEqual(1.24, bp.blockDesigns["block 4"]["clad"].od)
-        self.assertEqual(
-            1.24, bp.blockDesigns["block 5"]["clad"].od
-        )  # modifies all blocks
+        self.assertEqual(1.24, bp.blockDesigns["block 5"]["clad"].od)  # modifies all blocks
 
     def test_CladThickenessByIDModifier(self):
         """
@@ -120,14 +115,10 @@ class TestBlueprintModifiers(unittest.TestCase):
         self.assertEqual(1.0, bp.blockDesigns["block 4"]["clad"].id)
         self.assertEqual(1.0, bp.blockDesigns["block 5"]["clad"].id)
 
-        pinTypeInputModifiers.CladThicknessByIDModifier(0.025)(
-            settings.Settings(), bp, MockGeom
-        )
+        pinTypeInputModifiers.CladThicknessByIDModifier(0.025)(settings.Settings(), bp, MockGeom)
 
         self.assertEqual(1.05, bp.blockDesigns["fuel 1"]["clad"].id)
         self.assertEqual(1.05, bp.blockDesigns["fuel 2"]["clad"].id)
         self.assertEqual(1.05, bp.blockDesigns["block 3"]["clad"].id)
         self.assertEqual(1.05, bp.blockDesigns["block 4"]["clad"].id)
-        self.assertEqual(
-            1.05, bp.blockDesigns["block 5"]["clad"].id
-        )  # modifies all blocks
+        self.assertEqual(1.05, bp.blockDesigns["block 5"]["clad"].id)  # modifies all blocks

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers."""
+
 import io
 import os
 import unittest
@@ -133,12 +134,8 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def test_smearDensityFail(self):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
-        builder.addDegreeOfFreedom(
-            pinTypeInputModifiers.SmearDensityModifier(v) for v in (0.5, 0.6)
-        )
-        builder.addDegreeOfFreedom(
-            pinTypeInputModifiers.CladThicknessByIDModifier(v) for v in (0.05, 0.01)
-        )
+        builder.addDegreeOfFreedom(pinTypeInputModifiers.SmearDensityModifier(v) for v in (0.5, 0.6))
+        builder.addDegreeOfFreedom(pinTypeInputModifiers.CladThicknessByIDModifier(v) for v in (0.05, 0.01))
         self.assertEqual(4, len(builder))
 
         with self.assertRaisesRegex(RuntimeError, "before .*SmearDensityModifier"):
@@ -147,13 +144,9 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def test_settingsModifier(self):
         builder = suiteBuilder.SeparateEffectsSuiteBuilder(self.baseCase)
         builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier(CONF_FP_MODEL, v)
-            for v in ("noFissionProducts", "infinitelyDilute", "MO99")
+            inputModifiers.SettingsModifier(CONF_FP_MODEL, v) for v in ("noFissionProducts", "infinitelyDilute", "MO99")
         )
-        builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier("detailedAxialExpansion", v)
-            for v in (True,)
-        )
+        builder.addDegreeOfFreedom(inputModifiers.SettingsModifier("detailedAxialExpansion", v) for v in (True,))
         builder.addDegreeOfFreedom(
             inputModifiers.SettingsModifier("buGroups", v)
             for v in (
@@ -177,15 +170,9 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
         builder.addDegreeOfFreedom(
-            [
-                inputModifiers.BluePrintBlockModifier(
-                    "fuel 1", "clad", "od", float("{:.2f}".format(22 / 7))
-                )
-            ]
+            [inputModifiers.BluePrintBlockModifier("fuel 1", "clad", "od", float("{:.2f}".format(22 / 7)))]
         )
-        builder.addDegreeOfFreedom(
-            [inputModifiers.BluePrintBlockModifier("block 5", "clad", "od", 3.14159)]
-        )
+        builder.addDegreeOfFreedom([inputModifiers.BluePrintBlockModifier("block 5", "clad", "od", 3.14159)])
 
         def SuiteNaming(index, _case, _mods):
             uniquePart = "{:0>4}".format(index + case_nbr)
@@ -223,9 +210,7 @@ class TestSettingsModifiers(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
 
-        cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
-            cs, None, None
-        )
+        cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(cs, None, None)
         self.assertAlmostEqual(cs[CONF_EPS_EIG], 1e-2)
         self.assertAlmostEqual(cs[CONF_EPS_FSAVG], 1.0)
         self.assertAlmostEqual(cs[CONF_EPS_FSPOINT], 1.0)

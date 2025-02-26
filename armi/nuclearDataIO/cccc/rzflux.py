@@ -26,6 +26,7 @@ Examples
 >>> rzflux.writeBinary(flux, "RZFLUX2")
 >>> rzflux.writeAscii(flux, "RZFLUX2.ascii")
 """
+
 from enum import Enum
 
 import numpy as np

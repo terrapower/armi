@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This package contains the settings that control the base/framework-level ARMI functionality."""
+
 from typing import List
 
 from armi.settings import setting

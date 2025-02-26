@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit test custom isotopics."""
+
 import unittest
 from logging import DEBUG
 
@@ -346,9 +347,7 @@ assemblies:
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
         cls.numUZrNuclides = 29  # Number of nuclides defined `nuclide flags`
-        cls.numCustomNuclides = (
-            28  # Number of nuclides defined in `nuclide flags` without Zr
-        )
+        cls.numCustomNuclides = 28  # Number of nuclides defined in `nuclide flags` without Zr
 
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
@@ -373,9 +372,7 @@ assemblies:
         self.assertEqual(self.numCustomNuclides, len(fuel1.p.numberDensities))
         self.assertAlmostEqual(19.1, fuel1.density())
 
-        self.assertEqual(
-            set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys())
-        )  # keys are same
+        self.assertEqual(set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys()))  # keys are same
 
     def test_densitiesAppliedToNonCustomMaterials(self):
         """Ensure that a density can be set in custom isotopics for components using library materials."""
@@ -432,9 +429,7 @@ assemblies:
         # has a density from the blueprint and adjusted from Tinput -> Thot
         s = Sodium()
         self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
-        self.assertAlmostEqual(
-            sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25))
-        )
+        self.assertAlmostEqual(sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25)))
 
     def test_customDensityLogsAndErrors(self):
         """Test that the right warning messages and errors are emitted when applying custom densities."""
@@ -458,9 +453,7 @@ assemblies:
                 streamVal,
                 msg=streamVal,
             )
-            self.assertIn(
-                "A custom material density was specified", streamVal, msg=streamVal
-            )
+            self.assertIn("A custom material density was specified", streamVal, msg=streamVal)
             self.assertIn(
                 "A custom isotopic with associated density has been specified for non-`Custom`",
                 streamVal,
@@ -502,9 +495,7 @@ assemblies:
         self.assertAlmostEqual(fuel2.density(), fuel4.density())
 
         for nuc in fuel2.p.numberDensities.keys():
-            self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc]
-            )
+            self.assertAlmostEqual(fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc])
 
     def test_numberDensities(self):
         """Ensure that the custom isotopics can be specified via number densities.
@@ -519,9 +510,7 @@ assemblies:
         self.assertAlmostEqual(fuel2.density(), fuel5.density())
 
         for nuc in fuel2.p.numberDensities.keys():
-            self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
-            )
+            self.assertAlmostEqual(fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc])
 
     def test_numberDensitiesAnchor(self):
         fuel4 = self.a[4].getComponent(Flags.FUEL)
@@ -529,9 +518,7 @@ assemblies:
         self.assertAlmostEqual(fuel4.density(), fuel5.density())
 
         for nuc in fuel4.p.numberDensities.keys():
-            self.assertAlmostEqual(
-                fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
-            )
+            self.assertAlmostEqual(fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc])
 
     def test_expandedNatural(self):
         cs = settings.Settings()
@@ -692,7 +679,4 @@ assemblies:
                     cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: x})
                     _ = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
 
-                self.assertTrue(
-                    "Failed to determine nuclides for modeling"
-                    in str(context.exception)
-                )
+                self.assertTrue("Failed to determine nuclides for modeling" in str(context.exception))

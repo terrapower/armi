@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Testing mathematics utilities."""
+
 import unittest
 from math import sqrt
 
@@ -51,9 +52,7 @@ class TestMath(unittest.TestCase):
         self.assertEqual(result[2], 6.0)
 
     def test_average1DWithinToleranceInvalid(self):
-        vals = np.array(
-            [np.array([1, -2, 3]), np.array([4, -5, 6]), np.array([7, -8, 9])]
-        )
+        vals = np.array([np.array([1, -2, 3]), np.array([4, -5, 6]), np.array([7, -8, 9])])
         with self.assertRaises(ValueError):
             average1DWithinTolerance(vals, 0.1)
 
@@ -155,9 +154,7 @@ class TestMath(unittest.TestCase):
         f = lambda x: (x + 1) ** 2
         minimum = minimizeScalarFunc(f, -3.0, 10.0, maxIterations=10)
         self.assertAlmostEqual(minimum, -1.0, places=3)
-        minimum = minimizeScalarFunc(
-            f, -3.0, 10.0, maxIterations=10, positiveGuesses=True
-        )
+        minimum = minimizeScalarFunc(f, -3.0, 10.0, maxIterations=10, positiveGuesses=True)
         self.assertAlmostEqual(minimum, 0.0, places=3)
 
     def test_newtonsMethod(self):
