@@ -4,7 +4,7 @@ ARMI v0.5 Release Notes
 
 ARMI v0.5.1
 ===========
-Release Date: TBD (March-ish, 2025)
+Release Date: TBD (March, 2025)
 
 New Features
 ------------
@@ -32,6 +32,7 @@ Bug Fixes
 
 Quality Work
 ------------
+#. Open-Sourcing the ARMI requirements. (`PR#2076 <https://github.com/terrapower/armi/pull/2076>`_)
 #. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
