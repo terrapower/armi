@@ -1244,7 +1244,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             if not self.parent:
                 return np.zeros(1)
 
-            volumeFraction = self.getVolume() / self.parent.getVolume()
+            volumeFraction = (
+                self.getVolume() / self.parent.getSymmetryFactor()
+            ) / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
         # pin-level flux is available. Note that it is NOT integrated on the param level.
@@ -1259,7 +1261,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
 
-        return pinFluxes[self.p.pinNum - 1] * self.getVolume()
+        return (
+            pinFluxes[self.p.pinNum - 1]
+            * self.getVolume()
+            / self.parent.getSymmetryFactor()
+        )
 
     def getPinMgFluxes(
         self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False
