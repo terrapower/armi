@@ -8,47 +8,48 @@ This section provides requirements for the :py:mod:`armi.settings` package, whic
 Functional Requirements
 +++++++++++++++++++++++
 
-.. req:: placeholder
+.. req:: The settings package shall allow the configuration of a simulation through user settings.
     :id: R_ARMI_SETTING
-    :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Settings are how the user configures their run.
+    :acceptance_criteria: Create and edit a set of settings that can be used to initialize a run.
+    :subtype: functional
 
-.. req:: placeholder
+.. req:: All settings must have default values.
     :id: R_ARMI_SETTINGS_DEFAULTS
-    :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Enforcing a default recommendation for a setting allows for ease-of-use of the system
+    :acceptance_criteria: A setting cannot be created without providing a default value.
+    :subtype: functional
+    :repo: rework
 
-.. req:: placeholder
+.. req:: Settings shall support rules to validate and customize each setting's behavior.
     :id: R_ARMI_SETTINGS_RULES
-    :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Validation of user settings adds quality assurance pedigree and reduces user errors.
+    :acceptance_criteria: Query a setting and make decisions based on its value.
+    :subtype: functional
 
-.. req:: placeholder
+.. req:: The settings package shall supply the total reactor power at each time step of a simulation.
     :id: R_ARMI_SETTINGS_POWER
-    :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Power history is needed by many downstream plugins and methodologies for normalization.
+    :acceptance_criteria: Retrieve the power fractions series from the operator and access the value at a given time step.
+    :subtype: functional
 
-.. req:: placeholder
+.. req:: The settings package shall allow users to define basic metadata for the run.
     :id: R_ARMI_SETTINGS_META
-    :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Storing metadata in the settings file makes it easier for analysts to differentiate many settings files, and describe the simulations they configure.
+    :acceptance_criteria: Set and retrieve the basic metadata settings.
+    :subtype: functional
 
 I/O Requirements
 ++++++++++++++++
 
-.. req:: placeholder
+.. req:: The settings package shall use human-readable, plain-text files as input and output.
     :id: R_ARMI_SETTINGS_IO_TXT
-    :subtype: io
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Settings are how the user configures their run.
+    :acceptance_criteria: Show a settings object can be created from a text file with a well-specific format, and written back out to a text file.
+    :subtype: io

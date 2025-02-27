@@ -9,26 +9,26 @@ the reporting of messages to the user.
 Functional Requirements
 +++++++++++++++++++++++
 
-.. req:: placeholder
+.. req:: The runLog module shall allow for a simulation-wide log with user-specified verbosity.
     :id: R_ARMI_LOG
     :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Logging simulation information is required for analysts to document and verify simulation results.
+    :acceptance_criteria: Messages are written to the log with specified verbosity.
 
 I/O Requirements
 ++++++++++++++++
 
-.. req:: placeholder
+.. req:: The runLog module shall allow logging to the screen, to a file, or both.
     :id: R_ARMI_LOG_IO
     :subtype: io
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Logging simulation information is required for analysts to document and verify simulation results.
+    :acceptance_criteria: Messages can be written to log files and log streams.
 
-.. req:: placeholder
+.. req:: The runLog module shall allow log files to be combined from different processes.
     :id: R_ARMI_LOG_MPI
     :subtype: io
-    :basis: placeholder
-    :acceptance_criteria: placeholder
     :status: accepted
+    :basis: Logging simulation information is required for analysts to document and verify simulation results.
+    :acceptance_criteria: Messages in different log files can be concatenated.

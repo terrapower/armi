@@ -10,23 +10,23 @@ This section provides requirements for the :py:mod:`armi.utils` package within t
 Functional Requirements
 +++++++++++++++++++++++
 
-.. req:: placeholder
+.. req:: ARMI shall provide a utility to convert mass densities and fractions to number densities.
     :id: R_ARMI_UTIL_MASS2N_DENS
     :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
+    :basis: This is a widely used utility.
+    :acceptance_criteria: Provide a series of mass densities and fractions and verify the returned number densities.
     :status: accepted
 
-.. req:: placeholder
+.. req:: ARMI shall provide a utility to expand elemental mass fractions to natural nuclides.
     :id: R_ARMI_UTIL_EXP_MASS_FRACS
     :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
+    :basis: This is a widely used utility.
+    :acceptance_criteria: Expand an element's mass into a list of it's naturally occurring nuclides and their corresponding mass fractions.
     :status: accepted
 
-.. req:: placeholder
+.. req:: ARMI shall provide a utility to format nuclides and densities into an MCNP material card.
     :id: R_ARMI_UTIL_MCNP_MAT_CARD
     :subtype: functional
-    :basis: placeholder
-    :acceptance_criteria: placeholder
+    :basis: This will be useful for downstream MCNP plugins.
+    :acceptance_criteria: Create an MCNP material card from a collection of densities.
     :status: accepted
