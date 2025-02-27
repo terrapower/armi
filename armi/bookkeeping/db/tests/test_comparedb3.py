@@ -14,6 +14,7 @@
 
 """Tests for the compareDB3 module."""
 import unittest
+import warnings
 
 import h5py
 import numpy as np
@@ -176,11 +177,13 @@ class TestCompareDB3(unittest.TestCase):
             dbs.append(db)
 
         # end-to-end validation that comparing a photocopy database works
-        diffs = compareDatabases(
-            dbs[0]._fullPath,
-            dbs[1]._fullPath,
-            timestepCompare=[(0, 0), (0, 1)],
-        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            diffs = compareDatabases(
+                dbs[0]._fullPath,
+                dbs[1]._fullPath,
+                timestepCompare=[(0, 0), (0, 1)],
+            )
         self.assertEqual(len(diffs.diffs), 504)
         # Cycle length is only diff (x3)
         self.assertEqual(diffs.nDiffs(), 3)
@@ -256,7 +259,7 @@ class TestCompareDB3(unittest.TestCase):
 
         # spin up one example H5 Dataset
         f1 = h5py.File("test_diffSimpleData1.hdf5", "w")
-        a1 = np.arange(100, dtype="<f8")
+        a1 = np.arange(1, 101, dtype="<f8")
         refData = f1.create_dataset("numberDensities", data=a1)
         refData.attrs["1"] = 1
         refData.attrs["2"] = 22
@@ -275,7 +278,7 @@ class TestCompareDB3(unittest.TestCase):
 
         # spin up a different size example H5 Dataset
         f3 = h5py.File("test_diffSimpleData3.hdf5", "w")
-        a2 = np.arange(90, dtype="<f8")
+        a2 = np.arange(1, 91, dtype="<f8")
         srcData3 = f3.create_dataset("numberDensities", data=a2)
         srcData3.attrs["1"] = 1
         srcData3.attrs["2"] = 22

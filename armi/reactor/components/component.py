@@ -271,19 +271,32 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         True if a circle encompassing this object has a smaller diameter than one encompassing another component.
 
+        If the bounding circles for both components have identical size, then revert to checking the inner
+        diameter of each component for sorting.
+
         This allows sorting because the Python sort functions only use this method.
         """
         thisOD = self.getBoundingCircleOuterDiameter(cold=True)
         thatOD = other.getBoundingCircleOuterDiameter(cold=True)
         try:
-            return thisOD < thatOD
-        except Exception:
-            raise ValueError(
-                "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
-                "bounding circle outer diameters are not comparable.".format(
-                    self, thisOD, other, thatOD
+            if thisOD == thatOD:
+                thisID = self.getCircleInnerDiameter(cold=True)
+                thatID = other.getCircleInnerDiameter(cold=True)
+                return thisID < thatID
+            else:
+                return thisOD < thatOD
+        except (NotImplementedError, Exception) as e:
+            if isinstance(e, NotImplementedError):
+                raise NotImplementedError(
+                    f"getCircleInnerDiameter not implemented for at least one of {self}, {other}"
                 )
-            )
+            else:
+                raise ValueError(
+                    "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
+                    "bounding circle outer diameters are not comparable.".format(
+                        self, thisOD, other, thatOD
+                    )
+                )
 
     def __setstate__(self, state):
         composites.Composite.__setstate__(self, state)
@@ -1231,7 +1244,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             if not self.parent:
                 return np.zeros(1)
 
-            volumeFraction = self.getVolume() / self.parent.getVolume()
+            volumeFraction = (
+                self.getVolume() / self.parent.getSymmetryFactor()
+            ) / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
         # pin-level flux is available. Note that it is NOT integrated on the param level.
@@ -1246,7 +1261,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
 
-        return pinFluxes[self.p.pinNum - 1] * self.getVolume()
+        return (
+            pinFluxes[self.p.pinNum - 1]
+            * self.getVolume()
+            / self.parent.getSymmetryFactor()
+        )
 
     def getPinMgFluxes(
         self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False

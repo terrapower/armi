@@ -260,7 +260,7 @@ class Block(composites.Composite):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
-            elif c.hasFlags(Flags.SLUG):
+            elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
                 # this flag designates that this clad/slug combination isn't fuel and shouldn't be
                 # counted in the average
                 pass
@@ -1943,7 +1943,7 @@ class HexBlock(Block):
         ----------
         rad: float, required
             Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
-            increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6, and 2 * PI)
+            increments (i.e., PI/3, 2 * PI/3, PI, 4 * PI/3, 5 * PI/3, and 2 * PI).
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
@@ -2319,13 +2319,25 @@ class HexBlock(Block):
             Flags.GRID_PLATE,
             Flags.INLET_NOZZLE,
             Flags.HANDLING_SOCKET,
+            Flags.DUCT | Flags.DEPLETABLE,
+            Flags.GRID_PLATE | Flags.DEPLETABLE,
+            Flags.INLET_NOZZLE | Flags.DEPLETABLE,
+            Flags.HANDLING_SOCKET | Flags.DEPLETABLE,
         )
 
         # flags pertaining to circular pin components where the exterior of the circle is wetted
-        wettedPinComponentFlags = (Flags.CLAD, Flags.WIRE)
+        wettedPinComponentFlags = (
+            Flags.CLAD,
+            Flags.WIRE,
+            Flags.CLAD | Flags.DEPLETABLE,
+            Flags.WIRE | Flags.DEPLETABLE,
+        )
 
         # flags pertaining to components where both the interior and exterior are wetted
-        wettedHollowComponentFlags = (Flags.DUCT | Flags.INNER,)
+        wettedHollowComponentFlags = (
+            Flags.DUCT | Flags.INNER,
+            Flags.DUCT | Flags.INNER | Flags.DEPLETABLE,
+        )
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []

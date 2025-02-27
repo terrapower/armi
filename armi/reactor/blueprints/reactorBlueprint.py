@@ -146,6 +146,8 @@ class SystemBlueprint(yamlize.Object):
 
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
+        elif geom is not None and self.name == "Spent Fuel Pool":
+            gridDesign = geom.toGridBlueprints("Spent Fuel Pool")[0]
         else:
             if not bp.gridDesigns:
                 raise ValueError(
