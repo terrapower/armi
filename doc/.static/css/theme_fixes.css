@@ -21,3 +21,8 @@
 img {
    max-width: 100% !important;
 }
+
+/* get eq numbers to show on the side of the equation */
+span.eqno {
+    float: right;
+}
