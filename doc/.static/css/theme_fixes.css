@@ -18,6 +18,11 @@
     font-size: 10pt;
 }
 
+.rst-content table.docutils td, .rst-content table.docutils th, .rst-content table.field-list td, .rst-content table.field-list th, .wy-table td, .wy-table th {
+    margin: 0;
+    padding: 0;
+}
+
 img {
    max-width: 100% !important;
 }
