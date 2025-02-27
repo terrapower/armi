@@ -34,6 +34,7 @@ NHFLUX
 RZFLUX
     Reads/writes total fluxes from zones
 """
+
 import numpy as np
 
 from armi.nuclearDataIO import cccc
@@ -117,9 +118,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
     def _rw1DRecord(self):
         """Read/write File specifications on 1D record."""
         with self.createRecord() as record:
-            self._metadata.update(
-                record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
-            )
+            self._metadata.update(record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata))
 
     def _rw2DRecord(self):
         """Read/write 1-dimensional regular total flux."""
@@ -150,9 +149,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
                     numZonesInBlock = jUp - jLow + 1
                     with self.createRecord() as record:
                         # pass in shape in fortran (read) order
-                        self._data.groupFluxes[
-                            :, jLow : jUp + 1, k, gEff
-                        ] = record.rwDoubleMatrix(
+                        self._data.groupFluxes[:, jLow : jUp + 1, k, gEff] = record.rwDoubleMatrix(
                             self._data.groupFluxes[:, jLow : jUp + 1, k, gEff],
                             numZonesInBlock,
                             imax,

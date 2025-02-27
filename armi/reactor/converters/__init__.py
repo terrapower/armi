@@ -24,7 +24,7 @@ Converting from one geometry to another while properly conserving mass or some o
 parameter manually is tedious and error prone. So it's well-suited for automation with
 ARMI.
 
-This subpackage contains code that does a certain subset of conversions along those lines. 
+This subpackage contains code that does a certain subset of conversions along those lines.
 
 .. warning::
     Geometry conversions are relatively design-specific, so the converters in this
@@ -32,14 +32,14 @@ This subpackage contains code that does a certain subset of conversions along th
     targeting hexagonal pin-type assemblies. If your geometry is different from this, this
     code is best considered as examples and starting points, as you will likely need to
     write your own converters in your own plugin. Of course, if your converter is
-    sufficiently generic, we welcome it here. 
+    sufficiently generic, we welcome it here.
 
     In other words, some of these converters may at some point migrate to a more
     design-specific plugin.
-    
+
 
 See Also
 --------
-armi.cases.inputModifiers 
+armi.cases.inputModifiers
     Modify input files and re-write them.
 """

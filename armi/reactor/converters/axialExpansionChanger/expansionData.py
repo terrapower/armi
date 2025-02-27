@@ -118,10 +118,7 @@ class ExpansionData:
             raise RuntimeError
         for exp in expFrac:
             if exp <= 0.0:
-                msg = (
-                    f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions "
-                    "should be greater than 0.0."
-                )
+                msg = f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions should be greater than 0.0."
                 runLog.error(msg)
                 raise RuntimeError(msg)
         for c, p in zip(components, expFrac):
@@ -208,9 +205,7 @@ class ExpansionData:
             # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
             self._expansionFactors[c] = c.getThermalExpansionFactor()
         elif c in self.componentReferenceTemperature:
-            growFrac = c.getThermalExpansionFactor(
-                T0=self.componentReferenceTemperature[c]
-            )
+            growFrac = c.getThermalExpansionFactor(T0=self.componentReferenceTemperature[c])
             self._expansionFactors[c] = growFrac
         else:
             # We want expansion factors relative to componentReferenceTemperature not
@@ -252,9 +247,7 @@ class ExpansionData:
             else:
                 self.determineTargetComponent(b)
 
-    def determineTargetComponent(
-        self, b: "Block", flagOfInterest: Optional[Flags] = None
-    ) -> "Component":
+    def determineTargetComponent(self, b: "Block", flagOfInterest: Optional[Flags] = None) -> "Component":
         """Determines the component who's expansion will determine block height.
 
         This information is also stored on the block at ``Block.p.axialExpTargetComponent`` for faster
@@ -298,9 +291,7 @@ class ExpansionData:
             candidates = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
         if len(candidates) == 0:
             # if only 1 solid, be smart enought to snag it
-            solidMaterials = list(
-                c for c in b if not isinstance(c.material, material.Fluid)
-            )
+            solidMaterials = list(c for c in b if not isinstance(c.material, material.Fluid))
             if len(solidMaterials) == 1:
                 candidates = solidMaterials
         if len(candidates) == 0:

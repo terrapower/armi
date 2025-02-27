@@ -17,6 +17,7 @@ Executors are useful for having a standard way to run physics calculations.
 They may involve external codes (with inputs/execution/output) or in-memory
 data pathways.
 """
+
 import hashlib
 import os
 
@@ -218,12 +219,8 @@ class DefaultExecuter(Executer):
         """
         self.options.resolveDerivedOptions()
         runLog.debug(self.options.describe())
-        if self.options.executablePath and not os.path.exists(
-            self.options.executablePath
-        ):
-            raise IOError(
-                f"Required executable `{self.options.executablePath}` not found for {self}"
-            )
+        if self.options.executablePath and not os.path.exists(self.options.executablePath):
+            raise IOError(f"Required executable `{self.options.executablePath}` not found for {self}")
         self._performGeometryTransformations()
         inputs, outputs = self._collectInputsAndOutputs()
         state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"

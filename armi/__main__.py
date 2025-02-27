@@ -18,6 +18,7 @@ Primary entry point into ARMI.
 There are a variety of entry points in the ``cli`` package that define the various run options.
 This invokes them according to command-line user input.
 """
+
 import sys
 
 from armi import apps, configure, context, isConfigured
@@ -39,22 +40,16 @@ def main():
 
         # TODO: change to critical after critical no longer throws an exception.
         print(
-            "[CRIT {:03} ] Unhandled exception in __main__ on {}.".format(
-                context.MPI_RANK, context.MPI_NODENAME
-            ),
+            "[CRIT {:03} ] Unhandled exception in __main__ on {}.".format(context.MPI_RANK, context.MPI_NODENAME),
             file=sys.__stderr__,
         )
         print(
-            "[CRIT {:03} ] Stack trace: {}".format(
-                context.MPI_RANK, traceback.format_exc()
-            ),
+            "[CRIT {:03} ] Stack trace: {}".format(context.MPI_RANK, traceback.format_exc()),
             file=sys.__stderr__,
         )
         if context.MPI_SIZE > 1:
             print(
-                "[CRIT {:03} ] killing all MPI tasks from __main__.\n".format(
-                    context.MPI_RANK
-                ),
+                "[CRIT {:03} ] killing all MPI tasks from __main__.\n".format(context.MPI_RANK),
                 file=sys.__stderr__,
             )
             # cleanTempDirs has @atexit.register so it should be called at the end, but mpi.Abort in main

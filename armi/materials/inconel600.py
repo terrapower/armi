@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Inconel600."""
+
 import numpy as np
 
 from armi.materials.material import Material

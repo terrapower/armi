@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Parameter definitions for thermal hydraulic plugins."""
+
 from armi.reactor import parameters
 from armi.reactor.blocks import Block
 from armi.reactor.parameters import ParamLocation
@@ -32,7 +33,6 @@ def _getBlockParams():
         saveToDB=False,
         categories=["thermal hydraulics"],
     ) as pb:
-
         pb.defParam(
             "pressureLossCoeffs",
             units=units.UNITLESS,
@@ -42,10 +42,7 @@ def _getBlockParams():
             categories=[parameters.Category.assignInBlueprints],
         )
 
-    with pDefs.createBuilder(
-        default=0.0, location=ParamLocation.AVERAGE, categories=["thermal hydraulics"]
-    ) as pb:
-
+    with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE, categories=["thermal hydraulics"]) as pb:
         pb.defParam(
             "THhotChannelCladMidwallT",
             units=units.DEGC,
@@ -60,10 +57,7 @@ def _getBlockParams():
             description="Film heat transfer coefficient for hot channel in the assembly.",
         )
 
-    with pDefs.createBuilder(
-        default=None, saveToDB=True, categories=["thermal hydraulics"]
-    ) as pb:
-
+    with pDefs.createBuilder(default=None, saveToDB=True, categories=["thermal hydraulics"]) as pb:
         pb.defParam(
             "THhotChannelCladODT",
             units=units.DEGC,
@@ -143,10 +137,7 @@ def _getBlockParams():
             location=ParamLocation.AVERAGE,
         )
 
-    with pDefs.createBuilder(
-        default=0.0, categories=["thInterface"], saveToDB=True
-    ) as pb:
-
+    with pDefs.createBuilder(default=0.0, categories=["thInterface"], saveToDB=True) as pb:
         pb.defParam(
             "THTfuelCL",
             units=units.DEGC,
@@ -270,10 +261,7 @@ def _getBlockParams():
             location=ParamLocation.AVERAGE,
         )
 
-    with pDefs.createBuilder(
-        default=None, categories=["thermal hydraulics", "mongoose"], saveToDB=True
-    ) as pb:
-
+    with pDefs.createBuilder(default=None, categories=["thermal hydraulics", "mongoose"], saveToDB=True) as pb:
         pb.defParam(
             "THcornTemp",
             units=units.DEGC,
@@ -288,9 +276,7 @@ def _getBlockParams():
             location=ParamLocation.TOP | ParamLocation.EDGES,
         )
 
-    with pDefs.createBuilder(
-        default=0, categories=["thermal hydraulics", "mongoose"], saveToDB=True
-    ) as pb:
+    with pDefs.createBuilder(default=0, categories=["thermal hydraulics", "mongoose"], saveToDB=True) as pb:
         pb.defParam(
             "THhotChannel",
             units=units.UNITLESS,

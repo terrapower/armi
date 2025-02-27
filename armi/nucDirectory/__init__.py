@@ -100,7 +100,7 @@ decay and transmutation modes).
 
 Nuclide names, labels, and IDs
 ------------------------------
-Nuclides have names, labels and IDs. 
+Nuclides have names, labels and IDs.
 
 :py:attr:`INuclide.name <armi.nucDirectory.nuclideBases.INuclide.name>`
     The nuclide name is what *should* be used within ARMI itself. This is a human readable name
@@ -108,14 +108,14 @@ Nuclides have names, labels and IDs.
     from the corresponding element symbol and mass number (A).
 
 :py:attr:`INuclide.label <armi.nucDirectory.nuclideBases.INuclide.label>`
-    The nuclide label is a unique 4 character name which identifies the nuclide from all others. 
+    The nuclide label is a unique 4 character name which identifies the nuclide from all others.
     The label is fixed to 4 characters to conform with the CCCC standard files, which traditionally
     only allow for a maximum of 6 character labels in legacy nuclear codes. Of the 6 allowable
     characters, 4 are reserved for the unique identifier of the nuclide and 2 characters are reserved
     for cross section labels (i.e., AA, AB, ZA, etc.). The cross section labels are based on the
-    cross section group manager implementation within the framework. These labels are not necessarily 
-    human readable/interpretable, but are generally the nuclide symbol followed by the last two digits 
-    of the mass number (A), so the nuclide for U235 has the label ``U235``, but PU239 has the label 
+    cross section group manager implementation within the framework. These labels are not necessarily
+    human readable/interpretable, but are generally the nuclide symbol followed by the last two digits
+    of the mass number (A), so the nuclide for U235 has the label ``U235``, but PU239 has the label
     ``PU39``.
 
 For reference, there is a complete list of the nuclides along with the names, labels and IDs

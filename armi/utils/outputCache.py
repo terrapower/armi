@@ -72,8 +72,7 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
         else:
             # outputs didn't match manifest. Just delete to save checking next time.
             runLog.warning(
-                "Outputs in {} were inconsistent with manifest. "
-                "Deleting and reproducing".format(cachedFolder)
+                "Outputs in {} were inconsistent with manifest. Deleting and reproducing".format(cachedFolder)
             )
             try:
                 deleteCache(cachedFolder)
@@ -152,9 +151,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
     This function should be supplied with a greedy list of outputs.
     """
     # outputFilePaths is a greedy list and they might not all be produced
-    outputsThatExist = [
-        outputFile for outputFile in outputFiles if os.path.exists(outputFile)
-    ]
+    outputsThatExist = [outputFile for outputFile in outputFiles if os.path.exists(outputFile)]
 
     folderLoc = _getCachedFolder(exePath, inputPaths, cacheDir)
     if os.path.exists(folderLoc):
@@ -182,9 +179,7 @@ def deleteCache(cachedFolder):
     cleanPath(cachedFolder)
 
 
-def cacheCall(
-    cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None
-):
+def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None):
     """
     Checks the cache to see if there are outputs for the run and returns them, otherwise calls the execute command.
 
@@ -209,8 +204,7 @@ def cacheCall(
             return
     except Exception as e:
         runLog.warning(
-            "Outputs existed in cache, but failed to retrieve outputs from: "
-            "{} \nerror: {}".format(
+            "Outputs existed in cache, but failed to retrieve outputs from: {} \nerror: {}".format(
                 _getCachedFolder(executablePath, inputPaths, cacheDir), e
             )
         )

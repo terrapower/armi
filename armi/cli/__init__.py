@@ -134,13 +134,9 @@ class ArmiCLI:
 
         group = parser.add_mutually_exclusive_group()
 
-        group.add_argument(
-            "-v", "--version", action="store_true", help="display the version"
-        )
+        group.add_argument("-v", "--version", action="store_true", help="display the version")
 
-        group.add_argument(
-            "-l", "--list-commands", action="store_true", help="list commands"
-        )
+        group.add_argument("-l", "--list-commands", action="store_true", help="list commands")
         group.add_argument("command", nargs="?", default="help", help=argparse.SUPPRESS)
         parser.add_argument("args", nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
 
@@ -165,9 +161,7 @@ class ArmiCLI:
         indent = 22
         initial_indent = "  "
         subsequent_indent = initial_indent + " " * indent
-        wrapper = textwrap.TextWrapper(
-            initial_indent=initial_indent, subsequent_indent=subsequent_indent, width=79
-        )
+        wrapper = textwrap.TextWrapper(initial_indent=initial_indent, subsequent_indent=subsequent_indent, width=79)
 
         sub = re.compile(r"\s+").sub
 
@@ -205,11 +199,7 @@ class ArmiCLI:
         """Execute `command` with arguments `args`, return optional exit code."""
         command = command.lower()
         if command not in self._entryPoints:
-            print(
-                'Unrecognized command "{}". Valid commands are listed below.'.format(
-                    command
-                )
-            )
+            print('Unrecognized command "{}". Valid commands are listed below.'.format(command))
             self.listCommands()
 
             return 1

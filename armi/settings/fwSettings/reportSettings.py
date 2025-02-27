@@ -39,8 +39,7 @@ def defineSettings():
             CONF_ASSEM_POW_SUMMARY,
             default=False,
             label="Summarize Assembly Power",
-            description="Print a summary of how much power is in each assembly "
-            "type at every timenode",
+            description="Print a summary of how much power is in each assembly type at every timenode",
         ),
         setting.Setting(
             CONF_SUMMARIZE_ASSEM_DESIGN,

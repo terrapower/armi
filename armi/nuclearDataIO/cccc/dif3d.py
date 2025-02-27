@@ -162,9 +162,7 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                     self._data.fourD = {omegaParam: None for omegaParam in omegaParams}
 
                 for omegaParam in omegaParams:
-                    self._data.fourD[omegaParam] = record.rwDouble(
-                        self._data.fourD[omegaParam]
-                    )
+                    self._data.fourD[omegaParam] = record.rwDouble(self._data.fourD[omegaParam])
 
     def _rw5DRecord(self) -> None:
         """
@@ -176,26 +174,18 @@ class Dif3dStream(cccc.StreamWithDataContainer):
         """
         if self._data.twoD["NCMRZS"] != 0:
             zcmrcParams = [f"ZCMRC{e}" for e in range(1, self._data.twoD["NCMRZS"] + 1)]
-            nzintsParams = [
-                f"NZINTS{e}" for e in range(1, self._data.twoD["NCMRZS"] + 1)
-            ]
+            nzintsParams = [f"NZINTS{e}" for e in range(1, self._data.twoD["NCMRZS"] + 1)]
 
             with self.createRecord() as record:
                 # Initialize the record if we're reading
                 if self._data.fiveD is None:
                     self._data.fiveD = {zcmrcParam: None for zcmrcParam in zcmrcParams}
-                    self._data.fiveD.update(
-                        {nzintsParam: None for nzintsParam in nzintsParams}
-                    )
+                    self._data.fiveD.update({nzintsParam: None for nzintsParam in nzintsParams})
 
                 for zcmrcParam in zcmrcParams:
-                    self._data.fiveD[zcmrcParam] = record.rwDouble(
-                        self._data.fiveD[zcmrcParam]
-                    )
+                    self._data.fiveD[zcmrcParam] = record.rwDouble(self._data.fiveD[zcmrcParam])
                 for nzintsParam in nzintsParams:
-                    self._data.fiveD[nzintsParam] = record.rwInt(
-                        self._data.fiveD[nzintsParam]
-                    )
+                    self._data.fiveD[nzintsParam] = record.rwInt(self._data.fiveD[nzintsParam])
 
     def readWrite(self):
         """Reads or writes metadata and data from the five records of the DIF3D binary file.

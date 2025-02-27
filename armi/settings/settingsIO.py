@@ -16,6 +16,7 @@
 :py:class:`~armi.settings.caseSettings.Settings`, and the contained
 :py:class:`~armi.settings.setting.Setting`.
 """
+
 import collections
 import datetime
 import enum
@@ -77,8 +78,7 @@ class SettingRenamer:
                 else:
                     if oldName in self._activeRenames:
                         raise SettingException(
-                            "The setting rename from {0}->{1} collides with another "
-                            "rename {0}->{2}".format(
+                            "The setting rename from {0}->{1} collides with another rename {0}->{2}".format(
                                 oldName, name, self._activeRenames[oldName]
                             )
                         )
@@ -113,25 +113,19 @@ class SettingRenamer:
 
         activeRename = self._activeRenames.get(name, None)
         if activeRename is not None:
-            runLog.warning(
-                "Invalid setting {} found. Renaming to {}.".format(name, activeRename)
-            )
+            runLog.warning("Invalid setting {} found. Renaming to {}.".format(name, activeRename))
             return activeRename, True
 
-        expiredCandidates = {
-            val[1]: val[2] for val in self._expiredRenames if val[0] == name
-        }
+        expiredCandidates = {val[1]: val[2] for val in self._expiredRenames if val[0] == name}
 
         if expiredCandidates:
             msg = "\n".join(
-                [
-                    "   {}: {}".format(expiredRename, date)
-                    for expiredRename, date in expiredCandidates.items()
-                ]
+                ["   {}: {}".format(expiredRename, date) for expiredRename, date in expiredCandidates.items()]
             )
             runLog.warning(
-                "Encountered an invalid setting `{}`. There are expired "
-                "renames to newer setting names:\n{}".format(name, msg)
+                "Encountered an invalid setting `{}`. There are expired renames to newer setting names:\n{}".format(
+                    name, msg
+                )
             )
 
         return name, False
@@ -224,18 +218,14 @@ class SettingsReader:
             )
 
         if const.ORIFICE_SETTING_ZONE_MAP in tree:
-            raise InvalidSettingsFileError(
-                self.inputPath, "Appears to be an orifice_settings file"
-            )
+            raise InvalidSettingsFileError(self.inputPath, "Appears to be an orifice_settings file")
 
         caseSettings = tree[Roots.CUSTOM]
         setts = tree["settings"]
         if CONF_VERSIONS in setts and "armi" in setts[CONF_VERSIONS]:
             self.inputVersion = setts[CONF_VERSIONS]["armi"]
         else:
-            runLog.warning(
-                "Versions setting section not found. Continuing with uncontrolled versions."
-            )
+            runLog.warning("Versions setting section not found. Continuing with uncontrolled versions.")
             self.inputVersion = "uncontrolled"
 
         for settingName, settingVal in caseSettings.items():
@@ -346,9 +336,7 @@ class SettingsWriter:
         This is general so it can be dumped to whatever file format.
         """
         settingData = collections.OrderedDict()
-        for settingName, settingObject in iter(
-            sorted(self.cs.items(), key=lambda name: name[0].lower())
-        ):
+        for settingName, settingObject in iter(sorted(self.cs.items(), key=lambda name: name[0].lower())):
             if self.style == WRITE_SHORT and not settingObject.offDefault:
                 continue
 
@@ -361,7 +349,7 @@ class SettingsWriter:
 
             attribs = settingObject.getCustomAttributes().items()
             settingDatum = {}
-            for (attribName, attribValue) in attribs:
+            for attribName, attribValue in attribs:
                 if isinstance(attribValue, type):
                     attribValue = attribValue.__name__
                 settingDatum[attribName] = attribValue
@@ -390,9 +378,7 @@ def prompt(statement, question, *options):
 
     elif context.CURRENT_MODE == context.Mode.INTERACTIVE:
         response = ""
-        responses = [
-            opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]
-        ]
+        responses = [opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]]
 
         if "YES_NO" in responses:
             index = responses.index("YES_NO")
@@ -420,9 +406,7 @@ def prompt(statement, question, *options):
         return response in ["YES", "Y", "OK"]
 
     else:
-        raise RunLogPromptUnresolvable(
-            "Incorrect CURRENT_MODE for prompting user: {}".format(context.CURRENT_MODE)
-        )
+        raise RunLogPromptUnresolvable("Incorrect CURRENT_MODE for prompting user: {}".format(context.CURRENT_MODE))
 
 
 class RunLogPromptCancel(Exception):

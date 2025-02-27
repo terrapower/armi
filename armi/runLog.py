@@ -21,9 +21,8 @@ The default way of calling and the global armi logger is to just import it:
 
     from armi import runLog
 
-You may want a logger specific to a single module, say to provide debug logging
-for only one module. That functionality is provided by a global override of
-logging imports:
+You may want a logger specific to a single module, say to provide debug logging for only one module.
+That functionality is provided by a global override of logging imports:
 
 .. code::
 
@@ -44,6 +43,7 @@ Or change the log level the same way:
 
     runLog.setVerbosity('debug')
 """
+
 import collections
 import logging
 import operator
@@ -70,9 +70,8 @@ class _RunLog:
     """
     Handles all the logging.
 
-    For the parent process, things are allowed to print to stdout and stderr,
-    but the stdout prints are formatted like log statements.
-    For the child processes, everything is piped to log files.
+    For the parent process, things are allowed to print to stdout and stderr, but the stdout prints
+    are formatted like log statements. For the child processes, everything is piped to log files.
     """
 
     STDERR_NAME = "{0}.{1:04d}.stderr"
@@ -85,8 +84,8 @@ class _RunLog:
         Parameters
         ----------
         mpiRank : int
-            If this is zero, we are in the parent process, otherwise child process.
-            This should not be adjusted after instantiation.
+            If this is zero, we are in the parent process, otherwise child process. This should not
+            be adjusted after instantiation.
         """
         self._mpiRank = mpiRank
         self._verbosity = logging.INFO
@@ -111,8 +110,8 @@ class _RunLog:
         Parameters
         ----------
         mpiRank : int
-            If this is zero, we are in the parent process, otherwise child process.
-            This should not be adjusted after instantiation.
+            If this is zero, we are in the parent process, otherwise child process. This should not
+            be adjusted after instantiation.
         """
         rank = "" if mpiRank == 0 else "-{:>03d}".format(mpiRank)
 
@@ -137,8 +136,8 @@ class _RunLog:
         Parameters
         ----------
         mpiRank : int
-            If this is zero, we are in the parent process, otherwise child process.
-            This should not be adjusted after instantiation.
+            If this is zero, we are in the parent process, otherwise child process. This should not
+            be adjusted after instantiation.
         """
         logLevels = _RunLog.getLogLevels(mpiRank)
         return " " * len(max([ll[1] for ll in logLevels.values()]))
@@ -154,7 +153,7 @@ class _RunLog:
             logging.addLevelName(logValue, shortLogString.upper())
             logging.addLevelName(logValue, shortLogString)
 
-            # ensure that we add any custom logging levels as constants to the module, e.g. logging.HEADER
+            # ensure that we add any custom logging levels to the module, e.g. logging.HEADER
             try:
                 getattr(logging, longLogString.upper())
             except AttributeError:
@@ -168,11 +167,11 @@ class _RunLog:
 
     def log(self, msgType, msg, single=False, label=None, **kwargs):
         """
-        This is a wrapper around logger.log() that does most of the work and is
-        used by all message passers (e.g. info, warning, etc.).
+        This is a wrapper around logger.log() that does most of the work and is used by all message
+        passers (e.g. info, warning, etc.).
 
-        In this situation, we do the mangling needed to get the log level to the correct number.
-        And we do some custom string manipulation so we can handle de-duplicating warnings.
+        In this situation, we do the mangling needed to get the log level to the correct number. And
+        we do some custom string manipulation so we can handle de-duplicating warnings.
         """
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else self.logLevels[msgType][0]
@@ -184,10 +183,7 @@ class _RunLog:
         self.logger.log(msgLevel, msg, single=single, label=label)
 
     def getDuplicatesFilter(self):
-        """
-        The top-level ARMI logger should have a no duplicates filter
-        If it exists, find it.
-        """
+        """The top-level ARMI logger should have a no duplicates filter. If it exists, find it."""
         if not self.logger or not isinstance(self.logger, logging.Logger):
             return None
 
@@ -209,16 +205,13 @@ class _RunLog:
             return self.logLevels[level][0]
         except KeyError:
             log_strs = list(self.logLevels.keys())
-            raise KeyError(
-                "{} is not a valid verbosity level: {}".format(level, log_strs)
-            )
+            raise KeyError("{} is not a valid verbosity level: {}".format(level, log_strs))
 
     def setVerbosity(self, level):
         """
         Sets the minimum output verbosity for the logger.
 
-        Any message with a higher verbosity than this will
-        be emitted.
+        Any message with a higher verbosity than this will be emitted.
 
         Parameters
         ----------
@@ -236,9 +229,9 @@ class _RunLog:
         if isinstance(level, str):
             self._verbosity = self.getLogVerbosityRank(level)
         elif isinstance(level, int):
-            # The logging module does strange things if you set the log level to something other than DEBUG, INFO, etc
-            # So, if someone tries, we HAVE to set the log level at a canonical value.
-            # Otherwise, nearly all log statements will be silently dropped.
+            # The logging module does strange things if you set the log level to something other
+            # than DEBUG, INFO, etc. So, if someone tries, we HAVE to set the log level at a
+            # canonical value. Otherwise, nearly all log statements will be silently dropped.
             if level in self._logLevelNumbers:
                 self._verbosity = level
             elif level < self._logLevelNumbers[0]:
@@ -269,9 +262,7 @@ class _RunLog:
     def startLog(self, name):
         """Initialize the streams when parallel processing."""
         # open the main logger
-        self.logger = logging.getLogger(
-            STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank)
-        )
+        self.logger = logging.getLogger(STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank))
 
         # if there was a pre-existing _verbosity, use it now
         if self._verbosity != logging.INFO:
@@ -279,9 +270,7 @@ class _RunLog:
 
         if self._mpiRank != 0:
             # init stderr intercepting logging
-            filePath = os.path.join(
-                LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
-            )
+            filePath = os.path.join(LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank))
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
             h = logging.FileHandler(filePath, delay=True)
             fmt = "%(message)s"
@@ -326,15 +315,13 @@ def concatenateLogs(logDir=None):
         :id: I_ARMI_LOG_MPI
         :implements: R_ARMI_LOG_MPI
 
-        The log files are plain text files. Since ARMI is frequently run in parallel,
-        the situation arises where each ARMI process generates its own plain text log
-        file. This function combines the separate log files, per process, into one log
-        file.
+        The log files are plain text files. Since ARMI is frequently run in parallel, the situation
+        arises where each ARMI process generates its own plain text log file. This function combines
+        the separate log files, per process, into one log file.
 
-        The files are written in numerical order, with the lead process stdout first
-        then the lead process stderr. Then each other process is written to the
-        combined file, in order, stdout then stderr. Finally, the original stdout and
-        stderr files are deleted.
+        The files are written in numerical order, with the lead process stdout first then the lead
+        process stderr. Then each other process is written to the combined file, in order, stdout
+        then stderr. Finally, the original stdout and stderr files are deleted.
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -360,9 +347,7 @@ def concatenateLogs(logDir=None):
 
     combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
     with open(combinedLogName, "w") as workerLog:
-        workerLog.write(
-            "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
-        )
+        workerLog.write("\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10))
 
         for stdoutName in stdoutFiles:
             # NOTE: If the log file name format changes, this will need to change.
@@ -371,9 +356,7 @@ def concatenateLogs(logDir=None):
                 data = logFile.read()
                 # only write if there's something to write
                 if data:
-                    rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
-                        "-" * 10, rank, "-" * 60
-                    )
+                    rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format("-" * 10, rank, "-" * 60)
                     if rank == 0:
                         print(rankId, file=sys.stdout)
                         print(data, file=sys.stdout)
@@ -392,9 +375,7 @@ def concatenateLogs(logDir=None):
                     data = logFile.read()
                     if data:
                         # only write if there's something to write.
-                        rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format(
-                            "-" * 10, rank, "-" * 60
-                        )
+                        rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format("-" * 10, rank, "-" * 60)
                         print(rankId, file=sys.stderr)
                         print(data, file=sys.stderr)
                 try:
@@ -506,11 +487,10 @@ class RunLogger(logging.Logger):
         :id: I_ARMI_LOG
         :implements: R_ARMI_LOG
 
-        Log statements are any text a user wants to record during a run. For instance,
-        basic notifications of what is happening in the run, simple warnings, or hard
-        errors. Every log message has an associated log level, controlled by the
-        "verbosity" of the logging statement in the code. In the ARMI codebase, you
-        can see many examples of logging:
+        Log statements are any text a user wants to record during a run. For instance, basic
+        notifications of what is happening in the run, simple warnings, or hard errors. Every log
+        message has an associated log level, controlled by the "verbosity" of the logging statement
+        in the code. In the ARMI codebase, you can see many examples of logging:
 
         .. code-block:: python
 
@@ -519,33 +499,32 @@ class RunLogger(logging.Logger):
             runLog.info("This is the usual verbosity.")
             runLog.debug("This is only logged during a debug run.")
 
-        The full list of logging levels is defined in ``_RunLog.getLogLevels()``, and
-        the developer specifies the verbosity of a run via ``_RunLog.setVerbosity()``.
+        The full list of logging levels is defined in ``_RunLog.getLogLevels()``, and the developer
+        specifies the verbosity of a run via ``_RunLog.setVerbosity()``.
 
-        At the end of the ARMI-based simulation, the analyst will have a full record of
-        potentially interesting information they can use to understand their run.
+        At the end of the ARMI-based simulation, the analyst will have a full record of potentially
+        interesting information they can use to understand their run.
 
     .. impl:: Logging is done to the screen and to file.
         :id: I_ARMI_LOG_IO
         :implements: R_ARMI_LOG_IO
 
-        This logger makes it easy for users to add log statements to and ARMI
-        application, and ARMI will control the flow of those log statements. In
-        particular, ARMI overrides the normal Python logging tooling, to allow
-        developers to pipe their log statements to both screen and file. This works for
-        stdout and stderr.
+        This logger makes it easy for users to add log statements to and ARMI application, and ARMI
+        will control the flow of those log statements. In particular, ARMI overrides the normal
+        Python logging tooling, to allow developers to pipe their log statements to both screen and
+        file. This works for stdout and stderr.
 
-        At any place in the ARMI application, developers can interject a plain text
-        logging message, and when that code is hit during an ARMI simulation, the text
-        will be piped to screen and a log file. By default, the ``logging`` module only
-        logs to screen, but ARMI adds a ``FileHandler`` in the ``RunLog`` constructor
-        and in ``_RunLog.startLog``.
+        At any place in the ARMI application, developers can interject a plain text logging message,
+        and when that code is hit during an ARMI simulation, the text will be piped to screen and a
+        log file. By default, the ``logging`` module only logs to screen, but ARMI adds a
+        ``FileHandler`` in the ``RunLog`` constructor and in ``_RunLog.startLog``.
     """
 
     FMT = "%(levelname)s%(message)s"
 
     def __init__(self, *args, **kwargs):
-        # optionally, the user can pass in the MPI_RANK by putting it in the logger name after a separator string
+        # Optionally, the user can pass in the MPI_RANK by putting it in the logger name after a
+        # separator string:
         # args[0].split(SEP): 0 = "ARMI", 1 = caseTitle, 2 = MPI_RANK
         if SEP in args[0]:
             mpiRank = int(args[0].split(SEP)[-1].strip())
@@ -561,9 +540,7 @@ class RunLogger(logging.Logger):
             handler.setLevel(logging.INFO)
             self.setLevel(logging.INFO)
         else:
-            filePath = os.path.join(
-                LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
-            )
+            filePath = os.path.join(LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank))
             handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
@@ -576,17 +553,15 @@ class RunLogger(logging.Logger):
         """
         This is a wrapper around logger.log() that does most of the work.
 
-        This is used by all message passers (e.g. info, warning, etc.). In this situation,
-        we do the mangling needed to get the log level to the correct number. And we do
-        some custom string manipulation so we can handle de-duplicating warnings.
+        This is used by all message passers (e.g. info, warning, etc.). In this situation, we do the
+        mangling needed to get the log level to the correct number. And we do some custom string
+        manipulation so we can handle de-duplicating warnings.
         """
         # Determine the log level: users can optionally pass in custom strings ("debug")
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
         # Do the actual logging
-        logging.Logger.log(
-            self, msgLevel, str(msg), extra={"single": single, "label": label}
-        )
+        logging.Logger.log(self, msgLevel, str(msg), extra={"single": single, "label": label})
 
     def _log(self, *args, **kwargs):
         """
@@ -594,10 +569,9 @@ class RunLogger(logging.Logger):
 
         The primary goal here is to allow us to support the deduplication of warnings.
 
-        .. note:: All of the ``*args`` and ``**kwargs`` logic here are mandatory, as the
-            standard library implementation of this method has been changing the number of
-            kwargs between Python v3.4 and v3.9.
-
+        .. note:: All of the ``*args`` and ``**kwargs`` logic here are mandatory, as the standard
+            library implementation of this method has been changing the number of kwargs between
+            Python v3.4 and v3.9.
         """
         # we need 'extra' as an output keyword, even if empty
         if "extra" not in kwargs:
@@ -656,9 +630,7 @@ class RunLogger(logging.Logger):
             return
 
         # sort by labcollections.defaultdict(lambda: 1)
-        for label, count in sorted(
-            dupsFilter.singleWarningMessageCounts.items(), key=operator.itemgetter(1)
-        ):
+        for label, count in sorted(dupsFilter.singleWarningMessageCounts.items(), key=operator.itemgetter(1)):
             self.info("  {0:^10s}   {1:^25s}".format(str(count), str(label)))
         self.info("------------------------------------")
 

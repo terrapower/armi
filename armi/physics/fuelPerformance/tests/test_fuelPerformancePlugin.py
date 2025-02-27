@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic fuel performance plugin."""
+
 from armi.physics.fuelPerformance.plugin import FuelPerformancePlugin
 from armi.tests.test_plugins import TestPlugin
 

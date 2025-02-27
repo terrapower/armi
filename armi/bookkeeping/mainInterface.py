@@ -17,6 +17,7 @@ This module performs some file manipulations, cleanups, state loads, etc.
 
 It's a bit of a catch-all interface, and it's name is admittedly not very descriptive.
 """
+
 import glob
 import itertools
 import os
@@ -70,10 +71,7 @@ class MainInterface(interfaces.Interface):
         if not dbi.enabled():
             return
         dbi.initDB()
-        if (
-            self.cs["loadStyle"] != "fromInput"
-            and self.cs["runType"] != operators.RunTypes.SNAPSHOTS
-        ):
+        if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != operators.RunTypes.SNAPSHOTS:
             # load case before going forward with normal cycle
             runLog.important("MainInterface loading DB history for restart.")
 
@@ -92,8 +90,7 @@ class MainInterface(interfaces.Interface):
                 # so here we explicitly call the EOC interactions now and then proceed with normal
                 # BOL interactions for the cycle we are starting
                 runLog.important(
-                    "MainInterface calling `o.interactAllEOC` due to "
-                    "loading the last time node of the previous cycle."
+                    "MainInterface calling `o.interactAllEOC` due to loading the last time node of the previous cycle."
                 )
                 self.o.interactAllEOC(self.r.p.cycle)
 
@@ -128,9 +125,7 @@ class MainInterface(interfaces.Interface):
         """
         # handle a lot of asterisks and missing files
         copyFilesFrom = [
-            filePath
-            for possiblePath in self.cs[CONF_COPY_FILES_FROM]
-            for filePath in glob.glob(possiblePath)
+            filePath for possiblePath in self.cs[CONF_COPY_FILES_FROM] for filePath in glob.glob(possiblePath)
         ]
         copyFilesTo = self.cs[CONF_COPY_FILES_TO]
 
@@ -138,9 +133,7 @@ class MainInterface(interfaces.Interface):
             # if any files to copy, then use the first as the default, i.e. len() == 1,
             # otherwise assume '.'
             default = copyFilesTo[0] if any(copyFilesTo) else "."
-            for filename, dest in itertools.zip_longest(
-                copyFilesFrom, copyFilesTo, fillvalue=default
-            ):
+            for filename, dest in itertools.zip_longest(copyFilesFrom, copyFilesTo, fillvalue=default):
                 pathTools.copyOrWarn(CONF_COPY_FILES_FROM, filename, dest)
         else:
             runLog.error(
@@ -149,9 +142,7 @@ class MainInterface(interfaces.Interface):
                 f"    {CONF_COPY_FILES_TO}   : {copyFilesTo}\n"
                 f"    {CONF_COPY_FILES_FROM} : {copyFilesFrom}"
             )
-            raise InputError(
-                f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}"
-            )
+            raise InputError(f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}")
 
     def interactBOC(self, cycle=None):
         """Typically the first interface to interact beginning of cycle."""
@@ -241,6 +232,5 @@ class MainInterface(interfaces.Interface):
                         os.remove(fileName)
                     except OSError:
                         runLog.warning(
-                            "Error removing file {0} during cleanup. It is still in use,"
-                            " probably".format(fileName)
+                            "Error removing file {0} during cleanup. It is still in use, probably".format(fileName)
                         )

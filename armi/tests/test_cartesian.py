@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for Cartesian reactors."""
+
 import unittest
 
 from armi.reactor import geometry
@@ -42,9 +43,7 @@ class CartesianReactorTests(unittest.TestCase):
 
     def test_custom(self):
         """Test Custom material with custom density."""
-        fuel = self.r.core.getFirstAssembly(Flags.MIDDLE | Flags.FUEL).getFirstBlock(
-            Flags.FUEL
-        )
+        fuel = self.r.core.getFirstAssembly(Flags.MIDDLE | Flags.FUEL).getFirstBlock(Flags.FUEL)
         custom = fuel.getComponent(Flags.FUEL)
         self.assertEqual(self.r.core.geomType, geometry.GeomType.CARTESIAN)
         # from blueprints input file

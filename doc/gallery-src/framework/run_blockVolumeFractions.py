@@ -24,6 +24,7 @@ structure components are uniformly increased.
 Note: Thermal expansion is automatically considered with material data defined within
 :py:mod:`materials <armi.materials>`.
 """
+
 # ruff: noqa: E402
 import collections
 
@@ -54,7 +55,6 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
     initialVols = {}
     relativeVols = collections.defaultdict(list)
     for tempInC in uniformTemps:
-
         print(f"Updating fuel/structure components to {tempInC} °C")
         # Modify the fuel/structure components to the
         # same uniform temperature
@@ -70,9 +70,7 @@ def plotVolFracsWithComponentTemps(b, uniformTemps):
             if tempInC == uniformTempsInC[0]:
                 initialVols[c] = c.getVolume()
 
-            relativeVols[c].append(
-                (c.getVolume() - initialVols[c]) / initialVols[c] * 100.0
-            )
+            relativeVols[c].append((c.getVolume() - initialVols[c]) / initialVols[c] * 100.0)
 
     fig, ax = plt.subplots()
 

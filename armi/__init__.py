@@ -42,6 +42,7 @@ If using the ``run`` entry point, additional work is done:
 * Wrap up
 * Quit
 """
+
 # ruff: noqa: F401
 import atexit
 import datetime
@@ -232,8 +233,7 @@ def getApp() -> Optional[apps.App]:
 def _cleanupOnCancel(signum, _frame):
     """Helper function to clean up upon cancellation."""
     print(
-        "Caught Cancel signal ({}); cleaning temporary files and exiting..."
-        "".format(signum),
+        "Caught Cancel signal ({}); cleaning temporary files and exiting...".format(signum),
         file=sys.stderr,
     )
     context.cleanTempDirs()
@@ -289,8 +289,9 @@ def configure(app: Optional[apps.App] = None, permissive=False):
             return
         else:
             raise RuntimeError(
-                "Multiple calls to armi.configure() are not allowed. "
-                "Previous call from:\n{}".format(_ARMI_CONFIGURE_CONTEXT)
+                "Multiple calls to armi.configure() are not allowed. Previous call from:\n{}".format(
+                    _ARMI_CONFIGURE_CONTEXT
+                )
             )
 
     assert not context.BLUEPRINTS_IMPORTED, (
@@ -323,11 +324,7 @@ def applyAsyncioWindowsWorkaround() -> None:
     """
     import asyncio
 
-    if (
-        sys.version_info[0] == 3
-        and sys.version_info[1] >= 8
-        and sys.platform.startswith("win")
-    ):
+    if sys.version_info[0] == 3 and sys.version_info[1] >= 8 and sys.platform.startswith("win"):
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 

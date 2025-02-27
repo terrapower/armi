@@ -70,11 +70,7 @@ class ReportContent:
                 if isinstance(self.sections[group][subgroup], htmltree.HtmlElement):
                     fig = self.sections[group].childContents[subgroup].render()
                 else:
-                    fig = (
-                        self.sections[group]
-                        .childContents[subgroup]
-                        .render(0, str(group) + str(subgroup))
-                    )
+                    fig = self.sections[group].childContents[subgroup].render(0, str(group) + str(subgroup))
                 innerDiv.C.append(fig)
                 div.C.append(innerDiv)
         divMain.C.append(div)
@@ -85,16 +81,12 @@ class ReportContent:
 
         # Copy css file to the correct folder containing the reportContent.html
         safeCopy(
-            os.path.abspath(
-                os.path.join(os.path.abspath(__file__), os.pardir, "styles.css")
-            ),
+            os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, "styles.css")),
             "styles.css",
         )
 
         safeCopy(
-            os.path.abspath(
-                os.path.join(os.path.abspath(__file__), os.pardir, "report.js")
-            ),
+            os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir, "report.js")),
             "report.js",
         )
         fileurl = doc.renderToFile("index.html", 0)
@@ -141,9 +133,7 @@ class ReportContent:
                 subgroup = elements[group].childContents[subKey]
                 if type(subgroup) is Section:
                     sectionHeading = htmltree.Li(
-                        htmltree.A(
-                            subgroup.title, href="#{}".format(str(group) + str(subKey))
-                        ),
+                        htmltree.A(subgroup.title, href="#{}".format(str(group) + str(subKey))),
                         _class="nestedSection",
                     )
                     ul.C.append(sectionHeading)
@@ -156,9 +146,7 @@ class ReportContent:
                                 htmltree.Li(
                                     htmltree.A(
                                         element.title,
-                                        href="#{}".format(
-                                            str(group) + str(subKey) + str(key)
-                                        ),
+                                        href="#{}".format(str(group) + str(subKey) + str(key)),
                                     )
                                 )
                             )
@@ -166,11 +154,7 @@ class ReportContent:
                             sectionHeading.A.update({"class": "subsection"})
                     ul.C.append(ul2)
                 elif type(subgroup) is not htmltree.HtmlElement:
-                    ul.C.append(
-                        htmltree.Li(
-                            htmltree.A(subKey, href="#{}".format(group + subKey))
-                        )
-                    )
+                    ul.C.append(htmltree.Li(htmltree.A(subKey, href="#{}".format(group + subKey))))
 
             outerList.C.append(ul)
 
@@ -179,7 +163,6 @@ class ReportContent:
 
 
 class ReportNode(ABC):
-
     levelDict = collections.defaultdict(lambda: htmltree.H5())
     levelDict[0] = htmltree.H2()
     levelDict[1] = htmltree.H3()
@@ -218,9 +201,7 @@ class Section(ReportNode):
 
     def __init__(self, title):
         self.title = title
-        self.childContents: Dict[
-            str, Union[Section, htmltree.HtmlElement, ReportNode]
-        ] = collections.OrderedDict()
+        self.childContents: Dict[str, Union[Section, htmltree.HtmlElement, ReportNode]] = collections.OrderedDict()
 
     def addChildElement(self, element, heading="", subheading=None):
         """Add an element to the group of Sections.
@@ -326,7 +307,6 @@ class Image(ReportNode):
 
         xtn = os.path.splitext(imagePath)[1][1:]  # [1:] to cut out the period
         if xtn == "pdf":
-
             runLog.warning(
                 "'.pdf' images cannot be embedded into this HTML report. Path name was {}, cannot be inserted.".format(
                     imagePath
@@ -342,11 +322,7 @@ class Image(ReportNode):
         figure = htmltree.Figure()
         if self.encode:
             self.imagePath = encode64(os.path.abspath(self.imagePath))
-        figure.C.append(
-            htmltree.Img(
-                src=self.imagePath, alt="{}_image".format(self.caption), id=idPrefix
-            )
-        )
+        figure.C.append(htmltree.Img(src=self.imagePath, alt="{}_image".format(self.caption), id=idPrefix))
         figure.C.append(htmltree.Figcaption(self.caption))
         return figure
 
@@ -402,11 +378,7 @@ class Table(ReportNode):
             for element in row:
                 htmlRow.C.append(htmltree.Td(element))
             table.C.append(htmlRow)
-        table.C.append(
-            htmltree.Caption(
-                self.caption, style={"caption-side": "bottom", "font-size": "13"}
-            )
-        )
+        table.C.append(htmltree.Caption(self.caption, style={"caption-side": "bottom", "font-size": "13"}))
         return table
 
 
@@ -591,10 +563,6 @@ def encode64(file_path):
     xtn = os.path.splitext(file_path)[1][1:]  # [1:] to cut out the period
     with open(file_path, "rb") as img_src:
         if xtn == "svg":
-            return r"data:image/{};base64,{}".format(
-                xtn + "+xml", base64.b64encode(img_src.read()).decode()
-            )
+            return r"data:image/{};base64,{}".format(xtn + "+xml", base64.b64encode(img_src.read()).decode())
 
-        return r"data:image/{};base64,{}".format(
-            xtn, base64.b64encode(img_src.read()).decode()
-        )
+        return r"data:image/{};base64,{}".format(xtn, base64.b64encode(img_src.read()).decode())

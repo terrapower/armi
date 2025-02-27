@@ -34,7 +34,7 @@ from armi.utils import (
 
 def insertBlueprintContent(r, cs, report, blueprint):
     insertCoreDesignReport(r.core, cs, report)
-    insertCoreAndAssemblyMaps(r, cs, report, blueprint),
+    (insertCoreAndAssemblyMaps(r, cs, report, blueprint),)
     insertBlockDiagrams(cs, blueprint, report, True)
     insertBlockDesignReport(blueprint, report, cs)
 
@@ -91,9 +91,7 @@ def insertDesignContent(r, report):
 
     first_fuel_block = r.core.getFirstBlock(Flags.FUEL)
     if first_fuel_block is not None:
-        report[DESIGN]["Dimensions in First Fuel Block"] = newReports.Section(
-            "Dimensions in First Fuel Block"
-        )
+        report[DESIGN]["Dimensions in First Fuel Block"] = newReports.Section("Dimensions in First Fuel Block")
 
         for component_ in sorted(first_fuel_block):
             report[DESIGN]["Dimensions in First Fuel Block"].addChildElement(
@@ -116,9 +114,7 @@ def insertBlockDesignReport(blueprint, report, cs):
     report[DESIGN]["Block Summaries"] = newReports.Section("Block Summaries")
 
     for bDesign in blueprint.blockDesigns:
-        loadingFileTable = newReports.Table(
-            "Summary Of Block: {}".format(bDesign.name), "block contents"
-        )
+        loadingFileTable = newReports.Table("Summary Of Block: {}".format(bDesign.name), "block contents")
         loadingFileTable.header = ["", "Input Parameter"]
         constructedBlock = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
         loadingFileTable.addRow(["Number of Components", len(bDesign)])
@@ -165,9 +161,7 @@ def insertBlockDesignReport(blueprint, report, cs):
                             ]
                         )
         loadingFileTable.title = "Summary of Block: {}".format(bDesign.name)
-        report[DESIGN]["Block Summaries"].addChildElement(
-            loadingFileTable, loadingFileTable.title
-        )
+        report[DESIGN]["Block Summaries"].addChildElement(loadingFileTable, loadingFileTable.title)
 
 
 def insertCoreDesignReport(core, cs, report):
@@ -196,9 +190,7 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     coreDesignTable.addRow(["Run Type", "{}".format(cs["runType"])])
     coreDesignTable.addRow(["Geometry File", "{}".format(cs["geomFile"])])
     coreDesignTable.addRow(["Loading File", "{}".format(cs[CONF_LOADING_FILE])])
-    coreDesignTable.addRow(
-        ["Fuel Shuffling Logic File", "{}".format(cs[CONF_SHUFFLE_LOGIC])]
-    )
+    coreDesignTable.addRow(["Fuel Shuffling Logic File", "{}".format(cs[CONF_SHUFFLE_LOGIC])])
     coreDesignTable.addRow(["Reactor State Loading", "{}".format(cs["loadStyle"])])
     if cs["loadStyle"] == "fromDB":
         coreDesignTable.addRow(["Database File", "{}".format(cs["reloadDBName"])])
@@ -222,9 +214,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     heavyMetalMass = sum(b.getHMMass() for b in blocks)
     totalVolume = sum(b.getVolume() for b in blocks)
     coreDesignTable.addRow([" ", ""])
-    coreDesignTable.addRow(
-        ["Core Power", "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW)]
-    )
+    coreDesignTable.addRow(["Core Power", "{:.2f} MWth".format(cs["power"] / units.WATTS_PER_MW)])
     coreDesignTable.addRow(
         ["Base Capacity Factor", "{}".format(getAvailabilityFactors(cs))],
     )
@@ -262,12 +252,8 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
             "{:.2f} kg".format(totalMass / units.G_PER_KG * corePowerMult),
         ]
     )
-    coreDesignTable.addRow(
-        ["Number of Assembly Rings", "{}".format(core.getNumRings())]
-    )
-    coreDesignTable.addRow(
-        ["Number of Assemblies", "{}".format(len(core.getAssemblies() * corePowerMult))]
-    )
+    coreDesignTable.addRow(["Number of Assembly Rings", "{}".format(core.getNumRings())])
+    coreDesignTable.addRow(["Number of Assemblies", "{}".format(len(core.getAssemblies() * corePowerMult))])
     coreDesignTable.addRow(
         [
             "Number of Fuel Assemblies",
@@ -299,15 +285,9 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
 
     coreDesignTable.addRow(["  ", ""])
     coreDesignTable.addRow(["Full Core Model", "{}".format(core.isFullCore)])
-    coreDesignTable.addRow(
-        ["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))]
-    )
-    coreDesignTable.addRow(
-        ["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])]
-    )
-    coreDesignTable.addRow(
-        ["Neutronics Enabled for", "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE])]
-    )
+    coreDesignTable.addRow(["Tight Physics Coupling Enabled", "{}".format(bool(cs["tightCoupling"]))])
+    coreDesignTable.addRow(["Lattice Physics Enabled for", "{}".format(cs[CONF_GEN_XS])])
+    coreDesignTable.addRow(["Neutronics Enabled for", "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE])])
 
 
 def insertEndOfLifeContent(r, report):
@@ -367,17 +347,11 @@ def insertBlockDiagrams(cs, blueprint, report, cold):
     report[DESIGN]["Block Diagrams"] = newReports.Section("Block Diagrams")
     for bDesign in blueprint.blockDesigns:
         block = bDesign.construct(cs, blueprint, 0, 1, 0, "A", dict())
-        fileName = plotting.plotBlockDiagram(
-            block, "{}.svg".format(bDesign.name), cold, materialList=materialList
-        )
+        fileName = plotting.plotBlockDiagram(block, "{}.svg".format(bDesign.name), cold, materialList=materialList)
         plotting.close()
         if fileName is not None:
-            report[DESIGN]["Block Diagrams"][
-                bDesign.name.capitalize()
-            ] = newReports.Image(
-                "Diagram of {} Block at Cold Temperature".format(
-                    bDesign.name.capitalize()
-                ),
+            report[DESIGN]["Block Diagrams"][bDesign.name.capitalize()] = newReports.Image(
+                "Diagram of {} Block at Cold Temperature".format(bDesign.name.capitalize()),
                 fileName,
                 "{}".format(bDesign.name.capitalize()),
             )
@@ -392,9 +366,7 @@ def insertMetaTable(cs, report):
     report: ReportContent
     """
     section = report[COMPREHENSIVE_REPORT]
-    tableList = section.get(
-        SETTINGS, newReports.Table("Settings", "General overview of the run")
-    )
+    tableList = section.get(SETTINGS, newReports.Table("Settings", "General overview of the run"))
     tableList.addRow(["outputFileExtension", cs["outputFileExtension"]])
     tableList.addRow(["Total Core Power", "%8.5E MWt" % (cs["power"] / 1.0e6)])
     if not cs["cycleLengths"]:
@@ -414,9 +386,7 @@ def insertSettingsData(cs, report):
     from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_NEUTRONICS_KERNEL
 
     report[COMPREHENSIVE_REPORT][CASE_PARAMETERS] = newReports.Table("Case Parameters")
-    report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table(
-        "Reactor Parameters"
-    )
+    report[COMPREHENSIVE_REPORT][REACTOR_PARAMS] = newReports.Table("Reactor Parameters")
     report[COMPREHENSIVE_REPORT][CASE_CONTROLS] = newReports.Table("Case Controls")
     report[COMPREHENSIVE_REPORT][SNAPSHOT] = newReports.Table("Snapshot")
     report[COMPREHENSIVE_REPORT][BURNUP_GROUPS] = newReports.Table("Burn Up Groups")
@@ -430,7 +400,6 @@ def insertSettingsData(cs, report):
         report[COMPREHENSIVE_REPORT][CASE_PARAMETERS].addRow([key, cs[key]])
 
     for key in cs.environmentSettings:
-
         report[COMPREHENSIVE_REPORT][SETTINGS].addRow([key, str(cs[key])])
     for key in ["reloadDBName", "startCycle", "startNode"]:
         report[COMPREHENSIVE_REPORT][SNAPSHOT].addRow([key, cs[key]])
@@ -466,9 +435,7 @@ def getPinDesignTable(core):
             designInfo["ductThick"].append(
                 (duct.getDimension("op") - duct.getDimension("ip")) * 5.0
             )  # convert to mm and divide by 2
-            designInfo["cladThick"].append(
-                (clad.getDimension("od") - clad.getDimension("id")) * 5.0
-            )
+            designInfo["cladThick"].append((clad.getDimension("od") - clad.getDimension("id")) * 5.0)
             pinOD = clad.getDimension("od") * 10.0
             wireOD = wire.getDimension("od") * 10.0
             pitch = pinOD + wireOD  # pitch has half a wire on each side.
@@ -496,12 +463,8 @@ def getPinDesignTable(core):
             tableRows.addRow([dim, val])
 
         a = core.refAssem
-        tableRows.addRow(
-            ["Fuel Height (cm):", "{0:.2f}".format(a.getHeight(Flags.FUEL))]
-        )
-        tableRows.addRow(
-            ["Plenum Height (cm):", "{0:.2f}".format(a.getHeight(Flags.PLENUM))]
-        )
+        tableRows.addRow(["Fuel Height (cm):", "{0:.2f}".format(a.getHeight(Flags.FUEL))])
+        tableRows.addRow(["Plenum Height (cm):", "{0:.2f}".format(a.getHeight(Flags.PLENUM))])
     except Exception as error:
         runLog.warning("Pin summarization failed to work")
         runLog.warning(error)
@@ -553,7 +516,6 @@ def createDimensionReport(comp):
     }
     reportGroup = None
     for componentType, componentReport in REPORT_GROUPS.items():
-
         if comp.hasFlags(componentType):
             reportGroup = newReports.Table(componentReport.capitalize())
             break
@@ -567,9 +529,7 @@ def createDimensionReport(comp):
     ]
 
     dimensions = {
-        k: comp.p[k]
-        for k in comp.DIMENSION_NAMES
-        if k not in ("modArea", "area") and comp.p[k] is not None
+        k: comp.p[k] for k in comp.DIMENSION_NAMES if k not in ("modArea", "area") and comp.p[k] is not None
     }  # py3 cannot format None
     # Set component name and material
     reportGroup.addRow(["Name", comp.getName(), ""])
@@ -583,9 +543,7 @@ def createDimensionReport(comp):
             reportGroup.addRow([niceName, refVal, hotVal])
         except ValueError:
             runLog.info(
-                "{0} has an invalid dimension for {1}. refVal: {2} hotVal: {3}".format(
-                    comp, dimName, refVal, hotVal
-                )
+                "{0} has an invalid dimension for {1}. refVal: {2} hotVal: {3}".format(comp, dimName, refVal, hotVal)
             )
 
     # calculate thickness if applicable.
@@ -613,9 +571,7 @@ def createDimensionReport(comp):
     return reportGroup
 
 
-def insertCoreAndAssemblyMaps(
-    r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True
-):
+def insertCoreAndAssemblyMaps(r, cs, report, blueprint, generateFullCoreMap=False, showBlockAxMesh=True):
     """Create core and assembly design plots.
 
     Parameters
@@ -632,8 +588,7 @@ def insertCoreAndAssemblyMaps(
         assemPrototypes.add(blueprint.constructAssem(cs, name=aKey))
 
     counts = {
-        assemDesign.name: len(r.core.getChildrenOfType(assemDesign.name))
-        for assemDesign in blueprint.assemDesigns
+        assemDesign.name: len(r.core.getChildrenOfType(assemDesign.name)) for assemDesign in blueprint.assemDesigns
     }
 
     core = r.core
@@ -646,9 +601,7 @@ def insertCoreAndAssemblyMaps(
 
     report[DESIGN]["Assembly Designs"] = newReports.Section("Assembly Designs")
     currentSection = report[DESIGN]["Assembly Designs"]
-    for plotNum, assemBatch in enumerate(
-        iterables.chunk(list(assemPrototypes), MAX_ASSEMS_PER_ASSEM_PLOT), start=1
-    ):
+    for plotNum, assemBatch in enumerate(iterables.chunk(list(assemPrototypes), MAX_ASSEMS_PER_ASSEM_PLOT), start=1):
         assemPlotImage = newReports.Image(
             imageCaption,
             os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png"),
@@ -699,9 +652,7 @@ def insertCoreAndAssemblyMaps(
         fontSize=8,
     )
 
-    report[DESIGN][CORE_MAP] = newReports.Image(
-        "Map of the Core at BOL", os.path.abspath(fName)
-    )
+    report[DESIGN][CORE_MAP] = newReports.Image("Map of the Core at BOL", os.path.abspath(fName))
 
 
 """Sections Constants"""

@@ -15,6 +15,7 @@
 This module contains subclasses of the armi.runLog._RunLog class that can be used to determine
 whether or not one of the specific methods were called. These should only be used in testing.
 """
+
 import io
 import sys
 

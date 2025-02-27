@@ -40,9 +40,7 @@ class ThetaRZGrid(StructuredGrid):
     """
 
     def getSymmetricEquivalents(self, indices: IJType) -> NoReturn:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not support symmetric equivalents"
-        )
+        raise NotImplementedError(f"{self.__class__.__name__} does not support symmetric equivalents")
 
     @classmethod
     def fromGeom(cls, geom, armiObject: Optional["ArmiObject"] = None) -> "ThetaRZGrid":
@@ -64,9 +62,7 @@ class ThetaRZGrid(StructuredGrid):
         --------
         >>> grid = grids.ThetaRZGrid.fromGeom(geomInfo)
         """
-        allIndices = [
-            indices for indices, _assemName in geom.assemTypeByIndices.items()
-        ]
+        allIndices = [indices for indices, _assemName in geom.assemTypeByIndices.items()]
 
         # create ordered lists of all unique theta and R points
         thetas, radii = set(), set()
@@ -78,9 +74,7 @@ class ThetaRZGrid(StructuredGrid):
         radii = np.array(sorted(radii), dtype=np.float64)
         thetaRadians = np.array(sorted(thetas), dtype=np.float64)
 
-        return ThetaRZGrid(
-            bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject
-        )
+        return ThetaRZGrid(bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject)
 
     def getRingPos(self, indices):
         return (indices[1] + 1, indices[0] + 1)
@@ -90,9 +84,7 @@ class ThetaRZGrid(StructuredGrid):
         return (pos - 1, ring - 1)
 
     def getCoordinates(self, indices, nativeCoords=False) -> np.ndarray:
-        meshCoords = theta, r, z = super().getCoordinates(
-            indices, nativeCoords=nativeCoords
-        )
+        meshCoords = theta, r, z = super().getCoordinates(indices, nativeCoords=nativeCoords)
         if not 0 <= theta <= TAU:
             raise ValueError("Invalid theta value: {}. Check mesh.".format(theta))
         if nativeCoords:

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for DELAYXS."""
+
 import copy
 import filecmp
 import unittest
@@ -306,9 +307,7 @@ class DlayxsTests(unittest.TestCase):
             )
         )
 
-    @unittest.skip(
-        "The TH232, U232, PU238 and PU242 numbers do not agree, likely because they are from ENDV/B VI.8."
-    )
+    @unittest.skip("The TH232, U232, PU238 and PU242 numbers do not agree, likely because they are from ENDV/B VI.8.")
     def test_ENDFVII1DecayConstants(self):
         """Test ENDF/B VII.1 decay constants. Retrieved from ENDF/B VII.1."""
         self._assertDC(
@@ -920,17 +919,13 @@ class DlayxsTests(unittest.TestCase):
     def _assertDC(self, nucName, endfProvidedData):
         # DC -> decay constants
         try:
-            dlayData = self.dlayxs3[
-                nuclideBases.byName[nucName.strip()]
-            ].precursorDecayConstants
+            dlayData = self.dlayxs3[nuclideBases.byName[nucName.strip()]].precursorDecayConstants
             self.assertTrue(np.allclose(dlayData, endfProvidedData, 1e-3))
         except AssertionError:
             # this is reraised because generating the message might take some time to format all the
             # data from the arrays
             raise AssertionError(
-                "{} was different,\nexpected:{}\nactual:{}".format(
-                    nucName, endfProvidedData, dlayData
-                )
+                "{} was different,\nexpected:{}\nactual:{}".format(nucName, endfProvidedData, dlayData)
             )
         except KeyError:
             pass
@@ -1058,19 +1053,13 @@ class DlayxsTests(unittest.TestCase):
 
     def _assertNuDelay(self, nucName, endfProvidedData):
         try:
-            dlayData = self.dlayxs3[
-                nuclideBases.byName[nucName.strip()]
-            ].delayNeutronsPerFission
+            dlayData = self.dlayxs3[nuclideBases.byName[nucName.strip()]].delayNeutronsPerFission
             npData = np.array(endfProvidedData)
             self.assertTrue(np.allclose(dlayData, npData, 1e-3))
         except AssertionError:
             # this is reraised because generating the message might take some time to format all the
             # data from the arrays
-            raise AssertionError(
-                "{} was different,\nexpected:{}\nactual:{}".format(
-                    nucName, npData, dlayData
-                )
-            )
+            raise AssertionError("{} was different,\nexpected:{}\nactual:{}".format(nucName, npData, dlayData))
         except KeyError:
             pass
 
@@ -1087,9 +1076,7 @@ class DlayxsTests(unittest.TestCase):
         """
         with TemporaryDirectoryChanger():
             dlayxs.writeBinary(self.dlayxs3, "test_writeBinary_mcc3.temp")
-            self.assertTrue(
-                filecmp.cmp(test_xsLibraries.DLAYXS_MCC3, "test_writeBinary_mcc3.temp")
-            )
+            self.assertTrue(filecmp.cmp(test_xsLibraries.DLAYXS_MCC3, "test_writeBinary_mcc3.temp"))
 
     def test_nuclides(self):
         nucs3 = set(
@@ -1123,6 +1110,4 @@ class DlayxsTests(unittest.TestCase):
         self.dlayxs3.nuclideContributionFractions = fracs
         avg = self.dlayxs3.generateAverageDelayedNeutronConstants()
         dlayU235 = self.dlayxs3[u235]
-        self.assertTrue(
-            np.allclose(avg.delayEmissionSpectrum, dlayU235.delayEmissionSpectrum)
-        )
+        self.assertTrue(np.allclose(avg.delayEmissionSpectrum, dlayU235.delayEmissionSpectrum))

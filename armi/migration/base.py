@@ -21,6 +21,7 @@ in from an old database. The migration class defined here
 chooses this behavior based on whether the ``stream`` or ``path``
 variables are given in the constructor.
 """
+
 import os
 import shutil
 
@@ -41,10 +42,7 @@ class Migration:
     def __init__(self, stream=None, path=None):
         if not (bool(stream) ^ bool(path)):
             # XOR
-            raise RuntimeError(
-                "Stream and path inputs to migration are"
-                "mutually exclusive. Choose one or the other."
-            )
+            raise RuntimeError("Stream and path inputs to migration aremutually exclusive. Choose one or the other.")
         self.stream = stream
         self.path = path
 

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test armi.utils.units.py."""
+
 import unittest
 
 from armi.utils import units

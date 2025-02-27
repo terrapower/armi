@@ -18,6 +18,7 @@ FIXSRC is a CCCC standard data file for storing multigroup fixed sources on a tr
 Currently, the FIXSRC writing capability assumes a gamma (not neutron) fixed source problem.
 This enables photon transport problems. [CCCC-IV]_
 """
+
 import collections
 
 import numpy as np
@@ -91,11 +92,7 @@ class FIXSRC(cccc.Stream):
 
     def readWrite(self):
         """Read or write a binary FIXSRC file for DIF3D fixed source input."""
-        runLog.info(
-            "{} gamma fixed source file {}".format(
-                "Reading" if "r" in self._fileMode else "Writing", self
-            )
-        )
+        runLog.info("{} gamma fixed source file {}".format("Reading" if "r" in self._fileMode else "Writing", self))
 
         self._rwFileID()
         self._rw1DRecord()

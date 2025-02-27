@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Package for generating reports as printable groups and HTML in ARMI."""
+
 from armi.bookkeeping.report import data
 
 
@@ -54,9 +55,7 @@ def setData(name, value, group=None, reports=None):
 # --------------------------------------------
 #               GROUP DEFINITIONS
 # --------------------------------------------
-UNGROUPED = data.Table(
-    "Ungrouped", "No grouping specified for the following information."
-)
+UNGROUPED = data.Table("Ungrouped", "No grouping specified for the following information.")
 RUN_META = data.Table("Run Meta")
 CASE_PARAMETERS = data.Table("Case Parameters")
 CASE_CONTROLS = data.Table("Case Controls")
@@ -64,9 +63,7 @@ PLANT_META = data.Table("Plant Meta")
 REACTOR_PARAMS = data.Table("Reactor Params")
 BURNUP_GROUPS = data.Table("Burnup Groups")
 SNAPSHOT = data.Table("Snapshot", "Information regarding the loaded snapshot")
-COST_ASSUMPTIONS = data.Table(
-    "Cost Assumptions", "Values affecting primarily the business aspect of the reactor"
-)
+COST_ASSUMPTIONS = data.Table("Cost Assumptions", "Values affecting primarily the business aspect of the reactor")
 CORE_RESOURCES = data.Table(
     "Initial Core Resources",
     "Cost of the fuel in the core",
@@ -111,9 +108,7 @@ KEFF_PLOT = data.Image("Plot of K-Effective vs. Time", "k-eff vs. time")
 TIME_PLOT = data.Image("Plot of Value vs. Time", "value vs. time")
 BURNUP_PLOT = data.Image("Plot of Burnup vs. Time", "bu vs. time")
 DISTORTION_PLOT = data.Image("Plot of Distortion vs. Time", "distortion vs. time")
-TEMPERATURE_PLOT = data.Image(
-    "Plot of Peak Temperature vs. Time", "temperature vs. time"
-)
+TEMPERATURE_PLOT = data.Image("Plot of Peak Temperature vs. Time", "temperature vs. time")
 XS_PLOT = data.Image("Plot of Xs vs. Time", "xs vs. time")
 MOVES_PLOT = data.Image("Plot of Moves vs. Time", "moves vs. time")
 FLUX_PLOT = data.Image("Plot of flux", "flux plot")
@@ -128,24 +123,16 @@ ALL = data.Report(
     "Comprehensive Core Report",
     "Every piece of reported information about the ARMI run.",
 )
-DESIGN = data.Report(
-    "Core Design Report", "Information related to the core design parameters"
-)
+DESIGN = data.Report("Core Design Report", "Information related to the core design parameters")
 ECONOMICS = data.Report(
     "Economics Core Report",
     "Information regarding the costs of the reactor in the simulation",
 )
-ENVIRONMENT = data.Report(
-    "Environment Core Report", "ARMI Code environment information"
-)
+ENVIRONMENT = data.Report("Environment Core Report", "ARMI Code environment information")
 NEUTRONICS = data.Report("Neutronics Core Report", "Neutronics information")
-THERMALHYDRAULICS = data.Report(
-    "ThermalHydraulic Core Report", "ThermalHydraulic information"
-)
+THERMALHYDRAULICS = data.Report("ThermalHydraulic Core Report", "ThermalHydraulic information")
 
-DEVELOPER = data.Report(
-    "ARMI Developer Run Report", "Run detail information meant for code developers"
-)
+DEVELOPER = data.Report("ARMI Developer Run Report", "Run detail information meant for code developers")
 
 
 # --------------------------------------------

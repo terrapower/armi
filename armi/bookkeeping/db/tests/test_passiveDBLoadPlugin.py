@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Provides functionality for testing the PassiveDBLoadPlugin."""
+
 import unittest
 from copy import deepcopy
 from io import StringIO

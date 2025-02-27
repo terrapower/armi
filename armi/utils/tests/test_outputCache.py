@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the output cache tools."""
+
 import os
 import time
 import unittest
@@ -122,7 +123,5 @@ class TestOutputCache(unittest.TestCase):
                 f.write(open(manifest, "r").read())
 
             # attempt to retrieve some output from dummy caches
-            result = outputCache.retrieveOutput(
-                fakeExe, inputPaths, cacheDir, newFolder
-            )
+            result = outputCache.retrieveOutput(fakeExe, inputPaths, cacheDir, newFolder)
             self.assertFalse(result)

@@ -23,6 +23,7 @@ these types with schema validation. This also allows for more
 complex schema validation for settings that are more complex
 dictionaries (e.g. XS, rx coeffs).
 """
+
 import copy
 import datetime
 from collections import namedtuple
@@ -241,9 +242,7 @@ class Setting:
         return self._value
 
     def __repr__(self):
-        return "<{} {} value:{} default:{}>".format(
-            self.__class__.__name__, self.name, self.value, self.default
-        )
+        return "<{} {} value:{} default:{}>".format(self.__class__.__name__, self.name, self.value, self.default)
 
     def __getstate__(self):
         """

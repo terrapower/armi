@@ -16,6 +16,7 @@ Grid editor GUI entry point.
 
 CLI entry point to spin up the GridEditor GUI.
 """
+
 from armi.cli import entryPoint
 
 

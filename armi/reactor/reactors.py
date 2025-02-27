@@ -16,6 +16,7 @@
 Reactor objects represent the highest level in the hierarchy of structures that compose the system
 to be modeled.
 """
+
 import copy
 from typing import Optional
 
@@ -95,8 +96,7 @@ class Reactor(composites.Composite):
         if cores:
             if len(cores) != 1:
                 raise ValueError(
-                    "Only 1 core may be specified at this time. Please adjust input. "
-                    f"{len(cores)} cores found."
+                    f"Only 1 core may be specified at this time. Please adjust input. {len(cores)} cores found."
                 )
             self.core = cores[0]
 
@@ -190,14 +190,10 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
         if not bp.systemDesigns:
-            raise ValueError(
-                "The input must define a `core` system, but does not. Update inputs"
-            )
+            raise ValueError("The input must define a `core` system, but does not. Update inputs")
 
         for structure in bp.systemDesigns:
-            bpGeom = (
-                geom if structure.name.lower() in ("core", "spent fuel pool") else None
-            )
+            bpGeom = geom if structure.name.lower() in ("core", "spent fuel pool") else None
             structure.construct(cs, bp, r, geom=bpGeom)
 
     runLog.debug(f"Reactor: {r}")

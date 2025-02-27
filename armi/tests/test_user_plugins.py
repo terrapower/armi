@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the UserPlugin class."""
+
 import copy
 import os
 import unittest
@@ -123,11 +124,7 @@ class UserPluginWithInterface(plugins.UserPlugin):
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
         """Function for exposing interface(s) to other code."""
-        return [
-            interfaces.InterfaceInfo(
-                interfaces.STACK_ORDER.PREPROCESSING, UpInterface, {"enabled": True}
-            )
-        ]
+        return [interfaces.InterfaceInfo(interfaces.STACK_ORDER.PREPROCESSING, UpInterface, {"enabled": True})]
 
 
 class TestUserPlugins(unittest.TestCase):
@@ -240,9 +237,7 @@ class TestUserPlugins(unittest.TestCase):
         plug0 = [p[1] for p in pluginz if p[0] == name][0]
 
         # load a reactor and grab the fuel assemblies
-        o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         fuels = r.core.getBlocks(Flags.FUEL)
 
         # prove that our plugin affects the core in the desired way
@@ -267,9 +262,7 @@ class TestUserPlugins(unittest.TestCase):
         self.assertIn("UserPluginWithInterface", pluginNames)
 
         # load a reactor and grab the fuel assemblieapps
-        o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         _fuels = r.core.getAssemblies(Flags.FUEL)
 
         # This is here because we have multiple tests altering the App()

@@ -26,6 +26,7 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 
     Class inheritance diagram for :py:mod:`armi.reactor.components`.
 """
+
 # ruff: noqa: F405, I001
 import math
 
@@ -56,8 +57,7 @@ def factory(shape, bcomps, kwargs):
         class_ = ComponentType.TYPES[shape]
     except KeyError:
         raise ValueError(
-            "Unrecognized component shape: '{}'\n"
-            "Valid component names are {}".format(
+            "Unrecognized component shape: '{}'\nValid component names are {}".format(
                 shape, ", ".join(ComponentType.TYPES.keys())
             )
         )
@@ -69,10 +69,7 @@ def factory(shape, bcomps, kwargs):
     except TypeError:
         # TypeError raised when kwarg is missing. We add extra information
         # to the error to indicate which component needs updating.
-        runLog.error(
-            f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}."
-            " Check input."
-        )
+        runLog.error(f"Potentially invalid kwargs {kwargs} for {class_} of shape {shape}. Check input.")
         raise
 
 
@@ -389,9 +386,7 @@ class DerivedShape(UnshapedComponent):
         components. Thus we track area and volume fractions here when possible.
         """
         if self.parent is None:
-            raise ValueError(
-                f"Cannot compute volume/area of {self} without a parent object."
-            )
+            raise ValueError(f"Cannot compute volume/area of {self} without a parent object.")
 
         # Determine the volume/areas of the non-derived shape components within the parent.
         siblingVolume = 0.0
@@ -400,9 +395,7 @@ class DerivedShape(UnshapedComponent):
             if sibling is self:
                 continue
             elif not self and isinstance(sibling, DerivedShape):
-                raise ValueError(
-                    f"More than one ``DerivedShape`` component in {self.parent} is not allowed."
-                )
+                raise ValueError(f"More than one ``DerivedShape`` component in {self.parent} is not allowed.")
 
             siblingVolume += sibling.getVolume()
             try:
@@ -425,10 +418,7 @@ class DerivedShape(UnshapedComponent):
                 f"cm^3\nVolume of all non-derived shape components: {siblingVolume} cm^3\n"
             )
             runLog.error(msg)
-            raise ValueError(
-                f"Negative area/volume errors occurred for {self.parent}. "
-                "Check log for errors."
-            )
+            raise ValueError(f"Negative area/volume errors occurred for {self.parent}. Check log for errors.")
 
         height = self.parent.getHeight()
         if not height:
@@ -477,9 +467,7 @@ class DerivedShape(UnshapedComponent):
             # At cold temp, the DerivedShape has the area of the parent minus the other siblings
             parentArea = self.parent.getArea()
             # NOTE: the assumption is there is only one DerivedShape in each Component
-            siblings = sum(
-                [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
-            )
+            siblings = sum([c.getArea(cold=True) for c in self.parent if not isinstance(c, DerivedShape)])
             return parentArea - siblings
 
         if self.parent.derivedMustUpdate:

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for reactor blueprints."""
+
 import os
 import unittest
 
@@ -107,9 +108,7 @@ class TestReactorBlueprints(unittest.TestCase):
         newSettings = {"geomFile": self._testMethodName + "geometry.xml"}
         cs = cs.modified(newSettings=newSettings)
 
-        bp = blueprints.Blueprints.load(
-            test_customIsotopics.TestCustomIsotopics.yamlString
-        )
+        bp = blueprints.Blueprints.load(test_customIsotopics.TestCustomIsotopics.yamlString)
         bp.systemDesigns = self.systemDesigns
         bp.gridDesigns = self.gridDesigns
         reactor = reactors.Reactor(cs.caseTitle, bp)

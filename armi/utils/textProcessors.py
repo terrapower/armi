@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utility classes and functions for manipulating text files."""
+
 import io
 import os
 import pathlib
@@ -103,11 +104,7 @@ def _processIncludes(
             fName = pathlib.Path(os.path.expandvars(m.group(2)))
             path = root / fName
             if not path.exists():
-                raise ValueError(
-                    "The !included file, `{}` does not exist from {}!".format(
-                        fName, root
-                    )
-                )
+                raise ValueError("The !included file, `{}` does not exist from {}!".format(fName, root))
             includes.append((fName, FileMark(currentFile, i, m.start(2), root)))
 
             with open(path, "r") as includedFile:
@@ -125,9 +122,7 @@ def _processIncludes(
             out.write(leadingSpace + line)
 
 
-def resolveMarkupInclusions(
-    src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None
-) -> io.StringIO:
+def resolveMarkupInclusions(src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path] = None) -> io.StringIO:
     r"""
     Process a text stream, appropriately handling ``!include`` tags.
 
@@ -187,9 +182,7 @@ def resolveMarkupInclusions(
     return _resolveMarkupInclusions(src, root)[0]
 
 
-def _getRootFromSrc(
-    src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path]
-) -> pathlib.Path:
+def _getRootFromSrc(src: Union[TextIO, pathlib.Path], root: Optional[pathlib.Path]) -> pathlib.Path:
     if isinstance(src, pathlib.Path):
         root = root or src.parent.absolute()
     elif isinstance(src, io.TextIOBase):
@@ -368,11 +361,7 @@ class SequentialReader:
 
     def __exit__(self, exc_type, exc_value, traceback):
         # if checking for errors, we need to keep reading
-        if (
-            exc_type is not None
-            and not self.ignoreAllErrors
-            and (self._patternErrors or self._textErrors)
-        ):
+        if exc_type is not None and not self.ignoreAllErrors and (self._patternErrors or self._textErrors):
             while self._readLine():  # all lines have '\n' terminators
                 pass
 

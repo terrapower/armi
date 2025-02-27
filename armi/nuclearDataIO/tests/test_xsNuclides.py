@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test for xs nuclides."""
+
 import unittest
 
 from armi.nucDirectory import nuclideBases

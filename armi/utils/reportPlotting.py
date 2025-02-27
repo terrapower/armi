@@ -24,6 +24,7 @@ for instance, plot some sequence of objects in a loop at every time node. If you
 to see your memory usage grow inexplicably, you should question any plots that you are
 generating.
 """
+
 import itertools
 import math
 import os
@@ -81,9 +82,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         )
     except Exception as ee:
         runLog.warning(
-            "Cannot plot rxPerformance without the data model present in the database.\nError: {}".format(
-                ee
-            )
+            "Cannot plot rxPerformance without the data model present in the database.\nError: {}".format(ee)
         )
         return
 
@@ -330,14 +329,7 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
         for si, scraper in enumerate(scrapers):
             physicsName, physicsLabels, physicsVals = scraper(r)
             runLog.info("{}".format(physicsName))
-            runLog.info(
-                "\n".join(
-                    [
-                        "{:10s} {}".format(label, val)
-                        for label, val in zip(physicsLabels, physicsVals)
-                    ]
-                )
-            )
+            runLog.info("\n".join(["{:10s} {}".format(label, val) for label, val in zip(physicsLabels, physicsVals)]))
             physicsVals = np.array(physicsVals)
             theta = thetas.get(physicsName)
             if theta is None:
@@ -415,9 +407,7 @@ def _getMechanicalVals(r):
 def _getPhysicalVals(r):
     avgHeight = 0.0
     fuelA = r.core.getAssemblies(Flags.FUEL)
-    avgHeight = sum(
-        b.getHeight() for a in fuelA for b in a.getBlocks(Flags.FUEL)
-    ) / len(fuelA)
+    avgHeight = sum(b.getHeight() for a in fuelA for b in a.getBlocks(Flags.FUEL)) / len(fuelA)
     radius = r.core.getCoreRadius()
 
     labels, vals = list(
@@ -476,9 +466,7 @@ def _getTHVals(r):
 
 
 def _getEconVals(r):
-    labels, vals = zip(
-        *[("Feed U", r.p.eFeedMT), ("SWU", r.p.eSWU), ("LCOE", r.p.lcoe)]
-    )
+    labels, vals = zip(*[("Feed U", r.p.eFeedMT), ("SWU", r.p.eSWU), ("LCOE", r.p.lcoe)])
     return "Economics", labels, vals
 
 
@@ -502,9 +490,7 @@ def _radarFactory(numVars, frame="circle"):
     # calculate evenly-spaced axis angles
     # rotate theta such that the first axis is at the top
     # keep within 0 to 2pi range though.
-    theta = (np.linspace(0, 2 * np.pi, numVars, endpoint=False) + np.pi / 2) % (
-        2.0 * np.pi
-    )
+    theta = (np.linspace(0, 2 * np.pi, numVars, endpoint=False) + np.pi / 2) % (2.0 * np.pi)
 
     def drawPolyPatch():
         verts = _unitPolyVerts(theta)
@@ -587,9 +573,7 @@ def _unitPolyVerts(theta):
     return verts
 
 
-def createPlotMetaData(
-    title, xLabel, yLabel, xMajorTicks=None, yMajorTicks=None, legendLabels=None
-):
+def createPlotMetaData(title, xLabel, yLabel, xMajorTicks=None, yMajorTicks=None, legendLabels=None):
     """
     Create plot metadata (title, labels, ticks).
 

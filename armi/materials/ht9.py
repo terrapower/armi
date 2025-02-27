@@ -77,10 +77,4 @@ class HT9(materials.Material):
         .. tip:: This can probably be sped up with a polynomial evaluator.
         """
         Tk = units.getTk(Tc, Tk)
-        return (
-            29.65
-            - 6.668e-2 * Tk
-            + 2.184e-4 * Tk**2
-            - 2.527e-7 * Tk**3
-            + 9.621e-11 * Tk**4
-        )
+        return 29.65 - 6.668e-2 * Tk + 2.184e-4 * Tk**2 - 2.527e-7 * Tk**3 + 9.621e-11 * Tk**4

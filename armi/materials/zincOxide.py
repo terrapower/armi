@@ -19,7 +19,6 @@ from armi.utils.units import getTk
 
 
 class ZnO(Material):
-
     propertyValidTemperature = {"linear expansion percent": ((10.12, 1491.28), "K")}
 
     def setDefaultMassFracs(self):
@@ -41,6 +40,4 @@ class ZnO(Material):
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
-        return (
-            -1.9183e-10 * Tk**3 + 6.5944e-07 * Tk**2 + 5.2992e-05 * Tk - 5.2631e-02
-        )
+        return -1.9183e-10 * Tk**3 + 6.5944e-07 * Tk**2 + 5.2992e-05 * Tk - 5.2631e-02
