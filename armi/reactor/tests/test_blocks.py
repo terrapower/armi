@@ -1274,13 +1274,17 @@ class Block_TestCase(unittest.TestCase):
         neutronFluxInt = fuel.getIntegratedMgFlux()
         gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
         # getIntegratedMgFlux should be scaled by the component volume fraction
-        np.testing.assert_almost_equal(neutronFluxInt, np.full(5, neutronFlux * volFrac))
+        np.testing.assert_almost_equal(
+            neutronFluxInt, np.full(5, neutronFlux * volFrac)
+        )
         np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
 
         # getMgFlux should return regular, non-integrated flux
         neutronMgFlux = fuel.getMgFlux()
         gammaMgFlux = fuel.getMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronMgFlux, np.full(5, neutronFlux / blockVol))
+        np.testing.assert_almost_equal(
+            neutronMgFlux, np.full(5, neutronFlux / blockVol)
+        )
         np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
 
         # calculate Mg Flux with a Symmetry Factor of 1
@@ -1294,13 +1298,17 @@ class Block_TestCase(unittest.TestCase):
         neutronFluxInt = fuel.getIntegratedMgFlux()
         gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
         # getIntegratedMgFlux should be scaled by the component volume fraction
-        np.testing.assert_almost_equal(neutronFluxInt, np.full(5, neutronFlux * volFrac))
+        np.testing.assert_almost_equal(
+            neutronFluxInt, np.full(5, neutronFlux * volFrac)
+        )
         np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
 
         # getMgFlux should return regular, non-integrated flux
         neutronMgFlux = fuel.getMgFlux()
         gammaMgFlux = fuel.getMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronMgFlux, np.full(5, neutronFlux / blockVol))
+        np.testing.assert_almost_equal(
+            neutronMgFlux, np.full(5, neutronFlux / blockVol)
+        )
         np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
 
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
