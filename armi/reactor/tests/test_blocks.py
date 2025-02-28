@@ -1262,41 +1262,46 @@ class Block_TestCase(unittest.TestCase):
     def test_getMgFlux(self, mock_sf):
         # calculate Mg Flux with a Symmetry Factor of 3
         mock_sf.return_value = 3
-        self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
-        self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
+        neutronFlux = 1.0
+        gammaFlux = 2.0
+        self.block.p.mgFlux = np.full(5, neutronFlux)
+        self.block.p.mgFluxGamma = np.full(4, gammaFlux)
         fuel = self.block.getComponent(Flags.FUEL)
         blockVol = self.block.getVolume()
         fuelVol = fuel.getVolume()
+        # compute volume fraction of component; need symmetry factor
         volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
         neutronFluxInt = fuel.getIntegratedMgFlux()
         gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronFluxInt, np.ones(5) * volFrac)
-        np.testing.assert_almost_equal(gammaFluxInt, np.ones(4) * volFrac * 2.0)
+        # getIntegratedMgFlux should be scaled by the component volume fraction
+        np.testing.assert_almost_equal(neutronFluxInt, np.full(5, neutronFlux * volFrac))
+        np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
 
-        neutronFlux = fuel.getMgFlux()
-        gammaFlux = fuel.getMgFlux(gamma=True)
-        normalization = volFrac / fuelVol * self.block.getSymmetryFactor()
-        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * normalization)
-        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * normalization * 2.0)
+        # getMgFlux should return regular, non-integrated flux
+        neutronMgFlux = fuel.getMgFlux()
+        gammaMgFlux = fuel.getMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronMgFlux, np.full(5, neutronFlux / blockVol))
+        np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
 
         # calculate Mg Flux with a Symmetry Factor of 1
         mock_sf.return_value = 1
-        self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
-        self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
+        self.block.p.mgFlux = np.full(5, neutronFlux)
+        self.block.p.mgFluxGamma = np.full(4, gammaFlux)
         fuel = self.block.getComponent(Flags.FUEL)
         blockVol = self.block.getVolume()
         fuelVol = fuel.getVolume()
         volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
         neutronFluxInt = fuel.getIntegratedMgFlux()
         gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronFluxInt, np.ones(5) * volFrac)
-        np.testing.assert_almost_equal(gammaFluxInt, np.ones(4) * volFrac * 2.0)
+        # getIntegratedMgFlux should be scaled by the component volume fraction
+        np.testing.assert_almost_equal(neutronFluxInt, np.full(5, neutronFlux * volFrac))
+        np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
 
-        neutronFlux = fuel.getMgFlux()
-        gammaFlux = fuel.getMgFlux(gamma=True)
-        normalization = volFrac / fuelVol * self.block.getSymmetryFactor()
-        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * normalization)
-        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * normalization * 2.0)
+        # getMgFlux should return regular, non-integrated flux
+        neutronMgFlux = fuel.getMgFlux()
+        gammaMgFlux = fuel.getMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronMgFlux, np.full(5, neutronFlux / blockVol))
+        np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
 
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
     def test_completeInitialLoading(self, mock_sf):
