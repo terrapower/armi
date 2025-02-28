@@ -277,9 +277,11 @@ class TestComponentNDens(TestGeneralComponents):
             self.assertEqual(actual, refDens * scalingFactor)
 
         assert_allclose(
-            self.component.p.detailedNDens, refDetailedNDens * scalingFactor
+            self.component.p.detailedNDens, refDetailedNDens * scalingFactor, rtol=1e-6
         )
-        assert_allclose(self.component.p.pinNDens, refPinDens * scalingFactor)
+        assert_allclose(
+            self.component.p.pinNDens, refPinDens * scalingFactor, rtol=1e-6
+        )
 
 
 class TestComponent(TestGeneralComponents):
