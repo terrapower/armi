@@ -306,7 +306,7 @@ An example of a snapshot run input:
 
        runType: Snapshots
        reloadDBName: my-old-results.h5
-       dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
+       dumpSnapshot: ['000000', '001002'] # 2 snapshots at BOL and cycle 1-node 2
 
 To run a restart, the following settings must be added to your case settings:
 
