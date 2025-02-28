@@ -30,7 +30,7 @@ img {
 
 /* code snippets */
 .rst-content .linenodiv pre, .rst-content div[class^=highlight] pre, .rst-content pre.literal-block {
-    font-size: 10px !important;
+    ssp-tiny;
 }
 
 /* move equation numbers to right side of the equation */
