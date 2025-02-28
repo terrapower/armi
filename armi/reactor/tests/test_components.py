@@ -260,7 +260,7 @@ class TestComponentNDens(TestGeneralComponents):
         self.assertIsNone(self.component.p.pinNDens)
 
     def test_changeNDensByFactorWithExtraParams(self):
-        """"Test scaling other parameters when component number density is scaled."""
+        """Test scaling other parameters when component number density is scaled."""
         referenceDensity = self.component.getNumberDensities()
         refDetailedNDens = np.random.random(100)
         # Use copy to avoid spoiling the reference data with in-place multiplication
@@ -276,7 +276,9 @@ class TestComponentNDens(TestGeneralComponents):
             actual = self.component.getNumberDensity(nuc)
             self.assertEqual(actual, refDens * scalingFactor)
 
-        assert_allclose(self.component.p.detailedNDens, refDetailedNDens * scalingFactor)
+        assert_allclose(
+            self.component.p.detailedNDens, refDetailedNDens * scalingFactor
+        )
         assert_allclose(self.component.p.pinNDens, refPinDens * scalingFactor)
 
 
