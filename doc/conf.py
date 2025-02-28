@@ -335,21 +335,21 @@ release = meta.__version__
 # looking for source files.
 exclude_patterns = [
     "**.ipynb",
-    "**/Python27*",
-    "**/ccl*",
-    "gallery/**/*.ipynb",  # prevent sphinx-gallery from causing duplicate source file errors
-    "gallery/**/*.md5",
-    "gallery/**/*.zip",
-    "gallery/**/*.json",
     "**.ipynb_checkpoints",
     "**/ccl*",
+    "**/ccl*",
+    "**/Python27*",
     "**/Python27*",
     "**_reqs.rst",  # needed so included reqs files render
+    ".apidocs/armi.rst",
     ".DS_Store",
     "_build",
+    "gallery/**/*.ipynb",  # prevent sphinx-gallery from causing duplicate source file errors
+    "gallery/**/*.json",
+    "gallery/**/*.md5",
+    "gallery/**/*.zip",
     "logs",
     "Thumbs.db",
-    APIDOC_REL,
 ]
 
 rst_epilog = r"""
