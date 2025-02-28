@@ -15,10 +15,11 @@
 """Tests functionalities of components within ARMI."""
 import copy
 import math
+import random
 import unittest
 
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_allclose, assert_equal
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
@@ -244,6 +245,39 @@ class TestComponentNDens(TestGeneralComponents):
         expansionFactor = initialVolume / newVolume
         self.assertEqual(component.getNumberDensity("C"), 1.0 * expansionFactor)
         self.assertEqual(component.getNumberDensity("MN"), 0.58 * expansionFactor)
+
+    def test_changeNDensByFactor(self):
+        """Test the ability to change just the component number densities."""
+        referenceDensity = self.component.getNumberDensities()
+        self.component.p.detailedNDens = None
+        self.component.p.pinNDens = None
+        scalingFactor = random.uniform(0, 10)
+        self.component.changeNDensByFactor(scalingFactor)
+        for nuc, refDens in referenceDensity.items():
+            actual = self.component.getNumberDensity(nuc)
+            self.assertEqual(actual, refDens * scalingFactor, msg=nuc)
+        self.assertIsNone(self.component.p.detailedNDens)
+        self.assertIsNone(self.component.p.pinNDens)
+
+    def test_changeNDensByFactorWithExtraParams(self):
+        """"Test scaling other parameters when component number density is scaled."""
+        referenceDensity = self.component.getNumberDensities()
+        refDetailedNDens = np.random.random(100)
+        # Use copy to avoid spoiling the reference data with in-place multiplication
+        self.component.p.detailedNDens = refDetailedNDens.copy()
+        # Array of number densities per pin
+        refPinDens = np.random.random(size=(50, 10))
+        self.component.p.pinNDens = refPinDens.copy()
+
+        scalingFactor = random.uniform(0, 10)
+        self.component.changeNDensByFactor(scalingFactor)
+
+        for nuc, refDens in referenceDensity.items():
+            actual = self.component.getNumberDensity(nuc)
+            self.assertEqual(actual, refDens * scalingFactor)
+
+        assert_allclose(self.component.p.detailedNDens, refDetailedNDens * scalingFactor)
+        assert_allclose(self.component.p.pinNDens, refPinDens * scalingFactor)
 
 
 class TestComponent(TestGeneralComponents):
