@@ -36,7 +36,8 @@ Here is an example::
         cmd = "bob"
         context.MPI_COMM.bcast(cmd, root=0)
     else:
-        # these are the workers. They receive a value and set it to the variable cmd
+        # These are the workers.
+        # They receive a value and set it to the variable cmd
         context.MPI_COMM = comm.bcast(None, root=0)
 
 Note that the ``comm`` object is from the ``mpi4py`` module that deals with the MPI drivers. The value of cmd on
@@ -67,24 +68,24 @@ are all sent (multiple sets of transmitions) or you can split the data up into 1
 transmition to each CPU). This is called *load balancing*. 
 
 ARMI has utilities that can help called :py:func:`armi.utils.iterables.chunk` and :py:func:`armi.utils.iterables.flatten`.
-Given an arbitrary list, ``chunk`` breaks it up into a certain number of chunks and ``unchunk`` does the
-opposite to reassemble the original list after processing. Let's look at an example script::
+Given an arbitrary list, ``chunk`` breaks it up into a certain number of chunks and ``unchunk`` does
+the opposite to reassemble the original list after processing. Let's look at an example script::
 
     """mpi_example.py"""
-    import random
+    from random import random
 
     from armi import context
     from armi.utils import iterables
 
     # Generate a list of random number pairs: [[(v1,v2),(v3,v4),...]]
-    workList = [(random.random(), random.random()) for _i in range(1000)]
+    workList = [(random(), random()) for _i in range(1000)]
 
     if context.MPI_RANK == 0:
         # Primary Process: Split the data and send it to the workers
-        workListLoadBalanced = iterables.split(workList, context.MPI_SIZE, padWith=())
-        myValsToAdd = context.MPI_COMM.scatter(workListLoadBalanced, root=0)
+        balanced = iterables.split(workList, context.MPI_SIZE)
+        myValsToAdd = context.MPI_COMM.scatter(balanced, root=0)
     else:
-        # Worker Process: Receive data, pass a dummy value to scatter (None)
+        # Worker Process: Receive data, pass a dummy value to scatter
         myValsToAdd = context.MPI_COMM.scatter(None, root=0)
 
 
@@ -93,11 +94,13 @@ opposite to reassemble the original list after processing. Let's look at an exam
     for num1, num2 in myValsToAdd:
         results.append(num1 + num2)
 
-    # All processes call gather to send their results back to the root process.
-    #    (The result lists above are simply added to make one list with MPI_SIZE sub-lists.)
+    # All processes call gather to send their results back to the
+    # root process. (The result lists above are simply added to make
+    # one list with MPI_SIZE sub-lists.)
     allResultsLoadBalanced = context.MPI_COMM.gather(results, root=0)
 
-    # Primary Process: Flatten the multiple lists (from each process), and sum them.
+    # Primary Process: Flatten the multiple lists
+    # (from each process), and sum them.
     if context.MPI_RANK == 0:
         # Flatten the MPI_SIZE number of sub lists into one list
         allResults = iterables.flatten(allResultsLoadBalanced)
@@ -168,8 +171,8 @@ creates an ``Action`` and broadcasts it as appropriate::
 
             # Only primary node has allResults
             if allResults:
-                # Flatten results returns the original order after having
-                # made lists of mpiIter results.
+                # Flatten results returns the original order after
+                # having made lists of mpiIter results.
                 return self.mpiFlatten(allResults)
 
 
@@ -201,7 +204,7 @@ shows how different operations can be performed in parallel::
             distrib.invoke(self.o, self.r, self.cs)
             # the 3 lines above are equivalent to:
             # mpiActions.DistributeStateAction.invokeAsMaster(self.o, self.r, self.cs)
-            
+
             results = mpiActions.runActions(self.o, self.r, self.cs, actions)
 
             # do something to apply the results.
@@ -247,16 +250,17 @@ that the reactor state is synchronized across all nodes, and then use the reacto
                 for b in a:
                     b.p.someParam = func(b)
 
-            # notice we don't return an value, but instead just sync the state,
-            # which updates the primary node with the params that the workers changed.
+            # notice we don't return an value, but instead just sync
+            # the state, which updates the primary node with the
+            # params that the workers changed.
             self.r.syncMpiState()
-            
+
 .. warning::
 
     Only parameters that are set are synchronized to the primary node. Consequently if a mutable 
-    parameter (e.g. ``b.p.depletionMatrix`` which is of type ``BurnMatrix``) is changed, it will 
-    not natively be synced. To flag it to be synced, ``b.p.paramName`` must be set, even if it is 
-    to the same object. For this reason, setting parameters to mutable objects should be avoided. 
-    Further, if the mutable object has a reference to a large object, such as a composite or 
-    cross section library, it can be very computationally expensive to pass all this data to the primary node. 
-    See also: :py:mod:`armi.reactor.parameters`
+    parameter (e.g. ``b.p.depletionMatrix`` which is of type ``BurnMatrix``) is changed, it will not
+    natively be synced. To flag it to be synced, ``b.p.paramName`` must be set, even if it is to the
+    same object. For this reason, setting parameters to mutable objects should be avoided. Further,
+    if the mutable object has a reference to a large object, such as a composite or cross section
+    library, it can be very computationally expensive to pass all this data to the primary node. See
+    also: :py:mod:`armi.reactor.parameters`

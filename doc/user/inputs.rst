@@ -306,7 +306,7 @@ An example of a snapshot run input:
 
        runType: Snapshots
        reloadDBName: my-old-results.h5
-       dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
+       dumpSnapshot: ['000000', '001002'] # 2 snapshots at BOL and cycle 1-node 2
 
 To run a restart, the following settings must be added to your case settings:
 
@@ -1616,7 +1616,7 @@ through ``self.cs``.
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
     content = '\n.. container:: break_before ssp-landscape\n\n'
     content += ws + '.. list-table:: ARMI Settings\n'
-    content += ws2 + ':widths: 25 25 10 25\n'
+    content += ws2 + ':widths: 25 25 10 10\n'
     content += ws2 + ':class: ssp-tiny\n'
     content += ws2 + ':header-rows: 1\n\n'
     content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'
@@ -1632,7 +1632,7 @@ through ``self.cs``.
             default = ""
             options = ""
         content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
-        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(options)]))
+        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(options)]))
 
     content += '\n'
 

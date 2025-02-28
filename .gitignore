@@ -7,7 +7,6 @@
 # No build artifacts
 *.dll
 *.lib
-.apidocs/
 /bin
 armi/tests/tutorials/case-suite
 bin/*
@@ -17,6 +16,7 @@ coverage.xml
 coverage_results.*
 dist-*/
 dist/
+doc/.apidocs
 doc/_build
 doc/anl-afci-177
 doc/gallery
@@ -26,6 +26,7 @@ doc/tutorials/case-suite
 doc/user/tutorials
 htmlcov/
 monkeytype.*
+test_results.*
 wheelhouse
 
 # No workspace crumbs
