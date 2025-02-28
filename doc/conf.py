@@ -349,6 +349,7 @@ exclude_patterns = [
     "_build",
     "logs",
     "Thumbs.db",
+    APIDOC_REL,
 ]
 
 rst_epilog = r"""

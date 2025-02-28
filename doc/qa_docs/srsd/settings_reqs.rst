@@ -21,7 +21,6 @@ Functional Requirements
     :basis: Enforcing a default recommendation for a setting allows for ease-of-use of the system
     :acceptance_criteria: A setting cannot be created without providing a default value.
     :subtype: functional
-    :repo: rework
 
 .. req:: Settings shall support rules to validate and customize each setting's behavior.
     :id: R_ARMI_SETTINGS_RULES
