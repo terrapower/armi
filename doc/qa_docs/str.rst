@@ -127,7 +127,7 @@ The date of the test execution is recorded in the output of the test.
 Tester or Data Recorder
 """""""""""""""""""""""
 
-Automation will be created to run the acceptance tests.
+Acceptance tests will be run via automation.
 
 Simulation Models Used
 """"""""""""""""""""""
