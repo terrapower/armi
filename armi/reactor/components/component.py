@@ -1232,16 +1232,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
-
         average : bool, optional
-            If true, will return average flux between latest and previous. Doesn't work
-            for pin detailed yet
-
+            If True, will return average flux between latest and previous. Doesn't work
+            for pin detailed.
         volume: float, optional
             The volume-integrated flux is divided by volume before
             being returned. The user may specify a volume here, or the function
             will obtain the block volume directly.
-
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
