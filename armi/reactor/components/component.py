@@ -1295,6 +1295,41 @@ class Component(composites.Composite, metaclass=ComponentType):
             )
         self.setMassFracs(adjustedMassFracs)
 
+    def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
+        """
+        Return the multigroup neutron flux in [n/cm^2/s].
+
+        The first entry is the first energy group (fastest neutrons). Each additional
+        group is the next energy group, as set in the ISOTXS library.
+
+        Parameters
+        ----------
+        adjoint : bool, optional
+            Return adjoint flux instead of real
+        average : bool, optional
+            If True, will return average flux between latest and previous. Doesn't work
+            for pin detailed.
+        volume: float, optional
+            The volume-integrated flux is divided by volume before
+            being returned. The user may specify a volume here, or the function
+            will obtain the block volume directly.
+        gamma : bool, optional
+            Whether to return the neutron flux or the gamma flux.
+
+        Returns
+        -------
+        flux : np.ndarray
+            multigroup neutron flux in [n/cm^2/s]
+        """
+        if average:
+            raise NotImplementedError(
+                "Component has no method for producing average MG flux -- try"
+                "using blocks"
+            )
+
+        volume = volume or self.getVolume() / self.parent.getSymmetryFactor()
+        return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
+
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
         Return the multigroup neutron tracklength in [n-cm/s].
@@ -1318,7 +1353,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             if not self.parent:
                 return np.zeros(1)
 
-            volumeFraction = self.getVolume() / self.parent.getVolume()
+            volumeFraction = (
+                self.getVolume() / self.parent.getSymmetryFactor()
+            ) / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
         # pin-level flux is available. Note that it is NOT integrated on the param level.
@@ -1333,7 +1370,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
 
-        return pinFluxes[self.p.pinNum - 1] * self.getVolume()
+        return (
+            pinFluxes[self.p.pinNum - 1]
+            * self.getVolume()
+            / self.parent.getSymmetryFactor()
+        )
 
     def getPinMgFluxes(
         self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False
