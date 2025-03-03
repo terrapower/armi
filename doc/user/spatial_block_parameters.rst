@@ -92,8 +92,6 @@ for you.
 
 Our complete block definition would start like::
 
-.. code:: yaml
-
     blocks: &block_fuel
         grid name: pins
         fuel:

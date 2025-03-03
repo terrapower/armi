@@ -93,11 +93,10 @@ your ARMI plugin is a namespace package, the following extra config is required:
 
 Updating the Gallery
 ====================
-The :ref:`sphx_glr_gallery` is a great way to quickly
-highlight neat features and uses of ARMI. To add a new item to the gallery, add
-your example code (including the required docstring) to the ``doc/gallery-src``
-folder in the ARMI source tree. The example will be added to the gallery during
-the next documentation build.
+The `ARMI example gallery <https://terrapower.github.io/armi/gallery/index.html>`_ is a great way
+to quickly highlight neat features and uses of ARMI. To add a new item to the gallery, add your
+example code (including the required docstring) to the ``doc/gallery-src`` folder in the ARMI
+source tree. The example will be added to the gallery during the next documentation build.
 
 Using Jupyter notebooks
 =======================
