@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build:
     # Building and deploying docs is broken on forked repos
-    if: github.repository == 'terrapower/armi'
+    ###if: github.repository == 'terrapower/armi'
     runs-on: ubuntu-22.04
 
     steps:
