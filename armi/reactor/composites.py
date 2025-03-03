@@ -2079,8 +2079,8 @@ class ArmiObject(metaclass=CompositeModelType):
             for pin detailed yet
 
         volume: float, optional
-            If average=True, the volume-integrated flux is divided by volume before
-            being returned. The user may specify a volume here, or the function will
+            The volume-integrated flux is divided by volume before being
+            returned. The user may specify a volume here, or the function will
             obtain the block volume directly.
 
         gamma : bool, optional
