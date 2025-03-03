@@ -44,7 +44,7 @@ jobs:
           make html
           make simplepdf
       - name: Deploy
-        if: github.ref == 'refs/heads/main'
+        # TESTING: JOHN! if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
