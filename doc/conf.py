@@ -504,10 +504,12 @@ if "win32" in sys.platform:
 
 # PDF-only settings
 simplepdf_debug = True
-simplepdf_vars = {
-    "links": "#FF3333",
-    "primary": "#333333",
-}
+simplepdf_use_weasyprint_api = True
+simplepdf_weasyprint_flags = ["-v"]
+# simplepdf_vars = {
+#    "links": "#FF3333",
+#    "primary": "#333333",
+# }
 
 # sphinx-needs settings
 needs_statuses = [
