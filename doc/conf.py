@@ -336,10 +336,6 @@ release = meta.__version__
 exclude_patterns = [
     "**.ipynb",
     "**.ipynb_checkpoints",
-    "**/ccl*",
-    "**/ccl*",
-    "**/Python27*",
-    "**/Python27*",
     "**_reqs.rst",  # needed so included reqs files render
     ###########".apidocs/armi.rst",
     ".DS_Store",
@@ -507,6 +503,7 @@ if "win32" in sys.platform:
     image_converter_args = ["convert"]
 
 # PDF-only settings
+simplepdf_debug = True
 simplepdf_vars = {
     "links": "#FF3333",
     "primary": "#333333",
