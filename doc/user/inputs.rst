@@ -956,20 +956,20 @@ Once assemblies are defined they can be grouped together into the Core, the spen
 
 A complete reactor structure with a core and a SFP may be seen below::
 
-        systems:
-            core:
-                grid name: core
-                origin:
-                    x: 0.0
-                    y: 10.1
-                    z: 1.1
-            Spent Fuel Pool:
-                type: sfp
-                grid name: sfp
-                origin:
-                    x: 1000.0
-                    y: 12.1
-                    z: 1.1
+    systems:
+        core:
+            grid name: core
+            origin:
+                x: 0.0
+                y: 10.1
+                z: 1.1
+        Spent Fuel Pool:
+            type: sfp
+            grid name: sfp
+            origin:
+                x: 1000.0
+                y: 12.1
+                z: 1.1
 
 The ``origin`` defines the point of origin in global space
 in units of cm. This allows you to define the relative position of the various structures.

@@ -341,7 +341,7 @@ exclude_patterns = [
     "**/Python27*",
     "**/Python27*",
     "**_reqs.rst",  # needed so included reqs files render
-    ".apidocs/armi.rst",
+    ###########".apidocs/armi.rst",
     ".DS_Store",
     "_build",
     "gallery/**/*.ipynb",  # prevent sphinx-gallery from causing duplicate source file errors

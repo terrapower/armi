@@ -61,8 +61,11 @@ armi-venv/*
 dump-temp-*
 dump-tests*
 phabricator-lint.txt
+pytest_verbose.log
 pytestdebug.log
+python_details.log
 reportsOutputFiles/
+system_info.log
 tags
 temp-*
 venv*/
