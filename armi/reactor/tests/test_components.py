@@ -53,7 +53,7 @@ from armi.testing import loadTestReactor
 from armi.utils.units import getTc
 
 
-class CompositionDependentExpander(materials.Material):
+class MockCompositionDependentExpander(materials.Material):
     """Dummy material that has a composition-dependent thermal expansion coefficient."""
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
@@ -233,7 +233,7 @@ class TestComponentNDens(TestGeneralComponents):
         self.assertEqual(component.getNumberDensity("MN"), 0.58)
 
     def test_setNumberDensitiesWithExpansion(self):
-        expansionMaterial = CompositionDependentExpander()
+        expansionMaterial = MockCompositionDependentExpander()
         expansionMaterial.parent = self.component
         self.component.material = expansionMaterial
         component = self.component
