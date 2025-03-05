@@ -103,14 +103,11 @@ docs = [
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
     "pypdf==5.3.1",
-    "rst2pdf==0.103.1",
     "setuptools",  # needed for conf.py tooling
     "sphinx-data-viewer==0.1.5",
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
     "sphinx-needs==4.2.0", # Requirements traceability matrices for QA
-    "sphinx-pdf-generate==0.0.4",
     "sphinx-rtd-theme==3.0.2", # Read-The-Docs theme for Sphinx
-    "sphinx-simplepdf==1.6.0", # Used to make PDF versions of the docs
     "sphinx-test-reports==1.1.0", # sphinx-needs test reports in the STR
     "Sphinx==7.4.7", # central library used to build our docs
     "sphinxcontrib-apidoc==0.5.0", # More easily document our API
