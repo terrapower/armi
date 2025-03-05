@@ -434,8 +434,6 @@ latex_elements = {
     "preamble": r"""\usepackage{amsmath}
 
 \usepackage{wasysym}
-
-\renewcommand{\hyperref}[2][]{#2}
 """
 }
 
