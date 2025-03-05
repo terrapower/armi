@@ -342,7 +342,6 @@ exclude_patterns = [
     "**.ipynb",
     "**.ipynb_checkpoints",
     "**_reqs.rst",  # needed so included reqs files render
-    ###########".apidocs/armi.rst",
     ".DS_Store",
     "_build",
     "gallery/**/*.ipynb",  # prevent sphinx-gallery from causing duplicate source file errors
@@ -543,7 +542,7 @@ needs_extra_links = [
     dict(option="implements", incoming="implementations", outgoing="requirements"),
 ]
 
-# TODO: JOHN Do I need or like these templates and layouts?
+# TODO: Do we need and like these templates and layouts?
 needs_template_folder = os.path.join(STATIC_DIR, "needs_templates")
 needs_layouts = {
     "test_layout": {
