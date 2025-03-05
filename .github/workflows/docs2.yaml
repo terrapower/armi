@@ -54,7 +54,9 @@ jobs:
           make latex
           cd _build/latex/
           echo "latexmk -pdf -f ARMI.tex:"
-          latexmk -pdf -f ARMI.tex 
+          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
+          rm ARMI.pdf
+          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       #- name: Deploy
       #  # TESTING: JOHN! if: github.ref == 'refs/heads/main'
       #  uses: JamesIves/github-pages-deploy-action@v4.6.1
