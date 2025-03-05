@@ -431,7 +431,12 @@ latex_elements = {
     # The font size ('10pt', '11pt' or '12pt').
     #'pointsize': '10pt',
     # Additional stuff for the LaTeX preamble.
-    "preamble": r"\usepackage{amsmath} \usepackage{wasysym}"
+    "preamble": r"""\usepackage{amsmath}
+
+\usepackage{wasysym}
+
+\renewcommand{\hyperref}[2][]{#2}
+"""
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
