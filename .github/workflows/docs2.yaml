@@ -33,6 +33,10 @@ jobs:
       - name: Make html/pdf Docs
         run: |
           sudo apt-get install texlive-xetex
+          sudo apt-get install texlive-latex-base
+          sudo apt-get install texlive-fonts-recommended
+          sudo apt-get install texlive-latex-extra
+          sudo apt-get install texlive-full
           pip install -e .[memprof,mpi,test,docs]
           python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
           date > python_details.log
