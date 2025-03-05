@@ -5,7 +5,10 @@
 *.pyx
 
 # No build artifacts
+*.aux
 *.dll
+*.fdb_latexmk
+*.fls
 *.lib
 /bin
 armi/tests/tutorials/case-suite
