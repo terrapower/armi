@@ -30,8 +30,9 @@ jobs:
         run: sudo apt-get -y install pandoc
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
-      - name: Make HTML Docs
+      - name: Make html/pdf Docs
         run: |
+          sudo apt-get install texlive-xetex
           pip install -e .[memprof,mpi,test,docs]
           python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
           date > python_details.log
@@ -42,7 +43,9 @@ jobs:
           git submodule init
           git submodule update
           make html
-          #make simplepdf
+          make latex
+          cd _build/latex/
+          xelatex ARMI.tex 
       #- name: Deploy
       #  # TESTING: JOHN! if: github.ref == 'refs/heads/main'
       #  uses: JamesIves/github-pages-deploy-action@v4.6.1
@@ -52,16 +55,16 @@ jobs:
       #    branch: main
       #    folder: doc/_build/html
       #    target-folder: armi
-      - name: Archive HTML Docs
-        if: github.ref != 'refs/heads/main'
-        uses: actions/upload-artifact@v4
-        with:
-          name: html-docs
-          path: doc/_build/html
-          retention-days: 5
-      #- name: Archive PDF Docs
+      #- name: Archive HTML Docs
+      #  if: github.ref != 'refs/heads/main'
       #  uses: actions/upload-artifact@v4
       #  with:
-      #    name: pdf-docs
-      #    path: doc/_build/simplepdf/ARMI.pdf
+      #    name: html-docs
+      #    path: doc/_build/html
       #    retention-days: 5
+      - name: Archive PDF Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-docs
+          path: doc/_build/latex/ARMI.pdf
+          retention-days: 5
