@@ -254,6 +254,8 @@ sys.path.insert(0, os.path.abspath(".."))
 extensions = [
     "nbsphinx",
     "nbsphinx_link",
+    # "sphinx_pdf_generate",
+    #'rst2pdf.pdfbuilder',
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
@@ -270,12 +272,15 @@ extensions = [
     "sphinx_needs",  # needed for requirements tracking
     "sphinxcontrib.test_reports",
     "sphinx_rtd_theme",  # needed here for loading jquery in sphinx 6
-    "sphinx_simplepdf",
+    # "sphinx_simplepdf",
     "sphinxcontrib.apidoc",
     "sphinxcontrib.jquery",  # see https://github.com/readthedocs/sphinx_rtd_theme/issues/1452
     "sphinxcontrib.plantuml",
     "sphinxext.opengraph",
 ]
+
+# extensions = ['rst2pdf.pdfbuilder']
+# pdf_documents = [('index', u'rst2pdf', u'Sample rst2pdf doc', u'Your Name'),]
 
 # Our API should make sense without documenting private/special members.
 autodoc_default_options = {
@@ -336,10 +341,6 @@ release = meta.__version__
 exclude_patterns = [
     "**.ipynb",
     "**.ipynb_checkpoints",
-    "**/ccl*",
-    "**/ccl*",
-    "**/Python27*",
-    "**/Python27*",
     "**_reqs.rst",  # needed so included reqs files render
     ###########".apidocs/armi.rst",
     ".DS_Store",
@@ -507,10 +508,13 @@ if "win32" in sys.platform:
     image_converter_args = ["convert"]
 
 # PDF-only settings
-simplepdf_vars = {
-    "links": "#FF3333",
-    "primary": "#333333",
-}
+# simplepdf_debug = True
+# simplepdf_use_weasyprint_api = True
+# simplepdf_weasyprint_flags = ["-v"]
+# simplepdf_vars = {
+#    "links": "#FF3333",
+#    "primary": "#333333",
+# }
 
 # sphinx-needs settings
 needs_statuses = [
