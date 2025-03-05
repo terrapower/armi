@@ -96,6 +96,8 @@ docs = [
 # We are only building our docs with Python 3.13.                                    #
 ######################################################################################
     "docutils==0.21.2", # Needed by sphinx-rtd-them
+    "rst2pdf",
+    "sphinx-pdf-generate",
     "ipykernel>=6.0.0", # iPython kernel to run Jupyter notebooks
     "Jinja2==3.1.5", # Used in numpydoc and nbconvert
     "nbsphinx-link==1.3.1", # Adds Jupyter NBs to Sphinx source root
