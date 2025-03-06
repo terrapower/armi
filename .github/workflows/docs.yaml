@@ -33,7 +33,6 @@ jobs:
       - name: Make html/pdf Docs
         continue-on-error: true
         run: |
-          # Some of these installs are hopefully obsolete. JOHN TODO
           sudo apt-get install texlive-xetex
           sudo apt-get install texlive-latex-base
           sudo apt-get install texlive-fonts-recommended
