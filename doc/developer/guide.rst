@@ -165,25 +165,25 @@ in interface modules. The collection of the interfaces is known as the **Interfa
 Stack** and is prominently featured at the beginning of the standard output of each run,
 like this::
 
-    [R  0 ] -------------------------------------------------------------------------------
-    [R  0 ]                        ***  Interface Stack Report  ***
-    [R  0 ] NUM   TYPE                 NAME                 ENABLED    BOL FORCE  EOL ORDER
-    [R  0 ] -------------------------------------------------------------------------------
-    [R  0 ] 00    Main                 "main"               Yes        No         Reversed
-    [R  0 ] 01    Software Testing     "softwareTests"      Yes        No         Reversed
-    [R  0 ] 02    ReportInterface      "report"             Yes        No         Reversed
-    [R  0 ] 03    FuelHandler          "fuelHandler"        Yes        No         Normal
-    [R  0 ] 04    Depletion            "depletion"          Yes        Yes        Normal
-    [R  0 ] 05    MC2-2                "mc2"                Yes        No         Normal
-    [R  0 ] 06    DIF3D                "dif3d"              Yes        No         Normal
-    [R  0 ] 07    Thermo               "thermo"             Yes        No         Normal
-    [R  0 ] 08    OrificedOptimized    "orificer"           Yes        Yes        Normal
-    [R  0 ] 09    AlchemyLite          "alchemyLite"        Yes        No         Normal
-    [R  0 ] 10    Alchemy              "alchemy"            Yes        No         Normal
-    [R  0 ] 11    Economics            "economics"          Yes        No         Normal
-    [R  0 ] 12    History              "history"            Yes        No         Normal
-    [R  0 ] 13    Database             "database"           Yes        Yes        Normal
-    [R  0 ] -------------------------------------------------------------------------------
+    [R 0] ----------------------------------------------------------
+    [R 0]          ***  Interface Stack Report  ***
+    [R 0] NUM TYPE               NAME         ENABLED BOL  EOL ORDER
+    [R 0] ----------------------------------------------------------
+    [R 0] 00  Main               main         Yes     No   Reversed
+    [R 0] 01  Software Testing   tests        Yes     No   Reversed
+    [R 0] 02  ReportInterface    report       Yes     No   Reversed
+    [R 0] 03  FuelHandler        fuelHandler  Yes     No   Normal
+    [R 0] 04  Depletion          depletion    Yes     Yes  Normal
+    [R 0] 05  MC2-2              mc2          Yes     No   Normal
+    [R 0] 06  DIF3D              dif3d        Yes     No   Normal
+    [R 0] 07  Thermo             thermo       Yes     No   Normal
+    [R 0] 08  OrificedOptimized  orificer     Yes     Yes  Normal
+    [R 0] 09  AlchemyLite        alchemyLite  Yes     No   Normal
+    [R 0] 10  Alchemy            alchemy      Yes     No   Normal
+    [R 0] 11  Economics          economics    Yes     No   Normal
+    [R 0] 12  History            history      Yes     No   Normal
+    [R 0] 13  Database           database     Yes     Yes  Normal
+    [R 0] ----------------------------------------------------------
 
 
 Any interface that exists on the interface stack is accessible from the ``operator`` or

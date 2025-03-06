@@ -14,6 +14,7 @@ ARMI
    gallery/index
    tutorials/index
    release/index
+   qa_docs/index
    glossary
    API Docs <.apidocs/modules>
 
