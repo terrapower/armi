@@ -3,8 +3,7 @@
 pushd %~dp0
 
 REM Command file for Sphinx documentation for ARMI
-REM This can be run locally with make html
-REM or remotely on a HPC cluster.
+REM This can be run locally with make html.
 
 if "%PYTHON%" == "" (
 	set PYTHON=python
