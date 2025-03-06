@@ -33,7 +33,7 @@ jobs:
       - name: Make html/pdf Docs
         continue-on-error: true
         run: |
-          # These installs are probably obsolete now. JOHN TODO TBD
+          # Some of these installs are hopefully obsolete. JOHN TODO
           sudo apt-get install texlive-xetex
           sudo apt-get install texlive-latex-base
           sudo apt-get install texlive-fonts-recommended
@@ -56,7 +56,7 @@ jobs:
           echo "latexmk -pdf -f ARMI.tex:"
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
-        # TESTING: JOHN! if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
