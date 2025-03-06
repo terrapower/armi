@@ -90,29 +90,37 @@ test = [
     "ruff==0.5.1", # Linting and code formatting (version-pinned)
 ]
 docs = [
-#######################################################################
-# These are most specified that usual, because Sphinx docs seem to be
-# quite fragile.
-#
-# We are only building our docs with Python 3.13.
-#######################################################################
-    "Sphinx==8.1.3", # central library used to build our docs
+######################################################################################
+# These are most specified that usual, because Sphinx docs seem to be quite fragile. #
+#                                                                                    #
+# We are only building our docs with Python 3.13.                                    #
+######################################################################################
     "docutils==0.21.2", # Needed by sphinx-rtd-them
-    "sphinx-rtd-theme==3.0.2", # Read-The-Docs theme for Sphinx
-    "nbsphinx", # Parses Jupyter notebooks
-    "nbsphinx-link", # Adds Jupyter NBs to Sphinx source root
-    "sphinx-gallery", # Builds an HTML version of a Python script and puts it into a gallery
-    "sphinxcontrib-apidoc==0.5.0", # More easily document our API
-    "sphinxext-opengraph", # Generates OpenGraph metadata to make good-looking cards on social media
-    "sphinx-needs==4.1.0", # Requirements traceability matrices for QA
-    "sphinxcontrib-plantuml==0.30", # UML support in sphinx-needs
+    "ipykernel>=6.0.0", # iPython kernel to run Jupyter notebooks
+    "Jinja2==3.1.5", # Used in numpydoc and nbconvert
+    "nbsphinx-link==1.3.1", # Adds Jupyter NBs to Sphinx source root
+    "nbsphinx==0.9.6", # Parses Jupyter notebooks
     "pandoc", # Must be in the path (to convert file formats)
-    "ipykernel", # iPython kernel to run Jupyter notebooks
     "pylint", # Generates UML diagrams
-    "Jinja2", # Used in numpydoc and nbconvert
-    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
-    "sphinx-simplepdf==1.6.0", # Used to make PDF versions of the docs
+    "pypdf==5.3.1",
     "setuptools",  # needed for conf.py tooling
+    "sphinx-data-viewer==0.1.5",
+    "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
+    "sphinx-needs==4.2.0", # Requirements traceability matrices for QA
+    "sphinx-rtd-theme==3.0.2", # Read-The-Docs theme for Sphinx
+    "sphinx-test-reports==1.1.0", # sphinx-needs test reports in the STR
+    "Sphinx==7.4.7", # central library used to build our docs
+    "sphinxcontrib-apidoc==0.5.0", # More easily document our API
+    "sphinxcontrib-applehelp==2.0.0",
+    "sphinxcontrib-devhelp==2.0.0",
+    "sphinxcontrib-htmlhelp==2.1.0",
+    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
+    "sphinxcontrib-jsmath==1.0.1",
+    "sphinxcontrib-plantuml==0.30", # UML support in sphinx-needs
+    "sphinxcontrib-qthelp==2.0.0",
+    "sphinxcontrib-serializinghtml==2.0.0",
+    "sphinxext-opengraph==0.9.1", # Generates OpenGraph metadata to make cards for social media
+    "unittest-xml-reporting==3.2.0", # Allows us to generate junit XML test reports
 ]
 
 [project.scripts]
@@ -129,8 +137,8 @@ find = {}
 # This is the exact version of Ruff we use.
 required-version = "0.5.1"
 
-# Assume Python 3.9
-target-version = "py39"
+# Assume Python 3.13
+target-version = "py313"
 
 # Setting line-length to 120 (though blacks default is 88)
 line-length = 120
@@ -240,9 +248,9 @@ data_file = "coverage_results.cov"
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
 omit = [
+    "*/tests/*",
     "armi/cli/gridGui.py",
     "armi/utils/gridEditor.py",
-    "*/tests/*",
     ]
 
 exclude_also = [
@@ -250,18 +258,18 @@ exclude_also = [
     "def __repr__",
     "if self\\.debug",
 
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+
     # Don't complain about missing type checking-only code:
     "if TYPE_CHECKING",
 
     # Don't complain if tests don't hit defensive assertion code:
+    "except ImportError",
+    "pass",
     "raise AssertionError",
     "raise KeyboardInterrupt",
     "raise NotImplementedError",
-    "except ImportError",
-    "pass",
-
-    # Don't complain if non-runnable code isn't run:
-    "if __name__ == .__main__.:",
     ]
 
 ignore_errors = true

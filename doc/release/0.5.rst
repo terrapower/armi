@@ -4,7 +4,7 @@ ARMI v0.5 Release Notes
 
 ARMI v0.5.1
 ===========
-Release Date: TBD (March-ish, 2025)
+Release Date: TBD (March, 2025)
 
 New Features
 ------------
@@ -27,11 +27,12 @@ Bug Fixes
 #. Fixing number densities when custom isotopics are combined with Fluid components. (`PR#2071 <https://github.com/terrapower/armi/pull/2071>`_)
 #. Fixing scaling of volume-integrated parameters on edge assemblies. (`PR#2060 <https://github.com/terrapower/armi/pull/2060>`_)
 #. Fixing strictness of ``HexGrid`` rough equality check. (`PR#2058 <https://github.com/terrapower/armi/pull/2058>`_)
-#  Fixing treatment of symmetry factors when calculating component flux and reaction rates. (`PR#2068 <https://github.com/terrapower/armi/pull/2068>`_, `PR#2086 <https://github.com/terrapower/armi/pull/2086>`_))
+#. Fixing treatment of symmetry factors when calculating component flux and reaction rates. (`PR#2068 <https://github.com/terrapower/armi/pull/2068>`_)
 #. TBD
 
 Quality Work
 ------------
+#. Open-Sourcing the ARMI requirements. (`PR#2076 <https://github.com/terrapower/armi/pull/2076>`_)
 #. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
@@ -122,3 +123,4 @@ Quality Work
 #. Refactoring ``axialExpansionChanger``. (`PR#1861 <https://github.com/terrapower/armi/pull/1861>`_)
 #. Raising a ``ValueError`` when ``Database.load()`` fails. (`PR#1940 <https://github.com/terrapower/armi/pull/1940>`_)
 #. Making axial expansion-related classes more extensible. (`PR#1920 <https://github.com/terrapower/armi/pull/1920>`_)
+

@@ -30,14 +30,30 @@ jobs:
         run: sudo apt-get -y install pandoc
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
-      - name: Make HTML Docs
+      - name: Make html/pdf Docs
+        continue-on-error: true
         run: |
+          sudo apt-get install texlive-xetex
+          sudo apt-get install texlive-latex-base
+          sudo apt-get install texlive-fonts-recommended
+          sudo apt-get install texlive-latex-extra
+          sudo apt-get install texlive-full
           pip install -e .[memprof,mpi,test,docs]
+          python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
+          date > python_details.log
+          python --version >> python_details.log
+          pip freeze >> python_details.log
+          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
           cd doc
           git submodule init
           git submodule update
+          echo "make html:"
           make html
-          make simplepdf
+          echo "make latex:"
+          make latex
+          cd _build/latex/
+          echo "latexmk -pdf -f -interaction=nonstopmode ARMI.tex:"
+          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
         if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
@@ -58,5 +74,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pdf-docs
-          path: doc/_build/simplepdf/ARMI.pdf
+          path: doc/_build/latex/ARMI.pdf
           retention-days: 5
