@@ -146,6 +146,8 @@ class SystemBlueprint(yamlize.Object):
 
         if geom is not None and self.name == "core":
             gridDesign = geom.toGridBlueprints("core")[0]
+        elif geom is not None and self.name == "Spent Fuel Pool":
+            gridDesign = geom.toGridBlueprints("Spent Fuel Pool")[0]
         else:
             if not bp.gridDesigns:
                 raise ValueError(
@@ -237,6 +239,7 @@ class SystemBlueprint(yamlize.Object):
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()
+        converter.scaleParamsRelatedToSymmetry(container)
         converter.removeEdgeAssemblies(container)
 
         # now update the spatial grid dimensions based on the populated children

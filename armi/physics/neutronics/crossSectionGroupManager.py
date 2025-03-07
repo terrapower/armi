@@ -55,6 +55,7 @@ import collections
 import copy
 import os
 import string
+import sys
 
 import numpy as np
 
@@ -63,7 +64,6 @@ from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import flags
 from armi.reactor.components import basicShapes
-from armi.reactor.converters.blockConverters import stripComponents
 from armi.reactor.flags import Flags
 from armi.utils import safeCopy
 from armi.utils.units import C_TO_K, TRACE_NUMBER_DENSITY
@@ -81,7 +81,7 @@ def describeInterfaces(cs):
     return None
 
 
-_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase)
+_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase + string.ascii_lowercase)
 
 
 def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
@@ -710,6 +710,8 @@ class CylindricalComponentsDuctHetAverageBlockCollection(
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
+        from armi.reactor.converters.blockConverters import stripComponents
+
         nvt = np.zeros(len(self.allNuclidesInProblem))
         nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():
@@ -1464,6 +1466,17 @@ class CrossSectionGroupManager(interfaces.Interface):
                     len(allocatedXSTypes), len(availableXsTypes), howMany
                 )
             )
+
+        # check for lower-case on case-insensitive file system
+        if sys.platform.startswith("win"):
+            allXSTypes = allocatedXSTypes.union(set(availableXsTypes[:howMany]))
+            allCaps = {c.capitalize() for c in allXSTypes}
+            if len(allCaps) != len(allXSTypes):
+                runLog.warning(
+                    "Mixing upper and lower-case XS group types on a Windows system, which is not "
+                    "case-sensitive. There is a chance that ARMI could overwrite previously "
+                    "generated XS files, which could cause mysterious and/or unpredictable errors."
+                )
         return availableXsTypes[:howMany]
 
     def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):

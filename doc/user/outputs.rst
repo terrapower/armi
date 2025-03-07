@@ -25,17 +25,17 @@ Together the output fully define the analyzed ARMI case.
 
 The Standard Output
 ===================
-The Standard Output (or **stdout**) is a running log of things an ARMI run prints out as it executes a case. It shows
-what happened during a run, which inputs were used, which warnings were issued, and in some cases, what the summary
-results are.  Here is an excerpt::
+The Standard Output (or **stdout**) is a running log of things an ARMI run prints out as it executes
+a case. It shows what happened during a run, which inputs were used, which warnings were issued, and
+in some cases, what the summary results are. Here is an excerpt::
 
-        ===========  Completed BOL Event ===========
+        =========== Completed BOL Event ===========
 
-        ===========  Triggering BOC - cycle 0 Event ===========
-        =========== 01 - main                           BOC - cycle 0   ===========
+        =========== Triggering BOC - cycle 0 Event ===========
+        =========== 01 - main                 BOC - cycle 0 ===========
         [impt] Beginning of Cycle 0
-        =========== 02 - fissionProducts                BOC - cycle 0   ===========
-        =========== 03 - xsGroups                       BOC - cycle 0   ===========
+        =========== 02 - fissionProducts      BOC - cycle 0 ===========
+        =========== 03 - xsGroups             BOC - cycle 0 ===========
         [xtra] Generating representative blocks for XS
         [xtra] Cross section group manager summary
 
@@ -47,16 +47,16 @@ logger by placing this line at the top of the file::
 
     runLog = logging.getLogger(__name__)
 
-These single-module (file) loggers can be controlled using a the `moduleVerbosity` setting. All of these logger
-verbosities can be controlled from the settings file, for example::
+These single-module (file) loggers can be controlled using a the `moduleVerbosity` setting. All of
+these logger verbosities can be controlled from the settings file, for example::
 
     branchVerbosity: debug
     moduleVerbosity:
         armi.reactor.reactors: info
     verbosity: extra
 
-If there is an error, a useful message may be printed in the **stdout**, and a full traceback will be provided in the
-associated **stderr** file.
+If there is an error, a useful message may be printed in the **stdout**, and a full traceback will
+be provided in the associated **stderr** file.
 
 Some Linux users tend to use the **tail** command to monitor the progress of an ARMI run::
 
@@ -86,8 +86,9 @@ method to get a recovered ``Reactor`` object. For instance, given a database fil
 
    db = databaseFactory("myDatabase.h5", "r")
 
-   # The underlying file is not left open unless necessary. Use the handy context manager to
-   # temporarily open the file and interact with the data:
+   # The underlying file is not left open unless necessary. Use the
+   # handy context manager to temporarily open the file and
+   # interact with the data:
    with db:
        r = db.load(5, 2)
 

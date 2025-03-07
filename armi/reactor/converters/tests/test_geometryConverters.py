@@ -317,7 +317,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         # must be added after geom transform
         for b in self.o.r.core.getBlocks():
             b.p.power = 1.0
-        converter.scaleParamsRelatedToSymmetry(self.r)
+        converter.scaleParamsRelatedToSymmetry(self.r.core)
         a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]
         self.assertTrue(all(b.p.power == 2.0 for b in a), "Powers were not scaled")
 

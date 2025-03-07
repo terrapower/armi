@@ -279,16 +279,8 @@ class Assembly(composites.Composite):
         """
         Return the area of the assembly by looking at its first block.
 
-        The assumption is that all blocks in an assembly have the same area.
-        Calculate the total assembly volume in cm^3.
-
-        .. impl:: Assembly area is retrievable.
-            :id: I_ARMI_ASSEM_DIMS0
-            :implements: R_ARMI_ASSEM_DIMS
-
-            Returns the area of the first block in the Assembly. If there are no
-            blocks in the Assembly, a warning is issued and a default area of 1.0
-            is returned.
+        The assumption is that all blocks in an assembly have the same area. Calculate the total
+        assembly volume in cm^3.
         """
         try:
             return self[0].getArea()
@@ -299,16 +291,7 @@ class Assembly(composites.Composite):
             return 1.0
 
     def getVolume(self):
-        """Calculate the total assembly volume in cm^3.
-
-        .. impl:: Assembly volume is retrievable.
-            :id: I_ARMI_ASSEM_DIMS1
-            :implements: R_ARMI_ASSEM_DIMS
-
-            The volume of the Assembly is calculated as the product of the
-            area of the first block (via ``getArea``) and the total height
-            of the assembly (via ``getTotalHeight``).
-        """
+        """Calculate the total assembly volume in cm^3."""
         return self.getArea() * self.getTotalHeight()
 
     def getPinPlenumVolumeInCubicMeters(self):
@@ -471,14 +454,6 @@ class Assembly(composites.Composite):
     def getTotalHeight(self, typeSpec=None):
         """
         Determine the height of this assembly in cm.
-
-        .. impl:: Assembly height is retrievable.
-            :id: I_ARMI_ASSEM_DIMS2
-            :implements: R_ARMI_ASSEM_DIMS
-
-            The height of the Assembly is calculated by taking the sum of the
-            constituent Blocks. If a ``typeSpec`` is provided, the total height
-            of the blocks containing Flags that match the ``typeSpec`` is returned.
 
         Parameters
         ----------
@@ -1213,17 +1188,6 @@ class Assembly(composites.Composite):
         flags that match ``typeSpec`` and return dimension as specified by ``dimName``.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
-
-        .. impl:: Assembly dimensions are retrievable.
-            :id: I_ARMI_ASSEM_DIMS3
-            :implements: R_ARMI_ASSEM_DIMS
-
-            This method searches for the first Component that matches the
-            given ``typeSpec`` and returns the dimension as specified by
-            ``dimName``. There is a hard-coded preference for Components
-            to be within fuel Blocks. If there are no Blocks, then ``None``
-            is returned. If ``typeSpec`` is not within the first Block, an
-            error is raised within :py:meth:`~armi.reactor.blocks.Block.getDim`.
         """
         # prefer fuel blocks.
         bList = self.getBlocks(Flags.FUEL)

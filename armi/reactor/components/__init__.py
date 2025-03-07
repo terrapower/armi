@@ -186,6 +186,19 @@ class UnshapedComponent(Component):
         """
         return 2 * math.sqrt(self.getComponentArea(cold=cold) / math.pi)
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        Component is unshaped; assume it is circular and there is no ID (return 0.0).
+
+        Parameters
+        ----------
+        Tc : float, optional
+            Ignored for this component
+        cold : bool, optional
+            Ignored for this component
+        """
+        return 0.0
+
     @staticmethod
     def fromComponent(otherComponent):
         """

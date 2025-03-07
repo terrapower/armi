@@ -85,8 +85,8 @@ class SpentFuelPool(ExcoreStructure):
 
     def _updateNumberOfColumns(self):
         """Determine the number of columns in the spatial grid."""
-        _locs = self.spatialGrid.items()
-        self.numColumns = len(set([ll[0][0] for ll in _locs]))
+        locs = self.spatialGrid.items()
+        self.numColumns = len(set([ll[0][0] for ll in locs]))
 
     def _getNextLocation(self):
         """Helper method to allow each discharged assembly to be easily dropped into the SFP.

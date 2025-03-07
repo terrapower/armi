@@ -159,13 +159,7 @@ class HexReactorTests(ReactorTests):
         self.assertTrue(isinstance(self.r.excore["sfp"], Composite))
 
     def test_factorySortSetting(self):
-        """
-        Create a core object from an input yaml.
-
-        .. test:: Create core object from input yaml.
-            :id: T_ARMI_R_CORE
-            :tests: R_ARMI_R_CORE
-        """
+        """Create a core object from an input yaml."""
         # get a sorted Reactor (the default)
         cs = settings.Settings(fName="armiRun.yaml")
         r0 = reactors.loadFromCs(cs)
@@ -193,8 +187,8 @@ class HexReactorTests(ReactorTests):
         modify parameters at different levels.
 
         .. test:: Parameters are accessible throughout the armi tree.
-            :id: T_ARMI_PARAM_PART
-            :tests: R_ARMI_PARAM_PART
+            :id: T_ARMI_PARAM1
+            :tests: R_ARMI_PARAM
 
         .. test:: Ensure there is a setting for total core power.
             :id: T_ARMI_SETTINGS_POWER0
@@ -649,8 +643,8 @@ class HexReactorTests(ReactorTests):
         Get assembly by location, in a couple different ways to ensure they all work.
 
         .. test:: Get assembly by location.
-            :id: T_ARMI_R_GET_ASSEM_LOC
-            :tests: R_ARMI_R_GET_ASSEM_LOC
+            :id: T_ARMI_R_GET_ASSEM0
+            :tests: R_ARMI_R_GET_ASSEM
         """
         a0 = self.r.core.getAssemblyWithStringLocation("003-001")
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
@@ -665,8 +659,8 @@ class HexReactorTests(ReactorTests):
         Get assembly by name.
 
         .. test:: Get assembly by name.
-            :id: T_ARMI_R_GET_ASSEM_NAME
-            :tests: R_ARMI_R_GET_ASSEM_NAME
+            :id: T_ARMI_R_GET_ASSEM1
+            :tests: R_ARMI_R_GET_ASSEM
         """
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(assemblyName="A0010")
@@ -931,12 +925,7 @@ class HexReactorTests(ReactorTests):
             self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
-        """Tests retrieving ring numbers and removing a ring.
-
-        .. test:: Retrieve number of rings in core.
-            :id: T_ARMI_R_NUM_RINGS
-            :tests: R_ARMI_R_NUM_RINGS
-        """
+        """Tests retrieving ring numbers and removing a ring."""
         self.assertEqual(self.r.core.getNumRings(), 9)
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)

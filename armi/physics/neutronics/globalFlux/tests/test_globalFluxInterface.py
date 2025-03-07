@@ -276,12 +276,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingFalse()
 
     def test_getTightCouplingValue(self):
-        """Test getTightCouplingValue returns the correct value for keff and type for power.
-
-        .. test:: Return k-eff or assembly-wise power for coupling interactions.
-            :id: T_ARMI_FLUX_COUPLING_VALUE
-            :tests: R_ARMI_FLUX_COUPLING_VALUE
-        """
+        """Test getTightCouplingValue returns the correct value for keff and type for power."""
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"
