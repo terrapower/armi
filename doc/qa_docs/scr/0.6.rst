@@ -106,6 +106,13 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
      - Approver(s)
      - Issue(s)
      - PR(s)
+   * - Adding an SCR section to the docs
+     - Here I add a new process to ARMI. Instead of just a random "release notes" section, every ARMI PR will come with an SCR. This is part of the on-going quality work in ARMI.
+     - NA
+     - John Stilley
+     - Arrielle Opotowsky
+     - NA
+     - (`PR#2090 <https://github.com/terrapower/armi/pull/2090>`_)
    * - TBD
      - TBD
      - TBD
