@@ -2,13 +2,4 @@
 Release Notes
 #############
 
-You can find the release notes for each release below.
-
-----------
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-   :reversed:
-
-   /qa_docs/scr/0*
+You can find a Software Change Request (SCR) for each releases :doc:`here </qa_docs/scr>`.
