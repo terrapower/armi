@@ -2,11 +2,7 @@
 Release Notes
 #############
 
-Each ARMI release has a set of corresponding notes, found within this section.
-
-.. warning:: As ARMI transitions from an internal system to open source, we
-    will be improving the formality of our release process. At the moment the
-    updates and release cadence are lacking.
+You can find the release notes for each release below.
 
 ----------
 
@@ -15,4 +11,4 @@ Each ARMI release has a set of corresponding notes, found within this section.
    :glob:
    :reversed:
 
-   *
+   /qa_docs/scr/0*
