@@ -35,6 +35,27 @@ The following software changes added new features, or made a meaningful to chang
      - TBD
      - TBD
      - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
 
 
 Code Changes, Bugs and Fixes
@@ -54,6 +75,27 @@ The following software changes related to bugs or other fixes.
      - Approver(s)
      - Issue(s)
      - PR(s)
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
    * - TBD
      - TBD
      - TBD
@@ -87,6 +129,27 @@ This selection collects more trivial software changes. Such a change might fall 
      - TBD
      - TBD
      - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
 
 
 Documentation-Only Changes
@@ -106,6 +169,13 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
      - Approver(s)
      - Issue(s)
      - PR(s)
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
    * - Adding an SCR section to the docs
      - Adding a new process to ARMI. Instead of just a random "release notes" section, every ARMI PR will come with an SCR. This is part of the on-going quality work in ARMI.
      - NA
@@ -113,6 +183,20 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
      - Arrielle Opotowsky
      - NA
      - `PR#2090 <https://github.com/terrapower/armi/pull/2090>`_
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
    * - TBD
      - TBD
      - TBD
