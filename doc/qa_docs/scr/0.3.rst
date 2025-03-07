@@ -1,6 +1,7 @@
-***********************
-ARMI v0.3 Release Notes
-***********************
+Release Notes for ARMI 0.3
+==========================
+
+These are the release notes for past versions of ARMI, created before our SCR process. They are preserved here for historical record.
 
 
 ARMI v0.3.0
