@@ -32,13 +32,14 @@ jobs:
         uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make html/pdf Docs
         continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           sudo apt-get install texlive-xetex
           sudo apt-get install texlive-latex-base
           sudo apt-get install texlive-fonts-recommended
           sudo apt-get install texlive-latex-extra
           sudo apt-get install texlive-full
-          sudo apt install gh
           pip install -e .[memprof,mpi,test,docs]
           python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
           date > python_details.log
