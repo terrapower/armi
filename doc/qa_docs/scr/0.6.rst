@@ -26,7 +26,6 @@ The following software changes added new features, or made a meaningful to chang
        | Requirements
      - Author(s)
      - Approver(s)
-     - Issue(s)
      - PR(s)
    * - TBD
      - TBD
@@ -34,6 +33,11 @@ The following software changes added new features, or made a meaningful to chang
      - TBD
      - TBD
      - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
      - TBD
    * - TBD
      - TBD
@@ -41,16 +45,7 @@ The following software changes added new features, or made a meaningful to chang
      - TBD
      - TBD
      - TBD
-     - TBD
    * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
      - TBD
      - TBD
      - TBD
@@ -73,7 +68,6 @@ The following software changes related to bugs or other fixes.
        | Requirements
      - Author(s)
      - Approver(s)
-     - Issue(s)
      - PR(s)
    * - TBD
      - TBD
@@ -81,6 +75,11 @@ The following software changes related to bugs or other fixes.
      - TBD
      - TBD
      - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
      - TBD
    * - TBD
      - TBD
@@ -88,16 +87,7 @@ The following software changes related to bugs or other fixes.
      - TBD
      - TBD
      - TBD
-     - TBD
    * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
      - TBD
      - TBD
      - TBD
@@ -120,7 +110,6 @@ This selection collects more trivial software changes. Such a change might fall 
        | Requirements
      - Author(s)
      - Approver(s)
-     - Issue(s)
      - PR(s)
    * - TBD
      - TBD
@@ -128,6 +117,11 @@ This selection collects more trivial software changes. Such a change might fall 
      - TBD
      - TBD
      - TBD
+   * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
      - TBD
    * - TBD
      - TBD
@@ -135,16 +129,7 @@ This selection collects more trivial software changes. Such a change might fall 
      - TBD
      - TBD
      - TBD
-     - TBD
    * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
      - TBD
      - TBD
      - TBD
@@ -167,7 +152,6 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
        | Requirements
      - Author(s)
      - Approver(s)
-     - Issue(s)
      - PR(s)
    * - TBD
      - TBD
@@ -181,7 +165,6 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
      - NA
      - John Stilley
      - Arrielle Opotowsky
-     - NA
      - `PR#2090 <https://github.com/terrapower/armi/pull/2090>`_
    * - TBD
      - TBD
@@ -189,16 +172,13 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
      - TBD
      - TBD
      - TBD
-     - TBD
    * - TBD
      - TBD
      - TBD
      - TBD
      - TBD
      - TBD
-     - TBD
    * - TBD
-     - TBD
      - TBD
      - TBD
      - TBD

@@ -222,6 +222,7 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 
 def setup(app):
     """Method to make `make html` generate api documentation."""
+    print(subprocess.check_output(["gh", "pr", "view", "2022"]).decode("utf-8"))
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
@@ -232,9 +233,8 @@ def setup(app):
     if not os.path.exists(dataDir):
         os.mkdir(dataDir)
 
-    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but the working
-    # directory for running the notebooks is the directory of the link itself, so relative paths
-    # don't work.
+    # Copy resources needed to build the tutorial notebooks. nbsphinx_link needs the working
+    # directory for running the notebooks to be the directory of the link itself.
     for path in _TUTORIAL_FILES:
         safeCopy(path, dataDir)
 
