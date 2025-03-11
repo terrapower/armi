@@ -222,7 +222,6 @@ def autodoc_skip_member_handler(app, what, name, obj, skip, options):
 
 def setup(app):
     """Method to make `make html` generate api documentation."""
-    print(subprocess.check_output(["gh", "pr", "view", "2022"]).decode("utf-8"))
     app.connect("autodoc-skip-member", autodoc_skip_member_handler)
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
