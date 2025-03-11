@@ -32,8 +32,6 @@ jobs:
         uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make html/pdf Docs
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           sudo apt-get install texlive-xetex
           sudo apt-get install texlive-latex-base

@@ -1,3 +1,5 @@
+.. # autofill
+
 SCR Listing for ARMI 0.6.0
 ==========================
 
@@ -24,20 +26,16 @@ The following software changes added new features, or made a meaningful to chang
      - Change
      - | Impact on
        | Requirements
-     - Author(s)
-     - Approver(s)
+     - Author
+     - Reviewer(s)
      - PR(s)
+     - Issue(s)
    * - TBD
      - TBD
      - TBD
      - TBD
      - TBD
      - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
      - TBD
    * - TBD
      - TBD
@@ -45,7 +43,16 @@ The following software changes added new features, or made a meaningful to chang
      - TBD
      - TBD
      - TBD
+     - TBD
    * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
      - TBD
      - TBD
      - TBD
@@ -66,20 +73,16 @@ The following software changes related to bugs or other fixes.
      - Change
      - | Impact on
        | Requirements
-     - Author(s)
-     - Approver(s)
+     - Author
+     - Reviewer(s)
      - PR(s)
+     - Issue(s)
    * - TBD
      - TBD
      - TBD
      - TBD
      - TBD
      - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
      - TBD
    * - TBD
      - TBD
@@ -87,7 +90,16 @@ The following software changes related to bugs or other fixes.
      - TBD
      - TBD
      - TBD
+     - TBD
    * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
      - TBD
      - TBD
      - TBD
@@ -101,27 +113,23 @@ Code Changes, Maintenance, or Trivial
 This selection collects more trivial software changes. Such a change might fall into a usual "maintenance" bin. It is probably part of the continuous and on-going technical debt efforts. But the change might be as minor as linting.
 
 .. list-table:: Code Changes, Maintenance, or Trivial
-   :widths: 20 25 20 15 15 10 10
+   :widths: 20 25 25 15 15 10 10
    :header-rows: 1
 
    * - Title
      - Change
      - | Impact on
        | Requirements
-     - Author(s)
-     - Approver(s)
+     - Author
+     - Reviewer(s)
      - PR(s)
+     - Issue(s)
    * - TBD
      - TBD
      - TBD
      - TBD
      - TBD
      - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
      - TBD
    * - TBD
      - TBD
@@ -129,7 +137,16 @@ This selection collects more trivial software changes. Such a change might fall 
      - TBD
      - TBD
      - TBD
+     - TBD
    * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
      - TBD
      - TBD
      - TBD
@@ -150,35 +167,33 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
      - Change
      - | Impact on
        | Requirements
-     - Author(s)
-     - Approver(s)
+     - Author
+     - Reviewer(s)
      - PR(s)
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
+     - Issue(s)
    * - Adding an SCR section to the docs
      - Adding a new process to ARMI. Instead of just a random "release notes" section, every ARMI PR will come with an SCR. This is part of the on-going quality work in ARMI.
      - NA
      - John Stilley
      - Arrielle Opotowsky
-     - `PR#2090 <https://github.com/terrapower/armi/pull/2090>`_
+     - 2090
+     - NA
    * - TBD
      - TBD
      - TBD
      - TBD
      - TBD
      - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
      - TBD
    * - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+     - TBD
+   * - TBD
+     - TBD
      - TBD
      - TBD
      - TBD
