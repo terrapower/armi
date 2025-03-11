@@ -1,5 +1,5 @@
-SCR Listing for ARMI 0.6.0
-==========================
+SCR for ARMI 0.6.0
+==================
 
 This is a listing of all the Software Change Request (SCR) changes in the ARMI repository, as part of release number 0.6.0.
 

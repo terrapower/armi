@@ -228,7 +228,7 @@ Bug fixes
 
 
 ARMI v0.2.2
-===========
+-----------
 Release Date: 2022-01-19
 
 What's new in ARMI v0.2.2
