@@ -20,7 +20,7 @@ Functional Requirements
     :id: R_ARMI_ND_ISOTOPES
     :subtype: functional
     :basis: Isotope data is used to aid in construction of cross-section generation models, to convert between mass and number fractions, and other tasks.
-    :acceptance_criteria: Query isotopes and isomers by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.  
+    :acceptance_criteria: Query isotopes and isomers by name, label, MC2-3 ID, MCNP ID, and AAAZZZS ID.
     :status: accepted
 
 .. req:: The nucDirectory package shall store data separately from code.

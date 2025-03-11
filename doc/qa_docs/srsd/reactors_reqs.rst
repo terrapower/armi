@@ -250,7 +250,7 @@ Functional Requirements
     :id: R_ARMI_UMC_MIN_MESH
     :subtype: functional
     :basis: Regions with extremely small axial size can cause difficulties for the deterministic neutronics solvers.
-    :acceptance_criteria: Create a reactor with a mesh that is smaller than the minimum size. After the uniform mesh conversion the new mesh conforms to the user-specified value.    
+    :acceptance_criteria: Create a reactor with a mesh that is smaller than the minimum size. After the uniform mesh conversion the new mesh conforms to the user-specified value.
     :status: accepted
 
 .. ## blockConverters ######################

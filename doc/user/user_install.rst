@@ -16,12 +16,11 @@ You must have the following installed before proceeding:
 
   .. admonition:: The right Python command
 
-     Python 2 and Python 3 often co-exist on the same system. Whether the
-     ``python`` command refers to Python 2 or 3 depends on operating system and
-     configuration. Under some circumstances ``python3`` or ``pip3`` will need
-     to be used in place of ``python`` or ``pip`` to target the correct
-     version. You can verify your version by running ``python -VV``.  You can
-     also refer to the Python executable with a full path.
+     Python 2 and Python 3 often co-exist on the same system. Whether the ``python`` command refers
+     to Python 2 or 3 depends on operating system and configuration. Under some circumstances
+     ``python3`` or ``pip3`` will need to be used in place of ``python`` or ``pip`` to target the
+     correct version. You can verify your version by running ``python -VV``. You can also refer to
+     the Python executable with a full path.
 
 You also likely need the following for interacting with the source code repository:
 

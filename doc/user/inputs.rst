@@ -1508,13 +1508,9 @@ Such a method may look like this::
 
         return defaultFactors,factorSearchFlags
 
-Once a proper ``getFactorList`` method exists and a fuel handler object
-exists that can interpret the factors, activate a branch search
-during a regular run by selecting the **Branch Search** option on the GUI.
+Once a proper ``getFactorList`` method exists and a fuel handler object exists that can interpret the factors, activate a branch search during a regular run by selecting the **Branch Search** option on the GUI.
 
-The **best** result from the branch search is determined by comparing the *keff* values
-with the ``targetK`` setting, which is available for setting in the GUI. The branch
-with *keff* closest to the setting, while still being above 1.0 is chosen.
+The **best** result from the branch search is determined by comparing the *keff* values with the ``targetK`` setting, which is available for setting in the GUI. The branch with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 .. _settings-report:
 
@@ -1522,10 +1518,7 @@ Settings Report
 ===============
 This document lists all the `settings <#the-settings-input-file>`_ in ARMI.
 
-They are all accessible to developers
-through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically
-stored in a variable named ``cs``. Interfaces have access to a simulation's settings
-through ``self.cs``.
+They are all accessible to developers through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named ``cs``. Interfaces have access to a simulation's settings through ``self.cs``.
 
 
 .. exec::
