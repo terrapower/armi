@@ -1,5 +1,3 @@
-.. # autofill
-
 SCR Listing for ARMI 0.6.0
 ==========================
 
@@ -14,7 +12,7 @@ Below, this SCR is organized into the individual changes that comprise the net S
 
 
 Code Changes, Features
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 The following software changes added new features, or made a meaningful to change to an existing one.
 
@@ -61,7 +59,7 @@ The following software changes added new features, or made a meaningful to chang
 
 
 Code Changes, Bugs and Fixes
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+----------------------------
 
 The following software changes related to bugs or other fixes.
 
@@ -108,7 +106,7 @@ The following software changes related to bugs or other fixes.
 
 
 Code Changes, Maintenance, or Trivial
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------
 
 This selection collects more trivial software changes. Such a change might fall into a usual "maintenance" bin. It is probably part of the continuous and on-going technical debt efforts. But the change might be as minor as linting.
 
@@ -155,7 +153,7 @@ This selection collects more trivial software changes. Such a change might fall 
 
 
 Documentation-Only Changes
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------
 
 The following changes below are changes to the SRSD, SDID, STR, or other SQA documentation.
 
