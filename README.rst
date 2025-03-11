@@ -1,9 +1,9 @@
 
 |Build Status| |Code Coverage| |Commit Activity| |Good First Issues|
 
-####
-ARMI
-####
+#################
+ARMI Introduction
+#################
 
 The Advanced Reactor Modeling Interface (ARMI\ :sup:`®`) is an open-source tool that
 streamlines your nuclear reactor design/analysis needs by providing a
