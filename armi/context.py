@@ -114,13 +114,11 @@ if sys.platform.startswith("win"):
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
 else:
-    # non-Windows
-    APP_DATA = os.path.expanduser("~/.armi")
-
-    if os.access("/mnt/scratch/", os.W_OK):
-        APP_DATA = "/mnt/scratch/.armi"
-    elif os.access("/tmp/", os.W_OK):
+    # non-Windows: /tmp/ if possible, if not home
+    if os.access("/tmp/", os.W_OK):
         APP_DATA = "/tmp/.armi"
+    else:
+        APP_DATA = os.path.expanduser("~/.armi")
 
 if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
