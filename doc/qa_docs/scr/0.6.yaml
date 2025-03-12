@@ -1,10 +1,15 @@
-# TODO: JOHN comment all of this
-# TODO: JOHN Can I automate away the need for this?
+# Edit this file to add your PR to the SCR.
+#   Just add your PR number (on GitHub) to a new row under each section header
+#   Only add your PR to one field here (whichever applies and is closest to top)
 features:
+  # Code Changes, Features
   - -1
 fixes:
+  # Code Changes, Bugs and Fixes
   - -1
 trivial:
+  # Code Changes, Maintenance, or Trivial
   - -1
 docs:
+  # Documentation-Only Changes
   - 2090

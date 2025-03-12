@@ -13,9 +13,10 @@
 # limitations under the License.
 
 """
-TODO: JOHN.
+Tool to build SCR tables to be added to the RST docs.
 
-TODO: JOHN.
+This script is meant to generate an RST-formatted list-table to the docs, to automate the process of
+generating an SCR in ARMI.
 """
 import os
 import pathlib
@@ -23,7 +24,7 @@ import subprocess
 
 from ruamel.yaml import YAML
 
-# TODO: JOHN: Explain
+# A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.
 GITHUB_USERS = {
     "aaronjamesreynolds": "Aaron Reynolds",
     "albeanth": "Tony Alberti",
@@ -39,8 +40,21 @@ GITHUB_USERS = {
 }
 
 
-def _findOneLineData(lines, key):
-    """TODO: JOHN."""
+def _findOneLineData(lines: list, key: str):
+    """Helper method to find a single line in a GH CLI PR dump.
+
+    Parameters
+    ----------
+    lines : list
+        The GH CLI dump of a PR, split into lines for convenience.
+    key : str
+        The substring that the line in questions starts with.
+
+    Returns
+    -------
+    str
+        Data pulled for the key in question.
+    """
     for line in lines:
         if line.startswith(key):
             return line.split(key)[1].strip()
@@ -49,7 +63,20 @@ def _findOneLineData(lines, key):
 
 
 def _buildScrLine(prNum: str, scrType: str):
-    """TODO: JOHN."""
+    """Helper method to build a single RST list-table row in an SCR.
+
+    Parameters
+    ----------
+    prNum : str
+        The GitHub PR number in question.
+    scrType : str
+        The type of SCR: features, fixes, trivial, docs
+
+    Returns
+    -------
+    str
+        RST-formatted list-table row.
+    """
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
@@ -87,7 +114,20 @@ def _buildScrLine(prNum: str, scrType: str):
 
 
 def buildScrTable(fileName: str, scrType: str):
-    """TODO: JOHN."""
+    """Helper method to build an RST list-table for an SCR.
+
+    Parameters
+    ----------
+    fileName : str
+        Name of the YAML file in the SCR directory.
+    scrType : str
+        Generate a table for one type of SCR: features, fixes, trivial, docs
+
+    Returns
+    -------
+    str
+        RST-formatted list-table content.
+    """
     # build file path from file name
     thisDir = pathlib.Path(__file__).parent.absolute()
     filePath = os.path.join(thisDir, "..", "qa_docs", "scr", fileName)
@@ -105,7 +145,7 @@ def buildScrTable(fileName: str, scrType: str):
     # build table header
     tab = "   "
     content = ".. list-table:: Code Changes, Features\n"
-    content += f"{tab}:widths: 20 25 25 15 15 10\n"
+    content += f"{tab}:widths: 20 25 25 13 12 5\n"
     content += f"{tab}:header-rows: 1\n\n"
     content += f"{tab}* - Title\n"
     content += f"{tab}  - Change\n"
