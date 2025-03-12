@@ -102,26 +102,7 @@ responsible for not breaking that code/functionality. And you will be required t
 out that you touch such a code in your PR.
 
 Your PR reviewer will take an extra look at any PR that touches a requirement test or implementation.
-And you will need to add a special release note under the "Changes that Affect Requirements" section
-header.
-
-
-Add Release Notes
------------------
-For every PR, you will need to add your PR number to the YAML file under ``doc/qa_docs/scr/next.release.number.yaml``. Doing this will allow the ARMI documentation to automatically build a Release Note (an SCR line item) for your PR. Make sure that you have correctly filled out the mandatory fields in your PR description.
-
-In particular, in the release notes, you will find four sections to choose from:
-
-1. **Code Changes, Features** - For changes that are actual, meaningful code changes.
-2. **Code Changes, Bugs and Fixes** - If the actual, meaningful change is specifical a bug fix or something similar.
-3. **Code Changes, Maintenance, or Trivial** - If the change is not a meaningful code change, but linting, formatting, variable name changes or similar.
-4. **Documentation-Only Changes** - If the change just touches documentation or in-code comments.
-
-If your PR fits more than one of these categories, pick whichever has the smallest number on the list above.
-
-An important column in the Release Notes is "Impact on Requirements". This is the place to call out all the requirements that you touched. That is, if you touched the requirement in the documentation, or the code that implements that requirement which is marked by an "`impl`" tag, or even a requirement tests marked by a "`test`" tag. We want to make sure and document every time we touch a requirement some way in a PR.
-
-If you do not touch a requirement put "NA" in that column.
+And you will need to add a special note in your PR description, under a field called "One-line Impact on Requirements". This note can be as long as it needs to be, but can only be on one line.
 
 
 Packaging and dependency management
@@ -171,8 +152,7 @@ Every release should follow this process:
 
 1. Ensure all unit tests pass and the documentation is building correctly.
 2. Bump the ``version`` string in ``pyproject.toml``.
-3. Add release notes to the documentation:
-   `here <https://github.com/terrapower/armi/tree/main/doc/release>`__.
+3. Now that the release is done, just hard-copy the SCR information into the last releases RST file, so we don't keep regenerating it: ``doc/qa_docs/scr/last.release.rst``.
 4. Tag the commit after it goes into the repo:
 
     - From this commit: ``git tag -a 1.0.0 -m "Release v1.0.0"``

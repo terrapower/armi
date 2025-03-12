@@ -34,6 +34,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           sudo apt-get install texlive-xetex
           sudo apt-get install texlive-latex-base

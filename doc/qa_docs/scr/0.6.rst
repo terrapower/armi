@@ -8,49 +8,15 @@ Please note that the Software Test Report (STR) documents for all of the changes
 Below, this SCR is organized into the individual changes that comprise the net SCR for this release.
 
 
-Code Changes, Features
-----------------------
+SCR Listing
+-----------
 
-The following software changes added new features, or made a meaningful to change to an existing one.
-
-
-.. exec::
-   from automateScr import buildScrTable
-
-   return buildScrTable("0.6.yaml", "features")
-
-
-Code Changes, Bugs and Fixes
-----------------------------
-
-The following software changes related to bugs or other fixes.
+The following tables list all the SCRs in this release of the ARMI framework.
 
 
 .. exec::
+   import os
    from automateScr import buildScrTable
 
-   return buildScrTable("0.6.yaml", "fixes")
-
-
-Code Changes, Maintenance, or Trivial
--------------------------------------
-
-This selection collects more trivial software changes. Such a change might fall into a usual "maintenance" bin. It is probably part of the continuous and on-going technical debt efforts. But the change might be as minor as linting.
-
-
-.. exec::
-   from automateScr import buildScrTable
-
-   return buildScrTable("0.6.yaml", "trivial")
-
-
-Documentation-Only Changes
---------------------------
-
-The following changes below are changes to the SRSD, SDID, STR, or other SQA documentation.
-
-
-.. exec::
-   from automateScr import buildScrTable
-
-   return buildScrTable("0.6.yaml", "docs")
+   thisPrNum = int(os.environ.get('PR_NUMBER', -1))
+   return buildScrTable(thisPrNum, "66cac55")

@@ -18,18 +18,14 @@ Tool to build SCR tables to be added to the RST docs.
 This script is meant to generate an RST-formatted list-table to the docs, to automate the process of
 generating an SCR in ARMI.
 """
-import os
-import pathlib
 import subprocess
-
-from ruamel.yaml import YAML
 
 # A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.
 GITHUB_USERS = {
     "aaronjamesreynolds": "Aaron Reynolds",
     "albeanth": "Tony Alberti",
     "bsculac": "Brian Sculac",
-    "drew-tp": "Drew Johnson",
+    "drewj-tp": "Drew Johnson",
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
     "mgjarrett": "Michael Jarrett",
@@ -40,10 +36,10 @@ GITHUB_USERS = {
 }
 
 PR_TYPES = {
+    "docs": "Documentation-Only Changes",
     "features": "Code Changes, Features",
     "fixes": "Code Changes, Bugs and Fixes",
     "trivial": "Code Changes, Maintenance, or Trivial",
-    "docs": "Documentation-Only Changes",
 }
 
 
@@ -69,15 +65,13 @@ def _findOneLineData(lines: list, key: str):
     return "TBD"
 
 
-def _buildScrLine(prNum: str, scrType: str):
+def _buildScrLine(prNum: str):
     """Helper method to build a single RST list-table row in an SCR.
 
     Parameters
     ----------
     prNum : str
         The GitHub PR number in question.
-    scrType : str
-        The type of SCR: features, fixes, trivial, docs
 
     Returns
     -------
@@ -101,6 +95,12 @@ def _buildScrLine(prNum: str, scrType: str):
     reviewers = ", ".join(reviewers)
 
     # grab one-line description
+    scrType = _findOneLineData(lines, "Change Type:")
+    if scrType not in PR_TYPES:
+        print(f"WARNING: invalid change type '{scrType}' for PR#{prNum}")
+        scrType = "trivial"
+
+    # grab one-line description
     desc = _findOneLineData(lines, "One-Sentence Description:")
 
     # grab impact on requirements
@@ -117,38 +117,11 @@ def _buildScrLine(prNum: str, scrType: str):
     content += f"{coli}{reviewers}\n"
     content += f"{coli}{prNum}\n"
 
-    return content
+    return content, scrType
 
 
-def buildScrTable(fileName: str, scrType: str):
-    """Helper method to build an RST list-table for an SCR.
-
-    Parameters
-    ----------
-    fileName : str
-        Name of the YAML file in the SCR directory.
-    scrType : str
-        Generate a table for one type of SCR: features, fixes, trivial, docs
-
-    Returns
-    -------
-    str
-        RST-formatted list-table content.
-    """
-    # build file path from file name
-    thisDir = pathlib.Path(__file__).parent.absolute()
-    filePath = os.path.join(thisDir, "..", "qa_docs", "scr", fileName)
-
-    # read YAML data
-    with open(filePath, "r") as f:
-        scrData = YAML().load(f)
-
-    scrData = scrData[scrType]
-    scrData = [int(st) for st in scrData if int(st) > 0]
-
-    if len(scrData) < 1:
-        return "NOTE: there were SCRs of this type.\n"
-
+def _buildTableHeader(scrType: str):
+    """TODO: JOHN."""
     # build table header
     tab = "   "
     content = f".. list-table:: {PR_TYPES[scrType]}\n"
@@ -162,9 +135,63 @@ def buildScrTable(fileName: str, scrType: str):
     content += f"{tab}  - Reviewer(s)\n"
     content += f"{tab}  - PR\n"
 
-    # add one row to the table for each SCR
-    for prNum in sorted(scrData):
-        content += _buildScrLine(str(prNum), scrType)
+    return content
 
-    content += "\n"
+
+def buildScrTable(thisPrNum: int, pastCommit: str):
+    """Helper method to build an RST list-table for an SCR.
+
+    Parameters
+    ----------
+    thisPrNum : int
+        TODO
+    pastCommit : str
+        TODO
+
+    Returns
+    -------
+    str
+        RST-formatted list-table content.
+    """
+    # 1. Get a list of all the commits between this one and the reference
+    txt = ""
+    for num in range(100, 1001, 100):
+        gitCmd = f"git log -n {num} --pretty=oneline".split(" ")
+        txt = subprocess.check_output(gitCmd).decode("utf-8")
+        if pastCommit in txt:
+            break
+
+    if not txt:
+        return f"Could not find commit in git log: {pastCommit}"
+
+    # 2. arse commit history to get the PR numbers
+    prNums = []
+    if thisPrNum > 0:
+        # in case the docs are not being built from a PR
+        prNums.append(thisPrNum)
+
+    for ln in txt.split("\n"):
+        line = ln.strip()
+        if pastCommit in line:
+            # do not include the reference commit
+            break
+        if line.endswith(")"):
+            # get the PR number
+            prNums.append(int(line.split("(#")[-1].split(")")[0]))
+
+    # 3. Build a table row for each SCR
+    data = {"docs": [], "features": [], "fixes": [], "trivial": []}
+    for prNum in sorted(prNums):
+        row, scrType = _buildScrLine(str(prNum))
+        data[scrType].append(row)
+
+    # 4. Build final RST for all four tables, to return to the docs
+    content = ""
+    for typ in ["features", "fixes", "trivial", "docs"]:
+        if len(data[typ]):
+            content += _buildTableHeader(typ)
+            for line in data[typ]:
+                content += line
+            content += "\n\n"
+
     return content
