@@ -105,7 +105,7 @@ def buildScrTable(fileName: str, scrType: str):
     # build table header
     tab = "   "
     content = ".. list-table:: Code Changes, Features\n"
-    content += f"{tab}:widths: 20 25 25 15 15 10 10\n"
+    content += f"{tab}:widths: 20 25 25 15 15 10\n"
     content += f"{tab}:header-rows: 1\n\n"
     content += f"{tab}* - Title\n"
     content += f"{tab}  - Change\n"
