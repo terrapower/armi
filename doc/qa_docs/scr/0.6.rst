@@ -15,9 +15,9 @@ The following software changes added new features, or made a meaningful to chang
 
 
 .. exec::
-    from automateScr import buildScrTable
+   from automateScr import buildScrTable
 
-    return buildScrTable("0.6.yaml", "features")
+   return buildScrTable("0.6.yaml", "features")
 
 
 Code Changes, Bugs and Fixes
@@ -27,9 +27,9 @@ The following software changes related to bugs or other fixes.
 
 
 .. exec::
-    from automateScr import buildScrTable
+   from automateScr import buildScrTable
 
-    return buildScrTable("0.6.yaml", "fixes")
+   return buildScrTable("0.6.yaml", "fixes")
 
 
 Code Changes, Maintenance, or Trivial
@@ -39,9 +39,9 @@ This selection collects more trivial software changes. Such a change might fall 
 
 
 .. exec::
-    from automateScr import buildScrTable
+   from automateScr import buildScrTable
 
-    return buildScrTable("0.6.yaml", "trivial")
+   return buildScrTable("0.6.yaml", "trivial")
 
 
 Documentation-Only Changes
@@ -51,6 +51,6 @@ The following changes below are changes to the SRSD, SDID, STR, or other SQA doc
 
 
 .. exec::
-    from automateScr import buildScrTable
+   from automateScr import buildScrTable
 
-    return buildScrTable("0.6.yaml", "docs")
+   return buildScrTable("0.6.yaml", "docs")

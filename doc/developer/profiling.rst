@@ -10,7 +10,7 @@ The basic commands to run are::
 
     python -m gprof2dot -f pstats <mystatsfile>.stats | dot -Tpng -o <mydesiredimagename>.png
 
-This produces images like this::
+This produces images like this:
 
 .. figure:: /.static/buildMacros.png
     :align: center

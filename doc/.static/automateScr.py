@@ -1,3 +1,17 @@
+# Copyright 2025 TerraPower, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 TODO: JOHN.
 
@@ -6,7 +20,6 @@ TODO: JOHN.
 import os
 import pathlib
 import subprocess
-from glob import glob
 
 from ruamel.yaml import YAML
 
@@ -40,18 +53,18 @@ def _buildScrLine(prNum: str, scrType: str):
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
+    # grab title
+    title = _findOneLineData(lines, "title:")
+
     # grab author
-    author = _findOneLineData(lines, "Assignees:")
+    author = _findOneLineData(lines, "author:")
     author = GITHUB_USERS.get(author, author)
 
     # grab reviewer(s)
-    reviewers = _findOneLineData(lines, "Reviewers:")
+    reviewers = _findOneLineData(lines, "reviewers:")
     reviewers = [rr.split("(")[0].strip() for rr in reviewers.split(",")]
     reviewers = [GITHUB_USERS.get(rr, rr) for rr in reviewers]
     reviewers = ", ".join(reviewers)
-
-    # grab title
-    title = lines[0]
 
     # grab one-line description
     desc = _findOneLineData(lines, "One-Sentence Description:")
@@ -77,11 +90,11 @@ def buildScrTable(fileName: str, scrType: str):
     """TODO: JOHN."""
     # build file path from file name
     thisDir = pathlib.Path(__file__).parent.absolute()
-    filePath = glob(os.path.join(thisDir, "..", "qa_docs", "scr", fileName))
+    filePath = os.path.join(thisDir, "..", "qa_docs", "scr", fileName)
 
     # read YAML data
     with open(filePath, "r") as f:
-        scrData = YAML.load(f)
+        scrData = YAML().load(f)
 
     scrData = scrData[scrType]
     scrData = [int(st) for st in scrData if int(st) > 0]
