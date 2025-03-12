@@ -43,7 +43,7 @@ PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
 os.environ["PYTHONPATH"] = PYTHONPATH
-# Add dochelpers.py from doc/.static/ directory
+# Add dochelpers.py and automateScr.py from doc/.static/ directory
 sys.path.insert(0, ".static")
 
 from armi import apps, context, disableFutureConfigures, meta

@@ -108,37 +108,25 @@ header.
 
 Add Release Notes
 -----------------
-For most PRs, you will need to add release notes to the :doc:`Release Notes </qa_docs/scr>`. The
-goal here is to help track all the important changes that happened in ARMI, so ARMI can document
-what has changed during the next release. To that end, every PR requires a release note.
+For every PR, you will need to add your PR number to the YAML file under ``doc/qa_docs/scr/next.release.number.yaml``. Doing this will allow the ARMI documentation to automatically build a Release Note (an SCR line item) for your PR. Make sure that you have correctly filled out the mandatory fields in your PR description.
 
 In particular, in the release notes, you will find four sections to choose from:
 
 1. **Code Changes, Features** - For changes that are actual, meaningful code changes.
-2. **Code Changes, Bugs and Fixes** - If the actual, meaningful change is specifical a bug fix or
-   something similar.
-3. **Code Changes, Maintenance, or Trivial** - If the change is not a meaningful code change, but
-   linting, formatting, variable name changes or similar.
+2. **Code Changes, Bugs and Fixes** - If the actual, meaningful change is specifical a bug fix or something similar.
+3. **Code Changes, Maintenance, or Trivial** - If the change is not a meaningful code change, but linting, formatting, variable name changes or similar.
 4. **Documentation-Only Changes** - If the change just touches documentation or in-code comments.
 
-If your PR fits more than one of these categories, just pick the one that applies that has the
-smallest number on the list above.
+If your PR fits more than one of these categories, pick whichever has the smallest number on the list above.
 
-An important column in the Release Notes is "Changes to Requirements". This is the place to call
-out all the requirements that you touched. That is, if you touched the requirement in the
-documentation, or the code that implements that requirement which is marked by an "`impl`" tag, or
-even a requirement tests marked by a "`test`" tag. We want to make sure and document every time we
-touch a requirement some way in a PR.
+An important column in the Release Notes is "Impact on Requirements". This is the place to call out all the requirements that you touched. That is, if you touched the requirement in the documentation, or the code that implements that requirement which is marked by an "`impl`" tag, or even a requirement tests marked by a "`test`" tag. We want to make sure and document every time we touch a requirement some way in a PR.
 
 If you do not touch a requirement put "NA" in that column.
 
 
 Packaging and dependency management
 ===================================
-The process of packaging Python projects and managing their dependencies is somewhat challenging and
-nuanced. The contents of our ``pyproject.toml`` follow existing conventions as much as possible. In
-particular, we follow `the official Python packaging guidance
-<https://packaging.python.org/en/latest/>`_.
+There are many ways to manage and package a Python project. We try to centralize as much of this as possible in a ``pyproject.toml``, following existing conventions. In particular, we follow `the official Python packaging guidance <https://packaging.python.org/en/latest/>`_.
 
 pyproject.toml
 --------------

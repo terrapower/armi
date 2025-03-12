@@ -13,46 +13,11 @@ Code Changes, Features
 
 The following software changes added new features, or made a meaningful to change to an existing one.
 
-.. list-table:: Code Changes, Features
-   :widths: 20 25 25 15 15 10 10
-   :header-rows: 1
 
-   * - Title
-     - Change
-     - | Impact on
-       | Requirements
-     - Author
-     - Reviewer(s)
-     - PR(s)
-     - Issue(s)
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
+.. exec::
+    from automateScr import buildScrTable
+
+    return buildScrTable("0.6.yaml", "features")
 
 
 Code Changes, Bugs and Fixes
@@ -60,46 +25,11 @@ Code Changes, Bugs and Fixes
 
 The following software changes related to bugs or other fixes.
 
-.. list-table:: Code Changes, Bugs and Fixes
-   :widths: 20 25 25 15 15 10 10
-   :header-rows: 1
 
-   * - Title
-     - Change
-     - | Impact on
-       | Requirements
-     - Author
-     - Reviewer(s)
-     - PR(s)
-     - Issue(s)
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
+.. exec::
+    from automateScr import buildScrTable
+
+    return buildScrTable("0.6.yaml", "fixes")
 
 
 Code Changes, Maintenance, or Trivial
@@ -107,46 +37,11 @@ Code Changes, Maintenance, or Trivial
 
 This selection collects more trivial software changes. Such a change might fall into a usual "maintenance" bin. It is probably part of the continuous and on-going technical debt efforts. But the change might be as minor as linting.
 
-.. list-table:: Code Changes, Maintenance, or Trivial
-   :widths: 20 25 25 15 15 10 10
-   :header-rows: 1
 
-   * - Title
-     - Change
-     - | Impact on
-       | Requirements
-     - Author
-     - Reviewer(s)
-     - PR(s)
-     - Issue(s)
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
+.. exec::
+    from automateScr import buildScrTable
+
+    return buildScrTable("0.6.yaml", "trivial")
 
 
 Documentation-Only Changes
@@ -154,43 +49,8 @@ Documentation-Only Changes
 
 The following changes below are changes to the SRSD, SDID, STR, or other SQA documentation.
 
-.. list-table:: Documentation-Only Changes
-   :widths: 20 25 25 15 15 10 10
-   :header-rows: 1
 
-   * - Title
-     - Change
-     - | Impact on
-       | Requirements
-     - Author
-     - Reviewer(s)
-     - PR(s)
-     - Issue(s)
-   * - Adding an SCR section to the docs
-     - Adding a new process to ARMI. Instead of just a random "release notes" section, every ARMI PR will come with an SCR. This is part of the on-going quality work in ARMI.
-     - NA
-     - John Stilley
-     - Arrielle Opotowsky
-     - 2090
-     - NA
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-   * - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
-     - TBD
+.. exec::
+    from automateScr import buildScrTable
+
+    return buildScrTable("0.6.yaml", "docs")
