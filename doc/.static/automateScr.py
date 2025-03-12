@@ -39,6 +39,13 @@ GITHUB_USERS = {
     "zachmprince": "Zachary Prince",
 }
 
+PR_TYPES = {
+    "features": "Code Changes, Features",
+    "fixes": "Code Changes, Bugs and Fixes",
+    "trivial": "Code Changes, Maintenance, or Trivial",
+    "docs": "Documentation-Only Changes",
+}
+
 
 def _findOneLineData(lines: list, key: str):
     """Helper method to find a single line in a GH CLI PR dump.
@@ -144,7 +151,7 @@ def buildScrTable(fileName: str, scrType: str):
 
     # build table header
     tab = "   "
-    content = ".. list-table:: Code Changes, Features\n"
+    content = f".. list-table:: {PR_TYPES[scrType]}\n"
     content += f"{tab}:widths: 20 25 25 13 12 5\n"
     content += f"{tab}:header-rows: 1\n\n"
     content += f"{tab}* - Title\n"

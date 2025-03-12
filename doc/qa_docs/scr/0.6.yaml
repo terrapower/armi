@@ -1,6 +1,7 @@
-# Edit this file to add your PR to the SCR.
-#   Just add your PR number (on GitHub) to a new row under each section header
-#   Only add your PR to one field here (whichever applies and is closest to top)
+# Raw data file used to populate the SCR
+#
+# If you have an open ARMI PR, add your GitHub PR number below.
+# If your PR fits in multiple categories, just put it in the one closest to the top.
 features:
   # Code Changes, Features
   - -1
