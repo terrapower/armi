@@ -216,7 +216,7 @@ class SettingArgsTests(unittest.TestCase):
         ep.parse_args(["--nCycles", "5"])
         self.assertEqual(cs["nCycles"], 5)
 
-    def test_cannotLoadSettingsAfterParsingCommandLineSetting(self):
+    def test_cannotLoadSettingsAfterParsingCLI(self):
         self.test_commandLineSetting()
 
         with self.assertRaises(RuntimeError):

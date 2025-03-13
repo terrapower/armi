@@ -256,7 +256,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_thermalExpansionContractionConservation_simple(self):
+    def test_thermExpansContractConserv_simple(self):
         """Thermally expand and then contract to ensure original state is recovered.
 
         .. test:: Thermally expand and then contract to ensure original assembly is recovered.
@@ -301,7 +301,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         self._checkNDens(origNDens, newNDens, 1.0)
         self._checkDetailedNDens(origDetailedNDens, newDetailedNDens, 1.0)
 
-    def test_thermalExpansionContractionConservation_complex(self):
+    def test_thermExpansContractionConserv_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.
 
         Notes
@@ -720,7 +720,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_updateComponentTempsBy1DTempFieldValueError(self):
+    def test_updateCompTempsBy1DTempFieldValError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)
         with self.assertRaises(ValueError) as cm:
@@ -730,7 +730,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_updateComponentTempsBy1DTempFieldRuntimeError(self):
+    def test_updateCompTempsBy1DTempFieldError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 10)
         with self.assertRaises(RuntimeError) as cm:
@@ -838,7 +838,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
             msg=f"determineTargetComponent failed to recognize intended component: {expected}",
         )
 
-    def test_determineTargetComponentBlockWithMultipleFlags(self):
+    def test_determineTargetCompBlockWithMultiFlags(self):
         """Provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER with multiple flags."""
         # build a block that has two flags as well as a component matching each
         b = HexBlock("fuel poison", height=10.0)
@@ -851,7 +851,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(self.coolant)
         self._checkTarget(b, fuel)
 
-    def test_specifyTargetComponent_NotFound(self):
+    def test_specifyTargetComp_NotFound(self):
         """Ensure RuntimeError gets raised when no target component is found."""
         b = HexBlock("fuel", height=10.0)
         b.add(self.coolant)
@@ -865,7 +865,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_specifyTargetComponent_singleSolid(self):
+    def test_specifyTargetComp_singleSolid(self):
         """Ensures that specifyTargetComponent is smart enough to set the only solid as the target component."""
         b = HexBlock("plenum", height=10.0)
         ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
@@ -876,7 +876,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.setType("plenum")
         self._checkTarget(b, duct)
 
-    def test_specifyTargetComponet_MultipleFound(self):
+    def test_specifyTargetComp_MultiFound(self):
         """Ensure RuntimeError is hit when multiple target components are found.
 
         Notes

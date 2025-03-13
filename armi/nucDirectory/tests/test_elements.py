@@ -81,7 +81,7 @@ class TestElement(unittest.TestCase):
             with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
                 nuclideBases.imposeBurnChain(burnChainStream)
 
-    def test_element_getNatrualIsotpicsOnlyRetrievesAbundaceGt0(self):
+    def test_elementGetNatrualIsotpicsOnlyRetrievesAbund(self):
         for ee in elements.byZ.values():
             if not ee.isNaturallyOccurring():
                 continue

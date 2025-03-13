@@ -43,7 +43,7 @@ class ImmutablePropertyTests(unittest.TestCase):
             ic.myNum = 2.2
         self.assertEqual(ic.myNum, 4.0)
 
-    def test_unlockDoesNotPermitsReassignmentOfAnImmutableProperty(self):
+    def test_unlockDoesntPermitReassignmentOfAnImmutProp(self):
         ic = ImmutableClass()
         ic.myNum = 7.7
         with self.assertRaises(properties.ImmutablePropertyError):

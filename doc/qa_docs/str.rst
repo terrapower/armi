@@ -91,7 +91,7 @@ Test Record Criteria
 
 The default values for the remaining 12 criteria pertaining to the test record are given in this
 section below. A test record will be produced after the test  is run which contains pertinent
-information about the execution of the test.  This test record will be saved as part of the software
+information about the execution of the test. This test record will be saved as part of the software
 test report (STR).
 
 Software Tested, Including System Software Used and All Versions
