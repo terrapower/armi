@@ -121,7 +121,18 @@ def _buildScrLine(prNum: str):
 
 
 def _buildTableHeader(scrType: str):
-    """TODO: JOHN."""
+    """Build a RST list-table header for an SCR listing.
+
+    Parameters
+    ----------
+    scrType : str
+        This has to be one of the defined SCR types: features, fixes, trivial, docs
+
+    Returns
+    -------
+    str
+        RST-formatted list-table header.
+    """
     # build table header
     tab = "   "
     content = f".. list-table:: {PR_TYPES[scrType]}\n"
@@ -144,9 +155,10 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     Parameters
     ----------
     thisPrNum : int
-        TODO
+        The number of this PR. If this is not a PR, this is a -1.
     pastCommit : str
-        TODO
+        The shortened commit hash for a past reference commit. (This is the last commit of the last
+        release. It will not be included.)
 
     Returns
     -------
