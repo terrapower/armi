@@ -24,14 +24,18 @@ import subprocess
 GITHUB_USERS = {
     "aaronjamesreynolds": "Aaron Reynolds",
     "albeanth": "Tony Alberti",
+    "alexhjames": "Alex James",
     "bsculac": "Brian Sculac",
+    "clstocking": "Casey Stocking",
     "drewj-tp": "Drew Johnson",
+    "jakehader": "Jake Hader",
     "john-science": "John Stilley",
     "keckler": "Chris Keckler",
     "mgjarrett": "Michael Jarrett",
     "ntouran": "Nick Touran",
     "onufer": "Mark Onufer",
     "opotowsky": "Arrielle Opotowsky",
+    "sombrereau": "Tommy Cisneros",
     "zachmprince": "Zachary Prince",
 }
 
