@@ -987,7 +987,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
                 continue
             self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
 
-    def test_createRepresentativeBlocksUsingExistingBlocks(self):
+    def test_createRepBlocksUsingExistingBlocks(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block.
@@ -999,7 +999,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         """
         self._createRepresentativeBlocksUsingExistingBlocks(["fuel"])
 
-    def test_createRepresentativeBlocksUsingExistingBlocksDisableValidBlockTypes(self):
+    def test_createRepBlocksFromDisableValidBlockTypes(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.

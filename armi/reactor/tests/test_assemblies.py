@@ -1136,7 +1136,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockIgniter(self):
+    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1252,7 +1252,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
+    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 

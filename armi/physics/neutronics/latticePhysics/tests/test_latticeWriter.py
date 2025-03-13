@@ -131,7 +131,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         self.assertIn("AM241", names)
         self.assertIn("U238", names)
 
-    def test_getAllNuclidesByTemperatureInCExplicitFissionProducts(self):
+    def test_getAllNuclidesByTempInCExplicitFisProd(self):
         self.w.explicitFissionProducts = True
         c = self.r.core[0][0]
         nucsByTemp = self.w._getAllNuclidesByTemperatureInC(c)
