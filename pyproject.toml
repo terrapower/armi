@@ -93,7 +93,7 @@ docs = [
 ######################################################################################
 # These are most specified that usual, because Sphinx docs seem to be quite fragile. #
 #                                                                                    #
-# We are only building our docs with Python 3.13.                                    #
+# Officially, we build our docs with Python 3.13.                                    #
 ######################################################################################
     "docutils==0.21.2", # Needed by sphinx-rtd-them
     "ipykernel>=6.0.0", # iPython kernel to run Jupyter notebooks
@@ -102,7 +102,7 @@ docs = [
     "nbsphinx==0.9.6", # Parses Jupyter notebooks
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
-    "pypdf==5.3.1",
+    "pypdf==5.3.1", # Generating a single PDF file for the Sphinx documentation
     "setuptools",  # needed for conf.py tooling
     "sphinx-data-viewer==0.1.5",
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
