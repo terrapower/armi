@@ -10,9 +10,6 @@ New Features
 ------------
 #. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
 #. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
-#. Provide ``Composite.iterChildren``, ``Composite.iterChildrenWithFlags``, ``Composite.iterChildrenOfType``,
-   ``Composite.iterChildrenWithMaterials``, for efficient composite tree traversal.
-   (`PR#2031 <https://github.com/terrapower/armi/pull/2031>`_)
 #. TBD
 
 API Changes
