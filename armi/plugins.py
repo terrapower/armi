@@ -200,7 +200,7 @@ class ArmiPlugin:
             of the reactor they want to calculate, track, and store to the database.
 
         .. impl:: Define an arbitrary physical parameter.
-            :id: I_ARMI_PARAM
+            :id: I_ARMI_PARAM0
             :implements: R_ARMI_PARAM
 
             Through this method, plugin developers can create new Parameters. A
@@ -215,9 +215,8 @@ class ArmiPlugin:
         Returns
         -------
         dict
-            Keys should be subclasses of ArmiObject, values being a
-            ParameterDefinitionCollection should be added to the key's parameter
-            definitions.
+            Keys should be subclasses of ArmiObject, values being a ParameterDefinitionCollection
+            should be added to the key's parameter definitions.
 
         Example
         -------
@@ -270,17 +269,7 @@ class ArmiPlugin:
     @staticmethod
     @HOOKSPEC
     def beforeReactorConstruction(cs) -> None:
-        """
-        Function to call before the reactor is constructed.
-
-        .. impl:: Plugins can inject code before reactor initialization.
-            :id: I_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
-            :implements: R_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
-
-            This method allows for plugin developers to implement code after settings are loaded but
-            before the reactor is constructed. This hook is called in
-            :py:func:`armi.reactor.reactors.factory`.
-        """
+        """Function to call before the reactor is constructed."""
 
     @staticmethod
     @HOOKSPEC
@@ -341,14 +330,9 @@ class ArmiPlugin:
         the corresponding ``Block`` subclass that, if present in the assembly, should
         trigger it to be of the corresponding ``assemType``.
 
-        .. warning::
-
-            The utility of subclassing Assembly is suspect, and may soon cease to be
-            supported. In practice, Assembly subclasses provide very little
-            functionality beyond that on the base class, and even that functionality can
-            probably be better suited elsewhere. Moving this code around would let us
-            eliminate the specialized Assembly subclasses altogether. In such a case,
-            this API will be removed from the framework.
+        Warning
+        -------
+        There is no guarantee that you will find subclassing ``Assembly`` useful.
 
         Example
         -------
@@ -372,8 +356,7 @@ class ArmiPlugin:
         """
         Return new sections for the blueprints input method.
 
-        This hook allows plugins to extend the blueprints functionality with their own
-        sections.
+        This hook allows plugins to extend the blueprints functionality with their own sections.
 
         Returns
         -------
@@ -398,8 +381,7 @@ class ArmiPlugin:
         blueprints mainly because the schema is more flexible, allowing namespaces and
         hierarchical collections of settings. Perhaps in the near future it would make
         sense to enhance the settings system to support these features, moving the
-        blueprints extensions out into settings. This is discussed in more detail in
-        T1671.
+        blueprints extensions out into settings. This is discussed in more detail in T1671.
         """
 
     @staticmethod

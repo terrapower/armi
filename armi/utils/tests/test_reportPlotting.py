@@ -151,8 +151,8 @@ class TestRadar(unittest.TestCase):
         class HistTester:
             def __init__(self):
                 self.xsHistory = {
-                    1: [[0, 1], [0, 2], [0, 3]],
-                    2: [[0, 5], [0, 6], [0, 7]],
+                    65: [[0, 1], [0, 2], [0, 3]],
+                    66: [[0, 5], [0, 6], [0, 7]],
                 }
 
         history = HistTester()

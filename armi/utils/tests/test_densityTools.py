@@ -164,13 +164,7 @@ class TestDensityTools(unittest.TestCase):
         self.assertAlmostEqual(m, 843.5790671316283)
 
     def test_normalizeNuclideList(self):
-        """
-        Normalize a nuclide list.
-
-        .. test:: Normalize nuclide vector
-            :id: T_ARMI_UTIL_DENS_TOOLS
-            :tests: R_ARMI_UTIL_DENS_TOOLS
-        """
+        """Normalize a nuclide list."""
         nList = {"PU239": 23.2342, "U234": 0.001234, "U235": 34.152}
         norm = densityTools.normalizeNuclideList(nList)
 

@@ -82,7 +82,7 @@ class ParameterTests(unittest.TestCase):
             :tests: R_ARMI_PARAM_DB
 
         .. test:: Ensure that new parameters can be defined.
-            :id: T_ARMI_PARAM
+            :id: T_ARMI_PARAM0
             :tests: R_ARMI_PARAM
         """
         pDefs = parameters.ParameterDefinitionCollection()
@@ -380,7 +380,7 @@ class ParameterTests(unittest.TestCase):
             set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs))
         )
 
-    def test_cannotDefineParameterWithSameNameForCollectionSubclass(self):
+    def test_cannotDefineParamSameNameCollectionSubclass(self):
         class MockPCParent(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:

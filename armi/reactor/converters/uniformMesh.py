@@ -1231,7 +1231,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             if rate["rateFis"] > 0.0:
                 fuelVolFrac = obj.getComponentAreaFrac(Flags.FUEL)
-                obj.p.fisDens = rate["rateFis"] / fuelVolFrac
+                obj.p.fisDens = (
+                    np.nan if fuelVolFrac == 0 else rate["rateFis"] / fuelVolFrac
+                )
                 obj.p.fisDensHom = rate["rateFis"]
             else:
                 obj.p.fisDens = 0.0

@@ -145,7 +145,7 @@ X  Y  0.0"""
 
     def test_readFileWithPattern(self):
         with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
-            self.assertTrue(sr.searchForPattern("(X\s+Y\s+\d+\.\d+)"))
+            self.assertTrue(sr.searchForPattern(r"(X\s+Y\s+\d+\.\d+)"))
             self.assertEqual(float(sr.line.split()[2]), 3.5)
 
     def test_issueWarningOnFindingText(self):

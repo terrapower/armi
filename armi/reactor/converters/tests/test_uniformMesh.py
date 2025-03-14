@@ -451,8 +451,8 @@ class TestUniformMesh(unittest.TestCase):
 
         self.converter.convert(self.r)
         for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
-            b.p.mgFlux = list(range(33))
-            b.p.adjMgFlux = list(range(33))
+            b.p.mgFlux = list(range(1, 34))
+            b.p.adjMgFlux = list(range(1, 34))
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0

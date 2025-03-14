@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Unittests for iterables.py."""
-import time
 import unittest
 
 import numpy as np
@@ -69,20 +68,14 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(unchu, data)
 
     def test_packingAndUnpackingBinaryStrings(self):
-        start = time.perf_counter()
         packed = iterables.packBinaryStrings(_TEST_DATA)
         unpacked = iterables.unpackBinaryStrings(packed["turtle"][0])
-        timeDelta = time.perf_counter() - start
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
-        return timeDelta
 
     def test_packingAndUnpackingHexStrings(self):
-        start = time.perf_counter()
         packed = iterables.packHexStrings(_TEST_DATA)
         unpacked = iterables.unpackHexStrings(packed["turtle"][0])
-        timeDelta = time.perf_counter() - start
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
-        return timeDelta
 
     def test_sequenceInit(self):
         # init an empty sequence

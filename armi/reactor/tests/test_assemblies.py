@@ -219,7 +219,7 @@ class Assembly_TestCase(unittest.TestCase):
             "residence": 4.0,
             "smearDensity": 0.6996721711791459,
             "timeToLimit": 2.7e5,
-            "xsTypeNum": 40,
+            "xsTypeNum": 65,
             "zbottom": 97.3521,
             "ztop": 111.80279999999999,
         }
@@ -396,12 +396,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
-        """Tests area calculation for hex assembly.
-
-        .. test:: Assembly area is retrievable.
-            :id: T_ARMI_ASSEM_DIMS0
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests area calculation for hex assembly."""
         # Default case: for assemblies with no blocks
         a = HexAssembly("TestAssem", assemNum=10)
         self.assertEqual(a.getArea(), 1)
@@ -412,12 +407,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getVolume(self):
-        """Tests volume calculation for hex assembly.
-
-        .. test:: Assembly volume is retrievable.
-            :id: T_ARMI_ASSEM_DIMS1
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests volume calculation for hex assembly."""
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
@@ -481,14 +471,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHeight(self):
-        """
-        Test height of assembly calculation.
-
-        .. test:: Assembly height is retrievable.
-            :id: T_ARMI_ASSEM_DIMS2
-            :tests: R_ARMI_ASSEM_DIMS
-
-        """
+        """Test height of assembly calculation."""
         cur = self.assembly.getHeight()
         ref = self.height * NUM_BLOCKS
         places = 6
@@ -776,9 +759,9 @@ class Assembly_TestCase(unittest.TestCase):
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
             for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = (
-                    val * i
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                if key != "xsTypeNum":  # must keep valid
+                    b.p[key] = self.blockParamsTemp[key] = val * i
 
             b.setHeight(self.height)
             b.setType("fuel")
@@ -867,12 +850,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_getDim(self):
-        """Tests dimensions are retrievable.
-
-        .. test:: Assembly dimensions are retrievable.
-            :id: T_ARMI_ASSEM_DIMS3
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests dimensions are retrievable."""
         # quick test, if there are no blocks
         a = HexAssembly("TestAssem", assemNum=10)
         self.assertIsNone(a.getDim(Flags.FUEL, "op"))
@@ -1158,7 +1136,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockIgniter(self):
+    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1274,7 +1252,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
+    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 

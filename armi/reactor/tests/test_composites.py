@@ -149,12 +149,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(onlyLiner), 1)
 
     def test_getName(self):
-        """Test the getName method.
-
-        .. test:: Composites names should be accessible.
-            :id: T_ARMI_CMP_GET_NAME
-            :tests: R_ARMI_CMP_GET_NAME
-        """
+        """Test the getName method."""
         self.assertEqual(self.secondGen.getName(), "liner")
         self.assertEqual(self.thirdGen.getName(), "pin 77")
         self.assertEqual(self.secondGen.getName(), "liner")
@@ -793,7 +788,7 @@ class TestMiscMethods(unittest.TestCase):
                 self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
             )
 
-    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+    def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
 
         .. test:: Get number densities.
