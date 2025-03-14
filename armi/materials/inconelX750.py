@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Inconel X750."""
+
 import numpy as np
 
 from armi.materials.material import Material
@@ -164,9 +165,7 @@ class InconelX750(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("heat capacity", Tc)
-        heatCapacity = (
-            9.2261e-7 * Tc**3 - 9.6368e-4 * Tc**2 + 4.7778e-1 * Tc + 420.55
-        )
+        heatCapacity = 9.2261e-7 * Tc**3 - 9.6368e-4 * Tc**2 + 4.7778e-1 * Tc + 420.55
         return heatCapacity  # J/kg-C
 
     def polyfitLinearExpansionPercent(self, power=2):

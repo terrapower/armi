@@ -86,9 +86,7 @@ class TestMPI(unittest.TestCase):
         if context.MPI_RANK == 0:
             # from main, confirm that subdirectories were created by all workers
             for i in range(context.MPI_SIZE):
-                self.assertTrue(
-                    os.path.isdir(os.path.join(os.getcwd(), self.targetDir, str(i)))
-                )
+                self.assertTrue(os.path.isdir(os.path.join(os.getcwd(), self.targetDir, str(i))))
 
         # make sure all workers have moved back out from the targetDir
         self.assertNotIn(self.targetDir, os.getcwd())

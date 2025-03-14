@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests to demonstrate the test helper is functional."""
+
 import os
 
 from armi.tests import ArmiTestHelper
@@ -32,9 +33,7 @@ class TestArmiTestHelper(ArmiTestHelper):
             "Supercomputing for reliable and comprehensive modeling\n"
         )
         self.BAD_TEXT = self.BLOCK_TEXT.replace("class", "NEGATIVE")
-        for path, text in zip(
-            [self.goodFilePath, self.badFilePath], (self.BLOCK_TEXT, self.BAD_TEXT)
-        ):
+        for path, text in zip([self.goodFilePath, self.badFilePath], (self.BLOCK_TEXT, self.BAD_TEXT)):
             with open(path, "w") as fileObj:
                 fileObj.write(text)
 
@@ -55,6 +54,4 @@ class TestArmiTestHelper(ArmiTestHelper):
         )
 
     def test_compareFilesSucceedFalseNegative(self):
-        self.compareFilesLineByLine(
-            self.goodFilePath, self.badFilePath, falseNegList=["NEGATIVE"]
-        )
+        self.compareFilesLineByLine(self.goodFilePath, self.badFilePath, falseNegList=["NEGATIVE"])

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for Case and CaseSuite objects."""
+
 import copy
 import cProfile
 import io
@@ -89,11 +90,7 @@ class TestArmiCase(unittest.TestCase):
             case = cases.Case(cs)
             c2 = case.clone()
             c2.summarizeDesign()
-            self.assertTrue(
-                os.path.exists(
-                    os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")
-                )
-            )
+            self.assertTrue(os.path.exists(os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")))
 
     def test_independentVariables(self):
         """Ensure that independentVariables added to a case move with it."""
@@ -469,9 +466,7 @@ class TestCaseSuiteComparison(unittest.TestCase):
                 # validate the file exists, and force it to be readable again
                 b = h5py.File(db._fullPath, "r")
                 self.assertEqual(list(b.keys()), ["inputs"])
-                self.assertEqual(
-                    sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-                )
+                self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"])
                 b.close()
 
                 # append to lists
@@ -626,9 +621,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePath = os.path.join(newDir.destination, shuffleFile)
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
@@ -641,9 +634,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
 
@@ -661,9 +652,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         app = getApp()
         app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
 
-        pluginPath = (
-            "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
-        )
+        pluginPath = "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
         settingFiles = ["COMPXS.ascii", "ISOAA"]
         testName = "test_copyInterfaceInputs_multipleFiles"
         testSetting = "multipleFilesSetting"
@@ -677,9 +666,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
             for newFilePath in newFilePaths:
                 self.assertTrue(os.path.exists(newFilePath))
@@ -694,22 +681,16 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePath = [os.path.join(newDir.destination, "ISOAA")]
             self.assertTrue(os.path.exists(newFilePath[0]))
-            self.assertEqual(
-                newSettings[testSetting], [os.path.basename(newFilePath[0])]
-            )
+            self.assertEqual(newSettings[testSetting], [os.path.basename(newFilePath[0])])
 
         # Check on a file that doesn't exist (so globFilePaths len is 0)
         wcFile = "fakeFile*"
         cs = cs.modified(newSettings={testSetting: wcFile})
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             self.assertFalse(os.path.exists(newSettings[testSetting][0]))
             self.assertEqual(newSettings[testSetting], [wcFile])
 
@@ -722,9 +703,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
 
         # ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             newFilePath = os.path.join(newDir.destination, shuffleFile)
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
@@ -738,9 +717,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         cs = cs.modified(newSettings={testSetting: absFile})
 
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
-            newSettings = cases.case.copyInterfaceInputs(
-                cs, destination=newDir.destination
-            )
+            newSettings = cases.case.copyInterfaceInputs(cs, destination=newDir.destination)
             # file exists
             self.assertTrue(os.path.exists(newSettings[testSetting]))
             # but not copied to this dir

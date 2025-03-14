@@ -122,18 +122,11 @@ class LabelsStream(cccc.StreamWithDataContainer):
         return LabelsData()
 
     def readWrite(self):
-        runLog.info(
-            "{} LABELS data {}".format(
-                "Reading" if "r" in self._fileMode else "Writing", self
-            )
-        )
+        runLog.info("{} LABELS data {}".format("Reading" if "r" in self._fileMode else "Writing", self))
         self._rwFileID()
         self._rw1DRecord()
         self._rw2DRecord()
-        if (
-            self._metadata["numHalfHeightsDirection1"] > 0
-            or self._metadata["numHalfHeightsDirection2"] > 0
-        ):
+        if self._metadata["numHalfHeightsDirection1"] > 0 or self._metadata["numHalfHeightsDirection2"] > 0:
             self._rw3DRecord()
         if self._metadata["numNuclideSets"] > 1:
             self._rw4DRecord()
@@ -166,18 +159,14 @@ class LabelsStream(cccc.StreamWithDataContainer):
     def _rw2DRecord(self):
         """Read/write the label and area data."""
         with self.createRecord() as record:
-            self._data.zoneLabels = record.rwList(
-                self._data.zoneLabels, "string", self._metadata["numZones"], 8
-            )
+            self._data.zoneLabels = record.rwList(self._data.zoneLabels, "string", self._metadata["numZones"], 8)
             self._data.regionLabels = record.rwList(
                 self._data.regionLabels,
                 "string",
                 self._metadata["numRegions"],
                 8,
             )
-            self._data.areaLabels = record.rwList(
-                self._data.areaLabels, "string", self._metadata["numAreas"], 8
-            )
+            self._data.areaLabels = record.rwList(self._data.areaLabels, "string", self._metadata["numAreas"], 8)
             self._data.regionAreaAssignments = record.rwList(
                 self._data.regionAreaAssignments,
                 "string",

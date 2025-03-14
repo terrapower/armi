@@ -20,6 +20,7 @@ blueprint files, and ignore any parameters as you want.
 
 This was designed to allow loading an ARMI database without the application that created it.
 """
+
 import yamlize
 
 from armi import plugins
@@ -34,9 +35,7 @@ class PassThroughYamlize(yamlize.Object):
     @classmethod
     def from_yaml(cls, loader, node, round_trip_data=None):
         node.value = []
-        return yamlize.Object.from_yaml.__func__(
-            PassThroughYamlize, loader, node, round_trip_data
-        )
+        return yamlize.Object.from_yaml.__func__(PassThroughYamlize, loader, node, round_trip_data)
 
 
 class PassiveDBLoadPlugin(plugins.ArmiPlugin):
@@ -72,9 +71,7 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
             skips.append(
                 (
                     skippedBp.replace(" ", ""),
-                    yamlize.Attribute(
-                        key=skippedBp, type=PassThroughYamlize, default=None
-                    ),
+                    yamlize.Attribute(key=skippedBp, type=PassThroughYamlize, default=None),
                     PassThroughYamlize,
                 )
             )
@@ -101,8 +98,6 @@ class PassiveDBLoadPlugin(plugins.ArmiPlugin):
         pDefs = parameters.ParameterDefinitionCollection()
         with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
             for param in names:
-                pb.defParam(
-                    param, units=units.UNITLESS, description=desc, saveToDB=False
-                )
+                pb.defParam(param, units=units.UNITLESS, description=desc, saveToDB=False)
 
         return pDefs

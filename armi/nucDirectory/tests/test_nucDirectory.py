@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests nuclide directory."""
+
 import unittest
 
 from armi.nucDirectory import nucDir, nuclideBases

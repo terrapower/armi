@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Alloy-200 are wrought commercially pure nickel."""
+
 from numpy import interp
 
 from armi.materials.material import Material
@@ -20,14 +21,11 @@ from armi.utils.units import getTk
 
 
 class Alloy200(Material):
-
     references = {
         "linearExpansion": [
             "Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf"
         ],
-        "refDens": [
-            "Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf"
-        ],
+        "refDens": ["Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf"],
         "referenceMaxPercentImpurites": [
             "Alloy 200/201 Data Sheet http://www.jacquet.biz/JACQUET/USA/files/JCQusa-alloy-200-201.pdf"
         ],

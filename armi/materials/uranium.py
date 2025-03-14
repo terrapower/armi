@@ -29,7 +29,6 @@ from armi.utils.units import getTk
 
 
 class Uranium(FuelMaterial):
-
     enrichedNuclide = "U235"
 
     materialIntro = ""
@@ -40,9 +39,7 @@ class Uranium(FuelMaterial):
 
     propertyUnits = {"thermal conductivity": "W/m-K", "heat capacity": "J/kg-K"}
 
-    propertyEquation = {
-        "thermal conductivity": "21.73 + 0.01591T + 5.907&#215;10<super>-6</super>T<super>2</super>"
-    }
+    propertyEquation = {"thermal conductivity": "21.73 + 0.01591T + 5.907&#215;10<super>-6</super>T<super>2</super>"}
 
     _heatCapacityTableK = [
         298,
@@ -203,16 +200,12 @@ class Uranium(FuelMaterial):
     }
 
     references = {
-        "thermal conductivity": [
-            "AAA Fuels Handbook by YS Kim and G.L. Hofman, ANL, Section 6.1.1"
-        ],
+        "thermal conductivity": ["AAA Fuels Handbook by YS Kim and G.L. Hofman, ANL, Section 6.1.1"],
         "heat capacity": ["AAA Fuels Handbook by YS Kim and GL Hofman, Table 2-14"],
         "melting point": ["AAA Fuels Handbook by YS Kim and GL Hofman, Table 2-13"],
         "density": ["Metallic Fuels Handbook, ANL-NSE-3, Table B.3.3-1"],
         "linear expansion": ["Metallic Fuels Handbook, ANL-NSE-3, Table B.3.3-1"],
-        "linear expansion percent": [
-            "Metallic Fuels Handbook, ANL-NSE-3, Table B.3.3-1"
-        ],
+        "linear expansion percent": ["Metallic Fuels Handbook, ANL-NSE-3, Table B.3.3-1"],
     }
 
     refDens = 19.07  # the value corresponding to linearExpansionPercent = 0
@@ -236,17 +229,13 @@ class Uranium(FuelMaterial):
         u235 = nb.byLabel["U235"]
         u238 = nb.byLabel["U238"]
 
-        u238Abundance = (
-            1.0 - u235.abundance
-        )  # neglect U234 and keep U235 at natural level
+        u238Abundance = 1.0 - u235.abundance  # neglect U234 and keep U235 at natural level
         gramsIn1Mol = u235.abundance * u235.weight + u238Abundance * u238.weight
 
         self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
         self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
 
-    def applyInputParams(
-        self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs
-    ):
+    def applyInputParams(self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs):
         if U235_wt_frac is not None:
             self.adjustMassEnrichment(U235_wt_frac)
 
@@ -254,8 +243,7 @@ class Uranium(FuelMaterial):
         if td is not None:
             if td > 1.0:
                 runLog.warning(
-                    "Theoretical density frac for {0} is {1}, which is >1"
-                    "".format(self, td),
+                    "Theoretical density frac for {0} is {1}, which is >1".format(self, td),
                     single=True,
                     label="Large theoretical density",
                 )

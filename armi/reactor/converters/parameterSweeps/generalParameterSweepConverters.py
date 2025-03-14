@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module for general core parameter sweeps."""
+
 from armi.physics.neutronics.settings import (
     CONF_EPS_EIG,
     CONF_EPS_FSAVG,
@@ -47,9 +48,7 @@ class SettingsModifier(ParameterSweepConverter):
         if sType is not type(None):
             # NOTE: this won't work with "new-style" settings related to the plugin system.
             # Using the type of the setting._default may be more appropriate if there are issues.
-            self._cs = self._cs.modified(
-                newSettings={self.modifier: sType(self._parameter)}
-            )
+            self._cs = self._cs.modified(newSettings={self.modifier: sType(self._parameter)})
 
 
 class NeutronicConvergenceModifier(ParameterSweepConverter):

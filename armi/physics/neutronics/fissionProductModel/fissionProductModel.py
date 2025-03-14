@@ -15,30 +15,30 @@
 This module contains the implementation of the ``FissionProductModel`` interface.
 
 
-This ``FissionProductModel`` class implements the management of fission products within 
-the reactor core and can be extended to support more general applications. Currently, the 
-fission product model supports explicit modeling of fission products in each of the 
+This ``FissionProductModel`` class implements the management of fission products within
+the reactor core and can be extended to support more general applications. Currently, the
+fission product model supports explicit modeling of fission products in each of the
 blocks/components, independent management of lumped fission products for each
 blocks/components within the core, or global management of lumped fission products
 where the fission products between all blocks/components are shared and are modified
 together.
 
 Within the framework, there is a coupling between the management of the fission products
-through this model to neutronics evaluations of flux and depletion calculations. 
+through this model to neutronics evaluations of flux and depletion calculations.
 
 When using a Monte Carlo solver, such as MCNP (i.e., there is an interface that is attached
 to the operator that has a name of "mcnp"), the fission products will always be treated
-independently and fission products (either explicit or lumped) will be added to all 
-blocks/components in the core. The reason for this is that Monte Carlo solvers, like MCNP, 
-may implement their own coupling between flux and depletion evaluations and having the 
+independently and fission products (either explicit or lumped) will be added to all
+blocks/components in the core. The reason for this is that Monte Carlo solvers, like MCNP,
+may implement their own coupling between flux and depletion evaluations and having the
 initialization of these fission products in each block/component independently will
 allow that solver to manage the inventory over time.
 
 When determining which fission product model to use (either explicit or lumped) it is
 important to consider which cross section data is available to the flux and/or depletion
-solvers, and what level of fidelity is required for the analysis. This is where decisions 
-as a developer/user need to be made, and the implementation of this specific model may 
-not be, in general, accurate for any reactor system. It is dependent on which plugins 
+solvers, and what level of fidelity is required for the analysis. This is where decisions
+as a developer/user need to be made, and the implementation of this specific model may
+not be, in general, accurate for any reactor system. It is dependent on which plugins
 are implemented and the requirements of the individual flux/depletion solver.
 
 Lumped fission products are generally useful for fast reactor applications, especially
@@ -61,9 +61,9 @@ used to implement this for cross section generation codes, like NJOY, CASMO, MC2
 etc.
 
 .. warning::
-    
+
     The lumped fission product model and the ``burn-chain.yaml`` data may not be directly
-    applicable to light water reactor systems, especially if there are strong reactivity 
+    applicable to light water reactor systems, especially if there are strong reactivity
     impacts with fission products like ``Xe`` and ``Sm`` that need to be tracked independently.
     A user/developer may update the ``referenceFissionProducts.dat`` data file to exclude
     these important nuclides from the lumped fission product models if need be, but this
@@ -72,19 +72,19 @@ etc.
 
 A further simplified option for lumped fission product treatment that is available is to
 treat all fission products explicitly as ``Mo-99``. This is not guaranteed to be an accurate
-treatment of the fission products from a reactivity/depletion perspective, but it is 
+treatment of the fission products from a reactivity/depletion perspective, but it is
 available for quick scoping evaluations and model building.
 
-Finally, the explicit fission product modeling aims to include as many nuclides on the 
+Finally, the explicit fission product modeling aims to include as many nuclides on the
 blocks/components as the user wishes to consider, but the nuclides that are modeled
-must be compatible with the plugins that are implemented for the application. When using this 
-option, the user should look to set the ``fpModelLibrary`` setting. 
+must be compatible with the plugins that are implemented for the application. When using this
+option, the user should look to set the ``fpModelLibrary`` setting.
 
-    - If this setting is not set, then it is expected that the user will need to manually add 
-      all nuclides to the ``nuclideFlags`` section of the reactor core blueprints. 
+    - If this setting is not set, then it is expected that the user will need to manually add
+      all nuclides to the ``nuclideFlags`` section of the reactor core blueprints.
 
-    - If the ``fpModelLibrary`` is selected then this will automatically add to the 
-      ``nuclideFlags`` input using :py:func:`isotopicOptions.autoUpdateNuclideFlags` 
+    - If the ``fpModelLibrary`` is selected then this will automatically add to the
+      ``nuclideFlags`` input using :py:func:`isotopicOptions.autoUpdateNuclideFlags`
       and this class will initialize all added nuclides to have zero number densities.
 
 .. warning::
@@ -129,10 +129,7 @@ class FissionProductModel(interfaces.Interface):
 
     @property
     def _useGlobalLFPs(self):
-        return not (
-            self.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT]
-            or self._explicitFissionProducts
-        )
+        return not (self.cs[CONF_MAKE_ALL_BLOCK_LFPS_INDEPENDENT] or self._explicitFissionProducts)
 
     @property
     def _fissionProductBlockType(self):

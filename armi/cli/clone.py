@@ -122,6 +122,4 @@ class CloneSuiteCommand(EntryPoint):
             rootDir=self.args.directory,
             ignorePatterns=self.args.ignore,
         )
-        suite.clone(
-            oldRoot=self.args.directory, writeStyle=self.args.settingsWriteStyle
-        )
+        suite.clone(oldRoot=self.args.directory, writeStyle=self.args.settingsWriteStyle)

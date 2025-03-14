@@ -65,9 +65,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         # database is excluded since SS writes by itself
         excludeDB = ("database",)
         for ssCycle, ssNode in snapshots:
-            runLog.important(
-                "Beginning snapshot ({0:02d}, {1:02d})".format(ssCycle, ssNode)
-            )
+            runLog.important("Beginning snapshot ({0:02d}, {1:02d})".format(ssCycle, ssNode))
             dbi.loadState(ssCycle, ssNode)
 
             # need to update reactor power after the database load

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for fuel performance utilities."""
+
 import unittest
 
 from armi.physics.fuelPerformance import utils

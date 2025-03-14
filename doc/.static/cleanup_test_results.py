@@ -15,6 +15,7 @@
 Docs build helper script, used to clean up the test-results file so it is easier to read in HTML
 and PDF later.
 """
+
 from sys import argv
 
 CLASS_NAME = 'classname="'

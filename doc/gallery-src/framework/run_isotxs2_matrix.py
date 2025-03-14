@@ -21,6 +21,7 @@ matrix.
 
 See Also: :py:mod:`ISOTXS <armi.nuclearDataIO.isotxs>` format.
 """
+
 import matplotlib.pyplot as plt
 
 from armi import configure

@@ -19,7 +19,6 @@ Thermal/hydraulics is concerned with temperatures, flows, pressures,
 and heat transfer.
 """
 
-
 from armi import interfaces, plugins
 from armi.physics.thermalHydraulics import settings
 

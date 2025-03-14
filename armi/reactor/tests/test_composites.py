@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
+
 import logging
 import unittest
 from copy import deepcopy
@@ -69,9 +70,7 @@ class DummyLeaf(composites.Composite):
         self.p.type = name
         self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
 
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
+    def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
         """Return empty list, representing that this object has no children."""
         return []
 
@@ -143,9 +142,7 @@ class TestCompositePattern(unittest.TestCase):
         allC = self.container.getChildren(deep=True)
         self.assertEqual(len(allC), 8)
 
-        onlyLiner = self.container.getChildren(
-            deep=True, predicate=lambda o: o.p.type == "liner"
-        )
+        onlyLiner = self.container.getChildren(deep=True, predicate=lambda o: o.p.type == "liner")
         self.assertEqual(len(onlyLiner), 1)
 
     def test_getName(self):
@@ -212,24 +209,18 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIn("U235", uNucs)
         self.assertIn("U241", uNucs)
         self.assertIn("U227", uNucs)
-        self.assertEqual(
-            self.container._getNuclidesFromSpecifier(["U238", "U235"]), ["U235", "U238"]
-        )
+        self.assertEqual(self.container._getNuclidesFromSpecifier(["U238", "U235"]), ["U235", "U238"])
 
         uzr = self.container._getNuclidesFromSpecifier(["U238", "U235", "ZR"])
         self.assertIn("U235", uzr)
         self.assertIn("ZR92", uzr)
         self.assertNotIn("ZR", uzr)
 
-        puIsos = self.container._getNuclidesFromSpecifier(
-            ["PU"]
-        )  # PU is special because it has no natural isotopics
+        puIsos = self.container._getNuclidesFromSpecifier(["PU"])  # PU is special because it has no natural isotopics
         self.assertIn("PU239", puIsos)
         self.assertNotIn("PU", puIsos)
 
-        self.assertEqual(
-            self.container._getNuclidesFromSpecifier(["FE", "FE56"]).count("FE56"), 1
-        )
+        self.assertEqual(self.container._getNuclidesFromSpecifier(["FE", "FE56"]).count("FE56"), 1)
 
     def test_hasFlags(self):
         """Ensure flags are queryable.
@@ -358,9 +349,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(sum([r for r in rRates.values()]), 0)
 
         # init reactor
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
         r.core.lib = lib
 
@@ -670,9 +659,7 @@ class TestFlagSerializer(unittest.TestCase):
 
         flagsArray, attrs = composites.FlagSerializer.pack(data)
 
-        data2 = composites.FlagSerializer.unpack(
-            flagsArray, composites.FlagSerializer.version, attrs
-        )
+        data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
         self.assertEqual(data, data2)
 
         # discrepant versions
@@ -687,9 +674,7 @@ class TestFlagSerializer(unittest.TestCase):
             runLog.LOG.startLog(testName)
             runLog.LOG.setVerbosity(logging.WARNING)
 
-            data2 = composites.FlagSerializer.unpack(
-                flagsArray, composites.FlagSerializer.version, attrs
-            )
+            data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
             flagLog = mock.getStdout()
 
         self.assertIn("The set of flags", flagLog)
@@ -784,9 +769,7 @@ class TestMiscMethods(unittest.TestCase):
 
         # verify the children match this composite
         for nuc in ["FE", "SI"]:
-            self.assertAlmostEqual(
-                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
-            )
+            self.assertAlmostEqual(self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc)
 
     def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
@@ -830,9 +813,7 @@ class TestMiscMethods(unittest.TestCase):
 
         # verify the children match this composite
         for nuc in ["FE", "SI"]:
-            self.assertAlmostEqual(
-                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
-            )
+            self.assertAlmostEqual(self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc)
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
@@ -861,7 +842,5 @@ class TestMiscMethods(unittest.TestCase):
 class TestGetReactionRateDict(unittest.TestCase):
     def test_getReactionRateDict(self):
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(
-            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
-        )
+        rxRatesDict = getReactionRateDict(nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1)
         self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))

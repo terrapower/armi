@@ -18,6 +18,7 @@ Core is a high-level object in the data model in ARMI.
 A Core frequently contain assemblies which in turn contain more refinement in representing the
 physical reactor.
 """
+
 import collections
 import copy
 import itertools
@@ -225,11 +226,7 @@ class Core(composites.Composite):
     @lib.setter
     def lib(self, value):
         """Set the microscopic cross section library."""
-        runLog.extra(
-            f"Updating cross section library on {self}.\n"
-            f"Initial: {self._lib}\n"
-            f"Updated: {value}."
-        )
+        runLog.extra(f"Updating cross section library on {self}.\nInitial: {self._lib}\nUpdated: {value}.")
         self._lib = value
 
     @property
@@ -313,9 +310,7 @@ class Core(composites.Composite):
         for b in self.getBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
-            b.p.puFrac = (
-                b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
-            )
+            b.p.puFrac = b.getPuMoles() / b.p.molesHmBOL if b.p.molesHmBOL > 0.0 else 0.0
 
     def getScalarEvolution(self, key):
         return self.scalarVals[key]
@@ -399,9 +394,7 @@ class Core(composites.Composite):
         --------
         getAssembliesInRing : definition of a ring
         """
-        for a in self.getAssembliesInRing(
-            ringNum, overrideCircularRingMode=overrideCircularRingMode
-        ):
+        for a in self.getAssembliesInRing(ringNum, overrideCircularRingMode=overrideCircularRingMode):
             self.removeAssembly(a)
 
         self.processLoading(cs)
@@ -420,8 +413,7 @@ class Core(composites.Composite):
                 del self.blocksByName[b.getName()]
             except KeyError:
                 runLog.warning(
-                    "Cannot delete block {0}. It is not in the Core.blocksByName structure"
-                    "".format(b),
+                    "Cannot delete block {0}. It is not in the Core.blocksByName structure".format(b),
                     single=True,
                     label="cannot dereference: lost block",
                 )
@@ -514,8 +506,7 @@ class Core(composites.Composite):
 
         if spatialLocator is not None and spatialLocator in self.childrenByLocator:
             raise ValueError(
-                "Cannot add {} because location {} is already filled by {}."
-                "".format(
+                "Cannot add {} because location {} is already filled by {}.".format(
                     aName, a.spatialLocator, self.childrenByLocator[a.spatialLocator]
                 )
             )
@@ -523,9 +514,7 @@ class Core(composites.Composite):
         if spatialLocator is not None:
             # transfer spatialLocator to Core one
             spatialLocator = self.spatialGrid[tuple(spatialLocator.indices)]
-            if not self.spatialGrid.locatorInDomain(
-                spatialLocator, symmetryOverlap=True
-            ):
+            if not self.spatialGrid.locatorInDomain(spatialLocator, symmetryOverlap=True):
                 raise LookupError(
                     "Location `{}` outside of the represented domain: `{}`".format(
                         spatialLocator, self.spatialGrid.symmetry.domain
@@ -550,9 +539,7 @@ class Core(composites.Composite):
 
         a.orientBlocks(parentSpatialGrid=self.spatialGrid)
         if self.geomType == geometry.GeomType.HEX:
-            ring, _loc = self.spatialGrid.getRingPos(
-                a.spatialLocator.getCompleteIndices()
-            )
+            ring, _loc = self.spatialGrid.getRingPos(a.spatialLocator.getCompleteIndices())
             if ring > self.numRings:
                 self.numRings = ring
 
@@ -671,9 +658,7 @@ class Core(composites.Composite):
         --------
         getFirstFuelBlockAxialNode
         """
-        fuelblocks = (
-            a.getBlocks(Flags.FUEL) for a in self.getAssemblies(includeBolAssems=True)
-        )
+        fuelblocks = (a.getBlocks(Flags.FUEL) for a in self.getAssemblies(includeBolAssems=True))
         try:
             return max(len(fuel) for fuel in fuelblocks)
         except ValueError:  # thrown when iterator is empty
@@ -741,9 +726,7 @@ class Core(composites.Composite):
         else:
             getter = self.getAssembliesInSquareOrHexRing
 
-        return getter(
-            ring=ring, typeSpec=typeSpec, exactType=exactType, exclusions=exclusions
-        )
+        return getter(ring=ring, typeSpec=typeSpec, exactType=exactType, exclusions=exclusions)
 
     def getMaxAssembliesInHexRing(self, ring, fullCore=False):
         """
@@ -769,9 +752,7 @@ class Core(composites.Composite):
 
         return maxAssemsInRing
 
-    def getAssembliesInSquareOrHexRing(
-        self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    def getAssembliesInSquareOrHexRing(self, ring, typeSpec=None, exactType=False, exclusions=None):
         """
         Returns the assemblies in a specified ring. Definitions of rings can change with problem
         parameters.
@@ -802,12 +783,8 @@ class Core(composites.Composite):
             assems.drop(lambda a: a in exclusions)
 
         # filter based on geomType
-        if (
-            self.geomType == geometry.GeomType.CARTESIAN
-        ):  # a ring in cartesian is basically a square.
-            assems.select(
-                lambda a: any(xy == ring for xy in abs(a.spatialLocator.indices[:2]))
-            )
+        if self.geomType == geometry.GeomType.CARTESIAN:  # a ring in cartesian is basically a square.
+            assems.select(lambda a: any(xy == ring for xy in abs(a.spatialLocator.indices[:2])))
         else:
             assems.select(lambda a: (a.spatialLocator.getRingPos()[0] == ring))
 
@@ -817,9 +794,7 @@ class Core(composites.Composite):
 
         return list(assems)
 
-    def getAssembliesInCircularRing(
-        self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    def getAssembliesInCircularRing(self, ring, typeSpec=None, exactType=False, exclusions=None):
         """
         Gets an assemblies within a circular range of the center of the core. This function allows
         for more circular styled assembly shuffling instead of the current hex approach.
@@ -845,16 +820,12 @@ class Core(composites.Composite):
         """
         if self.geomType == geometry.GeomType.CARTESIAN:
             # a ring in cartesian is basically a square.
-            raise RuntimeError(
-                "A circular ring in cartesian coordinates has not been defined yet."
-            )
+            raise RuntimeError("A circular ring in cartesian coordinates has not been defined yet.")
 
         # determine if the circularRingList has been generated
         # TODO: make circularRingList a property that is generated on request
         if not self.circularRingList:
-            self.circularRingList = self.buildCircularRingDictionary(
-                self._circularRingPitch
-            )
+            self.circularRingList = self.buildCircularRingDictionary(self._circularRingPitch)
 
         assems = Sequence(self)
 
@@ -884,9 +855,7 @@ class Core(composites.Composite):
         ringPitch : float, optional
             The relative pitch that should be used to define the spacing between each ring.
         """
-        runLog.extra(
-            "Building a circular ring dictionary with ring pitch {}".format(ringPitch)
-        )
+        runLog.extra("Building a circular ring dictionary with ring pitch {}".format(ringPitch))
         referenceAssembly = self.childrenByLocator[self.spatialGrid[0, 0, 0]]
         refLocation = referenceAssembly.spatialLocator
         pitchFactor = ringPitch / self.spatialGrid.pitch
@@ -998,20 +967,12 @@ class Core(composites.Composite):
             includeBolAssems = includeSFP = True
 
         assems = []
-        if (
-            includeBolAssems
-            and self.parent is not None
-            and self.parent.blueprints is not None
-        ):
+        if includeBolAssems and self.parent is not None and self.parent.blueprints is not None:
             assems.extend(self.parent.blueprints.assemblies.values())
 
         assems.extend(a for a in sorted(self, key=sortKey))
 
-        if (
-            includeSFP
-            and self.parent is not None
-            and self.parent.excore.get("sfp") is not None
-        ):
+        if includeSFP and self.parent is not None and self.parent.excore.get("sfp") is not None:
             assems.extend(self.parent.excore.sfp.getChildren())
 
         if typeSpec:
@@ -1039,9 +1000,7 @@ class Core(composites.Composite):
         ``nozzleType`` is added during a run. This problem should not occur with the
         ``includeBolAssems=True`` argument provided.
         """
-        nozzleList = list(
-            set(a.p.nozzleType for a in self.getAssemblies(includeBolAssems=True))
-        )
+        nozzleList = list(set(a.p.nozzleType for a in self.getAssemblies(includeBolAssems=True)))
         return {nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList))}
 
     def getBlockByName(self, name):
@@ -1077,18 +1036,14 @@ class Core(composites.Composite):
 
     def _genBlocksByName(self):
         """If self.blocksByName is deleted, then this will regenerate it."""
-        self.blocksByName = {
-            block.getName(): block for block in self.getBlocks(includeAll=True)
-        }
+        self.blocksByName = {block.getName(): block for block in self.getBlocks(includeAll=True)}
 
     # TODO: (Idea) wrap this in an "if not self.blocksByLocName:"
     # This will likely fail, but it will help diagnose why property approach
     # wasn't working correctly
     def genBlocksByLocName(self):
         """If self.blocksByLocName is deleted, then this will regenerate it or update it if things change."""
-        self.blocksByLocName = {
-            block.getLocation(): block for block in self.getBlocks(includeAll=True)
-        }
+        self.blocksByLocName = {block.getLocation(): block for block in self.getBlocks(includeAll=True)}
 
     def getBlocks(self, bType=None, **kwargs):
         """
@@ -1220,9 +1175,7 @@ class Core(composites.Composite):
             for c in self.iterComponents():
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                nuclides = [
-                    nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0
-                ]
+                nuclides = [nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0]
                 if c.getName() == "coolant":
                     coolantNuclides.update(nuclides)
                 elif "fuel" in c.getName():
@@ -1231,11 +1184,7 @@ class Core(composites.Composite):
                     structureNuclides.update(nuclides)
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
-            remainingNuclides = (
-                set(self.parent.blueprints.allNuclidesInProblem)
-                - structureNuclides
-                - coolantNuclides
-            )
+            remainingNuclides = set(self.parent.blueprints.allNuclidesInProblem) - structureNuclides - coolantNuclides
             fuelNuclides.update(remainingNuclides)
             self._nuclideCategories["coolant"] = coolantNuclides
             self._nuclideCategories["fuel"] = fuelNuclides
@@ -1256,21 +1205,15 @@ class Core(composites.Composite):
                 [
                     (
                         "Fuel",
-                        createFormattedStrWithDelimiter(
-                            self._nuclideCategories["fuel"]
-                        ),
+                        createFormattedStrWithDelimiter(self._nuclideCategories["fuel"]),
                     ),
                     (
                         "Coolant",
-                        createFormattedStrWithDelimiter(
-                            self._nuclideCategories["coolant"]
-                        ),
+                        createFormattedStrWithDelimiter(self._nuclideCategories["coolant"]),
                     ),
                     (
                         "Structure",
-                        createFormattedStrWithDelimiter(
-                            self._nuclideCategories["structure"]
-                        ),
+                        createFormattedStrWithDelimiter(self._nuclideCategories["structure"]),
                     ),
                 ],
                 headers=["Nuclide Category", "Nuclides"],
@@ -1333,9 +1276,7 @@ class Core(composites.Composite):
             return {b.getLocation(): b for a in self for b in a}
 
     # TODO: Can be cleaned up, but need test case to guard agains breakage
-    def getFluxVector(
-        self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
-    ):
+    def getFluxVector(self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True):
         """
         Return the multigroup real or adjoint flux of the entire reactor as a vector.
 
@@ -1398,9 +1339,7 @@ class Core(composites.Composite):
         """Return a list of assemblies in the core that are of type assemType."""
         return self.getChildrenWithFlags(typeSpec, exactMatch=exactMatch)
 
-    def getAssembly(
-        self, assemNum=None, locationString=None, assemblyName=None, *args, **kwargs
-    ):
+    def getAssembly(self, assemNum=None, locationString=None, assemblyName=None, *args, **kwargs):
         """
         Finds an assembly in the core.
 
@@ -1488,9 +1427,7 @@ class Core(composites.Composite):
         """
         return self.spatialGrid.pitch
 
-    def findNeighbors(
-        self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False
-    ):
+    def findNeighbors(self, a, showBlanks=True, duplicateAssembliesOnReflectiveBoundary=False):
         r"""
         Find assemblies that are next to this assembly.
 
@@ -1594,9 +1531,7 @@ class Core(composites.Composite):
         --------
         grids.Grid.getSymmetricEquivalents
         """
-        neighborIndices = self.spatialGrid.getNeighboringCellIndices(
-            *a.spatialLocator.getCompleteIndices()
-        )
+        neighborIndices = self.spatialGrid.getNeighboringCellIndices(*a.spatialLocator.getCompleteIndices())
 
         dupReflectors = (
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
@@ -1709,11 +1644,7 @@ class Core(composites.Composite):
                 # make endlessly iterable if float was passed in
                 enrichList = itertools.cycle([enrichList])
             elif len(a) != len(enrichList):
-                raise RuntimeError(
-                    "{0} and enrichment list do not have the same number of blocks.".format(
-                        a
-                    )
-                )
+                raise RuntimeError("{0} and enrichment list do not have the same number of blocks.".format(a))
 
             for b, enrich in zip(a, enrichList):
                 if enrich == 0.0:
@@ -1727,9 +1658,7 @@ class Core(composites.Composite):
 
         if not self._detailedAxialExpansion:
             # if detailedAxialExpansion: False, make sure that the assembly being created has the correct core mesh
-            a.setBlockMesh(
-                self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto"
-            )  # pass [1:] to skip 0.0
+            a.setBlockMesh(self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto")  # pass [1:] to skip 0.0
 
         return a
 
@@ -1741,8 +1670,7 @@ class Core(composites.Composite):
             for block in blocks:
                 for gi in groups:
                     f.write(
-                        "{:10s} {:10d} {:12.5E} {:12.5E} {:12.5E}\n"
-                        "".format(
+                        "{:10s} {:10d} {:12.5E} {:12.5E} {:12.5E}\n".format(
                             block.getName(),
                             gi,
                             block.p.mgFlux[gi],
@@ -1750,13 +1678,9 @@ class Core(composites.Composite):
                             block.getVolume(),
                         )
                     )
-                if len(block.p.mgFlux) > len(groups) or len(block.p.adjMgFlux) > len(
-                    groups
-                ):
+                if len(block.p.mgFlux) > len(groups) or len(block.p.adjMgFlux) > len(groups):
                     raise ValueError(
-                        "Too many flux values: {}\n{}\n{}".format(
-                            block, block.p.mgFlux, block.p.adjMgFlux
-                        )
+                        "Too many flux values: {}\n{}\n{}".format(block, block.p.mgFlux, block.p.adjMgFlux)
                     )
 
     def getAssembliesOnSymmetryLine(self, symmetryLineID):
@@ -1832,17 +1756,11 @@ class Core(composites.Composite):
         for a in assems:
             for b in a:
                 # these params should be combined into a new b.p.meshSubdivisions tuple
-                numPoints = (
-                    (a.p.AziMesh, a.p.RadMesh, b.p.axMesh)
-                    if applySubMesh
-                    else (1, 1, 1)
-                )
+                numPoints = (a.p.AziMesh, a.p.RadMesh, b.p.axMesh) if applySubMesh else (1, 1, 1)
                 base = b.spatialLocator.getGlobalCellBase()
                 # make sure this is in mesh coordinates (important to have TRZ, not XYZ in TRZ cases
                 top = b.spatialLocator.getGlobalCellTop()
-                for axis, (collection, subdivisions) in enumerate(
-                    zip((iMesh, jMesh, kMesh), numPoints)
-                ):
+                for axis, (collection, subdivisions) in enumerate(zip((iMesh, jMesh, kMesh), numPoints)):
                     axisVal = float(base[axis])  # convert from np.float64
                     step = float(top[axis] - axisVal) / subdivisions
                     for _subdivision in range(subdivisions):
@@ -1886,11 +1804,7 @@ class Core(composites.Composite):
         avgHeight = average1DWithinTolerance(
             np.array(
                 [
-                    [
-                        h
-                        for b in a
-                        for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh
-                    ]
+                    [h for b in a for h in [(b.p.ztop - b.p.zbottom) / b.p.axMesh] * b.p.axMesh]
                     for a in self
                     if self.findAllAxialMeshPoints([a]) == refMesh
                 ]
@@ -1919,8 +1833,9 @@ class Core(composites.Composite):
             if currentHeightCm >= heightCm:
                 return zi
         raise ValueError(
-            "The value {} cm is not within range of the reactor axial mesh with max {}"
-            "".format(heightCm, currentHeightCm)
+            "The value {} cm is not within range of the reactor axial mesh with max {}".format(
+                heightCm, currentHeightCm
+            )
         )
 
     def addMoreNodes(self, meshList):
@@ -1931,16 +1846,12 @@ class Core(composites.Composite):
             dP1 = meshList[i + 1] - innerMeshVal
 
             if dP0 / (dP0 + dP1) < ratio:
-                runLog.warning(
-                    "Mesh gap too small. Adjusting mesh to be more reasonable."
-                )
+                runLog.warning("Mesh gap too small. Adjusting mesh to be more reasonable.")
                 meshList.append(innerMeshVal + dP1 * ratio)
                 meshList.sort()
                 return meshList, False
             elif dP0 / (dP0 + dP1) > (1.0 - ratio):
-                runLog.warning(
-                    "Mesh gap too large. Adjusting mesh to be more reasonable."
-                )
+                runLog.warning("Mesh gap too large. Adjusting mesh to be more reasonable.")
                 meshList.append(meshList[i - 1] + dP0 * (1.0 - ratio))
                 meshList.sort()
                 return meshList, False
@@ -1982,18 +1893,14 @@ class Core(composites.Composite):
     def getMaxBlockParam(self, *args, **kwargs):
         """Get max param over blocks."""
         if "generationNum" in kwargs:
-            raise ValueError(
-                "Cannot getMaxBlockParam over anything but blocks. Prefer `getMaxParam`."
-            )
+            raise ValueError("Cannot getMaxBlockParam over anything but blocks. Prefer `getMaxParam`.")
         kwargs["generationNum"] = 2
         return self.getMaxParam(*args, **kwargs)
 
     def getTotalBlockParam(self, *args, **kwargs):
         """Get total param over blocks."""
         if "generationNum" in kwargs:
-            raise ValueError(
-                "Cannot getTotalBlockParam over anything but blocks. Prefer `calcTotalParam`."
-            )
+            raise ValueError("Cannot getTotalBlockParam over anything but blocks. Prefer `calcTotalParam`.")
         kwargs["generationNum"] = 2
         return self.calcTotalParam(*args, **kwargs)
 
@@ -2031,12 +1938,7 @@ class Core(composites.Composite):
             # compare to outer most ring
             # flatten list into one list of all blocks
             blocksInRing = list(
-                itertools.chain(
-                    *[
-                        a.getBlocks(Flags.FUEL)
-                        for a in self.getAssembliesInRing(ringNumber)
-                    ]
-                )
+                itertools.chain(*[a.getBlocks(Flags.FUEL) for a in self.getAssembliesInRing(ringNumber)])
             )
             # TODO: itertools.chain.from_iterable(...)
 
@@ -2049,10 +1951,7 @@ class Core(composites.Composite):
                 targetRing = ringNumber
 
             # this will only get the leakage if the target fraction isn't too low
-            if (
-                ringPower / totalPower < target
-                and ringPower / totalPower > fluxFraction
-            ):
+            if ringPower / totalPower < target and ringPower / totalPower > fluxFraction:
                 fluxFraction = ringPower / totalPower
                 targetRing = ringNumber
 
@@ -2060,7 +1959,7 @@ class Core(composites.Composite):
 
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
         """
-        get the volume-average fuel, cladding, coolant temperature in core.
+        Get the volume-average fuel, cladding, coolant temperature in core.
 
         Parameters
         ----------
@@ -2145,10 +2044,7 @@ class Core(composites.Composite):
         # add maxes based on pin-level max if it exists, block level max otherwise.
         # may want to use percentBuMax for pin-detailed cases.
         self.p.maxBuF = max(
-            (
-                a.getMaxParam("percentBu")
-                for a in self.getAssemblies(Flags.FEED | Flags.FUEL)
-            ),
+            (a.getMaxParam("percentBu") for a in self.getAssemblies(Flags.FEED | Flags.FUEL)),
             default=0.0,
         )
         self.p.maxBuI = max(
@@ -2209,9 +2105,7 @@ class Core(composites.Composite):
         updateAxialMesh : Perturbs the axial mesh originally set up here.
         """
         self.setOptionsFromCs(cs)
-        runLog.header(
-            "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
-        )
+        runLog.header("=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== ")
 
         for b in self.getBlocks():
             if b.p.molesHmBOL > 0.0:
@@ -2231,17 +2125,10 @@ class Core(composites.Composite):
             self.parent.blueprints._prepConstruction(cs)
         else:
             # set reactor level meshing params
-            nonUniformAssems = [
-                Flags.fromStringIgnoreErrors(t)
-                for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
-            ]
+            nonUniformAssems = [Flags.fromStringIgnoreErrors(t) for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]]
             # some assemblies, like control assemblies, have a non-conforming mesh
             # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
-            uniformAssems = [
-                a
-                for a in self.getAssemblies()
-                if not any(a.hasFlags(f) for f in nonUniformAssems)
-            ]
+            uniformAssems = [a for a in self.getAssemblies() if not any(a.hasFlags(f) for f in nonUniformAssems)]
             self.p.referenceBlockAxialMesh = self.findAllAxialMeshPoints(
                 assems=uniformAssems,
                 applySubMesh=False,
@@ -2267,9 +2154,7 @@ class Core(composites.Composite):
 
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
-        getPluginManagerOrFail().hook.onProcessCoreLoading(
-            core=self, cs=cs, dbLoad=dbLoad
-        )
+        getPluginManagerOrFail().hook.onProcessCoreLoading(core=self, cs=cs, dbLoad=dbLoad)
 
     def buildManualZones(self, cs):
         """
@@ -2296,9 +2181,7 @@ class Core(composites.Composite):
         not do any validation against a Core object to ensure those manual zones
         make sense.
         """
-        runLog.debug(
-            "Building Zones by manual definitions in `zoneDefinitions` setting"
-        )
+        runLog.debug("Building Zones by manual definitions in `zoneDefinitions` setting")
         stripper = lambda s: s.strip()
         self.zones = zones.Zones()
 

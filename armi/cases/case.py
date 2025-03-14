@@ -24,6 +24,7 @@ See Also
 --------
 armi.cases.suite : A collection of Cases
 """
+
 import ast
 import cProfile
 import glob
@@ -183,9 +184,7 @@ class Case:
         if self._caseSuite is not None:
             pm = getPluginManager()
             if pm is not None:
-                for pluginDependencies in pm.hook.defineCaseDependencies(
-                    case=self, suite=self._caseSuite
-                ):
+                for pluginDependencies in pm.hook.defineCaseDependencies(case=self, suite=self._caseSuite):
                     dependencies.update(pluginDependencies)
 
             # the ([^\/]) capture basically gets the file name portion and excludes any
@@ -213,10 +212,7 @@ class Case:
         with the other, implicitly discovered, dependencies.
         """
         if case in self._dependencies:
-            runLog.warning(
-                "The case {} is already explicity specified as a dependency of "
-                "{}".format(case, self)
-            )
+            runLog.warning("The case {} is already explicity specified as a dependency of {}".format(case, self))
         self._dependencies.add(case)
 
     def getPotentialParentFromSettingValue(self, settingValue, filePattern):
@@ -255,9 +251,7 @@ class Case:
             if os.path.normcase(case.title) != os.path.normcase(title):
                 return False
 
-            return os.path.normcase(
-                os.path.abspath(case.directory)
-            ) == os.path.normcase(os.path.abspath(dirName))
+            return os.path.normcase(os.path.abspath(case.directory)) == os.path.normcase(os.path.abspath(dirName))
 
         return {case for case in self._caseSuite if caseMatches(case)}
 
@@ -375,9 +369,7 @@ class Case:
         cov = None
         if self.cs["coverage"]:
             cov = coverage.Coverage(
-                config_file=Case._getCoverageRcFile(
-                    userCovFile=self.cs["coverageConfigFile"], makeCopy=True
-                ),
+                config_file=Case._getCoverageRcFile(userCovFile=self.cs["coverageConfigFile"], makeCopy=True),
                 debug=["dataio"],
             )
             if context.MPI_SIZE > 1:
@@ -415,9 +407,7 @@ class Case:
         if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
             # combine all the parallel coverage data files into one and make
             # the XML and HTML reports for the whole run.
-            combinedCoverage = coverage.Coverage(
-                config_file=Case._getCoverageRcFile(userCovFile), debug=["dataio"]
-            )
+            combinedCoverage = coverage.Coverage(config_file=Case._getCoverageRcFile(userCovFile), debug=["dataio"])
             combinedCoverage.config.parallel = True
             # combine does delete the files it merges
             combinedCoverage.combine()
@@ -494,11 +484,7 @@ class Case:
                 for rank, statsString in enumerate(allStats):
                     # using print statements because the logger has been turned off
                     print("=" * 100)
-                    print(
-                        "{:^100}".format(
-                            " Profiler statistics for RANK={} ".format(rank)
-                        )
-                    )
+                    print("{:^100}".format(" Profiler statistics for RANK={} ".format(rank)))
                     print(statsString)
                     print("=" * 100)
         else:
@@ -529,9 +515,7 @@ class Case:
         up-to-date by lots of modules).
         """
         if not self.cs["initializeBurnChain"]:
-            runLog.info(
-                "Skipping burn-chain initialization since `initializeBurnChain` setting is disabled."
-            )
+            runLog.info("Skipping burn-chain initialization since `initializeBurnChain` setting is disabled.")
             return
 
         if not os.path.exists(self.cs["burnChainFileName"]):
@@ -582,9 +566,7 @@ class Case:
                 queryData.append(
                     (
                         i,
-                        textwrap.fill(
-                            query.statement, width=50, break_long_words=False
-                        ),
+                        textwrap.fill(query.statement, width=50, break_long_words=False),
                         textwrap.fill(query.question, width=50, break_long_words=False),
                     )
                 )
@@ -648,9 +630,7 @@ class Case:
         if pathTools.armiAbsPath(clone.cs.path) == pathTools.armiAbsPath(self.cs.path):
             raise RuntimeError(
                 "The source file and destination file are the same: {}\n"
-                "Cannot use armi-clone to modify armi settings file.".format(
-                    pathTools.armiAbsPath(clone.cs.path)
-                )
+                "Cannot use armi-clone to modify armi settings file.".format(pathTools.armiAbsPath(clone.cs.path))
             )
 
         newSettings = copyInterfaceInputs(self.cs, clone.cs.inputDirectory)
@@ -672,21 +652,13 @@ class Case:
                     os.path.join(clone.cs.inputDirectory, fileName),
                 )
             else:
-                runLog.warning(
-                    "skipping {}, there is no file specified".format(inputFileSetting)
-                )
+                runLog.warning("skipping {}, there is no file specified".format(inputFileSetting))
 
         with open(self.cs[CONF_LOADING_FILE], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the
             # settings file
-            root = (
-                pathlib.Path(self.cs.inputDirectory)
-                / pathlib.Path(self.cs[CONF_LOADING_FILE]).parent
-            )
-            cloneRoot = (
-                pathlib.Path(clone.cs.inputDirectory)
-                / pathlib.Path(clone.cs[CONF_LOADING_FILE]).parent
-            )
+            root = pathlib.Path(self.cs.inputDirectory) / pathlib.Path(self.cs[CONF_LOADING_FILE]).parent
+            cloneRoot = pathlib.Path(clone.cs.inputDirectory) / pathlib.Path(clone.cs[CONF_LOADING_FILE]).parent
             for includePath, mark in textProcessors.findYamlInclusions(f, root=root):
                 if not includePath.is_absolute():
                     includeSrc = root / includePath
@@ -695,23 +667,15 @@ class Case:
                     # don't bother copying absolute files
                     continue
                 if not includeSrc.exists():
-                    raise OSError(
-                        "The input file file `{}` referenced at {} does not exist.".format(
-                            includeSrc, mark
-                        )
-                    )
+                    raise OSError("The input file file `{}` referenced at {} does not exist.".format(includeSrc, mark))
                 pathTools.copyOrWarn(
-                    "auxiliary input file `{}` referenced at {}".format(
-                        includeSrc, mark
-                    ),
+                    "auxiliary input file `{}` referenced at {}".format(includeSrc, mark),
                     includeSrc,
                     includeDest,
                 )
 
         for fileName in additionalFiles or []:
-            pathTools.copyOrWarn(
-                "additional file", fromPath(fileName), clone.cs.inputDirectory
-            )
+            pathTools.copyOrWarn("additional file", fromPath(fileName), clone.cs.inputDirectory)
 
         return clone
 
@@ -727,11 +691,7 @@ class Case:
 
         This is useful both for in-use testing and engineering analysis.
         """
-        runLog.info(
-            "Comparing the following databases:\n"
-            "REF: {}\n"
-            "SRC: {}".format(self.dbName, that.dbName)
-        )
+        runLog.info("Comparing the following databases:\nREF: {}\nSRC: {}".format(self.dbName, that.dbName))
         diffResults = compareDatabases(
             self.dbName,
             that.dbName,
@@ -742,18 +702,12 @@ class Case:
 
         code = 1 if diffResults is None else diffResults.nDiffs()
 
-        sameOrDifferent = (
-            "different"
-            if diffResults is None or diffResults.nDiffs() > 0
-            else "the same"
-        )
+        sameOrDifferent = "different" if diffResults is None or diffResults.nDiffs() > 0 else "the same"
         runLog.important("Cases are {}.".format(sameOrDifferent))
 
         return code
 
-    def writeInputs(
-        self, sourceDir: Optional[str] = None, writeStyle: Optional[str] = "short"
-    ):
+    def writeInputs(self, sourceDir: Optional[str] = None, writeStyle: Optional[str] = "short"):
         """
         Write the inputs to disk.
 
@@ -784,9 +738,7 @@ class Case:
             Similar to this but doesn't let you write out new/modified
             geometry or blueprints objects
         """
-        with ForcedCreationDirectoryChanger(
-            self.cs.inputDirectory, dumpOnException=False
-        ):
+        with ForcedCreationDirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
             self.bp
@@ -800,8 +752,7 @@ class Case:
 
             if self.independentVariables:
                 newSettings["independentVariables"] = [
-                    "({}, {})".format(repr(varName), repr(val))
-                    for varName, val in self.independentVariables.items()
+                    "({}, {})".format(repr(varName), repr(val)) for varName, val in self.independentVariables.items()
                 ]
 
             with open(newSettings[CONF_LOADING_FILE], "w") as loadingFile:
@@ -817,9 +768,7 @@ class Case:
                 fromPath = os.path.join(sourceDir, self.title + ".yaml")
             else:
                 fromPath = self.cs.path
-            self.cs.writeToYamlFile(
-                self.title + ".yaml", style=writeStyle, fromFile=fromPath
-            )
+            self.cs.writeToYamlFile(self.title + ".yaml", style=writeStyle, fromFile=fromPath)
 
 
 def _copyInputsHelper(
@@ -863,9 +812,7 @@ def _copyInputsHelper(
         return origFile
 
 
-def copyInterfaceInputs(
-    cs, destination: str, sourceDir: Optional[str] = None
-) -> Dict[str, Union[str, list]]:
+def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -> Dict[str, Union[str, list]]:
     """
     Ping active interfaces to determine which files are considered "input". This
     enables developers to add new inputs in a plugin-dependent/ modular way.
@@ -954,23 +901,16 @@ def copyInterfaceInputs(
                 # Attempt to construct an absolute file path
                 sourceFullPath = os.path.join(sourceDirPath, f)
                 if WILDCARD:
-                    globFilePaths = [
-                        pathlib.Path(os.path.join(sourceDirPath, g))
-                        for g in glob.glob(sourceFullPath)
-                    ]
+                    globFilePaths = [pathlib.Path(os.path.join(sourceDirPath, g)) for g in glob.glob(sourceFullPath)]
                     if len(globFilePaths) == 0:
                         destFilePath = f
                         newFiles.append(str(destFilePath))
                     else:
                         for gFile in globFilePaths:
-                            destFilePath = _copyInputsHelper(
-                                label, gFile, destination, f
-                            )
+                            destFilePath = _copyInputsHelper(label, gFile, destination, f)
                             newFiles.append(str(destFilePath))
                 else:
-                    destFilePath = _copyInputsHelper(
-                        label, sourceFullPath, destination, f
-                    )
+                    destFilePath = _copyInputsHelper(label, sourceFullPath, destination, f)
                     newFiles.append(str(destFilePath))
 
                 if destFilePath == f:

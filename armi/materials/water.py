@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Basic water material."""
+
 import math
 
 from armi.materials.material import Fluid
@@ -21,10 +22,7 @@ from armi.nucDirectory import thermalScattering as tsl
 from armi.utils import units
 from armi.utils.units import getTk
 
-_REF_SR1_86 = (
-    "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and "
-    "Steam"
-)
+_REF_SR1_86 = "IAPWS SR1-86 Revised Supplementary Release on Saturation Properties of Ordinary Water and Steam"
 
 
 class Water(Fluid):
@@ -58,9 +56,7 @@ class Water(Fluid):
     TEMPERATURE_CRITICAL_K = 647.096
 
     DENSITY_CRITICAL_KGPERCUBICMETER = 322.0
-    DENSITY_CRITICAL_GPERCUBICCENTIMETER = (
-        DENSITY_CRITICAL_KGPERCUBICMETER * units.G_PER_KG / units.CM3_PER_M3
-    )
+    DENSITY_CRITICAL_GPERCUBICCENTIMETER = DENSITY_CRITICAL_KGPERCUBICMETER * units.G_PER_KG / units.CM3_PER_M3
     VAPOR_PRESSURE_CRITICAL_MPA = 22.064
     VAPOR_PRESSURE_CRITICAL_PA = VAPOR_PRESSURE_CRITICAL_MPA * 1e6
     ALPHA_0 = 1000
@@ -133,24 +129,13 @@ class Water(Fluid):
         a5 = -15.9618719
         a6 = 1.80122502
 
-        sum_coefficients = (
-            a1 * tau
-            + a2 * tau**1.5
-            + a3 * tau**3
-            + a4 * tau**3.5
-            + a5 * tau**4
-            + a6 * tau**7.5
-        )
+        sum_coefficients = a1 * tau + a2 * tau**1.5 + a3 * tau**3 + a4 * tau**3.5 + a5 * tau**4 + a6 * tau**7.5
         log_vapor_pressure = T_ratio * sum_coefficients
-        vapor_pressure = self.VAPOR_PRESSURE_CRITICAL_PA * math.e ** (
-            log_vapor_pressure
-        )
+        vapor_pressure = self.VAPOR_PRESSURE_CRITICAL_PA * math.e ** (log_vapor_pressure)
         # past the supercritical point tau's raised to .5 cause complex #'s
         return vapor_pressure.real
 
-    def vaporPressurePrime(
-        self, Tk: float = None, Tc: float = None, dT: float = 1e-6
-    ) -> float:
+    def vaporPressurePrime(self, Tk: float = None, Tc: float = None, dT: float = 1e-6) -> float:
         """
         Approximation of derivative of vapor pressure wrt temperature.
 
@@ -171,9 +156,7 @@ class Water(Fluid):
         dp = self.vaporPressure(Tk=Thot) - self.vaporPressure(Tk=Tcold)
         return dp / dT
 
-    def auxiliaryQuantitySpecificEnthalpy(
-        self, Tk: float = None, Tc: float = None
-    ) -> float:
+    def auxiliaryQuantitySpecificEnthalpy(self, Tk: float = None, Tc: float = None) -> float:
         """
         Returns the auxiliary quantity for specific enthalpy.
 
@@ -213,9 +196,7 @@ class Water(Fluid):
         # past the supercritical point tau's raised to .5 cause complex #'s
         return normalized_alpha.real * self.ALPHA_0
 
-    def auxiliaryQuantitySpecificEntropy(
-        self, Tk: float = None, Tc: float = None
-    ) -> float:
+    def auxiliaryQuantitySpecificEntropy(self, Tk: float = None, Tc: float = None) -> float:
         """
         Returns the auxiliary quantity for specific entropy.
 
@@ -322,9 +303,7 @@ class Water(Fluid):
         -----
         In ARMI, we define pseudoDensity() and density() as the same for Fluids.
         """
-        raise NotImplementedError(
-            "Please use a concrete instance: SaturatedWater or SaturatedSteam."
-        )
+        raise NotImplementedError("Please use a concrete instance: SaturatedWater or SaturatedSteam.")
 
 
 class SaturatedWater(Water):
@@ -439,7 +418,4 @@ class SaturatedSteam(Water):
         )
 
         # past the supercritical point tau's raised to .5 cause complex #'s
-        return (
-            math.e**log_normalized_rho.real
-            * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER
-        )
+        return math.e**log_normalized_rho.real * self.DENSITY_CRITICAL_GPERCUBICCENTIMETER

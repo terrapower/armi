@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the basic triangle math."""
+
 import unittest
 
 from armi.utils import triangle
@@ -41,18 +42,14 @@ class TestTriangle(unittest.TestCase):
         yT3 = 1.0
         xP = 0.0
         yP = 0.0
-        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
 
         self.assertTrue(rightTriangleInOrOut)
 
         # now create a case that should evaluate False
         xP = 2.0
         yP = 0.5
-        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(rightTriangleInOrOut)
 
         # Now check non right triangle
@@ -65,25 +62,19 @@ class TestTriangle(unittest.TestCase):
         xP = 50.0
         yP = 50.0
 
-        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertTrue(generalTriangleInOrOut)
 
         # now check false case
         xP = 1.0
         yP = 60.0
-        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(generalTriangleInOrOut)
 
         # Check a case that should cause failure since only two triangle can be drawn
         xP = 0.0
         yP = 0.17
-        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(generalTriangleInOrOut)
 
     def test_checkIfPointIsInTriangle2(self):
@@ -97,9 +88,7 @@ class TestTriangle(unittest.TestCase):
         yT3 = 1.0
         xP = 0.5
         yP = 0.5
-        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertTrue(rightTriangleInOrOut)
 
         # Check a case that should cause failure for checkIfPointIsInTriangle since only two triangle can be drawn
@@ -111,17 +100,13 @@ class TestTriangle(unittest.TestCase):
         y3 = 0.376
         xP = 0.0
         yP = 0.17
-        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            x1, y1, x2, y2, x3, y3, xP, yP
-        )
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(x1, y1, x2, y2, x3, y3, xP, yP)
         self.assertTrue(generalTriangleInOrOut)
 
         # now create a case that should evaluate False
         xP = 2.0
         yP = 0.5
-        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        rightTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(rightTriangleInOrOut)
 
         # Now check non right triangle
@@ -134,15 +119,11 @@ class TestTriangle(unittest.TestCase):
         xP = 50.0
         yP = 50.0
 
-        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertTrue(generalTriangleInOrOut)
 
         # now check false case
         xP = 1.0
         yP = 60.0
-        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(
-            xT1, yT1, xT2, yT2, xT3, yT3, xP, yP
-        )
+        generalTriangleInOrOut = triangle.checkIfPointIsInTriangle(xT1, yT1, xT2, yT2, xT3, yT3, xP, yP)
         self.assertFalse(generalTriangleInOrOut)

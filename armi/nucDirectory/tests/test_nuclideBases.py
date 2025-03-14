@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for nuclideBases."""
+
 import math
 import os
 import random
@@ -45,24 +46,21 @@ class TestNuclide(unittest.TestCase):
         for zz in range(1, 102):
             nuclides = nuclideBases.isotopes(zz)
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
-            self.assertTrue(
-                len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz)
-            )
+            self.assertTrue(len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz))
             total = sum([nn.abundance for nn in nuclides if nn.a > 0])
             self.assertAlmostEqual(
                 any([nn.abundance > 0 for nn in nuclides]),
                 total,
                 delta=1e-4,
-                msg="Abundance ({}) not 1.0 for nuclideBases:\n  {}"
-                "".format(total, "\n  ".join(repr(nn) for nn in nuclides)),
+                msg="Abundance ({}) not 1.0 for nuclideBases:\n  {}".format(
+                    total, "\n  ".join(repr(nn) for nn in nuclides)
+                ),
             )
 
     def test_nucBases_AllLabelsAreUnique(self):
         labels = []
         for nn in nuclideBases.instances:
-            self.assertTrue(
-                nn.label not in labels, "Label already exists: {}".format(nn.label)
-            )
+            self.assertTrue(nn.label not in labels, "Label already exists: {}".format(nn.label))
             labels.append(nn.label)
 
     def test_nucBases_NegativeZRaisesException(self):
@@ -86,24 +84,18 @@ class TestNuclide(unittest.TestCase):
             "DUMP2",
             "LREGN",
         ]
-        for lump in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase)
-        ):
+        for lump in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase)):
             if lump.name in notElemental:
                 self.assertIsInstance(lump, nuclideBases.LumpNuclideBase)
             else:
                 self.assertIsInstance(lump, nuclideBases.NaturalNuclideBase)
 
     def test_LumpNucBaseGetNatIsotopDoesNotFail(self):
-        for nuc in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0
-        ):
+        for nuc in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0):
             self.assertEqual(0, len(list(nuc.getNaturalIsotopics())), nuc)
 
     def test_NaturalNuclideBase_getNatrualIsotpics(self):
-        for nuc in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
-        ):
+        for nuc in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)):
             numNaturals = len(list(nuc.getNaturalIsotopics()))
             self.assertGreaterEqual(len(nuc.element.nuclides) - 1, numNaturals)
 
@@ -121,9 +113,7 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(92, u235.z)
 
     def test_natNucStomicWgtIsAvgOfNatIsotopes(self):
-        for natNuk in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
-        ):
+        for natNuk in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)):
             atomicMass = 0.0
             for natIso in natNuk.getNaturalIsotopics():
                 atomicMass += natIso.abundance * natIso.weight
@@ -178,8 +168,7 @@ class TestNuclide(unittest.TestCase):
             self.assertAlmostEqual(
                 expected,
                 actual,
-                msg="{0} has {1} transmutation but the branches add up to {2}"
-                "".format(nuc, expected, actual),
+                msg="{0} has {1} transmutation but the branches add up to {2}".format(nuc, expected, actual),
                 delta=3e-4,
             )  # ternary fission
 
@@ -190,9 +179,7 @@ class TestNuclide(unittest.TestCase):
             :id: T_ARMI_ND_DATA0
             :tests: R_ARMI_ND_DATA
         """
-        actual = {
-            nn.name: nn.nuSF for nn in nuclideBases.where(lambda nn: nn.nuSF > 0.0)
-        }
+        actual = {nn.name: nn.nuSF for nn in nuclideBases.where(lambda nn: nn.nuSF > 0.0)}
         expected = {
             "CM248": 3.1610,
             "BK249": 3.4000,
@@ -261,9 +248,7 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            if isinstance(
-                nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)
-            ):
+            if isinstance(nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)):
                 self.assertFalse(nb.isHeavyMetal())
             else:
                 self.assertTrue(nb.isHeavyMetal())
@@ -351,10 +336,8 @@ class TestNuclide(unittest.TestCase):
             except ZeroDivisionError:
                 self.assertEqual(refDecayConstant, decayConstantNb)
             except AssertionError:
-                errorMessage = (
-                    "{} reference decay constant {} ARMI decay constant {}".format(
-                        nucName, refDecayConstant, decayConstantNb
-                    )
+                errorMessage = "{} reference decay constant {} ARMI decay constant {}".format(
+                    nucName, refDecayConstant, decayConstantNb
                 )
                 raise AssertionError(errorMessage)
 
@@ -391,9 +374,7 @@ class TestNuclide(unittest.TestCase):
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
-            expectedNuclides = set(
-                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None]
-            )
+            expectedNuclides = set([nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None])
 
         for nuc, nb in nuclideBases.byMcc2Id.items():
             self.assertIn(nb.name, expectedNuclides)
@@ -416,9 +397,7 @@ class TestNuclide(unittest.TestCase):
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
-            expectedNuclides = set(
-                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
-            )
+            expectedNuclides = set([nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None])
 
         for nuc, nb in nuclideBases.byMcc3IdEndfbVII0.items():
             self.assertIn(nb.name, expectedNuclides)
@@ -442,9 +421,7 @@ class TestNuclide(unittest.TestCase):
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
-            expectedNuclides = set(
-                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.1"] is not None]
-            )
+            expectedNuclides = set([nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.1"] is not None])
 
         for nuc, nb in nuclideBases.byMcc3IdEndfbVII1.items():
             self.assertIn(nb.name, expectedNuclides)

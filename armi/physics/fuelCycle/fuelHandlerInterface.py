@@ -96,9 +96,7 @@ class FuelHandlerInterface(interfaces.Interface):
             mc2.interactBOC(cycle=cycle)
 
         if self.enabled() and (
-            self.cs["loadStyle"] != "fromDB"
-            or self.cs["startNode"] == 0
-            or (self.cs["startCycle"] != cycle)
+            self.cs["loadStyle"] != "fromDB" or self.cs["startNode"] == 0 or (self.cs["startCycle"] != cycle)
         ):
             # in restart cases, only do this if restarting at BOC to avoid duplicating shuffles
             # the logic to accomplish this is a bit long because we don't pass the
@@ -108,9 +106,7 @@ class FuelHandlerInterface(interfaces.Interface):
 
     def interactEOC(self, cycle=None):
         if self.r.excore.get("sfp") is not None:
-            runLog.extra(
-                f"There are {len(self.r.excore['sfp'])} assemblies in the Spent Fuel Pool"
-            )
+            runLog.extra(f"There are {len(self.r.excore['sfp'])} assemblies in the Spent Fuel Pool")
 
     def interactEOL(self):
         """Make reports at EOL."""
@@ -165,14 +161,11 @@ class FuelHandlerInterface(interfaces.Interface):
                     assemblyType,
                     movingAssemName,
                 ) in movesThisCycle:
-                    enrichLine = " ".join(
-                        ["{0:.8f}".format(enrich) for enrich in chargeEnrich]
-                    )
+                    enrichLine = " ".join(["{0:.8f}".format(enrich) for enrich in chargeEnrich])
                     if fromLoc in ["ExCore", "SFP"]:
                         # this is a re-entering assembly. Give extra info so repeat shuffles can handle it
                         out.write(
-                            "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n"
-                            "".format(
+                            "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n".format(
                                 fromLoc,
                                 toLoc,
                                 assemblyType,
@@ -183,8 +176,9 @@ class FuelHandlerInterface(interfaces.Interface):
                     else:
                         # skip extra info. regular expression in readMoves will handle it just fine.
                         out.write(
-                            "{0} moved to {1} with assembly type {2} with enrich list: {3}\n"
-                            "".format(fromLoc, toLoc, assemblyType, enrichLine)
+                            "{0} moved to {1} with assembly type {2} with enrich list: {3}\n".format(
+                                fromLoc, toLoc, assemblyType, enrichLine
+                            )
                         )
             out.write("\n")
         out.close()

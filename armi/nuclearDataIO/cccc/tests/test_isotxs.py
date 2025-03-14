@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests the workings of the library wrappers."""
+
 import unittest
 
 from armi import nuclearDataIO
@@ -114,18 +115,12 @@ class TestIsotxs(unittest.TestCase):
             0.0,
             0.0,
         ]
-        for v1, v2 in zip(
-            refVector, self.lib.getScatterWeights()["U235AA", 1].todense().T.tolist()[0]
-        ):
+        for v1, v2 in zip(refVector, self.lib.getScatterWeights()["U235AA", 1].todense().T.tolist()[0]):
             self.assertAlmostEqual(v1, v2)
 
     def test_getNuclide(self):
-        self.assertEqual(
-            nuclideBases.byName["U235"], self.lib.getNuclide("U235", "AA")._base
-        )
-        self.assertEqual(
-            nuclideBases.byName["PU239"], self.lib.getNuclide("PU239", "AA")._base
-        )
+        self.assertEqual(nuclideBases.byName["U235"], self.lib.getNuclide("U235", "AA")._base)
+        self.assertEqual(nuclideBases.byName["PU239"], self.lib.getNuclide("PU239", "AA")._base)
 
     def test_n2nIsReactionBased(self):
         """
@@ -147,12 +142,8 @@ class TestIsotxs(unittest.TestCase):
     def test_getISOTXSFileName(self):
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=0), "ISOTXS-c0")
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=1), "ISOTXS-c1")
-        self.assertEqual(
-            nuclearDataIO.getExpectedISOTXSFileName(cycle=0, node=1), "ISOTXS-c0n1"
-        )
-        self.assertEqual(
-            nuclearDataIO.getExpectedISOTXSFileName(cycle=23), "ISOTXS-c23"
-        )
+        self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=0, node=1), "ISOTXS-c0n1")
+        self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(cycle=23), "ISOTXS-c23")
         self.assertEqual(nuclearDataIO.getExpectedISOTXSFileName(xsID="AA"), "ISOAA")
         self.assertEqual(
             nuclearDataIO.getExpectedISOTXSFileName(xsID="AA", suffix="test"),
@@ -164,22 +155,14 @@ class TestIsotxs(unittest.TestCase):
             nuclearDataIO.getExpectedISOTXSFileName(cycle=10, xsID="AA")
 
     def test_getGAMISOFileName(self):
-        self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=0), "cycle0.gamiso"
-        )
-        self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.gamiso"
-        )
+        self.assertEqual(nuclearDataIO.getExpectedGAMISOFileName(cycle=0), "cycle0.gamiso")
+        self.assertEqual(nuclearDataIO.getExpectedGAMISOFileName(cycle=1), "cycle1.gamiso")
         self.assertEqual(
             nuclearDataIO.getExpectedGAMISOFileName(cycle=1, node=3),
             "cycle1node3.gamiso",
         )
-        self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.gamiso"
-        )
-        self.assertEqual(
-            nuclearDataIO.getExpectedGAMISOFileName(xsID="AA"), "AA.gamiso"
-        )
+        self.assertEqual(nuclearDataIO.getExpectedGAMISOFileName(cycle=23), "cycle23.gamiso")
+        self.assertEqual(nuclearDataIO.getExpectedGAMISOFileName(xsID="AA"), "AA.gamiso")
         self.assertEqual(
             nuclearDataIO.getExpectedGAMISOFileName(xsID="AA", suffix="test"),
             "AA-test.gamiso",

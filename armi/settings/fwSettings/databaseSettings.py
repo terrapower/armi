@@ -60,8 +60,7 @@ def defineSettings():
             CONF_DB_STORAGE_AFTER_CYCLE,
             default=0,
             label="Database Storage After Cycle",
-            description="Only store cycles after this cycle in the database (to "
-            "save storage space)",
+            description="Only store cycles after this cycle in the database (to save storage space)",
             schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -76,8 +75,7 @@ def defineSettings():
             default=True,
             label="Sync Database After Write",
             description=(
-                "Copy the output database from the fast scratch space to the shared "
-                "network drive after each write."
+                "Copy the output database from the fast scratch space to the shared network drive after each write."
             ),
         ),
         setting.Setting(

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Data formats for reports."""
+
 import collections
 import copy
 import re
@@ -39,27 +40,17 @@ class Report:
     @property
     def _groupRenderOrder(self):
         """Helper method to the rendering methods on this class for rendering order of contained info."""
-        presentGroupsOrderFirst = [
-            group for group in self.groupsOrderFirst if group in self.groups
-        ]
+        presentGroupsOrderFirst = [group for group in self.groupsOrderFirst if group in self.groups]
         completeGroupOrder = presentGroupsOrderFirst + [
-            group
-            for group in self.groups.keys()
-            if group not in presentGroupsOrderFirst
+            group for group in self.groups.keys() if group not in presentGroupsOrderFirst
         ]
-        specialsRemovedOrder = [
-            group
-            for group in completeGroupOrder
-            if group not in self.componentWellGroups
-        ]
+        specialsRemovedOrder = [group for group in completeGroupOrder if group not in self.componentWellGroups]
         return specialsRemovedOrder
 
     def __str__(self):
         str_ = "\n{} - (REPORT) {}\n".format(self.title, self.description)
         for global_group in self.groups.values():
-            str_ += re.sub(
-                "\n", "\n\t", "{}".format(Group.__str__(global_group))
-            )  # Don't use subclassed methods
+            str_ += re.sub("\n", "\n\t", "{}".format(Group.__str__(global_group)))  # Don't use subclassed methods
         return str_
 
     def addToReport(self, group, name, value):
@@ -72,9 +63,7 @@ class Report:
         try:
             return self.groups[group]
         except KeyError:
-            runLog.warning(
-                "Cannot locate group {} in report {}".format(group.title, self.title)
-            )
+            runLog.warning("Cannot locate group {} in report {}".format(group.title, self.title))
             return None
 
     def writeHTML(self):
@@ -120,9 +109,7 @@ class Report:
                     rightCol.append(group)
                     rightNumImgs += len(group.data.keys())
             else:
-                raise NotImplementedError(
-                    "Please update this method for handling of new group classes."
-                )
+                raise NotImplementedError("Please update this method for handling of new group classes.")
 
         # write html columns and place content inside
         with html.Div(f, attrs={"class": "row"}):
@@ -134,9 +121,7 @@ class Report:
                     group.writeHTML(f)
 
         # specially gathered groups constructed into own subsection
-        presentComponentSpecials = [
-            group for group in self.componentWellGroups if group in self.groups
-        ]
+        presentComponentSpecials = [group for group in self.componentWellGroups if group in self.groups]
         if any(presentComponentSpecials):
             with html.Div(f, attrs={"class": "well"}):
                 for global_group in presentComponentSpecials:
@@ -171,9 +156,7 @@ class Group:
         try:
             return self.data[name]
         except KeyError:
-            runLog.warning(
-                "Given name {} not present in report group {}".format(name, self.title)
-            )
+            runLog.warning("Given name {} not present in report group {}".format(name, self.title))
 
         return None
 
@@ -256,7 +239,6 @@ class Table(Group):
 
 
 class Image(Group):
-
     count = 0
 
     def __init__(self, title, description=""):
@@ -264,9 +246,7 @@ class Image(Group):
         self._shortformTitle = title.replace(" ", "").lower()
 
     def writeHTML(self, f):
-
         if len(self.data.keys()) == 1:
-
             # single images don't get the standard Header as the same information is moved to it's Figure Caption
             with html.Img(
                 f,
@@ -284,7 +264,6 @@ class Image(Group):
                     f.writeEscaped(self.description)
 
         elif len(self.data.keys()) > 1:
-
             with html.H4(f, attrs={"style": self.titleStyle}):
                 f.writeEscaped(self.title)
                 with html.Span(f, attrs={"style": self.descStyle}):
@@ -311,9 +290,7 @@ class Image(Group):
                 first = True
                 for i, (name, filepath) in enumerate(self.data.items()):
                     pane_attrs = {}
-                    pane_attrs["class"] = (
-                        "tab-pane fade active in" if first else "tab-pane fade"
-                    )
+                    pane_attrs["class"] = "tab-pane fade active in" if first else "tab-pane fade"
                     pane_attrs["id"] = "{}{}".format(self._shortformTitle, i)
                     first = False
 
@@ -327,16 +304,10 @@ class Image(Group):
                                 "padding-top": "15px",
                             },
                         ):
-                            with html.Div(
-                                f, attrs={"class": "alert alert-dismissible alert-info"}
-                            ):
+                            with html.Div(f, attrs={"class": "alert alert-dismissible alert-info"}):
                                 with html.B(f):
-                                    f.writeEscaped(
-                                        "Figure {} - {}".format(Image.count, name)
-                                    )
+                                    f.writeEscaped("Figure {} - {}".format(Image.count, name))
                                 f.writeEscaped(filepath)
 
         else:
-            runLog.warning(
-                "Empty Image group {} has nothing to report to HTML".format(self.title)
-            )
+            runLog.warning("Empty Image group {} has nothing to report to HTML".format(self.title))

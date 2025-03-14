@@ -230,9 +230,7 @@ class _GridControls(wx.Panel):
     """Collection of controls for the main Grid editor. Save/Open, num rings, etc."""
 
     def __init__(self, parent):
-        wx.Panel.__init__(
-            self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize
-        )
+        wx.Panel.__init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition, size=wx.DefaultSize)
 
         self.parent = parent
 
@@ -250,9 +248,7 @@ class _GridControls(wx.Panel):
         self.labelMode = wx.Choice(
             self,
             id=wx.ID_ANY,
-            choices=[
-                mode.label for mode in GridGui.Mode if mode is not GridGui.Mode.PATH
-            ],
+            choices=[mode.label for mode in GridGui.Mode if mode is not GridGui.Mode.PATH],
         )
         self.labelMode.SetSelection(int(GridGui.Mode.SPECIFIER))
         self.labelMode.SetToolTip("Select what to display in each grid region.")
@@ -261,8 +257,7 @@ class _GridControls(wx.Panel):
         self.saveButton.SetToolTip("Save just the grids section to its own file. ")
         self.openButton = wx.Button(self, id=wx.ID_ANY, label="Open blueprints...")
         self.openButton.SetToolTip(
-            "Open a new top-level blueprints file. Top-level is "
-            "needed to populate the assembly palette on the right."
+            "Open a new top-level blueprints file. Top-level is needed to populate the assembly palette on the right."
         )
         self.newButton = wx.Button(self, id=wx.ID_ANY, label="New grid blueprints...")
         self.newButton.SetToolTip("Create a new Grid blueptint.")
@@ -282,9 +277,7 @@ class _GridControls(wx.Panel):
         self.help = HelpDialog(self)
 
         ringBox = wx.BoxSizer(wx.VERTICAL)
-        ringLabel = wx.StaticText(
-            self, wx.ID_ANY, "Num. Rings", style=wx.ALIGN_CENTRE_HORIZONTAL
-        )
+        ringLabel = wx.StaticText(self, wx.ID_ANY, "Num. Rings", style=wx.ALIGN_CENTRE_HORIZONTAL)
         ringBox.Add(ringLabel, 1, wx.EXPAND)
         ringBox.Add(self.ringControl, 1, wx.EXPAND)
         ringBox.Add(self.ringApply, 1, wx.EXPAND)
@@ -409,9 +402,7 @@ class _PathControl(wx.Panel):
         return path, index
 
     def maybeIncrement(self):
-        self._needsIncrement = (
-            self.autoIncrement.GetValue() and self.activateButton.GetValue()
-        )
+        self._needsIncrement = self.autoIncrement.GetValue() and self.activateButton.GetValue()
 
 
 class _AssemblyPalette(wx.ScrolledWindow):
@@ -427,9 +418,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
         assemDesigns=None,
         viewer=None,
     ):
-        wx.ScrolledWindow.__init__(
-            self, parent, wx.ID_ANY, (0, 0), size=(250, 150), style=wx.SUNKEN_BORDER
-        )
+        wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY, (0, 0), size=(250, 150), style=wx.SUNKEN_BORDER)
 
         self.parent = parent
         self.geomType = geomType
@@ -439,9 +428,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
         # None -> None is useful for propagating a None to other components without
         # special branching
-        self.assemDesignsById: Dict[Optional[int], Optional[AssemblyBlueprint]] = {
-            None: None
-        }
+        self.assemDesignsById: Dict[Optional[int], Optional[AssemblyBlueprint]] = {None: None}
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(
@@ -510,9 +497,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
             self.assemDesignsById[button.GetId()] = design
 
-        sizer.Add(
-            wx.StaticText(self, wx.ID_ANY, "Equilibrium Fuel Path:"), 0, wx.ALIGN_CENTRE
-        )
+        sizer.Add(wx.StaticText(self, wx.ID_ANY, "Equilibrium Fuel Path:"), 0, wx.ALIGN_CENTRE)
 
         self.pathControl = _PathControl(self, viewer)
         sizer.Add(self.pathControl)
@@ -557,8 +542,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
         mode = (
             GridGui.Mode.PATH
-            if event.GetId() in self.pathControl.getActivateButtons()
-            and setTo is not None
+            if event.GetId() in self.pathControl.getActivateButtons() and setTo is not None
             else GridGui.Mode.SPECIFIER
         )
 
@@ -670,18 +654,12 @@ class GridGui(wx.ScrolledWindow):
             not provided, a dictionary will be created with an empty "core" grid
             blueprint.
         """
-        wx.ScrolledWindow.__init__(
-            self, parent, wx.ID_ANY, (0, 0), size=(250, 150), style=wx.BORDER_DEFAULT
-        )
+        wx.ScrolledWindow.__init__(self, parent, wx.ID_ANY, (0, 0), size=(250, 150), style=wx.BORDER_DEFAULT)
 
         self.parent = parent
 
         if bp is None:
-            bp = {
-                "core": GridBlueprint(
-                    name="core", gridContents=dict(), geom=defaultGeom
-                )
-            }
+            bp = {"core": GridBlueprint(name="core", gridContents=dict(), geom=defaultGeom)}
 
         self.bp = bp
         self.coreBp = bp["core"]
@@ -697,9 +675,7 @@ class GridGui(wx.ScrolledWindow):
 
         grid = self.coreBp.construct()
         if self.coreBp.gridContents:
-            maxRings = max(
-                grid.getRingPos(idx)[0] for idx in self.coreBp.gridContents.keys()
-            )
+            maxRings = max(grid.getRingPos(idx)[0] for idx in self.coreBp.gridContents.keys())
             self.numRings = max(7, maxRings)
 
         # Need to assign this after setting numRings, since we need a grid to
@@ -755,10 +731,7 @@ class GridGui(wx.ScrolledWindow):
         self._idxByRing = [list() for _ in range(self.numRings)]
         for idx, loc in self._grid.items():
             ring, _pos = self._grid.getRingPos(idx)
-            if (
-                not self._grid.locatorInDomain(loc, symmetryOverlap=False)
-                or ring > self.numRings
-            ):
+            if not self._grid.locatorInDomain(loc, symmetryOverlap=False) or ring > self.numRings:
                 continue
             self._idxByRing[ring - 1].append(idx)
 
@@ -833,10 +806,7 @@ class GridGui(wx.ScrolledWindow):
             return objs[0]
 
         # list of tuples with (distance, ID)
-        sortableObjectIds = [
-            (_distanceish(wx.RealPoint(x, y), self.pdcIdToCenter[obj]), obj)
-            for obj in objs
-        ]
+        sortableObjectIds = [(_distanceish(wx.RealPoint(x, y), self.pdcIdToCenter[obj]), obj) for obj in objs]
 
         return min(sortableObjectIds)[1]
 
@@ -863,9 +833,7 @@ class GridGui(wx.ScrolledWindow):
         )
 
         # uniform grid, so all shapes have the same scale
-        model = np.array(
-            [[gridScale[0], 0.0, 0.0], [0.0, gridScale[1], 0.0], [0.0, 0.0, 1.0]]
-        )
+        model = np.array([[gridScale[0], 0.0, 0.0], [0.0, gridScale[1], 0.0], [0.0, 0.0, 1.0]])
         self.transform = flip_y.dot(scale)
         rect = self._calcGridBounds()
         self.SetVirtualSize((rect.Width, rect.Height))
@@ -919,11 +887,7 @@ class GridGui(wx.ScrolledWindow):
         thisPath = self.parent.getSelectedPath()
 
         stuffInPath = sorted(
-            [
-                (index, idx)
-                for idx, (path, index) in self.eqFuelPathBp.gridContents.items()
-                if path == thisPath
-            ]
+            [(index, idx) for idx, (path, index) in self.eqFuelPathBp.gridContents.items() if path == thisPath]
         )
         touchedIndices = {entry[0] for entry in stuffInPath}
         indexGraph = {index: list() for index in touchedIndices}
@@ -1019,11 +983,7 @@ class GridGui(wx.ScrolledWindow):
                 ]
             grid = grids.CartesianGrid.fromRectangle(*rectangle, numRings=self.numRings)
         else:
-            raise ValueError(
-                "Only support Hex and Cartesian grids, not {}".format(
-                    self.grid.geomType
-                )
-            )
+            raise ValueError("Only support Hex and Cartesian grids, not {}".format(self.grid.geomType))
 
         grid.symmetry = self.grid.symmetry
         grid.geomType = self.grid.geomType
@@ -1081,21 +1041,13 @@ class GridGui(wx.ScrolledWindow):
 
     def onSelectAssembly(self, event):
         specifier = self.coreBp.gridContents.get(self.clickIndices[0:2], None)
-        aDesign = (
-            self.parent.getAssemDesignBySpecifier(specifier)
-            if specifier is not None
-            else None
-        )
+        aDesign = self.parent.getAssemDesignBySpecifier(specifier) if specifier is not None else None
         self.parent.setActiveAssem(aDesign)
 
     def onFillRing(self, event):
         ring, _ = self.grid.getRingPos(self.clickIndices)
         specifier = self.coreBp.gridContents.get(self.clickIndices[0:2], None)
-        aDesign = (
-            self.parent.getAssemDesignBySpecifier(specifier)
-            if specifier is not None
-            else None
-        )
+        aDesign = self.parent.getAssemDesignBySpecifier(specifier) if specifier is not None else None
         for idx in self._idxByRing[ring - 1]:
             self.applyAssem(self.indicesToPdcId[idx], aDesign)
 
@@ -1104,9 +1056,7 @@ class GridGui(wx.ScrolledWindow):
         for idx in self._idxByRing[ring - 1]:
             self.applyAssem(self.indicesToPdcId[idx], None)
 
-    def applyAssem(
-        self, pdcId, value: Optional[Union[AssemblyBlueprint, Tuple[int, int]]]
-    ):
+    def applyAssem(self, pdcId, value: Optional[Union[AssemblyBlueprint, Tuple[int, int]]]):
         """
         Apply the passed assembly design or equilibrium path indices for the desired
         object and redraw it.
@@ -1116,9 +1066,7 @@ class GridGui(wx.ScrolledWindow):
 
         # uniform grid, so all shapes have the same scale
         gridScale = self._gridScale(self.grid)
-        model = np.array(
-            [[gridScale[0], 0.0, 0.0], [0.0, gridScale[1], 0.0], [0.0, 0.0, 1.0]]
-        )
+        model = np.array([[gridScale[0], 0.0, 0.0], [0.0, gridScale[1], 0.0], [0.0, 0.0, 1.0]])
 
         idx = tuple(self.pdcIdToIndices[pdcId])
         idx2 = idx[0:2]
@@ -1182,8 +1130,7 @@ class GridGui(wx.ScrolledWindow):
         inDomain = {
             idx: loc
             for idx, loc in self.grid.items()
-            if self.grid.locatorInDomain(loc)
-            and self.grid.getRingPos(loc)[0] <= self.numRings
+            if self.grid.locatorInDomain(loc) and self.grid.getRingPos(loc)[0] <= self.numRings
         }
 
         _ = self._gridScale(self.grid)
@@ -1288,9 +1235,7 @@ class GridBlueprintControl(wx.Panel):
     def setActiveAssem(self, aDesign):
         self.assemblyPalette.setActiveAssem(aDesign)
         self.clicker.mode = (
-            GridGui.Mode.SPECIFIER
-            if isinstance(aDesign, (AssemblyBlueprint, type(None)))
-            else GridGui.Mode.PATH
+            GridGui.Mode.SPECIFIER if isinstance(aDesign, (AssemblyBlueprint, type(None))) else GridGui.Mode.PATH
         )
 
     def setMode(self, mode: GridGui.Mode):
@@ -1398,11 +1343,7 @@ class GridBlueprintControl(wx.Panel):
             return
 
         # Disallow overwriting the main blueprints with the grids section
-        if (
-            not full
-            and pathlib.Path(path).exists()
-            and pathlib.Path(path).samefile(self._fName)
-        ):
+        if not full and pathlib.Path(path).exists() and pathlib.Path(path).samefile(self._fName):
             message = (
                 "The chosen path, `{}` is the same as the main blueprints "
                 'file. This tool only saves the "grids" section of the '
@@ -1465,9 +1406,7 @@ class GridBlueprintControl(wx.Panel):
         self._fName = fName
         self._cs = cs
         with open(fName, "r") as bpYaml:
-            bpYaml = textProcessors.resolveMarkupInclusions(
-                bpYaml, root=pathlib.Path(fName).parent
-            )
+            bpYaml = textProcessors.resolveMarkupInclusions(bpYaml, root=pathlib.Path(fName).parent)
             bp = Blueprints.load(bpYaml)
             if bp.gridDesigns is None or "core" not in bp.gridDesigns:
                 cs = self._cs or self._promptForCs()
@@ -1485,9 +1424,7 @@ class GridBlueprintControl(wx.Panel):
             if design.specifier == specifier:
                 return design
 
-        raise KeyError(
-            "Could not find an Assembly design with specifier `{}`".format(specifier)
-        )
+        raise KeyError("Could not find an Assembly design with specifier `{}`".format(specifier))
 
     def getAssemToSet(self):
         return self.assemblyPalette.getAssemToSet()
@@ -1596,12 +1533,7 @@ class NewGridBlueprintDialog(wx.Dialog):
 
     # these provide stable mappings from the wx.Choice control indices to the respective
     # geom types
-    _geomFromIdx = {
-        i: geomType
-        for i, geomType in enumerate(
-            {geometry.GeomType.CARTESIAN, geometry.GeomType.HEX}
-        )
-    }
+    _geomFromIdx = {i: geomType for i, geomType in enumerate({geometry.GeomType.CARTESIAN, geometry.GeomType.HEX})}
     _idxFromGeom = {geomType: i for i, geomType in _geomFromIdx.items()}
 
     def __init__(self, parent):
@@ -1622,12 +1554,8 @@ class NewGridBlueprintDialog(wx.Dialog):
         self.Bind(wx.EVT_CHOICE, self.onSelectGeomType, self.geomType)
 
         # Domain controls
-        self.throughCenter = wx.CheckBox(
-            self, id=wx.ID_ANY, label="Through Center Assembly"
-        )
-        self.domainFull = wx.RadioButton(
-            self, id=wx.ID_ANY, label="Full Core", style=wx.RB_GROUP
-        )
+        self.throughCenter = wx.CheckBox(self, id=wx.ID_ANY, label="Through Center Assembly")
+        self.domainFull = wx.RadioButton(self, id=wx.ID_ANY, label="Full Core", style=wx.RB_GROUP)
         self.domain3 = wx.RadioButton(self, id=wx.ID_ANY, label="1/3 Core")
         self.domain4 = wx.RadioButton(self, id=wx.ID_ANY, label="1/4 Core")
 
@@ -1640,9 +1568,7 @@ class NewGridBlueprintDialog(wx.Dialog):
         self.Bind(wx.EVT_RADIOBUTTON, self.onDomainChange)
 
         # Symmetry controls
-        self.symmetryFull = wx.RadioButton(
-            self, id=wx.ID_ANY, style=wx.RB_GROUP, label="Full"
-        )
+        self.symmetryFull = wx.RadioButton(self, id=wx.ID_ANY, style=wx.RB_GROUP, label="Full")
         self.periodic = wx.RadioButton(self, id=wx.ID_ANY, label="Periodic")
         self.reflective = wx.RadioButton(self, id=wx.ID_ANY, label="Reflective")
 

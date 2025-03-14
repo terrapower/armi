@@ -18,6 +18,7 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
+
 import collections
 import copy
 import functools
@@ -235,24 +236,14 @@ class Block(composites.Composite):
 
         circles = self.getComponentsOfShape(components.Circle)
         if not circles:
-            raise ValueError(
-                "Cannot get smear density of {}. There are no circular components.".format(
-                    self
-                )
-            )
+            raise ValueError("Cannot get smear density of {}. There are no circular components.".format(self))
         clads = set(self.getComponents(Flags.CLAD)).intersection(set(circles))
         if not clads:
-            raise ValueError(
-                "Cannot get smear density of {}. There are no clad components.".format(
-                    self
-                )
-            )
+            raise ValueError("Cannot get smear density of {}. There are no clad components.".format(self))
 
         # Compute component areas
         cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
-        innerCladdingArea = (
-            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
-        )
+        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
         negativeArea = 0.0
@@ -340,9 +331,7 @@ class Block(composites.Composite):
         -------
         flux : multigroup neutron flux in [n/cm^2/s]
         """
-        flux = composites.ArmiObject.getMgFlux(
-            self, adjoint=adjoint, average=False, volume=volume, gamma=gamma
-        )
+        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, volume=volume, gamma=gamma)
         if average and np.any(self.p.lastMgFlux):
             volume = volume or self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
@@ -406,8 +395,9 @@ class Block(composites.Composite):
         env = self.p.envGroup
         if not env:
             raise RuntimeError(
-                "Cannot get MicroXS suffix because {0} in {1} does not have a environment(env) group"
-                "".format(self, self.parent)
+                "Cannot get MicroXS suffix because {0} in {1} does not have a environment(env) group".format(
+                    self, self.parent
+                )
             )
 
         xsType = self.p.xsType
@@ -415,9 +405,7 @@ class Block(composites.Composite):
             return xsType + env
         elif len(xsType) == 2 and ord(env) != ord("A"):
             # default is "A" so if we got an off default 2 char, there is no way to resolve.
-            raise ValueError(
-                "Use of non-default env groups is not allowed with multi-character xs groups!"
-            )
+            raise ValueError("Use of non-default env groups is not allowed with multi-character xs groups!")
         else:
             # ignore env group, multi Char XS type to support assigning 2 chars in blueprints
             return xsType
@@ -464,19 +452,13 @@ class Block(composites.Composite):
         """
         originalHeight = self.getHeight()  # get before modifying
         if modifiedHeight < 0.0:
-            raise ValueError(
-                "Cannot set height of block {} to height of {} cm".format(
-                    self, modifiedHeight
-                )
-            )
+            raise ValueError("Cannot set height of block {} to height of {} cm".format(self, modifiedHeight))
         self.p.height = modifiedHeight
         self.clearCache()
         if conserveMass:
             if originalHeight != modifiedHeight:
                 if not adjustList:
-                    raise ValueError(
-                        "Nuclides in ``adjustList`` must be provided to conserve mass."
-                    )
+                    raise ValueError("Nuclides in ``adjustList`` must be provided to conserve mass.")
                 self.adjustDensity(originalHeight / modifiedHeight, adjustList)
         if self.parent:
             self.parent.calculateZCoords()
@@ -554,9 +536,7 @@ class Block(composites.Composite):
             block axial index from the bottom of the core.
         """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
-            return self.core.spatialGrid.getLabel(
-                self.spatialLocator.getCompleteIndices()
-            )
+            return self.core.spatialGrid.getLabel(self.spatialLocator.getCompleteIndices())
         else:
             return "ExCore"
 
@@ -581,9 +561,7 @@ class Block(composites.Composite):
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
         else:
-            timeLimit = (
-                self.p.buLimit - self.p.percentBu
-            ) / self.p.buRate + self.p.residence
+            timeLimit = (self.p.buLimit - self.p.percentBu) / self.p.buRate + self.p.residence
             self.p.timeToLimit = (timeLimit - self.p.residence) / units.DAYS_PER_YEAR
 
     def getMaxArea(self):
@@ -669,7 +647,7 @@ class Block(composites.Composite):
 
     def adjustDensity(self, frac, adjustList, returnMass=False):
         """
-        adjusts the total density of each nuclide in adjustList by frac.
+        Adjusts the total density of each nuclide in adjustList by frac.
 
         Parameters
         ----------
@@ -765,9 +743,7 @@ class Block(composites.Composite):
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
         self.p.molesHmBOL = self.getHMMoles()
-        self.p.puFrac = (
-            self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
-        )
+        self.p.puFrac = self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
 
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
@@ -785,11 +761,7 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
-                child.p.puFrac = (
-                    self.getPuMoles() / child.p.molesHmBOL
-                    if child.p.molesHmBOL > 0.0
-                    else 0.0
-                )
+                child.p.puFrac = self.getPuMoles() / child.p.molesHmBOL if child.p.molesHmBOL > 0.0 else 0.0
 
         self.p.massHmBOL = massHmBOL
 
@@ -825,8 +797,7 @@ class Block(composites.Composite):
             )
         if self.isFuel():
             runLog.warning(
-                f"{self.name} has both fuel and initial b10. "
-                "b10 volume may not be conserved with axial expansion.",
+                f"{self.name} has both fuel and initial b10. b10 volume may not be conserved with axial expansion.",
                 single=True,
             )
 
@@ -842,9 +813,7 @@ class Block(composites.Composite):
 
         Typically used in the insertion of control rods.
         """
-        paramsToSkip = set(
-            self.p.paramDefs.inCategory(parameters.Category.retainOnReplacement).names
-        )
+        paramsToSkip = set(self.p.paramDefs.inCategory(parameters.Category.retainOnReplacement).names)
 
         tempBlock = copy.deepcopy(bReplacement)
         oldParams = self.p
@@ -1056,11 +1025,7 @@ class Block(composites.Composite):
         nPins = [
             sum(
                 [
-                    (
-                        int(c.getDimension("mult"))
-                        if isinstance(c, basicShapes.Circle)
-                        else 0
-                    )
+                    (int(c.getDimension("mult")) if isinstance(c, basicShapes.Circle) else 0)
                     for c in self.iterComponents(compType)
                 ]
             )
@@ -1127,9 +1092,7 @@ class Block(composites.Composite):
             return tFrac
         else:
             runLog.warning(
-                "No component {0} exists on {1}, so area fraction is zero.".format(
-                    typeSpec, self
-                ),
+                "No component {0} exists on {1}, so area fraction is zero.".format(typeSpec, self),
                 single=True,
                 label="{0} areaFrac is zero".format(typeSpec),
             )
@@ -1165,9 +1128,7 @@ class Block(composites.Composite):
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
 
-        raise ValueError(
-            "Cannot get Dimension because Flag not found: {0}".format(typeSpec)
-        )
+        raise ValueError("Cannot get Dimension because Flag not found: {0}".format(typeSpec))
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
@@ -1194,11 +1155,7 @@ class Block(composites.Composite):
         # This assumes that anything with the GAP flag will have a valid 'id' dimension. If that
         # were not the case, then we would need to protect the call to getDimension with a
         # try/except
-        cIsCenterGapGap = (
-            isinstance(c, components.Component)
-            and c.hasFlags(Flags.GAP)
-            and c.getDimension("id") == 0
-        )
+        cIsCenterGapGap = isinstance(c, components.Component) and c.hasFlags(Flags.GAP) and c.getDimension("id") == 0
         return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
     def getPitch(self, returnComp=False):
@@ -1542,10 +1499,7 @@ class Block(composites.Composite):
         totalEnergyGenConstant: np.ndarray
             Total (fission + capture) energy generation group constants (Joules/cm)
         """
-        return (
-            self.getFissionEnergyGenerationConstants()
-            + self.getCaptureEnergyGenerationConstants()
-        )
+        return self.getFissionEnergyGenerationConstants() + self.getCaptureEnergyGenerationConstants()
 
     def getFissionEnergyGenerationConstants(self):
         """
@@ -1566,8 +1520,7 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
+                "Cannot compute energy generation group constants without a library. Please ensure a library exists."
             )
 
         return xsCollections.computeFissionEnergyGenerationConstants(
@@ -1593,8 +1546,7 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
+                "Cannot compute energy generation group constants without a library. Please ensure a library exists."
             )
 
         return xsCollections.computeCaptureEnergyGenerationConstants(
@@ -1641,8 +1593,7 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot get gamma energy deposition group constants without "
-                "a library. Please ensure a library exists."
+                "Cannot get gamma energy deposition group constants without a library. Please ensure a library exists."
             )
 
         return xsCollections.computeGammaEnergyDepositionConstants(
@@ -1683,9 +1634,7 @@ class Block(composites.Composite):
             when creating blocks from scratch in testing where the entire composite
             tree may not exist.
         """
-        ancestorWithBp = self.getAncestor(
-            lambda o: getattr(o, "blueprints", None) is not None
-        )
+        ancestorWithBp = self.getAncestor(lambda o: getattr(o, "blueprints", None) is not None)
         if ancestorWithBp is not None:
             bp = ancestorWithBp.blueprints
             assemDesign = bp.assemDesigns[self.parent.getType()]
@@ -1822,12 +1771,8 @@ class HexBlock(Block):
                     )
                     pinComponent.setType("pin", Flags.CLAD)
                     pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
-                    if isinstance(
-                        pinComponent.spatialLocator, grids.MultiIndexLocation
-                    ):
-                        for i1, i2 in zip(
-                            list(pinComponent.spatialLocator), list(clad.spatialLocator)
-                        ):
+                    if isinstance(pinComponent.spatialLocator, grids.MultiIndexLocation):
+                        for i1, i2 in zip(list(pinComponent.spatialLocator), list(clad.spatialLocator)):
                             i1.associate(i2.grid)
                     pinComponent.setDimension("mult", clad.getDimension("mult"))
                     b.add(pinComponent)
@@ -1892,8 +1837,7 @@ class HexBlock(Block):
         numPins = self.getNumPins()
         if not numPins or numPins != len(powers):
             raise ValueError(
-                f"Invalid power data for {self} with {numPins} pins."
-                f" Got {len(powers)} entries in powers: {powers}"
+                f"Invalid power data for {self} with {numPins} pins. Got {len(powers)} entries in powers: {powers}"
             )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
@@ -1916,10 +1860,7 @@ class HexBlock(Block):
         if powerKeySuffix:
             if powerKeySuffix == GAMMA:
                 if self.p[f"linPowByPin{NEUTRON}"] is None:
-                    msg = (
-                        "Neutron power has not been set yet. Cannot set total power for "
-                        f"{self}."
-                    )
+                    msg = f"Neutron power has not been set yet. Cannot set total power for {self}."
                     raise UnboundLocalError(msg)
                 self.p.linPowByPin = self.p[f"linPowByPin{NEUTRON}"] + self.p[powerKey]
             else:
@@ -1956,9 +1897,7 @@ class HexBlock(Block):
         if self.spatialGrid is None:
             return
 
-        locationRotator = functools.partial(
-            self.spatialGrid.rotateIndex, rotations=rotNum
-        )
+        locationRotator = functools.partial(self.spatialGrid.rotateIndex, rotations=rotNum)
         rotationMatrix = np.array(
             [
                 [math.cos(radians), -math.sin(radians)],
@@ -1973,9 +1912,7 @@ class HexBlock(Block):
             elif isinstance(c.spatialLocator, grids.CoordinateLocation):
                 oldCoords = c.spatialLocator.getLocalCoordinates()
                 newXY = rotationMatrix.dot(oldCoords[:2])
-                newLocation = grids.CoordinateLocation(
-                    newXY[0], newXY[1], oldCoords[2], self.spatialGrid
-                )
+                newLocation = grids.CoordinateLocation(newXY[0], newXY[1], oldCoords[2], self.spatialGrid)
                 c.spatialLocator = newLocation
             elif isinstance(c.spatialLocator, grids.IndexLocation):
                 c.spatialLocator = locationRotator(c.spatialLocator)
@@ -2042,20 +1979,15 @@ class HexBlock(Block):
         except ValueError:
             # there are probably more that one clad/wire, so we really dont know what this block looks like
             runLog.info(
-                "Block design {} is too complicated to verify dimensions. Make sure they "
-                "are correct!".format(self)
+                "Block design {} is too complicated to verify dimensions. Make sure they are correct!".format(self)
             )
             return
         # check wire wrap in contact with clad
-        if (
-            self.getComponent(Flags.CLAD) is not None
-            and self.getComponent(Flags.WIRE) is not None
-        ):
+        if self.getComponent(Flags.CLAD) is not None and self.getComponent(Flags.WIRE) is not None:
             wwCladGap = self.getWireWrapCladGap(cold=True)
             if round(wwCladGap, 6) != 0.0:
                 runLog.warning(
-                    "The gap between wire wrap and clad in block {} was {} cm. Expected 0.0."
-                    "".format(self, wwCladGap),
+                    "The gap between wire wrap and clad in block {} was {} cm. Expected 0.0.".format(self, wwCladGap),
                     single=True,
                 )
         # check clad duct overlap
@@ -2064,9 +1996,7 @@ class HexBlock(Block):
         # gaps
         if pinToDuctGap is not None and pinToDuctGap < -0.005:
             raise ValueError(
-                "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(
-                    pinToDuctGap, self
-                )
+                "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(pinToDuctGap, self)
             )
         elif pinToDuctGap is None:
             # only produce a warning if pin or clad are found, but not all of pin, clad and duct. We
@@ -2075,10 +2005,7 @@ class HexBlock(Block):
             if (cladComp is not None or wireComp is not None) and any(
                 [c is None for c in (wireComp, cladComp, ductComp)]
             ):
-                runLog.warning(
-                    "Some component was missing in {} so pin-to-duct gap not calculated"
-                    "".format(self)
-                )
+                runLog.warning("Some component was missing in {} so pin-to-duct gap not calculated".format(self))
 
     def getPinToDuctGap(self, cold=False):
         """
@@ -2116,9 +2043,7 @@ class HexBlock(Block):
         # see thermal hydraulic design basis for description of equation
         pinCenterFlatToFlat = self.getPinCenterFlatToFlat(cold=cold)
         pinOuterFlatToFlat = (
-            pinCenterFlatToFlat
-            + clad.getDimension("od", cold=cold)
-            + 2.0 * wire.getDimension("od", cold=cold)
+            pinCenterFlatToFlat + clad.getDimension("od", cold=cold) + 2.0 * wire.getDimension("od", cold=cold)
         )
         ductMarginToContact = duct.getDimension("ip", cold=cold) - pinOuterFlatToFlat
         pinToDuctGap = ductMarginToContact / 2.0
@@ -2127,9 +2052,7 @@ class HexBlock(Block):
 
     def getRotationNum(self) -> int:
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
-        return (
-            np.rint(self.p.orientation[2] / 360.0 * 6) % 6
-        )  # assume rotation only in Z
+        return np.rint(self.p.orientation[2] / 360.0 * 6) % 6  # assume rotation only in Z
 
     def setRotationNum(self, rotNum: int):
         """
@@ -2157,10 +2080,7 @@ class HexBlock(Block):
             symmetry = self.parent.spatialLocator.grid.symmetry
         except Exception:
             return 1.0
-        if (
-            symmetry.domain == geometry.DomainType.THIRD_CORE
-            and symmetry.boundary == geometry.BoundaryType.PERIODIC
-        ):
+        if symmetry.domain == geometry.DomainType.THIRD_CORE and symmetry.boundary == geometry.BoundaryType.PERIODIC:
             indices = self.spatialLocator.getCompleteIndices()
             if indices[0] == 0 and indices[1] == 0:
                 # central location
@@ -2270,9 +2190,7 @@ class HexBlock(Block):
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
-        return (self.getComponent(Flags.CLAD) is not None) and (
-            self.getComponent(Flags.WIRE) is not None
-        )
+        return (self.getComponent(Flags.CLAD) is not None) and (self.getComponent(Flags.WIRE) is not None)
 
     def getPinPitch(self, cold=False):
         """
@@ -2296,20 +2214,13 @@ class HexBlock(Block):
             wire = self.getComponent(Flags.WIRE)
         except ValueError:
             raise ValueError(
-                "Block {} has multiple clad and wire components,"
-                " so pin pitch is not well-defined.".format(self)
+                "Block {} has multiple clad and wire components, so pin pitch is not well-defined.".format(self)
             )
 
         if wire and clad:
-            return clad.getDimension("od", cold=cold) + wire.getDimension(
-                "od", cold=cold
-            )
+            return clad.getDimension("od", cold=cold) + wire.getDimension("od", cold=cold)
         else:
-            raise ValueError(
-                "Cannot get pin pitch in {} because it does not have a wire and a clad".format(
-                    self
-                )
-            )
+            raise ValueError("Cannot get pin pitch in {} because it does not have a wire and a clad".format(self))
 
     def getWettedPerimeter(self):
         """Return the total wetted perimeter of the block in cm."""
@@ -2364,9 +2275,7 @@ class HexBlock(Block):
         # hollow hexagon = 6 * ip / sqrt(3)
         wettedHollowHexagonPerimeter = 0.0
         for c in wettedHollowHexagonComponents:
-            wettedHollowHexagonPerimeter += (
-                6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
-            )
+            wettedHollowHexagonPerimeter += 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
 
         # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
@@ -2376,9 +2285,7 @@ class HexBlock(Block):
                 # account for the helical wire wrap
                 correctionFactor = np.hypot(
                     1.0,
-                    math.pi
-                    * c.getDimension("helixDiameter")
-                    / c.getDimension("axialPitch"),
+                    math.pi * c.getDimension("helixDiameter") / c.getDimension("axialPitch"),
                 )
             wettedPinPerimeter += c.getDimension("od") * correctionFactor
         wettedPinPerimeter *= self.getNumPins() * math.pi
@@ -2386,24 +2293,17 @@ class HexBlock(Block):
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
         for c in wettedHollowCircleComponents:
-            wettedHollowCirclePerimeter += (
-                c.getDimension("id") + c.getDimension("od") if c else 0.0
-            )
+            wettedHollowCirclePerimeter += c.getDimension("id") + c.getDimension("od") if c else 0.0
         wettedHollowCirclePerimeter *= math.pi
 
         # hollow hexagon = 6 * (ip + op) / sqrt(3)
         wettedHollowHexPerimeter = 0.0
         for c in wettedHollowHexComponents:
-            wettedHollowHexPerimeter += (
-                c.getDimension("ip") + c.getDimension("op") if c else 0.0
-            )
+            wettedHollowHexPerimeter += c.getDimension("ip") + c.getDimension("op") if c else 0.0
         wettedHollowHexPerimeter *= 6 / math.sqrt(3)
 
         return (
-            wettedHollowHexagonPerimeter
-            + wettedPinPerimeter
-            + wettedHollowCirclePerimeter
-            + wettedHollowHexPerimeter
+            wettedHollowHexagonPerimeter + wettedPinPerimeter + wettedHollowCirclePerimeter + wettedHollowHexPerimeter
         )
 
     def getFlowArea(self):
@@ -2432,9 +2332,7 @@ class CartesianBlock(Block):
         return xw * yw
 
     def setPitch(self, val, updateBolParams=False):
-        raise NotImplementedError(
-            "Directly setting the pitch of a cartesian block is currently not supported."
-        )
+        raise NotImplementedError("Directly setting the pitch of a cartesian block is currently not supported.")
 
     def getSymmetryFactor(self):
         """
@@ -2465,9 +2363,7 @@ class ThRZBlock(Block):
 
     def getMaxArea(self):
         """Return the area of the Theta-R-Z block if it was totally full."""
-        raise NotImplementedError(
-            "Cannot get max area of a TRZ block. Fully specify your geometry."
-        )
+        raise NotImplementedError("Cannot get max area of a TRZ block. Fully specify your geometry.")
 
     def radialInner(self):
         """Return a smallest radius of all the components."""

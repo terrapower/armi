@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module for testing componentBlueprint."""
+
 import inspect
 import unittest
 
@@ -22,7 +23,6 @@ from armi.reactor.flags import Flags
 
 
 class TestComponentBlueprint(unittest.TestCase):
-
     componentString = r"""
 blocks:
     block: &block
@@ -58,8 +58,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlagsFuelWithBurn
-            + self.componentString.format(material="UZr", isotopics="", flags="")
+            nuclideFlagsFuelWithBurn + self.componentString.format(material="UZr", isotopics="", flags="")
         )
         cs = settings.Settings()
         with self.assertRaises(ValueError):
@@ -88,10 +87,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: B4C", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: B4C", flags="")
         )
         cs = settings.Settings()
         _ = bp.constructAssem(cs, "assembly")
@@ -119,10 +115,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: B4C", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: B4C", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -143,10 +136,7 @@ assemblies:
 
         # repeat the process with some flags set explicitly
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: B4C", flags="fuel test"
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: B4C", flags="fuel test")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -206,10 +196,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: AM", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: AM", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -296,10 +283,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: Thorium", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: Thorium", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -322,10 +306,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: Thorium", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: Thorium", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")

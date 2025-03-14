@@ -17,6 +17,7 @@ outside the reactor core.
 The idea here is that all ex-core objects will be represented first as a spatial grid, and then
 arbitrary ArmiObjects can be added to that grid.
 """
+
 import copy
 
 from armi.reactor.composites import Composite
@@ -59,9 +60,7 @@ class ExcoreStructure(Composite):
             loc = obj.spatialLocator
 
         if loc.grid is not self.spatialGrid:
-            raise ValueError(
-                f"An Composite cannot be added to {self} using a spatial locator from another grid."
-            )
+            raise ValueError(f"An Composite cannot be added to {self} using a spatial locator from another grid.")
 
         # If an assembly is added and it has a negative ID, that is a placeholder, fix it.
         if "assemNum" in obj.p and obj.p.assemNum < 0:

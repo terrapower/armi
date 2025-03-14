@@ -18,6 +18,7 @@ Module containing global constants that reflect the executing context of ARMI.
 ARMI's global state information: operating system information, environment data, user data, memory
 parallelism, temporary storage locations, and if operational mode (interactive, gui, or batch).
 """
+
 import datetime
 import enum
 import gc
@@ -225,8 +226,7 @@ def cleanTempDirs(olderThanDays=None):
             for outputStream in (sys.stderr, sys.stdout):
                 if printMsg:
                     print(
-                        "Failed to delete temporary files in: {}\n"
-                        "    error: {}".format(_FAST_PATH, error),
+                        "Failed to delete temporary files in: {}\n    error: {}".format(_FAST_PATH, error),
                         file=outputStream,
                     )
 

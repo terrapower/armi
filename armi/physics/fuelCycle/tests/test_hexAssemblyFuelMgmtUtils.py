@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests some fuel handling tools, specific to hex-assembly reactors."""
+
 from armi.physics.fuelCycle import hexAssemblyFuelMgmtUtils as hexUtils
 from armi.tests import ArmiTestHelper
 from armi.utils import directoryChangers
@@ -65,8 +66,6 @@ class TestHexAssemMgmtTools(ArmiTestHelper):
             schedule, widths = hexUtils.buildRingSchedule(9, 1, 17, jumpRingFrom=0)
 
         # test 4: Mid way jumping
-        schedule, widths = hexUtils.buildRingSchedule(
-            9, 1, 9, jumpRingTo=6, jumpRingFrom=3
-        )
+        schedule, widths = hexUtils.buildRingSchedule(9, 1, 9, jumpRingTo=6, jumpRingFrom=3)
         self.assertEqual(schedule, [9, 8, 7, 4, 5, 6, 3, 2, 1])
         self.assertEqual(widths, zeroWidths)

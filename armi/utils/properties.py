@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module contains methods for adding properties with custom behaviors to classes."""
+
 import numpy as np
 
 
@@ -20,9 +21,7 @@ def areEqual(val1, val2, relativeTolerance=0.0):
     hackEqual = numpyHackForEqual(val1, val2)
     if hackEqual or not relativeTolerance:  # takes care of dictionaries and strings.
         return hackEqual
-    return np.allclose(
-        val1, val2, rtol=relativeTolerance, atol=0.0
-    )  # does not work for dictionaries or strings
+    return np.allclose(val1, val2, rtol=relativeTolerance, atol=0.0)  # does not work for dictionaries or strings
 
 
 def numpyHackForEqual(val1, val2):
@@ -96,9 +95,7 @@ def createImmutableProperty(name, dependencyAction, doc):
             if getattr(self, "-unlocked", False):
                 return None
             raise ImmutablePropertyError(
-                "Attribute {} on {} has not been set, must read {} file first.".format(
-                    name, self, dependencyAction
-                )
+                "Attribute {} on {} has not been set, must read {} file first.".format(name, self, dependencyAction)
             )
 
     def _setter(self, value):
@@ -110,9 +107,7 @@ def createImmutableProperty(name, dependencyAction, doc):
                 raise ImmutablePropertyError(
                     "{} on {} has already been set by reading {} file.\n"
                     "The original value:           ({})\n"
-                    "does not match the new value: ({}).".format(
-                        name, self, dependencyAction, currentVal, value
-                    )
+                    "does not match the new value: ({}).".format(name, self, dependencyAction, currentVal, value)
                 )
         else:
             setattr(self, privateName, value)
