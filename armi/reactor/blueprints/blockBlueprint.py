@@ -15,19 +15,19 @@
 """This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 import collections
 from inspect import signature
-from typing import Iterable, Set, Iterator
+from typing import Iterable, Iterator, Set
 
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
-from armi.reactor import blocks
-from armi.reactor import parameters
+from armi.reactor import blocks, parameters
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.components.component import Component
 from armi.reactor.composites import Composite
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 def _configureGeomOptions():
@@ -144,7 +144,11 @@ class BlockBlueprint(yamlize.KeyedList):
             filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
-            c = componentDesign.construct(blueprint, filteredMaterialInput)
+            c = componentDesign.construct(
+                blueprint,
+                filteredMaterialInput,
+                cs[CONF_INPUT_HEIGHTS_HOT],
+            )
             components[c.name] = c
 
             # check that the mat mods for this component are valid options

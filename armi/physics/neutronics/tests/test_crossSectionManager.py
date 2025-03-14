@@ -19,11 +19,11 @@ Test the cross section manager.
 """
 import copy
 import os
+import pickle
+import sys
 import unittest
 from io import BytesIO
 from unittest.mock import MagicMock
-
-from six.moves import cPickle
 
 from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
@@ -73,9 +73,9 @@ class TestBlockCollection(unittest.TestCase):
     def test_is_pickleable(self):
         self.bc.weightingParam = "test"
         buf = BytesIO()
-        cPickle.dump(self.bc, buf)
+        pickle.dump(self.bc, buf)
         buf.seek(0)
-        newBc = cPickle.load(buf)
+        newBc = pickle.load(buf)
         self.assertEqual(self.bc.weightingParam, newBc.weightingParam)
 
 
@@ -85,6 +85,7 @@ class TestBlockCollectionMedian(unittest.TestCase):
         for bi, b in enumerate(self.blockList):
             b.setType("fuel")
             b.p.percentBu = bi / 4.0 * 100
+
         self.blockList[0], self.blockList[2] = self.blockList[2], self.blockList[0]
         self.bc = MedianBlockCollection(
             self.blockList[0].core.r.blueprints.allNuclidesInProblem
@@ -868,6 +869,19 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("C", xsType2)
         self.assertEqual("D", xsType3)
 
+        # verify that we can get lowercase letters
+        xsTypes = self.csm.getNextAvailableXsTypes(27)
+        self.assertEqual("Y", xsTypes[-4])
+        self.assertEqual("a", xsTypes[-3])
+        self.assertEqual("b", xsTypes[-2])
+        self.assertEqual("c", xsTypes[-1])
+
+        # verify that we can get lowercase letters
+        if sys.platform.startswith("win"):
+            with mockRunLogs.BufferLog() as mock:
+                xsTypes = self.csm.getNextAvailableXsTypes(27)
+                self.assertIn("Mixing upper and lower-case XS", mock.getStdout())
+
     def test_getRepresentativeBlocks(self):
         """Test that we can create the representative blocks for a reactor.
 
@@ -973,7 +987,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
                 continue
             self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
 
-    def test_createRepresentativeBlocksUsingExistingBlocks(self):
+    def test_createRepBlocksUsingExistingBlocks(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block.
@@ -985,7 +999,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         """
         self._createRepresentativeBlocksUsingExistingBlocks(["fuel"])
 
-    def test_createRepresentativeBlocksUsingExistingBlocksDisableValidBlockTypes(self):
+    def test_createRepBlocksFromDisableValidBlockTypes(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.

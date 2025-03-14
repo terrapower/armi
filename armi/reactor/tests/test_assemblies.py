@@ -21,31 +21,30 @@ import unittest
 import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings
-from armi import tests
+from armi import settings, tests
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import components
-from armi.reactor import geometry
-from armi.reactor import parameters
-from armi.reactor import reactors
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    components,
+    geometry,
+    parameters,
+    reactors,
+)
 from armi.reactor.assemblies import (
-    copy,
     Flags,
-    grids,
     HexAssembly,
+    copy,
+    grids,
     runLog,
 )
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-
+from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 
@@ -204,7 +203,6 @@ class Assembly_TestCase(unittest.TestCase):
         )
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
-        self.r.core.add(self.assembly)
 
         # Use these if they are needed
         self.blockParams = {
@@ -221,7 +219,7 @@ class Assembly_TestCase(unittest.TestCase):
             "residence": 4.0,
             "smearDensity": 0.6996721711791459,
             "timeToLimit": 2.7e5,
-            "xsTypeNum": 40,
+            "xsTypeNum": 65,
             "zbottom": 97.3521,
             "ztop": 111.80279999999999,
         }
@@ -267,6 +265,7 @@ class Assembly_TestCase(unittest.TestCase):
             self.assembly.add(b)
             self.blockList.append(b)
 
+        self.r.core.add(self.assembly)
         self.assembly.calculateZCoords()
 
     def test_isOnWhichSymmetryLine(self):
@@ -345,6 +344,35 @@ class Assembly_TestCase(unittest.TestCase):
         cur = self.assembly.spatialLocator
         self.assertEqual(cur, ref)
 
+    def test_scaleParamsWhenMoved(self):
+        """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
+        blockParams = {
+            # volume integrated parameters
+            "massHmBOL": 9.0,
+            "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
+            "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
+            "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
+        }
+        for b in self.assembly.getBlocks(Flags.FUEL):
+            b.p.update(blockParams)
+
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
+        locator = self.r.core.spatialGrid[i, j, 0]
+        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+        self.assembly.moveTo(locator)
+        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+        for b in self.assembly.getBlocks(Flags.FUEL):
+            # float
+            assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
+            # np.ndarray
+            assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
+            # list
+            assert_allclose(
+                np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3
+            )
+            # string
+            self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
+
     def test_getName(self):
         cur = self.assembly.getName()
         ref = self.name
@@ -368,12 +396,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
-        """Tests area calculation for hex assembly.
-
-        .. test:: Assembly area is retrievable.
-            :id: T_ARMI_ASSEM_DIMS0
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests area calculation for hex assembly."""
         # Default case: for assemblies with no blocks
         a = HexAssembly("TestAssem", assemNum=10)
         self.assertEqual(a.getArea(), 1)
@@ -384,12 +407,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getVolume(self):
-        """Tests volume calculation for hex assembly.
-
-        .. test:: Assembly volume is retrievable.
-            :id: T_ARMI_ASSEM_DIMS1
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests volume calculation for hex assembly."""
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
@@ -453,14 +471,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHeight(self):
-        """
-        Test height of assembly calculation.
-
-        .. test:: Assembly height is retrievable.
-            :id: T_ARMI_ASSEM_DIMS2
-            :tests: R_ARMI_ASSEM_DIMS
-
-        """
+        """Test height of assembly calculation."""
         cur = self.assembly.getHeight()
         ref = self.height * NUM_BLOCKS
         places = 6
@@ -748,9 +759,9 @@ class Assembly_TestCase(unittest.TestCase):
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
             for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = (
-                    val * i
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                if key != "xsTypeNum":  # must keep valid
+                    b.p[key] = self.blockParamsTemp[key] = val * i
 
             b.setHeight(self.height)
             b.setType("fuel")
@@ -839,12 +850,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_getDim(self):
-        """Tests dimensions are retrievable.
-
-        .. test:: Assembly dimensions are retrievable.
-            :id: T_ARMI_ASSEM_DIMS3
-            :tests: R_ARMI_ASSEM_DIMS
-        """
+        """Tests dimensions are retrievable."""
         # quick test, if there are no blocks
         a = HexAssembly("TestAssem", assemNum=10)
         self.assertIsNone(a.getDim(Flags.FUEL, "op"))
@@ -1015,7 +1021,7 @@ class Assembly_TestCase(unittest.TestCase):
         """Test rotation of an assembly spatial objects.
 
         .. test:: An assembly can be rotated about its z-axis.
-            :id: T_ARMI_ROTATE_HEX
+            :id: T_ARMI_ROTATE_HEX_ASSEM
             :tests: R_ARMI_ROTATE_HEX
         """
         a = makeTestAssembly(1, 1)
@@ -1130,7 +1136,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockIgniter(self):
+    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1246,7 +1252,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
+    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 

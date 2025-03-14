@@ -12,22 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import ABC, abstractmethod
-from enum import Enum
-from enum import auto
-from operator import itemgetter
-from typing import Union, Dict
 import base64
 import collections
 import copy
 import os
-import shutil
+from abc import ABC, abstractmethod
+from enum import Enum, auto
+from operator import itemgetter
+from typing import Dict, Union
 
 import htmltree
 import matplotlib.pyplot as plt
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
+from armi.utils import safeCopy
 
 
 class ReportContent:
@@ -86,14 +84,14 @@ class ReportContent:
         doc = htmltree.Html(head, body)
 
         # Copy css file to the correct folder containing the reportContent.html
-        shutil.copy(
+        safeCopy(
             os.path.abspath(
                 os.path.join(os.path.abspath(__file__), os.pardir, "styles.css")
             ),
             "styles.css",
         )
 
-        shutil.copy(
+        safeCopy(
             os.path.abspath(
                 os.path.join(os.path.abspath(__file__), os.pardir, "report.js")
             ),

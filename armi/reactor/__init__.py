@@ -16,47 +16,16 @@ r"""
 The reactor package houses the data model used in ARMI to represent the reactor during its
 simulation. It contains definitions of the reactor, assemblies, blocks, components, etc.
 
-The key classes of the reactor package are shown below:
-
-.. _reactor-class-diagram:
-
-.. pyreverse:: armi.reactor -A -k --ignore=
-               assemblyParameters.py,
-               basicShapes.py,
-               blockParameters.py,
-               blueprints,
-               complexShapes.py,
-               componentParameters.py,
-               converters,
-               excoreStructure.py,
-               flags.py,
-               geometry.py,
-               grids.py,
-               parameters,
-               plugins.py,
-               reactorParameters.py,
-               shapes.py,
-               spentFuelPool.py,
-               tests,
-               volumetricShapes.py,
-               zones.py
-    :align: center
-    :alt: Reactor class diagram
-    :width: 90%
-
-    Class inheritance diagram for :py:mod:`armi.reactor`.
-
 See :doc:`/developer/index`.
 """
 
-from typing import Dict, Callable, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Dict, Union
 
-from armi import materials
-from armi import plugins
+from armi import materials, plugins
 
 if TYPE_CHECKING:
-    from armi.reactor.reactors import Core
     from armi.reactor.excoreStructure import ExcoreStructure
+    from armi.reactor.reactors import Core
     from armi.reactor.spentFuelPool import SpentFuelPool
 
 
@@ -79,9 +48,9 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineBlockTypes():
-        from armi.reactor.components.basicShapes import Rectangle, Hexagon
-        from armi.reactor.components.volumetricShapes import RadialSegment
         from armi.reactor import blocks
+        from armi.reactor.components.basicShapes import Hexagon, Rectangle
+        from armi.reactor.components.volumetricShapes import RadialSegment
 
         return [
             (Rectangle, blocks.CartesianBlock),
@@ -92,8 +61,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from armi.reactor.blocks import HexBlock, CartesianBlock, ThRZBlock
-        from armi.reactor.assemblies import HexAssembly, CartesianAssembly, ThRZAssembly
+        from armi.reactor.assemblies import CartesianAssembly, HexAssembly, ThRZAssembly
+        from armi.reactor.blocks import CartesianBlock, HexBlock, ThRZBlock
 
         return [
             (HexBlock, HexAssembly),
@@ -106,9 +75,9 @@ class ReactorPlugin(plugins.ArmiPlugin):
     def defineSystemBuilders() -> Dict[
         str, Callable[[str], Union["Core", "ExcoreStructure", "SpentFuelPool"]]
     ]:
-        from armi.reactor.spentFuelPool import SpentFuelPool
         from armi.reactor.excoreStructure import ExcoreStructure
         from armi.reactor.reactors import Core
+        from armi.reactor.spentFuelPool import SpentFuelPool
 
         return {
             "core": Core,

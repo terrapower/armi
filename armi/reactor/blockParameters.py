@@ -13,8 +13,6 @@
 # limitations under the License.
 
 """Parameter definitions for Blocks."""
-import six
-
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
@@ -82,36 +80,12 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "molesHmBOL",
-            units=f"{units.MOLES}",
-            description="Total number of atoms of heavy metal at BOL assuming a full assembly",
-        )
-
-        pb.defParam(
-            "massHmBOL",
-            units=units.GRAMS,
-            description="Mass of heavy metal at BOL",
-        )
-
-        pb.defParam(
-            "initialB10ComponentVol",
-            units=f"{units.CM}^3",
-            description="cc's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
-        )
-
-        pb.defParam(
             "molesHmBOLByPin",
             units=f"{units.MOLES}",
             description="Total number of atoms of heavy metal at BOL",
             default=None,
             saveToDB=False,
             location=ParamLocation.CHILDREN,
-        )
-
-        pb.defParam(
-            "molesHmNow",
-            units=f"{units.MOLES}",
-            description="Total number of atoms of heavy metal",
         )
 
         pb.defParam(
@@ -152,13 +126,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "percentBuMin",
-            units=units.PERCENT_FIMA,
-            description="Minimum percentage of the initial heavy metal atoms that have been fissioned",
-            location=ParamLocation.MAX,
-        )
-
-        pb.defParam(
             "residence",
             units=units.DAYS,
             description=(
@@ -166,6 +133,37 @@ def getBlockParameterDefinitions():
                 "of full power generated in that time."
             ),
             categories=["cumulative"],
+        )
+
+    with pDefs.createBuilder(
+        default=0.0, location=ParamLocation.VOLUME_INTEGRATED, categories=["depletion"]
+    ) as pb:
+
+        pb.defParam(
+            "molesHmNow",
+            units=f"{units.MOLES}",
+            description="Total number of atoms of heavy metal",
+        )
+
+        pb.defParam(
+            "molesHmBOL",
+            units=f"{units.MOLES}",
+            description="Total number of atoms of heavy metal at BOL.",
+        )
+
+        pb.defParam(
+            "massHmBOL",
+            units=units.GRAMS,
+            description="Mass of heavy metal at BOL",
+        )
+
+        pb.defParam(
+            "initialB10ComponentVol",
+            units=f"{units.CM}^3",
+            description=(
+                "cc's of un-irradiated, cold B10 containing component "
+                "(includes full volume of any components with B10)"
+            ),
         )
 
     pDefs.add(
@@ -207,7 +205,7 @@ def getBlockParameterDefinitions():
                 )
                 self.envGroupNum = intValue
                 return
-            elif not isinstance(envGroupChar, six.string_types):
+            elif not isinstance(envGroupChar, str):
                 raise Exception(
                     f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}"
                 )

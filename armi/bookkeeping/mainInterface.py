@@ -22,17 +22,14 @@ import itertools
 import os
 import re
 
-from armi import context
-from armi import interfaces
-from armi import operators
-from armi import runLog
-from armi import utils
+from armi import context, interfaces, operators, runLog, utils
 from armi.bookkeeping.db.database import Database
-from armi.settings.fwSettings.globalSettings import CONF_COPY_FILES_FROM
-from armi.settings.fwSettings.globalSettings import CONF_COPY_FILES_TO
+from armi.settings.fwSettings.globalSettings import (
+    CONF_COPY_FILES_FROM,
+    CONF_COPY_FILES_TO,
+)
 from armi.utils import pathTools
 from armi.utils.customExceptions import InputError
-
 
 ORDER = interfaces.STACK_ORDER.PREPROCESSING
 

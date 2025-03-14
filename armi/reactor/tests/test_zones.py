@@ -18,13 +18,15 @@ import os
 import unittest
 
 from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor import zones
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    geometry,
+    grids,
+    reactors,
+    zones,
+)
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 
@@ -187,7 +189,7 @@ class TestZone(unittest.TestCase):
         # loop once to prove looping works
         for aLoc in zone:
             self.assertIn(aLoc, zone.locs)
-            self.assertTrue(aLoc in zone)  # Tests Zone.__contains__()
+            self.assertTrue(aLoc in zone)  # test Zone.__contains__()
 
 
 class TestZones(unittest.TestCase):
@@ -211,8 +213,8 @@ class TestZones(unittest.TestCase):
         Test creating and interacting with the Zones object.
 
         .. test:: Create collection of Zones.
-            :id: T_ARMI_ZONES
-            :tests: R_ARMI_ZONES
+            :id: T_ARMI_ZONE4
+            :tests: R_ARMI_ZONE
         """
         zs = zones.Zones()
 

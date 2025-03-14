@@ -19,19 +19,21 @@ from typing import Optional
 
 import yamlize
 
-from armi import context
-from armi import getApp
-from armi import getPluginManagerOrFail
-from armi import interfaces
-from armi import plugins
-from armi import settings
-from armi import utils
-from armi.bookkeeping.db.passiveDBLoadPlugin import PassiveDBLoadPlugin
+from armi import (
+    context,
+    getApp,
+    getPluginManagerOrFail,
+    interfaces,
+    plugins,
+    settings,
+    utils,
+)
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
+from armi.testing import loadTestReactor
+from armi.tests import TEST_ROOT
 
 
 class PluginFlags1(plugins.ArmiPlugin):
@@ -128,35 +130,8 @@ class TestPluginRegistration(unittest.TestCase):
         # Registering a plugin that implements the hook means we get that plugin's axial expander
         self.assertIs(second, SillyAxialExpansionChanger)
 
-    def test_passiveDBLoadPlugin(self):
-        plug = PassiveDBLoadPlugin()
-
-        # default case
-        bpSections = plug.defineBlueprintsSections()
-        self.assertEqual(len(bpSections), 0)
-        params = plug.defineParameters()
-        self.assertEqual(len(params), 0)
-
-        # non-empty cases
-        PassiveDBLoadPlugin.SKIP_BP_SECTIONS = ["hi", "mom"]
-        PassiveDBLoadPlugin.UNKNOWN_PARAMS = {Block: ["fake1", "fake2"]}
-        bpSections = plug.defineBlueprintsSections()
-        self.assertEqual(len(bpSections), 2)
-        self.assertTrue(type(bpSections[0]), tuple)
-        self.assertEqual(bpSections[0][0], "hi")
-        self.assertTrue(type(bpSections[1]), tuple)
-        self.assertEqual(bpSections[1][0], "mom")
-        params = plug.defineParameters()
-        self.assertEqual(len(params), 1)
-        self.assertIn(Block, params)
-
     def test_beforeReactorConstructionHook(self):
-        """Test that plugin hook successfully injects code before reactor initialization.
-
-        .. test:: Capture code in the beforeReactorConstruction hook from reactor construction being carried out.
-            :id: T_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
-            :tests: R_ARMI_SETTINGS_BEFORE_REACTOR_HOOK
-        """
+        """Test that plugin hook successfully injects code before reactor initialization."""
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
         o = loadTestReactor(

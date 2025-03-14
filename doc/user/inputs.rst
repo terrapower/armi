@@ -306,7 +306,7 @@ An example of a snapshot run input:
 
        runType: Snapshots
        reloadDBName: my-old-results.h5
-       dumpSnapshot: ['000000', '001002'] # would produce 2 snapshots, at BOL and at node 2 of cycle 1
+       dumpSnapshot: ['000000', '001002'] # 2 snapshots at BOL and cycle 1-node 2
 
 To run a restart, the following settings must be added to your case settings:
 
@@ -788,8 +788,12 @@ xs types
   best to set blocks that have much different compositions to have separate cross section types. The
   tradeoff is that the more XS types you define, the more CPU time the case will take to run.
 
-  Representing xsType by a single letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
+  Representing xsType by a single capital letter (A-Z) or number (0-9) limits users to 36 groups. So ARMI
   will allow 2-letter xsType designations if and only if the ``buGroups`` setting has length 1 (i.e. no burnup groups are defined). This is useful for high-fidelity XS modeling.
+
+  ARMI is able to use lower-case letters (a-z) for an additional 26 cross section groups, but this 
+  should only be done when working on a case-sensitive file system. On a case-insensitive file system 
+  (Windows, and some MacOS systems) this could cause unpredictable errors.
 
 axial mesh points
   Blocks will be broken up into this many uniform mesh points in the deterministic neutronics
@@ -952,20 +956,20 @@ Once assemblies are defined they can be grouped together into the Core, the spen
 
 A complete reactor structure with a core and a SFP may be seen below::
 
-        systems:
-            core:
-                grid name: core
-                origin:
-                    x: 0.0
-                    y: 10.1
-                    z: 1.1
-            Spent Fuel Pool:
-                type: sfp
-                grid name: sfp
-                origin:
-                    x: 1000.0
-                    y: 12.1
-                    z: 1.1
+    systems:
+        core:
+            grid name: core
+            origin:
+                x: 0.0
+                y: 10.1
+                z: 1.1
+        Spent Fuel Pool:
+            type: sfp
+            grid name: sfp
+            origin:
+                x: 1000.0
+                y: 12.1
+                z: 1.1
 
 The ``origin`` defines the point of origin in global space
 in units of cm. This allows you to define the relative position of the various structures.
@@ -1591,9 +1595,9 @@ through ``self.cs``.
 
 
 .. exec::
-    from armi import settings
     import textwrap
     from dochelpers import escapeSpecialCharacters
+    from armi import settings
 
     def looks_like_path(s):
         """Super quick, not robust, check if a string looks like a file path."""
@@ -1605,23 +1609,30 @@ through ``self.cs``.
     cs = settings.Settings()
 
     # User textwrap to split up long words that mess up the table.
+    ws = "    "
+    ws2 = ws + "    "
+    ws3 = ws2 + "  "
     wrapper = textwrap.TextWrapper(width=25, subsequent_indent='')
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
-    content = '\n.. list-table:: ARMI Settings\n   :header-rows: 1\n   :widths: 20 30 15 15\n    \n'
-    content += '   * - Name\n     - Description\n     - Default\n     - Options\n'
+    content = '\n.. container:: break_before ssp-landscape\n\n'
+    content += ws + '.. list-table:: ARMI Settings\n'
+    content += ws2 + ':widths: 25 25 10 10\n'
+    content += ws2 + ':class: ssp-tiny\n'
+    content += ws2 + ':header-rows: 1\n\n'
+    content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'
 
     for setting in sorted(cs.values(), key=lambda s: s.name):
-        content += '   * - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
+        content += ws2 + '* - {}\n'.format(' '.join(wrapper.wrap(setting.name)))
         description = escapeSpecialCharacters(str(setting.description) or "")
-        content += "     - {}\n".format(" ".join(wrapper.wrap(description)))
+        content += ws3 + "- {}\n".format(" ".join(wrapper.wrap(description)))
         default = str(getattr(setting, 'default', None)).split("/")[-1]
         options = str(getattr(setting,'options','') or '')
         if looks_like_path(default):
             # We don't want to display default file paths in this table.
             default = ""
             options = ""
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
-        content += '     - {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper.wrap(options)]))
+        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(default)]))
+        content += ws3 + '- {}\n'.format(' '.join(['``{}``'.format(wrapped) for wrapped in wrapper2.wrap(options)]))
 
     content += '\n'
 

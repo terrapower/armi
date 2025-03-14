@@ -17,11 +17,9 @@ import io
 import os
 import unittest
 
-from armi import context
-from armi import settings
+from armi import context, settings
 from armi.cli import entryPoint
-from armi.settings import setting
-from armi.settings import settingsIO
+from armi.settings import setting, settingsIO
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import (
@@ -218,7 +216,7 @@ class SettingArgsTests(unittest.TestCase):
         ep.parse_args(["--nCycles", "5"])
         self.assertEqual(cs["nCycles"], 5)
 
-    def test_cannotLoadSettingsAfterParsingCommandLineSetting(self):
+    def test_cannotLoadSettingsAfterParsingCLI(self):
         self.test_commandLineSetting()
 
         with self.assertRaises(RuntimeError):

@@ -13,27 +13,26 @@
 # limitations under the License.
 
 """Test the Lattice Interface."""
-from collections import OrderedDict
 import unittest
+from collections import OrderedDict
 
-from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
-    LatticePhysicsInterface,
-)
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.operators.operator import Operator
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
-from armi.physics.neutronics.settings import CONF_GEN_XS
-from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
-from armi.reactor.reactors import Reactor, Core
-from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-from armi.tests import mockRunLogs
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    LatticePhysicsInterface,
+)
+from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
-from armi.tests import ISOAA_PATH
+from armi.reactor.reactors import Core, Reactor
+from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.tests import ISOAA_PATH, mockRunLogs
+
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
@@ -88,12 +87,7 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.testVerification = False
 
     def test_includeGammaXS(self):
-        """Test that we can correctly flip the switch to calculate gamma XS.
-
-        .. test:: Users can flip a setting to determine if gamma XS are generated.
-            :id: T_ARMI_GAMMA_XS
-            :tests: R_ARMI_GAMMA_XS
-        """
+        """Test that we can correctly flip the switch to calculate gamma XS."""
         # The default operator here turns off Gamma XS generation
         self.assertFalse(self.latticeInterface.includeGammaXS)
         self.assertEqual(self.o.cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron")
@@ -121,9 +115,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None by the BOC
-        interaction, so this test does not have a good means of verifying the
-        correct function, so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
+        self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
         self.latticeInterface.interactBOL()
@@ -143,10 +136,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to
-        None by the BOC interaction, so this test does not have a
-        good means of verifying the correct function,
-        so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
+        self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
         self.latticeInterface.interactBOC()

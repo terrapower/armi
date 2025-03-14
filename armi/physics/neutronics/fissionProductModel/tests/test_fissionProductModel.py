@@ -16,13 +16,13 @@ import unittest
 
 from armi import nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FISSION_PRODUCT_LIBRARY_NAME,
+    CONF_FP_MODEL,
+)
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
-)
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_FP_MODEL,
-    CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import (
@@ -151,12 +151,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
         self.assertFalse(self.fpModel._useGlobalLFPs)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
-        """Test that the depletable blocks contain all the MC2-3 modeled nuclides.
-
-        .. test:: Determine if any component is depletable.
-            :id: T_ARMI_DEPL_DEPLETABLE
-            :tests: R_ARMI_DEPL_DEPLETABLE
-        """
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)

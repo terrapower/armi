@@ -26,12 +26,12 @@ versioning information.
 
 import collections
 from typing import (
+    Any,
+    Dict,
+    List,
     Optional,
     Tuple,
     Type,
-    Dict,
-    Any,
-    List,
 )
 
 import numpy as np
@@ -41,8 +41,7 @@ from armi.reactor import grids
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
 from armi.reactor.excoreStructure import ExcoreStructure
-from armi.reactor.reactors import Core
-from armi.reactor.reactors import Reactor
+from armi.reactor.reactors import Core, Reactor
 
 # Here we store the Database version information.
 DB_MAJOR = 3
@@ -384,7 +383,7 @@ class Layout:
         """Write a chunk of data to the database.
 
         .. impl:: Write data to the DB for a given time step.
-            :id: I_ARMI_DB_TIME
+            :id: I_ARMI_DB_TIME0
             :implements: R_ARMI_DB_TIME
 
             This method writes a snapshot of the current state of the reactor to the
@@ -394,8 +393,7 @@ class Layout:
             objects are written to the file. Though, this turns out to still be very
             powerful. For instance, the data for all ``HexBlock`` children of a given
             parent are stored contiguously within the ``HexBlock`` group, and will not
-            be interleaved with data from the ``HexBlock`` children of any of the
-            parent's siblings.
+            be interleaved with data from the ``HexBlock`` children of any of the parent's siblings.
         """
         if "layout/type" in h5group:
             # It looks like we have already written the layout to DB, skip for now

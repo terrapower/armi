@@ -33,7 +33,7 @@ class TestEnergyGroups(unittest.TestCase):
             with self.assertRaises(ValueError):
                 energyGroups.getGroupStructureType(energyBounds)
 
-    def test_consistenciesBetweenGroupStructureAndGroupStructureType(self):
+    def test_consistenciesBetweenGSAndGSType(self):
         """Test that the reverse lookup of the energy group structures work.
 
         .. test:: Check the neutron energy group bounds for a given group structure.

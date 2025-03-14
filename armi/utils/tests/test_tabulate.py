@@ -19,32 +19,31 @@ many arbitrary changes as we need. Thanks to the tabulate team.
 
 https://github.com/astanin/python-tabulate
 """
-from collections import defaultdict
-from collections import namedtuple
-from collections import OrderedDict
-from collections import UserDict
+import unittest
+from collections import OrderedDict, UserDict, defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime
-import unittest
 
 import numpy as np
 
-from armi.utils.tabulate import _alignCellVeritically
-from armi.utils.tabulate import _alignColumn
-from armi.utils.tabulate import _bool
-from armi.utils.tabulate import _buildLine
-from armi.utils.tabulate import _buildRow
-from armi.utils.tabulate import _format
-from armi.utils.tabulate import _isMultiline
-from armi.utils.tabulate import _multilineWidth
-from armi.utils.tabulate import _normalizeTabularData
-from armi.utils.tabulate import _tableFormats
-from armi.utils.tabulate import _type
-from armi.utils.tabulate import _visibleWidth
-from armi.utils.tabulate import _wrapTextToColWidths
-from armi.utils.tabulate import SEPARATING_LINE
-from armi.utils.tabulate import tabulate
-from armi.utils.tabulate import tabulateFormats
+from armi.utils.tabulate import (
+    SEPARATING_LINE,
+    _alignCellVeritically,
+    _alignColumn,
+    _bool,
+    _buildLine,
+    _buildRow,
+    _format,
+    _isMultiline,
+    _multilineWidth,
+    _normalizeTabularData,
+    _tableFormats,
+    _type,
+    _visibleWidth,
+    _wrapTextToColWidths,
+    tabulate,
+    tabulateFormats,
+)
 
 
 class TestTabulateAPI(unittest.TestCase):
@@ -214,7 +213,7 @@ class TestTabulateInputs(unittest.TestCase):
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
-                "formats": ["a32", "uint8", "float32"],
+                "formats": ["S32", "uint8", "float32"],
             },
         )
         expected = "\n".join(
@@ -234,7 +233,7 @@ class TestTabulateInputs(unittest.TestCase):
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
-                "formats": ["a32", "uint8", "float32"],
+                "formats": ["S32", "uint8", "float32"],
             },
         )
         expected = "\n".join(
@@ -254,7 +253,7 @@ class TestTabulateInputs(unittest.TestCase):
             [("Alice", 23, 169.5), ("Bob", 27, 175.0)],
             dtype={
                 "names": ["name", "age", "height"],
-                "formats": ["a32", "uint8", "float32"],
+                "formats": ["S32", "uint8", "float32"],
             },
         )
         expected = "\n".join(
@@ -458,7 +457,7 @@ class TestTabulateInternal(unittest.TestCase):
         ]
         self.assertEqual(expected, output)
 
-    def test_alignColumnDecimalWithIncorrectThousandSeparators(self):
+    def test_alignColDecimalIncorrectThousandSeparators(self):
         """Internal: _align_column(..., 'decimal')."""
         column = ["12.345", "-1234.5", "1.23", "12,34.5", "1e+234", "1.0e234"]
         output = _alignColumn(column, "decimal")
@@ -499,32 +498,32 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["one line"]
         assert top == center == bottom == none == expected
 
-    def test_alignCellVeriticallyTopSingleTextMultiplePad(self):
+    def test_alignCellVertTopSingleTextMultiPad(self):
         """Internal: Align single cell text to top."""
         result = _alignCellVeritically(["one line"], 3, 8, "top")
         expected = ["one line", "        ", "        "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVeriticallyCenterSingleTextMultiplePad(self):
+    def test_alignCellVertCenterSingleTextMultiPad(self):
         """Internal: Align single cell text to center."""
         result = _alignCellVeritically(["one line"], 3, 8, "center")
         expected = ["        ", "one line", "        "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVeriticallyBottomSingleTextMultiplePad(self):
+    def test_alignCellVertBottomSingleTextMultiPad(self):
         """Internal: Align single cell text to bottom."""
         result = _alignCellVeritically(["one line"], 3, 8, "bottom")
         expected = ["        ", "        ", "one line"]
         self.assertEqual(expected, result)
 
-    def test_alignCellVeriticallyTopMultiTextMultiplePad(self):
+    def test_alignCellVertTopMultiTextMultiPad(self):
         """Internal: Align multiline celltext text to top."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "top")
         expected = ["just", "one ", "cell", "    ", "    ", "    "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVeriticallyCenterMultiTextMultiplePad(self):
+    def test_alignCellVertCenterMultiTextMultiPad(self):
         """Internal: Align multiline celltext text to center."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "center")
@@ -534,7 +533,7 @@ class TestTabulateInternal(unittest.TestCase):
         expected = ["    ", "just", "one ", "cell", "    ", "    "]
         self.assertEqual(expected, result)
 
-    def test_alignCellVeriticallyBottomMultiTextMultiplePad(self):
+    def test_alignCellVertBottomMultiTextMultiPad(self):
         """Internal: Align multiline celltext text to bottom."""
         text = ["just", "one ", "cell"]
         result = _alignCellVeritically(text, 6, 4, "bottom")
@@ -543,9 +542,11 @@ class TestTabulateInternal(unittest.TestCase):
 
     def test_assortedRareEdgeCases(self):
         """Test some of the more rare edge cases in the purely internal functions."""
-        from armi.utils.tabulate import _alignHeader
-        from armi.utils.tabulate import _prependRowIndex
-        from armi.utils.tabulate import _removeSeparatingLines
+        from armi.utils.tabulate import (
+            _alignHeader,
+            _prependRowIndex,
+            _removeSeparatingLines,
+        )
 
         self.assertEqual(_alignHeader("123", False, 3, 3, False, None), "123")
 

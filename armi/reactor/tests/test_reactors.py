@@ -15,37 +15,32 @@
 import copy
 import logging
 import os
+import pickle
 import unittest
 from math import sqrt
 from unittest.mock import patch
 
 from numpy.testing import assert_allclose, assert_equal
-from six.moves import cPickle
 
-from armi import operators
-from armi import runLog
-from armi import settings
-from armi import tests
+from armi import operators, runLog, settings, tests
 from armi.materials import uZr
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
+from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Hexagon, Rectangle
 from armi.reactor.composites import Composite
 from armi.reactor.converters import geometryConverters
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.reactor.spentFuelPool import SpentFuelPool
-from armi.settings.fwSettings.globalSettings import CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
-from armi.tests import ARMI_RUN_PATH, mockRunLogs, TEST_ROOT
+from armi.settings.fwSettings.globalSettings import (
+    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
+    CONF_SORT_REACTOR,
+)
+from armi.testing import loadTestReactor, reduceTestReactorRings  # noqa: F401
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
-THIS_DIR = os.path.dirname(__file__)
-TEST_REACTOR = None  # pickled string of test reactor (for fast caching)
+_THIS_DIR = os.path.dirname(__file__)
 
 
 def buildOperatorOfEmptyHexBlocks(customSettings=None):
@@ -130,95 +125,6 @@ def buildOperatorOfEmptyCartesianBlocks(customSettings=None):
     return o
 
 
-"""
-NOTE: If this reactor had 3 rings instead of 9, most unit tests that use it
-go 4 times faster (based on testing). The problem is it would breat a LOT
-of downstream tests that import this method. Probably still worth it though.
-"""
-
-
-def loadTestReactor(
-    inputFilePath=TEST_ROOT,
-    customSettings=None,
-    inputFileName="armiRun.yaml",
-):
-    """
-    Loads a test reactor. Can be used in other test modules.
-
-    Parameters
-    ----------
-    inputFilePath : str, default=TEST_ROOT
-        Path to the directory of the input file.
-
-    customSettings : dict with str keys and values of any type, default=None
-        For each key in customSettings, the cs which is loaded from the
-        armiRun.yaml will be overwritten to the value given in customSettings
-        for that key.
-
-    inputFileName : str, default="armiRun.yaml"
-        Name of the input file to run.
-
-    Returns
-    -------
-    o : Operator
-    r : Reactor
-    """
-    global TEST_REACTOR
-    fName = os.path.join(inputFilePath, inputFileName)
-    customSettings = customSettings or {}
-    isPickeledReactor = fName == ARMI_RUN_PATH and customSettings == {}
-
-    if isPickeledReactor and TEST_REACTOR:
-        # return test reactor only if no custom settings are needed.
-        o, r, assemNum = cPickle.loads(TEST_REACTOR)
-        o.reattach(r, o.cs)
-        return o, r
-
-    cs = settings.Settings(fName=fName)
-
-    # Overwrite settings if desired
-    if customSettings:
-        cs = cs.modified(newSettings=customSettings)
-
-    if "verbosity" not in customSettings:
-        runLog.setVerbosity("error")
-
-    newSettings = {}
-    cs = cs.modified(newSettings=newSettings)
-
-    o = operators.factory(cs)
-    r = reactors.loadFromCs(cs)
-
-    o.initializeInterfaces(r)
-
-    o.r.core.regenAssemblyLists()
-
-    if isPickeledReactor:
-        # cache it for fast load for other future tests
-        # protocol=2 allows for classes with __slots__ but not __getstate__ to be pickled
-        TEST_REACTOR = cPickle.dumps((o, o.r, o.r.p.maxAssemNum), protocol=2)
-
-    return o, o.r
-
-
-def reduceTestReactorRings(r, cs, maxNumRings):
-    """Helper method for the test reactor above.
-
-    The goal is to reduce the size of the reactor for tests that don't neeed
-    such a large reactor, and would run much faster with a smaller one.
-    """
-    maxRings = r.core.getNumRings()
-    if maxNumRings > maxRings:
-        runLog.info("The test reactor has a maximum of {} rings.".format(maxRings))
-        return
-    elif maxNumRings <= 1:
-        raise ValueError("The test reactor must have multiple rings.")
-
-    # reducing the size of the test reactor, by removing the outer rings
-    for ring in range(maxRings, maxNumRings, -1):
-        r.core.removeAssembliesInRing(ring, cs)
-
-
 class ReactorTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -253,13 +159,7 @@ class HexReactorTests(ReactorTests):
         self.assertTrue(isinstance(self.r.excore["sfp"], Composite))
 
     def test_factorySortSetting(self):
-        """
-        Create a core object from an input yaml.
-
-        .. test:: Create core object from input yaml.
-            :id: T_ARMI_R_CORE
-            :tests: R_ARMI_R_CORE
-        """
+        """Create a core object from an input yaml."""
         # get a sorted Reactor (the default)
         cs = settings.Settings(fName="armiRun.yaml")
         r0 = reactors.loadFromCs(cs)
@@ -287,8 +187,8 @@ class HexReactorTests(ReactorTests):
         modify parameters at different levels.
 
         .. test:: Parameters are accessible throughout the armi tree.
-            :id: T_ARMI_PARAM_PART
-            :tests: R_ARMI_PARAM_PART
+            :id: T_ARMI_PARAM1
+            :tests: R_ARMI_PARAM
 
         .. test:: Ensure there is a setting for total core power.
             :id: T_ARMI_SETTINGS_POWER0
@@ -743,8 +643,8 @@ class HexReactorTests(ReactorTests):
         Get assembly by location, in a couple different ways to ensure they all work.
 
         .. test:: Get assembly by location.
-            :id: T_ARMI_R_GET_ASSEM_LOC
-            :tests: R_ARMI_R_GET_ASSEM_LOC
+            :id: T_ARMI_R_GET_ASSEM0
+            :tests: R_ARMI_R_GET_ASSEM
         """
         a0 = self.r.core.getAssemblyWithStringLocation("003-001")
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
@@ -759,8 +659,8 @@ class HexReactorTests(ReactorTests):
         Get assembly by name.
 
         .. test:: Get assembly by name.
-            :id: T_ARMI_R_GET_ASSEM_NAME
-            :tests: R_ARMI_R_GET_ASSEM_NAME
+            :id: T_ARMI_R_GET_ASSEM1
+            :tests: R_ARMI_R_GET_ASSEM
         """
         a1 = self.r.core.getAssemblyWithAssemNum(assemNum=10)
         a2 = self.r.core.getAssembly(assemblyName="A0010")
@@ -867,7 +767,8 @@ class HexReactorTests(ReactorTests):
         for b in self.r.core.getBlocks():
             b.p.mgFlux = range(5)
             b.p.adjMgFlux = range(5)
-        with directoryChangers.TemporaryDirectoryChanger(root=THIS_DIR):
+
+        with directoryChangers.TemporaryDirectoryChanger(root=_THIS_DIR):
             self.r.core.saveAllFlux()
 
     def test_getFluxVector(self):
@@ -934,7 +835,7 @@ class HexReactorTests(ReactorTests):
         assert_allclose(mass1, mass2)
 
     def test_isPickleable(self):
-        loaded = cPickle.loads(cPickle.dumps(self.r))
+        loaded = pickle.loads(pickle.dumps(self.r))
 
         # ensure we didn't break the current reactor
         self.assertIs(self.r.core.spatialGrid.armiObject, self.r.core)
@@ -1024,12 +925,7 @@ class HexReactorTests(ReactorTests):
             self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
     def test_removeAssembliesInRingByCount(self):
-        """Tests retrieving ring numbers and removing a ring.
-
-        .. test:: Retrieve number of rings in core.
-            :id: T_ARMI_R_NUM_RINGS
-            :tests: R_ARMI_R_NUM_RINGS
-        """
+        """Tests retrieving ring numbers and removing a ring."""
         self.assertEqual(self.r.core.getNumRings(), 9)
         self.r.core.removeAssembliesInRing(9, self.o.cs)
         self.assertEqual(self.r.core.getNumRings(), 8)

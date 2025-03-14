@@ -56,19 +56,13 @@ and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
 import collections
 import gc
 import math
+import pickle
 import timeit
 
-from six.moves import cPickle
-
-from armi import context
-from armi import interfaces
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import context, interfaces, runLog, settings, utils
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
-from armi.utils import iterables
-from armi.utils import tabulate
+from armi.utils import iterables, tabulate
 
 
 class MpiAction:
@@ -138,7 +132,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except cPickle.PicklingError as error:
+        except pickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise
@@ -475,7 +469,7 @@ class DistributionAction(MpiAction):
         actionResult = None
         try:
             action = mpiComm.scatter(self._actions, root=0)
-            # create a new communicator that only has these specific dudes running
+            # create a new communicator that only has these specific processes running
             hasAction = action is not None
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()
@@ -505,7 +499,7 @@ class DistributeStateAction(MpiAction):
         self._skipInterfaces = skipInterfaces
 
     def invokeHook(self):
-        r"""Sync up all nodes with the reactor, the cs, and the interfaces.
+        """Sync up all nodes with the reactor, the cs, and the interfaces.
 
         Notes
         -----
@@ -539,7 +533,7 @@ class DistributeStateAction(MpiAction):
             # or how the interfaces are distributed.
             self.r._markSynchronized()
 
-        except (cPickle.PicklingError, TypeError) as error:
+        except (pickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
             runLog.error(error)
             # workers are still waiting for a reactor object
@@ -604,9 +598,7 @@ class DistributeStateAction(MpiAction):
 
         self.r.o = self.o
 
-        runLog.debug(
-            "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
-        )
+        runLog.debug(f"The reactor has {len(self.r.core.getAssemblies())} assemblies")
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 

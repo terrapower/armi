@@ -26,7 +26,7 @@ These objects hold the dimensions, temperatures, composition, and shape of react
 
     Class inheritance diagram for :py:mod:`armi.reactor.components`.
 """
-# ruff: noqa: F405
+# ruff: noqa: F405, I001
 import math
 
 import numpy as np
@@ -132,7 +132,7 @@ class UnshapedComponent(Component):
         material,
         Tinput,
         Thot,
-        area=np.NaN,
+        area=np.nan,
         modArea=None,
         isotopics=None,
         mergeWith=None,
@@ -186,6 +186,19 @@ class UnshapedComponent(Component):
         """
         return 2 * math.sqrt(self.getComponentArea(cold=cold) / math.pi)
 
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        """
+        Component is unshaped; assume it is circular and there is no ID (return 0.0).
+
+        Parameters
+        ----------
+        Tc : float, optional
+            Ignored for this component
+        cold : bool, optional
+            Ignored for this component
+        """
+        return 0.0
+
     @staticmethod
     def fromComponent(otherComponent):
         """
@@ -224,12 +237,12 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         material,
         Tinput,
         Thot,
-        area=np.NaN,
+        area=np.nan,
         op=None,
         isotopics=None,
         mergeWith=None,
         components=None,
-        volume=np.NaN,
+        volume=np.nan,
     ):
         Component.__init__(
             self,

@@ -62,18 +62,15 @@ Database revision changelog
 import os
 
 from armi import runLog
+from armi.bookkeeping.db.compareDB3 import compareDatabases
 
 # re-export package components for easier import
 from armi.bookkeeping.db.database import Database
-from armi.bookkeeping.db.database3 import Database3
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.bookkeeping.db.compareDB3 import compareDatabases
 from armi.bookkeeping.db.factory import databaseFactory
-
 
 __all__ = [
     "Database",
-    "Database3",
     "DatabaseInterface",
     "compareDatabases",
     "databaseFactory",
@@ -86,6 +83,7 @@ def loadOperator(
     loadNode,
     statePointName=None,
     allowMissing=False,
+    handleInvalids=True,
 ):
     """
     Return an operator given the path to a database.
@@ -104,6 +102,8 @@ def loadOperator(
     allowMissing : bool
         Whether to emit a warning, rather than crash if reading a database
         with undefined parameters. Default False.
+    handleInvalids : bool
+        Whether to check for invalid settings. Default True.
 
     See Also
     --------
@@ -145,7 +145,7 @@ def loadOperator(
         # init Case here as it keeps track of execution time and assigns a reactor
         # attribute. This attribute includes the time it takes to initialize the reactor
         # so creating a reactor from the database should be included.
-        cs = db.loadCS()
+        cs = db.loadCS(handleInvalids=handleInvalids)
         thisCase = cases.Case(cs)
 
         r = db.load(
@@ -153,6 +153,7 @@ def loadOperator(
             loadNode,
             statePointName=statePointName,
             allowMissing=allowMissing,
+            handleInvalids=handleInvalids,
         )
 
     o = thisCase.initializeOperator(r=r)

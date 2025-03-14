@@ -15,37 +15,62 @@
 """Tests functionalities of components within ARMI."""
 import copy
 import math
+import random
 import unittest
+
+import numpy as np
+from numpy.testing import assert_allclose, assert_equal
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
-from armi.reactor import components
-from armi.reactor import flags
+from armi.reactor import components, flags
+from armi.reactor.blocks import Block
 from armi.reactor.components import (
-    Component,
-    UnshapedComponent,
-    NullComponent,
     Circle,
+    Component,
+    ComponentType,
+    Cube,
+    DerivedShape,
+    DifferentialRadialSegment,
+    Helix,
     Hexagon,
-    HoledHexagon,
     HexHoledCircle,
+    HoledHexagon,
     HoledRectangle,
     HoledSquare,
-    Helix,
-    Sphere,
-    Cube,
+    NullComponent,
+    RadialSegment,
     Rectangle,
     SolidRectangle,
+    Sphere,
     Square,
     Triangle,
-    RadialSegment,
-    DifferentialRadialSegment,
-    DerivedShape,
+    UnshapedComponent,
     UnshapedVolumetricComponent,
-    ComponentType,
+    materials,
 )
-from armi.reactor.components import materials
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
+from armi.utils.units import getTc
+
+
+class MockCompositionDependentExpander(materials.Material):
+    """Dummy material that has a composition-dependent thermal expansion coefficient."""
+
+    def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
+        """
+        Composition-dependent linear expansion coefficient.
+
+        Parameters
+        ----------
+        Tk : float, optional
+            Temperature in Kelvin.
+        Tc : float, optional
+            Temperature in Celsius.
+        """
+        alpha = 1.0e-5
+        beta = 1.0e-5 * self.parent.getMassFrac("C")
+        refTemp = 20
+        return (alpha + beta) * getTc(Tc=Tc, Tk=Tk) * (Tc - refTemp)
 
 
 class TestComponentFactory(unittest.TestCase):
@@ -176,24 +201,11 @@ class TestGeneralComponents(unittest.TestCase):
             return component
 
 
-class TestComponent(TestGeneralComponents):
-    """Test the base component."""
+class TestComponentNDens(TestGeneralComponents):
+    """Test component number density setting."""
 
-    componentCls = Component
-
-    def test_initializeComponentMaterial(self):
-        """Creating component with single material.
-
-        .. test:: Components are made of one material.
-            :id: T_ARMI_COMP_1MAT0
-            :tests: R_ARMI_COMP_1MAT
-        """
-        expectedName = "TestComponent"
-        actualName = self.component.getName()
-        expectedMaterialName = "HT9"
-        actualMaterialName = self.component.material.getName()
-        self.assertEqual(expectedName, actualName)
-        self.assertEqual(expectedMaterialName, actualMaterialName)
+    componentCls = Circle
+    componentDims = {"Tinput": 25.0, "Thot": 25.0, "id": 0.0, "od": 0.5}
 
     def test_setNumberDensity(self):
         """Test setting a single number density.
@@ -220,12 +232,79 @@ class TestComponent(TestGeneralComponents):
         self.assertEqual(component.getNumberDensity("C"), 1.0)
         self.assertEqual(component.getNumberDensity("MN"), 0.58)
 
+    def test_setNumberDensitiesWithExpansion(self):
+        expansionMaterial = MockCompositionDependentExpander()
+        expansionMaterial.parent = self.component
+        self.component.material = expansionMaterial
+        component = self.component
+        initialVolume = component.getVolume()
+        component.temperatureInC = 50
+        self.assertAlmostEqual(component.getNumberDensity("MN"), 0.000426, 6)
+        component.setNumberDensities({"C": 1, "MN": 0.58})
+        newVolume = component.getVolume()
+        expansionFactor = initialVolume / newVolume
+        self.assertEqual(component.getNumberDensity("C"), 1.0 * expansionFactor)
+        self.assertEqual(component.getNumberDensity("MN"), 0.58 * expansionFactor)
+
+    def test_changeNDensByFactor(self):
+        """Test the ability to change just the component number densities."""
+        referenceDensity = self.component.getNumberDensities()
+        self.component.p.detailedNDens = None
+        self.component.p.pinNDens = None
+        scalingFactor = random.uniform(0, 10)
+        self.component.changeNDensByFactor(scalingFactor)
+        for nuc, refDens in referenceDensity.items():
+            actual = self.component.getNumberDensity(nuc)
+            self.assertEqual(actual, refDens * scalingFactor, msg=nuc)
+        self.assertIsNone(self.component.p.detailedNDens)
+        self.assertIsNone(self.component.p.pinNDens)
+
+    def test_changeNDensByFactorWithExtraParams(self):
+        """Test scaling other parameters when component number density is scaled."""
+        referenceDensity = self.component.getNumberDensities()
+        refDetailedNDens = np.random.random(100)
+        # Use copy to avoid spoiling the reference data with in-place multiplication
+        self.component.p.detailedNDens = refDetailedNDens.copy()
+        # Array of number densities per pin
+        refPinDens = np.random.random(size=(50, 10))
+        self.component.p.pinNDens = refPinDens.copy()
+
+        scalingFactor = random.uniform(0, 10)
+        self.component.changeNDensByFactor(scalingFactor)
+
+        for nuc, refDens in referenceDensity.items():
+            actual = self.component.getNumberDensity(nuc)
+            self.assertEqual(actual, refDens * scalingFactor)
+
+        assert_allclose(
+            self.component.p.detailedNDens, refDetailedNDens * scalingFactor, rtol=1e-6
+        )
+        assert_allclose(
+            self.component.p.pinNDens, refPinDens * scalingFactor, rtol=1e-6
+        )
+
+
+class TestComponent(TestGeneralComponents):
+    """Test the base component."""
+
+    componentCls = Component
+
+    def test_initializeComponentMaterial(self):
+        """Creating component with single material.
+
+        .. test:: Components are made of one material.
+            :id: T_ARMI_COMP_1MAT0
+            :tests: R_ARMI_COMP_1MAT
+        """
+        expectedName = "TestComponent"
+        actualName = self.component.getName()
+        expectedMaterialName = "HT9"
+        actualMaterialName = self.component.material.getName()
+        self.assertEqual(expectedName, actualName)
+        self.assertEqual(expectedMaterialName, actualMaterialName)
+
     def test_solid_material(self):
         """Determine if material is solid.
-
-        .. test:: Determine if material is solid.
-            :id: T_ARMI_COMP_SOLID
-            :tests: R_ARMI_COMP_SOLID
 
         .. test:: Components have material properties.
             :id: T_ARMI_COMP_MAT
@@ -508,6 +587,52 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         self.assertAlmostEqual(totalAreaCold, totalAreaHot, delta=1e-10)
 
 
+class TestComponentSort(unittest.TestCase):
+    def setUp(self):
+        self.components = []
+        pinComp = components.Circle(
+            "pin", "UZr", Tinput=273.0, Thot=273.0, od=0.08, mult=169.0
+        )
+        gapComp = components.Circle(
+            "gap", "Sodium", Tinput=273.0, Thot=273.0, id=0.08, od=0.08, mult=169.0
+        )
+        ductComp = components.Hexagon(
+            "duct", "HT9", Tinput=273.0, Thot=273.0, op=2.6, ip=2.0, mult=1.0
+        )
+        cladComp = components.Circle(
+            "clad", "HT9", Tinput=273.0, Thot=273.0, id=0.08, od=0.1, mult=169.0
+        )
+        wireComp = components.Helix(
+            "wire",
+            "HT9",
+            Tinput=273.0,
+            Thot=273.0,
+            axialPitch=10.0,
+            helixDiameter=0.11,
+            od=0.01,
+            mult=169.0,
+        )
+        self.components = [
+            wireComp,
+            cladComp,
+            ductComp,
+            pinComp,
+            gapComp,
+        ]
+
+    def test_sorting(self):
+        """Test that components are sorted as expected."""
+        sortedComps = sorted(self.components)
+        currentMaxOd = 0.0
+        for c in sortedComps:
+            self.assertGreaterEqual(
+                c.getBoundingCircleOuterDiameter(cold=True), currentMaxOd
+            )
+            currentMaxOd = c.getBoundingCircleOuterDiameter(cold=True)
+        self.assertEqual(sortedComps[1].name, "gap")
+        self.assertEqual(sortedComps[2].name, "clad")
+
+
 class TestCircle(TestShapedComponent):
     """Test circle shaped component."""
 
@@ -523,7 +648,7 @@ class TestCircle(TestShapedComponent):
         "mult": 1.5,
     }
 
-    def test_getThermalExpansionFactorConservedMassByLinearExpansionPercent(self):
+    def test_getThermExpansFactorConsMassLinExpanPerc(self):
         """Test that when ARMI thermally expands a circle, mass is conserved.
 
         .. test:: Calculate thermal expansion.
@@ -698,10 +823,12 @@ class TestCircle(TestShapedComponent):
         """Test that demonstates that the number densities on a component can be modified."""
         self.component.p.numberDensities = {"NA23": 1.0}
         self.component.p.detailedNDens = [1.0]
+        self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
         self.component.changeNDensByFactor(3.0)
         self.assertEqual(self.component.getNumberDensity("NA23"), 3.0)
         self.assertEqual(self.component.p.detailedNDens[0], 3.0)
+        self.assertEqual(self.component.p.pinNDens[0], 3.0)
 
     def test_fuelMass(self):
         nominalMass = self.component.getMass()
@@ -1631,7 +1758,7 @@ class TestRadialSegment(TestShapedComponent):
 
     def test_getBoundingCircleOuterDiameter(self):
         self.assertEqual(
-            self.component.getBoundingCircleOuterDiameter(cold=True), 170.0
+            self.component.getBoundingCircleOuterDiameter(cold=True), 340.0
         )
 
 
@@ -1678,7 +1805,7 @@ class TestDifferentialRadialSegment(TestShapedComponent):
         self.assertFalse(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_getBoundingCircleOuterDiameter(self):
-        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 170)
+        self.assertEqual(self.component.getBoundingCircleOuterDiameter(cold=True), 340)
 
 
 class TestMaterialAdjustments(unittest.TestCase):
@@ -1814,3 +1941,61 @@ class TestMaterialAdjustments(unittest.TestCase):
         comp.p.theoreticalDensityFrac = tdFrac
         comp.finalizeLoadingFromDB()
         self.assertEqual(comp.material.getTD(), tdFrac)
+
+
+class TestPinQuantities(unittest.TestCase):
+    """Test methods that involve retrieval of pin quantities."""
+
+    def setUp(self):
+        self.r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )[1]
+
+    def test_getPinMgFluxes(self):
+        """Test proper retrieval of pin multigroup flux for fuel component."""
+        # Get a fuel block and its fuel component from the core
+        fuelBlock: Block = self.r.core.getFirstBlock(flags.Flags.FUEL)
+        fuelComponent: Component = fuelBlock.getComponent(flags.Flags.FUEL)
+        numPins = int(fuelComponent.p.mult)
+        self.assertEqual(numPins, 169)
+
+        # Set pin fluxes at block level
+        fuelBlock.initializePinLocations()
+        pinMgFluxes = np.random.rand(numPins, 33)
+        pinMgFluxesAdj = np.random.rand(numPins, 33)
+        pinMgFluxesGamma = np.random.rand(numPins, 33)
+        fuelBlock.setPinMgFluxes(pinMgFluxes)
+        fuelBlock.setPinMgFluxes(pinMgFluxesAdj, adjoint=True)
+        fuelBlock.setPinMgFluxes(pinMgFluxesGamma, gamma=True)
+
+        # Retrieve from component to ensure they match
+        simPinMgFluxes = fuelComponent.getPinMgFluxes()
+        simPinMgFluxesAdj = fuelComponent.getPinMgFluxes(adjoint=True)
+        simPinMgFluxesGamma = fuelComponent.getPinMgFluxes(gamma=True)
+        assert_equal(pinMgFluxes, simPinMgFluxes)
+        assert_equal(pinMgFluxesAdj, simPinMgFluxesAdj)
+        assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
+
+        # Mock the spatial locator of the component to raise error
+        with unittest.mock.patch.object(fuelComponent, "spatialLocator") as mockLocator:
+            mockLocator.i = 111
+            mockLocator.j = 111
+            with self.assertRaisesRegex(
+                ValueError,
+                f"Failed to retrieve pin indices for component {fuelComponent}",
+            ):
+                fuelComponent.getPinMgFluxes()
+
+        # Check assertion for adjoint gamma flux
+        with self.assertRaisesRegex(
+            ValueError, "Adjoint gamma flux is currently unsupported."
+        ):
+            fuelComponent.getPinMgFluxes(adjoint=True, gamma=True)
+
+        # Check assertion for not-found parameter
+        fuelBlock.p.pinMgFluxes = None
+        with self.assertRaisesRegex(
+            ValueError,
+            f"Failure getting pinMgFluxes from {fuelComponent} via parent {fuelBlock}",
+        ):
+            fuelComponent.getPinMgFluxes()

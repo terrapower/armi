@@ -39,7 +39,6 @@ import timeit
 from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
-import six
 
 from armi import context, runLog, utils
 from armi.nucDirectory import elements, nucDir, nuclideBases
@@ -47,9 +46,7 @@ from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.reactor import grids, parameters
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import resolveCollections
-from armi.utils import densityTools
-from armi.utils import tabulate
-from armi.utils import units
+from armi.utils import densityTools, tabulate, units
 from armi.utils.densityTools import calculateNumberDensity
 from armi.utils.flags import auto
 
@@ -298,8 +295,8 @@ class ArmiObject(metaclass=CompositeModelType):
     next step. As a result, the public API on this method should be considered unstable.
 
     .. impl:: Parameters are accessible throughout the armi tree.
-        :id: I_ARMI_PARAM_PART
-        :implements: R_ARMI_PARAM_PART
+        :id: I_ARMI_PARAM1
+        :implements: R_ARMI_PARAM
 
         An ARMI reactor model is composed of collections of ARMIObject objects. These
         objects are combined in a hierarchical manner. Each level of the composite tree
@@ -666,14 +663,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return s.lower() in name
 
     def getName(self):
-        """Get composite name.
-
-        .. impl:: Composite name is accessible.
-            :id: I_ARMI_CMP_GET_NAME
-            :implements: R_ARMI_CMP_GET_NAME
-
-            This method returns the name of a Composite.
-        """
+        """Get composite name."""
         return self.name
 
     def setName(self, name):
@@ -759,10 +749,9 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         if not typeID:
             return not exact
-        if isinstance(typeID, six.string_types):
+        if isinstance(typeID, str):
             raise TypeError(
-                "Must pass Flags, or an iterable of Flags; Strings are no longer "
-                "supported"
+                "Must pass Flags, or an iterable of Flags; Strings are no longer supported"
             )
 
         elif not isinstance(typeID, Flags):
@@ -1578,6 +1567,9 @@ class ArmiObject(metaclass=CompositeModelType):
         # Update detailedNDens
         if self.p.detailedNDens is not None:
             self.p.detailedNDens *= factor
+        # Update pinNDens
+        if self.p.pinNDens is not None:
+            self.p.pinNDens *= factor
 
     def clearNumberDensities(self):
         """
@@ -1944,29 +1936,18 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getHMMoles(self):
         """
-        Get the number of moles of heavy metal in this object in full symmetry.
+        Get the number of moles of heavy metal in this object.
 
         Notes
         -----
-        If an object is on a symmetry line, the number of moles will be scaled up by the
-        symmetry factor. This is done because this is typically used for tracking
-        burnup, and BOL moles are computed in full objects too so there are no
-        complications as things move on and off of symmetry lines.
-
-        Warning
-        -------
-        getHMMoles is different than every other get mass call since it multiplies by
-        symmetry factor but getVolume() on the block level divides by symmetry factor
-        causing them to cancel out.
-
-        This was needed so that HM moles mass did not change based on if the
-        block/assembly was on a symmetry line or not.
+        If an object is on a symmetry line, the volume reported by getVolume
+        is reduced to reflect that the block is not wholly within the reactor. This
+        reduction in volume reduces the reported HM moles.
         """
         return (
             self.getHMDens()
             / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
             * self.getVolume()
-            * self.getSymmetryFactor()
         )
 
     def getHMDens(self):
@@ -2098,8 +2079,8 @@ class ArmiObject(metaclass=CompositeModelType):
             for pin detailed yet
 
         volume: float, optional
-            If average=True, the volume-integrated flux is divided by volume before
-            being returned. The user may specify a volume here, or the function will
+            The volume-integrated flux is divided by volume before being
+            returned. The user may specify a volume here, or the function will
             obtain the block volume directly.
 
         gamma : bool, optional
@@ -2298,16 +2279,6 @@ class ArmiObject(metaclass=CompositeModelType):
     def getComponentByName(self, name):
         """
         Gets a particular component from this object, based on its name.
-
-        .. impl:: Get child component by name.
-            :id: I_ARMI_CMP_BY_NAME
-            :implements: R_ARMI_CMP_BY_NAME
-
-            Each Composite has a name, and some Composites are made up
-            of collections of child Composites. This method retrieves a child
-            Component from this Composite by searching for it by name. If more than
-            one Component shares the same name, it raises a ``ValueError``. If no
-            Components are found by the input name then ``None`` is returned.
 
         Parameters
         ----------
@@ -3120,6 +3091,13 @@ class Composite(ArmiObject):
         """
         getter = operator.methodcaller("getBoundingCircleOuterDiameter", Tc, cold)
         return sum(map(getter, self))
+
+    def getPuMoles(self):
+        """Returns total number of moles of Pu isotopes."""
+        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
+        puN = sum(self.getNuclideNumberDensities(nucNames))
+
+        return puN / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
 
 
 class StateRetainer:

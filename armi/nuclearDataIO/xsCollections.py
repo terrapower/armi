@@ -42,8 +42,7 @@ import numpy as np
 from scipy import sparse
 
 from armi import runLog
-from armi.utils import properties
-from armi.utils import units
+from armi.utils import properties, units
 
 # Basic cross-section types that are represented by a 1-D vector in the multigroup approximation
 # No one is particularly proud of these names...we can claim
@@ -271,8 +270,9 @@ class XSCollection:
         mult = np.array(crossSection) * np.array(weights)
         return sum(mult) / sum(weights)
 
-    def compare(self, other, flux, relativeTolerance=0, verbose=False):
+    def compare(self, other, flux, relativeTolerance=0, verbose=False, nucName=""):
         """Compare the cross sections between two XSCollections objects."""
+        nuclideIDMsg = f"Nuclide {nucName} " if nucName else ""
         equal = True
         for xsName in ALL_COLLECTION_DATA:
             myXsData = self.__dict__[xsName]
@@ -283,8 +283,10 @@ class XSCollection:
                     if actualList != expectedList:
                         equal = False
                         runLog.important(
-                            "  {} {:<30} cross section is different.".format(
-                                self.source, xsName
+                            "  {}{} {:<30} cross section is different.".format(
+                                nuclideIDMsg,
+                                self.source,
+                                xsName,
                             )
                         )
 
@@ -301,8 +303,8 @@ class XSCollection:
                         else "\n{},\n\n{}".format(myXsData, theirXsData)
                     )
                     runLog.important(
-                        "  {} {:<30} cross section is different.{}".format(
-                            self.source, xsName, verboseData
+                        "  {}{} {:<30} cross section is different.{}".format(
+                            nuclideIDMsg, self.source, xsName, verboseData
                         )
                     )
                     equal = False
@@ -314,8 +316,8 @@ class XSCollection:
                     "" if not verbose else "\n{},\n\n{}".format(myXsData, theirXsData)
                 )
                 runLog.important(
-                    "  {} {:<30} cross section is different.{}".format(
-                        self.source, xsName, verboseData
+                    "  {}{} {:<30} cross section is different.{}".format(
+                        nuclideIDMsg, self.source, xsName, verboseData
                     )
                 )
                 equal = False

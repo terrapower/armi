@@ -13,15 +13,15 @@
 # limitations under the License.
 
 """Testing some utility functions."""
-from collections import defaultdict
 import os
 import unittest
+from collections import defaultdict
 
 import numpy as np
 
 from armi import utils
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils import (
     codeTiming,
@@ -41,6 +41,7 @@ from armi.utils import (
     getStepLengths,
     hasBurnup,
     safeCopy,
+    safeMove,
 )
 
 
@@ -157,9 +158,9 @@ class TestGeneralUtils(unittest.TestCase):
         ytick = ([0, 1], ["1", "2"])
         fname = "test_plotMatrix_testfile"
         with directoryChangers.TemporaryDirectoryChanger():
-            utils.plotMatrix(matrix, fname, show=True, title="plot")
-            utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
-            utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
+            utils.plotMatrix(matrix, fname, show=False, title="plot")
+            utils.plotMatrix(matrix, fname, show=False, minV=0, maxV=5, figsize=[3, 4])
+            utils.plotMatrix(matrix, fname, show=False, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
@@ -218,6 +219,53 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("Copied", mock.getStdout())
                 self.assertIn("file2", mock.getStdout())
                 self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMove(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file1, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file2, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMoveDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                safeMove("dir1", "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("dir1", mock.getStdout())
+                self.assertIn("dir2", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
 
 
 class CyclesSettingsTests(unittest.TestCase):

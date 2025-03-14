@@ -52,28 +52,24 @@ The mesh mapping happens as described in the figure:
 .. figure:: /.static/axial_homogenization.png
 
 """
-import re
-import glob
-import copy
 import collections
+import copy
+import glob
+import re
 from timeit import default_timer as timer
 
 import numpy as np
 
 import armi
 from armi import runLog
-from armi.utils.mathematics import average1DWithinTolerance
-from armi.utils import iterables
-from armi.utils import plotting
-from armi.reactor import grids
-from armi.reactor.reactors import Core
-from armi.reactor.flags import Flags
+from armi.physics.neutronics.globalFlux import RX_ABS_MICRO_LABELS, RX_PARAM_NAMES
+from armi.reactor import grids, parameters
 from armi.reactor.converters.geometryConverters import GeometryConverter
-from armi.reactor import parameters
-from armi.reactor.reactors import Reactor
+from armi.reactor.flags import Flags
+from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
-from armi.physics.neutronics.globalFlux import RX_PARAM_NAMES, RX_ABS_MICRO_LABELS
-
+from armi.utils import iterables, plotting
+from armi.utils.mathematics import average1DWithinTolerance
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
@@ -1236,7 +1232,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             if rate["rateFis"] > 0.0:
                 fuelVolFrac = obj.getComponentAreaFrac(Flags.FUEL)
-                obj.p.fisDens = rate["rateFis"] / fuelVolFrac
+                obj.p.fisDens = (
+                    np.nan if fuelVolFrac == 0 else rate["rateFis"] / fuelVolFrac
+                )
                 obj.p.fisDensHom = rate["rateFis"]
             else:
                 obj.p.fisDens = 0.0

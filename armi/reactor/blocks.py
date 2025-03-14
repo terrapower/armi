@@ -18,36 +18,32 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
 import collections
 import copy
 import functools
 import math
+from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases
-from armi import runLog
+from armi import nuclideBases, runLog
 from armi.bookkeeping import report
-from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA
-from armi.physics.neutronics import NEUTRON
-from armi.reactor import blockParameters
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.reactor import (
+    blockParameters,
+    components,
+    composites,
+    geometry,
+    grids,
+    parameters,
+)
 from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools
-from armi.utils import hexagon
-from armi.utils import iterables
-from armi.utils import units
+from armi.utils import densityTools, hexagon, iterables, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -66,9 +62,10 @@ _PitchDefiningComponent = Optional[Tuple[Type[components.Component], ...]]
 
 class Block(composites.Composite):
     """
-    A homogenized axial slab of material.
+    An axial slice of an assembly.
 
-    Blocks are stacked together to form assemblies.
+    Blocks are Composite objects with extra parameter bindings, and utility methods that let them
+    play nicely with their containing Assembly.
     """
 
     uniqID = 0
@@ -87,14 +84,12 @@ class Block(composites.Composite):
 
         name : str
             The name of this block
-
         height : float, optional
             The height of the block in cm. Defaults to 1.0 so that ``getVolume`` assumes unit height.
         """
         composites.Composite.__init__(self, name)
         self.p.height = height
         self.p.heightBOL = height
-
         self.p.orientation = np.array((0.0, 0.0, 0.0))
 
         self.points = []
@@ -265,7 +260,7 @@ class Block(composites.Composite):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
-            elif c.hasFlags(Flags.SLUG):
+            elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
                 # this flag designates that this clad/slug combination isn't fuel and shouldn't be
                 # counted in the average
                 pass
@@ -634,8 +629,8 @@ class Block(composites.Composite):
             a += myArea
         fullArea = a
 
-        # correct the fullHexArea by the symmetry factor
-        # this factor determines if the hex has been clipped by symmetry lines
+        # correct the fullHexArea by the symmetry factor this factor determines if the hex has been
+        # clipped by symmetry lines
         area = fullArea / self.getSymmetryFactor()
 
         self._setCache("area", area)
@@ -644,16 +639,6 @@ class Block(composites.Composite):
     def getVolume(self):
         """
         Return the volume of a block.
-
-        .. impl:: Volume of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS0
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Loops over all the components in the block, calling
-            :py:meth:`~armi.reactor.components.component.Component.getVolume` on
-            each and summing the result. The summed value is then divided by
-            the symmetry factor of the block to account for reduced volumes of
-            blocks in certain symmetric representations.
 
         Returns
         -------
@@ -792,13 +777,19 @@ class Block(composites.Composite):
 
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
-        sf = self.getSymmetryFactor()
         for child in self:
-            hmMass = child.getHMMass() * sf
+            hmMass = child.getHMMass()
             massHmBOL += hmMass
-            # Components have a massHmBOL parameter but not every composite will
+            # Components have the following parameters but not every composite will
+            # massHmBOL, molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+                child.p.molesHmBOL = child.getHMMoles()
+                child.p.puFrac = (
+                    self.getPuMoles() / child.p.molesHmBOL
+                    if child.p.molesHmBOL > 0.0
+                    else 0.0
+                )
 
         self.p.massHmBOL = massHmBOL
 
@@ -1095,7 +1086,7 @@ class Block(composites.Composite):
         This merges on a high level (using number densities). Components will not be merged.
 
         This is used e.g. for inserting a control block partially to get a very tight criticality
-        control.  In this case, a control block would be merged with a duct block. It is also used
+        control. In this case, a control block would be merged with a duct block. It is also used
         when a control rod is specified as a certain length but that length does not fit exactly
         into a full block.
         """
@@ -1213,21 +1204,6 @@ class Block(composites.Composite):
     def getPitch(self, returnComp=False):
         """
         Return the center-to-center hex pitch of this block.
-
-        .. impl:: Pitch of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS1
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Uses the block's ``_pitchDefiningComponent`` to identify the component
-            in the block that defines the pitch. Then uses the
-            :py:meth:`~armi.reactor.components.component.Component.getPitchData`
-            method of that component to return the pitch for the block, accounting
-            for the component's current temperature.
-
-            The ``_pitchDefiningComponent`` attribute can be set by
-            :py:meth:`~armi.reactor.blocks.Block.setPitch`, but is typically
-            set via a calls to :py:meth:`~armi.reactor.blocks.Block._updatePitchComponent`
-            as components are added to the block with :py:meth:`~armi.reactor.blocks.Block.add`.
 
         Parameters
         ----------
@@ -1431,63 +1407,6 @@ class Block(composites.Composite):
                 c.updateDims()
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
-
-    def breakFuelComponentsIntoIndividuals(self):
-        """
-        Split block-level components (in fuel blocks) into pin-level components.
-
-        The fuel component will be broken up according to its multiplicity.
-
-        Order matters! The first pin component will be located at a particular (x, y), which
-        will be used in the fluxRecon module to determine the interpolated flux.
-
-        The fuel will become fuel001 through fuel169 if there are 169 pins.
-        """
-        fuels = self.getChildrenWithFlags(Flags.FUEL)
-        if len(fuels) != 1:
-            runLog.error(
-                "This block contains {0} fuel components: {1}".format(len(fuels), fuels)
-            )
-            raise RuntimeError(
-                "Cannot break {0} into multiple fuel components b/c there is not a single fuel"
-                " component.".format(self)
-            )
-
-        fuel = fuels[0]
-        fuelFlags = fuel.p.flags
-        nPins = self.getNumPins()
-        runLog.info(
-            "Creating {} individual {} components on {}".format(nPins, fuel, self)
-        )
-
-        # Handle all other components that may be linked to the fuel multiplicity
-        # by unlinking them and setting them directly.
-        # TODO: What about other (actual) dimensions? This is a limitation in that only fuel
-        # components are duplicated, and not the entire pin. It is also a reasonable assumption with
-        # current/historical usage of ARMI.
-        for comp, dim in self.getComponentsThatAreLinkedTo(fuel, "mult"):
-            comp.setDimension(dim, nPins)
-
-        # finish the first pin as a single pin
-        fuel.setDimension("mult", 1)
-        fuel.setName("fuel001")
-        fuel.p.pinNum = 1
-
-        # create all the new pin components and add them to the block with 'fuel001' names
-        for i in range(nPins - 1):
-            # wow, only use of a non-deepcopy
-            newC = copy.copy(fuel)
-            newC.setName("fuel{0:03d}".format(i + 2))  # start with 002.
-            newC.p.pinNum = i + 2
-            self.add(newC)
-
-        # update moles at BOL for each pin
-        self.p.molesHmBOLByPin = []
-        for pin in self.iterComponents(Flags.FUEL):
-            # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
-            pin.p.flags = fuelFlags
-            self.p.molesHmBOLByPin.append(pin.getHMMoles())
-            pin.p.massHmBOL /= nPins
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
@@ -1739,18 +1658,6 @@ class Block(composites.Composite):
             return 0.0
         return b10 / total
 
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        puN = sum(self.getNuclideNumberDensities(nucNames))
-
-        return (
-            puN
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
-
     def getUraniumMassEnrich(self):
         """Returns U-235 mass fraction assuming U-235 and U-238 only."""
         u5 = self.getMass("U235")
@@ -1931,50 +1838,19 @@ class HexBlock(Block):
         return b
 
     def getMaxArea(self):
-        """
-        Compute the max area of this block if it was totally full.
-
-        .. impl:: Area of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS2
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method first retrieves the pitch of the hexagonal Block
-            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
-            area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
-
-        """
+        """Compute the max area of this block if it was totally full."""
         pitch = self.getPitch()
         if not pitch:
             return 0.0
         return hexagon.area(pitch)
 
     def getDuctIP(self):
-        """
-        Returns the duct IP dimension.
-
-        .. impl:: IP dimension is retrievable.
-            :id: I_ARMI_BLOCK_DIMS3
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method retrieves the duct Component and quieries
-            it's inner pitch directly. If the duct is missing or if there
-            are multiple duct Components, an error will be raised.
-        """
+        """Returns the duct IP dimension."""
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("ip")
 
     def getDuctOP(self):
-        """
-        Returns the duct OP dimension.
-
-        .. impl:: OP dimension is retrievable.
-            :id: I_ARMI_BLOCK_DIMS4
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method retrieves the duct Component and quieries
-            its outer pitch directly. If the duct is missing or if there
-            are multiple duct Components, an error will be raised.
-        """
+        """Returns the duct OP dimension."""
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
@@ -2051,32 +1927,23 @@ class HexBlock(Block):
 
     def rotate(self, rad: float):
         """
-        Rotates a block's spatially varying parameters by a specified angle in the
-        counter-clockwise direction.
+        Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise
+        direction.
 
-        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
-        Python list of length 6 in order to be eligible for rotation; all parameters that
-        do not meet these two criteria are not rotated.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a Python
+        list of length 6 in order to be eligible for rotation; all parameters that do not meet these
+        two criteria are not rotated.
 
-        .. impl:: Rotating a hex block updates the orientation parameter.
-            :id: I_ARMI_ROTATE_HEX_ORIENTATION
-            :implements: R_ARMI_ROTATE_HEX_PARAMS
-
-        .. impl:: Rotating a hex block updates parameters on the boundary of the hexagon.
-            :id: I_ARMI_ROTATE_HEX_BOUNDARY
-            :tests: R_ARMI_ROTATE_HEX_PARAMS
-
-        .. impl:: Rotating a hex block updates the spatial coordinates on contained objects.
-            :id: I_ARMI_ROTATE_HEX_PIN
-            :tests: R_ARMI_ROTATE_HEX
+        .. impl:: Rotating a hex block updates parameters on the boundary, the orientation
+            parameter, and the spatial coordinates on contained objects.
+            :id: I_ARMI_ROTATE_HEX_BLOCK
+            :implements: R_ARMI_ROTATE_HEX
 
         Parameters
         ----------
         rad: float, required
-            Angle of counter-clockwise rotation in units of radians. Rotations must be
-            in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
-            and 2 * PI)
-
+            Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
+            increments (i.e., PI/3, 2 * PI/3, PI, 4 * PI/3, 5 * PI/3, and 2 * PI).
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
@@ -2217,18 +2084,6 @@ class HexBlock(Block):
         """
         Returns the distance in cm between the outer most pin and the duct in a block.
 
-        .. impl:: Pin to duct gap of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS5
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Requires that the outer most duct be Hexagonal and wire and clad Components
-            be present. The flat-to-flat distance between the radial exterior of opposing
-            pins in the outermost ring is computed by computing the distance between
-            pin centers (``getPinCenterFlatToFlat``) and adding the outer diameter of
-            the clad Component and the outer diameter of the wire Component twice. The
-            total margin between the inner pitch of the duct Component and the wire is then
-            computed. The pin to duct gap is then half this distance.
-
         Parameters
         ----------
         cold : boolean
@@ -2331,7 +2186,7 @@ class HexBlock(Block):
 
         In this case, a simple block would be one that has either multiplicity of components equal
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
-        into a given number of hex rings.  Otherwise, do not create a grid for this block.
+        into a given number of hex rings. Otherwise, do not create a grid for this block.
 
         Parameters
         ----------
@@ -2426,15 +2281,6 @@ class HexBlock(Block):
         Assumes that the pin pitch is defined entirely by contacting cladding tubes and wire wraps.
         Grid spacers not yet supported.
 
-        .. impl:: Pin pitch within block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS6
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This implementation requires that clad and wire Components are present.
-            If not, an error is raised. If present, the pin pitch is calculated
-            as the sum of the outer diameter of the clad and outer diameter of
-            the wire.
-
         Parameters
         ----------
         cold : boolean
@@ -2466,55 +2312,32 @@ class HexBlock(Block):
             )
 
     def getWettedPerimeter(self):
-        r"""Return the total wetted perimeter of the block in cm.
-
-        .. impl:: Wetted perimeter of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS7
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This implementation computes wetted perimeters for specific Components, as specified
-            by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
-            are supported. The latter supports both instances where the exterior is wetted
-            (e.g., clad, wire) as well as when the interior and exterior are wetted (hollow circle).
-
-            Hollow hexagons are calculated via,
-
-            .. math::
-
-                \frac{6 \times \text{ip}}{\sqrt{3}},
-
-            where :math:`\text{ip}` is the inner pitch of the hollow hexagon. Circular pin Components
-            where the exterior is wetted is calculated via,
-
-            .. math::
-
-                N \pi \left( \text{OD}_c + \text{OD}_w \right),
-
-            where :math:`N` is the total number of pins, :math:`\text{OD}_c` is the outer diameter
-            of the clad, and :math:`\text{OD}_w` is the outer diameter of the wire, respectively.
-            When both the interior and exterior are wetted, the wetted perimeter is calculated as
-
-            .. math::
-
-                \pi \left( \text{OD} + \text{ID} \right),
-
-            where :math:`\text{OD}` and :math:`\text{ID}` are the outer and inner diameters of the pin
-            Component, respectively.
-
-        """
+        """Return the total wetted perimeter of the block in cm."""
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
             Flags.GRID_PLATE,
             Flags.INLET_NOZZLE,
             Flags.HANDLING_SOCKET,
+            Flags.DUCT | Flags.DEPLETABLE,
+            Flags.GRID_PLATE | Flags.DEPLETABLE,
+            Flags.INLET_NOZZLE | Flags.DEPLETABLE,
+            Flags.HANDLING_SOCKET | Flags.DEPLETABLE,
         )
 
         # flags pertaining to circular pin components where the exterior of the circle is wetted
-        wettedPinComponentFlags = (Flags.CLAD, Flags.WIRE)
+        wettedPinComponentFlags = (
+            Flags.CLAD,
+            Flags.WIRE,
+            Flags.CLAD | Flags.DEPLETABLE,
+            Flags.WIRE | Flags.DEPLETABLE,
+        )
 
         # flags pertaining to components where both the interior and exterior are wetted
-        wettedHollowComponentFlags = (Flags.DUCT | Flags.INNER,)
+        wettedHollowComponentFlags = (
+            Flags.DUCT | Flags.INNER,
+            Flags.DUCT | Flags.INNER | Flags.DEPLETABLE,
+        )
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []
@@ -2590,8 +2413,8 @@ class HexBlock(Block):
             :id: I_ARMI_BLOCK_DIMS8
             :implements: R_ARMI_BLOCK_DIMS
 
-            Retrieving the flow area requires that there be a single coolant Component.
-            If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
+            Retrieving the flow area requires that there be a single coolant Component. If
+            available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
         """
         area = self.getComponent(Flags.COOLANT, exact=True).getArea()
         for c in self.getComponents(Flags.INTERDUCTCOOLANT, exact=True):
@@ -2600,26 +2423,12 @@ class HexBlock(Block):
         return area
 
     def getHydraulicDiameter(self):
-        r"""
+        """
         Return the hydraulic diameter in this block in cm.
 
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
-
-        .. impl:: Hydraulic diameter of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS9
-            :implements: R_ARMI_BLOCK_DIMS
-
-            The hydraulic diamter is calculated via
-
-            .. math::
-
-                4\frac{A}{P},
-
-            where :math:`A` is the flow area (:need:`I_ARMI_BLOCK_DIMS8`) and :math:`P` is the
-            wetted perimeter (:need:`I_ARMI_BLOCK_DIMS7`).
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter. In a hex
+        assembly, the wetted perimeter includes the cladding, the wire wrap, and the inside of the
+        duct. The flow area is the inner area of the duct minus the area of the pins and the wire.
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 

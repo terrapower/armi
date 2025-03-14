@@ -4,23 +4,37 @@ ARMI v0.5 Release Notes
 
 ARMI v0.5.1
 ===========
-Release Date: TBD
+Release Date: 2025-03-14
 
 New Features
 ------------
-#. TBD
+#. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
+#. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
+#. Using inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
+#. Invoking ``component.material.density()`` does not log an expensive stack tracefor fluids. (`PR#2075 <https://github.com/terrapower/armi/pull/2075>`_)
+#. ARMI will now try to use the ``/tmp/`` directory for its temp files, on Linux and MacOS. (`PR#2092 <https://github.com/terrapower/armi/pull/2092>`_)
 
 API Changes
 -----------
-#. TBD
+#. Removing ``Database3`` from the API, use ``Database``. (`PR#2052 <https://github.com/terrapower/armi/pull/2052>`_)
 
 Bug Fixes
 ---------
-#. TBD
+#. Fixing check for jagged arrays during ``_writeParams``. (`PR#2051 <https://github.com/terrapower/armi/pull/2051>`_)
+#. Fixing BP-section ignoring tool in ``PassiveDBLoadPlugin``. (`PR#2055 <https://github.com/terrapower/armi/pull/2055>`_)
+#. Making sure SFPs have spatial grids. (`PR#2082 <https://github.com/terrapower/armi/pull/2082>`_)
+#. Fixing number densities when custom isotopics are combined with Fluid components. (`PR#2071 <https://github.com/terrapower/armi/pull/2071>`_)
+#. Fixing scaling of volume-integrated parameters on edge assemblies. (`PR#2060 <https://github.com/terrapower/armi/pull/2060>`_)
+#. Fixing strictness of ``HexGrid`` rough equality check. (`PR#2058 <https://github.com/terrapower/armi/pull/2058>`_)
+#. Fixing treatment of symmetry factors when calculating component flux and reaction rates. (`PR#2068 <https://github.com/terrapower/armi/pull/2068>`_)
 
 Quality Work
 ------------
-#. TBD
+#. Open-Sourcing the ARMI requirements. (`PR#2076 <https://github.com/terrapower/armi/pull/2076>`_)
+#. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
+#. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
+#. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
+#. Removing silent overwrite of ``shutil.copy``. (`PR#2081 <https://github.com/terrapower/armi/pull/2081>`_)
 
 
 ARMI v0.5.0
@@ -34,6 +48,7 @@ New Features
 #. Adding data models for ex-core structures in ARMI. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
 #. Opening some DBs without the ``App`` that created them. (`PR#1917 <https://github.com/terrapower/armi/pull/1917>`_)
 #. Adding support for ENDF/B-VII.1-based MC2-3 libraries. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
+#. Adding setting ``mcnpLibraryVersion`` to chosen ENDF library for MCNP. (`PR#1989 <https://github.com/terrapower/armi/pull/1989>`_)
 #. Removing the ``tabulate`` dependency by ingesting it to ``armi.utils.tabulate``. (`PR#1811 <https://github.com/terrapower/armi/pull/1811>`_)
 #. ``HexBlock.rotate`` updates the spatial locator for children of that block. (`PR#1943 <https://github.com/terrapower/armi/pull/1943>`_)
 #. Provide ``Block.getInputHeight`` for determining the height of a block from blueprints. (`PR#1927 <https://github.com/terrapower/armi/pull/1927>`_)
@@ -50,7 +65,9 @@ New Features
 #. Improve efficiency of reaction rate calculations. (`PR#1887 <https://github.com/terrapower/armi/pull/1887>`_)
 #. Adding new options for simplifying 1D cross section modeling. (`PR#1949 <https://github.com/terrapower/armi/pull/1949>`_)
 #. Adding ``--skip-inspection`` flag to ``CompareCases`` CLI. (`PR#1842 <https://github.com/terrapower/armi/pull/1842>`_)
+#. Exposing skip inspection options for ``armi.init`` and ``db.loadOperator``. (`PR#2005 <https://github.com/terrapower/armi/pull/2005>`_)
 #. Exposing ``detailedNDens`` to components. (`PR#1954 <https://github.com/terrapower/armi/pull/1954>`_)
+#. Adding a method ``getPinMgFluxes`` to get pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 
 API Changes
 -----------
@@ -75,6 +92,10 @@ API Changes
 #. Removing method ``SkippingXsGen_BuChangedLessThanTolerance``. (`PR#1845 <https://github.com/terrapower/armi/pull/1845>`_)
 #. Removing setting ``autoGenerateBlockGrids``. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Removing setting ``mpiTasksPerNode`` and renaming ``numProcessors`` to ``nTasks``. (`PR#1958 <https://github.com/terrapower/armi/pull/1958>`_)
+#. History Tracker: "detail assemblies" are now fuel and control assemblies. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Removing ``Block.breakFuelComponentsIntoIndividuals()``. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Moving ``getPuMoles`` from blocks.py up to composites.py. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
+#. Requiring ``buReducingAssemblyRotation`` and ``getOptimalAssemblyOrientation`` to have pin-level burnup. (`PR#2019 <https://github.com/terrapower/armi/pull/2019>`_)
 
 Bug Fixes
 ---------
@@ -91,6 +112,7 @@ Bug Fixes
 #. Fixed hex block rotation in ``plotBlockDiagram``. (`PR#1926 <https://github.com/terrapower/armi/pull/1926>`_)
 #. Fixed edge case in ``assemblyBlueprint._checkParamConsistency()``. (`PR#1928 <https://github.com/terrapower/armi/pull/1928>`_)
 #. Fixed wetted perimeter for hex inner ducts. (`PR#1985 <https://github.com/terrapower/armi/pull/1985>`_)
+#. Fixing number densities when custom isotopics and material properties are combined. (`PR#1822 <https://github.com/terrapower/armi/pull/1822>`_)
 
 Quality Work
 ------------
@@ -98,3 +120,4 @@ Quality Work
 #. Refactoring ``axialExpansionChanger``. (`PR#1861 <https://github.com/terrapower/armi/pull/1861>`_)
 #. Raising a ``ValueError`` when ``Database.load()`` fails. (`PR#1940 <https://github.com/terrapower/armi/pull/1940>`_)
 #. Making axial expansion-related classes more extensible. (`PR#1920 <https://github.com/terrapower/armi/pull/1920>`_)
+

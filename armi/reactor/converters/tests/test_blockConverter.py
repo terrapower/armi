@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Test block conversions."""
+import math
 import os
 import unittest
 
-import math
 import numpy as np
 
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
@@ -26,7 +26,7 @@ from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.testing import TEST_ROOT, loadTestReactor
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -300,10 +300,10 @@ class TestBlockConverter(unittest.TestCase):
         # block went to 1 component
         self.assertEqual(1, len([c for c in convertedWithoutDriver]))
 
-    def test_convertHexWithFuelDriverOnNegativeComponentAreaBlock(self):
+    def test_convertHexWithFuelDrOnNegCompAreaBlock(self):
         """
-        Tests the conversion of a control block with linked components, where
-        a component contains a negative area due to thermal expansion.
+        Tests the conversion of a control block with linked components, where a component contains a
+        negative area due to thermal expansion.
         """
         driverBlock = (
             loadTestReactor(TEST_ROOT)[1]

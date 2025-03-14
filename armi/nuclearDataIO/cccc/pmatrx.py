@@ -26,9 +26,7 @@ See  [GAMSOR]_ and [MC23]_.
 import traceback
 
 from armi import runLog
-from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import xsNuclides
-from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import cccc, xsLibraries, xsNuclides
 from armi.utils import properties
 
 

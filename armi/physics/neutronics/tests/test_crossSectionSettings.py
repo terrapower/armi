@@ -15,22 +15,24 @@
 import io
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
 from armi import settings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.crossSectionSettings import CONF_BLOCK_REPRESENTATION
-from armi.physics.neutronics.crossSectionSettings import CONF_GEOM
-from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
-from armi.physics.neutronics.crossSectionSettings import XSSettingDef
-from armi.physics.neutronics.crossSectionSettings import XSSettings
-from armi.physics.neutronics.crossSectionSettings import xsSettingsValidator
-from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
-from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
-    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+from armi.physics.neutronics.crossSectionSettings import (
+    CONF_BLOCK_REPRESENTATION,
+    CONF_GEOM,
+    XSModelingOptions,
+    XSSettingDef,
+    XSSettings,
+    xsSettingsValidator,
 )
+from armi.physics.neutronics.settings import (
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+    CONF_XS_BLOCK_REPRESENTATION,
+)
+from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
 from armi.settings import caseSettings
 
 
@@ -121,7 +123,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
         self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
 
-    def test_setDefaultSettingsByLowestEnvGroupHomogeneous(self):
+    def test_setDefSettingsByLowestEnvGroupHomog(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xs = XSSettings()
@@ -147,7 +149,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("JB", xs)
         self.assertNotEqual(xs["JD"], xs["JB"])
 
-    def test_setDefaultSettingsByLowestEnvGroupOneDimensional(self):
+    def test_setDefSettingsByLowestEnvGroup1D(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xsModel = XSSettings()

@@ -37,14 +37,16 @@ from armi.reactor import blocks, blueprints, components, geometry, grids
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
-from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.reactor.tests.test_reactors import TEST_ROOT
-from armi.tests import ISOAA_PATH
-from armi.utils import hexagon, units
+from armi.testing import loadTestReactor
+from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
-from armi.utils.units import MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
-
+from armi.utils.units import (
+    ASCII_LETTER_A,
+    ASCII_LETTER_Z,
+    MOLES_PER_CC_TO_ATOMS_PER_BARN_CM,
+    ASCII_LETTER_a,
+)
 
 NUM_PINS_IN_TEST_BLOCK = 217
 
@@ -80,7 +82,7 @@ def buildSimpleFuelBlock():
     return b
 
 
-def loadTestBlock(cold=True) -> blocks.HexBlock:
+def loadTestBlock(cold=True, depletable=False) -> blocks.HexBlock:
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
     caseSetting[CONF_XS_KERNEL] = "MC2v2"
@@ -108,6 +110,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     fuel = components.Circle("fuel", "UZr", **fuelDims)
+    if depletable:
+        fuel.p.flags = Flags.fromString("fuel depletable")
 
     bondDims = {
         "Tinput": coldTemp,
@@ -178,6 +182,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     cladding = components.Circle("clad", "HT9", **claddingDims)
+    if depletable:
+        cladding.p.flags = Flags.fromString("clad depletable")
 
     linerCladGapDims = {
         "Tinput": hotTempStructure,
@@ -199,6 +205,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": NUM_PINS_IN_TEST_BLOCK,
     }
     wire = components.Helix("wire", "HT9", **wireDims)
+    if depletable:
+        wire.p.flags = Flags.fromString("wire depletable")
 
     coolantDims = {"Tinput": hotTempCoolant, "Thot": hotTempCoolant}
     coolant = components.DerivedShape("coolant", "Sodium", **coolantDims)
@@ -211,6 +219,8 @@ def loadTestBlock(cold=True) -> blocks.HexBlock:
         "mult": 1,
     }
     duct = components.Hexagon("duct", "HT9", **ductDims)
+    if depletable:
+        duct.p.flags = Flags.fromString("duct depletable")
 
     interDims = {
         "Tinput": hotTempCoolant,
@@ -333,10 +343,39 @@ class TestDetailedNDensUpdate(unittest.TestCase):
         self.assertEqual(block.p.detailedNDens, np.array([0.5]))
 
 
+class TestValidateSFPSpatialGrids(unittest.TestCase):
+    def test_noSFPExists(self):
+        """Validate the spatial grid for a new SFP is None if it was not provided."""
+        # copy the inputs, so we can modify them
+        with TemporaryDirectoryChanger() as newDir:
+            oldDir = os.path.join(TEST_ROOT, "smallestTestReactor")
+            newDir2 = os.path.join(newDir.destination, "smallestTestReactor")
+            shutil.copytree(oldDir, newDir2)
+
+            # cut out the SFP grid in the input file
+            testFile = os.path.join(newDir2, "refSmallestReactor.yaml")
+            txt = open(testFile, "r").read()
+            txt = txt.split("symmetry: full")[0]
+            open(testFile, "w").write(txt)
+
+            # verify there is no spatial grid defined
+            _o, r = loadTestReactor(newDir2, inputFileName="armiRunSmallest.yaml")
+            self.assertIsNone(r.excore.sfp.spatialGrid)
+
+    def test_SFPSpatialGridExists(self):
+        """Validate the spatial grid for a new SFP is not None if it was provided."""
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+        self.assertIsNotNone(r.excore.sfp.spatialGrid)
+
+
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
         self.block = loadTestBlock()
         self._hotBlock = loadTestBlock(cold=False)
+        self._deplBlock = loadTestBlock(depletable=True)
 
     def test_getSmearDensity(self):
         cur = self.block.getSmearDensity()
@@ -843,6 +882,26 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(3, len(block))
         self.assertEqual(block.p.height, refHeight)
 
+    def test_getWettedPerimeterDepletable(self):
+        # calculate the reference value
+        wire = self._deplBlock.getComponent(Flags.WIRE)
+        correctionFactor = np.hypot(
+            1.0,
+            math.pi
+            * wire.getDimension("helixDiameter")
+            / wire.getDimension("axialPitch"),
+        )
+        wireDiam = wire.getDimension("od") * correctionFactor
+
+        ipDim = self.block.getDim(Flags.DUCT, "ip")
+        odDim = self.block.getDim(Flags.CLAD, "od")
+        mult = self.block.getDim(Flags.CLAD, "mult")
+        ref = math.pi * (odDim + wireDiam) * mult + 6 * ipDim / math.sqrt(3)
+
+        # test getWettedPerimeter
+        cur = self._deplBlock.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
     def test_getWettedPerimeter(self):
         # calculate the reference value
         wire = self.block.getComponent(Flags.WIRE)
@@ -1223,7 +1282,72 @@ class Block_TestCase(unittest.TestCase):
 
         self.assertAlmostEqual(mass2 - mass1, massDiff)
 
-    def test_completeInitialLoading(self):
+    @patch.object(blocks.HexBlock, "getSymmetryFactor")
+    def test_getMgFlux(self, mock_sf):
+        # calculate Mg Flux with a Symmetry Factor of 3
+        mock_sf.return_value = 3
+        neutronFlux = 1.0
+        gammaFlux = 2.0
+        self.block.p.mgFlux = np.full(5, neutronFlux)
+        self.block.p.mgFluxGamma = np.full(4, gammaFlux)
+        fuel = self.block.getComponent(Flags.FUEL)
+        blockVol = self.block.getVolume()
+        fuelVol = fuel.getVolume()
+        # compute volume fraction of component; need symmetry factor
+        volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
+        neutronFluxInt = fuel.getIntegratedMgFlux()
+        gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
+        # getIntegratedMgFlux should be scaled by the component volume fraction
+        np.testing.assert_almost_equal(
+            neutronFluxInt, np.full(5, neutronFlux * volFrac)
+        )
+        np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
+
+        # getMgFlux should return regular, non-integrated flux
+        neutronMgFlux = fuel.getMgFlux()
+        gammaMgFlux = fuel.getMgFlux(gamma=True)
+        np.testing.assert_almost_equal(
+            neutronMgFlux, np.full(5, neutronFlux / blockVol)
+        )
+        np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
+
+        # calculate Mg Flux with a Symmetry Factor of 1
+        mock_sf.return_value = 1
+        self.block.p.mgFlux = np.full(5, neutronFlux)
+        self.block.p.mgFluxGamma = np.full(4, gammaFlux)
+        fuel = self.block.getComponent(Flags.FUEL)
+        blockVol = self.block.getVolume()
+        fuelVol = fuel.getVolume()
+        volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
+        neutronFluxInt = fuel.getIntegratedMgFlux()
+        gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
+        # getIntegratedMgFlux should be scaled by the component volume fraction
+        np.testing.assert_almost_equal(
+            neutronFluxInt, np.full(5, neutronFlux * volFrac)
+        )
+        np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
+
+        # getMgFlux should return regular, non-integrated flux
+        neutronMgFlux = fuel.getMgFlux()
+        gammaMgFlux = fuel.getMgFlux(gamma=True)
+        np.testing.assert_almost_equal(
+            neutronMgFlux, np.full(5, neutronFlux / blockVol)
+        )
+        np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
+
+    @patch.object(blocks.HexBlock, "getSymmetryFactor")
+    def test_completeInitialLoading(self, mock_sf):
+        """Ensure that some BOL block and component params are populated properly.
+
+        Notes
+        -----
+        - When checking component-level BOL params, puFrac is skipped due to 1) there's no Pu in the block, and 2)
+          getPuMoles is functionally identical to getHMMoles (just limits nuclides from heavy metal to just Pu).
+        - getSymmetryFactor is mocked to return 3. This indicates that the block is in the center-most assembly.
+          Providing this mock ensures that symmetry factors are tested as well (otherwise it's just a factor of 1
+          and it is a less robust test).
+        """
+        mock_sf.return_value = 3
         area = self.block.getArea()
         height = 2.0
         self.block.setHeight(height)
@@ -1240,10 +1364,33 @@ class Block_TestCase(unittest.TestCase):
 
         self.block.completeInitialLoading()
 
+        sf = self.block.getSymmetryFactor()
         cur = self.block.p.molesHmBOL
         ref = self.block.getHMDens() / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * height * area
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=12)
+
+        totalHMMass = 0.0
+        for c in self.block:
+            nucs = c.getNuclides()
+            hmNucs = [nuc for nuc in nucs if nucDir.isHeavyMetal(nuc)]
+            hmNDens = {hmNuc: c.getNumberDensity(hmNuc) for hmNuc in hmNucs}
+            # use sf to account for only a 1/sf portion of the component being in the block
+            hmMass = densityTools.calculateMassDensity(hmNDens) * c.getVolume() / sf
+            totalHMMass += hmMass
+            if hmMass:
+                self.assertAlmostEqual(c.p.massHmBOL, hmMass, places=12)
+                self.assertAlmostEqual(
+                    c.p.molesHmBOL,
+                    sum(ndens for ndens in hmNDens.values())
+                    / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+                    * c.getVolume(),
+                    places=12,
+                )
+            else:
+                self.assertEqual(c.p.massHmBOL, 0.0)
+                self.assertEqual(c.p.molesHmBOL, 0.0)
+
+        self.assertAlmostEqual(self.block.p.massHmBOL, totalHMMass)
 
     def test_add(self):
         numComps = len(self.block.getComponents())
@@ -1357,12 +1504,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertEqual(cur[0], ref)
 
     def test_getComponentByName(self):
-        """Test children by name.
-
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME0
-            :tests: R_ARMI_CMP_BY_NAME
-        """
+        """Test children by name."""
         self.assertIsNone(
             self.block.getComponentByName("not the droid youre looking for")
         )
@@ -1372,10 +1514,6 @@ class Block_TestCase(unittest.TestCase):
         """Test that components can be sorted within a block and returned in the correct order.
 
         For an arbitrary example: a clad component.
-
-        .. test:: Get children by name.
-            :id: T_ARMI_CMP_BY_NAME1
-            :tests: R_ARMI_CMP_BY_NAME
         """
         expected = [
             self.block.getComponentByName(c)
@@ -1584,7 +1722,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 
     def test_expandElementalToIsotopics(self):
-        r"""Tests the expand to elementals capability."""
+        """Tests the expand to elementals capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1616,7 +1754,7 @@ class Block_TestCase(unittest.TestCase):
             )
 
     def test_expandAllElementalsToIsotopics(self):
-        r"""Tests the expand all elementals simlutaneously capability."""
+        """Tests the expand all elementals simlutaneously capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1649,7 +1787,7 @@ class Block_TestCase(unittest.TestCase):
             )
 
     def test_setPitch(self):
-        r"""
+        """
         Checks consistency after adjusting pitch.
 
         Needed to verify fix to Issue #165.
@@ -1695,7 +1833,7 @@ class Block_TestCase(unittest.TestCase):
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
-    def test_consistentMassDensityVolumeBetweenColdBlockAndColdComponents(self):
+    def test_consistentMassDensVolBetweenColdBlockAndComp(self):
         block = self.block
         expectedData = []
         actualData = []
@@ -1713,7 +1851,7 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentMassDensityVolumeBetweenHotBlockAndHotComponents(self):
+    def test_consistentMassDensVolBetweenHotBlockAndComp(self):
         block = self._hotBlock
         expectedData = []
         actualData = []
@@ -1731,7 +1869,7 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentAreaWithOverlappingComponents(self):
+    def test_consistentAreaWithOverlappingComp(self):
         """
         Test that negative gap areas correctly account for area overlapping upon thermal expansion.
 
@@ -1790,14 +1928,6 @@ class Block_TestCase(unittest.TestCase):
             self.block.getComponent(Flags.DUCT).getDimension("op"),
             self.block.getComponent(Flags.INTERCOOLANT).getDimension("ip"),
         )
-
-    def test_breakFuelComponentsIntoIndividuals(self):
-        fuel = self.block.getComponent(Flags.FUEL)
-        mult = fuel.getDimension("mult")
-        self.assertGreater(mult, 1.0)
-        self.block.completeInitialLoading()
-        self.block.breakFuelComponentsIntoIndividuals()
-        self.assertEqual(fuel.getDimension("mult"), 1.0)
 
     def test_pinMgFluxes(self):
         """
@@ -2125,13 +2255,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(self.hexBlock.getNumPins(), 169)
 
     def test_block_dims(self):
-        """
-        Tests that the block class can provide basic dimensionality information about itself.
-
-        .. test:: Important block dimensions are retrievable.
-            :id: T_ARMI_BLOCK_DIMS
-            :tests: R_ARMI_BLOCK_DIMS
-        """
+        """Tests that the block class can provide basic dimensionality information about itself."""
         self.assertAlmostEqual(4316.582, self.hexBlock.getVolume(), 3)
         self.assertAlmostEqual(70.6, self.hexBlock.getPitch(), 1)
         self.assertAlmostEqual(4316.582, self.hexBlock.getMaxArea(), 3)

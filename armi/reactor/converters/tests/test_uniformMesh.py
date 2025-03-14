@@ -13,20 +13,19 @@
 # limitations under the License.
 """Tests for the uniform mesh geometry converter."""
 import collections
+import copy
 import os
 import random
 import unittest
-import copy
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_assemblies
-from armi.reactor.tests import test_blocks
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT, ISOAA_PATH
+from armi.reactor.tests import test_assemblies, test_blocks
+from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
+from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.tests import ISOAA_PATH, TEST_ROOT
 
 
 class DummyFluxOptions:
@@ -452,8 +451,8 @@ class TestUniformMesh(unittest.TestCase):
 
         self.converter.convert(self.r)
         for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
-            b.p.mgFlux = list(range(33))
-            b.p.adjMgFlux = list(range(33))
+            b.p.mgFlux = list(range(1, 34))
+            b.p.adjMgFlux = list(range(1, 34))
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0

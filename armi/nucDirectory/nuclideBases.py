@@ -97,11 +97,10 @@ Retrieve U-235 by the AAAZZZS ID:
 
 import os
 
-from ruamel.yaml import YAML
 import numpy as np
+from ruamel.yaml import YAML
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.nucDirectory import transmutations
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
@@ -115,7 +114,6 @@ instances = []
 # to allow for simutaneous initialization of the nuclides and elements
 # together to maintain self-consistency.
 from armi.nucDirectory import elements  # noqa: E402
-
 
 # Dictionary of INuclides by the INuclide.name for fast indexing
 byName = {}
@@ -802,22 +800,6 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
         """
         return "{0:d}000".format(self.z)
 
-    def getAAAZZZSId(self):
-        """Gets the AAAZZZS ID for a few elements.
-
-        Notes
-        -----
-        the natural nuclides 'C' and 'V' do not have isotopic nuclide data for MC2 so sometimes they tag along in the
-        list of active nuclides. This method is designed to fail in the same as if there was not getAAAZZZSId method
-        defined.
-        """
-        if self.element.symbol == "C":
-            return "120060"
-        elif self.element.symbol == "V":
-            return "510230"
-        else:
-            return None
-
     def getMcc2Id(self):
         """Return the MC2-2 nuclide identification label based on the ENDF/B-V.2 cross section library."""
         return self.mcc2id
@@ -1444,6 +1426,8 @@ def addGlobalNuclide(nuclide: NuclideBase):
                 f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added and cannot be duplicated."
             )
         byMcnpId[nuclide.getMcnpId()] = nuclide
+    if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
+        # There are no AZS ID for elements / natural nuclides, or ficticious lump or dummy nuclides
         byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
 

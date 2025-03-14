@@ -54,8 +54,8 @@ The class diagram is provided in `xsgm-class-diagram`_
 import collections
 import copy
 import os
-import shutil
 import string
+import sys
 
 import numpy as np
 
@@ -64,9 +64,9 @@ from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import flags
 from armi.reactor.components import basicShapes
-from armi.reactor.converters.blockConverters import stripComponents
 from armi.reactor.flags import Flags
-from armi.utils.units import TRACE_NUMBER_DENSITY, C_TO_K
+from armi.utils import safeCopy
+from armi.utils.units import C_TO_K, TRACE_NUMBER_DENSITY
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.CROSS_SECTIONS
 
@@ -81,7 +81,7 @@ def describeInterfaces(cs):
     return None
 
 
-_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase)
+_ALLOWABLE_XS_TYPE_LIST = list(string.ascii_uppercase + string.ascii_lowercase)
 
 
 def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
@@ -95,7 +95,7 @@ def getXSTypeNumberFromLabel(xsTypeLabel: str) -> int:
     return int("".join(["{:02d}".format(ord(si)) for si in xsTypeLabel]))
 
 
-def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
+def getXSTypeLabelFromNumber(xsTypeNumber: int) -> str:
     """
     Convert a XSID label (e.g. 65) to an XS label (e.g. 'A').
 
@@ -107,6 +107,11 @@ def getXSTypeLabelFromNumber(xsTypeNumber: int) -> int:
         if xsTypeNumber > ord("Z"):
             # two digit. Parse
             return chr(int(str(xsTypeNumber)[:2])) + chr(int(str(xsTypeNumber)[2:]))
+        elif xsTypeNumber < ord("A"):
+            raise ValueError(
+                f"Cannot convert invalid xsTypeNumber `{xsTypeNumber}` to char. "
+                "The number must be >= 65 (corresponding to 'A')."
+            )
         else:
             return chr(xsTypeNumber)
     except ValueError:
@@ -705,6 +710,8 @@ class CylindricalComponentsDuctHetAverageBlockCollection(
 
     def _getNucTempHelper(self):
         """All candidate blocks are used in the average."""
+        from armi.reactor.converters.blockConverters import stripComponents
+
         nvt = np.zeros(len(self.allNuclidesInProblem))
         nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():
@@ -1195,7 +1202,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             )
             # Prevent copy error if the path and destination are the same.
             if xsFileLocation != dest:
-                shutil.copy(xsFileLocation, dest)
+                safeCopy(xsFileLocation, dest)
 
     def _copyPregeneratedFluxSolutionFile(self, xsID):
         # stop a race condition to copy files between all processors
@@ -1211,7 +1218,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         )
         # Prevent copy error if the path and destination are the same.
         if fluxFileLocation != dest:
-            shutil.copy(fluxFileLocation, dest)
+            safeCopy(fluxFileLocation, dest)
 
     def _getPregeneratedXsFileLocationData(self, xsID):
         """
@@ -1459,6 +1466,17 @@ class CrossSectionGroupManager(interfaces.Interface):
                     len(allocatedXSTypes), len(availableXsTypes), howMany
                 )
             )
+
+        # check for lower-case on case-insensitive file system
+        if sys.platform.startswith("win"):
+            allXSTypes = allocatedXSTypes.union(set(availableXsTypes[:howMany]))
+            allCaps = {c.capitalize() for c in allXSTypes}
+            if len(allCaps) != len(allXSTypes):
+                runLog.warning(
+                    "Mixing upper and lower-case XS group types on a Windows system, which is not "
+                    "case-sensitive. There is a chance that ARMI could overwrite previously "
+                    "generated XS files, which could cause mysterious and/or unpredictable errors."
+                )
         return availableXsTypes[:howMany]
 
     def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):

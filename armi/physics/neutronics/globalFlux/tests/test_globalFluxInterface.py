@@ -27,8 +27,7 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests import test_blocks, test_reactors
 from armi.tests import ISOAA_PATH
 
 
@@ -277,12 +276,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingFalse()
 
     def test_getTightCouplingValue(self):
-        """Test getTightCouplingValue returns the correct value for keff and type for power.
-
-        .. test:: Return k-eff or assembly-wise power for coupling interactions.
-            :id: T_ARMI_FLUX_COUPLING_VALUE
-            :tests: R_ARMI_FLUX_COUPLING_VALUE
-        """
+        """Test getTightCouplingValue returns the correct value for keff and type for power."""
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"

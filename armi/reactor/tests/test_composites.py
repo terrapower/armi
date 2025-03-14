@@ -13,31 +13,23 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-from copy import deepcopy
 import logging
 import unittest
+from copy import deepcopy
 
-from armi import nuclearDataIO
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
+from armi.testing import loadTestReactor
+from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:
@@ -157,12 +149,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(onlyLiner), 1)
 
     def test_getName(self):
-        """Test the getName method.
-
-        .. test:: Composites names should be accessible.
-            :id: T_ARMI_CMP_GET_NAME
-            :tests: R_ARMI_CMP_GET_NAME
-        """
+        """Test the getName method."""
         self.assertEqual(self.secondGen.getName(), "liner")
         self.assertEqual(self.thirdGen.getName(), "pin 77")
         self.assertEqual(self.secondGen.getName(), "liner")
@@ -801,7 +788,7 @@ class TestMiscMethods(unittest.TestCase):
                 self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
             )
 
-    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+    def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
 
         .. test:: Get number densities.

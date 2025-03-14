@@ -18,12 +18,12 @@ import unittest
 
 from armi import cases, settings
 from armi.cases.inputModifiers.inputModifiers import (
-    SamplingInputModifier,
     InputModifier,
+    SamplingInputModifier,
 )
 from armi.cases.suiteBuilder import (
-    LatinHyperCubeSuiteBuilder,
     FullFactorialSuiteBuilder,
+    LatinHyperCubeSuiteBuilder,
     SeparateEffectsSuiteBuilder,
 )
 

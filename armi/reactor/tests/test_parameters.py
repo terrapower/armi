@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for assorted Parameters tools."""
-from glob import glob
-from shutil import copyfile
 import copy
 import os
 import unittest
+from glob import glob
+from shutil import copyfile
 
 from armi.reactor import parameters
 from armi.reactor.reactorParameters import makeParametersReadOnly
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -82,7 +82,7 @@ class ParameterTests(unittest.TestCase):
             :tests: R_ARMI_PARAM_DB
 
         .. test:: Ensure that new parameters can be defined.
-            :id: T_ARMI_PARAM
+            :id: T_ARMI_PARAM0
             :tests: R_ARMI_PARAM
         """
         pDefs = parameters.ParameterDefinitionCollection()
@@ -380,7 +380,7 @@ class ParameterTests(unittest.TestCase):
             set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs))
         )
 
-    def test_cannotDefineParameterWithSameNameForCollectionSubclass(self):
+    def test_cannotDefineParamSameNameCollectionSubclass(self):
         class MockPCParent(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:

@@ -17,10 +17,8 @@ import os
 import unittest
 
 from armi import settings
-from armi.reactor import blueprints
-from armi.reactor import reactors
-from armi.reactor.blueprints import gridBlueprint
-from armi.reactor.blueprints import reactorBlueprint
+from armi.reactor import blueprints, reactors
+from armi.reactor.blueprints import gridBlueprint, reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
 from armi.reactor.composites import Composite
 from armi.reactor.excoreStructure import ExcoreStructure
@@ -145,7 +143,12 @@ class TestReactorBlueprints(unittest.TestCase):
 
     def test_materialDataSummary(self):
         """Test that the material data summary for the core is valid as a printout to the stdout."""
-        expectedMaterialData = [("Custom", "ARMI"), ("HT9", "ARMI"), ("UZr", "ARMI")]
+        expectedMaterialData = [
+            ("Custom", "ARMI"),
+            ("HT9", "ARMI"),
+            ("Sodium", "ARMI"),
+            ("UZr", "ARMI"),
+        ]
         core, _sfp, _evst = self._setupReactor()
         materialData = reactorBlueprint.summarizeMaterialData(core)
         for actual, expected in zip(materialData, expectedMaterialData):
