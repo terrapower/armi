@@ -124,6 +124,7 @@ if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
             os.makedirs(APP_DATA)
+            os.chmod(APP_DATA, 0o0777)
         except OSError:
             pass
     if not os.path.isdir(APP_DATA):
