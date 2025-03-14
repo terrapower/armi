@@ -4,7 +4,7 @@ ARMI v0.5 Release Notes
 
 ARMI v0.5.1
 ===========
-Release Date: TBD (March, 2025)
+Release Date: 2025-03-14
 
 New Features
 ------------
@@ -12,12 +12,11 @@ New Features
 #. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
 #. Using inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
 #. Invoking ``component.material.density()`` does not log an expensive stack tracefor fluids. (`PR#2075 <https://github.com/terrapower/armi/pull/2075>`_)
-#. TBD
+#. ARMI will now try to use the ``/tmp/`` directory for its temp files, on Linux and MacOS. (`PR#2092 <https://github.com/terrapower/armi/pull/2092>`_)
 
 API Changes
 -----------
 #. Removing ``Database3`` from the API, use ``Database``. (`PR#2052 <https://github.com/terrapower/armi/pull/2052>`_)
-#. TBD
 
 Bug Fixes
 ---------
@@ -28,7 +27,6 @@ Bug Fixes
 #. Fixing scaling of volume-integrated parameters on edge assemblies. (`PR#2060 <https://github.com/terrapower/armi/pull/2060>`_)
 #. Fixing strictness of ``HexGrid`` rough equality check. (`PR#2058 <https://github.com/terrapower/armi/pull/2058>`_)
 #. Fixing treatment of symmetry factors when calculating component flux and reaction rates. (`PR#2068 <https://github.com/terrapower/armi/pull/2068>`_)
-#. TBD
 
 Quality Work
 ------------
@@ -37,7 +35,6 @@ Quality Work
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
 #. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
 #. Removing silent overwrite of ``shutil.copy``. (`PR#2081 <https://github.com/terrapower/armi/pull/2081>`_)
-#. TBD
 
 
 ARMI v0.5.0
