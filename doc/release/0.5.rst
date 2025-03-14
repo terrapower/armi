@@ -18,7 +18,6 @@ API Changes
 
 Bug Fixes
 ---------
-#. Fix assembly plots to use initial block heights. (`PR#1998 <https://github.com/terrapower/armi/pull/1998>`_)
 #. TBD
 
 Quality Work
