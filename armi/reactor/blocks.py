@@ -2407,15 +2407,7 @@ class HexBlock(Block):
         )
 
     def getFlowArea(self):
-        """Return the total flowing coolant area of the block in cm^2.
-
-        .. impl:: Flow area of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS8
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Retrieving the flow area requires that there be a single coolant Component. If
-            available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
-        """
+        """Return the total flowing coolant area of the block in cm^2."""
         area = self.getComponent(Flags.COOLANT, exact=True).getArea()
         for c in self.getComponents(Flags.INTERDUCTCOOLANT, exact=True):
             area += c.getArea()
