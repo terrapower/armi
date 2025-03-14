@@ -161,8 +161,7 @@ Every release should follow this process:
     - **NOTE** - The ONLY tags in the ARMI repo are for official version releases.
 
 5. Also add the release notes on `the GitHub UI <https://github.com/terrapower/armi/releases>`__.
-6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to archive
-   the new documentation.
+6. Follow the instructions `here <https://github.com/terrapower/terrapower.github.io>`_ to archive the new documentation.
 7. Tell everyone!
 
 Logging with runLog
@@ -245,8 +244,7 @@ That log message gets printed 1,000 times, but we can ensure it is only printed 
     for _i in range(1000):
         runLog.warning("Something wicked this way comes.", single=True)
 
-Obviously, this will not be useful in every scenario. But it is a handy tool to clean up your log
-files.
+Obviously, this will not be useful in every scenario. But it is a handy tool to clean up your log files.
 
 
 Module-Level Logging
