@@ -1221,29 +1221,46 @@ class Block_TestCase(unittest.TestCase):
     def test_getMgFlux(self, mock_sf):
         # calculate Mg Flux with a Symmetry Factor of 3
         mock_sf.return_value = 3
-        self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
-        self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
+        neutronFlux = 1.0
+        gammaFlux = 2.0
+        self.block.p.mgFlux = np.full(5, neutronFlux)
+        self.block.p.mgFluxGamma = np.full(4, gammaFlux)
         fuel = self.block.getComponent(Flags.FUEL)
         blockVol = self.block.getVolume()
         fuelVol = fuel.getVolume()
+        # compute volume fraction of component; need symmetry factor
         volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
-        neutronFlux = fuel.getIntegratedMgFlux()
-        gammaFlux = fuel.getIntegratedMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * volFrac)
-        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * volFrac * 2.0)
+        neutronFluxInt = fuel.getIntegratedMgFlux()
+        gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
+        # getIntegratedMgFlux should be scaled by the component volume fraction
+        np.testing.assert_almost_equal(neutronFluxInt, np.full(5, neutronFlux * volFrac))
+        np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
+
+        # getMgFlux should return regular, non-integrated flux
+        neutronMgFlux = fuel.getMgFlux()
+        gammaMgFlux = fuel.getMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronMgFlux, np.full(5, neutronFlux / blockVol))
+        np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
 
         # calculate Mg Flux with a Symmetry Factor of 1
         mock_sf.return_value = 1
-        self.block.p.mgFlux = np.array([1, 1, 1, 1, 1])
-        self.block.p.mgFluxGamma = np.array([2, 2, 2, 2])
+        self.block.p.mgFlux = np.full(5, neutronFlux)
+        self.block.p.mgFluxGamma = np.full(4, gammaFlux)
         fuel = self.block.getComponent(Flags.FUEL)
         blockVol = self.block.getVolume()
         fuelVol = fuel.getVolume()
         volFrac = fuelVol / blockVol / self.block.getSymmetryFactor()
-        neutronFlux = fuel.getIntegratedMgFlux()
-        gammaFlux = fuel.getIntegratedMgFlux(gamma=True)
-        np.testing.assert_almost_equal(neutronFlux, np.ones(5) * volFrac)
-        np.testing.assert_almost_equal(gammaFlux, np.ones(4) * volFrac * 2.0)
+        neutronFluxInt = fuel.getIntegratedMgFlux()
+        gammaFluxInt = fuel.getIntegratedMgFlux(gamma=True)
+        # getIntegratedMgFlux should be scaled by the component volume fraction
+        np.testing.assert_almost_equal(neutronFluxInt, np.full(5, neutronFlux * volFrac))
+        np.testing.assert_almost_equal(gammaFluxInt, np.full(4, gammaFlux * volFrac))
+
+        # getMgFlux should return regular, non-integrated flux
+        neutronMgFlux = fuel.getMgFlux()
+        gammaMgFlux = fuel.getMgFlux(gamma=True)
+        np.testing.assert_almost_equal(neutronMgFlux, np.full(5, neutronFlux / blockVol))
+        np.testing.assert_almost_equal(gammaMgFlux, np.full(4, gammaFlux / blockVol))
 
     @patch.object(blocks.HexBlock, "getSymmetryFactor")
     def test_completeInitialLoading(self, mock_sf):
@@ -1613,7 +1630,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 
     def test_expandElementalToIsotopics(self):
-        r"""Tests the expand to elementals capability."""
+        """Tests the expand to elementals capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1645,7 +1662,7 @@ class Block_TestCase(unittest.TestCase):
             )
 
     def test_expandAllElementalsToIsotopics(self):
-        r"""Tests the expand all elementals simlutaneously capability."""
+        """Tests the expand all elementals simlutaneously capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1678,7 +1695,7 @@ class Block_TestCase(unittest.TestCase):
             )
 
     def test_setPitch(self):
-        r"""
+        """
         Checks consistency after adjusting pitch.
 
         Needed to verify fix to Issue #165.
@@ -1724,7 +1741,7 @@ class Block_TestCase(unittest.TestCase):
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
-    def test_consistentMassDensityVolumeBetweenColdBlockAndColdComponents(self):
+    def test_consistentMassDensVolBetweenColdBlockAndComp(self):
         block = self.block
         expectedData = []
         actualData = []
@@ -1740,7 +1757,7 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentMassDensityVolumeBetweenHotBlockAndHotComponents(self):
+    def test_consistentMassDensVolBetweenHotBlockAndComp(self):
         block = self._hotBlock
         expectedData = []
         actualData = []
@@ -1756,7 +1773,7 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentAreaWithOverlappingComponents(self):
+    def test_consistentAreaWithOverlappingComp(self):
         """
         Test that negative gap areas correctly account for area overlapping upon thermal expansion.
 

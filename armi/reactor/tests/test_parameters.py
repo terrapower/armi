@@ -361,7 +361,7 @@ class ParameterTests(unittest.TestCase):
         self.assertTrue(set(base.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs)))
         self.assertTrue(set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs)))
 
-    def test_cannotDefineParameterWithSameNameForCollectionSubclass(self):
+    def test_cannotDefineParamSameNameCollectionSubclass(self):
         class MockPCParent(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:

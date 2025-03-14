@@ -2,9 +2,8 @@
 
 pushd %~dp0
 
-REM Command file for Sphinx documentation for ARMI
-REM This can be run locally with make html
-REM or remotely on a HPC cluster.
+REM Windows command file for Sphinx documentation for ARMI
+REM This can be run locally with make html.
 
 if "%PYTHON%" == "" (
 	set PYTHON=python
@@ -16,8 +15,8 @@ if "%BUILDDIR%" == "" (
 if "%PYTHONPATH%" == "" (
 	set PYTHONPATH=..
 )
-REM Graphviz and Pandoc binaries are required for
-REM auto-generating figures and running notebooks during doc building
+REM Graphviz and Pandoc binaries are required for auto-generating figures and running notebooks
+REM during doc building
 if NOT "%GRAPHVIZ%" == "" (
 	set PATH="%PATH%";%GRAPHVIZ%
 )
@@ -30,13 +29,11 @@ if "%1" == "" goto help
 %PYTHON% -m sphinx >NUL 2>NUL
 if errorlevel 9009 (
 	echo.
-	echo.The 'sphinx' package was not found. Make sure you have Sphinx
-	echo.installed, then set the SPHINXBUILD environment variable to point
-	echo.to the full path of the 'sphinx-build' executable. Alternatively you
-	echo.may add the Sphinx directory to PATH.
+	echo.The 'sphinx' package was not found. Make sure you have Sphinx installed, then set the
+	echo.SPHINXBUILD environment variable to point to the full path of the 'sphinx-build'
+	echo.executable. Alternatively you may add the Sphinx directory to PATH.
 	echo.
-	echo.If you don't have Sphinx installed, grab it from
-	echo.http://sphinx-doc.org/
+	echo.If you don't have Sphinx installed, grab it from: http://sphinx-doc.org/
 	exit /b 1
 )
 @ECHO ON

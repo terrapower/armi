@@ -26,13 +26,13 @@ class NuclideTests(unittest.TestCase):
     def setUpClass(cls):
         cls.lib = isotxs.readBinary(ISOAA_PATH)
 
-    def test_nuclide_createFromLabelFailsOnBadName(self):
+    def test_nucl_createFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
         nuc.isotxsMetadata["nuclideId"] = "BACN87"
         with self.assertRaises(OSError):
             nuc.updateBaseNuclide()
 
-    def test_nuclide_creatingNuclidesDoesNotMessWithUnderlyingNuclideDict(self):
+    def test_nuc_creatingNucNotMessWithUnderlyingNucDict(self):
         nuc = nuclideBases.byName["U238"]
         self.assertFalse(hasattr(nuc, "xsId"))
         nrAA = xsNuclides.XSNuclide(None, "U238AA")
@@ -41,7 +41,7 @@ class NuclideTests(unittest.TestCase):
         self.assertEqual("AA", nrAA.xsId)
         self.assertFalse(hasattr(nuc, "xsId"))
 
-    def test_nuclide_modifyingNuclideAttributesUpdatesTheIsotxsNuclide(self):
+    def test_nucl_modifyingNucAttrUpdatesTheIsotxsNuc(self):
         lib = xsLibraries.IsotxsLibrary()
         nuc = nuclideBases.byName["FE"]
         nrAA = xsNuclides.XSNuclide(lib, "FEAA")
