@@ -2,51 +2,39 @@
 Inputs
 ******
 
-ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis
-should be performed on it.
+ARMI input files define the initial state of the reactor model and tell ARMI what kind of analysis should be performed on it.
 
 .. note:: We have a :ref:`walkthrough-inputs` tutorial for a quick overview of the inputs.
 
 There are several input files:
 
 Settings file
-    Contains simulation parameters (like full power, cycle length, and which physics modules to
-    activate) and all kind of modeling approximation settings (e.g. convergence criteria)
+    Contains simulation parameters (like full power, cycle length, and which physics modules to activate) and all kind of modeling approximation settings (e.g. convergence criteria)
 
 Blueprints file
-    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems,
-    from fuel pins to heat exchangers
+    Contains dimensions and composition of the components/blocks/assemblies in your reactor systems, from fuel pins to heat exchangers
 
 Fuel management file
     Describes how fuel moves around during a simulation
 
 
-Depending on the type of analysis, developers may create other input files for things like: control
-logic, ex-core models for transients and shielding, etc.
+Depending on the type of analysis, developers may create other input files for things like: control logic, ex-core models for transients and shielding, etc.
 
 
 YAML Files
 ==========
-ARMI's input files all use the `YAML <https://en.wikipedia.org/wiki/YAML>`_ format. This is a well-
-known file format, chosen because it is human-readable and easy to hand-write. That being said,
-there are two details about the YAML format that are important to know:
+ARMI's input files all use the `YAML <https://en.wikipedia.org/wiki/YAML>`_ format. This is a well-known file format, chosen because it is human-readable and easy to hand-write. That being said, there are two details about the YAML format that are important to know:
 
 Ordering
-    YAML is not order specific; however, one of the techniques used to limit the size of the input
-    includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g.
-    ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
+    YAML is not order specific; however, one of the techniques used to limit the size of the input includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g. ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
 
 Duplicate Keys
-    YAML allows for duplicate keys. However, in ARMI, duplicates might be erroneous. Unfortunately,
-    because the international YAML specification allows for duplicates, none of the YAML-parsing
-    libraries see it as an error. You will have to hand-verify your inputs are correct.
+    YAML allows for duplicate keys. However, in ARMI, duplicates might be erroneous. Unfortunately, because the international YAML specification allows for duplicates, none of the YAML-parsing libraries see it as an error. You will have to hand-verify your inputs are correct.
 
 
 The Settings Input File
 =======================
-The **settings** input file defines a series of key/value pairs the define various information about
-the system you are modeling as well as which modules to run and various modeling/approximation
-settings. For example, it includes:
+The **settings** input file defines a series of key/value pairs the define various information about the system you are modeling as well as which modules to run and various modeling/approximation settings. For example, it includes:
 
 * The case title
 * The reactor power
@@ -75,39 +63,23 @@ Many settings are provided by the ARMI Framework, and others are defined by vari
 
 The ARMI GUI
 ------------
-The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the
-settings). The GUI also enables the graphical manipulation of a reactor core map, and convenient
-automation of commands required to submit to a cluster. The GUI is a front-end to these files. You
-can choose to use the GUI or not, ARMI doesn't know or care --- it just reads these files and runs
-them.
+The ARMI GUI may be used to manipulate many common settings (though the GUI can't change all of the settings). The GUI also enables the graphical manipulation of a reactor core map, and convenient automation of commands required to submit to a cluster. The GUI is a front-end to these files. You can choose to use the GUI or not, ARMI doesn't know or care -- it just reads these files and runs them.
 
-Note that one settings input file is required for each ARMI case, though many ARMI cases can refer
-to the same Blueprints, Core Map, and Fuel Management inputs.
+Note that one settings input file is required for each ARMI case, though many ARMI cases can refer to the same Blueprints, Core Map, and Fuel Management inputs.
 
-.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple
-    grid editor GUI is, as described in :ref:`grids`
+.. tip:: The ARMI GUI is not yet included in the open-source ARMI framework, but a simple grid editor GUI is, as described in :ref:`grids`
 
 The assembly clicker
 ^^^^^^^^^^^^^^^^^^^^
-The assembly clicker (aka the :py:mod:`Grid Editor <armi.utils.gridEditor>`) allows users to define the 2-D layout of the assemblies defined in the
-:ref:`bp-input-file`. This can be done in hexagon or cartesian. The results of this arrangement get written to
-grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the
-assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
+The assembly clicker (aka the :py:mod:`Grid Editor <armi.utils.gridEditor>`) allows users to define the 2-D layout of the assemblies defined in the :ref:`bp-input-file`. This can be done in hexagon or cartesian. The results of this arrangement get written to grids in blueprints. Click on the assembly palette on the right and click on the locations where you want to put the assembly. By default, the input assumes a 1/3 core model, but you can create a full core model through the menu.
 
-If you want one assembly type to fill all positions in a ring, right click it once it is placed and choose ``Make ring
-like this hex``. Once you submit the job or save the settings file (File -> Save), you will be prompted for a new name
-of the geometry file before the settings file is saved. The geometry setting in the main tab will also be updated.
+If you want one assembly type to fill all positions in a ring, right click it once it is placed and choose ``Make ring like this hex``. Once you submit the job or save the settings file (File -> Save), you will be prompted for a new name of the geometry file before the settings file is saved. The geometry setting in the main tab will also be updated.
 
 The ARMI Environment Tab
 ^^^^^^^^^^^^^^^^^^^^^^^^
-The environment tab contains important settings about which version of ARMI you will run
-and with which version of Python, etc. Most important is the ``ARMI location`` setting. This
-points to the codebase that will run. If you want to run the released version of ARMI,
-ensure that it is set in this setting. If you want to run a developer version, then be sure
-to update this setting.
+The environment tab contains important settings about which version of ARMI you will run and with which version of Python, etc. Most important is the ``ARMI location`` setting. This points to the codebase that will run. If you want to run the released version of ARMI, ensure that it is set in this setting. If you want to run a developer version, then be sure to update this setting.
 
-Other settings on this tab may need to be updated depending on your computational environment.
-Talk to your system admins to determine which settings are best.
+Other settings on this tab may need to be updated depending on your computational environment. Talk to your system admins to determine which settings are best.
 
 Some special settings
 ---------------------
@@ -117,20 +89,11 @@ A few settings warrant additional discussion.
 
 Detail assemblies
 ^^^^^^^^^^^^^^^^^
-Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses
-often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins
-may treat detail assemblies differently, so it's important to read the plugin documentation
-as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis
-only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies,
-while subchannel T/H is run on the others.
+Many plugins perform more detailed analysis on certain regions of the reactor. Since the analyses often take longer, ARMI has a feature, called *detail assemblies* to help. Different plugins may treat detail assemblies differently, so it's important to read the plugin documentation as well. For example, a depletion plugin may perform pin-level depletion and rotation analysis only on the detail assemblies. Or perhaps CFD thermal/hydraulics will be run on detail assemblies, while subchannel T/H is run on the others.
 
-Detail assemblies are specified by the user in a variety of ways,
-through the GUI or the settings system.
+Detail assemblies are specified by the user in a variety of ways, through the GUI or the settings system.
 
-.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush
-    for serious multiphysics calculations with each plugin treating them differently.
-    It is likely that this feature will be extended to be more flexible and less
-    surprising in the future.
+.. warning:: The Detail Assemblies mechanism has begun to be too broad of a brush for serious multiphysics calculations with each plugin treating them differently. It is likely that this feature will be extended to be more flexible and less surprising in the future.
 
 Detail Assembly Locations BOL
     The ``detailAssemLocationsBOL`` setting is a list of assembly location strings
@@ -149,11 +112,7 @@ Detail all assemblies
 
 Kinetics settings
 ^^^^^^^^^^^^^^^^^
-In reactor physics analyses it is standard practice to represent reactivity
-in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To
-support this functionality, the framework supplies the ``beta`` and
-``decayConstants`` settings to apply the delayed neutron fraction and
-precursor decay constants to the Core parameters during initialization.
+In reactor physics analyses it is standard practice to represent reactivity in either absolute units (i.e., dk/kk' or pcm) or in dollars or cents. To support this functionality, the framework supplies the ``beta`` and ``decayConstants`` settings to apply the delayed neutron fraction and precursor decay constants to the Core parameters during initialization.
 
 These settings come with a few caveats:
 
@@ -183,12 +142,9 @@ These settings come with a few caveats:
 
 Cycle history
 ^^^^^^^^^^^^^
-For all cases, ``nCycles`` and ``power`` must be specified by the user.
-In the case that only a single state is to be examined (i.e. no burnup), the user need only additionally specify ``nCycles = 1``.
+For all cases, ``nCycles`` and ``power`` must be specified by the user. In the case that only a single state is to be examined (i.e. no burnup), the user need only additionally specify ``nCycles = 1``.
 
-In the case of burnup, the reactor cycle history may be specified using either the simple or detailed
-option.
-The simple cycle history consists of the following case settings:
+In the case of burnup, the reactor cycle history may be specified using either the simple or detailed option. The simple cycle history consists of the following case settings:
 
     * ``power``
     * ``nCycles`` (default = 1)
@@ -196,14 +152,7 @@ The simple cycle history consists of the following case settings:
     * ``availabilityFactor(s)`` (default = 1.0)
     * ``cycleLength(s)`` (default = 365.2425)
 
-In addition, one may optionally use the ``powerFractions`` setting to change the reactor
-power between each cycle.
-With these settings, a user can define a history in which each cycle may vary
-in power, length, and uptime.
-The history is restricted, however, to each cycle having a constant power, to
-each cycle having the same number of burnup nodes, and to those burnup nodes being
-evenly spaced within each cycle.
-An example simple cycle history might look like
+In addition, one may optionally use the ``powerFractions`` setting to change the reactor power between each cycle. With these settings, a user can define a history in which each cycle may vary in power, length, and uptime. The history is restricted, however, to each cycle having a constant power, to each cycle having the same number of burnup nodes, and to those burnup nodes being evenly spaced within each cycle. An example simple cycle history might look like
 
 .. code-block:: yaml
 
@@ -432,35 +381,22 @@ A few examples of restart cases:
 The Blueprints Input File
 =========================
 
-The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In
-a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are
-defined here. The specifics of each assembly type are then overlayed, possibly including enrichment
-distributions and other material modifications.
+The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are defined here. The specifics of each assembly type are then overlayed, possibly including enrichment distributions and other material modifications.
 
 .. note:: See the :py:mod:`~armi.reactor.blueprints` module for implementation and more detail.
 
-This input file is formatted using `YAML <https://en.wikipedia.org/wiki/YAML>`_, which allows
-text-based change tracking for design control. ARMI does not have a blueprints-editing GUI yet, but
-may in the future.
+This input file is formatted using `YAML <https://en.wikipedia.org/wiki/YAML>`_, which allows text-based change tracking for design control. ARMI does not have a blueprints-editing GUI yet, but may in the future.
 
 .. note:: You can point many ARMI runs to the same Blueprints input file using full paths in ``loadingFile`` setting.
 
-ARMI adds an ``!include`` YAML tag, which can be used to include the
-contents of an external YAML file in any part of a blueprints file. The can be useful
-for sharing core or assembly pin layouts amongst multiple cases.
-For example::
+ARMI adds an ``!include`` YAML tag, which can be used to include the contents of an external YAML file in any part of a blueprints file. The can be useful for sharing core or assembly pin layouts amongst multiple cases. For example::
 
    grids:
        core: !include path/to/core_grid.yaml
 
-would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into
-the main blueprints file. The rules that ARMI uses to handle things like indentation of
-the included text are usually rather intuitive, but sometimes it can be useful to
-witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run
-for testing inputs with !includes.
+Would have the effect of copy-pasting the contents of ``path/to/core_grid.yaml`` into the main blueprints file. The rules that ARMI uses to handle things like indentation of the included text are usually rather intuitive, but sometimes it can be useful to witness the behavior first-hand. The ``expand-bp`` command can be used to do a dry run for testing inputs with !includes.
 
-ARMI models are built hierarchically, first by defining components, and then by larger and larger
-collections of the levels of the reactor.
+ARMI models are built hierarchically, first by defining components, and then by larger and larger collections of the levels of the reactor.
 
 Blueprint sections
 ------------------
@@ -508,8 +444,7 @@ Blocks and Components
 ---------------------
 Blocks and components are defined together in the **blueprints** input.
 
-We will start with a component, and then define the whole ``blocks:``
-input. The structure will be something like::
+We will start with a component, and then define the whole ``blocks:`` input. The structure will be something like::
 
     blocks:
         block name 1:
@@ -1312,8 +1247,7 @@ are now four components, but only three that have actual area and composition::
 
 This can similarly be done for hex geometry and and a hexagon with Outer Pitch (``op``).
 
-.. warning:: The rest of the input described below are scheduled to be moved into the
-   settings input file, since their nature is that of a setting.
+.. warning:: The rest of the input described below are scheduled to be moved into the settings input file, since their nature is that of a setting.
 
 .. _nuclide-flags:
 
@@ -1574,13 +1508,9 @@ Such a method may look like this::
 
         return defaultFactors,factorSearchFlags
 
-Once a proper ``getFactorList`` method exists and a fuel handler object
-exists that can interpret the factors, activate a branch search
-during a regular run by selecting the **Branch Search** option on the GUI.
+Once a proper ``getFactorList`` method exists and a fuel handler object exists that can interpret the factors, activate a branch search during a regular run by selecting the **Branch Search** option on the GUI.
 
-The **best** result from the branch search is determined by comparing the *keff* values
-with the ``targetK`` setting, which is available for setting in the GUI. The branch
-with *keff* closest to the setting, while still being above 1.0 is chosen.
+The **best** result from the branch search is determined by comparing the *keff* values with the ``targetK`` setting, which is available for setting in the GUI. The branch with *keff* closest to the setting, while still being above 1.0 is chosen.
 
 .. _settings-report:
 
@@ -1588,10 +1518,7 @@ Settings Report
 ===============
 This document lists all the `settings <#the-settings-input-file>`_ in ARMI.
 
-They are all accessible to developers
-through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically
-stored in a variable named ``cs``. Interfaces have access to a simulation's settings
-through ``self.cs``.
+They are all accessible to developers through the :py:class:`armi.settings.caseSettings.Settings` object, which is typically stored in a variable named ``cs``. Interfaces have access to a simulation's settings through ``self.cs``.
 
 
 .. exec::
@@ -1616,7 +1543,7 @@ through ``self.cs``.
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
     content = '\n.. container:: break_before ssp-landscape\n\n'
     content += ws + '.. list-table:: ARMI Settings\n'
-    content += ws2 + ':widths: 25 25 10 10\n'
+    content += ws2 + ':widths: 30 40 15 15\n'
     content += ws2 + ':class: ssp-tiny\n'
     content += ws2 + ':header-rows: 1\n\n'
     content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'

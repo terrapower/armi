@@ -126,7 +126,7 @@ the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method have ``o``, ``r``, a
 .. warning::
 
     When communicating raw Blocks or Assemblies all references to parents are lost. If a whole reactor is needed
-    use ``DistributeStateAction`` and ``syncMpiState`` (shown in last example).  Additionally, note that if a ``self.r`` 
+    use ``DistributeStateAction`` and ``syncMpiState`` (shown in last example). Additionally, note that if a ``self.r`` 
     exists on the ``MpiAction`` prior to transmission it will be removed when ``invoke()`` is called.
 
 If you have a bunch of blocks that you need independent work done on, always remember that unless you explicitly
