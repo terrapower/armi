@@ -1543,7 +1543,7 @@ They are all accessible to developers through the :py:class:`armi.settings.caseS
     wrapper2 = textwrap.TextWrapper(width=10, subsequent_indent='')
     content = '\n.. container:: break_before ssp-landscape\n\n'
     content += ws + '.. list-table:: ARMI Settings\n'
-    content += ws2 + ':widths: 25 25 10 10\n'
+    content += ws2 + ':widths: 30 40 15 15\n'
     content += ws2 + ':class: ssp-tiny\n'
     content += ws2 + ':header-rows: 1\n\n'
     content += ws2 + '* - Name\n' + ws3 + '- Description\n' + ws3 + '- Default\n' + ws3 + '- Options\n'
