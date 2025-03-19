@@ -40,7 +40,7 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.utils import units
 
@@ -315,8 +315,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
             if a.hasFlags([Flags.MIDDLE, Flags.ANNULAR, Flags.TEST]):
-                # assemblies with the above flags have liners and conservation
-                # of such assemblies is not currently supported
+                # assemblies with the above flags have liners and conservation of such assemblies is
+                # not currently supported
                 continue
             self.complexConservationTest(a)
 
@@ -357,8 +357,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     @staticmethod
     def _getMass(a):
-        """Get the mass of an assembly. The conservation of HT9 pins in shield assems
-        are accounted for in FE56 conservation checks.
+        """Get the mass of an assembly. The conservation of HT9 pins in shield assems are accounted
+        for in FE56 conservation checks.
         """
         newMass = None
         if a.hasFlags(Flags.FUEL):
@@ -423,8 +423,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
 
     def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
-        """Check whether the detailedNDens of two input dictionaries containing the
-        detailedNDens arrays for all components of an assembly are conserved.
+        """Check whether the detailedNDens of two input dictionaries containing the detailedNDens
+        arrays for all components of an assembly are conserved.
         """
         for prevComp, newComp in zip(
             prevDetailedNDen.values(), newDetailedNDens.values()
@@ -445,9 +445,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     @staticmethod
     def _setComponentDetailedNDens(a, nDens):
-        """Returns a dictionary that contains detailedNDens for all components in an
-        assembly object input which are set to the corresponding component number densities
-        from a number density dictionary input.
+        """Returns a dictionary that contains detailedNDens for all components in an assembly object
+        input which are set to the corresponding component number densities from a number density
+        dictionary input.
         """
         detailedNDens = {}
         for b in a:
@@ -608,8 +608,7 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def setUp(self):
         self.axialExpChngr = AxialExpansionChanger()
-        o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, o.cs, 3)
+        _o, self.r = loadTestReactor(os.path.join(TEST_ROOT, "detailedAxialExpansion"))
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         self.componentLst = []
@@ -648,8 +647,8 @@ class TestManageCoreMesh(unittest.TestCase):
             )
 
     def _getComponentDetailedNDensAndVol(self, componentLst):
-        """Returns a tuple containing dictionaries of detailedNDens and volumes of
-        all components from a component list input.
+        """Returns a tuple containing dictionaries of detailedNDens and volumes of all components
+        from a component list input.
         """
         detailedNDens = {}
         volumes = {}
@@ -669,7 +668,9 @@ class TestManageCoreMesh(unittest.TestCase):
                 )
             else:
                 # should not conserve mass here as it is structural material above active fuel
-                self.assertAlmostEqual(newMass / prevMass, 0.99, msg=f"{c}, {c.parent}")
+                self.assertAlmostEqual(
+                    newMass / prevMass, 0.99999999, msg=f"{c}, {c.parent}"
+                )
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
@@ -757,12 +758,13 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isFuelLocked(self):
-        """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately.
+        """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised
+        appropriately.
 
         Notes
         -----
-        This is implemented by creating a fuel block that contains no fuel component
-        and passing it to ExpansionData::_isFuelLocked.
+        This is implemented by creating a fuel block that contains no fuel component and passing it
+        to ExpansionData::_isFuelLocked.
         """
         expdata = ExpansionData(
             HexAssembly("testAssemblyType"), setFuel=True, expandFromTinputToThot=False
@@ -964,7 +966,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
-        reduceTestReactorRings(r, o.cs, 3)
 
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
@@ -972,7 +973,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
-        reduceTestReactorRings(rCold, oCold.cs, 3)
 
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
@@ -995,9 +995,9 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
 
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
-            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
-               Thot > Tinput resulting in a non-zero DeltaT. Each block in the
-               expanded case should therefore be a different height than that of the standard case.
+            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml, Thot > Tinput
+               resulting in a non-zero DeltaT. Each block in the expanded case should therefore be a
+               different height than that of the standard case.
         """
         for aStd, aExp in zip(self.stdAssems, self.testAssems):
             self.assertAlmostEqual(
