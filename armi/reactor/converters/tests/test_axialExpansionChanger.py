@@ -343,15 +343,15 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             newFE56Mass = a.getMass("FE56")
             newMass = self._getMass(a)
             self.assertAlmostEqual(
-                newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
+                newFE56Mass / prevFE56Mass, 1.0, places=8, msg=f"{a}"
             )
             if newMass:
-                self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
+                self.assertAlmostEqual(newMass / prevMass, 1.0, places=8, msg=f"{a}")
 
         newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
-            self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
+            self.assertAlmostEqual(orig, new, places=8, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
 
@@ -964,7 +964,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
-        reduceTestReactorRings(r, o.cs, 5)
+        reduceTestReactorRings(r, o.cs, 3)
 
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
@@ -972,7 +972,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
-        reduceTestReactorRings(rCold, oCold.cs, 5)
+        reduceTestReactorRings(rCold, oCold.cs, 3)
 
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 

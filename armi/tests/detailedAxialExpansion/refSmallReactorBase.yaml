@@ -1,33 +1,32 @@
 custom isotopics:
     MOX:
         input format: number densities
-        AM241: 2.3606e-05
-        PU238: 3.7387e-06
-        PU239: 0.00286038
-        PU240: 0.000712945
-        PU241: 9.82312e-05
-        PU242: 2.02221e-05
-        U235: 0.00405533
-        U238: 0.0134125
+        AM241: 2.36e-05
+        PU238: 3.74e-06
+        PU239: 0.0020
+        PU240: 0.0007
+        PU241: 9.82e-05
+        PU242: 2.022e-05
+        U235: 0.004
+        U238: 0.013
     PuUZr:
         input format: mass fractions
-        density: 9.491820414019937
+        density: 9.49
         PU239: 0.1
         U235: 0.15
         U238: 0.65
         ZR: 0.1
 blocks:
-    ## ------------------------------------------------------------------------------------
-    ## universal blocks
+    # universal blocks
     grid plate: &block_grid_plate
         grid:
             shape: Hexagon
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            ip: 15.277
+            ip: 15.28
             mult: 1.0
-            op: 16.577
+            op: 16.58
         coolant: &component_coolant
             shape: DerivedShape
             material: Sodium
@@ -72,8 +71,7 @@ blocks:
             mult: 1.0
             op: 16.75
 
-    ## ------------------------------------------------------------------------------------
-    ## fuel blocks
+    # fuel blocks
     axial shield: &block_fuel_axial_shield
         shield:
             shape: Circle
@@ -105,7 +103,7 @@ blocks:
             Tinput: 25.0
             Thot: 470.0
             axialPitch: 30.15
-            helixDiameter: 1.19056
+            helixDiameter: 1.19
             id: 0.0
             mult: shield.mult
             od: 0.10056
@@ -121,7 +119,7 @@ blocks:
             Thot: 600.0
             id: 0.0
             mult: 169.0
-            od: 0.86602
+            od: 0.87
         bond: &component_fuel_bond
             shape: Circle
             material: Sodium
@@ -144,10 +142,10 @@ blocks:
             Tinput: 25.0
             Thot: 470.0
             axialPitch: 30.15
-            helixDiameter: 1.19056
+            helixDiameter: 1.19
             id: 0.0
             mult: fuel.mult
-            od: 0.10056
+            od: 0.1
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -175,10 +173,10 @@ blocks:
             Tinput: 25.0
             Thot: 470.0
             axialPitch: 30.15
-            helixDiameter: 1.19056
+            helixDiameter: 1.19
             id: 0.0
             mult: clad.mult
-            od: 0.10056
+            od: 0.1
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -200,7 +198,7 @@ blocks:
             id: 0.0
             isotopics: MOX
             mult: 169.0
-            od: 0.86602
+            od: 0.87
         bond:
             shape: Circle
             material: Sodium
@@ -253,7 +251,7 @@ blocks:
             id: 0.0
             isotopics: PuUZr
             mult: 169.0
-            od: 0.86602
+            od: 0.87
         bond: *component_fuel_bond
         liner2: *component_fuel2_liner2
         liner1: *component_fuel2_liner1
@@ -277,9 +275,9 @@ blocks:
             material: UZr
             Tinput: 25.0
             Thot: 600.0
-            id: 0.600
+            id: 0.6
             mult: 169.0
-            od: 0.86602
+            od: 0.87
             flags: annular fuel depletable
         gap2:
             shape: Circle
@@ -294,7 +292,7 @@ blocks:
             material: HT9
             Tinput: 25.0
             Thot: 430.0
-            id: 0.878
+            id: 0.88
             mult: fuel.mult
             od: 0.898
         gap3:
@@ -310,7 +308,7 @@ blocks:
             material: Zr
             Tinput: 25.0
             Thot: 430.0
-            id: 0.898
+            id: 0.9
             mult: fuel.mult
             od: 0.900
         gap4:
@@ -326,16 +324,15 @@ blocks:
             material: HT9
             Tinput: 25.0
             Thot: 470.0
-            id: 0.900
+            id: 0.9
             mult: fuel.mult
-            od: 1.000
+            od: 1.0
         wire: *component_fuel_wire
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    ## ------------------------------------------------------------------------------------
-    ## control
+    # control
     moveable duct: &block_ctrl_duct
         coolant: *component_coolant
         duct: &component_control_duct
@@ -345,7 +342,7 @@ blocks:
             Thot: 450.0
             ip: 15.277
             mult: 1.0
-            op: 16.28228
+            op: 16.28
         intercoolant: &component_control_intercoolant
             shape: Hexagon
             material: Sodium
@@ -369,7 +366,7 @@ blocks:
             material: Void
             Tinput: 25.0
             Thot: 450.0
-            id: 1.286
+            id: 1.29
             mult: clad.mult
             od: clad.id
         clad: &component_control_clad
@@ -379,14 +376,14 @@ blocks:
             Thot: 450.0
             id: 1.358
             mult: 61.0
-            od: 1.686
+            od: 1.69
         wire: &component_control_wire
             shape: Helix
             material: HT9
             Tinput: 25.0
             Thot: 450.0
             axialPitch: 50.0
-            helixDiameter: 1.771
+            helixDiameter: 1.77
             id: 0.0
             mult: clad.mult
             od: 0.085
@@ -395,7 +392,7 @@ blocks:
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            ip: 14.268
+            ip: 14.27
             mult: 1.0
             op: 14.582
         duct: *component_control_duct
@@ -411,8 +408,7 @@ blocks:
         duct: *component_control_duct
         intercoolant: *component_control_intercoolant
 
-    ## ------------------------------------------------------------------------------------
-    ## radial shield
+    # radial shield
     radial shield: &block_radial_shield
         shield:
             shape: Circle
@@ -421,13 +417,13 @@ blocks:
             Thot: 600.0
             id: 0.0
             mult: 169.0
-            od: 0.90362
+            od: 0.9
         gap: &component_radial_shield_gap
             shape: Circle
             material: Void
             Tinput: 25.0
             Thot: 450.0
-            id: 0.90362
+            id: 0.9
             mult: 169.0
             od: clad.id
         clad: &component_radial_shield_clad
@@ -435,19 +431,19 @@ blocks:
             material: HT9
             Tinput: 25.0
             Thot: 450.0
-            id: 0.90562
+            id: 0.9
             mult: 169.0
-            od: 1.05036
+            od: 1.05
         wire: &component_radial_shield_wire
             shape: Helix
             material: HT9
             Tinput: 25.0
             Thot: 450.0
             axialPitch: 30.15
-            helixDiameter: 16.85056
+            helixDiameter: 16.85
             id: 0.0
             mult: 169.0
-            od: 0.10056
+            od: 0.1
         duct: *component_duct
         intercoolant: *component_intercoolant
         coolant: *component_coolant
