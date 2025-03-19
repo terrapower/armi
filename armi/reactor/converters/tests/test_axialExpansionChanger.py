@@ -142,8 +142,7 @@ class Temperature:
 
         - all temperatures are in C
         - temperature field : temperature readings (e.g., from T/H calculation)
-        - temperature grid : physical locations in which
-                            temperature is measured
+        - temperature grid : physical locations in which temperature is measured
         """
         # Generate temp field
         self.tempField[0, :] = coldTemp
@@ -196,7 +195,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
                 )
 
     def _generateComponentWiseExpectedHeight(self):
-        """Calculate the expected height, external of AssemblyAxialExpansion()."""
+        """Calculate the expected height, external of AssemblyAxialExpansion."""
         assem = buildTestAssemblyWithFakeMaterial(name="FakeMat")
         aveBlockTemp = zeros((len(assem), self.temp.tempSteps))
         self.trueZtop = zeros((len(assem), self.temp.tempSteps))
@@ -1107,9 +1106,8 @@ class TestComponentLinks(AxialExpansionTestBase, unittest.TestCase):
         - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component
           to "typeB"
         - the different assertions are particularly useful for comparing two annuli
-        - to add Component class types to a test:
-            Add dictionary entry with following:
-              {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
+        - to add Component class types to a test add dictionary entry with following:
+          {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
         """
         if commonArgs is None:
             common = self.common
@@ -1332,8 +1330,8 @@ class FakeMat(materials.ht9.HT9):
     -----
     - specifically used in TestAxialExpansionHeight to verify axialExpansionChanger produces
       expected heights from hand calculation
-    - also used to verify mass and height conservation resulting from even amounts of expansion
-      and contraction. See TestConservation.
+    - also used to verify mass and height conservation resulting from even amounts of expansion and
+      contraction. See TestConservation.
     """
 
     name = "FakeMat"
@@ -1349,8 +1347,9 @@ class FakeMatException(materials.ht9.HT9):
 
     Notes
     -----
-    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion factor
-      is higher to ensure that a negative block height is caught in TestExceptions:test_AssemblyAxialExpansionException.
+    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion
+      factor is higher to ensure that a negative block height is caught in
+      TestExceptions:test_AssemblyAxialExpansionException.
     """
 
     name = "FakeMatException"
