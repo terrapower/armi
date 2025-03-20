@@ -353,5 +353,5 @@ armi = [
     "tests/tutorials",
     "tests/tutorials/data_model.ipynb",
     "tests/zpprTest.yaml",
-    "tests/zpprTestGeom.xml",
+    "tests/zpprTestGeom.yaml",
 ]
