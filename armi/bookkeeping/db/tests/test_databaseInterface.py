@@ -300,7 +300,6 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertEqual(h5.attrs["version"], version)
 
             self.assertIn("caseTitle", h5.attrs)
-            self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
 

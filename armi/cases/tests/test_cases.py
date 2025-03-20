@@ -468,9 +468,7 @@ class TestCaseSuiteComparison(unittest.TestCase):
                 # validate the file exists, and force it to be readable again
                 b = h5py.File(db._fullPath, "r")
                 self.assertEqual(list(b.keys()), ["inputs"])
-                self.assertEqual(
-                    sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-                )
+                self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
                 b.close()
 
                 # append to lists

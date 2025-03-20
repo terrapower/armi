@@ -56,18 +56,13 @@ class ExtractInputs(EntryPoint):
         db = Database(self.args.h5db, "r")
 
         with db:
-            settings, geom, bp = db.readInputsFromDB()
+            settings, bp = db.readInputsFromDB()
 
         settingsPath = self.args.output_base + "_settings.yaml"
         bpPath = self.args.output_base + "_blueprints.yaml"
 
-        geomPath = None
-        if geom:
-            geomExt = ".xml" if geom.lstrip()[0] == "<" else ".yaml"
-            geomPath = self.args.output_base + "_geom" + geomExt
-
         bail = False
-        for path in [settingsPath, bpPath, geomPath]:
+        for path in [settingsPath, bpPath]:
             if os.path.exists(settingsPath):
                 runLog.error("`{}` already exists. Aborting.".format(path))
                 bail = True
@@ -77,7 +72,6 @@ class ExtractInputs(EntryPoint):
         for path, data, inp in [
             (settingsPath, settings, "settings"),
             (bpPath, bp, "blueprints"),
-            (geomPath, geom, "geometry"),
         ]:
             if path is None:
                 continue

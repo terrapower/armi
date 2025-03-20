@@ -466,7 +466,7 @@ class Database:
         geom.readGeomFromStream(io.StringIO(self.h5db["inputs/geomFile"].asstr()[()]))
         return geom
 
-    def writeInputsToDB(self, cs, csString=None, geomString=None, bpString=None):
+    def writeInputsToDB(self, cs, csString=None, bpString=None):
         """
         Write inputs into the database based the Settings.
 
@@ -524,13 +524,11 @@ class Database:
                 bpString = ""
 
         self.h5db["inputs/settings"] = csString
-        self.h5db["inputs/geomFile"] = geomString or ""
         self.h5db["inputs/blueprints"] = bpString
 
     def readInputsFromDB(self):
         return (
             self.h5db["inputs/settings"].asstr()[()],
-            self.h5db["inputs/geomFile"].asstr()[()],
             self.h5db["inputs/blueprints"].asstr()[()],
         )
 
@@ -798,9 +796,9 @@ class Database:
             root.sort()
         else:
             runLog.warning(
-                "DeprecationWarning: This Reactor is not being sorted on DB load. "
-                f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted. "
-                "But this feature is temporary and will be removed by 2024."
+                "DeprecationWarning: This Reactor is not being sorted on DB load. Due to the "
+                f"setting {CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is "
+                "temporary and will be removed by 2024."
             )
 
         return root
@@ -860,8 +858,8 @@ class Database:
         """Given a flat collection of all of the ArmiObjects in the model, reconstitute the hierarchy."""
         comp, _, numChildren, location = next(comps)
 
-        # attach the parent early, if provided; some cases need the parent attached for
-        # the rest of _compose to work properly.
+        # attach the parent early, if provided; some cases need the parent attached for the rest of
+        # _compose to work properly.
         comp.parent = parent
 
         # The Reactor adds a Core child by default, this is not ideal
@@ -871,9 +869,8 @@ class Database:
         if isinstance(comp, Core):
             pass
         elif isinstance(comp, Assembly):
-            # Assemblies force their name to be something based on assemNum. When the
-            # assembly is created it gets a new assemNum, and throws out the correct
-            # name that we read from the DB
+            # Assemblies force their name to be something based on assemNum. When the assembly is
+            # created it gets a new assemNum, and throws out the correct name read from the DB.
             comp.name = comp.makeNameFromAssemNum(comp.p.assemNum)
             comp.lastLocationLabel = Assembly.DATABASE
 
@@ -886,9 +883,9 @@ class Database:
                     location[0], location[1], location[2], None
                 )
 
-        # Need to keep a collection of Component instances for linked dimension
-        # resolution, before they can be add()ed to their parents. Not just filtering
-        # out of `children`, since resolveLinkedDims() needs a dict
+        # Need to keep a collection of Component instances for linked dimension resolution, before
+        # they can be add()ed to their parents. Not just filtering out of `children`, since
+        # resolveLinkedDims() needs a dict
         childComponents = collections.OrderedDict()
         children = []
 
@@ -928,9 +925,8 @@ class Database:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
-            # Only create the group if it doesnt already exist. This happens when
-            # re-writing params in the same time node (e.g. something changed between
-            # EveryNode and EOC)
+            # Only create the group if it doesnt already exist. This happens when re-writing params
+            # in the same time node (e.g. something changed between EveryNode and EOC)
             g = h5group.create_group(groupName, track_order=True)
         else:
             g = h5group[groupName]
