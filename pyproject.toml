@@ -348,7 +348,6 @@ armi = [
     "tests/ThRZGeom.xml",
     "tests/ThRZloading.yaml",
     "tests/ThRZSettings.yaml",
-    "tests/trz_geom.xml",
     "tests/tutorials",
     "tests/tutorials/data_model.ipynb",
     "tests/zpprTest.yaml",
