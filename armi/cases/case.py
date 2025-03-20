@@ -663,18 +663,15 @@ class Case:
 
         fromPath = lambda f: pathTools.armiAbsPath(self.cs.inputDirectory, f)
 
-        for inputFileSetting in [CONF_LOADING_FILE, "geomFile"]:
-            fileName = self.cs[inputFileSetting]
-            if fileName:
-                pathTools.copyOrWarn(
-                    inputFileSetting,
-                    fromPath(fileName),
-                    os.path.join(clone.cs.inputDirectory, fileName),
-                )
-            else:
-                runLog.warning(
-                    "skipping {}, there is no file specified".format(inputFileSetting)
-                )
+        fileName = self.cs[CONF_LOADING_FILE]
+        if fileName:
+            pathTools.copyOrWarn(
+                CONF_LOADING_FILE,
+                fromPath(fileName),
+                os.path.join(clone.cs.inputDirectory, fileName),
+            )
+        else:
+            runLog.warning(f"skipping {CONF_LOADING_FILE}, there is no file specified")
 
         with open(self.cs[CONF_LOADING_FILE], "r") as f:
             # The root for handling YAML includes is relative to the YAML file, not the
