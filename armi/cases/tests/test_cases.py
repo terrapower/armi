@@ -14,7 +14,6 @@
 """Unit tests for Case and CaseSuite objects."""
 import copy
 import cProfile
-import io
 import logging
 import os
 import platform
@@ -25,7 +24,7 @@ import h5py
 from armi import cases, context, getApp, interfaces, plugins, runLog, settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
-from armi.reactor import blueprints, systemLayoutInput
+from armi.reactor import blueprints
 from armi.reactor.tests import test_reactors
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers

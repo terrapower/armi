@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers."""
-import io
 import os
 import unittest
 
@@ -33,14 +32,9 @@ from armi.physics.neutronics.settings import (
     CONF_EPS_FSAVG,
     CONF_EPS_FSPOINT,
 )
-from armi.reactor import blueprints, systemLayoutInput
+from armi.reactor import blueprints
 from armi.reactor.tests import test_reactors
 from armi.utils import directoryChangers
-
-
-class MockGeom:
-    geomType = "hex"
-
 
 FLAGS_INPUT = """nuclide flags:
     U: {burn: false, xs: true}
@@ -54,13 +48,6 @@ FLAGS_INPUT = """nuclide flags:
     NI: {burn: false, xs: true}
     V: {burn: false, xs: true}
     W: {burn: false, xs: true}"""
-CLAD = """clad: &fuel_1_clad
-            Tinput: 350.0
-            Thot: 350.0
-            shape: circle
-            id: 1.0
-            od: 1.1
-            material: HT9"""
 CLAD_LINKED = """clad: &fuel_1_clad
             Tinput: 350.0
             Thot: 350.0
@@ -89,14 +76,7 @@ BLOCKS_INPUT = """blocks:
     block 3: *fuel_1                                        # non-fuel blocks
     block 4: {{<<: *fuel_1}}                                  # non-fuel blocks
     block 5: {{fuel: *fuel_1_fuel, clad: *fuel_1_clad, hex: *fuel_1_hex}}       # non-fuel blocks"""
-BLOCKS_INPUT_1 = BLOCKS_INPUT.format(clad=CLAD)
 BLOCKS_INPUT_2 = BLOCKS_INPUT.format(clad=CLAD_LINKED)
-
-BLUEPRINT_INPUT = f"""
-{FLAGS_INPUT}
-{BLOCKS_INPUT_1}
-assemblies: {{}}
-"""
 
 BLUEPRINT_INPUT_LINKS = f"""
 {FLAGS_INPUT}
@@ -104,31 +84,37 @@ BLUEPRINT_INPUT_LINKS = f"""
 assemblies: {{}}
 """
 
-GEOM_INPUT = io.StringIO(
-    """<?xml version="1.0" ?>
-<reactor geom="hex" symmetry="third core periodic">
-    <assembly name="A1" pos="1"  ring="1"/>
-    <assembly name="A2" pos="2"  ring="2"/>
-    <assembly name="A3" pos="1"  ring="2"/>
-    <assembly name="A4" pos="3"  ring="3"/>
-    <assembly name="A5" pos="2"  ring="3"/>
-    <assembly name="A6" pos="12" ring="3"/>
-    <assembly name="A7" pos="4"  ring="3"/>
-    <assembly name="A8" pos="1"  ring="3"/>
-</reactor>
+CORE_INPUT = """
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+grids:
+    core:
+        geom: hex
+        symmetry: third core periodic
+        grid contents:
+            [0, 0]: A1
+            [1, 0]: A2
+            [1, 1]: A3
+            [2, -2]: A4
+            [2, -1]: A5
+            [2, 0]: A6
+            [2, 1]: A7
+            [2, 2]: A8
 """
-)
 
 
 class TestsuiteBuilderIntegrations(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(GEOM_INPUT)
-        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS)
+        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS + CORE_INPUT)
         cs = settings.Settings()
         bp._prepConstruction(cs)
-        cls.baseCase = cases.Case(cs=cs, bp=bp, geom=geom)
+        cls.baseCase = cases.Case(cs=cs, bp=bp)
 
     def test_smearDensityFail(self):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
