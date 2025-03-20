@@ -575,8 +575,7 @@ class Case:
             inspectorIssues = [query for query in inspector.queries if query]
 
             # Write out the settings validation issues that will be prompted for
-            # resolution if in an interactive session or forced to be resolved
-            # otherwise.
+            # resolution if in an interactive session or forced to be resolved otherwise.
             queryData = []
             for i, query in enumerate(inspectorIssues, start=1):
                 queryData.append(
@@ -647,8 +646,8 @@ class Case:
 
         if pathTools.armiAbsPath(clone.cs.path) == pathTools.armiAbsPath(self.cs.path):
             raise RuntimeError(
-                "The source file and destination file are the same: {}\n"
-                "Cannot use armi-clone to modify armi settings file.".format(
+                "The source file and destination file are the same: {}\nCannot use armi-clone to "
+                "modify armi settings file.".format(
                     pathTools.armiAbsPath(clone.cs.path)
                 )
             )
@@ -657,9 +656,9 @@ class Case:
         newCs = clone.cs.modified(newSettings=newSettings)
         clone.cs = newCs
 
-        runLog.important("writing settings file {}".format(clone.cs.path))
+        runLog.important(f"writing settings file {clone.cs.path}")
         clone.cs.writeToYamlFile(clone.cs.path, style=writeStyle, fromFile=self.cs.path)
-        runLog.important("finished writing {}".format(clone.cs))
+        runLog.important(f"finished writing {clone.cs}")
 
         fromPath = lambda f: pathTools.armiAbsPath(self.cs.inputDirectory, f)
 
@@ -754,9 +753,8 @@ class Case:
         """
         Write the inputs to disk.
 
-        This allows input objects that have been modified in memory (e.g.
-        for a parameter sweep or migration) to be written out as input
-        for a forthcoming case.
+        This allows input objects that have been modified in memory (e.g. for a parameter sweep or
+        migration) to be written out as input for a forthcoming case.
 
         Parameters
         ----------
@@ -769,8 +767,7 @@ class Case:
 
         Notes
         -----
-        This will rename the ``loadingFile`` and ``geomFile`` to be ``title-blueprints + '.yaml'`` and
-        ``title + '-geom.yaml'`` respectively.
+        This will rename the ``loadingFile`` to ``title-blueprints + '.yaml'``.
 
         See Also
         --------
@@ -778,8 +775,7 @@ class Case:
             parses/reads the independentVariables setting
 
         clone
-            Similar to this but doesn't let you write out new/modified
-            geometry or blueprints objects
+            Similar to this but doesn't let you write out new/modified eometry or blueprints objects
         """
         with ForcedCreationDirectoryChanger(
             self.cs.inputDirectory, dumpOnException=False
@@ -787,14 +783,9 @@ class Case:
             # trick: these seemingly no-ops load the bp and geom via properties if
             # they are not yet initialized.
             self.bp
-            self.geom
 
             newSettings = {}
             newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"
-            if self.geom:
-                newSettings["geomFile"] = self.title + "-geom.yaml"
-                self.geom.writeGeom(newSettings["geomFile"])
-
             if self.independentVariables:
                 newSettings["independentVariables"] = [
                     "({}, {})".format(repr(varName), repr(val))
