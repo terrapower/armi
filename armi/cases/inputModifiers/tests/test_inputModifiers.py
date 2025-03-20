@@ -48,6 +48,13 @@ FLAGS_INPUT = """nuclide flags:
     NI: {burn: false, xs: true}
     V: {burn: false, xs: true}
     W: {burn: false, xs: true}"""
+CLAD = """clad: &fuel_1_clad
+            Tinput: 350.0
+            Thot: 350.0
+            shape: circle
+            id: 1.0
+            od: 1.1
+            material: HT9"""
 CLAD_LINKED = """clad: &fuel_1_clad
             Tinput: 350.0
             Thot: 350.0
@@ -76,8 +83,13 @@ BLOCKS_INPUT = """blocks:
     block 3: *fuel_1                                        # non-fuel blocks
     block 4: {{<<: *fuel_1}}                                  # non-fuel blocks
     block 5: {{fuel: *fuel_1_fuel, clad: *fuel_1_clad, hex: *fuel_1_hex}}       # non-fuel blocks"""
+BLOCKS_INPUT_1 = BLOCKS_INPUT.format(clad=CLAD)
 BLOCKS_INPUT_2 = BLOCKS_INPUT.format(clad=CLAD_LINKED)
-
+BLUEPRINT_INPUT = f"""
+{FLAGS_INPUT}
+{BLOCKS_INPUT_1}
+assemblies: {{}}
+"""
 BLUEPRINT_INPUT_LINKS = f"""
 {FLAGS_INPUT}
 {BLOCKS_INPUT_2}
