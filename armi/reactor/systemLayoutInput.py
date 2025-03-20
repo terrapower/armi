@@ -36,7 +36,7 @@ from ruamel.yaml import YAML
 
 from armi import runLog
 from armi.reactor import geometry, grids
-from armi.utils import asciimaps, directoryChangers
+from armi.utils import asciimaps
 
 INP_SYSTEMS = "reactor"
 INP_SYMMETRY = "symmetry"
@@ -550,10 +550,4 @@ class SystemLayoutInput:
     @classmethod
     def loadFromCs(cls, cs):
         """Function to load Geoemtry based on supplied ``Settings``."""
-        if not cs["geomFile"]:
-            return None
-
-        with directoryChangers.DirectoryChanger(cs.inputDirectory):
-            geom = cls()
-            geom.readGeomFromFile(cs["geomFile"])
-            return geom
+        return None
