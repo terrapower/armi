@@ -335,7 +335,6 @@ armi = [
     "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
     "tests/detailedAxialExpansion/refSmallReactor.yaml",
     "tests/detailedAxialExpansion/refSmallReactorBase.yaml",
-    "tests/geom.xml",
     "tests/geom1Assem.xml",
     "tests/ISOAA",
     "tests/refSmallCartesian.yaml",
