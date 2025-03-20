@@ -30,15 +30,6 @@ from armi.reactor.tests import test_reactors
 from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
 
-GEOM_INPUT = """<?xml version="1.0" ?>
-<reactor geom="hex" symmetry="third core periodic">
-    <assembly name="A1" pos="1"  ring="1"/>
-    <assembly name="A2" pos="2"  ring="2"/>
-    <assembly name="A3" pos="1"  ring="2"/>
-</reactor>
-"""
-# This gets made into a StringIO multiple times because it gets read multiple times.
-
 BLUEPRINT_INPUT = """
 nuclide flags:
     U: {burn: false, xs: true}
@@ -67,10 +58,25 @@ blocks:
             od: 1.1
             material: SS316
     fuel 2: *fuel_1
-    block 3: *fuel_1                                        # non-fuel blocks
-    block 4: {<<: *fuel_1}                                  # non-fuel blocks
-    block 5: {fuel: *fuel_1_fuel, clad: *fuel_1_clad}       # non-fuel blocks
+    block 3: *fuel_1                                   # non-fuel blocks
+    block 4: {<<: *fuel_1}                             # non-fuel blocks
+    block 5: {fuel: *fuel_1_fuel, clad: *fuel_1_clad}  # non-fuel blocks
 assemblies: {}
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+grids:
+    core:
+        geom: hex
+        symmetry: third core periodic
+        grid contents:
+            [0, 0]: A1
+            [1, 0]: A2
+            [1, 1]: A3
 """
 
 
@@ -97,12 +103,10 @@ class TestArmiCase(unittest.TestCase):
 
     def test_independentVariables(self):
         """Ensure that independentVariables added to a case move with it."""
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
         cs = settings.Settings(ARMI_RUN_PATH)
         cs = cs.modified(newSettings={"verbosity": "important"})
-        baseCase = cases.Case(cs, bp=bp, geom=geom)
+        baseCase = cases.Case(cs, bp=bp)
         with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
@@ -271,15 +275,13 @@ class TestCaseSuiteDependencies(unittest.TestCase):
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())
 
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
 
-        self.c1 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+        self.c1 = cases.Case(cs=settings.Settings(), bp=bp)
         self.c1.cs.path = "c1.yaml"
         self.suite.add(self.c1)
 
-        self.c2 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+        self.c2 = cases.Case(cs=settings.Settings(), bp=bp)
         self.c2.cs.path = "c2.yaml"
         self.suite.add(self.c2)
 
@@ -443,15 +445,13 @@ class TestCaseSuiteComparison(unittest.TestCase):
             # Build the cases
             suite = cases.CaseSuite(settings.Settings())
 
-            geom = systemLayoutInput.SystemLayoutInput()
-            geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
             bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
 
-            c1 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+            c1 = cases.Case(cs=settings.Settings(), bp=bp)
             c1.cs.path = "c1.yaml"
             suite.add(c1)
 
-            c2 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+            c2 = cases.Case(cs=settings.Settings(), bp=bp)
             c2.cs.path = "c2.yaml"
             suite.add(c2)
 
