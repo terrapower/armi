@@ -525,8 +525,6 @@ needs_extra_links = [
     dict(option="implements", incoming="implementations", outgoing="requirements"),
 ]
 
-# TODO: Do we need and like these templates and layouts?
-needs_template_folder = os.path.join(STATIC_DIR, "needs_templates")
 needs_layouts = {
     "test_layout": {
         "grid": "simple",
@@ -557,7 +555,6 @@ needs_layouts = {
 
 needs_global_options = {
     # Defaults for test tags
-    "template": ("test", "type=='test'"),
     "layout": ("test_layout", "type=='test'"),
     "result": ("[[get_test_result()]]", "type=='test'"),
 }
