@@ -555,17 +555,6 @@ needs_layouts = {
 }
 
 needs_global_options = {
-    # Defaults for test tags
-    "sequence": (None, "type=='test'"),
-    "branching": (None, "type=='test'"),
-    "required_inputs": (None, "type=='test'"),
-    "parameter_ranges": (None, "type=='test'"),
-    "expected_result": (None, "type=='test'"),
-    "record_environment": (None, "type=='test'"),
-    "record_models": (None, "type=='test'"),
-    "record_reference_problem": (None, "type=='test'"),
-    "record_inputs": (None, "type=='test'"),
-    "record_actions": (None, "type=='test'"),
     "template": ("test", "type=='test'"),
     "layout": ("test_layout", "type=='test'"),
     "result": ("[[get_test_result()]]", "type=='test'"),
