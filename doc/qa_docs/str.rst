@@ -248,8 +248,16 @@ Appendix A Pytest Verbose Output
 
 Shown here is the verbose output from pytest.
 
-Note that the skipped tests are either skipped because they require MPI or because they have hard-coded skips in the
-codebase (``test_canRemoveIsotopes``, ``test_ENDFVII1DecayConstants``, and ``test_ENDFVII1NeutronsPerFission``). None
-of these tests are linked to requirements.
+Note that the skipped tests are either skipped because they require MPI (and are run via a separate command) or because
+they have hard-coded skips in the codebase (``test_canRemoveIsotopes``, ``test_ENDFVII1DecayConstants``, and
+``test_ENDFVII1NeutronsPerFission``). None of these hard-coded skipped tests are linked to requirements.
+
+Serial unit tests:
 
 .. test-results:: ../test_results.xml
+
+MPI-enabled unit tests:
+
+.. test-results:: ../test_results_mpi1.xml
+.. test-results:: ../test_results_mpi2.xml
+.. test-results:: ../test_results_mpi3.xml
