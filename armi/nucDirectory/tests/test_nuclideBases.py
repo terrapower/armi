@@ -94,7 +94,7 @@ class TestNuclide(unittest.TestCase):
             else:
                 self.assertIsInstance(lump, nuclideBases.NaturalNuclideBase)
 
-    def test_LumpNuclideBase_getNatrualIsotopicsDoesNotFail(self):
+    def test_LumpNucBaseGetNatIsotopDoesNotFail(self):
         for nuc in nuclideBases.where(
             lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0
         ):
@@ -120,7 +120,7 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(235, u235.a)
         self.assertEqual(92, u235.z)
 
-    def test_NaturalNuclide_atomicWeightIsAverageOfNaturallyOccuringIsotopes(self):
+    def test_natNucStomicWgtIsAvgOfNatIsotopes(self):
         for natNuk in nuclideBases.where(
             lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
         ):
@@ -129,7 +129,7 @@ class TestNuclide(unittest.TestCase):
                 atomicMass += natIso.abundance * natIso.weight
             self.assertAlmostEqual(atomicMass, natNuk.weight, delta=0.000001)
 
-    def test_nucBases_labelAndNameCollsionsAreForSameNuclide(self):
+    def test_nucBasesLabelAndNameCollsAreForSameNuc(self):
         """The name and labels for correct for nuclides.
 
         .. test:: Validate the name, label, and DB name are accessible for nuclides.
@@ -144,7 +144,7 @@ class TestNuclide(unittest.TestCase):
             self.assertEqual(nuc, nuclideBases.byLabel[nuc.label])
         self.assertGreater(count, 10)
 
-    def test_nucBases_imposeBurnChainDecayBulkStatistics(self):
+    def test_nucBases_imposeBurnChainDecayBulkStats(self):
         """Test must be updated manually when burn chain is modified."""
         decayers = list(nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
@@ -162,7 +162,7 @@ class TestNuclide(unittest.TestCase):
                 continue
             self.assertAlmostEqual(1.0, sum(dd.branch for dd in nuc.decays))
 
-    def test_nucBases_imposeBurnChainTransmutationBulkStatistics(self):
+    def test_nucBasesImposeBurnChainTransmBulkStats(self):
         """
         Make sure all branches are equal to 1 for every transmutation type.
 

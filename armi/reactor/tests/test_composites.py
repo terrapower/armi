@@ -902,7 +902,7 @@ class TestMiscMethods(unittest.TestCase):
                 self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
             )
 
-    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+    def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
 
         .. test:: Get number densities.

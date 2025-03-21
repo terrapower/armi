@@ -1698,7 +1698,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 
     def test_expandElementalToIsotopics(self):
-        r"""Tests the expand to elementals capability."""
+        """Tests the expand to elementals capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1730,7 +1730,7 @@ class Block_TestCase(unittest.TestCase):
             )
 
     def test_expandAllElementalsToIsotopics(self):
-        r"""Tests the expand all elementals simlutaneously capability."""
+        """Tests the expand all elementals simlutaneously capability."""
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1763,7 +1763,7 @@ class Block_TestCase(unittest.TestCase):
             )
 
     def test_setPitch(self):
-        r"""
+        """
         Checks consistency after adjusting pitch.
 
         Needed to verify fix to Issue #165.
@@ -1809,7 +1809,7 @@ class Block_TestCase(unittest.TestCase):
         assert_allclose(235.0, mfpAbs, rtol=0.1)
         assert_allclose(17.0, diffusionLength, rtol=0.1)
 
-    def test_consistentMassDensityVolumeBetweenColdBlockAndColdComponents(self):
+    def test_consistentMassDensVolBetweenColdBlockAndComp(self):
         block = self.block
         expectedData = []
         actualData = []
@@ -1827,7 +1827,7 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentMassDensityVolumeBetweenHotBlockAndHotComponents(self):
+    def test_consistentMassDensVolBetweenHotBlockAndComp(self):
         block = self._hotBlock
         expectedData = []
         actualData = []
@@ -1845,7 +1845,7 @@ class Block_TestCase(unittest.TestCase):
             for expectedVal, actualVal in zip(expected, actual):
                 self.assertAlmostEqual(expectedVal, actualVal, msg=msg)
 
-    def test_consistentAreaWithOverlappingComponents(self):
+    def test_consistentAreaWithOverlappingComp(self):
         """
         Test that negative gap areas correctly account for area overlapping upon thermal expansion.
 

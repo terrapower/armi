@@ -300,10 +300,10 @@ class TestBlockConverter(unittest.TestCase):
         # block went to 1 component
         self.assertEqual(1, len([c for c in convertedWithoutDriver]))
 
-    def test_convertHexWithFuelDriverOnNegativeComponentAreaBlock(self):
+    def test_convertHexWithFuelDrOnNegCompAreaBlock(self):
         """
-        Tests the conversion of a control block with linked components, where
-        a component contains a negative area due to thermal expansion.
+        Tests the conversion of a control block with linked components, where a component contains a
+        negative area due to thermal expansion.
         """
         driverBlock = (
             loadTestReactor(TEST_ROOT)[1]
