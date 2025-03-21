@@ -887,15 +887,12 @@ class Assembly(composites.Composite):
         except StopIteration:
             return None
 
-    def getBlockAtElevation(self, elevation):
+    def getBlockAtElevation(self, elevation: float) -> Optional[blocks.Block]:
         """
         Returns the block at a specified axial dimension elevation (given in cm).
 
         If height matches the exact top of the block, the block is considered at that
         height.
-
-        Used as a way to determine what block the control rod will be modifying with a
-        mergeBlocks.
 
         Parameters
         ----------
@@ -904,8 +901,9 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        targetBlock : block
-            The block that exists at the specified height in the reactor
+        targetBlock : block or None
+            The block that exists at the specified height in the reactor. ``None``
+            if a block was not found.
         """
         bottomOfBlock = 0.0
         for b in self:
