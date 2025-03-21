@@ -36,10 +36,9 @@ import warnings
 import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
+from getTestResults import getTestResult
 from sphinx.domains.python import PythonDomain
 from sphinx_needs.api import add_dynamic_function
-
-from getTestResults import getTestResult
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")

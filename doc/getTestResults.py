@@ -1,5 +1,5 @@
-import os
 import glob
+import os
 import xml.etree.ElementTree as ET
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
