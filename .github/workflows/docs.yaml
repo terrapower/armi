@@ -41,6 +41,7 @@ jobs:
           pip install -e .[memprof,mpi,test,docs]
           python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
           date > python_details.log
+          armi --version >> python_details.log
           python --version >> python_details.log
           pip freeze >> python_details.log
           pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
