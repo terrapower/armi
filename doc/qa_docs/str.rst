@@ -235,6 +235,19 @@ This section includes the resulting test record for each test which together wit
 :numref:`Section %s <ref_armi_test_env>` satisfies the criteria necessary for the creation of the
 test record defined in :numref:`Section %s <ref_armi_record_criteria>`.
 
+.. needtable:: Acceptance test results
+   :types: test
+   :columns: id, title, result
+   :filter: id.startswith('T_ARMI_')
+   :style_row: needs_[[copy('result')]]
+   :colwidths: 30,50,10
+   :class: longtable
+
+Appendix A Pytest Verbose Output
+--------------------------------
+
+Shown here is the verbose output from pytest.
+
 Note that the skipped tests are either skipped because they require MPI or because they have hard-coded skips in the
 codebase (``test_canRemoveIsotopes``, ``test_ENDFVII1DecayConstants``, and ``test_ENDFVII1NeutronsPerFission``). None
 of these tests are linked to requirements.
