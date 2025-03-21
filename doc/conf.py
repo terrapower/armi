@@ -37,6 +37,9 @@ import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
+from sphinx_needs.api import add_dynamic_function
+
+from getTestResults import getTestResult
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
@@ -226,6 +229,7 @@ def setup(app):
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+    add_dynamic_function(app, getTestResult, "get_test_result")
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
