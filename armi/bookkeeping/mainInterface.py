@@ -41,7 +41,7 @@ def describeInterfaces(_cs):
 
 class MainInterface(interfaces.Interface):
     """
-    Do some basic manipulations, calls, Instantiates the database.
+    Do some basic manipulations, calls, Instantiates the databse.
 
     Notes
     -----
@@ -211,7 +211,7 @@ class MainInterface(interfaces.Interface):
             newFolder = "snapShot{0}_{1}".format(cycle, node)
             utils.pathTools.cleanPath(newFolder)
 
-        # delete database if it's sqlite
+        # delete database if it's SQLlite
         # no need to delete because the database won't have copied it back if using fastpath.
 
         # clean temp directories.

@@ -623,7 +623,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         Notes
         -----
-        Ensures that parameters are consistent between Standard runs and restart runs.
+        Ensures that parameters are consistant between Standard runs and restart runs.
         """
         o, cs = getSimpleDBOperator(cs)
 
@@ -631,7 +631,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
-            # susceptible to cancellation of errors off by one.
+            # suseptable to cancelation of errors off by one.
             self.r.p.time += self.r.p.timeNode + 1
 
         # Magic to change the method only on this instance of the class.

@@ -538,7 +538,7 @@ def createDimensionReport(comp):
 
     Returns
     -------
-    newReports.Table that corresponds to the passed components dimension report
+    newReports.Table that corresponds to the passed componenets dimension report
     """
     REPORT_GROUPS = {
         Flags.INTERCOOLANT: INTERCOOLANT_DIMS,

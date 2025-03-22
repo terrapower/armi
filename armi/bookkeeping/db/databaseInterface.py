@@ -93,7 +93,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available. (Beginning of Life)."""
+        """Initialize the database if the main interface was not available. (Begining of Life)."""
         if not self._db:
             self.initDB()
 
@@ -124,7 +124,7 @@ class DatabaseInterface(interfaces.Interface):
         # Grab geomString here because the DB-level has no access to the reactor or
         # blueprints or anything.
         # There's not always a geomFile; we are moving towards the core grid definition
-        # living in the blueprints themselves. In this case, the db doesn't need to store
+        # living in the blueprints themselves. In this case, the db doesnt need to store
         # a geomFile at all.
         if self.cs["geomFile"]:
             with open(os.path.join(self.cs.inputDirectory, self.cs["geomFile"])) as f:
@@ -145,7 +145,7 @@ class DatabaseInterface(interfaces.Interface):
           via writeDBEveryNode
         """
         if self.o.cs["tightCoupling"]:
-            # h5 can't handle overwriting so we skip here and write once the tight coupling loop has completed
+            # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
             return
         self.writeDBEveryNode()
 
@@ -237,7 +237,7 @@ class DatabaseInterface(interfaces.Interface):
         that the cycle histories prior to `startCycle`/`startNode` are equivalent.
 
         ARMI expects the reload DB to have been made in the same version of ARMI as you
-        are running. ARMI does not guarantee that a DB from a decade ago will be easily
+        are running. ARMI does not gaurantee that a DB from a decade ago will be easily
         used to restart a run.
         """
         reloadDBName = self.cs["reloadDBName"]
