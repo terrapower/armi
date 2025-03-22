@@ -145,7 +145,7 @@ class SettingsReader:
         :implements: R_ARMI_SETTINGS_IO_TXT
 
         ARMI uses the YAML standard for settings files. ARMI uses industry-standard
-        ``ruamel.yaml`` Python libraray to read these files. ARMI does not bend or
+        ``ruamel.yaml`` Python library to read these files. ARMI does not bend or
         change the YAML file format standard in any way.
 
     Parameters
@@ -229,9 +229,9 @@ class SettingsReader:
             )
 
         caseSettings = tree[Roots.CUSTOM]
-        setts = tree["settings"]
-        if CONF_VERSIONS in setts and "armi" in setts[CONF_VERSIONS]:
-            self.inputVersion = setts[CONF_VERSIONS]["armi"]
+        sets = tree["settings"]
+        if CONF_VERSIONS in sets and "armi" in sets[CONF_VERSIONS]:
+            self.inputVersion = sets[CONF_VERSIONS]["armi"]
         else:
             runLog.warning(
                 "Versions setting section not found. Continuing with uncontrolled versions."

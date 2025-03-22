@@ -54,7 +54,7 @@ MPI_COMM = context.MPI_COMM
 class FailingInterface1(Interface):
     """utility classes to make sure the logging system fails properly."""
 
-    name = "failer"
+    name = "failure"
 
     def interactEveryNode(self, cycle, node):
         raise RuntimeError("Failing interface failure")
@@ -63,7 +63,7 @@ class FailingInterface1(Interface):
 class FailingInterface2(Interface):
     """utility class to make sure the logging system fails properly."""
 
-    name = "failer"
+    name = "failure"
 
     def interactEveryNode(self, cycle, node):
         raise RuntimeError("Failing interface critical failure")
@@ -72,7 +72,7 @@ class FailingInterface2(Interface):
 class FailingInterface3(Interface):
     """fails on worker operate."""
 
-    name = "failer"
+    name = "failure"
 
     def fail(self):
         raise RuntimeError("Failing interface critical worker failure")
@@ -126,8 +126,8 @@ class MpiOperatorTests(unittest.TestCase):
             :tests: R_ARMI_OPERATOR_MPI
         """
         self.o.removeAllInterfaces()
-        failer = FailingInterface1(self.o.r, self.o.cs)
-        self.o.addInterface(failer)
+        failure = FailingInterface1(self.o.r, self.o.cs)
+        self.o.addInterface(failure)
 
         if context.MPI_RANK == 0:
             self.assertRaises(RuntimeError, self.o.operate)
@@ -137,8 +137,8 @@ class MpiOperatorTests(unittest.TestCase):
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_primaryCritical(self):
         self.o.removeAllInterfaces()
-        failer = FailingInterface2(self.o.r, self.o.cs)
-        self.o.addInterface(failer)
+        failure = FailingInterface2(self.o.r, self.o.cs)
+        self.o.addInterface(failure)
 
         if context.MPI_RANK == 0:
             self.assertRaises(Exception, self.o.operate)

@@ -111,7 +111,7 @@ burnChainImposed = False
 
 instances = []
 # The elements must be imported after the instances list is established
-# to allow for simutaneous initialization of the nuclides and elements
+# to allow for simultaneous initialization of the nuclides and elements
 # together to maintain self-consistency.
 from armi.nucDirectory import elements  # noqa: E402
 
@@ -1395,14 +1395,14 @@ def __renormalizeNuclideToElementRelationship():
 def __deriveElementalWeightsByNaturalNuclideAbundances():
     """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
     for element in elements.byName.values():
-        numer = 0.0
+        number = 0.0
         denom = 0.0
         for nb in element.getNaturalIsotopics():
-            numer += nb.weight * nb.abundance
+            number += nb.weight * nb.abundance
             denom += nb.abundance
 
         if denom:
-            element.standardWeight = numer / denom
+            element.standardWeight = number / denom
 
 
 def addGlobalNuclide(nuclide: NuclideBase):
@@ -1427,7 +1427,7 @@ def addGlobalNuclide(nuclide: NuclideBase):
             )
         byMcnpId[nuclide.getMcnpId()] = nuclide
     if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
-        # There are no AZS ID for elements / natural nuclides, or ficticious lump or dummy nuclides
+        # There are no AZS ID for elements / natural nuclides, or fictitious lump or dummy nuclides
         byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
 

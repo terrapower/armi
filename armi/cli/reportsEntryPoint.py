@@ -191,7 +191,7 @@ def createReportFromSettings(cs):
     """
     if cs is None:
         raise RuntimeError(
-            "No Settings with Blueprint or Database, cannot gerenate a report"
+            "No Settings with Blueprint or Database, cannot generate a report"
         )
 
     blueprint = blueprints.loadFromCs(cs)

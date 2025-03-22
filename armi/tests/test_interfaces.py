@@ -53,7 +53,7 @@ class TestCodeInterface(unittest.TestCase):
     def test_nameContains(self):
         i = DummyInterface(None, self.cs)
         self.assertFalse(i.nameContains("nope"))
-        self.assertTrue(i.nameContains("Dum"))
+        self.assertTrue(i.nameContains("Dumb"))
 
     def test_distributable(self):
         i = DummyInterface(None, self.cs)

@@ -117,7 +117,7 @@ def getAssemblyParameterDefinitions():
             "daysSinceLastMove", units=units.UNITLESS, description="daysSinceLastMove"
         )
 
-        pb.defParam("kInf", units=units.UNITLESS, description="kInf")
+        pb.defParam("kind", units=units.UNITLESS, description="kind")
 
         pb.defParam("maxDpaPeak", units=units.DPA, description="maxDpaPeak")
 
