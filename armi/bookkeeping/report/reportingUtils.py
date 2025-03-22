@@ -754,7 +754,7 @@ def summarizePowerPeaking(core):
     avgPDens = maxPowAssem.calcAvgParam("pdens")
     peakPDens = maxPowAssem.getMaxParam("pdens")
     if not avgPDens:
-        # protect against divide-by-zero. Peaking doesnt make sense if there is no
+        # protect against divide-by-zero. Peaking doesn't make sense if there is no
         # power.
         return
     axPeakF = peakPDens / avgPDens
