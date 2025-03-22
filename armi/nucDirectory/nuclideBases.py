@@ -1395,14 +1395,14 @@ def __renormalizeNuclideToElementRelationship():
 def __deriveElementalWeightsByNaturalNuclideAbundances():
     """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
     for element in elements.byName.values():
-        number = 0.0
+        numer = 0.0
         denom = 0.0
         for nb in element.getNaturalIsotopics():
-            number += nb.weight * nb.abundance
+            numer += nb.weight * nb.abundance
             denom += nb.abundance
 
         if denom:
-            element.standardWeight = number / denom
+            element.standardWeight = numer / denom
 
 
 def addGlobalNuclide(nuclide: NuclideBase):

@@ -229,9 +229,9 @@ class SettingsReader:
             )
 
         caseSettings = tree[Roots.CUSTOM]
-        sets = tree["settings"]
-        if CONF_VERSIONS in sets and "armi" in sets[CONF_VERSIONS]:
-            self.inputVersion = sets[CONF_VERSIONS]["armi"]
+        setts = tree["settings"]
+        if CONF_VERSIONS in setts and "armi" in setts[CONF_VERSIONS]:
+            self.inputVersion = setts[CONF_VERSIONS]["armi"]
         else:
             runLog.warning(
                 "Versions setting section not found. Continuing with uncontrolled versions."
