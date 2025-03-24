@@ -46,7 +46,7 @@ PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
 os.environ["PYTHONPATH"] = PYTHONPATH
-# Add dochelpers.py from doc/.static/ directory
+# Add dochelpers.py and automateScr.py from doc/.static/ directory
 sys.path.insert(0, ".static")
 
 from armi import apps, context, disableFutureConfigures, meta
@@ -236,9 +236,8 @@ def setup(app):
     if not os.path.exists(dataDir):
         os.mkdir(dataDir)
 
-    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but the working
-    # directory for running the notebooks is the directory of the link itself, so relative paths
-    # don't work.
+    # Copy resources needed to build the tutorial notebooks. nbsphinx_link needs the working
+    # directory for running the notebooks to be the directory of the link itself.
     for path in _TUTORIAL_FILES:
         safeCopy(path, dataDir)
 
@@ -419,16 +418,14 @@ html_context = {
 # -- Options for LaTeX output --------------------------------------------------
 latex_engine = "xelatex"
 
+# Additional stuff for the LaTeX preamble.
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
+    "papersize": "letterpaper",
+    "pointsize": "10pt",
     "preamble": r"""\usepackage{amsmath}
 
 \usepackage{wasysym}
-"""
+""",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

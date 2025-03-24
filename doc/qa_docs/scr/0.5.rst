@@ -1,25 +1,28 @@
-***********************
-ARMI v0.5 Release Notes
-***********************
+Release Notes for ARMI 0.5
+==========================
+
+These are the release notes for past versions of ARMI, created before our SCR process. They are preserved here for historical record.
 
 ARMI v0.5.1
-===========
+-----------
 Release Date: 2025-03-14
 
+This release was all about QA documentation. We open-sourced our QA documentation, even our software requirements. There were also several bug fixes.
+
 New Features
-------------
-#. Move instead of copy files from TemporaryDirectoryChanger. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
+^^^^^^^^^^^^
+#. Move instead of copy files from ``TemporaryDirectoryChanger``. (`PR#2022 <https://github.com/terrapower/armi/pull/2022>`_)
 #. Creating the ``armi.testing`` module, to share ARMI testing tools. (`PR#2028 <https://github.com/terrapower/armi/pull/2028>`_)
 #. Using inner diameter for sorting components when outer diameter is identical. (`PR#1882 <https://github.com/terrapower/armi/pull/1882>`_)
 #. Invoking ``component.material.density()`` does not log an expensive stack tracefor fluids. (`PR#2075 <https://github.com/terrapower/armi/pull/2075>`_)
 #. ARMI will now try to use the ``/tmp/`` directory for its temp files, on Linux and MacOS. (`PR#2092 <https://github.com/terrapower/armi/pull/2092>`_)
 
 API Changes
------------
+^^^^^^^^^^^
 #. Removing ``Database3`` from the API, use ``Database``. (`PR#2052 <https://github.com/terrapower/armi/pull/2052>`_)
 
 Bug Fixes
----------
+^^^^^^^^^
 #. Fixing check for jagged arrays during ``_writeParams``. (`PR#2051 <https://github.com/terrapower/armi/pull/2051>`_)
 #. Fixing BP-section ignoring tool in ``PassiveDBLoadPlugin``. (`PR#2055 <https://github.com/terrapower/armi/pull/2055>`_)
 #. Making sure SFPs have spatial grids. (`PR#2082 <https://github.com/terrapower/armi/pull/2082>`_)
@@ -29,20 +32,20 @@ Bug Fixes
 #. Fixing treatment of symmetry factors when calculating component flux and reaction rates. (`PR#2068 <https://github.com/terrapower/armi/pull/2068>`_)
 
 Quality Work
-------------
+^^^^^^^^^^^^
 #. Open-Sourcing the ARMI requirements. (`PR#2076 <https://github.com/terrapower/armi/pull/2076>`_)
 #. Significant revamp of the ARMI requirements. (`PR#2074 <https://github.com/terrapower/armi/pull/2074>`_)
 #. Adding PDF versions of the ARMI docs. (`PR#2072 <https://github.com/terrapower/armi/pull/2072>`_)
-#. Update docs build to occur with python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
+#. Update docs build to occur with Python 3.13 and updated docs dependencies. (`PR#2050 <https://github.com/terrapower/armi/pull/2050>`_)
 #. Removing silent overwrite of ``shutil.copy``. (`PR#2081 <https://github.com/terrapower/armi/pull/2081>`_)
 
 
 ARMI v0.5.0
-===========
+-----------
 Release Date: 2024-12-14
 
 New Features
-------------
+^^^^^^^^^^^^
 #. Supporting Python 3.12. (`PR#1813 <https://github.com/terrapower/armi/pull/1813>`_)
 #. Supporting Python 3.13. (`PR#1996 <https://github.com/terrapower/armi/pull/1996>`_)
 #. Adding data models for ex-core structures in ARMI. (`PR#1891 <https://github.com/terrapower/armi/pull/1891>`_)
@@ -70,7 +73,7 @@ New Features
 #. Adding a method ``getPinMgFluxes`` to get pin-wise multigroup fluxes from a Block. (`PR#1990 <https://github.com/terrapower/armi/pull/1990>`_)
 
 API Changes
------------
+^^^^^^^^^^^
 #. ``nuclideBases.byMcc3ID`` and ``getMcc3Id()`` return IDs consistent with ENDF/B-VII.1. (`PR#1982 <https://github.com/terrapower/armi/pull/1982>`_)
 #. Moving ``settingsValidation`` from ``operators`` to ``settings``. (`PR#1895 <https://github.com/terrapower/armi/pull/1895>`_)
 #. Allowing for unknown Flags when opening a DB. (`PR#1844 <https://github.com/terrapower/armi/pull/1835>`_)
@@ -98,7 +101,7 @@ API Changes
 #. Requiring ``buReducingAssemblyRotation`` and ``getOptimalAssemblyOrientation`` to have pin-level burnup. (`PR#2019 <https://github.com/terrapower/armi/pull/2019>`_)
 
 Bug Fixes
----------
+^^^^^^^^^
 #. Fixed spatial grids of pins in Blocks on flats-up grids. (`PR#1947 <https://github.com/terrapower/armi/pull/1947>`_)
 #. Fixed ``DerivedShape.getArea`` for ``cold=True``. (`PR#1831 <https://github.com/terrapower/armi/pull/1831>`_)
 #. Fixed error parsing command line integers in ``ReportsEntryPoint``. (`PR#1824 <https://github.com/terrapower/armi/pull/1824>`_)
@@ -115,9 +118,8 @@ Bug Fixes
 #. Fixing number densities when custom isotopics and material properties are combined. (`PR#1822 <https://github.com/terrapower/armi/pull/1822>`_)
 
 Quality Work
-------------
+^^^^^^^^^^^^
 #. Removing deprecated code ``axialUnitGrid``. (`PR#1809 <https://github.com/terrapower/armi/pull/1809>`_)
 #. Refactoring ``axialExpansionChanger``. (`PR#1861 <https://github.com/terrapower/armi/pull/1861>`_)
 #. Raising a ``ValueError`` when ``Database.load()`` fails. (`PR#1940 <https://github.com/terrapower/armi/pull/1940>`_)
 #. Making axial expansion-related classes more extensible. (`PR#1920 <https://github.com/terrapower/armi/pull/1920>`_)
-
