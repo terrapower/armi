@@ -21,7 +21,7 @@ from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import Block
 from armi.reactor.cores import Core
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
+from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
 from armi.utils import directoryChangers
 
 
