@@ -16,11 +16,14 @@ from armi.cli import entryPoint
 
 
 class ReportsEntryPoint(entryPoint.EntryPoint):
-    """Create a report from a database file."""
+    """
+    Placeholder for an ARMI reports entry point.
+
+    Subclass this if you want to parse the ARMI DB or Reactor data model to build your reports.
+    """
 
     name = "report"
     settingsArgument = "optional"
-    description = "Convert ARMI databases into a report"
 
     def __init__(self):
         entryPoint.EntryPoint.__init__(self)
