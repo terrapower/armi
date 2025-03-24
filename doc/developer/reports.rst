@@ -13,10 +13,10 @@ from a specific plugin.
 
 Currently it is implemented in the bookkeeping and neutronics plugin.
 
+
 The Hook: getReportContents()
 =============================
- getReportContents takes in 5 arguments (r, cs, report, stage, blueprint)
-
+getReportContents takes in 5 arguments (r, cs, report, stage, blueprint)
 
 +---------------+--------------------------------------------------------------------------------------------------------------------------+
 | ``r``         | a Reactor                                                                                                                |
@@ -52,6 +52,7 @@ so one can imagine the functionality of the below to allow for ``Standard`` addi
 
 ReportContent acts as a dicionary of ``Section``'s behind the scenes and the further description of these objects will be found in the following topics. 
 
+
 What is ReportContent?
 ======================
 At the start of any report creation, creation of the ReportContent object is key.
@@ -62,13 +63,10 @@ To do so, one could do the following::
     >>> report = ReportContent(r.name)
 
 
-
-
 The resulting use of this content to generate the title on the html page:
 
 .. figure:: /.static/titleReportContent.png
     :align: center
-
 
 
 ``ReportContent`` itself has a dicionary (``.sections``), and so functionality inherent to dictionaries also exists for ``ReportContent``.
@@ -116,80 +114,12 @@ It is also possible to do the following through dictionary access for the same r
                     ))
 
 
-Tables
-======
-Making sure a ``Table`` isn't already created is important. Due to the repeated call to ``getReportContents()`` at different cycles/nodes of the 
-reactor life cycle, some sections may have already been called before, and we want to be careful about not overwriting a ``Table``/``TimeSeries``.
-(most ``Image``'s may only be called at a single time and not dependent on multiple plugins, so those cases have less to worry about at this time)
-
-A general workflow to combat the issue of potentially overwriting the table is to ensure that it exists in a get or default type call.
-
-The ``get()`` function implemented in Section works perfectly for this::
-
->>> currentTable = report["Comprehensive"].get("Settings", Table("Settings Table", "General Overview))
->>> # If Comprehensive is not created as a Section yet, it will be (based on how the inner workings of __get__ defined within ReportContents works)
->>> # and Settings will be a table added to Comprehensive.
-
-
-Now, once you have the current table, you may add a row to it with ``addRow()``
-
-
-
-An example of this in action in two distinct plugins (Neutronics and Bookkeeping) below is meant to outline the ability to add to the
-same table from different plugins.
-
-Suppose in Bookkeeping a ``Table`` is accessed with the following code::
-
-    >>> section = report[COMPREHENSIVE_REPORT]
-    >>> tableList = section.get(SETTINGS, newReports.Table("Settings", "General overview of the run"))
-    >>> tableList.addRow(["outputFileExtension", cs["outputFileExtension"]])
-    >>> tableList.addRow(["Total Core Power", "%8.5E MWt" % (cs["power"] / 1.0e6)])
-    >>> if not cs["cycleLengths"]:
-    >>>     tableList.addRow(["Cycle Length", "%8.5f days" % cs["cycleLength"]])
-    >>> tableList.addRow(["BU Groups", str(cs["buGroups"])])
-
-
-
-Similarily that same ``Table`` is accessed within Neutronics for additional settings additions::
-
-    >>> section = report[newReportUtils.COMPREHENSIVE_REPORT]
-    >>> table = section.get(newReportUtils.SETTINGS, newReports.Table("Settings", "Overview of the Run"))
-    >>> for key in [CONF_BOUNDARIES, CONF_NEUTRONICS_KERNEL, CONF_NEUTRONICS_TYPE, CONF_FP_MODEL]:
-    >>>    table.addRow([key, cs[key]])
-
-
-The result (with some additional Bookkeeping additions) is outlined in this image
-
-.. figure:: /.static/differentPluginsSameTable.png
-    :align: center
-
-
-.. note:: If a Table is only having additions made within one plugin and never accessed again (only happens at BOL or EOL),the opportunity to do the following exists::
-    
-    >>> report[COMPREHENSIVE_REPORT][ASSEMBLY_AREA] = newReports.Table("Assembly Area Fractions (of First Fuel Block)",
-    >>>        header=["Component", "Area (cm<sup>2</sup>)", "Fraction"],
-    >>>    )
-
-    This is because there is no worry for Table overwrite if a Table is only accessed in one plugin and not time dependent.
-    So, something like Assembly Area Fractions, or other general Design things that you would want to insert from beginning of 
-    reactor life.
-
-
-    The general layout of this corresponding to the html output is 
-
-    .. figure:: /.static/tableLayoutExample.png
-        :align: center
-
-
 Images
 ======
-Images may generally be things to add at stage = Beg, or stage = End. (For example, a core map at BOL would be inserted at stage = Beg)
-Images require a ``caption`` and a ``filename`` and have an optional ``title`` argument. (They would also have a call to another function before hand to create the image file (for example))
+Images may generally be things to add at stage = Beg, or stage = End. (For example, a core map at BOL would be inserted at stage = Beg) Images require a ``caption`` and a ``filename`` and have an optional ``title`` argument. (They would also have a call to another function before hand to create the image file (for example))
 
 
-The ``title`` on an ``Image`` is defaulted to None. This is a decision to deal with some images where maybe it is best to group them together, but overdoing it if 
-each were to be given a title. Title in general has the sole purpose of giving this image a position within the table of contents one the left of the html
-page. Without ``title``, it will not have a +/- sign for additional drop down reference. If you want to specify an image, give it a caption and mention its name.
+The ``title`` on an ``Image`` is defaulted to None. This is a decision to deal with some images where maybe it is best to group them together, but overdoing it if each were to be given a title. Title in general has the sole purpose of giving this image a position within the table of contents one the left of the html page. Without ``title``, it will not have a +/- sign for additional drop down reference. If you want to specify an image, give it a caption and mention its name.
 
 There are two examples of additions of images within sections worth mentioning.
 
@@ -206,44 +136,6 @@ Here is an example for Block Images (in which table of content access was wanted
 
 In this case, Block Diagrams is the Section Title, and it is expandable, for easy viewing of distinct blocks.
 
-
-TimeSeries
-==========
-
-This is where information for later graphing is collected. The TimeSeries contains many elements. A ``title`` a ``rname`` (reactor name), ``labels`` list, ``yaxis`` title, and ``filename``.
-
-Like ``Table``, these objects need to have a check on whether they already exist. In this case, you could just check and create the object when ``stage`` is set to Begin (and then when ``stage`` is Standard always know it exists to add content to),
-but for good measure, you may also just check if the Plot already exists in the Section, and if not, add it.
-
-Here is code for adding to a K-effective plot::
-    >>> # Make K-Effective Plot
-    >>> labels = ["k-effective"]
-    >>> neutronicsSection = report[reportConstants.NEUTRONICS_SECTION]
-    >>> if reportConstants.KEFF_PLOT not in neutronicsSection:
-    >>>    report[reportConstants.NEUTRONICS_SECTION][
-    >>>        reportConstants.KEFF_PLOT
-    >>>    ] = newReports.TimeSeries(
-    >>>        "Plot of K-Effective",
-    >>>        r.name,
-    >>>        labels,
-    >>>        "K-eff value",
-    >>>        "keff." + cs["outputFileExtension"],
-    >>>    )
-    >>>    # To create the keff section and start populating it's points...
-    >>> report[reportConstants.NEUTRONICS_SECTION][reportConstants.KEFF_PLOT].add(
-        labels[0], r.p.time, r.core.p.keff, r.core.p.keffUnc
-    >>> )
-
-Here, only one label exists, so we only add one line for ``label[0]``. There are further examples of this in the docstring of ``TimeSeries`` for information on adding multiple lines.
-In summary, to add multiple lines (say, for different assembly types on a Peak DPA plot), the label would be the assembly type and the data would be the dpa at the time for that type.
-The ``uncertainty`` value --> which in general denotes an error bar on the graph---> would be None or 0, for each point if there is no uncertainty.
-
-HTML Elements
-=============
-One may also want to add just plain prose. To do this, Sections also allow for the addition of htmltree elements so you can add paragraphs,
-divs, etc, as outlined in htmltree. These parts however will not be titled unless wrapped within a Section, and similarily will not have a direct link
-in the table of contents without a Section wrap as well (due to their inherent lack of title). However, thier addition may add beneficial information to reports in between Tables and Images that
-could prove useful to the user and any readers.
 
 Summary
 =======
