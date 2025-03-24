@@ -154,9 +154,6 @@ class Table(Group):
 
 
 class Image(Group):
-
-    count = 0
-
     def __init__(self, title, description=""):
         Group.__init__(self, title, description=description)
         self._shortformTitle = title.replace(" ", "").lower()
