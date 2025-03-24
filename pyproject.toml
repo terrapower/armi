@@ -16,7 +16,7 @@
 #                        GENERAL PYTHON CONFIG                        #
 #######################################################################
 [build-system]
-requires = ["setuptools>=61.2"]
+requires = ["setuptools>=61.2,<78"]
 build-backend = "setuptools.build_meta"
 
 [project]
