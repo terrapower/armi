@@ -37,6 +37,9 @@ import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
+from sphinx_needs.api import add_dynamic_function
+
+from doc.getTestResults import getTestResult
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
@@ -226,6 +229,7 @@ def setup(app):
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+    add_dynamic_function(app, getTestResult, "get_test_result")
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
@@ -521,8 +525,6 @@ needs_extra_links = [
     dict(option="implements", incoming="implementations", outgoing="requirements"),
 ]
 
-# TODO: Do we need and like these templates and layouts?
-needs_template_folder = os.path.join(STATIC_DIR, "needs_templates")
 needs_layouts = {
     "test_layout": {
         "grid": "simple",
@@ -551,6 +553,11 @@ needs_layouts = {
     },
 }
 
+needs_global_options = {
+    # Defaults for test tags
+    "layout": ("test_layout", "type=='test'"),
+    "result": ("[[get_test_result()]]", "type=='test'"),
+}
 
 # Formats need roles (reference to a req in text) as just the req ID
 needs_role_need_template = "{id}"

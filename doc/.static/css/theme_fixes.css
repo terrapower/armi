@@ -37,3 +37,16 @@ img {
 span.eqno {
     float: right;
 }
+
+/* Style test needs by their result */
+tr.needs_passed td {
+    background-color: rgba(0,250,0,0.2) !important;
+}
+
+tr.needs_failure td {
+    background-color: rgba(250,0,0,0.2) !important;
+}
+
+tr.needs_skipped td {
+    background-color: rgba(0,0,0,0.1) !important;
+}

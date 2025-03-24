@@ -41,9 +41,13 @@ jobs:
           pip install -e .[memprof,mpi,test,docs]
           python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
           date > python_details.log
+          armi --version >> python_details.log
           python --version >> python_details.log
           pip freeze >> python_details.log
           pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
           python doc/.static/cleanup_test_results.py test_results.xml
           cd doc
           git submodule init
