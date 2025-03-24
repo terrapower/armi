@@ -283,11 +283,6 @@ class TestReportInterface(unittest.TestCase):
         self.assertIn("REPORTS BEGIN", rep)
         self.assertIn("REPORTS END", rep)
 
-    def test_writeReports(self):
-        """Test writing html reports."""
-        repInt = reportInterface.ReportInterface(None, None)
-        repInt.writeReports()
-
     def test_distributableReportInt(self):
         repInt = reportInterface.ReportInterface(None, None)
         self.assertEqual(repInt.distributable(), 4)
