@@ -26,7 +26,7 @@ from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
-from armi.utils import directoryChangers, reportPlotting, units
+from armi.utils import reportPlotting, units
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -138,9 +138,6 @@ class ReportInterface(interfaces.Interface):
         _timelinePlot = self.o.timer.timeline(
             self.cs.caseTitle, self.cs["timelineInclusionCutoff"], total_time=True
         )
-        runLog.debug("Generating report HTML.")
-        self.writeReports()
-        runLog.debug("Report HTML generated successfully.")
         runLog.info(self.printReports())
 
     # --------------------------------------------
@@ -156,12 +153,6 @@ class ReportInterface(interfaces.Interface):
             + str_
             + "\n----------- REPORTS END -----------"
         )
-
-    def writeReports(self):
-        """Renders each report into a document for viewing."""
-        with directoryChangers.ForcedCreationDirectoryChanger("reports"):
-            for report_ in self.reports:
-                report_.writeHTML()
 
     # --------------------------------------------
     #        Ex-Core Summaries
