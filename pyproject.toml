@@ -16,7 +16,7 @@
 #                        GENERAL PYTHON CONFIG                        #
 #######################################################################
 [build-system]
-requires = ["setuptools>=61.2,<78"]
+requires = ["setuptools>=61.2,<77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -103,7 +103,7 @@ docs = [
     "pandoc", # Must be in the path (to convert file formats)
     "pylint", # Generates UML diagrams
     "pypdf==5.3.1",
-    "setuptools",  # needed for conf.py tooling
+    "setuptools<77",  # needed for conf.py tooling
     "sphinx-data-viewer==0.1.5",
     "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
     "sphinx-needs==4.2.0", # Requirements traceability matrices for QA
