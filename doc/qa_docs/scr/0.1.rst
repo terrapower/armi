@@ -151,7 +151,7 @@ Release Date: 2020-02-27
 Bugfixes
 ^^^^^^^^
 #. Fix minor output date/time bug.
-#. Copy Interface inputs in a manner constistent with standard inputs when cloning Cases.
+#. Copy Interface inputs in a manner consistent with standard inputs when cloning Cases.
 
 ARMI v0.1.3
 -----------
@@ -166,7 +166,7 @@ User-facing enhancements
    isotopic vectors.
 #. Add YAML ``!include`` support to blueprints files.
 #. Remove ``latticeFile`` section to grid blueprints.
-#. Allow modification of linked dimentions in ``SuiteBuilder``.
+#. Allow modification of linked dimensions in ``SuiteBuilder``.
 
 Bugfixes
 ^^^^^^^^

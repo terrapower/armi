@@ -213,7 +213,7 @@ class Case:
         """
         if case in self._dependencies:
             runLog.warning(
-                "The case {} is already explicity specified as a dependency of "
+                "The case {} is already explicitly specified as a dependency of "
                 "{}".format(case, self)
             )
         self._dependencies.add(case)

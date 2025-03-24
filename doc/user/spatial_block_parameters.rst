@@ -19,7 +19,7 @@ Blueprints
 ----------
 
 In your blueprints file, you likely have a core grid that defines where assemblies reside in the reactor. Assemblies
-are assigned to locations on that grid according to their ``specifcier`` blueprint attribute. Below is an example
+are assigned to locations on that grid according to their ``specifier`` blueprint attribute. Below is an example
 of a "flats up" hexagonal core grid of fuel assemblies with 1/3 symmetry.
 
 .. code:: yaml

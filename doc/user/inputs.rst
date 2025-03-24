@@ -217,7 +217,7 @@ Such a scheme would define the following cycles:
 
     4. Constant full-power operation for 90 days, split into two equal-length 45 day segments, followed by 10 days of downtime
 
-As can be seen, the detailed cycle history option provides much greated flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
+As can be seen, the detailed cycle history option provides much flexibility for simulating realistic operations, particularly power ramps or scenarios that call for unevenly spaced burnup nodes, such as xenon buildup in the early period of thermal reactor operations.
 
 .. note:: Although the detailed cycle history option allows for powers to change within each cycle, it should be noted that the power over each step is still considered to be constant.
 
@@ -381,7 +381,7 @@ A few examples of restart cases:
 The Blueprints Input File
 =========================
 
-The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are defined here. The specifics of each assembly type are then overlayed, possibly including enrichment distributions and other material modifications.
+The **blueprints** input defines the dimensions of structures in the reactor, as well as their material makeup. In a typical case, pin dimensions, isotopic composition, control definitions, coolant type, etc. are defined here. The specifics of each assembly type are then overlaid, possibly including enrichment distributions and other material modifications.
 
 .. note:: See the :py:mod:`~armi.reactor.blueprints` module for implementation and more detail.
 
@@ -459,7 +459,7 @@ We will start with a component, and then define the whole ``blocks:`` input. The
 
 .. note:: You can also define components at the top level of the blueprints file under
     the ``components:`` top level section, but bringing anything defined there into
-    the reactor model must currently be done programatically. We are currently
+    the reactor model must currently be done programmatically. We are currently
     developing additional input capabilities to use these more flexibly.
 
     Associated with this is a ``component groups:`` section which can collect
@@ -574,7 +574,7 @@ block. For instance, the sodium bond between fuel and cladding. The format is si
                 Tinput: 450.0
                 Thot: 450.0
                 mult: fuel.mult
-                id: fuel.od         # bond is connected to the ouside of fuel
+                id: fuel.od         # bond is connected to the outside of fuel
                 od: clad.id         # and the inside of the clad
             clad:
                 shape: Circle
@@ -875,7 +875,7 @@ material modifications
                 material modifications:
                     by component:
                         fuel1:
-                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block defaul value
+                            U235_wt_frac: [0.20, ''] # <-- the U235_wt_frac for the second block will go to the block default value
                         fuel2: # the U235_wt_frac for fuel2 component in both axial blocks will go to the block default values
                             Zr_wt_frac: [0.02, ''] # <-- the Zr_wt_frac for the second block will go to the material class default because there is no block default value
                     U235_wt_frac: [0.30, 0.30]
@@ -1170,7 +1170,7 @@ Here is a complete fuel block definition::
 Making blocks with unshaped components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Sometimes you will want to make a homogenous block,  which is a mixture of multiple
+Sometimes you will want to make a homogeneous block,  which is a mixture of multiple
 materials, and will not want to define an exact shape for each of the components in
 the block. In this case unshaped components can be used, but ARMI still requires there
 to be at least one component with shape to define the pitch of the block.
