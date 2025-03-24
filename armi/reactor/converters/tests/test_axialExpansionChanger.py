@@ -342,10 +342,10 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             newFE56Mass = a.getMass("FE56")
             newMass = self._getMass(a)
             self.assertAlmostEqual(
-                newFE56Mass / prevFE56Mass, 1.0, places=8, msg=f"{a}"
+                newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
             )
             if newMass:
-                self.assertAlmostEqual(newMass / prevMass, 1.0, places=8, msg=f"{a}")
+                self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
 
         newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
