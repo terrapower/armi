@@ -23,7 +23,7 @@ import copy
 import itertools
 import os
 import time
-from typing import Optional, Callable, Iterator
+from typing import Callable, Iterator, Optional
 
 import numpy as np
 
