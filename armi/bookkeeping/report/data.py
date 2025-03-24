@@ -83,11 +83,9 @@ class Group:
     def __init__(self, title, description=""):
         self.title = title
         self.description = description
-
         self.data = collections.OrderedDict()
-
-        self.titleStyle = "font-weight: bold; padding-top: 20px;"
         self.descStyle = "font-weight: normal; font-style: italic; font-size: 14px; padding-left: 5px;"
+        self.titleStyle = "font-weight: bold; padding-top: 20px;"
 
     def __str__(self):
         str_ = "\n{} - (GROUP) {}\n".format(self.title, self.description)
@@ -107,10 +105,6 @@ class Group:
 
     def __setitem__(self, name, value):
         self.data[name] = value
-
-    def writeHTML(self, f):
-        """Writes the HTML information to file."""
-        raise NotImplementedError
 
 
 class Table(Group):
