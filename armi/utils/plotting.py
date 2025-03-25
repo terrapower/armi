@@ -323,7 +323,7 @@ def plotFaceMap(
         labels = [None] * len(data)
     if len(data) != len(labels):
         raise ValueError(
-            "Data had length {}, but lables had length {}. "
+            "Data had length {}, but labels had length {}. "
             "They should be equal length.".format(len(data), len(labels))
         )
 

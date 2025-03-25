@@ -134,7 +134,7 @@ Functional Requirements
     :id: R_ARMI_XSGM_FREQ
     :subtype: functional
     :basis: The cross section groups need to be up to date with the core state at the time that the Lattice Physics Interface is called.
-    :acceptance_criteria: Initiate the cross-section group manager by the same setting that intiates calculating cross sections. And ensure the cross-section group manager always runs before cross sections are calculated.
+    :acceptance_criteria: Initiate the cross-section group manager by the same setting that initiates calculating cross sections. And ensure the cross-section group manager always runs before cross sections are calculated.
     :status: accepted
 
 .. req:: The cross-section group manager package shall create separate collections of blocks for each combination of user-specified XS type and burnup group.

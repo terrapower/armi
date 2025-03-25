@@ -176,7 +176,7 @@ class SystemLayoutInput:
         bounds = None
 
         if self.geomType == geometry.GeomType.RZT:
-            # We need a grid in order to go from whats in the input to indices, and to
+            # We need a grid in order to go from what's in the input to indices, and to
             # be able to provide grid bounds to the blueprint.
             rztGrid = grids.ThetaRZGrid.fromGeom(self)
             theta, r, _ = rztGrid.getBounds()
@@ -549,7 +549,7 @@ class SystemLayoutInput:
 
     @classmethod
     def loadFromCs(cls, cs):
-        """Function to load Geoemtry based on supplied ``Settings``."""
+        """Function to load Geometry based on supplied ``Settings``."""
         if not cs["geomFile"]:
             return None
 
