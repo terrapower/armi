@@ -350,7 +350,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
-            self.assertAlmostEqual(orig, new, places=8, msg=f"{a}")
+            self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
 
