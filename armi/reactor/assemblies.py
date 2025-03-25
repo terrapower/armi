@@ -87,7 +87,7 @@ class Assembly(composites.Composite):
         Notes
         -----
         As with other ArmiObjects, Assemblies are sorted based on location. Assemblies are more
-        permissive in the grid consistency checks to accomodate situations where assemblies might be
+        permissive in the grid consistency checks to accommodate situations where assemblies might be
         children of the same Core, but not in the same grid as each other (like in the spent fuel
         pool). In these situations, the operator returns ``False``.  This behavior may lead to some
         strange sorting behavior when two or more Assemblies are being compared that do not live in
@@ -1036,7 +1036,7 @@ class Assembly(composites.Composite):
         elevations : array of float
             the elevations from the bottom of the assembly in cm at which you want the point.
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            used in interp1d. interp1d documentation: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
@@ -1082,7 +1082,7 @@ class Assembly(composites.Composite):
         param : str
             the parameter to interpolate
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            used in interp1d. interp1d documentation: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the

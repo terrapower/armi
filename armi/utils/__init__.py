@@ -181,7 +181,7 @@ def _getStepAndCycleLengths(cs):
 
     Notes
     -----
-    Using this method directly is more effecient than calling `getStepLengths`
+    Using this method directly is more efficient than calling `getStepLengths`
     and `getCycleLengths` separately, but it is probably more clear to the user
     to call each of them separately.
     """
@@ -494,7 +494,7 @@ def doTestPickleOnAllContents2(obj, ignore=None):
                 pickle.dumps(ob)  # dump as a string
             except Exception:
                 unpickleable.append(name)
-                print("Cant pickle {0}".format(name))
+                print("Can't pickle {0}".format(name))
                 # recursive call.
                 unpickleable.extend(
                     doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore)
@@ -537,7 +537,7 @@ def tryPickleOnAllContents3(obj):
 
 
 def classesInHierarchy(obj, classCounts, visited=None):
-    """Count the number of instances of each class contained in an objects heirarchy."""
+    """Count the number of instances of each class contained in an objects hierarchy."""
     if not isinstance(classCounts, collections.defaultdict):
         raise TypeError(
             "Need to pass in a default dict for classCounts (it's an out param)"
@@ -581,7 +581,7 @@ def slantSplit(val, ratio, nodes, order="low first"):
 
 def prependToList(originalList, listToPrepend):
     """
-    Add a new list to the beginnning of an original list.
+    Add a new list to the beginning of an original list.
 
     Parameters
     ----------

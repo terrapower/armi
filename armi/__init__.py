@@ -134,7 +134,7 @@ def init(choice=None, fName=None, cs=None, skipInspection=False):
         The path to a settings file to load: my_case.yaml
 
     cs : Settings, optional
-        If supplied, this CS object will supercede the other case input methods and use
+        If supplied, this CS object will supersede the other case input methods and use
         the object directly.
 
     skipInspection : bool, optional
