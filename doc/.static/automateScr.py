@@ -176,6 +176,8 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
         print(f"TODO: JOHN 2: {num}")
         gitCmd = f"git log -n {num} --pretty=oneline".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
+        for line in txt.split("\n"):
+            print(line.rstrip())
         if pastCommit in txt:
             print(f"TODO: JOHN 4: {txt}")
             break
