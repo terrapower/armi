@@ -1,6 +1,6 @@
 # Contribution License Agreement
 
-For information on how to contribute to ARMI, see [our official documenation](https://terrapower.github.io/armi/developer/first_time_contributors.html).
+For information on how to contribute to ARMI, see [our official documentation](https://terrapower.github.io/armi/developer/first_time_contributors.html).
 
 This Contribution License Agreement (**"Agreement"**) is agreed to by the party signing below (**"You"**), and conveys certain license rights to TerraPower, LLC and its affiliates (**"TerraPower"**) for Your contributions to TerraPower open source projects. This Agreement is effective as of the latest signature date below.
 

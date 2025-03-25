@@ -93,7 +93,7 @@ class Operator:
 
         A major design feature of ARMI is that a run is built from user settings.
         In code, this means that a case ``Settings`` object is passed into this
-        class to intialize an Operator. Conceptually, this means that the
+        class to initialize an Operator. Conceptually, this means that the
         Operator that controls a reactor simulation is defined by user settings.
         Because developers can create their own settings, the user can
         control an ARMI simulation with arbitrary granularity in this way. In
@@ -716,7 +716,7 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accomodate testing
+        This is split off from self.interactAllCoupled to accommodate testing
         """
         # Summarize the coupled results and the convergence status.
         converged = []
@@ -858,7 +858,7 @@ class Operator:
         Order does not matter here because the interfaces added here are disabled and playing supporting
         role so it is not intended to run on the interface stack. They will be called by other interfaces.
 
-        As mentioned in :py:meth:`addInterface`, it may be better to just insantiate utility code
+        As mentioned in :py:meth:`addInterface`, it may be better to just instantiate utility code
         when its needed rather than rely on this system.
         """
         # Make multiple passes in case there's one added that depends on another.
@@ -1149,7 +1149,7 @@ class Operator:
 
         See Also
         --------
-        armi.bookeeping.db.loadOperator:
+        armi.bookkeeping.db.loadOperator:
             A method for loading an operator given a database. loadOperator does not
             require an operator prior to loading the state of the reactor. loadState
             does, and therefore armi.init must be called which requires access to the

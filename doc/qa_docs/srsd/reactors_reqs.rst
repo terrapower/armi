@@ -3,7 +3,7 @@
 Reactors Package
 ----------------
 
-This section provides requirements for the :py:mod:`armi.reactors` package within the framework, unsurprisingly this is the largest package in ARMI. In this package are sub-packages for fully defining a nuclear reactor, starting from blueprints and all the way through defining the full reactor data model. It is this reactor data object that is critical to the framwork; this is how different reactor modeling tools share information.
+This section provides requirements for the :py:mod:`armi.reactors` package within the framework, unsurprisingly this is the largest package in ARMI. In this package are sub-packages for fully defining a nuclear reactor, starting from blueprints and all the way through defining the full reactor data model. It is this reactor data object that is critical to the framework; this is how different reactor modeling tools share information.
 
 
 
@@ -67,7 +67,7 @@ Functional Requirements
 .. req:: The parameters package shall provide a way to signal if a parameter needs updating across multiple processes.
     :id: R_ARMI_PARAM_PARALLEL
     :status: accepted
-    :basis: Parameters updated on compute nodes must be propogated to the head node.
+    :basis: Parameters updated on compute nodes must be propagated to the head node.
     :acceptance_criteria: A parameter has an attribute which signals its last updated status among the processors.
     :subtype: functional
 

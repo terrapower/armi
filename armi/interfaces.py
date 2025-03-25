@@ -45,7 +45,7 @@ class STACK_ORDER:  # noqa: N801
         :id: I_ARMI_OPERATOR_INTERFACES0
         :implements: R_ARMI_OPERATOR_INTERFACES
 
-        At each time node during a simulation, an ordered colletion of Interfaces are run (referred
+        At each time node during a simulation, an ordered collection of Interfaces are run (referred
         to as the interface stack). But ARMI does not force the order upon the analyst. Instead,
         each Interface registers where in that ordered list it belongs by giving itself an order
         number (which can be an integer or a decimal). This class defines a set of constants which
@@ -160,7 +160,7 @@ class TightCoupler:
         Parameters
         ----------
         val : _SUPPORTED_TYPES
-            The most recent value for computing convergence critera. Is commonly equal to
+            The most recent value for computing convergence criteria. Is commonly equal to
             interface.getTightCouplingValue()
 
         Returns

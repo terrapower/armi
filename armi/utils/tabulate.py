@@ -1391,7 +1391,7 @@ def tabulate(
     else:  # default
         aligns = [numAlign if ct in [int, float] else strAlign for ct in coltypes]
 
-    # then specific alignements
+    # then specific alignments
     if colAlign is not None:
         assert isinstance(colAlign, Iterable)
         if isinstance(colAlign, str):
@@ -1421,7 +1421,7 @@ def tabulate(
             alignsHeaders = [headersGlobalAlign] * len(tCols)
         else:  # default
             alignsHeaders = aligns or [strAlign] * len(headers)
-        # then specific header alignements
+        # then specific header alignments
         if headersAlign is not None:
             assert isinstance(headersAlign, Iterable)
             if isinstance(headersAlign, str):

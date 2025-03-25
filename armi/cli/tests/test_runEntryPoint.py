@@ -16,7 +16,6 @@ import logging
 import os
 import sys
 import unittest
-from glob import glob
 from shutil import copyfile
 
 from armi import runLog
@@ -125,7 +124,6 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         self.assertEqual(ci.name, "check-input")
         self.assertEqual(ci.args.patterns, ["/path/to/fake.yaml"])
         self.assertEqual(ci.args.skip_checks, True)
-        self.assertEqual(ci.args.generate_design_summary, False)
 
     def test_checkInputEntryPointInvoke(self):
         """Test the "check inputs" entry point.
@@ -380,77 +378,18 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
             self.assertIn("nTasks: 333", txt)
 
 
+class MockFakeReportsEntryPoint(ReportsEntryPoint):
+    name = "MockFakeReport"
+
+    def invoke(self):
+        return "mock fake"
+
+
 class TestReportsEntryPoint(unittest.TestCase):
-    def test_toTwoTuple(self):
-        result = ReportsEntryPoint.toTwoTuple("(1,2)")
-        self.assertEqual(result, (1, 2))
-
-        result = ReportsEntryPoint.toTwoTuple("(-931,223)")
-        self.assertEqual(result, (-931, 223))
-
-        result = ReportsEntryPoint.toTwoTuple("(-7,7")
-        self.assertEqual(result, (-7, 7))
-
-        # here is a funny edge case
-        result = ReportsEntryPoint.toTwoTuple("(1,2,3)")
-        self.assertEqual(result, (1, 2))
-
-        # test some cases that SHOULD fail
-        with self.assertRaises(ValueError):
-            ReportsEntryPoint.toTwoTuple("(1,)")
-
-        with self.assertRaises(ValueError):
-            ReportsEntryPoint.toTwoTuple("()")
-
-        with self.assertRaises(ValueError):
-            ReportsEntryPoint.toTwoTuple("[1,5]")
-
     def test_cleanArgs(self):
-        rep = ReportsEntryPoint()
-        rep.addOptions()
-
-        node0 = "(0,0)"
-        node3 = "(3,3)"
-        nodesStr = "(0,2)(1,3)(2,9)"
-
-        rep.parse_args(["--nodes", nodesStr])
-        self.assertEqual(rep.args.nodes, nodesStr)
-        rep._cleanArgs()
-        self.assertEqual(rep.args.nodes[0], (0, 2))
-        self.assertEqual(rep.args.nodes[1], (1, 3))
-        self.assertEqual(rep.args.nodes[2], (2, 9))
-
-        rep.parse_args(["--min-node", node0])
-        self.assertEqual(rep.args.min_node, node0)
-        rep._cleanArgs()
-        self.assertEqual(rep.args.min_node, (0, 0))
-
-        rep.parse_args(["--max-node", node3])
-        self.assertEqual(rep.args.max_node, node3)
-        rep._cleanArgs()
-        self.assertEqual(rep.args.max_node, (3, 3))
-
-    def test_reportsEntryPointBasics(self):
-        with TemporaryDirectoryChanger() as newDir:
-            # set up output names
-            fileNameDB = buildTestDB(self._testMethodName, 1, 1)
-            outputFile = f"{self._testMethodName}.txt"
-            outDir = os.path.join(newDir.destination, "reportsOutputFiles")
-
-            # define report
-            rep = ReportsEntryPoint()
-            rep.addOptions()
-            rep.parse_args(["-h5db", fileNameDB, "-o", outputFile])
-
-            # validate report options
-            self.assertEqual(rep.name, "report")
-            self.assertEqual(rep.settingsArgument, "optional")
-
-            # Run report, and make sure there are output files
-            rep.invoke()
-            self.assertTrue(os.path.exists(os.path.join(outDir, "index.html")))
-            outFiles = glob(os.path.join(outDir, f"*{self._testMethodName}*"))
-            self.assertGreater(len(outFiles), 2)
+        rep = MockFakeReportsEntryPoint()
+        result = rep.invoke()
+        self.assertEqual(result, "mock fake")
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):

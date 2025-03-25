@@ -412,9 +412,9 @@ class Zones:
 
     def summary(self) -> None:
         """
-        Summarize the zone defintions clearly, and in a way that can be copy/pasted
+        Summarize the zone definitions clearly, and in a way that can be copy/pasted
         back into a settings file under "zoneDefinitions", if the user wants to
-        manually re-use these zones later.
+        manually reuse these zones later.
 
         Examples
         --------

@@ -236,7 +236,7 @@ class Setting:
         """
         Return a serializable version of this setting's value.
 
-        Override to define custom deserializers for custom/compund settings.
+        Override to define custom deserializers for custom/compound settings.
         """
         return self._value
 

@@ -48,7 +48,7 @@ as the first argument and the system will load up the associated grid, e.g.::
 
 * Assembly colors are derived from the set of flags applied to them, but the mapping of
   colors to flags is not particularly rich, and there isn't anything to disambiguate
-  between asemblies of different design, but the same flags.
+  between assemblies of different design, but the same flags.
 
 * No proper zoom support, and object sizes are fixed and don't accommodate long
   specifiers.
@@ -523,7 +523,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
     def _setActiveAssemID(self, id: Optional[int]):
         """Make sure the appropriate button is on, but none others."""
         if self.activeAssemID is not None and self.activeAssemID != id:
-            # there is currently an active assem, and it isnt the requested one. Turn
+            # there is currently an active assem, and it isn't the requested one. Turn
             # its button off.
             self.assemButtons[self.activeAssemID].SetValue(False)
 

@@ -366,7 +366,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         Unlike other types of suite builders, only one instance of a
         modifier class should be added. This is because the Latin Hypercube
         Sampling will automatically perturb the values and produce modifier
-        sets internally. A settings modfier class passed to this method
+        sets internally. A settings modifier class passed to this method
         need include bounds by which the LHS algorithm can perturb the input
         parameters.
 
@@ -398,7 +398,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
                     duplicateNames.append(key)
 
             raise ValueError(
-                "Only a single input parameter should be inserted as an input modifer "
+                "Only a single input parameter should be inserted as an input modifier "
                 + "since cases are added through Latin Hypercube Sampling.\n"
                 + "Each inputModifier adds a dimension to the Latin Hypercube and "
                 + "represents a single input variable.\n"

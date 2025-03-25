@@ -773,7 +773,7 @@ def defineCoreParameters():
 
 
 def makeParametersReadOnly(r):
-    """Convert all the paramters in a Reactor to read-only.
+    """Convert all the parameters in a Reactor to read-only.
 
     This method is pretty simple. It goes through all the children of a Reactor object,
     recursively, and converts the parameters to read-only mode. This will affect the Core, but also

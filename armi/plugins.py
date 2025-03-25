@@ -454,7 +454,7 @@ class ArmiPlugin:
         complex cross-plugin info.
 
         We'd prefer to not manipulate objects passed in directly, but
-        rather have the inspection happen in a measureable hook. This
+        rather have the inspection happen in a measurable hook. This
         would help find misbehaving plugins.
 
         See Also

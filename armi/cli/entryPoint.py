@@ -32,7 +32,7 @@ class _EntryPointEnforcer(type):
     def __new__(mcs, name, bases, attrs):
         if "name" not in attrs:
             raise AttributeError(
-                "Subclasses of EntryPoint must define a `name` class attrubute."
+                "Subclasses of EntryPoint must define a `name` class attribute."
             )
 
         # basic input validation. Will throw a KeyError if argument is incorrect

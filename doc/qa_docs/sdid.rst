@@ -74,7 +74,7 @@ Implementation of Plugin System
 The first important design idea to understand in ARMI is that ARMI is a framework for nuclear
 reactor modeling. What this means is that the science or engineering calculations for nuclear
 reactor modeling do not happen in ARMI. The point of ARMI is to tie together disparate nuclear
-modeling softwares that already exist. Thus, ARMI must be able to wrap external codes, and
+modeling software that already exist. Thus, ARMI must be able to wrap external codes, and
 orchestrate running them at each time step we want to model.
 
 The second design idea is that at each time step, there is an ordered list of conceptual reactor

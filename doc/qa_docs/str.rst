@@ -25,7 +25,7 @@ This section defines some test attributes that all tests here have in common.
 Planned Test Cases, Sequence, and Identification of Stages Required
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-The test cases are described in the test traceability matrix in 
+The test cases are described in the test traceability matrix in
 :numref:`Section %s <ref_armi_test_trace_matrix>`. All  tests must be run, and the sequence can be
 in any order unless otherwise  specified for the test in
 :numref:`Section %s <ref_armi_test_trace_matrix>`.
@@ -61,19 +61,19 @@ If inputs are necessary to run test cases or to return the system and data back 
 state, the processes will be documented in the test  traceability matrix (TTM) in
 :numref:`Section %s <ref_armi_test_trace_matrix>`  (The TTM provides traceability for each test to
 the required criteria). Otherwise, there are no special inputs necessary to run test cases or steps
-to  restore the system. 
+to  restore the system.
 
 Required Ranges of Input Parameters for the Test Case(s)
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-If a test uses a range of inputs, then it will be documented in the TTM in 
+If a test uses a range of inputs, then it will be documented in the TTM in
 :numref:`Section %s <ref_armi_test_trace_matrix>`. Otherwise, there are no required ranges of inputs
 for the test case.
 
 Expected Results for the Test Case(s)
 """""""""""""""""""""""""""""""""""""
 
-If a test expects a specific result, it will be documented in the TTM in 
+If a test expects a specific result, it will be documented in the TTM in
 :numref:`Section %s <ref_armi_test_trace_matrix>`. Otherwise, the expected test result is that no
 error is raised, which constitutes a passing test.
 
@@ -97,7 +97,7 @@ test report (STR).
 Software Tested, Including System Software Used and All Versions
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-The ARMI version will be shown in the test record via standard output logs. 
+The ARMI version will be shown in the test record via standard output logs.
 
 Compute Platform and Hardware Used
 """"""""""""""""""""""""""""""""""
@@ -153,7 +153,7 @@ Action Taken in connection with Any Deviations Noted
 
 No actions will have been assumed to be taken based on the test other than pass or fail for the
 test. If there are exceptions, to this statement, they will be noted in the TTM in
-:numref:`Section %s <ref_armi_test_trace_matrix>`. 
+:numref:`Section %s <ref_armi_test_trace_matrix>`.
 
 Person Evaluating Test Result
 """""""""""""""""""""""""""""
@@ -223,24 +223,41 @@ Python Version and Packages
 Software Tested and Date
 """"""""""""""""""""""""
 
-The software tested and date of testing are below: 
+The software tested and date of testing are below:
 
 .. literalinclude:: ../../python_details.log
-   :lines: 1-2
+   :lines: 1-3
 
 Record of Test Cases
 ^^^^^^^^^^^^^^^^^^^^
 
-This section includes the resulting test record for each test which together with 
+This section includes the resulting test record for each test which together with
 :numref:`Section %s <ref_armi_test_env>` satisfies the criteria necessary for the creation of the
 test record defined in :numref:`Section %s <ref_armi_record_criteria>`.
 
-.. test-results:: ../test_results.xml
+.. needtable:: Acceptance test results
+   :types: test
+   :columns: id, title, result
+   :filter: id.startswith('T_ARMI_')
+   :style_row: needs_[[copy('result')]]
+   :colwidths: 30,50,10
+   :class: longtable
 
-
-Appendix A Pytest Verbose Output 
+Appendix A Pytest Verbose Output
 --------------------------------
 
-Below is the verbose output of the pytest run for armi.
+Shown here is the verbose output from pytest.
 
-.. literalinclude:: ../../pytest_verbose.log
+Note that the skipped tests are either skipped because they require MPI (and are run via a separate command) or because
+they have hard-coded skips in the codebase (``test_canRemoveIsotopes``, ``test_ENDFVII1DecayConstants``, and
+``test_ENDFVII1NeutronsPerFission``). None of these hard-coded skipped tests are linked to requirements.
+
+Serial unit tests:
+
+.. test-results:: ../test_results.xml
+
+MPI-enabled unit tests:
+
+.. test-results:: ../test_results_mpi1.xml
+.. test-results:: ../test_results_mpi2.xml
+.. test-results:: ../test_results_mpi3.xml

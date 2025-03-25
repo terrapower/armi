@@ -37,13 +37,16 @@ import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
+from sphinx_needs.api import add_dynamic_function
+
+from doc.getTestResults import getTestResult
 
 # handle python import locations for this execution
 PYTHONPATH = os.path.abspath("..")
 sys.path.insert(0, PYTHONPATH)
 # Also add to os.environ which will be used by the nbsphinx extension environment
 os.environ["PYTHONPATH"] = PYTHONPATH
-# Add dochelpers.py from doc/.static/ directory
+# Add dochelpers.py and automateScr.py from doc/.static/ directory
 sys.path.insert(0, ".static")
 
 from armi import apps, context, disableFutureConfigures, meta
@@ -226,15 +229,15 @@ def setup(app):
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_directive("exec", ExecDirective)
     app.add_directive("pyreverse", PyReverse)
+    add_dynamic_function(app, getTestResult, "get_test_result")
 
     # making tutorial data dir
     dataDir = pathlib.Path("user") / ".." / "anl-afci-177"
     if not os.path.exists(dataDir):
         os.mkdir(dataDir)
 
-    # copy resources needed to build the tutorial notebooks. nbsphinx_link is slick, but the working
-    # directory for running the notebooks is the directory of the link itself, so relative paths
-    # don't work.
+    # Copy resources needed to build the tutorial notebooks. nbsphinx_link needs the working
+    # directory for running the notebooks to be the directory of the link itself.
     for path in _TUTORIAL_FILES:
         safeCopy(path, dataDir)
 
@@ -415,16 +418,14 @@ html_context = {
 # -- Options for LaTeX output --------------------------------------------------
 latex_engine = "xelatex"
 
+# Additional stuff for the LaTeX preamble.
 latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
+    "papersize": "letterpaper",
+    "pointsize": "10pt",
     "preamble": r"""\usepackage{amsmath}
 
 \usepackage{wasysym}
-"""
+""",
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -440,7 +441,7 @@ latex_documents = [
     )
 ]
 
-# The name of an image file (relative to this directory) to place at the top ofthe title page.
+# The name of an image file (relative to this directory) to place at the top of the title page.
 latex_logo = os.path.join(STATIC_DIR, "armi-logo.png")
 
 # For "manual" documents, if this is true, then toplevel headings are parts, not chapters.
@@ -521,8 +522,6 @@ needs_extra_links = [
     dict(option="implements", incoming="implementations", outgoing="requirements"),
 ]
 
-# TODO: Do we need and like these templates and layouts?
-needs_template_folder = os.path.join(STATIC_DIR, "needs_templates")
 needs_layouts = {
     "test_layout": {
         "grid": "simple",
@@ -551,6 +550,11 @@ needs_layouts = {
     },
 }
 
+needs_global_options = {
+    # Defaults for test tags
+    "layout": ("test_layout", "type=='test'"),
+    "result": ("[[get_test_result()]]", "type=='test'"),
+}
 
 # Formats need roles (reference to a req in text) as just the req ID
 needs_role_need_template = "{id}"

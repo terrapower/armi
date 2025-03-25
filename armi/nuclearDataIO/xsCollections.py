@@ -107,7 +107,7 @@ class XSCollection:
 
     Notes
     -----
-    This is a dict so that it can store multiple 0_g "matricies", i.e. vectors. Realistically,
+    This is a dict so that it can store multiple 0_g "matrices", i.e. vectors. Realistically,
     during any given run there will only be a set of groups, e.g. 33.
     """
 

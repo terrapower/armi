@@ -84,4 +84,4 @@ The :py:class:`Global Flux Interface <armi.physics.neutronics.globalFlux.globalF
 class will attempt to set its own ``TightCoupler`` based on ``keff``. To see the specifics, see:
 :py:meth:`_setTightCouplingDefaults <armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxInterface._setTightCouplingDefaults>`.
 If you want to change the tight coupling performance of the ``GlobalFluxInterface``, it would be
-easiest to just sublass the interface and over-write the `_setTightCouplingDefaults` method.
+easiest to just subclass the interface and over-write the `_setTightCouplingDefaults` method.
