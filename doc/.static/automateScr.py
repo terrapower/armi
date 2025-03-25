@@ -174,7 +174,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     txt = ""
     for num in range(100, 1001, 100):
         print(f"TODO: JOHN 2: {num}")
-        gitCmd = f"git log -n {num} --pretty=oneline".split(" ")
+        gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         for line in txt.split("\n"):
             print(line.rstrip())
@@ -200,7 +200,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
         if pastCommit in line:
             # do not include the reference commit
             break
-        if line.endswith(")"):
+        if line.endswith(")") and "(#" in line:
             # get the PR number
             prNums.append(int(line.split("(#")[-1].split(")")[0]))
 
