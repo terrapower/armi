@@ -169,33 +169,24 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     str
         RST-formatted list-table content.
     """
-    print(f"TODO: JOHN 1:  {thisPrNum}  {pastCommit}")
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 1001, 100):
-        print(f"TODO: JOHN 2: {num}")
         gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
-        for line in txt.split("\n"):
-            print(line.rstrip())
         if pastCommit in txt:
-            print(f"TODO: JOHN 4: {txt}")
             break
 
-    print("TODO: JOHN 6")
     if not txt:
         return f"Could not find commit in git log: {pastCommit}"
 
     # 2. arse commit history to get the PR numbers
     prNums = []
     if thisPrNum > 0:
-        print(f"TODO: JOHN 8: {thisPrNum}")
         # in case the docs are not being built from a PR
         prNums.append(thisPrNum)
 
-    print("TODO: JOHN 10")
     for ln in txt.split("\n"):
-        print(f"TODO: JOHN 12: {ln}")
         line = ln.strip()
         if pastCommit in line:
             # do not include the reference commit
@@ -204,14 +195,12 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
             # get the PR number
             prNums.append(int(line.split("(#")[-1].split(")")[0]))
 
-    print("TODO: JOHN 20")
     # 3. Build a table row for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
-    print("TODO: JOHN 20")
     # 4. Build final RST for all four tables, to return to the docs
     content = ""
     for typ in ["features", "fixes", "trivial", "docs"]:
@@ -221,7 +210,4 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
                 content += line
             content += "\n\n"
 
-    print("TODO: JOHN 40")
-    for line in content.split("\n"):
-        print(line.rstrip())
     return content
