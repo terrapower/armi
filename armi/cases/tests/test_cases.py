@@ -481,8 +481,8 @@ class TestExtraInputWriting(unittest.TestCase):
             case = baseCase.clone()
             case.writeInputs()
             self.assertTrue(os.path.exists(cs[CONF_SHUFFLE_LOGIC]))
-            # Availability factor is in the original settings file but since it is a
-            # default value, gets removed for the write-out
+            # Availability factor is in the original settings file but since it is a default value,
+            # gets removed for the write-out
             txt = open("armiRun.yaml", "r").read()
             self.assertNotIn("availabilityFactor", txt)
             self.assertIn("armiRun-blueprints.yaml", txt)
@@ -490,16 +490,16 @@ class TestExtraInputWriting(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             case = baseCase.clone(writeStyle="medium")
             case.writeInputs(writeStyle="medium")
-            # Availability factor is in the original settings file and it is a default
-            # value. While "short" (default writing style) removes, "medium" should not
+            # Availability factor is in the original settings file and it is a default value. While
+            # "short" (default writing style) removes, "medium" should not
             txt = open("armiRun.yaml", "r").read()
             self.assertIn("availabilityFactor", txt)
 
 
 class MultiFilesInterfaces(interfaces.Interface):
     """
-    A little test interface that adds a setting that we need to test copyInterfaceInputs
-    with multiple files.
+    A little test interface that adds a setting that we need to test copyInterfaceInputs with
+    multiple files.
     """
 
     name = "MultiFilesInterfaces"
@@ -601,7 +601,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertFalse(os.path.exists(destFilePath))
             self.assertEqual(destFilePath, shuffleFile)
 
-    def test_copyInterfaceInputs_singleFile(self):
+    def test_copyInterfaceInputsSingleFile(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
@@ -613,9 +613,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             newFilePath = os.path.join(newDir.destination, shuffleFile)
             self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
+            self.assertEqual(newSettings[testSetting][0], os.path.basename(newFilePath))
 
-    def test_copyInterfaceInputs_nonFilePath(self):
+    def test_copyInterfaceInputsNonFilePath(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         fakeShuffle = "fakeFile.py"
@@ -626,8 +626,8 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            self.assertFalse(os.path.exists(newSettings[testSetting]))
-            self.assertEqual(newSettings[testSetting], fakeShuffle)
+            self.assertFalse(os.path.exists(newSettings[testSetting][0]))
+            self.assertEqual(newSettings[testSetting][0], fakeShuffle)
 
     def test_failOnDuplicateSetting(self):
         """That that if a plugin attempts to add a duplicate setting, it raises an error."""
@@ -638,7 +638,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = settings.Settings(ARMI_RUN_PATH)
 
-    def test_copyInterfaceInputs_multipleFiles(self):
+    def test_copyInterfaceInputsMultipleFiles(self):
         # register the new Plugin
         app = getApp()
         app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
@@ -667,7 +667,36 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(newSettings[testSetting], settingFiles)
 
-    def test_copyInterfaceInputs_wildcardFile(self):
+    def test_copyInterfaceInputsOneFile(self):
+        # register the new Plugin
+        app = getApp()
+        app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
+
+        pluginPath = (
+            "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
+        )
+        settingFiles = ["COMPXS.ascii"]
+        testName = "test_copyInterfaceInputsOneFile"
+        testSetting = "multipleFilesSetting"
+
+        cs = settings.Settings(ARMI_RUN_PATH)
+        cs = cs.modified(
+            caseTitle=testName,
+            newSettings={testName: [pluginPath]},
+        )
+        cs = cs.modified(newSettings={testSetting: settingFiles})
+
+        # ensure we are not in TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
+            for newFilePath in newFilePaths:
+                self.assertTrue(os.path.exists(newFilePath))
+            self.assertEqual(newSettings[testSetting], settingFiles)
+
+    def test_copyInterfaceInputsWildcardFile(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         # Use something that isn't the shuffle logic file in the case settings
@@ -695,7 +724,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertFalse(os.path.exists(newSettings[testSetting][0]))
             self.assertEqual(newSettings[testSetting], [wcFile])
 
-    def test_copyInterfaceInputs_relPath(self):
+    def test_copyInterfaceInputsRelPath(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
@@ -709,9 +738,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             newFilePath = os.path.join(newDir.destination, shuffleFile)
             self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
+            self.assertEqual(newSettings[testSetting][0], os.path.basename(newFilePath))
 
-    def test_copyInterfaceInputs_absPath(self):
+    def test_copyInterfaceInputsAbsPath(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
@@ -724,7 +753,9 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 cs, destination=newDir.destination
             )
             # file exists
-            self.assertTrue(os.path.exists(newSettings[testSetting]))
+            self.assertTrue(os.path.exists(newSettings[testSetting][0]))
             # but not copied to this dir
-            self.assertFalse(os.path.exists(os.path.basename(newSettings[testSetting])))
-            self.assertEqual(str(newSettings[testSetting]), absFile)
+            self.assertFalse(
+                os.path.exists(os.path.basename(newSettings[testSetting][0]))
+            )
+            self.assertEqual(str(newSettings[testSetting][0]), absFile)
