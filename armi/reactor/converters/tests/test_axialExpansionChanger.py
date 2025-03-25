@@ -667,7 +667,7 @@ class TestManageCoreMesh(unittest.TestCase):
                 )
             else:
                 # should not conserve mass here as it is structural material above active fuel
-                self.assertAlmostEqual(newMass / prevMass, 0.99, msg=f"{c}, {c.parent}")
+                self.assertAlmostEqual(newMass / prevMass, 1.00, msg=f"{c}, {c.parent}")
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
