@@ -306,10 +306,8 @@ class Assembly(composites.Composite):
         -------
         This is a bit design-specific for pinned assemblies
         """
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
-
         plenumVolume = 0.0
-        for b in plenumBlocks:
+        for b in self.iterChildrenWithFlags(Flags.PLENUM):
             cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
             plenumVolume += (
@@ -319,7 +317,7 @@ class Assembly(composites.Composite):
 
     def getAveragePlenumTemperature(self):
         """Return the average of the plenum block outlet temperatures."""
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
+        plenumBlocks = self.iterChildrenWithFlags(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
         # no plenum blocks, use the top block of the assembly for plenum temperature
@@ -786,7 +784,7 @@ class Assembly(composites.Composite):
         with open(fName, "w") as pkl:
             pickle.dump(self, pkl)
 
-    def getBlocks(self, typeSpec=None, exact=False):
+    def getBlocks(self, typeSpec=None, exact=False) -> list[blocks.Block]:
         """
         Get blocks in an assembly from bottom to top.
 
@@ -803,9 +801,10 @@ class Assembly(composites.Composite):
             List of blocks.
         """
         if typeSpec is None:
-            return self.getChildren()
+            items = iter(self)
         else:
-            return self.getChildrenWithFlags(typeSpec, exactMatch=exact)
+            items = self.iterChildrenWithFlags(typeSpec, exact)
+        return list(items)
 
     def getBlocksAndZ(self, typeSpec=None, returnBottomZ=False, returnTopZ=False):
         """
@@ -853,36 +852,47 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        return all(
-            b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks()
-        )
+        return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
     def getFirstBlock(self, typeSpec=None, exact=False):
-        bs = self.getBlocks(typeSpec, exact=exact)
-        if bs:
-            return bs[0]
+        """Find the first block that matches the spec.
+
+        Parameters
+        ----------
+        typeSpec : flag or list of flags, optional
+            Specification to require on the returned block.
+        exact : bool, optional
+            Require block to exactly match ``typeSpec``
+
+        Returns
+        -------
+        Block or None
+            First block that matches if such a block could be found.
+        """
+        if typeSpec is None:
+            items = iter(self)
         else:
+            items = self.iterChildrenWithFlags(typeSpec, exact)
+        try:
+            # Create an iterator and attempt to advance it to the first value.
+            return next(items)
+        except StopIteration:
+            # No items found in the iteration -> no blocks match the request
             return None
 
     def getFirstBlockByType(self, typeName):
-        bs = [
-            b
-            for b in self.getChildren(deep=False)
-            if isinstance(b, blocks.Block) and b.getType() == typeName
-        ]
-        if bs:
-            return bs[0]
-        return None
+        blocks = filter(lambda b: b.getType() == typeName, self)
+        try:
+            return next(blocks)
+        except StopIteration:
+            return None
 
-    def getBlockAtElevation(self, elevation):
+    def getBlockAtElevation(self, elevation: float) -> Optional[blocks.Block]:
         """
         Returns the block at a specified axial dimension elevation (given in cm).
 
         If height matches the exact top of the block, the block is considered at that
         height.
-
-        Used as a way to determine what block the control rod will be modifying with a
-        mergeBlocks.
 
         Parameters
         ----------
@@ -891,8 +901,9 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        targetBlock : block
-            The block that exists at the specified height in the reactor
+        targetBlock : block or None
+            The block that exists at the specified height in the reactor. ``None``
+            if a block was not found.
         """
         bottomOfBlock = 0.0
         for b in self:
@@ -1163,7 +1174,11 @@ class Assembly(composites.Composite):
         blockCounter : int
             number of blocks of this type
         """
-        return len(self.getBlocks(blockTypeSpec))
+        if blockTypeSpec is None:
+            items = iter(self)
+        else:
+            items = self.iterChildrenWithFlags(blockTypeSpec)
+        return sum(1 for _ in items)
 
     def getDim(self, typeSpec, dimName):
         """

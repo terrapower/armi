@@ -396,7 +396,7 @@ class DerivedShape(UnshapedComponent):
         # Determine the volume/areas of the non-derived shape components within the parent.
         siblingVolume = 0.0
         siblingArea = 0.0
-        for sibling in self.parent.getChildren():
+        for sibling in self.parent:
             if sibling is self:
                 continue
             elif not self and isinstance(sibling, DerivedShape):
