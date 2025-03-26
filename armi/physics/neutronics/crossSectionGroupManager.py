@@ -62,6 +62,7 @@ import numpy as np
 from armi import context, interfaces, runLog
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.nucDirectory import nuclideBases
 from armi.reactor import flags
 from armi.reactor.components import basicShapes
 from armi.reactor.flags import Flags
@@ -497,12 +498,15 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
 
     def getNumberDensitiesWithTrace(component, allNucNames):
         """Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature."""
-        return [
-            component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
-            if nucName in component.p.numberDensities
-            else 0.0
-            for nucName in allNucNames
-        ]
+        allNucIds = [nuclideBases.byName[nucName].index for nucName in allNucNames]
+        ndens = []
+        for nucId in allNucIds:
+            i = np.where(component.p.numberDensitiesIndex == nucId)[0]
+            if i.size > 0:
+                ndens.append(max(component.p.numberDensities[i[0]], TRACE_NUMBER_DENSITY))
+            else:
+                ndens.append(0.0)
+        return ndens
 
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())

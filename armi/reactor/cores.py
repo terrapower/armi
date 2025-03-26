@@ -29,6 +29,7 @@ import numpy as np
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
+from armi.nucDirectory import nuclideBases
 from armi.reactor import (
     composites,
     geometry,
@@ -1218,17 +1219,20 @@ class Core(composites.Composite):
             fuelNuclides = set()
             structureNuclides = set()
             for c in self.iterComponents():
+                compNuclides = []
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                nuclides = [
-                    nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0
-                ]
+                if c.p.numberDensities is None:
+                    continue
+                for nucId, dens in zip(c.p.numberDensitiesIndex, c.p.numberDensities):
+                    if dens > 0.0:
+                        compNuclides.append(nuclideBases.byIndex[nucId].name)
                 if c.getName() == "coolant":
-                    coolantNuclides.update(nuclides)
+                    coolantNuclides.update(compNuclides)
                 elif "fuel" in c.getName():
-                    fuelNuclides.update(nuclides)
+                    fuelNuclides.update(compNuclides)
                 else:
-                    structureNuclides.update(nuclides)
+                    structureNuclides.update(compNuclides)
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = (

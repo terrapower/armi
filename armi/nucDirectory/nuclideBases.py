@@ -103,6 +103,7 @@ from ruamel.yaml import YAML
 
 from armi import context, runLog
 from armi.nucDirectory import transmutations
+from armi.nucDirectory import nuclideBases
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
 # used to prevent multiple applications of burn chains, which would snowball
@@ -990,7 +991,7 @@ class LumpNuclideBase(INuclide):
         return self.mcc3idEndfbVII1
 
 
-def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclides):
+def initReachableActiveNuclidesThroughBurnChain(numberDensitiesIndex, numberDensities, activeNuclides):
     """
     March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
 
@@ -1005,12 +1006,14 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
         Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
     """
     if not burnChainImposed:
-        return
+        return numberDensitiesIndex, numberDensities
 
     missingActiveNuclides = set()
     memo = set()
-    difference = set(numberDensityDict).difference(memo)
+    nucNames = [nuclideBases.byIndex[id].name for id in numberDensitiesIndex]
+    difference = set(nucNames).difference(memo)
     while any(difference):
+        newNucs = set()
         nuclide = difference.pop()
         memo.add(nuclide)
         # Skip the nuclide if it is not `active` in the burn-chain
@@ -1024,17 +1027,23 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensityDict, activeNuclide
                 # Interaction nuclides can only be added to the number density
                 # dictionary if they are a part of the user-defined active nuclides
                 productNuclide = interaction.getPreferredProduct(activeNuclides)
-                if productNuclide not in numberDensityDict:
-                    numberDensityDict[productNuclide] = 0.0
+                if productNuclide not in nucNames:
+                    newNucs.add(nuclideBases.byName[productNuclide].index)
             except KeyError:
                 # Keep track of the first production nuclide
                 missingActiveNuclides.add(interaction.productNuclides)
 
-        difference = set(numberDensityDict).difference(memo)
+        newNDens = np.zeros(len(newNucs), dtype=np.float64)
+        numberDensitiesIndex = np.append(numberDensitiesIndex, list(newNucs))
+        numberDensities = np.append(numberDensities, newNDens)
+
+        nucNames = [nuclideBases.byIndex[id].name for id in numberDensitiesIndex]
+        difference = set(nucNames).difference(memo)
 
     if burnChainImposed and missingActiveNuclides:
         _failOnMissingActiveNuclides(missingActiveNuclides)
 
+    return numberDensitiesIndex, numberDensities
 
 def _failOnMissingActiveNuclides(missingActiveNuclides):
     """Raise ValueError with notification of which nuclides to include in the burn-chain."""

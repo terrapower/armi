@@ -698,7 +698,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         nuc = nuclideBases.byName[nucName]
         i = np.where(self.p.numberDensitiesIndex == nuc.index)[0]
         if i.size > 0:
-            return self.p.numberDensities[i]
+            return self.p.numberDensities[i[0]]
         else:
             return 0.0
 
@@ -819,7 +819,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             if np.all(np.isin(nucIndices, self.p.numberDensitiesIndex)):
                 # only update the the values that are changing. no need to reallocate numpy array.
                 for nucName, dens in numberDensities.items():
-                    i = np.where(self.p.numberDensitiesIndex == nuclideBases.byName[nucName].index)[0]
+                    i = np.where(self.p.numberDensitiesIndex == nuclideBases.byName[nucName].index)[0][0]
                     self.p.numberDensities[i] = dens
             else:
                 # create a list for new nucs, append as necessary, convert back to numpy array
@@ -827,8 +827,9 @@ class Component(composites.Composite, metaclass=ComponentType):
                 newNumDens = []
                 for nucName, dens in numberDensities.items():
                     nucId = nuclideBases.byName[nucName].index
-                    if nucId in self.p.numberDensitiesIndex:
-                        self.p.numberDensities[np.where(self.p.numberDensitiesIndex == nucId)[0]] = dens
+                    i = np.where(self.p.numberDensitiesIndex == nucId)[0]
+                    if i.size > 0:
+                        self.p.numberDensities[i[0]] = dens
                     else:
                         newIndex.append(nucId)
                         newNumDens.append(dens)
