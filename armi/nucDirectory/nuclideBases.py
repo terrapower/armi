@@ -45,6 +45,7 @@ framework and applications.
 
     * ``instances`` (list of nuclides)
     * ``byName`` (keyed by name, e.g., ``U235``)
+    * ``byIndex`` (keyed by integer index)
     * ``byDBName`` (keyed by database name, e.g., ``nU235``)
     * ``byLabel`` (keyed by label, e.g., ``U235``)
     * ``byMcc2Id`` (keyed by MC\ :sup:`2`-2 ID, e.g., ``U-2355``)
@@ -125,6 +126,7 @@ byMcc3IdEndfbVII0 = {}
 byMcc3IdEndfbVII1 = {}
 byMcnpId = {}
 byAAAZZZSId = {}
+byIndex = {}
 
 # lookup table from https://t2.lanl.gov/nis/data/endf/endfvii-n.html
 BASE_ENDFB7_MAT_NUM = {
@@ -369,6 +371,7 @@ class INuclide(NuclideInterface):
         self.mcc2id = mcc2id or ""
         self.mcc3idEndfbVII0 = mcc3idEndfbVII0 or ""
         self.mcc3idEndfbVII1 = mcc3idEndfbVII1 or ""
+        self.index = -1
         addGlobalNuclide(self)
         self.element.append(self)
 
@@ -1414,6 +1417,8 @@ def addGlobalNuclide(nuclide: NuclideBase):
     ):
         raise ValueError(f"{nuclide} has already been added and cannot be duplicated.")
 
+    nuclide.index = len(instances)
+    byIndex[nuclide.index] = nuclide
     instances.append(nuclide)
     byName[nuclide.name] = nuclide
     byDBName[nuclide.getDatabaseName()] = nuclide

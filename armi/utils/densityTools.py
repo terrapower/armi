@@ -14,6 +14,7 @@
 
 """Assorted utilities to help with basic density calculations."""
 from typing import Dict, List, Tuple
+import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import elements, nucDir, nuclideBases
@@ -48,12 +49,15 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     if normalize:
         massFracs = normalizeNuclideList(massFracs, normalization=normalize)
 
-    numberDensities = {}
+    numberDensitiesIndex = []
+    numberDensities = []
     rho = rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
     for nucName, massFrac in massFracs.items():
-        atomicWeight = nuclideBases.byName[nucName].weight
-        numberDensities[nucName] = massFrac * rho / atomicWeight
-    return numberDensities
+        nuc = nuclideBases.byName[nucName]
+        atomicWeight = nuc.weight
+        numberDensitiesIndex.append(nuc.index)
+        numberDensities.append(massFrac * rho / atomicWeight)
+    return np.array(numberDensitiesIndex), np.array(numberDensities)
 
 
 def getMassFractions(numberDensities):

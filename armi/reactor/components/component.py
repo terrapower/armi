@@ -392,7 +392,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         densityBasedOnParentComposition = self.material.getProperty(
             "pseudoDensity", Tc=self.temperatureInC
         )
-        self.p.numberDensities = densityTools.getNDensFromMasses(
+        self.p.numberDensitiesIndex, self.p.numberDensities = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
 
@@ -679,7 +679,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        return list(self.p.numberDensities.keys())
+        return [nuclideBases.byIndex[id].name for id in self.p.numberDensitiesIndex]
 
     def getNumberDensity(self, nucName):
         """
@@ -695,14 +695,24 @@ class Component(composites.Composite, metaclass=ComponentType):
         number density : float
             number density in atoms/bn-cm.
         """
-        return self.p.numberDensities.get(nucName, 0.0)
+        nuc = nuclideBases.byName[nucName]
+        i = np.where(self.p.numberDensitiesIndex == nuc.index)[0]
+        if i.size > 0:
+            return self.p.numberDensities[i]
+        else:
+            return 0.0
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
+        nucIndices = [nuclideBases.byName[nucName].index for nucName in nucNames]
+        reverseIndex = {id: i for i, id in enumerate(self.p.numberDensitiesIndex)}
+        nDens = np.zeros(len(nucIndices), dtype=np.float64)
+        for i, id in enumerate(nucIndices):
+            nDens[i] = self.p.numberDensities[reverseIndex[id]] if id in reverseIndex else 0.0
+        return nDens
 
     def _getNdensHelper(self):
-        return dict(self.p.numberDensities)
+        return dict(zip(self.getNuclides(), self.p.numberDensities))
 
     def setName(self, name):
         """Components use name for type and name."""
@@ -781,7 +791,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # prepare to change the densities with knowledge that dims could change due to
         # material thermal expansion dependence on composition
-        if len(self.p.numberDensities) > 0:
+        if self.p.numberDensities.size > 0:
             dLLprev = (
                 self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             )
@@ -800,8 +810,30 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         # change the densities
         if wipe:
-            self.p.numberDensities = {}  # clear things not passed
-        self.p.numberDensities.update(numberDensities)
+            self.p.numberDensities = None  # clear things not passed
+            self.p.numberDensitiesIndex = None  # clear things not passed
+            self.p.numberDensitiesIndex = np.array([nuclideBases.byName[nucName].index for nucName in numberDensities.keys()])
+            self.p.numberDensities = np.array(list(numberDensities.values()))
+        else:
+            nucIndices = np.array([nuclideBases.byName[nucName].index for nucName in numberDensities.keys()])
+            if np.all(np.isin(nucIndices, self.p.numberDensitiesIndex)):
+                # only update the the values that are changing. no need to reallocate numpy array.
+                for nucName, dens in numberDensities.items():
+                    i = np.where(self.p.numberDensitiesIndex == nuclideBases.byName[nucName].index)[0]
+                    self.p.numberDensities[i] = dens
+            else:
+                # create a list for new nucs, append as necessary, convert back to numpy array
+                newIndex = []
+                newNumDens = []
+                for nucName, dens in numberDensities.items():
+                    nucId = nuclideBases.byName[nucName].index
+                    if nucId in self.p.numberDensitiesIndex:
+                        self.p.numberDensities[np.where(self.p.numberDensitiesIndex == nucId)[0]] = dens
+                    else:
+                        newIndex.append(nucId)
+                        newNumDens.append(dens)
+                self.p.numberDensitiesIndex = np.append(self.p.numberDensitiesIndex, newIndex)
+                self.p.numberDensities = np.append(self.p.numberDensities, newNumDens)
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
@@ -824,10 +856,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        newDensities = {
-            nuc: dens * factor for nuc, dens in self.p.numberDensities.items()
-        }
-        self.p.numberDensities = newDensities
+        self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):
@@ -906,8 +935,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         )
         nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         # densities comes from self.p.numberDensities
-        densities = self.getNuclideNumberDensities(nuclideNames)
-        nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        if len(nuclideNames) > 0:
+            densities = self.getNuclideNumberDensities(nuclideNames)
+            nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        else:
+            nDens = {}
         return densityTools.calculateMassDensity(nDens) * volume
 
     def setDimension(self, key, val, retainLink=False, cold=True):

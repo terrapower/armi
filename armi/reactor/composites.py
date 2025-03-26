@@ -1962,7 +1962,8 @@ class ArmiObject(metaclass=CompositeModelType):
         hmNuclides = [
             nuclide for nuclide in self.getNuclides() if nucDir.isHeavyMetal(nuclide)
         ]
-        hmDens = sum(self.getNuclideNumberDensities(hmNuclides))
+
+        hmDens = np.sum(self.getNuclideNumberDensities(hmNuclides))
         return hmDens
 
     def getFPMass(self):
@@ -3095,7 +3096,7 @@ class Composite(ArmiObject):
     def getPuMoles(self):
         """Returns total number of moles of Pu isotopes."""
         nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        puN = sum(self.getNuclideNumberDensities(nucNames))
+        puN = np.sum(self.getNuclideNumberDensities(nucNames))
 
         return puN / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
 
