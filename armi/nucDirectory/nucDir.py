@@ -32,26 +32,26 @@ zaPat = re.compile(r"([A-Za-z]+)-?([0-9]+)")
 # See also: Table 2.4 in Primary Radiation Damage in Materials
 # https://www.oecd-nea.org/science/docs/2015/nsc-doc2015-9.pdf
 eDisplacement = {
-    "H": 10.0,
+    "AL": 25.0,
     "C": 31.0,
+    "CO": 40.0,
+    "CR": 40.0,
+    "CU": 30.0,
+    "FE": 40.0,
+    "H": 10.0,
+    "MN": 40.0,
+    "MO": 60.0,
     "N": 30.0,
     "NA": 25.0,
-    "SI": 25.0,
-    "V": 40.0,
-    "CR": 40.0,
-    "MN": 40.0,
-    "NI": 40.0,
-    "MO": 60.0,
-    "FE": 40.0,
-    "W": 90.0,
-    "TI": 30.0,
     "NB": 60.0,
-    "ZR": 40.0,
-    "CU": 30.0,
-    "CO": 40.0,
-    "AL": 25.0,
+    "NI": 40.0,
     "PB": 25.0,
+    "SI": 25.0,
     "TA": 90.0,
+    "TI": 30.0,
+    "V": 40.0,
+    "W": 90.0,
+    "ZR": 40.0,
 }
 
 
@@ -62,7 +62,7 @@ def getNuclideFromName(name):
     if "_" in name:
         actualName = name.replace("_", "")
 
-    return nuclideBases.byName[actualName]
+    return nuclideBases.byName[str(actualName)]
 
 
 def getNaturalIsotopics(elementSymbol=None, z=None):

@@ -94,7 +94,6 @@ Retrieve U-235 by the AAAZZZS ID:
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 """
-
 import os
 
 import numpy as np
@@ -102,11 +101,12 @@ from ruamel.yaml import YAML
 
 from armi import context, runLog
 from armi.nucDirectory import transmutations
+
+# from armi.nucDirectory.zaids import zaids  # noqa: F401
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
 # used to prevent multiple applications of burn chains, which would snowball
-# unphysically. This is a bit of a crutch for the global state that is the nuclide
-# directory.
+# unphysically. This is a bit of a crutch for the global state that is the nuclide directory.
 burnChainImposed = False
 
 instances = []
@@ -125,6 +125,8 @@ byMcc3IdEndfbVII0 = {}
 byMcc3IdEndfbVII1 = {}
 byMcnpId = {}
 byAAAZZZSId = {}
+zaids = {}
+reverseZaids = {}
 
 # lookup table from https://t2.lanl.gov/nis/data/endf/endfvii-n.html
 BASE_ENDFB7_MAT_NUM = {
@@ -447,8 +449,8 @@ class INuclide(NuclideInterface):
     def getDecay(self, decayType):
         """Get a :py:class:`~armi.nucDirectory.transmutations.DecayMode`.
 
-        Retrieve the first :py:class:`~armi.nucDirectory.transmutations.DecayMode`
-        matching the specified decType.
+        Retrieve the first :py:class:`~armi.nucDirectory.transmutations.DecayMode` matching the
+        specified decType.
 
         Parameters
         ----------
@@ -528,8 +530,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         internal ARMI name or label for a nuclide. There are instance methods
         for generating the nuclide ID for external codes, e.g. MCNP or Serpent,
         and retrieving the nuclide ID for MC\ :sup:`2`-2 or MC\ :sup:`2`-3.
-        There are also instance methods for generating an AAAZZZS ID and an ENDF
-        MAT number.
+        There are also instance methods for generating an AAAZZZS ID and an ENDF MAT number.
     """
 
     def __init__(self, element, a, weight, abundance, state, halflife):
@@ -655,8 +656,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
             This method generates the MCNP ID for an isotope using the standard
             MCNP format based on the atomic number A, number of protons Z, and
             excited state. The implementation includes the special rule for
-            Am-242m, which is 95242. 95642 is used for the less common ground
-            state Am-242.
+            Am-242m, which is 95242. 95642 is used for the less common ground state Am-242.
 
         Returns
         -------
@@ -719,8 +719,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         Basically, it's Z * 100 + I where I is an isotope number. I=25 is defined
         as the lightest known stable isotope of element Z, so for Uranium,
         Z=92 and I=25 refers to U234. The values of I go up by 3 for each
-        mass number, so U235 is 9228. This leaves room for three isomeric
-        states of each nuclide.
+        mass number, so U235 is 9228. This leaves room for three isomeric states of each nuclide.
 
         Returns
         -------
@@ -1219,6 +1218,7 @@ def factory():
             "Nuclides are already initialized and cannot be re-initialized unless "
             "`nuclideBases.destroyGlobalNuclides` is called first."
         )
+
     addNuclideBases()
     __addNaturalNuclideBases()
     __addDummyNuclideBases()
@@ -1326,6 +1326,8 @@ def readMCCNuclideData():
     global byMcc3Id
     global byMcc3IdEndfbVII0
     global byMcc3IdEndfbVII1
+    global zaids
+    global reverseZaids
 
     with open(os.path.join(context.RES, "mcc-nuclides.yaml"), "r") as f:
         yaml = YAML(typ="rt")
@@ -1348,6 +1350,19 @@ def readMCCNuclideData():
 
     # Have the byMcc3Id dictionary be VII.1 IDs.
     byMcc3Id = byMcc3IdEndfbVII1
+
+    # fill in global ZA ID data
+    zaids = {
+        v: i
+        for i, v in enumerate(sorted([val.name for val in byMcc3IdEndfbVII1.values()]))
+    }
+    lenZaids = max(zaids.values())
+    for i, symbol in enumerate(sorted(elements.bySymbol.keys())):
+        zaids[symbol] = lenZaids + i
+
+    reverseZaids = np.zeros(len(zaids), dtype="U6")
+    for nam, zid in zaids.items():
+        reverseZaids[zid] = nam
 
 
 def updateNuclideBasesForSpecialCases():
@@ -1443,6 +1458,8 @@ def destroyGlobalNuclides():
     global byMcc3IdEndfbVII1
     global byMcnpId
     global byAAAZZZSId
+    global zaids
+    global reverseZaids
 
     instances = []
     byName.clear()
@@ -1454,3 +1471,5 @@ def destroyGlobalNuclides():
     byMcc3IdEndfbVII0.clear()
     byMcnpId.clear()
     byAAAZZZSId.clear()
+    zaids.clear()
+    reverseZaids.clear()

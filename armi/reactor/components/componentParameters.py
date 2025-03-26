@@ -62,6 +62,14 @@ def getComponentParameterDefinitions():
             "numberDensities",
             units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
+            saveToDB=True,
+        )
+
+        pb.defParam(
+            "numberDensitiesZAIDs",
+            units=units.UNITLESS,
+            description="ZA IDs for the number densities array.",
+            saveToDB=True,
         )
 
         pb.defParam(

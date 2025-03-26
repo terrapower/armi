@@ -175,9 +175,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         Component types within ARMI are built upon. All primitive shapes (such as a
         square, circle, holed hexagon, helix etc.) are derived from this base class.
 
-        Fundamental capabilities of this class include the ability to store parameters
-        and attributes which describe the physical state of each Component within the
-        ARMI data model.
+        Fundamental capabilities of this class include the ability to store parameters and
+        ttributes which describe the physical state of each Component within the ARMI data model.
 
     .. impl:: Order Components by their outermost diameter (using the < operator).
         :id: I_ARMI_COMP_ORDER
@@ -322,7 +321,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             Component and converts the name of that Component to a link to the object
             itself. This series of links is then used downstream to resolve
             dimensional information.
-
         """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
@@ -340,15 +338,11 @@ class Component(composites.Composite, metaclass=ComponentType):
                 except Exception:
                     if value.count(".") > 1:
                         raise ValueError(
-                            "Component names should not have periods in them: `{}`".format(
-                                value
-                            )
+                            f"Component names should not have periods in them: `{value}`"
                         )
                     else:
                         raise KeyError(
-                            "Bad component link `{}` defined as `{}`".format(
-                                dimName, value
-                            )
+                            f"Bad component link `{dimName}` defined as `{value}`"
                         )
 
     def setLink(self, key, otherComp, otherCompKey):
@@ -359,8 +353,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Apply thermo-mechanical properties of a Material."""
         if isinstance(properties, str):
             mat = materials.resolveMaterialClassByName(properties)()
-            # note that the material will not be expanded to natural isotopics
-            # here because the user-input blueprints information is not available
+            # note that the material will not be expanded to natural isotopics here because the
+            # user-input blueprints information is not available
         else:
             mat = properties
         self.material = mat
@@ -373,16 +367,15 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        - the density returned accounts for the expansion of the component
-          due to the difference in self.inputTemperatureInC and self.temperatureInC
-        - After the expansion, the density of the component should reflect the 3d
-          density of the material
+        - the density returned accounts for the expansion of the component due to the difference in
+          self.inputTemperatureInC and self.temperatureInC
+        - After the expansion, the density of the component should reflect the 3D density of the
+          material
         """
         # note, that this is not the actual material density, but rather 2D expanded
-        # `density` is 3D density
-        # call getProperty to cache and improve speed
+        # `density` is 3D density call getProperty to cache and improve speed
         density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-        self.p.numberDensities = densityTools.getNDensFromMasses(
+        self.p.numberDensities = densityTools.getNumDensFromMasses(
             density, self.material.massFrac
         )
 
@@ -392,15 +385,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         densityBasedOnParentComposition = self.material.getProperty(
             "pseudoDensity", Tc=self.temperatureInC
         )
-        self.p.numberDensities = densityTools.getNDensFromMasses(
+        self.p.numberDensities = densityTools.getNumDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
 
-        # material needs to be expanded from the material's cold temp to hot,
-        # not components cold temp, so we don't use mat.linearExpansionFactor or
-        # component.getThermalExpansionFactor.
-        # Materials don't typically define the temperature for which their references
-        # density is defined so linearExpansionPercent must be called
+        # material needs to be expanded from the material's cold temp to hot, not components cold
+        # temp, so we don't use mat.linearExpansionFactor or component.getThermalExpansionFactor.
+        # Materials don't typically define the temperature for which their references density is
+        # defined so linearExpansionPercent must be called.
         coldMatAxialExpansionFactor = (
             1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         )
@@ -412,12 +404,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Call before setTemperature since we need old hot temp.
-        This works well if there is only 1 solid component.
-        If there are multiple components expanding at different rates during thermal
-        expansion this becomes more complicated and, and axial expansion should be used.
-        Multiple expansion rates cannot trivially be accommodated.
-        See AxialExpansionChanger.
+        Call before setTemperature since we need old hot temp. This works well if there is only 1
+        solid component. If there are multiple components expanding at different rates during
+        thermal expansion this becomes more complicated and, and axial expansion should be used.
+        Multiple expansion rates cannot trivially be accommodated. See AxialExpansionChanger.
         """
         self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
 
@@ -679,7 +669,13 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        return list(self.p.numberDensities.keys())
+        # TODO: JOHN: This needs to come from the ZA ID collection
+        # return list(self.p.numberDensities.keys())
+        lst = []
+        for i, dens in enumerate(self.p.numberDensities):
+            if dens > 0.0:
+                lst.append(nuclideBases.reverseZaids[i])
+        return lst
 
     def getNumberDensity(self, nucName):
         """
@@ -695,14 +691,23 @@ class Component(composites.Composite, metaclass=ComponentType):
         number density : float
             number density in atoms/bn-cm.
         """
-        return self.p.numberDensities.get(nucName, 0.0)
+        zaids = nuclideBases.zaids
+        if nucName not in zaids:
+            return 0.0
+
+        return self.p.numberDensities[zaids[nucName]]
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
+        return [self.getNumberDensity(nucName) for nucName in nucNames]
 
     def _getNdensHelper(self):
-        return dict(self.p.numberDensities)
+        nd = {}
+        for i, dens in enumerate(self.p.numberDensities):
+            if dens > 0.0:
+                nd[nuclideBases.reverseZaids[i]] = dens
+
+        return nd
 
     def setName(self, name):
         """Components use name for type and name."""
@@ -753,7 +758,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         self.updateNumberDensities(numberDensities, wipe=True)
 
-    def updateNumberDensities(self, numberDensities, wipe=False):
+    def updateNumberDensities(self, numberDensities, wipe=False, zaids=None):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
 
@@ -779,6 +784,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         This has no effect if the material thermal expansion has no dependence on component
         composition. If this is not desired, `self.p.numberDensities` can be set directly.
         """
+        if zaids is None:
+            zaids = nuclideBases.zaids
+
         # prepare to change the densities with knowledge that dims could change due to
         # material thermal expansion dependence on composition
         if len(self.p.numberDensities) > 0:
@@ -799,9 +807,15 @@ class Component(composites.Composite, metaclass=ComponentType):
             area = self.getArea()
 
         # change the densities
+        lenNumDens = len(zaids)
         if wipe:
-            self.p.numberDensities = {}  # clear things not passed
-        self.p.numberDensities.update(numberDensities)
+            # clear things not passed
+            self.p.numberDensities = np.zeros(lenNumDens, dtype=np.float64)
+        else:
+            assert len(self.p.numberDensities) == lenNumDens
+
+        for key, val in numberDensities.items():
+            self.p.numberDensities[zaids[key]] = val
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
@@ -809,7 +823,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             # the thermal expansion changed so the volume change is happening at same time as
             # density change was requested. Attempt to make mass consistent with old dims (since the
             # density change was for the old volume and otherwise mass wouldn't be conserved).
-
             self.clearLinkedCache()  # enable recalculation of volume, otherwise it uses cached
             if vol is not None:
                 factor = vol / self.getVolume()
@@ -824,10 +837,12 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        newDensities = {
-            nuc: dens * factor for nuc, dens in self.p.numberDensities.items()
-        }
-        self.p.numberDensities = newDensities
+        # TODO : JOHN, needs reworkering
+        # newDensities = {
+        #    nuc: dens * factor for nuc, dens in self.p.numberDensities.items()
+        # }
+        # self.p.numberDensities = newDensities
+        self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):

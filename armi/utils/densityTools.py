@@ -15,11 +15,55 @@
 """Assorted utilities to help with basic density calculations."""
 from typing import Dict, List, Tuple
 
+import numpy as np
+
 from armi import runLog
 from armi.nucDirectory import elements, nucDir, nuclideBases
 from armi.utils import units
 
 
+def getNumDensFromMasses(rho, massFracs, normalize=False):
+    """
+    Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
+
+    TODO: JOHN: this returns an array
+
+    .. impl:: Number densities are retrievable from masses.
+        :id: I_ARMI_UTIL_MASS2N_DENS
+        :implements: R_ARMI_UTIL_MASS2N_DENS
+
+        Loops over all provided nuclides (given as keys in the ``massFracs`` vector) and calculates
+        number densities of each, at a given material ``density``. Mass fractions can be provided
+        either as normalized to 1, or as unnormalized with subsequent normalization calling
+        ``normalizeNuclideList`` via the ``normalize`` flag.
+
+    Parameters
+    ----------
+    rho : float
+        density in (g/cc)
+    massFracs : dict
+        vector of mass fractions -- normalized to 1 -- keyed by their nuclide name
+
+    Returns
+    -------
+    numberDensities : dict
+        vector of number densities (#/bn-cm) keyed by their nuclide name
+    """
+    if normalize:
+        massFracs = normalizeNuclideList(massFracs, normalization=normalize)
+
+    zaids = nuclideBases.zaids
+    numberDensities = np.zeros(len(zaids), dtype=np.float64)
+
+    rho = rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+    for nucName, massFrac in massFracs.items():
+        atomicWeight = nuclideBases.byName[nucName].weight
+        numberDensities[zaids[nucName]] = massFrac * rho / atomicWeight
+
+    return numberDensities
+
+
+# TODO: JOHN: This is no longer relevant
 def getNDensFromMasses(rho, massFracs, normalize=False):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
@@ -53,6 +97,7 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     for nucName, massFrac in massFracs.items():
         atomicWeight = nuclideBases.byName[nucName].weight
         numberDensities[nucName] = massFrac * rho / atomicWeight
+
     return numberDensities
 
 
@@ -352,7 +397,7 @@ def expandElementalMassFracsToNuclides(
         total = sum(expandedNucs.values())
         if massFrac > 0.0 and abs(total - massFrac) / massFrac > 1e-6:
             raise ValueError(
-                "Mass fractions not normalized properly {}!".format((total, massFrac))
+                f"Mass fractions not normalized properly {(total, massFrac)}!"
             )
 
 
