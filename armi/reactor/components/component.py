@@ -669,8 +669,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        # TODO: JOHN: This needs to come from the ZA ID collection
-        # return list(self.p.numberDensities.keys())
         lst = []
         for i, dens in enumerate(self.p.numberDensities):
             if dens > 0.0:
@@ -837,11 +835,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        # TODO : JOHN, needs reworkering
-        # newDensities = {
-        #    nuc: dens * factor for nuc, dens in self.p.numberDensities.items()
-        # }
-        # self.p.numberDensities = newDensities
         self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
@@ -936,8 +929,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             Dimensions should be set considering the impact of thermal expansion. This
             method allows for a user or plugin to set a dimension and indicate if the
             dimension is for a cold configuration or not. If it is not for a cold
-            configuration, the thermal expansion factor is considered when setting the
-            dimension.
+            configuration, the thermal expansion factor is considered when setting the dimension.
 
             If the ``retainLink`` argument is ``True``, any Components linked to this
             one will also have its dimensions changed consistently. After a dimension
@@ -982,12 +974,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_DIMS
             :implements: R_ARMI_COMP_DIMS
 
-            Due to thermal expansion, Component dimensions depend on their temperature.
-            This method retrieves a dimension from the Component at a particular
-            temperature, if provided. If the Component is a LinkedComponent then the
-            dimensions are resolved to ensure that any thermal expansion that has
-            occurred to the Components that the LinkedComponent depends on is reflected
-            in the returned dimension.
+            Due to thermal expansion, Component dimensions depend on their temperature. This method
+            retrieves a dimension from the Component at a particular temperature, if provided. If
+            the Component is a LinkedComponent then the dimensions are resolved to ensure that any
+            thermal expansion that has occurred to the Components that the LinkedComponent depends
+            on is reflected in the returned dimension.
 
         Parameters
         ----------
@@ -1017,10 +1008,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        The inner circle is meaningful for annular shapes, i.e., circle with non-zero ID,
-        hexagon with non-zero IP, etc. For shapes with corners (e.g., hexagon, rectangle, etc)
-        the inner circle intersects the corners of the inner bound, opposed to intersecting
-        the "flats".
+        The inner circle is meaningful for annular shapes, i.e., circle with non-zero ID, hexagon
+        with non-zero IP, etc. For shapes with corners (e.g., hexagon, rectangle, etc) the inner
+        circle intersects the corners of the inner bound, opposed to intersecting the "flats".
         """
         raise NotImplementedError
 
@@ -1065,19 +1055,17 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
 
-            This method enables the calculation of the thermal expansion factor
-            for a given material. If the material is solid, the difference
-            between ``T0`` and ``Tc`` is used to calculate the thermal expansion
-            factor. If a solid material does not have a linear expansion factor
-            defined and the temperature difference is greater than
-            a predetermined tolerance, an
-            error is raised. Thermal expansion of fluids or custom materials is
+            This method enables the calculation of the thermal expansion factor for a given
+            material. If the material is solid, the difference between ``T0`` and ``Tc`` is used to
+            calculate the thermal expansion factor. If a solid material does not have a linear
+            expansion factor defined and the temperature difference is greater than a predetermined
+            tolerance, an error is raised. Thermal expansion of fluids or custom materials is
             neglected, currently.
 
         Parameters
         ----------
         Tc : float, optional
-            Adjusted temperature to get the thermal expansion factor at relative to the reference temperature
+            Adjusted temperature to get the thermal expansion factor at relative to the referencetemperature
 
         Returns
         -------
@@ -1201,8 +1189,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             nucName: compToMergeWith.getNumberDensity(nucName)
             for nucName in compToMergeWith.getNuclides()
         }
-        # set the new homogenized number densities from both. Allow
-        # overlapping nuclides.
+        # set the new homogenized number densities from both. Allow overlapping nuclides.
         for nucName in set(meNDens) | set(mergeNDens):
             compToMergeWith.setNumberDensity(
                 nucName, (meNDens.get(nucName, 0.0) + mergeNDens.get(nucName, 0.0))
@@ -1406,16 +1393,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         Returns
         -------
         np.ndarray
-            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the
-            equivalent to the multiplicity of the component (``self.p.mult``)
-            and ``nGroup`` is the number of energy groups of the flux.
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the
+            multiplicity of the component (``self.p.mult``) and ``nGroup`` is the number of energy
+            groups of the flux.
 
         Raises
         ------
         ValueError
-            If the location(s) of the component are not aligned with pin indices
-            from the block. This would happen if this component is not actually
-            a pin.
+            If the location(s) of the component are not aligned with pin indices from the block.
+            This would happen if this component is not actually a pin.
         """
         # Get the (i, j, k) location of all pins from the parent block
         indicesAll = {

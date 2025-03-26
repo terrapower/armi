@@ -26,8 +26,6 @@ def getNumDensFromMasses(rho, massFracs, normalize=False):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).
 
-    TODO: JOHN: this returns an array
-
     .. impl:: Number densities are retrievable from masses.
         :id: I_ARMI_UTIL_MASS2N_DENS
         :implements: R_ARMI_UTIL_MASS2N_DENS
@@ -63,7 +61,6 @@ def getNumDensFromMasses(rho, massFracs, normalize=False):
     return numberDensities
 
 
-# TODO: JOHN: This is no longer relevant
 def getNDensFromMasses(rho, massFracs, normalize=False):
     """
     Convert density (g/cc) and massFracs vector into a number densities vector (#/bn-cm).

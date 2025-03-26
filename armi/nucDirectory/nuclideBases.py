@@ -30,13 +30,11 @@ framework and applications.
     <armi.nucDirectory.nuclideBases.LumpNuclideBase>`, for lumped fission
     product nuclides, and :py:class:`NaturalNuclideBase
     <armi.nucDirectory.nuclideBases.NaturalNuclideBase>` for when data is given
-    collectively for an element at natural abundance rather than for individual
-    isotopes.
+    collectively for an element at natural abundance rather than for individual isotopes.
 
     The :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
     provides a data structure for information about a single nuclide, including
-    the atom number, atomic weight, element, isomeric state, half-life, and
-    name.
+    the atom number, atomic weight, element, isomeric state, half-life, and name.
 
     The :py:mod:`nuclideBases <armi.nucDirectory.nuclideBases>` module provides
     a factory and associated functions for instantiating the
@@ -92,7 +90,6 @@ Retrieve U-235 by the AAAZZZS ID:
 
 >>> nuclideBases.byAAAZZZSId['2350920']
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
-
 """
 import os
 
@@ -101,18 +98,15 @@ from ruamel.yaml import YAML
 
 from armi import context, runLog
 from armi.nucDirectory import transmutations
-
-# from armi.nucDirectory.zaids import zaids  # noqa: F401
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
-# used to prevent multiple applications of burn chains, which would snowball
-# unphysically. This is a bit of a crutch for the global state that is the nuclide directory.
+# Used to prevent multiple applications of burn chains, which would snowball unphysically. This is a
+# bit of a crutch for the global state that is the nuclide directory.
 burnChainImposed = False
 
 instances = []
-# The elements must be imported after the instances list is established
-# to allow for simultaneous initialization of the nuclides and elements
-# together to maintain self-consistency.
+# The elements must be imported after the instances list is established to allow for simultaneous
+# initialization of the nuclides and elements together to maintain self-consistency.
 from armi.nucDirectory import elements  # noqa: E402
 
 # Dictionary of INuclides by the INuclide.name for fast indexing
