@@ -23,6 +23,7 @@ This may be deprecated. Consider using the appropriate instance methods availabl
 """
 import re
 
+from armi import runLog
 from armi.nucDirectory import elements, nuclideBases
 
 nuclidePattern = re.compile(r"([A-Za-z]+)-?(\d{0,3})(\d*)(\S*)")
@@ -56,13 +57,13 @@ eDisplacement = {
 
 
 def getNuclideFromName(name):
-    actualName = name
-    if "-" in name:
-        actualName = name.replace("-", "")
-    if "_" in name:
-        actualName = name.replace("_", "")
+    actualName = str(name)
+    if "-" in actualName:
+        actualName = actualName.replace("-", "")
+    if "_" in actualName:
+        actualName = actualName.replace("_", "")
 
-    return nuclideBases.byName[str(actualName)]
+    return nuclideBases.byName[actualName]
 
 
 def getNaturalIsotopics(elementSymbol=None, z=None):
@@ -111,13 +112,11 @@ def getMc2Label(name):
     """
     Return a MC2 prefix label without a xstype suffix.
 
-    MC**2 has labels and library names. The labels are like
-    U235IA, ZIRCFB, etc. and the library names are references
-    to specific data sets on the MC**2 libraries (e.g. U-2355, etc.)
+    MC**2 has labels and library names. The labels are like U235IA, ZIRCFB, etc. and the library
+    names are references to specific data sets on the MC**2 libraries (e.g. U-2355, etc.)
 
-    This method returns the labels without the xstype suffixes (IA, FB).
-    Rather than maintaining a lookup table, this simply converts
-    the ARMI nuclide names to MC**2 names.
+    This method returns the labels without the xstype suffixes (IA, FB). Rather than maintaining a
+    lookup table, this simply converts the ARMI nuclide names to MC**2 names.
 
     Parameters
     ----------
@@ -255,7 +254,9 @@ def getNuclideNames(nucName=None, elementSymbol=None):
 
     If no arguments, returns all nuclideBases in the directory.
 
-    .. warning:: You will get both isotopes and NaturalNuclideBases for each element.
+    Warning
+    -------
+    You will get both isotopes and NaturalNuclideBases for each element.
 
     Parameters
     ----------
@@ -325,7 +326,7 @@ def isHeavyMetal(name):
         return getNuclide(name).isHeavyMetal()
     except AttributeError:
         raise AttributeError(
-            "The nuclide {0} is not found in the nuclide directory".format(name)
+            f"The nuclide {name} is not found in the nuclide directory"
         )
 
 
@@ -334,7 +335,7 @@ def isFissile(name):
         return getNuclide(name).isFissile()
     except AttributeError:
         raise AttributeError(
-            "The nuclide {0} is not found in the nuclide directory".format(name)
+            f"The nuclide {name} is not found in the nuclide directory"
         )
 
 
@@ -361,9 +362,9 @@ def getThresholdDisplacementEnergy(nuc):
     try:
         ed = eDisplacement[el.symbol]
     except KeyError:
-        print(
-            "The element {0} of nuclide {1} does not have a displacement energy in the library. Please add one."
-            "".format(el, nuc)
+        runLog.error(
+            f"The element {el} of nuclide {nuc} does not have a displacement energy in the "
+            "library. Please add one."
         )
         raise
 

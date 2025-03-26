@@ -906,15 +906,17 @@ class TestComponentExpansion(unittest.TestCase):
         circle1 = Circle("circle", mat, self.tCold, self.tWarm, self.coldOuterDiameter)
         circle2 = Circle("circle", mat, self.tCold, self.tHot, self.coldOuterDiameter)
 
-        # mass density is proportional to Fe number density and derived from
-        # all the number densities and atomic masses
+        # mass density is proportional to Fe number density and derived from all the number
+        # densities and atomic masses
+        isotopeIndex = nuclideBases.zaids[isotope]
         self.assertAlmostEqual(
-            circle1.p.numberDensities[isotope] / circle2.p.numberDensities[isotope],
+            circle1.p.numberDensities[isotopeIndex]
+            / circle2.p.numberDensities[isotopeIndex],
             circle1.density() / circle2.density(),
         )
 
-        # the colder one has more because it is the same cold outer diameter
-        # but it would be taller at the same temperature
+        # the colder one has more because it is the same cold outer diameter but it would be taller
+        # at the same temperature
         mass1 = circle1.density() * circle1.getArea() * hotHeight
         mass2 = circle2.density() * circle2.getArea() * hotHeight
         self.assertGreater(mass1, mass2)
@@ -928,8 +930,8 @@ class TestComponentExpansion(unittest.TestCase):
         # material.pseudoDensity is the 2D density of a material
         # material.density is true density and not equal in this case
         for circle in [circle1, circle2]:
-            # 2D density is not equal after application of coldMatAxialExpansionFactor
-            # which happens during construction
+            # 2D density is not equal after application of coldMatAxialExpansionFactor which happens
+            # during construction
             self.assertNotAlmostEqual(
                 circle.density(),
                 circle.material.pseudoDensity(Tc=circle.temperatureInC),
