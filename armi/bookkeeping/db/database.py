@@ -1059,8 +1059,7 @@ class Database:
 
         # this can also be made faster by specializing the method by type
         for paramName, dataSet in g.items():
-            # Honor historical databases where the parameters may have changed names
-            # since.
+            # Honor historical databases where the parameters may have changed names since.
             while paramName in renames:
                 paramName = renames[paramName]
 
@@ -1429,8 +1428,7 @@ class Database:
                 if not indexInData:
                     continue
 
-                # note this is very similar to _readParams, but there are some important
-                # differences.
+                # Note this is very similar to _readParams, but there are some differences:
                 # 1) we are not assigning to p[paramName]
                 # 2) not using linkedDims at all
                 # 3) not performing parameter renaming. This may become necessary
@@ -1531,8 +1529,8 @@ class Database:
                 dataName = str(len(attrGroup)) + "_" + key
                 attrGroup[dataName] = value
 
-                # using a soft link here allows us to cheaply copy time nodes without
-                # needing to crawl through and update object references.
+                # Using a soft link here allows us to cheaply copy time nodes without needing to
+                # crawl through and update object references.
                 linkName = attrGroup[dataName].name
                 obj.attrs[key] = "@{}".format(linkName)
 
@@ -1541,8 +1539,8 @@ class Database:
         """
         Reverse the action of _writeAttrs.
 
-        This reads actual attrs and looks for the real data
-        in the datasets that the attrs were pointing to.
+        This reads actual attrs and looks for the real data in the datasets that the attrs were
+        pointing to.
         """
         attr_link = re.compile("^@(.*)$")
 
@@ -1574,8 +1572,7 @@ def packSpecialData(
     arrayData: [np.ndarray, JaggedArray], paramName: str
 ) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
     """
-    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
-    that will.
+    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format that will.
 
     This is the main entry point for conforming "strange" data into something that will
     both fit into a numpy array/HDF5 dataset, and be recoverable to its original-ish
@@ -1598,19 +1595,17 @@ def packSpecialData(
       one-dimensional array, and storing attributes to describe the shapes of each
       object's data, and an offset into the beginning of each object's data.
     * Arrays with ``None`` in them: These are stored by replacing each instance of
-      ``None`` with a magical value that shouldn't be encountered in realistic
-      scenarios.
+      ``None`` with a magical value that shouldn't be encountered in realistic scenarios.
 
     Parameters
     ----------
     arrayData
-        An ndarray or JaggedArray object storing the data that we want to stuff into
-        the database. If the data is jagged, a special JaggedArray instance is passed
-        in, which contains a 1D array with offsets and shapes.
+        An ndarray or JaggedArray object storing the data that we want to stuff into the database.
+        If the data is jagged, a special JaggedArray instance is passed in, which contains a 1D
+        array with offsets and shapes.
 
     paramName
-        The parameter name that we are trying to store data for. This is mostly used for
-        diagnostics.
+        The parameter name that we want to store data for. This is mostly used for diagnostics.
 
     See Also
     --------
@@ -1619,8 +1614,8 @@ def packSpecialData(
     if isinstance(arrayData, JaggedArray):
         data = arrayData.flattenedArray
     else:
-        # Check to make sure that we even need to do this. If the numpy data type is
-        # not "O", chances are we have nice, clean data.
+        # Check to make sure that we even need to do this. If the numpy data type is not "O",
+        # chances are we have nice, clean data.
         if arrayData.dtype != "O":
             return arrayData, {}
         else:
@@ -1642,31 +1637,24 @@ def packSpecialData(
     if len(nones) > 0:
         attrs["nones"] = True
 
-    # TODO: this whole if/then/elif/else can be optimized by looping once and then
-    #      determining the correct action
-    # A robust solution would need
-    # to do this on a case-by-case basis, and re-do it any time we want to
-    # write, since circumstances may change. Not only that, but we may need
-    # to perform more than one of these operations to get to an array
-    # that we want to put in the database.
+    # TODO: This whole if/then/elif/else can be optimized by looping once and then determining the
+    #       correct action.
+    # A robust solution would need to do this on a case-by-case basis, and re-do it any time we want
+    # to write, since circumstances may change. Not only that, but we may need to perform more than
+    # one of these operations to get to an array that we want to put in the database.
     if any(isinstance(d, dict) for d in data):
-        # we're assuming that a dict is {str: float}. We store the union of
-        # all of the keys for all of the objects as a special "keys"
-        # attribute, and store a value for all of those keys for all
-        # objects, whether or not there is actually data associated with
-        # that key (storing a nan when no data). This makes for a simple
-        # approach that is somewhat digestible just looking at the db, and
-        # should be quite efficient in the case where most objects have data
-        # for most keys.
+        # We're assuming that a dict is {str: float}. We store the union of all of the keys for all
+        # of the objects as a special "keys" attribute, and store a value for all of those keys for
+        # all objects, whether or not there is actually data associated with that key (storing a nan
+        # when no data). This makes for a simple approach that is somewhat digestible just looking
+        # at the DB and should be efficient in the case where most objects have data for most keys.
         attrs["dict"] = True
         keys = sorted({k for d in data for k in d})
         data = np.array([[d.get(k, np.nan) for k in keys] for d in data])
         if data.dtype == "O":
-            # The data themselves are nasty. We could support this, but best to wait for
-            # a credible use case.
+            # The data themselves are nasty. ARMI does not support it.
             raise TypeError(
-                "Unable to coerce dictionary data into usable numpy array for "
-                "{}".format(paramName)
+                f"Unable to coerce dictionary data into usable numpy array for {paramName}"
             )
         attrs["keys"] = np.array(keys).astype("S")
 
@@ -1695,8 +1683,7 @@ def packSpecialData(
 
     if len(nones) == 0:
         raise TypeError(
-            "Cannot write {} to the database, it did not resolve to a numpy/HDF5 "
-            "type.".format(paramName)
+            f"Cannot write {paramName} to the database, it did not resolve to a numpy/HDF5 type."
         )
 
     runLog.error("Data unable to find special none value: {}".format(data))
@@ -1723,8 +1710,8 @@ def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        An ndarray containing the closest possible representation of the data that was
-        originally written to the database.
+        An ndarray containing the closest possible representation of the data that was originally
+        written to the database.
 
     See Also
     --------
@@ -1739,13 +1726,13 @@ def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
     if attrs.get("nones", False) and not attrs.get("jagged", False):
         data = replaceNonsenseWithNones(data, paramName)
         return data
-    if attrs.get("jagged", False):
+    elif attrs.get("jagged", False):
         offsets = attrs["offsets"]
         shapes = attrs["shapes"]
         nones = attrs["noneLocations"]
         data = JaggedArray.fromH5(data, offsets, shapes, nones, data.dtype, paramName)
         return data
-    if attrs.get("dict", False):
+    elif attrs.get("dict", False):
         keys = np.char.decode(attrs["keys"])
         unpackedData = []
         assert data.ndim == 2
@@ -1765,20 +1752,21 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
     """
     Collect block-by-block homogenized number densities for each nuclide.
 
-    Long ago, composition was stored on block params. No longer; they are on the
-    component numberDensity params. These block-level params, are still useful to see
-    compositions in some visualization tools. Rather than keep them on the reactor
-    model, we dynamically compute them here and slap them in the database. These are
-    ignored upon reading and will not affect the results.
+    Long ago, composition was stored on block params. No longer; they are on the component
+    numberDensity params. These block-level params, are still useful to see compositions in some
+    visualization tools. Rather than keep them on the reactor model, we dynamically compute them
+    here and put in the database. These are ignored upon reading and will not affect the results.
 
-    Remove this once a better viz tool can view composition distributions. Also remove
-    the try/except in ``_readParams``
+    Remove this once a better viz tool can view composition distributions. Also remove the
+    try/except in ``_readParams``
     """
     nucNames = sorted(list(set(nucName for b in blocks for nucName in b.getNuclides())))
-    nucBases = [nuclideBases.byName[nn] for nn in nucNames]
-    # it's faster to loop over blocks first and get all number densities from each
-    # than it is to get one nuclide at a time from each block because of area fraction
-    # calculations. So we use some RAM here instead.
+    # TODO: JOHN: This is hinky.
+    nucNames = [n for n in nucNames if n in nuclideBases.byName]
+    nucBases = [nuclideBases.byName[str(nn)] for nn in nucNames]
+    # It's faster to loop over blocks first and get all number densities from each than it is to get
+    # one nuclide at a time from each block because of area fraction calculations. So we use some
+    # RAM here instead.
     nucDensityMatrix = []
     for block in blocks:
         nucDensityMatrix.append(block.getNuclideNumberDensities(nucNames))

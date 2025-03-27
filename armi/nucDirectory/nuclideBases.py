@@ -1368,18 +1368,16 @@ def updateNuclideBasesForSpecialCases():
         :implements: R_ARMI_ND_ISOTOPES
 
         This function updates the keys for the :py:class:`NuclideBase
-        <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and
-        Am-242 in the ``byName`` and ``byDBName`` global dictionaries.  This
-        function associates the more common isomer Am-242m with the name
-        "AM242", and uses "AM242G" to denote the ground state.
+        <armi.nucDirectory.nuclideBases.NuclideBase>` instances for Am-242m and Am-242 in the
+        ``byName`` and ``byDBName`` global dictionaries.  This function associates the more common
+        isomer Am-242m with the name "AM242", and uses "AM242G" to denote the ground state.
 
     Notes
     -----
-    This function is specifically added to change the definition of
-    `AM242` to refer to its metastable isomer, `AM242M` by default. `AM242M`
-    is most common isomer of `AM242` and is typically the desired isomer
-    when being requested rather than than the ground state (i.e., S=0) of
-    `AM242`.
+    This function is specifically added to change the definition of `AM242` to refer to its
+    metastable isomer, `AM242M` by default. `AM242M` is most common isomer of `AM242` and is
+    typically the desired isomer when being requested rather than than the ground state (i.e., S=0)
+    of `AM242`.
     """
     # Change the name of `AM242` to specific represent its ground state.
     am242g = byName["AM242"]
@@ -1465,5 +1463,5 @@ def destroyGlobalNuclides():
     byMcc3IdEndfbVII0.clear()
     byMcnpId.clear()
     byAAAZZZSId.clear()
+    reverseZaids = np.zeros(len(zaids), dtype="U6")
     zaids.clear()
-    reverseZaids.clear()
