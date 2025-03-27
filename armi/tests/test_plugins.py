@@ -161,7 +161,7 @@ class TestPluginBasics(unittest.TestCase):
         self.assertEqual(b.p.power, 0)
         self.assertEqual(b.p.pdens, 0)
 
-        # Check the default values of parameters defined by the fuel peformance plugin
+        # Check the default values of parameters defined by the fuel performance plugin
         self.assertEqual(b.p.gasPorosity, 0)
         self.assertEqual(b.p.liquidPorosity, 0)
 

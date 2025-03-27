@@ -119,7 +119,7 @@ class Material:
     """Name of enriched nuclide to be interpreted by enrichment modification methods"""
 
     modelConst = {}
-    """Constants that may be used in intepolation functions for property lookups"""
+    """Constants that may be used in interpolation functions for property lookups"""
 
     propertyValidTemperature = {}
     """Dictionary of valid temperatures over which the property models are valid in the format
@@ -155,7 +155,7 @@ class Material:
 
         Warning
         -------
-        Some code in ARMI expects the "name" of a meterial matches its class name. So you use this
+        Some code in ARMI expects the "name" of a material matches its class name. So you use this
         method at your own risk.
 
         See Also
@@ -451,7 +451,7 @@ class Material:
     def getTemperatureAtDensity(
         self, targetDensity: float, tempGuessInC: float
     ) -> float:
-        """Get the temperature at which the perturbed density occurs (in Celcius)."""
+        """Get the temperature at which the perturbed density occurs (in Celsius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
@@ -754,7 +754,7 @@ class Fluid(Material):
 
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from one temperature (in
-        Celcius) to a new temperature.
+        Celsius) to a new temperature.
         """
         rho0 = self.pseudoDensity(Tc=prevTempInC)
         if not rho0:
