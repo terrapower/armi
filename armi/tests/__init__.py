@@ -229,7 +229,7 @@ class ArmiTestHelper(unittest.TestCase):
         * The reference file compared against will be called either ``[name]-ref.[ext]`` or ``[name].expected``.
         * The file that the test creates will be called ``[name]-test.[ext]`` or ``[name]``.
 
-        Rebaselining the reference files upon large, expected, hand-verified changes is accomodated by
+        Rebaselining the reference files upon large, expected, hand-verified changes is accommodated by
         :py:meth:`rebaselineTextComparisons`.
 
         Parameters
@@ -306,7 +306,7 @@ class ArmiTestHelper(unittest.TestCase):
         expectedWords = expected.split()
 
         if len(actualWords) != len(expectedWords):
-            # different number of words cant possibly be the same enough
+            # different number of words can't possibly be the same enough
             return False
 
         for actualWord, expectedWord in zip(actualWords, expectedWords):

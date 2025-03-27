@@ -72,7 +72,6 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         self.converter._setParamsToUpdate("in")
 
     def test_makeAssemWithUniformMesh(self):
-
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
 
         self.converter._generateUniformMesh(minimumMeshSize=0.01)

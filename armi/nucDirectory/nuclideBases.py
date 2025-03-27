@@ -113,7 +113,7 @@ burnChainImposed = False
 
 instances = []
 # The elements must be imported after the instances list is established
-# to allow for simutaneous initialization of the nuclides and elements
+# to allow for simultaneous initialization of the nuclides and elements
 # together to maintain self-consistency.
 from armi.nucDirectory import elements  # noqa: E402
 
@@ -1444,7 +1444,7 @@ def addGlobalNuclide(nuclide: NuclideBase):
             )
         byMcnpId[nuclide.getMcnpId()] = nuclide
     if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
-        # There are no AZS ID for elements / natural nuclides, or ficticious lump or dummy nuclides
+        # There are no AZS ID for elements / natural nuclides, or fictitious lump or dummy nuclides
         byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
 
