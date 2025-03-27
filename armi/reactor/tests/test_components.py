@@ -23,6 +23,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
+from armi.nucDirectory import nuclideBases
 from armi.reactor import components, flags
 from armi.reactor.blocks import Block
 from armi.reactor.components import (
@@ -816,12 +817,18 @@ class TestCircle(TestShapedComponent):
 
     def test_getNumberDensities(self):
         """Test that demonstrates that number densities can be retrieved on from component."""
-        self.component.p.numberDensities = {"NA23": 1.0}
+        self.component.p.numberDensities = np.ones(1, dtype=np.float64)
+        self.component.p.numberDensitiesIndex = np.array(
+            [nuclideBases.byName["NA23"].index]
+        )
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
         """Test that demonstates that the number densities on a component can be modified."""
-        self.component.p.numberDensities = {"NA23": 1.0}
+        self.component.p.numberDensities = np.ones(1, dtype=np.float64)
+        self.component.p.numberDensitiesIndex = np.array(
+            [nuclideBases.byName["NA23"].index]
+        )
         self.component.p.detailedNDens = [1.0]
         self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)

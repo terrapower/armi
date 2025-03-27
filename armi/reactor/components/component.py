@@ -414,12 +414,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Call before setTemperature since we need old hot temp.
-        This works well if there is only 1 solid component.
-        If there are multiple components expanding at different rates during thermal
-        expansion this becomes more complicated and, and axial expansion should be used.
+        Call before setTemperature since we need old hot temp. This works well if there is only 1
+        solid component. If there are multiple components expanding at different rates during
+        thermal expansion this becomes more complicated and, and axial expansion should be used.
         Multiple expansion rates cannot trivially be accommodated.
-        See AxialExpansionChanger.
         """
         self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
 
