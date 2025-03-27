@@ -500,10 +500,12 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
         """Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature."""
         allNucIds = [nuclideBases.byName[nucName].index for nucName in allNucNames]
         ndens = []
+        indexCopy = np.array(component.p.numberDensitiesIndex)
+        nDensCopy = np.array(component.p.numberDensities)
         for nucId in allNucIds:
-            i = np.where(component.p.numberDensitiesIndex == nucId)[0]
+            i = np.where(indexCopy == nucId)[0]
             if i.size > 0:
-                ndens.append(max(component.p.numberDensities[i[0]], TRACE_NUMBER_DENSITY))
+                ndens.append(max(nDensCopy[i[0]], TRACE_NUMBER_DENSITY))
             else:
                 ndens.append(0.0)
         return ndens

@@ -945,9 +945,7 @@ class ArmiObject(metaclass=CompositeModelType):
         elif isinstance(nucSpec, (str)):
             nuclideNames = [nucSpec]
         elif isinstance(nucSpec, list):
-            nuclideNames = []
-            for ns in nucSpec:
-                nuclideNames.extend(self._getNuclidesFromSpecifier(ns))
+            nuclideNames = nucSpec
         else:
             raise TypeError(
                 "nucSpec={0} is an invalid specifier. It is a {1}"

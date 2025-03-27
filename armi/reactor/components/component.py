@@ -679,7 +679,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        return [nuclideBases.byIndex[id].name for id in self.p.numberDensitiesIndex]
+        indexCopy = np.array(self.p.numberDensitiesIndex)
+        return [nuclideBases.byIndex[id].name for id in indexCopy]
 
     def getNumberDensity(self, nucName):
         """
@@ -705,10 +706,22 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
         nucIndices = [nuclideBases.byName[nucName].index for nucName in nucNames]
-        reverseIndex = {id: i for i, id in enumerate(self.p.numberDensitiesIndex)}
         nDens = np.zeros(len(nucIndices), dtype=np.float64)
-        for i, id in enumerate(nucIndices):
-            nDens[i] = self.p.numberDensities[reverseIndex[id]] if id in reverseIndex else 0.0
+        indexCopy = np.array(self.p.numberDensitiesIndex)
+        nDensCopy = np.array(self.p.numberDensities)
+        if len(nDens) > len(nDensCopy) / 5:
+            # if there are a lot of indices to get densities for, use reverseIndex lookup
+            reverseIndex = {id: i for i, id in enumerate(self.p.numberDensitiesIndex)}
+            for i, id in enumerate(nucIndices):
+                j = reverseIndex.get(id, -1)
+                if j >= 0:
+                    nDens[i] = nDensCopy[j]
+        else:
+            # if it's just a small subset of nuclides, use np.where for direct index lookup
+            for i, id in enumerate(nucIndices):
+                j = np.where(indexCopy == id)[0]
+                if j.size > 0:
+                    nDens[i] = nDensCopy[j[0]]
         return nDens
 
     def _getNdensHelper(self):
@@ -815,26 +828,20 @@ class Component(composites.Composite, metaclass=ComponentType):
             self.p.numberDensitiesIndex = np.array([nuclideBases.byName[nucName].index for nucName in numberDensities.keys()])
             self.p.numberDensities = np.array(list(numberDensities.values()))
         else:
-            nucIndices = np.array([nuclideBases.byName[nucName].index for nucName in numberDensities.keys()])
-            if np.all(np.isin(nucIndices, self.p.numberDensitiesIndex)):
-                # only update the the values that are changing. no need to reallocate numpy array.
-                for nucName, dens in numberDensities.items():
-                    i = np.where(self.p.numberDensitiesIndex == nuclideBases.byName[nucName].index)[0][0]
-                    self.p.numberDensities[i] = dens
-            else:
-                # create a list for new nucs, append as necessary, convert back to numpy array
-                newIndex = []
-                newNumDens = []
-                for nucName, dens in numberDensities.items():
-                    nucId = nuclideBases.byName[nucName].index
-                    i = np.where(self.p.numberDensitiesIndex == nucId)[0]
-                    if i.size > 0:
-                        self.p.numberDensities[i[0]] = dens
-                    else:
-                        newIndex.append(nucId)
-                        newNumDens.append(dens)
-                self.p.numberDensitiesIndex = np.append(self.p.numberDensitiesIndex, newIndex)
-                self.p.numberDensities = np.append(self.p.numberDensities, newNumDens)
+            newIndex = []
+            newNumDens = []
+            indexCopy = np.array(self.p.numberDensitiesIndex)
+            nDensCopy = np.array(self.p.numberDensities)
+            for nucName, dens in numberDensities.items():
+                nucId = nuclideBases.byName[nucName].index
+                i = np.where(indexCopy == nucId)[0]
+                if i.size > 0:
+                    nDensCopy[i[0]] = dens
+                else:
+                    newIndex.append(nucId)
+                    newNumDens.append(dens)
+            self.p.numberDensitiesIndex = np.append(self.p.numberDensitiesIndex, newIndex)
+            self.p.numberDensities = np.append(nDensCopy, newNumDens)
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
