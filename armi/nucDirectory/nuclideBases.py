@@ -594,9 +594,9 @@ class NuclideBase(INuclide, IMcnpNuclide):
             :implements: R_ARMI_ND_ISOTOPES
 
             This method returns the ``mcc2id`` attribute of a
-            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
-            instance. This attribute is initially populated by reading from the
-            mcc-nuclides.yaml file in the ARMI resources folder.
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instance. This
+            attribute is initially populated by reading from the mcc-nuclides.yaml file in the ARMI
+            resources folder.
         """
         return self.mcc2id
 
@@ -1158,11 +1158,11 @@ def imposeBurnChain(burnChainStream):
     Notes
     -----
     You cannot impose a burn chain twice. Doing so would require that you clean out the
-    transmutations and decays from all the module-level nuclide bases, which generally
-    requires that you rebuild them. But rebuilding those is not an option because some
-    of them get set as class-level attributes and would be orphaned. If a need to change
-    burn chains mid-run re-arises, then a better nuclideBase-level burnchain cleanup
-    should be implemented so the objects don't have to change identity.
+    transmutations and decays from all the module-level nuclide bases, which generally requires that
+    you rebuild them. But rebuilding those is not an option because some of them get set as class-
+    level attributes and would be orphaned. If a need to change burn chains mid-run re-arises, then
+    a better nuclideBase-level burnchain cleanup should be implemented so the objects don't have to
+    change identity.
 
     Notes
     -----

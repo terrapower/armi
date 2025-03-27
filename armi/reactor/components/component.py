@@ -963,16 +963,16 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION1
             :implements: R_ARMI_COMP_EXPANSION
 
-            Dimensions should be set considering the impact of thermal expansion. This
-            method allows for a user or plugin to set a dimension and indicate if the
-            dimension is for a cold configuration or not. If it is not for a cold
-            configuration, the thermal expansion factor is considered when setting the dimension.
+            Dimensions should be set considering the impact of thermal expansion. This method allows
+            for a user or plugin to set a dimension and indicate if the dimension is for a cold
+            configuration or not. If it is not for a cold configuration, the thermal expansion
+            factor is considered when setting the dimension.
 
-            If the ``retainLink`` argument is ``True``, any Components linked to this
-            one will also have its dimensions changed consistently. After a dimension
-            is updated, the ``clearLinkedCache`` method is called which sets the
-            volume of this Component to ``None``. This ensures that when the volume is
-            next accessed it is recomputed using the updated dimensions.
+            If the ``retainLink`` argument is ``True``, any Components linked to this one will also
+            have its dimensions changed consistently. After a dimension is updated, the
+            ``clearLinkedCache`` method is called which sets the volume of this Component to
+            ``None``. This ensures that when the volume is next accessed it is recomputed using the
+            updated dimensions.
 
         Parameters
         ----------
@@ -981,8 +981,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             The value to set on the dimension
         retainLink : bool, optional
-            If True, the val will be applied to the dimension of linked
-            component which indirectly changes this component's dimensions.
+            If True, the val will be applied to the dimension of linked component which indirectly
+            changes this component's dimensions.
         cold : bool, optional
             If True sets the component cold dimension to the specified value.
         """
@@ -1011,12 +1011,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_DIMS
             :implements: R_ARMI_COMP_DIMS
 
-            Due to thermal expansion, Component dimensions depend on their temperature.
-            This method retrieves a dimension from the Component at a particular
-            temperature, if provided. If the Component is a LinkedComponent then the
-            dimensions are resolved to ensure that any thermal expansion that has
-            occurred to the Components that the LinkedComponent depends on is reflected
-            in the returned dimension.
+            Due to thermal expansion, Component dimensions depend on their temperature. This method
+            retrieves a dimension from the Component at a particular temperature, if provided. If
+            the Component is a LinkedComponent then the dimensions are resolved to ensure that any
+            thermal expansion that has occurred to the Components that the LinkedComponent depends
+            on is reflected in the returned dimension.
 
         Parameters
         ----------
@@ -1152,7 +1151,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 reportGroup = componentReport
                 break
         if not reportGroup:
-            return "No report group designated for {} component.".format(self.getName())
+            return f"No report group designated for {self.getName()} component."
+
         reportGroup.header = [
             "",
             "Tcold ({0})".format(self.inputTemperatureInC),
@@ -1430,9 +1430,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         Returns
         -------
         np.ndarray
-            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the
-            equivalent to the multiplicity of the component (``self.p.mult``)
-            and ``nGroup`` is the number of energy groups of the flux.
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the
+            multiplicity of the component (``self.p.mult``) and ``nGroup`` is the number of energy
+            groups of the flux.
 
         Raises
         ------
@@ -1484,9 +1484,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         density = composites.Composite.density(self)
 
         if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case,
-            # defer to Material. Material.density is wrapped to warn if it's attached
-            # to a parent. Avoid that by calling the inner function directly
+            # possible that there are no nuclides in this component yet. In that case, defer to
+            # Material. Material.density is wrapped to warn if it's attached to a parent. Avoid that
+            # by calling the inner function directly
             density = self.material.density.__wrapped__(
                 self.material, Tc=self.temperatureInC
             )

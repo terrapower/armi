@@ -173,9 +173,9 @@ class TestGeneralComponents(unittest.TestCase):
 
     def setUp(self, component=None):
         """
-        Most of the time nothing will be passed as `component` and the result will
-        be stored in self, but you can also pass a component object as `component`,
-        in which case the object will be returned with the `parent` attribute assigned.
+        Most of the time nothing will be passed as `component` and the result will be stored in
+        self, but you can also pass a component object as `component`, in which case the object will
+        be returned with the `parent` attribute assigned.
         """
 
         class _Parent:
@@ -914,8 +914,8 @@ class TestComponentExpansion(unittest.TestCase):
             circle1.density() / circle2.density(),
         )
 
-        # the colder one has more because it is the same cold outer diameter
-        # but it would be taller at the same temperature
+        # the colder one has more because it is the same cold outer diameter but it would be taller
+        # at the same temperature
         mass1 = circle1.density() * circle1.getArea() * hotHeight
         mass2 = circle2.density() * circle2.getArea() * hotHeight
         self.assertGreater(mass1, mass2)
@@ -969,10 +969,7 @@ class TestComponentExpansion(unittest.TestCase):
         circle1.setTemperature(self.tHot)
 
         # now its density is same as hot component
-        self.assertAlmostEqual(
-            circle1.density(),
-            circle2.density(),
-        )
+        self.assertAlmostEqual(circle1.density(), circle2.density())
 
         # show that mass is conserved after expansion
         circle1NewHotHeight = hotHeight * heightFactor
@@ -1023,8 +1020,7 @@ class TestComponentExpansion(unittest.TestCase):
                 circle.density(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
-            # total mass consistent between hot and cold
-            # Hot height will be taller
+            # total mass consistent between hot and cold. Hot height will be taller
             hotHeight = coldHeight * circle.getThermalExpansionFactor()
             self.assertAlmostEqual(
                 coldHeight
