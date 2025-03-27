@@ -45,7 +45,6 @@ framework and applications.
 
     * ``instances`` (list of nuclides)
     * ``byName`` (keyed by name, e.g., ``U235``)
-    * ``byIndex`` (keyed by integer index)
     * ``byDBName`` (keyed by database name, e.g., ``nU235``)
     * ``byLabel`` (keyed by label, e.g., ``U235``)
     * ``byMcc2Id`` (keyed by MC\ :sup:`2`-2 ID, e.g., ``U-2355``)
@@ -103,7 +102,6 @@ from ruamel.yaml import YAML
 
 from armi import context, runLog
 from armi.nucDirectory import transmutations
-from armi.nucDirectory import nuclideBases
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
 
 # used to prevent multiple applications of burn chains, which would snowball
@@ -127,7 +125,6 @@ byMcc3IdEndfbVII0 = {}
 byMcc3IdEndfbVII1 = {}
 byMcnpId = {}
 byAAAZZZSId = {}
-byIndex = {}
 
 # lookup table from https://t2.lanl.gov/nis/data/endf/endfvii-n.html
 BASE_ENDFB7_MAT_NUM = {
@@ -372,7 +369,6 @@ class INuclide(NuclideInterface):
         self.mcc2id = mcc2id or ""
         self.mcc3idEndfbVII0 = mcc3idEndfbVII0 or ""
         self.mcc3idEndfbVII1 = mcc3idEndfbVII1 or ""
-        self.index = -1
         addGlobalNuclide(self)
         self.element.append(self)
 
@@ -992,7 +988,7 @@ class LumpNuclideBase(INuclide):
 
 
 def initReachableActiveNuclidesThroughBurnChain(
-    numberDensitiesIndex, numberDensities, activeNuclides
+    nuclides, numberDensities, activeNuclides
 ):
     """
     March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
@@ -1008,11 +1004,11 @@ def initReachableActiveNuclidesThroughBurnChain(
         Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
     """
     if not burnChainImposed:
-        return numberDensitiesIndex, numberDensities
+        return nuclides, numberDensities
 
     missingActiveNuclides = set()
     memo = set()
-    nucNames = [nuclideBases.byIndex[id].name for id in numberDensitiesIndex]
+    nucNames = [nucName.decode() for nucName in nuclides]
     difference = set(nucNames).difference(memo)
     while any(difference):
         newNucs = set()
@@ -1030,22 +1026,22 @@ def initReachableActiveNuclidesThroughBurnChain(
                 # dictionary if they are a part of the user-defined active nuclides
                 productNuclide = interaction.getPreferredProduct(activeNuclides)
                 if productNuclide not in nucNames:
-                    newNucs.add(nuclideBases.byName[productNuclide].index)
+                    newNucs.add(productNuclide.encode())
             except KeyError:
                 # Keep track of the first production nuclide
                 missingActiveNuclides.add(interaction.productNuclides)
 
         newNDens = np.zeros(len(newNucs), dtype=np.float64)
-        numberDensitiesIndex = np.append(numberDensitiesIndex, list(newNucs))
+        nuclides = np.append(nuclides, list(newNucs))
         numberDensities = np.append(numberDensities, newNDens)
 
-        nucNames = [nuclideBases.byIndex[id].name for id in numberDensitiesIndex]
+        nucNames = [nucName.decode() for nucName in nuclides]
         difference = set(nucNames).difference(memo)
 
     if burnChainImposed and missingActiveNuclides:
         _failOnMissingActiveNuclides(missingActiveNuclides)
 
-    return numberDensitiesIndex, numberDensities
+    return nuclides, numberDensities
 
 
 def _failOnMissingActiveNuclides(missingActiveNuclides):
@@ -1429,8 +1425,6 @@ def addGlobalNuclide(nuclide: NuclideBase):
     ):
         raise ValueError(f"{nuclide} has already been added and cannot be duplicated.")
 
-    nuclide.index = len(instances)
-    byIndex[nuclide.index] = nuclide
     instances.append(nuclide)
     byName[nuclide.name] = nuclide
     byDBName[nuclide.getDatabaseName()] = nuclide

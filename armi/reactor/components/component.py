@@ -393,7 +393,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             "pseudoDensity", Tc=self.temperatureInC
         )
         (
-            self.p.numberDensitiesIndex,
+            self.p.nuclides,
             self.p.numberDensities,
         ) = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
@@ -687,8 +687,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        indexCopy = np.array(self.p.numberDensitiesIndex)
-        return [nuclideBases.byIndex[id].name for id in indexCopy]
+        return [nucName.decode() for nucName in self.p.nuclides]
 
     def getNumberDensity(self, nucName):
         """
@@ -704,8 +703,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         number density : float
             number density in atoms/bn-cm.
         """
-        nuc = nuclideBases.byName[nucName]
-        i = np.where(self.p.numberDensitiesIndex == nuc.index)[0]
+        i = np.where(self.p.nuclides == nucName.encode())[0]
         if i.size > 0:
             return self.p.numberDensities[i[0]]
         else:
@@ -713,21 +711,22 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        nucIndices = [nuclideBases.byName[nucName].index for nucName in nucNames]
-        nDens = np.zeros(len(nucIndices), dtype=np.float64)
-        indexCopy = np.array(self.p.numberDensitiesIndex)
+        byteNucs = np.array([nucName.encode() for nucName in nucNames])
+        # nucIndices = [nuclideBases.byName[nucName].index for nucName in nucNames]
+        nDens = np.zeros(len(byteNucs), dtype=np.float64)
+        nuclideCopy = np.array(self.p.nuclides)
         nDensCopy = np.array(self.p.numberDensities)
         if len(nDens) > len(nDensCopy) / 5:
             # if there are a lot of indices to get densities for, use reverseIndex lookup
-            reverseIndex = {id: i for i, id in enumerate(self.p.numberDensitiesIndex)}
-            for i, id in enumerate(nucIndices):
-                j = reverseIndex.get(id, -1)
+            reverseIndex = {nuc: i for i, nuc in enumerate(self.p.nuclides)}
+            for i, nuc in enumerate(byteNucs):
+                j = reverseIndex.get(nuc, -1)
                 if j >= 0:
                     nDens[i] = nDensCopy[j]
         else:
             # if it's just a small subset of nuclides, use np.where for direct index lookup
-            for i, id in enumerate(nucIndices):
-                j = np.where(indexCopy == id)[0]
+            for i, nuc in enumerate(byteNucs):
+                j = np.where(nuclideCopy == nuc)[0]
                 if j.size > 0:
                     nDens[i] = nDensCopy[j[0]]
         return nDens
@@ -832,29 +831,28 @@ class Component(composites.Composite, metaclass=ComponentType):
         # change the densities
         if wipe:
             self.p.numberDensities = None  # clear things not passed
-            self.p.numberDensitiesIndex = None  # clear things not passed
-            self.p.numberDensitiesIndex = np.array(
+            self.p.nuclides = None  # clear things not passed
+            self.p.nuclides = np.array(
                 [
-                    nuclideBases.byName[nucName].index
+                    nucName.encode()
                     for nucName in numberDensities.keys()
                 ]
             )
             self.p.numberDensities = np.array(list(numberDensities.values()))
         else:
-            newIndex = []
+            newNucs = []
             newNumDens = []
-            indexCopy = np.array(self.p.numberDensitiesIndex)
+            nucCopy = np.array(self.p.nuclides)
             nDensCopy = np.array(self.p.numberDensities)
             for nucName, dens in numberDensities.items():
-                nucId = nuclideBases.byName[nucName].index
-                i = np.where(indexCopy == nucId)[0]
+                i = np.where(nucCopy == nucName.encode())[0]
                 if i.size > 0:
                     nDensCopy[i[0]] = dens
                 else:
-                    newIndex.append(nucId)
+                    newNucs.append(nucName.encode())
                     newNumDens.append(dens)
-            self.p.numberDensitiesIndex = np.append(
-                self.p.numberDensitiesIndex, newIndex
+            self.p.nuclides = np.append(
+                self.p.nuclides, newNucs
             )
             self.p.numberDensities = np.append(nDensCopy, newNumDens)
 
