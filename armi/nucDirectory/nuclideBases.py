@@ -991,7 +991,9 @@ class LumpNuclideBase(INuclide):
         return self.mcc3idEndfbVII1
 
 
-def initReachableActiveNuclidesThroughBurnChain(numberDensitiesIndex, numberDensities, activeNuclides):
+def initReachableActiveNuclidesThroughBurnChain(
+    numberDensitiesIndex, numberDensities, activeNuclides
+):
     """
     March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
 
@@ -1044,6 +1046,7 @@ def initReachableActiveNuclidesThroughBurnChain(numberDensitiesIndex, numberDens
         _failOnMissingActiveNuclides(missingActiveNuclides)
 
     return numberDensitiesIndex, numberDensities
+
 
 def _failOnMissingActiveNuclides(missingActiveNuclides):
     """Raise ValueError with notification of which nuclides to include in the burn-chain."""

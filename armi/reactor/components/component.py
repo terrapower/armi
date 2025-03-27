@@ -392,7 +392,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         densityBasedOnParentComposition = self.material.getProperty(
             "pseudoDensity", Tc=self.temperatureInC
         )
-        self.p.numberDensitiesIndex, self.p.numberDensities = densityTools.getNDensFromMasses(
+        (
+            self.p.numberDensitiesIndex,
+            self.p.numberDensities,
+        ) = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
 
@@ -825,7 +828,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         if wipe:
             self.p.numberDensities = None  # clear things not passed
             self.p.numberDensitiesIndex = None  # clear things not passed
-            self.p.numberDensitiesIndex = np.array([nuclideBases.byName[nucName].index for nucName in numberDensities.keys()])
+            self.p.numberDensitiesIndex = np.array(
+                [
+                    nuclideBases.byName[nucName].index
+                    for nucName in numberDensities.keys()
+                ]
+            )
             self.p.numberDensities = np.array(list(numberDensities.values()))
         else:
             newIndex = []
@@ -840,7 +848,9 @@ class Component(composites.Composite, metaclass=ComponentType):
                 else:
                     newIndex.append(nucId)
                     newNumDens.append(dens)
-            self.p.numberDensitiesIndex = np.append(self.p.numberDensitiesIndex, newIndex)
+            self.p.numberDensitiesIndex = np.append(
+                self.p.numberDensitiesIndex, newIndex
+            )
             self.p.numberDensities = np.append(nDensCopy, newNumDens)
 
         # check if thermal expansion changed
