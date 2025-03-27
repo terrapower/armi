@@ -56,8 +56,8 @@ def componentTypeIsValid(component, name):
 
     Notes
     -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be specfied as a
-      `DerivedShape` if the coolant dimensions are not provided.
+    - `Coolant` components are can no longer be defined as a general `Component` and should be
+      specfied as a `DerivedShape` if the coolant dimensions are not provided.
     """
     from armi.reactor.components import NullComponent
 
@@ -247,7 +247,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
+        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
@@ -269,10 +269,11 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def __lt__(self, other):
         """
-        True if a circle encompassing this object has a smaller diameter than one encompassing another component.
+        True if a circle encompassing this object has a smaller diameter than one encompassing
+        another component.
 
-        If the bounding circles for both components have identical size, then revert to checking the inner
-        diameter of each component for sorting.
+        If the bounding circles for both components have identical size, then revert to checking the
+        inner diameter of each component for sorting.
 
         This allows sorting because the Python sort functions only use this method.
         """
@@ -320,9 +321,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             Some Components are fluids and are thus defined by the shapes surrounding
             them. This method cycles through each dimension defining the border of this
             Component and converts the name of that Component to a link to the object
-            itself. This series of links is then used downstream to resolve
-            dimensional information.
-
+            itself. This series of links is then used downstream to resolve dimensional information.
         """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
@@ -523,11 +522,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        ``self.p.volume`` is not set until this method is called,
-        so under most circumstances it is probably not safe to
-        access ``self.p.volume`` directly. This is because not
-        all components (e.g., ``DerivedShape``) can compute
-        their volume during initialization.
+        ``self.p.volume`` is not set until this method is called, so under most circumstances it is
+        probably not safe to access ``self.p.volume`` directly. This is because not all components
+        (e.g., ``DerivedShape``) can compute their volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -569,9 +566,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Check for negative area and warn/error when appropriate.
 
-        Negative component area is allowed for Void materials (such as gaps)
-        which may be placed between components that will overlap during thermal expansion
-        (such as liners and cladding and annular fuel).
+        Negative component area is allowed for Void materials (such as gaps) which may be placed
+        between components that will overlap during thermal expansion (such as liners and cladding
+        and annular fuel).
 
         Overlapping is allowed to maintain conservation of atoms while sticking close to the
         as-built geometry. Modules that need true geometries will have to handle this themselves.
@@ -743,9 +740,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_NUCLIDE_FRACS0
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
-            The method allows a user or plugin to set the number density of a Component.
-            It also indicates to other processes that may depend on a Component's
-            status about this change via the ``assigned`` attribute.
+            The method allows a user or plugin to set the number density of a Component. It also
+            indicates to other processes that may depend on a Component's status about this change
+            via the ``assigned`` attribute.
 
         Parameters
         ----------
