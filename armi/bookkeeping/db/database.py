@@ -728,7 +728,7 @@ class Database:
             :implements: R_ARMI_DB_TIME
 
             This method creates a ``Reactor`` object by reading the reactor state out
-            of an ARMI database file. This is done by passing in mandatory arguements
+            of an ARMI database file. This is done by passing in mandatory arguments
             that specify the exact place in time you want to load the reactor from.
             (That is, the cycle and node numbers.) Users can either pass the settings
             and blueprints directly into this method, or it will attempt to read them
@@ -787,7 +787,7 @@ class Database:
         # stitch together
         self._compose(iter(comps), cs)
 
-        # also, make sure to update the global serial number so we don't re-use a number
+        # also, make sure to update the global serial number so we don't reuse a number
         parameterCollections.GLOBAL_SERIAL_NUM = max(
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
@@ -1234,7 +1234,7 @@ class Database:
 
         for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
             if "layout" not in h5TimeNodeGroup:
-                # layout hasnt been written for this time step, so we can't get anything
+                # layout hasn't been written for this time step, so we can't get anything
                 # useful here. Perhaps the current value is of use, in which case the
                 # DatabaseInterface should be used.
                 continue

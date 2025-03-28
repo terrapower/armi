@@ -99,7 +99,7 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
     Notes
     -----
     Tolerance allows the user to ignore small changes that may be caused by
-    small library differences or floating point cacluations
+    small library differences or floating point calculations
     the closer to zero the more differences will be shown
     10**-5 is a good tolerance to use if not using default.
     Verbose shows the XS matrixes that are not equal

@@ -295,7 +295,7 @@ mesh if you have very complicated assemblies:
     :end-before: end-assemblies-rr
 
 
-.. note:: Here we just re-use the fuel block cross sections. In more precise models, a different approach
+.. note:: Here we just reuse the fuel block cross sections. In more precise models, a different approach
 	may be used.
 
 Here is the radial shield:

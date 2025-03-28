@@ -1708,7 +1708,7 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Alloy200
 
     def test_nickleContent(self):
-        """Assert alloy 200 has more than 99% nickle per its spec."""
+        """Assert alloy 200 has more than 99% nickel per its spec."""
         self.assertGreater(self.mat.massFrac["NI"], 0.99)
 
     def test_linearExpansion(self):

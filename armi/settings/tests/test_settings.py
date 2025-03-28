@@ -389,7 +389,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         Notes
         -----
-        In particuar, self.schema and self._customSchema on a Setting object are
+        In particular, self.schema and self._customSchema on a Setting object are
         removed by Setting.__getstate__, and that has been a problem in the past.
         """
         # get a baseline: show how the Setting object looks to start

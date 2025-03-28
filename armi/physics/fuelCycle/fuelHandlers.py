@@ -625,7 +625,7 @@ class FuelHandler:
         Parameters
         ----------
         ringList : list
-            List of integer ring numbers to find assemblies in. Optionally, a string specifiying a
+            List of integer ring numbers to find assemblies in. Optionally, a string specifying a
             special location like the SFP (spent fuel pool)
 
         typeSpec : Flags or iterable of Flags, optional

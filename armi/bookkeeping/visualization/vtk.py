@@ -101,7 +101,7 @@ class VtkDumper(dumper.VisFileDumper):
         # collect param data
         blockData = _collectObjectData(blks, includeParams, excludeParams)
         assemData = _collectObjectData(assems, includeParams, excludeParams)
-        # block number densities are special, since they arent stored as params
+        # block number densities are special, since they aren't stored as params
         blockNdens = database.collectBlockNumberDensities(blks)
         # we need to copy the number density vectors to guarantee unit stride, which
         # pyevtk requires. Kinda seems like something it could do for us, but oh well.
@@ -161,7 +161,7 @@ def _collectObjectData(
             continue
         if data.dtype.kind == "O":
             # datatype is "object", usually because it's jagged, or has Nones. We are
-            # willing to try handling the Nones, but jagged also isnt visualizable.
+            # willing to try handling the Nones, but jagged also isn't visualizable.
             nones = np.where([d is None for d in data])[0]
 
             if len(nones) == data.shape[0]:

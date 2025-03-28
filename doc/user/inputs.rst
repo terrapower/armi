@@ -26,7 +26,7 @@ YAML Files
 ARMI's input files all use the `YAML <https://en.wikipedia.org/wiki/YAML>`_ format. This is a well-known file format, chosen because it is human-readable and easy to hand-write. That being said, there are two details about the YAML format that are important to know:
 
 Ordering
-    YAML is not order specific; however, one of the techniques used to limit the size of the input includes using YAML anchors to resuse block and component definitions. YAML anchors (e.g. ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
+    YAML is not order specific; however, one of the techniques used to limit the size of the input includes using YAML anchors to reuse block and component definitions. YAML anchors (e.g. ``&block_name``) must be defined before their corresponding alias (e.g. ``*block_name``) used.
 
 Duplicate Keys
     YAML allows for duplicate keys. However, in ARMI, duplicates might be erroneous. Unfortunately, because the international YAML specification allows for duplicates, none of the YAML-parsing libraries see it as an error. You will have to hand-verify your inputs are correct.
@@ -1088,7 +1088,7 @@ without explicitly defining new components.
     blocks:
         rect with 100 holes:
             holes:
-                shape: Cicle
+                shape: Circle
                 material: Sodium
                 Tinput: 600
                 Thot: 600

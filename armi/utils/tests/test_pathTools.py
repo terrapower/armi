@@ -37,7 +37,7 @@ class PathToolsTests(unittest.TestCase):
             pathTools.copyOrWarn("Test File", path, pathCopy)
             self.assertTrue(os.path.exists(pathCopy))
 
-            # Test a non-existant file
+            # Test a non-existent file
             with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "FileDoesntExist.txt", pathCopy)
                 self.assertIn("Could not copy", mock.getStdout())
@@ -55,7 +55,7 @@ class PathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(pathDirCopy))
             self.assertTrue(os.path.exists(os.path.join(pathDirCopy, "test.txt")))
 
-            # Test a non-existant file
+            # Test a non-existent file
             with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "DirDoesntExist", pathDirCopy)
                 self.assertIn("Could not copy", mock.getStdout())

@@ -274,7 +274,7 @@ class TestComponentAveraging(unittest.TestCase):
 
     def test_getAverageComponentNumberDensities(self):
         """Test component number density averaging."""
-        # becaue of the way densities are set up, the middle block (index 1 of 0-2) component
+        # because of the way densities are set up, the middle block (index 1 of 0-2) component
         # densities are equivalent to the average
         b = self.bc[1]
         for compIndex, c in enumerate(b.getComponents()):

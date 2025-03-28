@@ -137,7 +137,7 @@ class TestFlags(unittest.TestCase):
             self.assertEqual(flags.Flags.fromString(exampleInput), flag)
 
     def test_convertsStringsWithNonFlags(self):
-        # Useful for varifying block / assembly names convert to Flags.
+        # Useful for verifying block / assembly names convert to Flags.
         self.assertEqual(
             flags.Flags.fromStringIgnoreErrors("banana bond banana"), flags.Flags.BOND
         )
