@@ -162,7 +162,7 @@ class TestCompositePattern(unittest.TestCase):
         c1 = [c.name for c in self.container.getChildren()]
         self.assertNotEqual(c0, c1)
 
-        # verify repeated sorting behave
+        # verify repeated sortings behave
         for _ in range(3):
             self.container.sort()
             ci = [c.name for c in self.container.getChildren()]
