@@ -1123,21 +1123,24 @@ class Database:
                 runLog.error(msg)
                 raise ValueError(msg)
 
-            # iterating of np is not fast...
-            for c, val, linkedDim in itertools.zip_longest(
-                comps, unpackedData, linkedDims, fillvalue=""
-            ):
-                try:
-                    if linkedDim != "":
-                        c.p[paramName] = linkedDim
-                    else:
-                        c.p[paramName] = val
-                except AssertionError as ae:
-                    # happens when a param was deprecated but being loaded from old DB
-                    runLog.warning(
-                        f"{str(ae)}\nSkipping load of invalid param `{paramName}`"
-                        " (possibly loading from old DB)\n"
-                    )
+            if paramName == "numberDensities" and attrs.get("dict", False):
+                _applyComponentNumberDensitiesMigration(comps, unpackedData)
+            else:
+                # iterating of np is not fast...
+                for c, val, linkedDim in itertools.zip_longest(
+                    comps, unpackedData, linkedDims, fillvalue=""
+                ):
+                    try:
+                        if linkedDim != "":
+                            c.p[paramName] = linkedDim
+                        else:
+                            c.p[paramName] = val
+                    except AssertionError as ae:
+                        # happens when a param was deprecated but being loaded from old DB
+                        runLog.warning(
+                            f"{str(ae)}\nSkipping load of invalid param `{paramName}`"
+                            " (possibly loading from old DB)\n"
+                        )
 
     def getHistoryByLocation(
         self,
@@ -1790,3 +1793,18 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
         dataDict[nb.getDatabaseName()] = nucDensityMatrix[:, ni]
 
     return dataDict
+
+def _applyComponentNumberDensitiesMigration(comps, unpackedData):
+    """
+    Special migration from <= v2.1.0 component numberDensities parameter data type
+
+    old format: dict[str: float]
+    new format: two numpy arrays
+    - nuclides = np.array(dtype="S6")
+    - numberDensities = np.array(dtype=np.float64)
+    """
+    for c, ndensDict in zip(comps, unpackedData):
+        nuclides = np.array(list(ndensDict.keys()), dtype="S6")
+        numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
+        c.p["nuclides"] = nuclides
+        c.p["numberDensities"] = numberDensities
