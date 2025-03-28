@@ -694,7 +694,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         number density : float
             number density in atoms/bn-cm.
         """
-        nuc = nuclideBases.byName[nucName]
+        try:
+            nuc = nuclideBases.byName[nucName]
+        except KeyError:
+            return 0.0
+
         i = np.where(self.p.numberDensitiesIndex == nuc.index)[0]
         if i.size > 0:
             return self.p.numberDensities[i[0]]
