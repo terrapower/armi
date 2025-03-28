@@ -30,8 +30,6 @@ systems. Future work should generalize the concept of "system" to more varied sc
 See Also
 --------
 armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layouts.
-armi.reactor.systemLayoutInput.SystemLayoutInput : Deprecated method for reading the individual
-face-map xml files.
 """
 import yamlize
 
@@ -49,12 +47,11 @@ class SystemBlueprint(yamlize.Object):
         :id: I_ARMI_BP_SYSTEMS
         :implements: R_ARMI_BP_SYSTEMS, R_ARMI_BP_CORE
 
-        This class creates a yaml interface for the user to define systems with
-        grids, such as cores or spent fuel pools, each having their own name,
-        type, grid, and position in space. It is incorporated into the "systems"
-        section of a blueprints file by being included as key-value pairs within
-        the :py:class:`~armi.reactor.blueprints.reactorBlueprint.Systems` class,
-        which is in turn included into the overall blueprints within
+        This class creates a yaml interface for the user to define systems with grids, such as cores
+        or spent fuel pools, each having their own name, type, grid, and position in space. It is
+        incorporated into the "systems" section of a blueprints file by being included as key-value
+        pairs within the :py:class:`~armi.reactor.blueprints.reactorBlueprint.Systems` class, which
+        is in turn included into the overall blueprints within
         :py:class:`~armi.reactor.blueprints.Blueprints`.
 
         This class includes a
@@ -68,7 +65,7 @@ class SystemBlueprint(yamlize.Object):
 
     Notes
     -----
-    We use string keys to link grids to objects that use them. This differs from how blocks/
+    We use string keys to link grids to objects that use them. This differs from how blocks /
     assembies are specified, which use YAML anchors. YAML anchors have proven to be problematic and
     difficult to work with.
     """
