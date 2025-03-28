@@ -2449,8 +2449,7 @@ class Composite(ArmiObject):
     ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy
     triple representing either:
 
-    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype
-    is int.
+    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype is int.
 
     2. Coordinates in the parent's universe in cm, used when the dtype is float.
 

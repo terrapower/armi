@@ -825,7 +825,7 @@ class TestCircle(TestShapedComponent):
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
-        """Test that demonstates that the number densities on a component can be modified."""
+        """Test that demonstrates that the number densities on a component can be modified."""
         self.component.p.numberDensities = np.ones(1, dtype=np.float64)
         self.component.p.numberDensitiesIndex = np.array(
             [nuclideBases.byName["NA23"].index]

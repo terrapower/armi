@@ -442,7 +442,7 @@ class StructuredGrid(Grid):
         Note
         ----
         This should be implemented as a staticmethod, since no Grids currently in
-        exsistence actually need any instance data to perform this task, and
+        existence actually need any instance data to perform this task, and
         staticmethods provide the convenience of calling the method without an instance
         of the class in the first place.
         """

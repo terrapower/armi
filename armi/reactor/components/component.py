@@ -895,8 +895,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Notes
         -----
         Getting mass enrichment on any level higher than this is ambiguous because you may have
-        enriched boron in one pin and enriched uranium in another and blending those doesn't make
-        sense.
+        enriched boron in one pin and uranium in another and blending those doesn't make sense.
         """
         if self.material.enrichedNuclide is None:
             raise ValueError(
