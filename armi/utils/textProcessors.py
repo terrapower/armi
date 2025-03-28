@@ -224,7 +224,7 @@ def findYamlInclusions(
             except ValueError:
                 # Can't make a relative path. IMO, pathlib gives up a little too early,
                 # but we still probably want to decay to absolute paths if the files
-                # arent in the same tree.
+                # aren't in the same tree.
                 path = (mark.relativeTo / path).absolute()
 
         normalizedIncludes.append((path, mark))
@@ -272,7 +272,7 @@ class SequentialReader:
     :code:`match`.
 
     This pattern makes it easy to cycle through repetitive output in a very fast manner.
-    For example, if you had a text file with consistent chuncks of information that
+    For example, if you had a text file with consistent chunks of information that
     always started with the same text followed by information, you could do something
     like this:
 
@@ -397,7 +397,7 @@ class SequentialReader:
         Returns
         -------
         matched : bool
-            Boolean inidcating whether or not the pattern matched
+            Boolean indicating whether or not the pattern matched
         """
         self.match = None
         while True:
@@ -421,7 +421,7 @@ class SequentialReader:
         Returns
         -------
         matched : bool
-            Boolean inidcating whether or not the pattern matched
+            Boolean indicating whether or not the pattern matched
         """
         while True:
             self.match = re.search(pattern, self.line)
@@ -444,7 +444,7 @@ class SequentialReader:
         Returns
         -------
         matched : bool
-            Boolean inidcating whether or not the pattern matched
+            Boolean indicating whether or not the pattern matched
         """
         self.match = re.search(pattern, self.line)
         if self.match is None:
@@ -495,7 +495,7 @@ class SequentialStringIOReader(SequentialReader):
     :code:`match`.
 
     This pattern makes it easy to cycle through repetitive output in a very fast manner.
-    For example, if you had a text file with consistent chuncks of information that
+    For example, if you had a text file with consistent chunks of information that
     always started with the same text followed by information, you could do something
     like this:
 

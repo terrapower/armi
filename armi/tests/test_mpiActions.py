@@ -190,7 +190,7 @@ class QueueActionsTests(unittest.TestCase):
         )
         for i in range(num):
             if i in exclusiveIndices:
-                # wont be used for computation in future round
+                # won't be used for computation in future round
                 self.assertFalse(useForComputation[i])
             else:
                 self.assertTrue(useForComputation[i])

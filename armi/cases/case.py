@@ -42,7 +42,6 @@ import coverage
 
 from armi import context, getPluginManager, interfaces, operators, runLog, settings
 from armi.bookkeeping.db import compareDatabases
-from armi.cli import reportsEntryPoint
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import blueprints, reactors, systemLayoutInput
@@ -214,7 +213,7 @@ class Case:
         """
         if case in self._dependencies:
             runLog.warning(
-                "The case {} is already explicity specified as a dependency of "
+                "The case {} is already explicitly specified as a dependency of "
                 "{}".format(case, self)
             )
         self._dependencies.add(case)
@@ -601,10 +600,6 @@ class Case:
                 inspector.run()
 
             return not any(inspectorIssues)
-
-    def summarizeDesign(self):
-        """Uses the ReportInterface to create a fancy HTML page describing the design inputs."""
-        _ = reportsEntryPoint.createReportFromSettings(self.cs)
 
     def clone(
         self,

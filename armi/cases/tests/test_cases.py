@@ -82,24 +82,6 @@ grids:
 class TestArmiCase(unittest.TestCase):
     """Class to tests armi.cases.Case methods."""
 
-    def test_summarizeDesign(self):
-        """
-        Ensure that the summarizeDesign method runs.
-
-        Any assertions are bonus.
-        """
-        with directoryChangers.TemporaryDirectoryChanger():
-            cs = settings.Settings(ARMI_RUN_PATH)
-            cs = cs.modified(newSettings={"verbosity": "important"})
-            case = cases.Case(cs)
-            c2 = case.clone()
-            c2.summarizeDesign()
-            self.assertTrue(
-                os.path.exists(
-                    os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")
-                )
-            )
-
     def test_independentVariables(self):
         """Ensure that independentVariables added to a case move with it."""
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)

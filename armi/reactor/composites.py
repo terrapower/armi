@@ -1204,7 +1204,7 @@ class ArmiObject(metaclass=CompositeModelType):
             raise RuntimeError("Failed to adjust mass fraction.")
 
         # determine the mass fraction of the nuclides that will be adjusted to
-        # accomodate the requested change
+        # accommodate the requested change
         othersSum = 1.0 - A - constantSum
         if not othersSum:
             # no others to be modified.
@@ -1673,7 +1673,7 @@ class ArmiObject(metaclass=CompositeModelType):
         calcBasedOnFullObj : bool, optional
             Some assemblies or blocks, such as the center assembly in a third core
             model, are not modeled as full assemblies or blocks. In the third core model
-            objects at these postions are modeled as having 1/3 the volume and thus 1/3
+            objects at these positions are modeled as having 1/3 the volume and thus 1/3
             the power. Setting this argument to True will apply the full value of the
             parameter as if it was a full block or assembly.
         """
@@ -1684,7 +1684,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if addSymmetricPositions:
             if calcBasedOnFullObj:
                 raise ValueError(
-                    "AddSymmetricPositions is Incompatable with "
+                    "AddSymmetricPositions is Incompatible with "
                     "calcBasedOnFullObj. Will result in double counting."
                 )
             try:
@@ -2315,7 +2315,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        Component : The component that matches the critera or None
+        Component : The component that matches the criteria or None
         """
         results = self.getComponents(typeSpec, exact=exact)
         if len(results) == 1:
@@ -3002,7 +3002,7 @@ class Composite(ArmiObject):
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
 
         This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
-        heirarchy than ``Block``.
+        hierarchy than ``Block``.
         """
         from armi.reactor.blocks import Block
         from armi.reactor.reactors import Core

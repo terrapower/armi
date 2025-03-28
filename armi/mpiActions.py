@@ -423,7 +423,7 @@ class DistributionAction(MpiAction):
     it possible for sub-tasks to manage their own communicators and spawn their own work within some
     sub-communicator.
 
-    This performs an MPI Split operation and takes over the context.MPI_COMM and associated varaibles.
+    This performs an MPI Split operation and takes over the context.MPI_COMM and associated variables.
     For this reason, it is possible that when someone thinks they have distributed information to all
     nodes, it may only be a subset that was necessary to perform the number of actions needed by this
     DsitributionAction.
@@ -641,7 +641,7 @@ class DistributeStateAction(MpiAction):
         armi.interfaces.Interface.interactDistributeState : runs on workers after DS
         """
         if context.MPI_RANK == 0:
-            # These run on the primary node. (Worker nodes run sychronized code below)
+            # These run on the primary node. (Worker nodes run synchronized code below)
             toRestore = {}
             for i in self.o.getInterfaces():
                 if i.distributable() == interfaces.Interface.Distribute.DUPLICATE:
