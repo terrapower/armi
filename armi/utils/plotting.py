@@ -243,7 +243,7 @@ def plotFaceMap(
         E.g. ``"{:.1e}"``
 
     legendMap : list, optional
-        A tuple list of (value, lable, decription), to define the data in the legend.
+        A tuple list of (value, label, description), to define the data in the legend.
 
     fontSize : int, optional
         Font size in points

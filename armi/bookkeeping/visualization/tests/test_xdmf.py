@@ -21,7 +21,7 @@ class TestXdmf(unittest.TestCase):
     """
     Test XDMF-specific functionality.
 
-    This is for testing XDMF funtions that can reasonably be tested in a vacuum. The
+    This is for testing XDMF functions that can reasonably be tested in a vacuum. The
     main dump methods are hard to test without resorting to checking whole files, which
     isn't particularly useful. Those tests can be found in test_vis.
     """

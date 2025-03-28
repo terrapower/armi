@@ -29,7 +29,7 @@ class TestFlag(unittest.TestCase):
     def test_auto(self):
         """
         Make sure that auto() works right, and that mixing it with explicit values
-        doesnt lead to collision.
+        doesn't lead to collision.
         """
 
         class F(Flag):

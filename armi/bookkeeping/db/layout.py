@@ -20,7 +20,7 @@ map the hierarchical Composite Reactor Model to the flat representation in
 :py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
 This module also stores packing/packing tools to support
-:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as datbase
+:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as database
 versioning information.
 """
 
@@ -548,7 +548,7 @@ class Layout:
             # handle deeper scenarios. This is a bit tricky. Store the original
             # ancestors for the first generation, since that ultimately contains all of
             # the information that we need. Then in a loop, keep hopping one more layer
-            # of indirection, and indexing into the corresponding locaition in the
+            # of indirection, and indexing into the corresponding location in the
             # original ancestor array
             indexMap = {sn: i for i, sn in enumerate(serialNum)}
             origAncestors = ancestors
@@ -761,7 +761,7 @@ def replaceNonesWithNonsense(
     Notes
     -----
     This only supports situations where the data is a straight-up ``None``, or a valid,
-    database-storable numpy array (or easily convertable to one (e.g. tuples/lists with
+    database-storable numpy array (or easily convertible to one (e.g. tuples/lists with
     numerical values)). This does not support, for instance, a numpy ndarray with some
     Nones in it.
 

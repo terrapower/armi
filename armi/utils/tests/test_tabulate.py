@@ -83,7 +83,7 @@ class TestTabulateInputs(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_iterableOfIterables(self):
-        """Input: an interable of iterables."""
+        """Input: an iterable of iterables."""
         ii = iter(map(lambda x: iter(x), [range(5), range(5, 0, -1)]))
         expected = "\n".join(
             ["-  -  -  -  -", "0  1  2  3  4", "5  4  3  2  1", "-  -  -  -  -"]
@@ -92,7 +92,7 @@ class TestTabulateInputs(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_iterableOfIterablesHeaders(self):
-        """Input: an interable of iterables with headers."""
+        """Input: an iterable of iterables with headers."""
         ii = iter(map(lambda x: iter(x), [range(5), range(5, 0, -1)]))
         expected = "\n".join(
             [
@@ -106,7 +106,7 @@ class TestTabulateInputs(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_iterableOfIterablesFirstrow(self):
-        """Input: an interable of iterables with the first row as headers."""
+        """Input: an iterable of iterables with the first row as headers."""
         ii = iter(map(lambda x: iter(x), ["abcde", range(5), range(5, 0, -1)]))
         expected = "\n".join(
             [
@@ -409,7 +409,7 @@ class TestTabulateInputs(unittest.TestCase):
             ]
         )
 
-        # the data is a regular dictionry
+        # the data is a regular dictionary
         data = {
             "criticalCrIteration: keffUnc": [9.01234e-05],
             "dif3d: power": [0.00876543],

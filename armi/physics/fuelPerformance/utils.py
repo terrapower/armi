@@ -53,7 +53,7 @@ def gasConductivityCorrection(tempInC: float, porosity: float, morphology: int =
     Parameters
     ----------
     tempInC
-        temperature in celcius
+        temperature in celsius
     porosity
         fraction of open/total volume
     morphology, optional

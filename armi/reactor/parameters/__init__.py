@@ -231,7 +231,7 @@ since = ALL_DEFINITIONS.since
 
 
 def reset():
-    """Reset the status of all parameter definintions.
+    """Reset the status of all parameter definitions.
 
     This may become necessary when the state of the global parameter definitions becomes
     invalid.  Typically this happens when running multiple cases for the same import of

@@ -530,7 +530,7 @@ def _radarFactory(numVars, frame="circle"):
         """
         Radar projection.
 
-        Note different PEP8 naming convension to comply with parent class
+        Note different PEP8 naming convention to comply with parent class.
         """
 
         name = "radar"

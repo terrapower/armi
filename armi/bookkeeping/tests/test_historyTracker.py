@@ -111,7 +111,7 @@ class TestHistoryTracker(ArmiTestHelper):
         r"""
         This test confirms that mg flux has many groups when loaded with the history tracker.
 
-        armi.bookeeping.db.hdf.hdfDB.readBlocksHistory requires
+        armi.bookkeeping.db.hdf.hdfDB.readBlocksHistory requires
         historical_values\[historical_indices\] to be cast as a list to read more than the
         first energy group. This test shows that this behavior is preserved.
 
@@ -154,7 +154,7 @@ class TestHistoryTracker(ArmiTestHelper):
         self.assertIsNone(hti._preloadedBlockHistory)
 
     def test_historyParameters(self):
-        """Retrieve various paramaters from the history.
+        """Retrieve various parameters from the history.
 
         .. test:: Demonstrate that various parameters stored at differing time nodes can be recovered.
             :id: T_ARMI_HIST_TRACK1

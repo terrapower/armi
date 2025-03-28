@@ -98,7 +98,7 @@ class Grid(ABC):
     def symmetry(self) -> str:
         """Symmetry applied to the grid.
 
-        .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
+        .. impl:: Grids shall be able to represent 1/3 and full core symmetries.
             :id: I_ARMI_GRID_SYMMETRY0
             :implements: R_ARMI_GRID_SYMMETRY
 
