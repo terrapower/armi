@@ -44,7 +44,7 @@ from armi import context, getPluginManager, interfaces, operators, runLog, setti
 from armi.bookkeeping.db import compareDatabases
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import blueprints, reactors, systemLayoutInput
+from armi.reactor import blueprints, reactors
 from armi.utils import pathTools, tabulate, textProcessors
 from armi.utils.customExceptions import NonexistentSetting
 from armi.utils.directoryChangers import (
@@ -66,7 +66,7 @@ class Case:
     :py:class:`armi.cases.suite.CaseSuite`
     """
 
-    def __init__(self, cs, caseSuite=None, bp=None, geom=None):
+    def __init__(self, cs, caseSuite=None, bp=None):
         """
         Initialize a Case from user input.
 
@@ -74,21 +74,15 @@ class Case:
         ----------
         cs : Settings
             Settings for this Case
-
         caseSuite : CaseSuite, optional
-            CaseSuite this particular case belongs. Passing this in allows dependency
-            tracking across the other cases (e.g. if one case uses the output of
-            another as input, as happens in in-use testing for reactivity coefficient
-            snapshot testing or more complex analysis sequences).
-
+            CaseSuite this particular case belongs. Passing this in allows dependency tracking
+            across the other cases (e.g. if one case uses the output of another as input, as happens
+            in in-use testing for reactivity coefficient snapshot testing or more complex analysis
+            sequences).
         bp : Blueprints, optional
             :py:class:`armi.reactor.blueprints.Blueprints` object containing the assembly
-            definitions and other information. If not supplied, it will be loaded from the
-            ``cs`` as needed.
-
-        geom : SystemLayoutInput, optional
-            SystemLayoutInput for this case. If not supplied, it will be loaded from the
-            ``cs`` as needed.
+            definitions and other information. If not supplied, it will be loaded from the ``cs`` as
+            needed.
         """
         self._startTime = time.time()
         self._caseSuite = caseSuite
@@ -100,12 +94,10 @@ class Case:
         if bp is not None:
             cs.filelessBP = True
 
-        # NOTE: in order to prevent slow submission times for loading massively large
-        # blueprints (e.g. certain computer-generated input files),
-        # self.bp and self.geom can be None.
+        # NOTE: in order to prevent slow submission times for loading massively large blueprints
+        # (e.g. certain computer-generated input files), self.bp can be None.
         self.cs = cs
         self._bp = bp
-        self._geom = geom
 
         # this is used in parameter sweeps
         self._independentVariables = {}
@@ -147,23 +139,6 @@ class Case:
     @bp.setter
     def bp(self, bp):
         self._bp = bp
-
-    @property
-    def geom(self):
-        """
-        Geometry object for this Case.
-
-        Notes
-        -----
-        This property allows lazy loading.
-        """
-        if self._geom is None:
-            self._geom = systemLayoutInput.SystemLayoutInput.loadFromCs(self.cs)
-        return self._geom
-
-    @geom.setter
-    def geom(self, geom):
-        self._geom = geom
 
     @property
     def dependencies(self):
@@ -775,15 +750,14 @@ class Case:
         with ForcedCreationDirectoryChanger(
             self.cs.inputDirectory, dumpOnException=False
         ):
-            # trick: these seemingly no-ops load the bp and geom via properties if
-            # they are not yet initialized.
+            # These seemingly no-ops load the bp via properties if they are not yet initialized.
             self.bp
 
             newSettings = {}
             newSettings[CONF_LOADING_FILE] = self.title + "-blueprints.yaml"
             if self.independentVariables:
                 newSettings["independentVariables"] = [
-                    "({}, {})".format(repr(varName), repr(val))
+                    f"({repr(varName)}, {repr(val)})"
                     for varName, val in self.independentVariables.items()
                 ]
 
@@ -801,20 +775,17 @@ class Case:
             else:
                 fromPath = self.cs.path
             self.cs.writeToYamlFile(
-                self.title + ".yaml", style=writeStyle, fromFile=fromPath
+                f"{self.title}.yaml", style=writeStyle, fromFile=fromPath
             )
 
 
 def _copyInputsHelper(
-    fileDescription: str,
-    sourcePath: str,
-    destPath: str,
-    origFile: str,
+    fileDescription: str, sourcePath: str, destPath: str, origFile: str
 ) -> str:
     """
-    Helper function for copyInterfaceInputs: Creates an absolute file path, and
-    copies the file to that location. If that file path does not exist, returns
-    the file path from the original settings file.
+    Helper function for copyInterfaceInputs: Creates an absolute file path, and copies the file to
+    that location. If that file path does not exist, returns the file path from the original
+    settings file.
 
     Parameters
     ----------
@@ -836,8 +807,8 @@ def _copyInputsHelper(
     try:
         pathTools.copyOrWarn(fileDescription, sourcePath, destFilePath)
         if pathlib.Path(destFilePath).exists():
-            # the basename gets written back to the settings file to protect against
-            # potential future dir structure changes
+            # the basename gets written back to the settings file to protect against potential
+            # future dir structure changes
             return os.path.basename(destFilePath)
         else:
             # keep original filepath in the settings file if file copy was unsuccessful
@@ -850,8 +821,8 @@ def copyInterfaceInputs(
     cs, destination: str, sourceDir: Optional[str] = None
 ) -> Dict[str, Union[str, list]]:
     """
-    Ping active interfaces to determine which files are considered "input". This
-    enables developers to add new inputs in a plugin-dependent/ modular way.
+    Ping active interfaces to determine which files are considered "input". This enables developers
+    to add new inputs in a plugin-dependent/ modular way.
 
     This function should now be able to handle the updating of:
 
@@ -962,8 +933,8 @@ def copyInterfaceInputs(
                         f"following path: `{sourceFullPath}`. Will not update `{label}`."
                     )
 
-            # Some settings are a single filename. Others are lists of files. Make
-            # sure we are returning what the setting expects
+            # Some settings are a single filename. Others are lists of files. Make sure we are
+            # returning what the setting expects
             if isSetting:
                 if len(files) == 1 and not WILDCARD:
                     newSettings[label] = newFiles[0]

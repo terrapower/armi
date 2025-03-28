@@ -17,13 +17,11 @@ Reactor objects represent the highest level in the hierarchy of structures that 
 to be modeled.
 """
 import copy
-from typing import Optional
 
 from armi import getPluginManagerOrFail, runLog
 from armi.reactor import composites, reactorParameters
 from armi.reactor.cores import Core
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
-from armi.reactor.systemLayoutInput import SystemLayoutInput
 from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
 from armi.utils import directoryChangers
 
@@ -168,8 +166,8 @@ def loadFromCs(cs) -> Reactor:
     return factory(cs, bp)
 
 
-def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
-    """Build a reactor from input settings, blueprints and geometry."""
+def factory(cs, bp) -> Reactor:
+    """Build a reactor from input settings and blueprints."""
     runLog.header("=========== Constructing Reactor and Verifying Inputs ===========")
     getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
@@ -187,10 +185,7 @@ def factory(cs, bp, geom: Optional[SystemLayoutInput] = None) -> Reactor:
             )
 
         for structure in bp.systemDesigns:
-            bpGeom = (
-                geom if structure.name.lower() in ("core", "spent fuel pool") else None
-            )
-            structure.construct(cs, bp, r, geom=bpGeom)
+            structure.construct(cs, bp, r)
 
     runLog.debug(f"Reactor: {r}")
 

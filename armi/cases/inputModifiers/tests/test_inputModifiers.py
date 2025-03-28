@@ -221,9 +221,7 @@ class TestSettingsModifiers(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
 
-        cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
-            cs, None, None
-        )
+        cs, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(cs, None)
         self.assertAlmostEqual(cs[CONF_EPS_EIG], 1e-2)
         self.assertAlmostEqual(cs[CONF_EPS_FSAVG], 1.0)
         self.assertAlmostEqual(cs[CONF_EPS_FSPOINT], 1.0)
@@ -234,9 +232,9 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
         inputModifiers.InputModifier.__init__(self)
         self.neutronicsKernelOpts = neutronicsKernelOpts
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         cs = cs.modified(self.neutronicsKernelOpts)
-        return cs, bp, geom
+        return cs, bp
 
 
 class TestFullCoreModifier(unittest.TestCase):
@@ -247,5 +245,5 @@ class TestFullCoreModifier(unittest.TestCase):
         case = cases.Case(cs=cs)
         mod = inputModifiers.FullCoreModifier()
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
-        case, case.bp, _ = mod(case, case.bp, None)
+        case, case.bp = mod(case, case.bp)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")

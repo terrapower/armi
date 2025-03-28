@@ -113,7 +113,7 @@ class SystemBlueprint(yamlize.Object):
             "system of type `{}`. Supported types are {}.".format(typ, sorted(seen))
         )
 
-    def construct(self, cs, bp, reactor, geom=None, loadComps=True):
+    def construct(self, cs, bp, reactor, loadComps=True):
         """Build a core or ex-core grid and fill it with children.
 
         Parameters
@@ -124,7 +124,6 @@ class SystemBlueprint(yamlize.Object):
             armi blueprints to apply
         reactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>`
             reactor to fill
-        geom : optional
         loadComps : bool, optional
             whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
@@ -144,17 +143,12 @@ class SystemBlueprint(yamlize.Object):
         """
         runLog.info(f"Constructing the `{self.name}`")
 
-        if geom is not None and self.name == "core":
-            gridDesign = geom.toGridBlueprints("core")[0]
-        elif geom is not None and self.name == "Spent Fuel Pool":
-            gridDesign = geom.toGridBlueprints("Spent Fuel Pool")[0]
-        else:
-            if not bp.gridDesigns:
-                raise ValueError(
-                    "The input must define grids to construct a reactor, but does not. Update input."
-                )
-            gridDesign = bp.gridDesigns.get(self.gridName, None)
+        if not bp.gridDesigns:
+            raise ValueError(
+                "The input must define grids to construct a reactor, but does not. Update input."
+            )
 
+        gridDesign = bp.gridDesigns.get(self.gridName, None)
         system = self._resolveSystemType(self.typ)(self.name)
 
         # Some systems may not require a prescribed grid design. Only use one if provided
