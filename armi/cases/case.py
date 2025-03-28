@@ -13,12 +13,11 @@
 # limitations under the License.
 
 """
-The ``Case`` object is responsible for running, and executing a set of
-user inputs.  Many entry points redirect into ``Case`` methods, such as
-``clone``, ``compare``, and ``run``.
+The ``Case`` object is responsible for running, and executing a set of user inputs. Many entry
+points redirect into ``Case`` methods, such as ``clone``, ``compare``, and ``run``.
 
-The ``Case`` object provides an abstraction around ARMI inputs to allow
-for manipulation and collection of cases.
+The ``Case`` object provides an abstraction around ARMI inputs to allow for manipulation and
+collection of cases.
 
 See Also
 --------
@@ -63,7 +62,7 @@ class Case:
 
     A Case is capable of loading inputs, checking that they are valid, and initializing a reactor
     model. Cases can also compare against other cases and be collected into multiple
-    :py:class:`armi.cases.suite.CaseSuite`
+    :py:class:`armi.cases.suite.CaseSuite`.
     """
 
     def __init__(self, cs, caseSuite=None, bp=None):
@@ -209,8 +208,7 @@ class Case:
         filePattern : str
             A regular expression for extracting the location and name of the dependency.
             If the ``settingValue`` matches the passed pattern, this function will
-            attempt to extract the ``dirName`` and ``title`` groups to find the
-            dependency.
+            attempt to extract the ``dirName`` and ``title`` groups to find the dependency.
         """
         m = re.match(filePattern, settingValue, re.IGNORECASE)
         deps = self._getPotentialDependencies(**m.groupdict()) if m else set()
@@ -296,14 +294,12 @@ class Case:
             :id: I_ARMI_CASE
             :implements: R_ARMI_CASE
 
-            This method is responsible for "running" the ARMI simulation
-            instigated by the inputted settings. This initializes an
-            :py:class:`~armi.operators.operator.Operator`, a
+            This method is responsible for "running" the ARMI simulation instigated by the inputted
+            settings. This initializes an :py:class:`~armi.operators.operator.Operator`, a
             :py:class:`~armi.reactor.reactors.Reactor` and invokes
-            :py:meth:`Operator.operate
-            <armi.operators.operator.Operator.operate>`. It also activates
-            supervisory things like code coverage checking, profiling, or
-            tracing, if requested by users during debugging.
+            :py:meth:`Operator.operate <armi.operators.operator.Operator.operate>`. It also
+            activates supervisory things like code coverage checking, profiling, or tracing, if
+            requested by users during debugging.
 
         Notes
         -----
@@ -338,8 +334,7 @@ class Case:
         Case._endProfiling(profiler)
 
     def _startCoverage(self):
-        """Helper to the Case.run(): spin up the code coverage tooling,
-        if the Settings file says to.
+        """Helper to the Case.run: spin up the code coverage tooling, if the Settings file says to.
 
         Returns
         -------
@@ -355,10 +350,9 @@ class Case:
                 debug=["dataio"],
             )
             if context.MPI_SIZE > 1:
-                # interestingly, you cannot set the parallel flag in the constructor
-                # without auto-specifying the data suffix. This should enable
-                # parallel coverage with auto-generated data file suffixes and
-                # combinations.
+                # interestingly, you cannot set the parallel flag in the constructor without
+                # auto-specifying the data suffix. This should enable parallel coverage with
+                # auto-generated data file suffixes and combinations.
                 cov.config.parallel = True
             cov.start()
 
@@ -366,14 +360,12 @@ class Case:
 
     @staticmethod
     def _endCoverage(userCovFile, cov=None):
-        """Helper to the Case.run(): stop and report code coverage,
-        if the Settings file says to.
+        """Helper to the Case.run(): stop and report code coverage, if the Settings file says to.
 
         Parameters
         ----------
         userCovFile : str
-            File path to user-supplied coverage configuration file (default setting is
-            empty string)
+            File path to user-supplied coverage configuration file (default setting is empty string)
         cov: coverage.Coverage (optional)
             Hopefully, a valid and non-empty set of coverage data.
         """
@@ -387,8 +379,8 @@ class Case:
             context.MPI_COMM.barrier()  # force waiting for everyone to finish
 
         if context.MPI_RANK == 0 and context.MPI_SIZE > 1:
-            # combine all the parallel coverage data files into one and make
-            # the XML and HTML reports for the whole run.
+            # combine all the parallel coverage data files into one and make the XML and HTML
+            # reports for the whole run.
             combinedCoverage = coverage.Coverage(
                 config_file=Case._getCoverageRcFile(userCovFile), debug=["dataio"]
             )
@@ -401,8 +393,8 @@ class Case:
 
     @staticmethod
     def _getCoverageRcFile(userCovFile, makeCopy=False):
-        """Helper to provide the coverage configuration file according to the OS. A
-        user-supplied file will take precedence, and is not checked for a dot-filename.
+        """Helper to provide the coverage configuration file according to the OS. A user-supplied
+        file will take precedence, and is not checked for a dot-filename.
 
         Notes
         -----
@@ -411,8 +403,7 @@ class Case:
         Parameters
         ----------
         userCovFile : str
-            File path to user-supplied coverage configuration file (default setting is
-            empty string)
+            File path to user-supplied coverage configuration file (default setting is empty string)
         makeCopy : bool (optional)
             Whether or not to copy the coverage config file to an alternate file path
 
@@ -497,10 +488,9 @@ class Case:
 
         Notes
         -----
-        This is admittedly an odd place for this but the burn chain info must be
-        applied sometime after user-input has been loaded (for custom burn chains)
-        but not long after (because nucDir is framework-level and expected to be
-        up-to-date by lots of modules).
+        This is admittedly an odd place for this but the burn chain info must be applied sometime
+        after user-input has been loaded (for custom burn chains) but not long after (because nucDir
+        is framework-level and expected to be up-to-date by lots of modules).
         """
         if not self.cs["initializeBurnChain"]:
             runLog.info(
@@ -526,16 +516,14 @@ class Case:
             :id: I_ARMI_CASE_CHECK
             :implements: R_ARMI_CASE_CHECK
 
-            This method checks the validity of the current settings. It relies
-            on an :py:class:`~armi.operators.settingsValidation.Inspector`
-            object from the :py:class:`~armi.operators.operator.Operator` to
-            generate a list of
-            :py:class:`~armi.operators.settingsValidation.Query` objects that
-            represent potential issues in the settings. After gathering the
-            queries, this method prints a table of query "statements" and
-            "questions" to the console. If running in an interactive mode, the
-            user then has the opportunity to address the questions posed by the
-            queries by either addressing the potential issue or ignoring it.
+            This method checks the validity of the current settings. It relies on an
+            :py:class:`~armi.operators.settingsValidation.Inspector` object from the
+            :py:class:`~armi.operators.operator.Operator` to generate a list of
+            :py:class:`~armi.operators.settingsValidation.Query` objects that represent potential
+            issues in the settings. After gathering the queries, this method prints a table of query
+            "statements" and "questions" to the console. If running in an interactive mode, the user
+            then has the opportunity to address the questions posed by the queries by either
+            addressing the potential issue or ignoring it.
 
         Returns
         -------
@@ -548,8 +536,8 @@ class Case:
             inspector = operatorClass.inspector(self.cs)
             inspectorIssues = [query for query in inspector.queries if query]
 
-            # Write out the settings validation issues that will be prompted for
-            # resolution if in an interactive session or forced to be resolved otherwise.
+            # Write out the settings validation issues that will be prompted for resolution if in an
+            # interactive session or forced to be resolved otherwise.
             queryData = []
             for i, query in enumerate(inspectorIssues, start=1):
                 queryData.append(
@@ -586,8 +574,8 @@ class Case:
         """
         Clone existing ARMI inputs to current directory with optional settings modifications.
 
-        Since each case depends on multiple inputs, this is a safer way to move cases
-        around without having to wonder if you copied all the files appropriately.
+        Since each case depends on multiple inputs, this is a safer way to move cases around without
+        having to wonder if you copied all the files appropriately.
 
         Parameters
         ----------
@@ -828,16 +816,15 @@ def copyInterfaceInputs(
 
       - a single file (relative or absolute)
       - a list of files (relative or absolute)
-      - a file entry that has a wildcard processing into multiple files.
-        Glob is used to offer support for wildcards.
+      - a file entry that has a wildcard processing into multiple files. Glob is used to offer
+        support for wildcards.
       - a directory and its contents
 
     If the file paths are absolute, do nothing. The case will be able to find the file.
 
-    In case suites or parameter sweeps, these files often have a sourceDir associated
-    with them that is different from the cs.inputDirectory. So, if relative or wildcard,
-    update the file paths to be absolute in the case settings and copy the file to the
-    destination directory.
+    In case suites or parameter sweeps, these files often have a sourceDir associated with them that
+    is different from the cs.inputDirectory. So, if relative or wildcard, update the file paths to
+    be absolute in the case settings and copy the file to the destination directory.
 
     Parameters
     ----------
@@ -851,9 +838,9 @@ def copyInterfaceInputs(
     Returns
     -------
     dict
-        A new settings object that contains settings for the keys and values that are
-        either an absolute file path, a list of absolute file paths, or the original
-        file path if absolute paths could not be resolved
+        A new settings object that contains settings for the keys and values that are either an
+        absolute file path, a list of absolute file paths, or the original file path if absolute
+        paths could not be resolved
 
     Notes
     -----
@@ -929,8 +916,8 @@ def copyInterfaceInputs(
 
                 if destFilePath == f:
                     runLog.debug(
-                        f"No input files for `{label}` could be resolved with the "
-                        f"following path: `{sourceFullPath}`. Will not update `{label}`."
+                        f"No input files for `{label}` could be resolved with the following path: "
+                        f"`{sourceFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make sure we are
