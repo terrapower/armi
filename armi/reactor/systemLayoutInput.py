@@ -24,7 +24,6 @@ See Also
 reactor.blueprints.reactorBlueprint
 reactor.blueprints.gridBlueprint
 """
-
 import os
 import sys
 import xml.etree.ElementTree as ET
@@ -162,32 +161,19 @@ class SystemLayoutInput:
         """
         Migrate old-style SystemLayoutInput to new GridBlueprint.
 
-        Returns a list of GridBlueprint objects. There will at least be one entry,
-        containing the main core layout. If equilibrium fuel paths are specified, it
-        will occupy the second element.
+        Returns a list of GridBlueprint objects. There will at least be one entry, containing the
+        main core layout. If equilibrium fuel paths are specified it will occupy the second element.
         """
-        # TODO: After moving SystemLayoutInput out of geometry.py, we may be able to
-        # move this back out to top-level without causing blueprint import order issues.
         from armi.reactor.blueprints.gridBlueprint import GridBlueprint
 
+        bounds = None
         geom = self.geomType
         symmetry = self.symmetry
-
-        bounds = None
-
-        if self.geomType == geometry.GeomType.RZT:
-            # We need a grid in order to go from what's in the input to indices, and to
-            # be able to provide grid bounds to the blueprint.
-            rztGrid = grids.ThetaRZGrid.fromGeom(self)
-            theta, r, _ = rztGrid.getBounds()
-            bounds = {"theta": theta.tolist(), "r": r.tolist()}
 
         gridContents = dict()
         for indices, spec in self.assemTypeByIndices.items():
             if self.geomType == geometry.GeomType.HEX:
                 i, j = grids.HexGrid.getIndicesFromRingAndPos(*indices)
-            elif self.geomType == geometry.GeomType.RZT:
-                i, j, _ = rztGrid.indicesOfBounds(*indices[0:4])
             else:
                 i, j = indices
             gridContents[(i, j)] = spec
@@ -211,8 +197,6 @@ class SystemLayoutInput:
                     continue
                 if self.geomType == geometry.GeomType.HEX:
                     i, j = grids.HexGrid.getIndicesFromRingAndPos(*idx)
-                elif self.geomType == geometry.GeomType.RZT:
-                    i, j, _ = rztGrid.indicesOfBounds(*idx[0:4])
                 else:
                     i, j = idx
                 eqPathContents[i, j] = copy(self.eqPathInput[idx])
@@ -269,8 +253,7 @@ class SystemLayoutInput:
 
         Notes
         -----
-        This is intended to replace the XML format as we converge on
-        consistent inputs.
+        This is intended to replace the XML format as we converge on consistent inputs.
         """
         yaml = YAML()
         yaml.allow_duplicate_keys = False
@@ -336,8 +319,7 @@ class SystemLayoutInput:
         ----------
         modifiedPaths : dict, required
             This is a dictionary that contains the indices that are mapped to the
-            eqPathIndex and eqPathCycle.  modifiedPath[indices] = (eqPathIndex,
-            eqPathCycle)
+            eqPathIndex and eqPathCycle.  modifiedPath[indices] = (eqPathIndex, eqPathCycle)
         """
         runLog.important("Modifying the equilibrium paths on {}".format(self))
         self.eqPathsHaveBeenModified = True
@@ -357,10 +339,8 @@ class SystemLayoutInput:
         ----------
         outputFileName : str
             Geometry file name
-
         suffix : str
             Added suffix to the geometry output file name
-
         """
         if suffix:
             self._getModifiedFileName(outputFileName, suffix)

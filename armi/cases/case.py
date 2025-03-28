@@ -61,9 +61,9 @@ class Case:
     """
     An ARMI Case that can be used for suite set up and post-analysis.
 
-    A Case is capable of loading inputs, checking that they are valid, and
-    initializing a reactor model. Cases can also compare against other
-    cases and be collected into multiple :py:class:`armi.cases.suite.CaseSuite`
+    A Case is capable of loading inputs, checking that they are valid, and initializing a reactor
+    model. Cases can also compare against other cases and be collected into multiple
+    :py:class:`armi.cases.suite.CaseSuite`
     """
 
     def __init__(self, cs, caseSuite=None, bp=None, geom=None):
@@ -115,8 +115,8 @@ class Case:
         """
         Get dictionary of independent variables and their values.
 
-        This unpacks independent variables from the cs object's independentVariables
-        setting the first time it is run. This is used in parameter sweeps.
+        This unpacks independent variables from the cs object's independentVariables setting the
+        first time it is run. This is used in parameter sweeps.
 
         See Also
         --------
