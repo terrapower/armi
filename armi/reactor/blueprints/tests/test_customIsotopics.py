@@ -16,6 +16,7 @@
 import unittest
 from logging import DEBUG
 
+import numpy as np
 import yamlize
 
 from armi import runLog, settings
@@ -497,7 +498,8 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT4
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as number fractions
+        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as
+        # number fractions
         fuel2 = self.a[1].getComponent(Flags.FUEL)
         fuel4 = self.a[3].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel4.density())
@@ -514,14 +516,17 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT5
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as number densities
+        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as
+        # number densities
         fuel2 = self.a[1].getComponent(Flags.FUEL)
         fuel5 = self.a[4].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel5.density())
 
-        for nuc in fuel2.p.numberDensities.keys():
+        for i, val in enumerate(fuel2.p.numberDensitiesIndex):
+            self.assertIn(val, fuel5.p.numberDensitiesIndex)
+            j = np.where(fuel5.p.numberDensitiesIndex == val)[0][0]
             self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
+                fuel2.p.numberDensities[i], fuel5.p.numberDensities[j]
             )
 
     def test_numberDensitiesAnchor(self):
@@ -529,7 +534,7 @@ assemblies:
         fuel5 = self.a[5].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel4.density(), fuel5.density())
 
-        for nuc in fuel4.p.numberDensities.keys():
+        for nuc in range(len(fuel4.p.numberDensities)):
             self.assertAlmostEqual(
                 fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
             )
