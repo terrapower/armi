@@ -291,7 +291,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.unregister(DummySettingPlugin1)
 
         # Now try the same, but adding the plugins in a different order. This is to make
-        # sure that it doesnt matter if the Setting or its Options come first
+        # sure that it doesn't matter if the Setting or its Options come first
         pm.register(DummySettingPlugin2)
         pm.register(DummySettingPlugin1)
         cs = caseSettings.Settings()

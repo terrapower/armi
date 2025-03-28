@@ -558,7 +558,7 @@ class TestDerivedShape(TestShapedComponent):
 
         self.assertAlmostEqual(totalByParts, totalVolume)
 
-        # test the computeVolume method on the one DerivedShape in thi block
+        # test the computeVolume method on the one DerivedShape in this block
         self.assertAlmostEqual(c.computeVolume(), 1386.5232044586771)
 
 

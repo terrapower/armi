@@ -47,7 +47,7 @@ from armi.utils import tabulate
 from armi.utils.customExceptions import NonexistentSetting
 
 try:
-    # psutil is an optional requirement, since it doesnt support MacOS very well
+    # psutil is an optional requirement, since it doesn't support MacOS very well
     import psutil
 
     _havePsutil = True
@@ -188,7 +188,7 @@ class MemoryProfiler(interfaces.Interface):
             )
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """Scans thorugh ARMI model for duplicate objects."""
+        """Scans through ARMI model for duplicate objects."""
         if self.r is None:
             return
         uniqueIds = set()

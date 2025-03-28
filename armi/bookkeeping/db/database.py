@@ -928,7 +928,7 @@ class Database:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
-            # Only create the group if it doesnt already exist. This happens when
+            # Only create the group if it doesn't already exist. This happens when
             # re-writing params in the same time node (e.g. something changed between
             # EveryNode and EOC)
             g = h5group.create_group(groupName, track_order=True)

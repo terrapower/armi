@@ -124,7 +124,7 @@ class DatabaseInterface(interfaces.Interface):
         # Grab geomString here because the DB-level has no access to the reactor or
         # blueprints or anything.
         # There's not always a geomFile; we are moving towards the core grid definition
-        # living in the blueprints themselves. In this case, the db doesnt need to store
+        # living in the blueprints themselves. In this case, the db doesn't need to store
         # a geomFile at all.
         if self.cs["geomFile"]:
             with open(os.path.join(self.cs.inputDirectory, self.cs["geomFile"])) as f:

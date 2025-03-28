@@ -1482,7 +1482,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getComponentByName(self):
         """Test children by name."""
         self.assertIsNone(
-            self.block.getComponentByName("not the droid youre looking for")
+            self.block.getComponentByName("not the droid you are looking for")
         )
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 

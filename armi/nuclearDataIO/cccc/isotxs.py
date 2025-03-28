@@ -67,9 +67,8 @@ def compareSet(fileNames, tolerance=0.0, verbose=False):
     comparisons = []
 
     xsLibs = [readBinary(fileName) for fileName in fileNames]
-    for thisXSLib, thatXSLib in itertools.combinations(
-        xsLibs, 2
-    ):  # all unique combinations with 2 itmes
+    for thisXSLib, thatXSLib in itertools.combinations(xsLibs, 2):
+        # all unique combinations with 2 items
         runLog.info(
             "\n*****\n*****comparing {} and {}\n*****".format(thisXSLib, thatXSLib)
         )

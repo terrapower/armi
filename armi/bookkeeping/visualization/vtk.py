@@ -121,7 +121,7 @@ class VtkDumper(dumper.VisFileDumper):
     def __exit__(self, type, value, traceback):
         assert len(self._assemFiles) == len(self._blockFiles)
         if len(self._assemFiles) > 1:
-            # multiple files need to be wrapped up into groups. VTK doesnt like having
+            # multiple files need to be wrapped up into groups. VTK does not like having
             # multiple meshes in the same group, so we write out separate Collection
             # files for them
             asyGroup = VtkGroup(f"{self._baseName}_asm")

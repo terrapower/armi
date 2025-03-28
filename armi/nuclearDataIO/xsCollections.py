@@ -404,7 +404,7 @@ class MacroscopicCrossSectionCreator:
             Input micros
 
         block : Block
-            Object whos number densities should be used to generate macros
+            Object whose number densities should be used to generate macros
 
         nucNames : list, optional
             List of nuclides to include in the macros. Defaults to all in block.

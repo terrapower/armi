@@ -299,7 +299,7 @@ class TestRunLog(unittest.TestCase):
             self.assertIn("hi", mock.getStdout())
             mock.emptyStdout()
 
-            # we should start with a clean slate, before info loggin
+            # we should start with a clean slate, before info logging
             self.assertEqual("", mock.getStdout())
             runLog.LOG.setVerbosity(logging.INFO)
             runLog.LOG.startLog("test_setVerbosityBeforeStartLog2")

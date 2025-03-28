@@ -90,7 +90,7 @@ class ResolveParametersMeta(type):
     ``Block.paramCollectionType``. The ``BlockParameterCollection`` class will itself be
     a subclass of ``ArmiObjectParameterCollection``, which it would have found from the
     ``Composite`` class from which the ``Block`` class inherits. The ``Composite``
-    calss, on the other hand, would have obtained the ``ArmiObjectParameterCollection``
+    class, on the other hand, would have obtained the ``ArmiObjectParameterCollection``
     from it's parent (``ArmiObject``), since it does not have a ``pDefs`` attribute of
     its own.
     """
