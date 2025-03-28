@@ -498,9 +498,6 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here
         """
-        if self.p.area is not None and not cold:
-            return self.p.area
-
         area = self.getComponentArea(cold=cold)
         if self.p.get("modArea", None):
             comp, arg = self.p.modArea
@@ -512,8 +509,6 @@ class Component(composites.Composite, metaclass=ComponentType):
                 raise ValueError("Option {} does not exist".format(arg))
 
         self._checkNegativeArea(area, cold)
-        if not cold:
-            self.p.area = area
         return area
 
     def getVolume(self):
