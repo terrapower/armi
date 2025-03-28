@@ -94,7 +94,6 @@ class AbstractIsotopicDepleter:
 
         # ARMI objects to deplete keyed by name
         # order is important for consistency in iterating through objects
-        # cinder interface input format is very dependent on object order
         self._depleteByName = collections.OrderedDict()
 
         self.efpdToBurn = None
