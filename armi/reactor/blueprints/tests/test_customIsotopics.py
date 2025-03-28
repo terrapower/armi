@@ -373,9 +373,10 @@ assemblies:
         self.assertEqual(self.numCustomNuclides, len(fuel1.p.numberDensities))
         self.assertAlmostEqual(19.1, fuel1.density())
 
-        self.assertEqual(
-            set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys())
-        )  # keys are same
+        # keys are same
+        keys1 = set([i for i, v in enumerate(fuel1.p.numberDensities) if v == 0.0])
+        keys2 = set([i for i, v in enumerate(fuel2.p.numberDensities) if v == 0.0])
+        self.assertEqual(keys1, keys2)
 
     def test_densitiesAppliedToNonCustomMaterials(self):
         """Ensure that a density can be set in custom isotopics for components using library materials."""
