@@ -677,6 +677,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
+        if self.p.numberDensitiesIndex is None or not len(self.p.numberDensitiesIndex):
+            return []
+
         indexCopy = np.array(self.p.numberDensitiesIndex)
         return [nuclideBases.byIndex[id].name for id in indexCopy]
 
@@ -711,6 +714,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         nDens = np.zeros(len(nucIndices), dtype=np.float64)
         indexCopy = np.array(self.p.numberDensitiesIndex)
         nDensCopy = np.array(self.p.numberDensities)
+        if self.p.numberDensitiesIndex is None or self.p.numberDensities is None:
+            return nDens
+
         if len(nDens) > len(nDensCopy) / 5:
             # if there are a lot of indices to get densities for, use reverseIndex lookup
             reverseIndex = {id: i for i, id in enumerate(self.p.numberDensitiesIndex)}
@@ -724,6 +730,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 j = np.where(indexCopy == id)[0]
                 if j.size > 0:
                     nDens[i] = nDensCopy[j[0]]
+
         return nDens
 
     def _getNdensHelper(self):
