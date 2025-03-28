@@ -14,10 +14,9 @@
 """
 The legacy SystemLayoutInput class and supporting code.
 
-This module contains the soon-to-be defunct ``SystemLayoutInput`` class, which used to
-be used for specifying assembly locations in the core. This has been replaced by the
-``systems:`` and ``grids:`` sections of ``Blueprints``, but still exists to facilitate
-input migrations.
+This module contains the soon-to-be defunct ``SystemLayoutInput`` class, which used to be used for
+specifying assembly locations in the core. This has been replaced by the ``systems:`` and ``grids:``
+sections of ``Blueprints``, but still exists to facilitate input migrations.
 
 See Also
 --------
