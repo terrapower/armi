@@ -575,18 +575,8 @@ class TestDatabaseReading(unittest.TestCase):
         c1 = b1.getComponent(Flags.FUEL)
         c2 = b2.getComponent(Flags.FUEL)
 
-        self.assertIsInstance(c1.p.numberDensities, dict)
-        self.assertIsInstance(c2.p.numberDensities, dict)
-        keys1 = set(c1.p.numberDensities.keys())
-        keys2 = set(c2.p.numberDensities.keys())
-        self.assertEqual(keys1, keys2)
-
-        numDensVec1, numDensVec2 = [], []
-        for k in keys1:
-            numDensVec1.append(c1.p.numberDensities[k])
-            numDensVec2.append(c2.p.numberDensities[k])
-
-        assert_allclose(numDensVec1, numDensVec2)
+        for i, v1 in enumerate(c1.p.numberDensities):
+            self.assertAlmostEqual(v1, c2.p.numberDensities[i])
 
     def test_timesteps(self):
         with Database(self.dbName, "r") as db:
