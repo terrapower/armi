@@ -448,9 +448,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
         # keyed on ID
         self.assemButtons = dict()
-
         self.buttonIdBySpecifier = {None: None}
-
         self.activeAssemID: Optional[int] = None
 
         for key, design in self.assemDesigns.items():
@@ -535,8 +533,6 @@ class _AssemblyPalette(wx.ScrolledWindow):
         This makes sure that the right selector button is activated, and switches the
         GUI mode into the proper one based on whether an assembly design is selected, or
         the fuel path controls.
-
-        Notice that the
         """
         if self.assemButtons[event.GetId()].GetValue():
             # The button that generated the event is "on" (the ToggleButton assumes its new value
