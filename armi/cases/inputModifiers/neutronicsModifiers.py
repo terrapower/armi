@@ -29,10 +29,11 @@ from armi.physics.neutronics.settings import (
 
 class NeutronicConvergenceModifier(inputModifiers.InputModifier):
     """
-    Adjust the neutronics convergence parameters ``CONF_EPS_EIG``, ``CONF_EPS_FSAVG``, and ``CONF_EPS_FSPOINT``.
+    Adjust the neutronics convergence parameters ``CONF_EPS_EIG``, ``CONF_EPS_FSAVG``, and
+    ``CONF_EPS_FSPOINT``.
 
-    The supplied value is used for ``CONF_EPS_EIG``. ``CONF_EPS_FSAVG`` and ``CONF_EPS_FSPOINT`` are set
-    to 100 times the supplied value.
+    The supplied value is used for ``CONF_EPS_EIG``. ``CONF_EPS_FSAVG`` and ``CONF_EPS_FSPOINT`` are
+    set to 100 times the supplied value.
 
     This can be used to perform sensitivity studies on convergence criteria.
     """
@@ -42,26 +43,26 @@ class NeutronicConvergenceModifier(inputModifiers.InputModifier):
         self.value = value
         if value > 1e-2 or value <= 0.0:
             raise ValueError(
-                "Neutronic convergence modifier value must be greater than 0 and less "
-                "than 1e-2 (got {})".format(value)
+                "Neutronic convergence modifier value must be greater than 0 and less than 1e-2 "
+                f"(got {value})"
             )
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         newSettings = {}
         newSettings[CONF_EPS_FSAVG] = self.value * 100
         newSettings[CONF_EPS_FSPOINT] = self.value * 100
         newSettings[CONF_EPS_EIG] = self.value
         cs = cs.modified(newSettings=newSettings)
 
-        return cs, bp, geom
+        return cs, bp
 
 
 class NeutronicMeshsSizeModifier(inputModifiers.InputModifier):
     """
     Adjust the neutronics mesh in all assemblies by a multiplication factor.
 
-    This can be useful when switching between nodal and finite difference
-    approximations, or when doing mesh convergence sensitivity studies.
+    This can be useful when switching between nodal and finite difference approximations, or when
+    doing mesh convergence sensitivity studies.
 
     Attributes
     ----------
@@ -79,10 +80,10 @@ class NeutronicMeshsSizeModifier(inputModifiers.InputModifier):
             )
         self.multFactor = multFactor
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         for assemDesign in bp.assemDesigns:
             assemDesign.axialMeshPoints = [
                 ax * self.multFactor for ax in assemDesign.axialMeshPoints
             ]
 
-        return cs, bp, geom
+        return cs, bp
