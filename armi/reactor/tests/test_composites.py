@@ -225,6 +225,14 @@ class TestCompositePattern(unittest.TestCase):
         ):
             self.assertIs(fromIterChildren, fromNative, msg=count)
 
+    def test_iterChildrenWithMaterials(self):
+        """Test that C.iterChildrenWithMaterials gets materials following their parent component."""
+        items = iter(self.container.iterChildrenWithMaterials(deep=True))
+        for item in items:
+            if isinstance(item, components.Component):
+                mat = next(items)
+                self.assertIs(mat, item.material)
+
     def test_getName(self):
         """Test the getName method."""
         self.assertEqual(self.secondGen.getName(), "liner")
