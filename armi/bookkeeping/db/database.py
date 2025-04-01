@@ -800,11 +800,11 @@ class Database:
         return r
 
     @staticmethod
-    def _setParamsBeforeFreezing(r):
+    def _setParamsBeforeFreezing(r: Reactor):
         """Set some special case parameters before they are made read-only."""
-        for child in r.getChildren(deep=True):
-            if not isinstance(child, Component):
-                continue
+        for child in r.iterChildren(
+            deep=True, predicate=lambda c: isinstance(c, Component)
+        ):
             # calling Component.getVolume() sets the volume parameter
             child.getVolume()
 
