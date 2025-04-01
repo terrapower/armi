@@ -629,6 +629,21 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
 
+    def test_copyInterfaceInputs_emptyFilePath(self):
+        testSetting = CONF_SHUFFLE_LOGIC
+        cs = settings.Settings(ARMI_RUN_PATH)
+        fakeShuffle = ""
+        cs = cs.modified(newSettings={testSetting: fakeShuffle})
+
+        # ensure we are not in TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            with self.assertRaises(KeyError):
+                # shouldn't process this setting as anything to worry about
+                _shuffleLogic = newSettings[testSetting]
+
     def test_failOnDuplicateSetting(self):
         """That that if a plugin attempts to add a duplicate setting, it raises an error."""
         # register the new Plugin

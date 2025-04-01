@@ -931,13 +931,16 @@ def copyInterfaceInputs(
             for f in files:
                 WILDCARD = False
                 RELATIVE = False
+                EMPTY = False
                 if "*" in f:
                     WILDCARD = True
                 if ".." in f:
                     RELATIVE = True
+                if not f:
+                    EMPTY = True
 
                 path = pathlib.Path(f)
-                if not WILDCARD and not RELATIVE:
+                if not WILDCARD and not RELATIVE and not EMPTY:
                     try:
                         if path.is_absolute() and path.exists():
                             # Path is absolute, no settings modification or filecopy needed
