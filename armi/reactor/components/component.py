@@ -706,7 +706,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         nDens = np.zeros(len(byteNucs), dtype=np.float64)
         nuclideCopy = np.array(self.p.nuclides)
         nDensCopy = np.array(self.p.numberDensities)
-        if self.p.numberDensitiesIndex is None or self.p.numberDensities is None:
+        if self.p.numberDensities is None:
             return nDens
 
         if len(nDens) > len(nDensCopy) / 5:

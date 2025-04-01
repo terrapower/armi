@@ -142,7 +142,7 @@ class TestComponentFactory(unittest.TestCase):
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
-                if key in ["numberDensities", "numberDensitiesIndex"]:
+                if key in ["numberDensities", "nuclides"]:
                     for i in range(len(val)):
                         self.assertEqual(val[i], duped.p[key][i])
                 elif key not in ["area", "volume", "serialNum"]:  # they get recomputed
@@ -819,17 +819,13 @@ class TestCircle(TestShapedComponent):
     def test_getNumberDensities(self):
         """Test that demonstrates that number densities can be retrieved on from component."""
         self.component.p.numberDensities = np.ones(1, dtype=np.float64)
-        self.component.p.numberDensitiesIndex = np.array(
-            [nuclideBases.byName["NA23"].index]
-        )
+        self.component.p.nuclides = np.array(["NA23"], dtype="S6")
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
         """Test that demonstrates that the number densities on a component can be modified."""
         self.component.p.numberDensities = np.ones(1, dtype=np.float64)
-        self.component.p.numberDensitiesIndex = np.array(
-            [nuclideBases.byName["NA23"].index]
-        )
+        self.component.p.nuclides = np.array(["NA23"], dtype="S6")
         self.component.p.detailedNDens = [1.0]
         self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
@@ -910,7 +906,7 @@ class TestComponentExpansion(unittest.TestCase):
         # mass density is proportional to Fe number density and derived from
         # all the number densities and atomic masses
         self.assertAlmostEqual(
-            circle1.p.numberDensities[isotope] / circle2.p.numberDensities[isotope],
+            circle1.getNumberDensity(isotope) / circle2.getNumberDensity(isotope),
             circle1.density() / circle2.density(),
         )
 

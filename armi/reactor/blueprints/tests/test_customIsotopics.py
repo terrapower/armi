@@ -517,9 +517,9 @@ assemblies:
         fuel5 = self.a[4].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel5.density())
 
-        for i, val in enumerate(fuel2.p.numberDensitiesIndex):
-            self.assertIn(val, fuel5.p.numberDensitiesIndex)
-            j = np.where(fuel5.p.numberDensitiesIndex == val)[0][0]
+        for i, nuc in enumerate(fuel2.p.nuclides):
+            self.assertIn(nuc, fuel5.p.nuclides)
+            j = np.where(fuel5.p.nuclides == nuc)[0][0]
             self.assertAlmostEqual(
                 fuel2.p.numberDensities[i], fuel5.p.numberDensities[j]
             )
@@ -528,11 +528,7 @@ assemblies:
         fuel4 = self.a[4].getComponent(Flags.FUEL)
         fuel5 = self.a[5].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel4.density(), fuel5.density())
-
-        for nuc in range(len(fuel4.p.numberDensities)):
-            self.assertAlmostEqual(
-                fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
-            )
+        np.testing.assert_almost_equal(fuel4.p.numberDensities, fuel5.p.numberDensities)
 
     def test_expandedNatural(self):
         cs = settings.Settings()
