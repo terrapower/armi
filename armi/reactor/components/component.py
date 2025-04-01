@@ -677,6 +677,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
+        if self.p.nuclides is None:
+            return []
         return [nucName.decode() for nucName in self.p.nuclides]
 
     def getNumberDensity(self, nucName):
