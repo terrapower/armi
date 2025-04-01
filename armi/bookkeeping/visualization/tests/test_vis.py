@@ -68,7 +68,7 @@ class TestVisDump(unittest.TestCase):
             inputFileName="smallestTestReactor/armiRunSmallest.yaml"
         )
 
-        cls.hexBlock = cls.r.core.getBlocks()[0]
+        cls.hexBlock = next(cls.r.core.iterBlocks())
 
         cls.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
         cartesianComponent = components.HoledSquare(
