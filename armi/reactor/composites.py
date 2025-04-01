@@ -457,11 +457,11 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Make a clean copy of this object.
 
-        .. warning:: Be careful with inter-object dependencies. If one object contains a
-            reference to another object which contains links to the entire hierarchical
-            tree, memory can fill up rather rapidly. Weak references are designed to help
-            with this problem.
-
+        Warning
+        -------
+        Be careful with inter-object dependencies. If one object contains a reference to another
+        object which contains links to the entire hierarchical tree, memory can fill up rather
+        rapidly. Weak references are designed to help with this problem.
         """
         raise NotImplementedError
 
@@ -475,11 +475,9 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Obtain a value from the cache.
 
-        Cached values can be used to temporarily store frequently read but
-        long-to-compute values.  The practice is generally discouraged because it's
-        challenging to make sure to properly invalidate the cache when the state
-        changes.
-
+        Cached values can be used to temporarily store frequently read but long-to-compute values.
+        The practice is generally discouraged because it's challenging to make sure to properly
+        invalidate the cache when the state changes.
         """
         return self.cached.get(name, None)
 
@@ -1202,7 +1200,7 @@ class ArmiObject(metaclass=CompositeModelType):
             raise RuntimeError("Failed to adjust mass fraction.")
 
         # determine the mass fraction of the nuclides that will be adjusted to
-        # accomodate the requested change
+        # accommodate the requested change
         othersSum = 1.0 - A - constantSum
         if not othersSum:
             # no others to be modified.
@@ -1671,7 +1669,7 @@ class ArmiObject(metaclass=CompositeModelType):
         calcBasedOnFullObj : bool, optional
             Some assemblies or blocks, such as the center assembly in a third core
             model, are not modeled as full assemblies or blocks. In the third core model
-            objects at these postions are modeled as having 1/3 the volume and thus 1/3
+            objects at these positions are modeled as having 1/3 the volume and thus 1/3
             the power. Setting this argument to True will apply the full value of the
             parameter as if it was a full block or assembly.
         """
@@ -1682,7 +1680,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if addSymmetricPositions:
             if calcBasedOnFullObj:
                 raise ValueError(
-                    "AddSymmetricPositions is Incompatable with "
+                    "AddSymmetricPositions is Incompatible with "
                     "calcBasedOnFullObj. Will result in double counting."
                 )
             try:
@@ -2314,7 +2312,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Returns
         -------
-        Component : The component that matches the critera or None
+        Component : The component that matches the criteria or None
         """
         results = self.getComponents(typeSpec, exact=exact)
         if len(results) == 1:
@@ -2378,8 +2376,8 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide`
-            natural nuclide to replace.
+        elementalNuclide : :class:`armi.nucDirectory.nuclideBases.NaturalNuclide` natural nuclide to
+            replace.
         """
         natName = elementalNuclide.name
         for component in self.iterComponents():
@@ -2387,7 +2385,6 @@ class ArmiObject(metaclass=CompositeModelType):
             if elementalDensity == 0.0:
                 continue
             component.setNumberDensity(natName, 0.0)  # clear the elemental
-            del component.p.numberDensities[natName]
             # add in isotopics
             for natNuc in elementalNuclide.getNaturalIsotopics():
                 component.setNumberDensity(
@@ -2450,8 +2447,7 @@ class Composite(ArmiObject):
     ``spatialLocator`` and ``spatialGrid`` parameters. The ``spatialLocator`` is a numpy
     triple representing either:
 
-    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype
-    is int.
+    1. Indices in the parent's ``spatialGrid`` (for lattices, etc.), used when the dtype is int.
 
     2. Coordinates in the parent's universe in cm, used when the dtype is float.
 
@@ -2601,17 +2597,16 @@ class Composite(ArmiObject):
             :id: I_ARMI_CMP1
             :implements: R_ARMI_CMP
 
-            This method retrieves all children within a given Composite object. Children
-            of any generation can be retrieved. This is achieved by visiting all
-            children and calling this method recursively for each generation requested.
+            This method retrieves all children within a given Composite object. Children of any
+            generation can be retrieved. This is achieved by visiting all children and calling this
+            method recursively for each generation requested.
 
-            If the method is called with ``includeMaterials``, it will additionally
-            include information about the material for each child. If a function is
-            supplied as the ``predicate`` argument, then this method will be used
-            to evaluate all children as a filter to include or not. For example, if the
-            caller of this method only desires children with a certain flag, or children
-            which only contain a certain material, then the ``predicate`` function
-            can be used to perform this filtering.
+            If the method is called with ``includeMaterials``, it will additionally include
+            information about the material for each child. If a function is supplied as the
+            ``predicate`` argument, then this method will be used to evaluate all children as a
+            filter to include or not. For example, if the caller of this method only desires
+            children with a certain flag, or children which only contain a certain material, then
+            the ``predicate`` function can be used to perform this filtering.
 
         Parameters
         ----------
@@ -2619,21 +2614,20 @@ class Composite(ArmiObject):
             Return all children of all levels.
 
         generationNum : int, optional
-            Which generation to return. 1 means direct children, 2 means children of
-            children. Setting this parameter will only return children of this
-            generation, not their parents. Default: Just return direct children.
+            Which generation to return. 1 means direct children, 2 means children of children.
+            Setting this parameter will only return children of this generation, not their parents.
+            Default: Just return direct children.
 
         includeMaterials : bool, optional
             Include the material properties
 
         predicate : callable, optional
-            An optional unary predicate to use for filtering results. This can be used
-            to request children of specific types, or with desired attributes. Not all
-            ArmiObjects have the same methods and members, so care should be taken to
-            make sure that the predicate executes gracefully in all cases (e.g., use
-            ``getattr(obj, "attribute", None)`` to access instance attributes). Failure
-            to meet the predicate only affects the object in question; children will
-            still be considered.
+            An optional unary predicate to use for filtering results. This can be used to request
+            children of specific types, or with desired attributes. Not all ArmiObjects have the
+            same methods and members, so care should be taken to make sure that the predicate
+            executes gracefully in all cases (e.g., use ``getattr(obj, "attribute", None)`` to
+            access instance attributes). Failure to meet the predicate only affects the object in
+            question; children will still be considered.
 
         Examples
         --------
@@ -2720,22 +2714,21 @@ class Composite(ArmiObject):
 
     def syncMpiState(self):
         """
-        Synchronize all parameters of this object and all children to all worker nodes
-        over the network using MPI.
+        Synchronize all parameters of this object and all children to all worker nodes over the
+        network using MPI.
 
-        In parallelized runs, if each process has its own copy of the entire reactor
-        hierarchy, this method synchronizes the state of all parameters on all objects.
+        In parallelized runs, if each process has its own copy of the entire reactor hierarchy, this
+        method synchronizes the state of all parameters on all objects.
 
         .. impl:: Composites can be synchronized across MPI threads.
             :id: I_ARMI_CMP_MPI
             :implements: R_ARMI_CMP_MPI
 
-            Parameters need to be handled properly during parallel code execution.This
-            method synchronizes all parameters of the composite object across all
-            processes by cycling through all the children of the Composite and ensuring
-            that their parameters are properly synchronized. If it fails to synchronize,
-            an error message is displayed which alerts the user to which Composite has
-            inconsistent data across the processes.
+            Parameters need to be handled properly during parallel code execution. This method
+            synchronizes all parameters of the composite object across all processes by cycling
+            through all the children of the Composite and ensuring that their parameters are
+            properly synchronized. If it fails to synchronize, an error message is displayed which
+            alerts the user to which Composite has inconsistent data across the processes.
 
         Returns
         -------
@@ -2746,7 +2739,7 @@ class Composite(ArmiObject):
             return 0
 
         startTime = timeit.default_timer()
-        # sync parameters...
+        # sync parameters
         allComps = [self] + self.getChildren(deep=True, includeMaterials=True)
         allComps = [c for c in allComps if hasattr(c, "p")]
         sendBuf = [c.p.getSyncData() for c in allComps]
@@ -2825,10 +2818,9 @@ class Composite(ArmiObject):
             # nodeSyncData is a list of tuples
             for key, val in nodeSyncData.items():
                 if key in syncedKeys:
-                    # TODO: this requires further investigation and should be avoidable.
-                    # this situation results when a composite object is flagged as being
-                    # out of sync, and this parameter was also globally modified and
-                    # readjusted to the original value.
+                    # TODO: This requires further investigation and should be avoidable. This
+                    # situation results when a composite object is flagged as being out of sync, and
+                    # this parameter was also globally modified and readjusted to the original value.
                     curVal = self.p[key]
                     if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
@@ -2848,8 +2840,8 @@ class Composite(ArmiObject):
         """
         Mark the composite and child parameters as synchronized across MPI.
 
-        We clear SINCE_LAST_DISTRIBUTE_STATE so that anything after this point will set
-        the SINCE_LAST_DISTRIBUTE_STATE flag, indicating it has been modified
+        We clear SINCE_LAST_DISTRIBUTE_STATE so that anything after this point will set the
+        SINCE_LAST_DISTRIBUTE_STATE flag, indicating it has been modified
         SINCE_LAST_DISTRIBUTE_STATE.
         """
         paramDefs = set()
@@ -2870,8 +2862,8 @@ class Composite(ArmiObject):
         Parameters
         ----------
         paramsToApply : iterable
-            Parameters that should be applied to the state after existing the state
-            retainer. All others will be reverted to their values upon entering.
+            Parameters that should be applied to the state after existing the state retainer. All
+            others will be reverted to their values upon entering.
 
         Notes
         -----
@@ -2883,8 +2875,8 @@ class Composite(ArmiObject):
         """
         Create and store a backup of the state.
 
-        This needed to be overridden due to linked components which actually have a
-        parameter value of another ARMI component.
+        This needed to be overridden due to linked components which actually have a parameter value
+        of another ARMI component.
         """
         self._backupCache = (self.cached, self._backupCache)
         self.cached = {}  # don't .clear(), using reference above!
@@ -2930,7 +2922,7 @@ class Composite(ArmiObject):
 
         See Also
         --------
-        armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct : LFP object
+        armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct
         """
         lfps = ArmiObject.getLumpedFissionProductCollection(self)
         if lfps is None:
@@ -2957,8 +2949,8 @@ class Composite(ArmiObject):
         """
         Returns the multigroup neutron tracklength in [n-cm/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
 
         Parameters
         ----------
@@ -3001,7 +2993,7 @@ class Composite(ArmiObject):
         If you set nDensity to 1/CM2_PER_BARN this makes 1 group cross section generation easier.
 
         This method is not designed to work on ``Assembly``, ``Core``, or anything higher on the
-        heirarchy than ``Block``.
+        hierarchy than ``Block``.
         """
         from armi.reactor.blocks import Block
         from armi.reactor.reactors import Core

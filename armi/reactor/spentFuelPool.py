@@ -15,7 +15,7 @@
 
 This file implements a simple/default representation of such as an ARMI "system". ARMI systems, like
 the core are grids filled with ArmiObjects. This module also includes some helper tools to aid
-transfering spent fuel assemblies from the core to the SFP.
+transferring spent fuel assemblies from the core to the SFP.
 """
 import itertools
 

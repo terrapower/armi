@@ -23,6 +23,7 @@ from numpy.testing import assert_allclose, assert_equal
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
+from armi.nucDirectory import nuclideBases
 from armi.reactor import components, flags
 from armi.reactor.blocks import Block
 from armi.reactor.components import (
@@ -135,19 +136,20 @@ class TestComponentFactory(unittest.TestCase):
             thisAttrs = {k: 1.0 for k in set(klass.INIT_SIGNATURE).difference(attrs)}
             del thisAttrs["components"]
             thisAttrs.update(attrs)
-            thisAttrs["name"] = "banana{}".format(i)
+            thisAttrs["name"] = f"banana{i}"
             if "modArea" in thisAttrs:
                 thisAttrs["modArea"] = None
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
-                if key not in ["area", "volume", "serialNum"]:  # they get recomputed
+                if key in ["numberDensities", "numberDensitiesIndex"]:
+                    for i in range(len(val)):
+                        self.assertEqual(val[i], duped.p[key][i])
+                elif key not in ["area", "volume", "serialNum"]:  # they get recomputed
                     self.assertEqual(
                         val,
                         duped.p[key],
-                        msg="Key: {}, val1: {}, val2: {}".format(
-                            key, val, duped.p[key]
-                        ),
+                        msg=f"Key: {key}, val1: {val}, val2: {duped.p[key]}",
                     )
 
     def test_factoryBadShapeName(self):
@@ -171,9 +173,9 @@ class TestGeneralComponents(unittest.TestCase):
 
     def setUp(self, component=None):
         """
-        Most of the time nothing will be passed as `component` and the result will
-        be stored in self, but you can also pass a component object as `component`,
-        in which case the object will be returned with the `parent` attribute assigned.
+        Most of the time nothing will be passed as `component` and the result will be stored in
+        self, but you can also pass a component object as `component`, in which case the object will
+        be returned with the `parent` attribute assigned.
         """
 
         class _Parent:
@@ -816,12 +818,18 @@ class TestCircle(TestShapedComponent):
 
     def test_getNumberDensities(self):
         """Test that demonstrates that number densities can be retrieved on from component."""
-        self.component.p.numberDensities = {"NA23": 1.0}
+        self.component.p.numberDensities = np.ones(1, dtype=np.float64)
+        self.component.p.numberDensitiesIndex = np.array(
+            [nuclideBases.byName["NA23"].index]
+        )
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
-        """Test that demonstates that the number densities on a component can be modified."""
-        self.component.p.numberDensities = {"NA23": 1.0}
+        """Test that demonstrates that the number densities on a component can be modified."""
+        self.component.p.numberDensities = np.ones(1, dtype=np.float64)
+        self.component.p.numberDensitiesIndex = np.array(
+            [nuclideBases.byName["NA23"].index]
+        )
         self.component.p.detailedNDens = [1.0]
         self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
@@ -906,8 +914,8 @@ class TestComponentExpansion(unittest.TestCase):
             circle1.density() / circle2.density(),
         )
 
-        # the colder one has more because it is the same cold outer diameter
-        # but it would be taller at the same temperature
+        # the colder one has more because it is the same cold outer diameter but it would be taller
+        # at the same temperature
         mass1 = circle1.density() * circle1.getArea() * hotHeight
         mass2 = circle2.density() * circle2.getArea() * hotHeight
         self.assertGreater(mass1, mass2)
@@ -961,10 +969,7 @@ class TestComponentExpansion(unittest.TestCase):
         circle1.setTemperature(self.tHot)
 
         # now its density is same as hot component
-        self.assertAlmostEqual(
-            circle1.density(),
-            circle2.density(),
-        )
+        self.assertAlmostEqual(circle1.density(), circle2.density())
 
         # show that mass is conserved after expansion
         circle1NewHotHeight = hotHeight * heightFactor
@@ -1015,8 +1020,7 @@ class TestComponentExpansion(unittest.TestCase):
                 circle.density(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
-            # total mass consistent between hot and cold
-            # Hot height will be taller
+            # total mass consistent between hot and cold. Hot height will be taller
             hotHeight = coldHeight * circle.getThermalExpansionFactor()
             self.assertAlmostEqual(
                 coldHeight

@@ -28,8 +28,8 @@ from typing import Optional
 import numpy as np
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
-from armi.nuclearDataIO import xsLibraries
 from armi.nucDirectory import nuclideBases
+from armi.nuclearDataIO import xsLibraries
 from armi.reactor import (
     composites,
     geometry,
