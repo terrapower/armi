@@ -1795,6 +1795,7 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
 
     return dataDict
 
+
 def _applyComponentNumberDensitiesMigration(comps, unpackedData):
     """
     Special migration from <= v2.1.0 component numberDensities parameter data type

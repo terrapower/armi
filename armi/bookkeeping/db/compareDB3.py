@@ -380,7 +380,7 @@ def _diffSpecialData(
                 diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
-            if dSrc.dtype == np.bytes_ or dRef.dtype == np.bytes_:
+            if dSrc.dtype.type == np.bytes_ or dRef.dtype.type == np.bytes_:
                 # data is byte strings; can't be diffed like numbers
                 if np.array_equal(dSrc, dRef):
                     diffResults.addDiff(name, name, 0.0, 0.0, 0.0)
