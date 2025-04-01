@@ -641,7 +641,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 cs, destination=newDir.destination
             )
             with self.assertRaises(KeyError):
-                # shouldn't process this setting as anything to worry about
+                # shouldn't process this setting as anything to worry about, so it won't be added to the dict
                 _shuffleLogic = newSettings[testSetting]
 
     def test_failOnDuplicateSetting(self):
