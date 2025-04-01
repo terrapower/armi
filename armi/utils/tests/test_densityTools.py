@@ -18,6 +18,7 @@ from armi.materials.material import Material
 from armi.materials.uraniumOxide import UO2
 from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
+import numpy as np
 
 
 class UraniumOxide(Material):
@@ -128,10 +129,12 @@ class TestDensityTools(unittest.TestCase):
             :id: T_ARMI_UTIL_MASS2N_DENS
             :tests: R_ARMI_UTIL_MASS2N_DENS
         """
-        nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2})
+        nucs, nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2})
+        O = np.where(nucs == "O".encode())[0]
+        H = np.where(nucs == "H".encode())[0]
 
-        self.assertAlmostEqual(nDens["O"], 0.03764, 5)
-        self.assertAlmostEqual(nDens["H"], 1.19490, 5)
+        self.assertAlmostEqual(nDens[O][0], 0.03764, 5)
+        self.assertAlmostEqual(nDens[H][0], 1.19490, 5)
 
     def test_getMassFractions(self):
         """Number densities to mass fraction."""

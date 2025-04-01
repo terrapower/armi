@@ -2384,7 +2384,12 @@ class ArmiObject(metaclass=CompositeModelType):
             elementalDensity = component.getNumberDensity(natName)
             if elementalDensity == 0.0:
                 continue
-            component.setNumberDensity(natName, 0.0)  # clear the elemental
+
+            keepIndex = np.where(component.p.nuclides != natName.encode())[0]
+            newNuclides = [nuc.decode() for nuc in component.p.nuclides[keepIndex]]
+            newNDens = component.p.numberDensities[keepIndex]
+            component.updateNumberDensities(dict(zip(newNuclides, newNDens)), wipe=True)
+
             # add in isotopics
             for natNuc in elementalNuclide.getNaturalIsotopics():
                 component.setNumberDensity(
