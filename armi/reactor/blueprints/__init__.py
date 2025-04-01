@@ -576,10 +576,6 @@ def migrate(bp: Blueprints, cs):
 
     This is a good place to perform migrations that address changes to the system design description
     (settings, blueprints). We have access both here, so we can even move stuff between files.
-
-    This allows settings-driven core map to still be used for backwards compatibility. At some point
-    once the input stabilizes, we may wish to move this out to the dedicated migration portion of
-    the code, and not perform the migration so implicitly.
     """
     from armi.reactor.blueprints import gridBlueprint
 
@@ -592,12 +588,6 @@ def migrate(bp: Blueprints, cs):
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
     if "core" in [rd.name for rd in bp.systemDesigns]:
-        raise ValueError(
-            "Core map is defined in both the ``geometry`` setting and in the blueprints file. Only "
-            "one definition may exist. Update inputs."
-        )
+        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
-
-    # TODO: write out the migrated file. At the moment this messes up the case title and doesn't yet
-    # have the other systems in place so this isn't the right place.

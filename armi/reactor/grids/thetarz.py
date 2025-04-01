@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import TYPE_CHECKING, NoReturn
+from typing import NoReturn
 
 import numpy as np
 
 from armi.reactor.grids.locations import IJKType, IJType
 from armi.reactor.grids.structuredGrid import StructuredGrid
-
-if TYPE_CHECKING:
-    # Avoid circular imports
-    pass
 
 TAU = math.tau
 
