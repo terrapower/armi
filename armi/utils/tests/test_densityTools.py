@@ -14,11 +14,12 @@
 """Test densityTools."""
 import unittest
 
+import numpy as np
+
 from armi.materials.material import Material
 from armi.materials.uraniumOxide import UO2
 from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
-import numpy as np
 
 
 class UraniumOxide(Material):

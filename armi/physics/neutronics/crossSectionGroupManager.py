@@ -60,7 +60,6 @@ import sys
 import numpy as np
 
 from armi import context, interfaces, runLog
-from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.reactor import flags

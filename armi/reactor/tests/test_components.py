@@ -23,7 +23,6 @@ from numpy.testing import assert_allclose, assert_equal
 
 from armi.materials import air, alloy200
 from armi.materials.material import Material
-from armi.nucDirectory import nuclideBases
 from armi.reactor import components, flags
 from armi.reactor.blocks import Block
 from armi.reactor.components import (

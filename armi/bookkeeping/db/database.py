@@ -1099,7 +1099,7 @@ class Database:
                 )
 
             # nuclides are a special case where we want to keep in np.bytes_ format
-            if data.dtype.type is np.bytes_ and not paramName == "nuclides":
+            if data.dtype.type is np.bytes_ and paramName != "nuclides":
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
