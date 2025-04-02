@@ -924,24 +924,21 @@ def copyInterfaceInputs(
             newFiles = []
             for f in files:
                 WILDCARD = False
-                RELATIVE = False
+                EMPTY = False
+                ABSOLUTE = False
                 if "*" in f:
                     WILDCARD = True
-                if ".." in f:
-                    RELATIVE = True
-
+                if not f:
+                    # beware: pathlib.path("") returns "." which can be bad news, so we handle empty
+                    # strings as their own category
+                    EMPTY = True
                 path = pathlib.Path(f)
-                if not WILDCARD and not RELATIVE:
-                    try:
-                        if path.is_absolute() and path.exists():
-                            # Path is absolute, no settings modification or filecopy needed
-                            newFiles.append(path)
-                            continue
-                    except OSError:
-                        pass
+                if not EMPTY and path.is_absolute():
+                    ABSOLUTE = True
 
                 # Attempt to construct an absolute file path
                 srcFullPath = os.path.join(sourceDirPath, f)
+                destFilePath = None
                 if WILDCARD:
                     globFilePaths = [
                         pathlib.Path(os.path.join(sourceDirPath, g))
@@ -956,7 +953,14 @@ def copyInterfaceInputs(
                                 label, gFile, destination, f
                             )
                             newFiles.append(str(destFilePath))
+                elif EMPTY:
+                    pass
+                elif ABSOLUTE:
+                    if path.exists():
+                        # Path is absolute, no settings modification or filecopy needed
+                        newFiles.append(path)
                 else:
+                    # treat as a relative path
                     destFilePath = _copyInputsHelper(label, srcFullPath, destination, f)
                     newFiles.append(str(destFilePath))
 
@@ -966,9 +970,9 @@ def copyInterfaceInputs(
                         f"`{srcFullPath}`. Will not update `{label}`."
                     )
 
-            # Some settings are a single filename. Others are lists of files. Make sure we are
-            # returning what the setting expects.
-            if isSetting:
+            # Some settings are a single filename. Others are lists of files. Make
+            # sure we are returning what the setting expects
+            if isSetting and len(newFiles):
                 if (
                     len(files) == 1
                     and not WILDCARD
