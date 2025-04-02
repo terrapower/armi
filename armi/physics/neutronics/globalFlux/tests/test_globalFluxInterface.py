@@ -449,6 +449,6 @@ class TestGlobalFluxUtils(unittest.TestCase):
 
 def applyDummyFlux(r, ng=33):
     """Set arbitrary flux distribution on a Reactor."""
-    for b in r.core.getBlocks():
+    for b in r.core.iterBlocks():
         b.p.power = 1.0
         b.p.mgFlux = np.arange(ng, dtype=np.float64)
