@@ -619,7 +619,6 @@ class Interface:
         paths, or glob patterns that will be interpolated relative to the input directory. Absolute
         paths will not be copied anywhere.
 
-
         The returned dictionary will enable the source Settings object to be updated to the new file
         location. While the dictionary keys are recommended to be Setting objects, the name of the
         setting as a string, e.g., "shuffleLogic", is still interpreted. If the string name does not

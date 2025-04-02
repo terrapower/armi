@@ -589,8 +589,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(destFilePath, os.path.basename(newFilePath))
 
-        # test with bad file path, should return original file
-        # ensure we are not in TEST_ROOT
+        # test with bad file path, should return original file ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             destFilePath = cases.case._copyInputsHelper(
                 testSetting,
@@ -613,7 +612,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             newFilePath = os.path.join(newDir.destination, shuffleFile)
             self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting][0], os.path.basename(newFilePath))
+            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
 
     def test_copyInterfaceInputsNonFilePath(self):
         testSetting = CONF_SHUFFLE_LOGIC
@@ -626,8 +625,8 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             newSettings = cases.case.copyInterfaceInputs(
                 cs, destination=newDir.destination
             )
-            self.assertFalse(os.path.exists(newSettings[testSetting][0]))
-            self.assertEqual(newSettings[testSetting][0], fakeShuffle)
+            self.assertFalse(os.path.exists(newSettings[testSetting]))
+            self.assertEqual(newSettings[testSetting], fakeShuffle)
 
     def test_failOnDuplicateSetting(self):
         """That that if a plugin attempts to add a duplicate setting, it raises an error."""
@@ -738,7 +737,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             )
             newFilePath = os.path.join(newDir.destination, shuffleFile)
             self.assertTrue(os.path.exists(newFilePath))
-            self.assertEqual(newSettings[testSetting][0], os.path.basename(newFilePath))
+            self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
 
     def test_copyInterfaceInputsAbsPath(self):
         testSetting = CONF_SHUFFLE_LOGIC
@@ -753,9 +752,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 cs, destination=newDir.destination
             )
             # file exists
-            self.assertTrue(os.path.exists(newSettings[testSetting][0]))
+            self.assertTrue(os.path.exists(newSettings[testSetting]))
             # but not copied to this dir
-            self.assertFalse(
-                os.path.exists(os.path.basename(newSettings[testSetting][0]))
-            )
-            self.assertEqual(str(newSettings[testSetting][0]), absFile)
+            self.assertFalse(os.path.exists(os.path.basename(newSettings[testSetting])))
+            self.assertEqual(str(newSettings[testSetting]), absFile)

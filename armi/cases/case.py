@@ -972,8 +972,8 @@ def copyInterfaceInputs(
                 if (
                     len(files) == 1
                     and not WILDCARD
-                    and key in cs
-                    and isinstance(cs[key], list)
+                    and key.name in cs
+                    and not isinstance(cs[key.name], list)
                 ):
                     newSettings[label] = newFiles[0]
                 else:
