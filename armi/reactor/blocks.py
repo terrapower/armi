@@ -624,7 +624,7 @@ class Block(composites.Composite):
             return area
 
         a = 0.0
-        for c in self.getChildren():
+        for c in self:
             myArea = c.getArea(cold=cold)
             a += myArea
         fullArea = a
@@ -919,7 +919,7 @@ class Block(composites.Composite):
         self._updatePitchComponent(c)
 
     def removeAll(self, recomputeAreaFractions=True):
-        for c in self.getChildren():
+        for c in list(self):
             self.remove(c, recomputeAreaFractions=False)
         if recomputeAreaFractions:  # only do this once
             self.getVolumeFractions()
@@ -1257,7 +1257,7 @@ class Block(composites.Composite):
     def getDimensions(self, dimension):
         """Return dimensional values of the specified dimension."""
         dimVals = set()
-        for c in self.getChildren():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:
@@ -1506,7 +1506,7 @@ class Block(composites.Composite):
         :meth:`getPinCoordinates` - companion for this method.
         """
         items = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
+        for clad in self.iterChildrenWithFlags(Flags.CLAD):
             if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
                 items.extend(clad.spatialLocator)
             else:

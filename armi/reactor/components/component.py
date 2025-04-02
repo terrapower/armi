@@ -1072,7 +1072,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getLinkedComponents(self):
         """Find other components that are linked to this component."""
         dependents = []
-        for child in self.parent.getChildren():
+        for child in self.parent:
             for dimName in child.DIMENSION_NAMES:
                 isLinked = child.dimensionIsLinked(dimName)
                 if isLinked and child.p[dimName].getLinkedComponent() is self:

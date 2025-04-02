@@ -187,8 +187,9 @@ class TestGeneralComponents(unittest.TestCase):
             def clearCache(self):
                 pass
 
-            def getChildren(self):
-                return []
+            def __iter__(self):
+                """Act like an iterator but don't actually iterate."""
+                return iter(())
 
             derivedMustUpdate = False
 

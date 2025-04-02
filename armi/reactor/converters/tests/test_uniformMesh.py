@@ -84,7 +84,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
 
         prevB = None
-        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
+        for newB, sourceB in zip(newAssem, sourceAssem):
             if newB.isFuel() and sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif not newB.isFuel() and not sourceB.isFuel():
@@ -449,7 +449,7 @@ class TestUniformMesh(unittest.TestCase):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref mass
 
         self.converter.convert(self.r)
-        for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
+        for ib, b in enumerate(self.converter.convReactor.core.iterBlocks()):
             b.p.mgFlux = list(range(1, 34))
             b.p.adjMgFlux = list(range(1, 34))
             b.p.fastFlux = 2.0
@@ -471,7 +471,7 @@ class TestUniformMesh(unittest.TestCase):
 
         self.converter.applyStateToOriginal()
 
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             self.assertAlmostEqual(b.p.fastFlux, 2.0)
             self.assertAlmostEqual(b.p.flux, 5.0)
             self.assertAlmostEqual(b.p.pdens, 0.5)
@@ -573,7 +573,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
 
         # set original parameters on pre-mapped core with non-uniform assemblies
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = list(range(33))
             b.p.adjMgFlux = list(range(33))
             b.p.fastFlux = 2.0
@@ -583,7 +583,7 @@ class TestGammaUniformMesh(unittest.TestCase):
 
         # set new parameters on core with uniform assemblies (emulate a physics kernel)
         self.converter.convert(self.r)
-        for b in self.converter.convReactor.core.getBlocks():
+        for b in self.converter.convReactor.core.iterBlocks():
             b.p.powerGamma = 0.5
             b.p.powerNeutron = 0.5
             b.p.linPow = 10.0
@@ -605,7 +605,7 @@ class TestGammaUniformMesh(unittest.TestCase):
 
         self.converter.applyStateToOriginal()
 
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             # equal to original value because these were never mapped
             self.assertEqual(b.p.fastFlux, 2.0)
             self.assertEqual(b.p.flux, 5.0)

@@ -940,7 +940,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         blocks = []
         for a in assems:
-            blocks.extend(a.getBlocks())
+            blocks.extend(a)
         firstBlock = blocks[0]
         for paramName in blockParamNames:
             defaultValue = firstBlock.p.pDefs[paramName].default
@@ -1120,7 +1120,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
         """
         xsTypeGroups = collections.defaultdict(list)
-        for b in core.getBlocks():
+        for b in core.iterBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
 
         for xsID, blockList in xsTypeGroups.items():
