@@ -725,7 +725,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         return nDens
 
     def _getNdensHelper(self):
-        return dict(zip(self.getNuclides(), self.p.numberDensities))
+        nucs = self.getNuclides()
+        return dict(zip(nucs, self.p.numberDensities)) if len(nucs) > 0 else {}
 
     def setName(self, name):
         """Components use name for type and name."""
