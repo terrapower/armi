@@ -733,7 +733,7 @@ class Case:
             parses/reads the independentVariables setting
 
         clone
-            Similar to this but doesn't let you write out new/modified geometry or blueprints objects
+            Similar to this but doesn't let you write out new/modified blueprints objects
         """
         with ForcedCreationDirectoryChanger(
             self.cs.inputDirectory, dumpOnException=False
