@@ -11,11 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-TODO: JOHN.
-
-TODO: JOHN.
-"""
+"""Helpful tools for reporting data on Plugins."""
 from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
@@ -25,7 +21,21 @@ if TYPE_CHECKING:
 def parametersReport(
     plugin: type["ArmiPlugin"], returnDict: bool = True
 ) -> Union[list, dict]:
-    """TODO: JOHN."""
+    """Return a simple data structure with information on the parameters defined by a single Plugin.
+
+    Parameters
+    ----------
+    plugin : ArmiPlugin
+        The Plugin we want to get data about.
+    returnDict : bool
+        True if we want to report the data as a pure dict. If False, the data is returned as a list.
+
+    Returns
+    -------
+    dict or list
+        The parameters report in dict or lsit format.
+    """
+    # pull the data from the Plugin
     parameters = plugin.defineParameters()
     data = {}
     for armiObjType, params in parameters.items():
@@ -34,6 +44,7 @@ def parametersReport(
             d[param.name] = {"description": param.description, "units": param.units}
         data[armiObjType] = d
 
+    # handle the return dict param
     if not returnDict:
         header = ["param-type", "name", "description", "units"]
         d = [header]
@@ -41,7 +52,11 @@ def parametersReport(
             for name, p in params.items():
                 d.append([armiObjType, name, p["description"], p["units"]])
 
-        return d
+        if len(d) == 1:
+            # handle special, empty case
+            return []
+        else:
+            return d
 
     return data
 
@@ -49,7 +64,21 @@ def parametersReport(
 def settingsReport(
     plugin: type["ArmiPlugin"], returnDict: bool = True
 ) -> Union[list, dict]:
-    """TODO: JOHN: This needs to be more configurable in columns."""
+    """Return a simple data structure with information on the settings defined by a single Plugin.
+
+    Parameters
+    ----------
+    plugin : ArmiPlugin
+        The Plugin we want to get data about.
+    returnDict : bool
+        True if we want to report the data as a pure dict. If False, the data is returned as a list.
+
+    Returns
+    -------
+    dict or list
+        The settings report in dict or lsit format.
+    """
+    # pull the data from the Plugin
     settings = plugin.defineSettings()
     header = ["name", "description", "default", "options"]
     data = [header]
@@ -59,10 +88,15 @@ def settingsReport(
                 setting.name,
                 setting.description,
                 getattr(setting, "default", ""),
-                getattr(setting, "options", ""),  # TODO: Handle list?
+                getattr(setting, "options", ""),
             ]
         )
 
+    # handle special, empty case
+    if len(data) == 1:
+        return {} if returnDict else []
+
+    # handle the return dict param
     if returnDict:
         return {name: dict(zip(header[1:], vals)) for name, *vals in data[1:]}
 
