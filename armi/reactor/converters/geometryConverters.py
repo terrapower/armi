@@ -1366,7 +1366,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 for b in a:
                     self._scaleBlockVolIntegratedParams(b, "up")
 
-        # set domain after expanding, because it isnt actually full core until it's
+        # set domain after expanding, because it isn't actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
         self._sourceReactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
