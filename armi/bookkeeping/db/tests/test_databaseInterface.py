@@ -44,11 +44,10 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refOneBlockReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refSmallestReactor.yaml"
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
-    newSettings["geomFile"] = "geom1Assem.xml"
     newSettings["nCycles"] = 1
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
@@ -301,7 +300,6 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertEqual(h5.attrs["version"], version)
 
             self.assertIn("caseTitle", h5.attrs)
-            self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
 

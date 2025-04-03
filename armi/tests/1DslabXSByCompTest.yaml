@@ -167,7 +167,7 @@ assemblies:
   heights: &standard_heights [10.0, 30.0, 30.0, 15.0, 15.0, 30.0, 30.0, 10.0]
   axial mesh points: &standard_axial_mesh_points [1, 2, 2, 1, 1, 2, 2, 1]
   feed fuel:
-    specifier: DrawerSet1
+    specifier: D1
     blocks:
       [
         *block_reflectorblockinheritsblanket,
@@ -183,7 +183,7 @@ assemblies:
     axial mesh points: *standard_axial_mesh_points
     xs types: &feed_fuel_xs_types [AZ, AZ, AA, AA, AA, AA, AZ, AZ]
   drawerset2:
-    specifier: DrawerSet2
+    specifier: D2
     blocks:
       [
         *block_reflectorblockinheritsblanket,
