@@ -240,7 +240,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDensInd, nDens = densityTools.getNDensFromMasses(
+        nuclides, nDens = densityTools.getNDensFromMasses(
             air.pseudoDensity(Tk=300), air.massFrac
         )
 

@@ -701,7 +701,6 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
         byteNucs = np.array([nucName.encode() for nucName in nucNames])
-        # nucIndices = [nuclideBases.byName[nucName].index for nucName in nucNames]
         nDens = np.zeros(len(byteNucs), dtype=np.float64)
         nuclideCopy = np.array(self.p.nuclides)
         nDensCopy = np.array(self.p.numberDensities)
