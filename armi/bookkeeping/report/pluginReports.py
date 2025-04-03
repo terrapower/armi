@@ -35,8 +35,15 @@ def parametersReport(
     dict or list
         The parameters report in dict or lsit format.
     """
-    # pull the data from the Plugin
     parameters = plugin.defineParameters()
+    if parameters is None or not len(parameters):
+        # handle special, empty case
+        if returnDict:
+            return {}
+        else:
+            return []
+
+    # pull the data from the Plugin
     data = {}
     for armiObjType, params in parameters.items():
         d = {}
@@ -52,11 +59,7 @@ def parametersReport(
             for name, p in params.items():
                 d.append([armiObjType, name, p["description"], p["units"]])
 
-        if len(d) == 1:
-            # handle special, empty case
-            return []
-        else:
-            return d
+        return d
 
     return data
 
@@ -78,8 +81,15 @@ def settingsReport(
     dict or list
         The settings report in dict or lsit format.
     """
-    # pull the data from the Plugin
     settings = plugin.defineSettings()
+    if settings is None or not len(settings):
+        # handle special, empty case
+        if returnDict:
+            return {}
+        else:
+            return []
+
+    # pull the data from the Plugin
     header = ["name", "description", "default", "options"]
     data = [header]
     for setting in settings:

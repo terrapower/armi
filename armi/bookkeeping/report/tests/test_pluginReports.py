@@ -16,7 +16,12 @@ import unittest
 
 from armi.bookkeeping.report.pluginReports import parametersReport, settingsReport
 from armi.physics.fuelPerformance.plugin import FuelPerformancePlugin
+from armi.plugins import ArmiPlugin
 from armi.reactor.blocks import Block
+
+
+class MockDummyFakeEmptyPlugin(ArmiPlugin):
+    pass
 
 
 class TestPluginReports(unittest.TestCase):
@@ -72,3 +77,13 @@ class TestPluginReports(unittest.TestCase):
         self.assertEqual(data[7][0], "claddingStrain")
         self.assertFalse(data[6][2])
         self.assertIsNone(data[7][3], None)
+
+    def test_emptySettings(self):
+        plugin = MockDummyFakeEmptyPlugin()
+        self.assertEqual(len(settingsReport(plugin, False)), 0)
+        self.assertEqual(len(settingsReport(plugin, True)), 0)
+
+    def test_emptyParameters(self):
+        plugin = MockDummyFakeEmptyPlugin()
+        self.assertEqual(len(parametersReport(plugin, False)), 0)
+        self.assertEqual(len(parametersReport(plugin, True)), 0)
