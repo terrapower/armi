@@ -38,12 +38,7 @@ def escapeSpecialCharacters(s):
 def createTable(
     rst_table, caption=None, label=None, align=None, widths=None, width=None
 ):
-    """
-    This method is available within ``.. exec::``. It allows someone to create a table with a
-    caption.
-
-    The ``rst_table``
-    """
+    """This method allows someone to create an RST table with a caption."""
     rst = [".. table:: {}".format(caption or "")]
     if label:
         rst += ["    :name: {}".format(label)]
