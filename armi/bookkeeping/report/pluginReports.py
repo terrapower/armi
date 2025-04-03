@@ -102,10 +102,6 @@ def settingsReport(
             ]
         )
 
-    # handle special, empty case
-    if len(data) == 1:
-        return {} if returnDict else []
-
     # handle the return dict param
     if returnDict:
         return {name: dict(zip(header[1:], vals)) for name, *vals in data[1:]}
