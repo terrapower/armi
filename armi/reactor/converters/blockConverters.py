@@ -640,6 +640,17 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         """
         pinComponents, nonPins = [], []
 
+        pinComponentFlags = [
+            Flags.FUEL,
+            Flags.GAP,
+            Flags.LINER,
+            Flags.CLAD,
+            Flags.REFLECTOR,
+            Flags.SHIELD,
+            Flags.SLUG,
+            Flags.PIN,
+        ]
+
         for c in self._sourceBlock:
 
             # If the area of the component is negative than this component should be skipped
@@ -649,10 +660,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             if c.getArea() < 0.0:
                 continue
 
-            if (
-                self._sourceBlock.getNumComponents(c.p.flags)
-                == self._sourceBlock.getNumPins()
-            ):
+            if any(c.hasFlags(f) for f in pinComponentFlags):
                 pinComponents.append(c)
             elif (
                 c.name != "coolant"
