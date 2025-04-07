@@ -98,7 +98,7 @@ class ResolveParametersMeta(type):
     def __new__(mcl, name, bases, attrs):
         assert (
             attrs.get("paramCollectionType") is None
-        ), "{} already has paramter collection".format(name)
+        ), "{} already has parameter collection".format(name)
         baseCollections = [
             b.paramCollectionType for b in bases if hasattr(b, "paramCollectionType")
         ]
