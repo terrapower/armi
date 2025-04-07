@@ -169,7 +169,7 @@ class UnshapedComponent(Component):
         coldArea = self.p.area
         if cold:
             return coldArea
-        if Tc is not None:
+        if Tc is None:
             Tc = self.temperatureInC
 
         return self.getThermalExpansionFactor(Tc) ** 2 * coldArea

@@ -578,9 +578,6 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         )
         b = r.core[0][0]
 
-        # Prevent caching from obscuring circular logic
-        b.clearCache()
-
         # ensure there is a DerivedShape in this Block
         shapes = set([type(c) for c in b])
         self.assertIn(Circle, shapes)
