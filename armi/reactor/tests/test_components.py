@@ -578,6 +578,9 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         )
         b = r.core[0][0]
 
+        # Prevent caching from obscuring circular logic
+        b.clearCache()
+
         # ensure there is a DerivedShape in this Block
         shapes = set([type(c) for c in b])
         self.assertIn(Circle, shapes)
@@ -592,6 +595,29 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         totalAreaCold = sum([c.getArea(cold=True) for c in b])
         totalAreaHot = sum([c.getArea(cold=False) for c in b])
         self.assertAlmostEqual(totalAreaCold, totalAreaHot, delta=1e-10)
+
+    def test_getAreaTemp(self):
+        """Prove that the DerivedShape.getArea() works for an arbitrary temperature."""
+        # load one-block test reactor
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+        b = r.core[0][0]
+        b.clearCache()
+
+        # ensure there is a DerivedShape in this Block
+        shapes = set([type(c) for c in b])
+        self.assertIn(Circle, shapes)
+        self.assertIn(DerivedShape, shapes)
+        self.assertIn(Helix, shapes)
+        self.assertIn(Hexagon, shapes)
+
+        blockArea = b.getMaxArea()
+        compArea = sum([c.getArea(Tc=300) for c in b if type(c) != DerivedShape])
+
+        comp = [c for c in b if type(c) == DerivedShape][0]
+
+        self.assertAlmostEqual(blockArea - compArea, comp.getComponentArea(Tc=300))
 
 
 class TestComponentSort(unittest.TestCase):
