@@ -368,6 +368,12 @@ class TestUnshapedComponent(TestGeneralComponents):
             ** 2,
         )
 
+        # Passing temperature directly
+        self.assertEqual(
+            self.component.getComponentArea(cold=False),
+            self.component.getComponentArea(Tc=self.component.temperatureInC),
+        )
+
         # show that area expansion is consistent with the density change in the material
         hotDensity = self.component.density()
         hotArea = self.component.getArea()
