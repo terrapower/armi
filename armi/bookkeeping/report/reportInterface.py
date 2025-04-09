@@ -106,7 +106,7 @@ class ReportInterface(interfaces.Interface):
 
     def interactEOC(self, cycle=None):
         reportingUtils.writeCycleSummary(self.r.core)
-        runLog.info(self.o.timer.report(inclusion_cutoff=0.001))
+        runLog.info(self.o.timer.report(inclusionCutoff=0.001))
 
     def generateDesignReport(self, generateFullCoreMap, showBlockAxMesh):
         reportingUtils.makeCoreDesignReport(self.r.core, self.cs)
@@ -134,16 +134,14 @@ class ReportInterface(interfaces.Interface):
         reportingUtils.setNeutronBalancesReport(self.r.core)
         self.writeRunSummary()
         self.o.timer.stopAll()  # consider the run done
-        runLog.info(self.o.timer.report(inclusion_cutoff=0.001, total_time=True))
+        runLog.info(self.o.timer.report(inclusionCutoff=0.001, totalTime=True))
         _timelinePlot = self.o.timer.timeline(
-            self.cs.caseTitle, self.cs["timelineInclusionCutoff"], total_time=True
+            self.cs.caseTitle, self.cs["timelineInclusionCutoff"], totalTime=True
         )
         runLog.info(self.printReports())
 
-    # --------------------------------------------
-    #        Report Interface Specific
-    # --------------------------------------------
     def printReports(self):
+        """Report Interface Specific."""
         str_ = ""
         for report_ in self.reports:
             str_ += re.sub("\n", "\n\t", "{}".format(report_))
@@ -154,9 +152,6 @@ class ReportInterface(interfaces.Interface):
             + "\n----------- REPORTS END -----------"
         )
 
-    # --------------------------------------------
-    #        Ex-Core Summaries
-    # --------------------------------------------
     def writeRunSummary(self):
         """Make a summary of the run."""
         # spent fuel pool report
