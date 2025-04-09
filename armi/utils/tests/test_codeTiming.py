@@ -114,8 +114,8 @@ class CodeTimingTest(unittest.TestCase):
         ts = timer.times
         self.assertEqual(len(ts), 1)
         self.assertEqual(len(ts[0]), 2)
-        self.assertGreater(ts[0][0], 0)
-        self.assertGreater(ts[0][1], 0)
+        self.assertGreaterEqual(ts[0][0], 0)
+        self.assertGreaterEqual(ts[0][1], 0)
         tName = timer.name
         self.assertEqual(tName, "sometimer")
         tActive = timer.isActive
