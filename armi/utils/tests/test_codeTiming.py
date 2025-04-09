@@ -110,6 +110,7 @@ class CodeTimingTest(unittest.TestCase):
 
         t0 = timer.time
         time.sleep(0.01)
+        self.assertGreaterEqual(t0, 0)
         ts = timer.times
         self.assertEqual(len(ts), 1)
         self.assertEqual(len(ts[0]), 2)
