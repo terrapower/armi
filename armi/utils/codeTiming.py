@@ -310,7 +310,9 @@ class MasterTimer:
 class _Timer:
     """Code timer to call at various points to measure performance.
 
-    see MasterTimer.getTimer() for construction
+    See Also
+    --------
+    MasterTimer.getTimer() for construction
     """
 
     # If the master timer stops, all timers must freeze with no thaw.
