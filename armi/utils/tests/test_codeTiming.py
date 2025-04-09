@@ -168,11 +168,17 @@ class CodeTimingTest(unittest.TestCase):
 
     def test_report(self):
         master = codeTiming.MasterTimer.getMasterTimer()
-        name = "test_report"
-        timer = master.getTimer(name)
-        timer.start()
+        name1 = "test_report1"
+        timer1 = master.getTimer(name1)
+        timer1.start()
         time.sleep(0.01)
-        timer.stop()
+        timer1.stop()
+
+        name2 = "test_report2"
+        timer2 = master.getTimer(name2)
+        timer2.start()
+        time.sleep(0.01)
+        timer2.stop()
 
         # basic validation of the reports
         table = codeTiming.MasterTimer.report(inclusionCutoff=0.01, totalTime=True)
@@ -180,8 +186,10 @@ class CodeTimingTest(unittest.TestCase):
         self.assertIn("  CUMULATIVE ", table)
         self.assertIn("  NUM ITERS", table)
         self.assertIn("TIMER REPORTS  ", table)
-        self.assertIn(name, table)
+        self.assertIn(name1, table)
+        self.assertIn(name2, table)
 
         lines = table.strip().split("\n")
-        self.assertEqual(len(lines), 2)
+        self.assertEqual(len(lines), 3)
         self.assertEqual(len(lines[1].strip().split()), 4)
+        self.assertEqual(len(lines[2].strip().split()), 4)
