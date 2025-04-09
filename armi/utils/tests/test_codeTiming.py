@@ -53,35 +53,43 @@ class CodeTimingTest(unittest.TestCase):
         t0 = timer.stop()
         self.assertEqual(timer.overStart, 0)
 
+        time.sleep(0.01)
         t1 = timer.start()
         self.assertGreater(t1, t0)
         self.assertEqual(timer.overStart, 0)
 
+        time.sleep(0.01)
         t2 = timer.start()
         self.assertGreater(t2, t1)
         self.assertEqual(timer.overStart, 1)
 
+        time.sleep(0.01)
         t3 = timer.stop()
         self.assertGreater(t3, t2)
         self.assertEqual(timer.overStart, 0)
 
+        time.sleep(0.01)
         t4 = timer.stop()
         self.assertGreater(t4, t3)
         self.assertEqual(timer.overStart, 0)
 
+        time.sleep(0.01)
         t5 = timer.stop()
         self.assertGreater(t5, t4)
         self.assertEqual(timer.overStart, 0)
 
+        time.sleep(0.01)
         t6 = timer.start()
         self.assertGreater(t6, t5)
         self.assertEqual(timer.overStart, 0)
 
+        time.sleep(0.01)
         timer2 = master.endTimer("wazzlewazllewazzzle")
         t7 = timer2.start()
         self.assertGreater(t7, t6)
         self.assertEqual(timer2.overStart, 0)
 
+        time.sleep(0.01)
         t8 = timer2.start()
         self.assertGreater(t8, t7)
         self.assertEqual(timer2.overStart, 1)
@@ -101,6 +109,7 @@ class CodeTimingTest(unittest.TestCase):
         timer = master.startTimer("sometimer")
 
         t0 = timer.time
+        time.sleep(0.01)
         self.assertGreater(t0, 0)
         ts = timer.times
         self.assertEqual(len(ts), 1)
