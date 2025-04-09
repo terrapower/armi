@@ -166,8 +166,22 @@ class CodeTimingTest(unittest.TestCase):
         self.assertLess(timer.time, larger_time_end - larger_time_start)
         self.assertEqual(timer.numIterations, 3)
 
-        # test report
+    def test_report(self):
+        master = codeTiming.MasterTimer.getMasterTimer()
+        name = "test_report"
+        timer = master.getTimer(name)
+        timer.start()
+        time.sleep(0.01)
+        timer.stop()
+
+        # basic validation of the reports
         table = codeTiming.MasterTimer.report(inclusionCutoff=0.01, totalTime=True)
-        self.assertIn("TIMER REPORTS", table)
+        self.assertIn("  AVERAGE ", table)
+        self.assertIn("  CUMULATIVE ", table)
+        self.assertIn("  NUM ITERS", table)
+        self.assertIn("TIMER REPORTS  ", table)
         self.assertIn(name, table)
-        self.assertIn("CUMULATIVE", table)
+
+        lines = table.strip().split("\n")
+        self.assertEqual(len(lines), 2)
+        self.assertEqual(len(lines[1].strip().split()), 4)
