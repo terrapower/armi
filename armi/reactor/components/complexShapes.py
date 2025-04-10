@@ -199,7 +199,7 @@ class FilletedHexagon(basicShapes.Hexagon):
     def getPerimeter(self, Tc=None):
         """Computes the perimeter of the rounded hexagon component in cm."""
         D = self.getDimension("op", Tc)
-        r = self.getDimension("cornerR", cold=cold)
+        r = self.getDimension("cornerR", Tc)
         mult = self.getDimension("mult", Tc)
 
         perimeter = 2 * math.sqrt(3.0) * D

@@ -1382,9 +1382,9 @@ class TestHexagon(TestShapedComponent):
             :id: T_ARMI_COMP_SHAPES4
             :tests: R_ARMI_COMP_SHAPES
         """
-        ip = self.component.getDimension("ip")
+        op = self.component.getDimension("op")
         mult = self.component.getDimension("mult")
-        ref = 6 * (ip / math.sqrt(3)) * mult
+        ref = 6 * (op / math.sqrt(3)) * mult
         cur = self.component.getPerimeter()
         self.assertAlmostEqual(cur, ref)
 
