@@ -239,6 +239,21 @@ def getHexHoledCircleParameterDefinitions():
     return pDefs
 
 
+def getFilletedHexagonParameterDefinitions():
+    """Return parameters for FilletedHexagon."""
+    pDefs = parameters.ParameterDefinitionCollection()
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
+        pb.defParam(
+            "cornerR", units=units.CM, description="Radius of curvature of the corners"
+        )
+
+        pb.defParam("ip", units=units.CM, description="Inner pitch", default=0.0)
+
+        pb.defParam("op", units=units.CM, description="Outer pitch")
+
+    return pDefs
+
+
 def getHoledRectangleParameterDefinitions():
     """Return parameters for HoledRectangle."""
     pDefs = parameters.ParameterDefinitionCollection()

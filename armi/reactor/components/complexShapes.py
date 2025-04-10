@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Components represented by complex shapes, and typically less widely used."""
-
 import math
 
 from armi.reactor.components import ShapedComponent, basicShapes, componentParameters
@@ -26,10 +25,10 @@ class HoledHexagon(basicShapes.Hexagon):
         :id: I_ARMI_COMP_SHAPES5
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides an implementation for a holed hexagonal Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also provides the capability to retrieve the diameter of the
-        inner hole via the ``getCircleInnerDiameter`` method.
+        This class provides an implementation for a holed hexagonal Component. This includes setting
+        key parameters such as its material, temperature, and dimensions. It also provides the
+        capability to retrieve the diameter of the inner hole via the ``getCircleInnerDiameter``
+        method.
     """
 
     THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
@@ -66,7 +65,7 @@ class HoledHexagon(basicShapes.Hexagon):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area for the hexagon with n number of circular holes in cm^2."""
+        """Computes the area for the hexagon with n number of circular holes in cm^2."""
         op = self.getDimension("op", cold=cold)
         holeOD = self.getDimension("holeOD", cold=cold)
         nHoles = self.getDimension("nHoles", cold=cold)
@@ -78,11 +77,9 @@ class HoledHexagon(basicShapes.Hexagon):
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """
-        For the special case of only one single hole, returns the
-        diameter of that hole.
+        For the special case of only one single hole, returns the diameter of that hole.
 
-        For any other case, returns 0.0 because an "circle inner diameter" becomes
-        undefined.
+        For any other case, returns 0.0 because an "circle inner diameter" becomes undefined.
         """
         if self.getDimension("nHoles") == 1:
             return self.getDimension("holeOD", Tc, cold)
@@ -140,6 +137,88 @@ class HexHoledCircle(basicShapes.Circle):
         return self.getDimension("holeOP", Tc, cold)
 
 
+class FilletedHexagon(basicShapes.Hexagon):
+    """Hexagon with rounded corners.
+
+    This shape has a hexagonal hole with rounded corners cut out of the center of it. By default,
+    that inner hole has a diameter of zero, making this a solid object with no hole.
+    """
+
+    THERMAL_EXPANSION_DIMS = {"cornerR", "ip", "op"}
+
+    pDefs = componentParameters.getFilletedHexagonParameterDefinitions()
+
+    def __init__(
+        self,
+        name,
+        material,
+        Tinput,
+        Thot,
+        op,
+        ip=0.0,
+        cornerR=0.0,
+        mult=1.0,
+        modArea=None,
+        isotopics=None,
+        mergeWith=None,
+        components=None,
+    ):
+        ShapedComponent.__init__(
+            self,
+            name,
+            material,
+            Tinput,
+            Thot,
+            isotopics=isotopics,
+            mergeWith=mergeWith,
+            components=components,
+        )
+        self._linkAndStoreDimensions(
+            components, op=op, ip=ip, cornerR=cornerR, mult=mult, modArea=modArea
+        )
+
+    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
+        # TODO: JOHN: Update or remove if the same
+        sideLength = self.getDimension("op", Tc, cold) / math.sqrt(3)
+        return 2.0 * sideLength
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        # TODO: JOHN: Update or remove if the same
+        sideLength = self.getDimension("ip", Tc, cold) / math.sqrt(3)
+        return 2.0 * sideLength
+
+    def getComponentArea(self, cold=False):
+        """Computes the area for the hexagon component in cm^2."""
+        # TODO: JOHN: Update or remove if the same
+        op = self.getDimension("op", cold=cold)
+        ip = self.getDimension("ip", cold=cold)
+        mult = self.getDimension("mult")
+        area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
+        area *= mult
+        return area
+
+    def getPerimeter(self, Tc=None):
+        """Computes the perimeter of the hexagon component in cm."""
+        # TODO: JOHN: Update or remove if the same
+        ip = self.getDimension("ip", Tc)
+        mult = self.getDimension("mult", Tc)
+        perimeter = 6 * (ip / math.sqrt(3)) * mult
+        return perimeter
+
+    def getPitchData(self):
+        """
+        Return the pitch data that should be used to determine block pitch.
+
+        Notes
+        -----
+        This pitch data should only be used if this is the pitch defining component in
+        a block. The block is responsible for determining which component in it is the
+        pitch defining component.
+        """
+        # TODO: JOHN: Update or remove if the same
+        return self.getDimension("op")
+
+
 class HoledRectangle(basicShapes.Rectangle):
     """Rectangle with one circular hole in it."""
 
@@ -182,7 +261,7 @@ class HoledRectangle(basicShapes.Rectangle):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area (in cm^2) for the the rectangle with one hole in it."""
+        """Computes the area (in cm^2) for the the rectangle with one hole in it."""
         length = self.getDimension("lengthOuter", cold=cold)
         width = self.getDimension("widthOuter", cold=cold)
         rectangleArea = length * width
@@ -204,11 +283,10 @@ class HoledSquare(basicShapes.Square):
         :id: I_ARMI_COMP_SHAPES6
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides an implementation for a holed square Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes methods to retrieve geometric
-        dimension information unique to holed squares via the ``getComponentArea`` and
-        ``getCircleInnerDiameter`` methods.
+        This class provides an implementation for a holed square Component. This includes setting
+        key parameters such as its material, temperature, and dimensions. It also includes methods
+        to retrieve geometric dimension information unique to holed squares via the
+        ``getComponentArea`` and ``getCircleInnerDiameter`` methods.
     """
 
     THERMAL_EXPANSION_DIMS = {"widthOuter", "holeOD"}
@@ -244,7 +322,7 @@ class HoledSquare(basicShapes.Square):
         )
 
     def getComponentArea(self, cold=False):
-        r"""Computes the area (in cm^2) for the the square with one hole in it."""
+        """Computes the area (in cm^2) for the the square with one hole in it."""
         width = self.getDimension("widthOuter", cold=cold)
         rectangleArea = width**2
         holeOD = self.getDimension("holeOD", cold=cold)
@@ -265,11 +343,10 @@ class Helix(ShapedComponent):
         :id: I_ARMI_COMP_SHAPES7
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation for a helical Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes the ``getComponentArea`` method to retrieve the
-        area of a helix. Helixes can be used for wire wrapping around fuel pins in fast
-        reactor designs.
+        This class provides the implementation for a helical Component. This includes setting key
+        parameters such as its material, temperature, and dimensions. It also includes the
+        ``getComponentArea`` method to retrieve the area of a helix. Helixes can be used for wire
+        wrapping around fuel pins in fast reactor designs.
 
     Notes
     -----
@@ -279,11 +356,11 @@ class Helix(ShapedComponent):
 
     - od: outer diameter of the helix wire
     - id: inner diameter of the helix wire (if non-zero, helix wire is annular.)
-    - axialPitch: vertical distance between wraps. Is also the axial distance required to complete
-                  a full 2*pi rotation.
-    - helixDiameter: The helix diameter is the distance from the center of the
-                     wire-wrap on one side to the center of the wire-wrap on the opposite side
-                     (can be visualized if the axial pitch is 0.0 - creates a circle).
+    - axialPitch: vertical distance between wraps. Is also the axial distance required to complete a
+                  full 2*pi rotation.
+    - helixDiameter: The helix diameter is the distance from the center of the wire-wrap on one side
+                     to the center of the wire-wrap on the opposite side (can be visualized if the
+                     axial pitch is 0.0 - creates a circle).
     """
 
     is3D = False
@@ -337,7 +414,7 @@ class Helix(ShapedComponent):
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the interior of the wire-wrap.
 
-        - should be equal to the outer diameter of the pin in which the wire is wrapped around
+        This should be equal to the outer diameter of the pin in which the wire is wrapped around.
         """
         return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension(
             "od", Tc, cold
