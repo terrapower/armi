@@ -14,13 +14,16 @@
 
 """Tests for operator snapshots."""
 import unittest
+from unittest.mock import Mock, patch
+from pathlib import Path
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.operators import getOperatorClassFromSettings
+from armi.operators.operator import Operator
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor, reduceTestReactorRings
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -32,7 +35,7 @@ class TestOperatorSnapshots(unittest.TestCase):
         newSettings["branchVerbosity"] = "important"
         newSettings["nCycles"] = 1
         newSettings["dumpSnapshot"] = ["000000", "008000", "016005"]
-        o1, self.r = test_reactors.loadTestReactor(
+        o1, self.r = loadTestReactor(
             customSettings=newSettings,
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
@@ -100,3 +103,47 @@ class TestOperatorSnapshotsSettings(unittest.TestCase):
         cs = cs.modified(newSettings={"runType": RunTypes.SNAPSHOTS})
         clazz = getOperatorClassFromSettings(cs)
         self.assertEqual(clazz, OperatorSnapshots)
+
+
+class TestOperatorSnaphotFullCoreExpansion(unittest.TestCase):
+    """Test that a snapshot operator can do full core analysis with a 1/3 core DB."""
+
+    DB_PATH = Path("test_operator_snapshot_full_core_expansion.h5")
+
+    @classmethod
+    def setUpClass(cls):
+        o, cls.symmetricReactor = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
+        reduceTestReactorRings(cls.symmetricReactor, o.cs, maxNumRings=2)
+        dbi: DatabaseInterface = next(
+            filter(lambda i: isinstance(i, DatabaseInterface), o.interfaces)
+        )
+        dbi.initDB(cls.DB_PATH)
+        dbi.writeDBEveryNode()
+
+        cls.snapshotSettings: settings.Settings = o.cs.modified(
+            newSettings={
+                "runType": RunTypes.SNAPSHOTS,
+                "reloadDBName": str(cls.DB_PATH),
+            }
+        )
+
+    def test_fullCoreFromThirdCore(self):
+        cs = self.snapshotSettings.modified(
+            newSettings={"growToFullCoreOnLoad": True, "dumpSnapshot": ["0000"]}
+        )
+        o = getOperatorClassFromSettings(cs)(cs)
+        self.assertIsInstance(o, OperatorSnapshots)
+        o.r = self.symmetricReactor
+        # Just want Database interface not history tracker not reporting not etc.
+        o.addInterface(DatabaseInterface(o.r, o.cs))
+        # Mock interactAllBOC so we don't do iteract every nodes
+        # We just want to trigger the re-attachment of the loaded reactor
+        o.interactAllBOC = Mock(return_value=True)
+        o.operate()
+        self.assertTrue(o.r.core.isFullCore)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.DB_PATH.unlink()
