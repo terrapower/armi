@@ -74,7 +74,10 @@ from armi.reactor.composites import ArmiObject
 from armi.reactor.parameters import parameterCollections
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.settings.fwSettings.globalSettings import (
+    CONF_SORT_REACTOR,
+    CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
+)
 from armi.utils import getNodesPerCycle, safeCopy, safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions
 
@@ -774,6 +777,9 @@ class Database:
                 f"setting {CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is "
                 "temporary and will be removed by 2024."
             )
+
+        if cs[CONF_GROW_TO_FULL_CORE_AFTER_LOAD]:
+            root.core.growToFullCore(cs)
 
         return root
 

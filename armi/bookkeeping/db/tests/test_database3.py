@@ -30,7 +30,10 @@ from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.settings.fwSettings.globalSettings import (
+    CONF_SORT_REACTOR,
+    CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
+)
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
@@ -187,6 +190,15 @@ class TestDatabase(unittest.TestCase):
         )
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
+
+    def test_fullCoreOnDbLoad(self):
+        """Test we can expand a reactor to full core when loading from DB via settings."""
+        self.assertFalse(self.r.core.isFullCore)
+        self.db.writeToDB(self.r)
+        cs = self.db.loadCS()
+        cs = cs.modified(newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True})
+        r = self.db.load(0, 0, cs=cs, allowMissing=True)
+        self.assertTrue(r.core.isFullCore)
 
 
 class TestDatabaseSmaller(unittest.TestCase):
