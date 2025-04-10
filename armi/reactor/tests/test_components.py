@@ -1482,7 +1482,7 @@ class TestFilletedHexagon(TestShapedComponent):
             self.assertEqual(cur, ref[i])
 
     def test_filletedMatchesNormal(self):
-        """Prove that if the radius of curvature is 0.0, FilletedHexagon is just a Hexagon."""
+        """Prove that if the radius of curvature is 0.0, FilletedHexagon is just a hexagon."""
         for ip in np.arange(0.1, 2, 0.1):
             for op in np.arange(0.3, 6.1, 0.4):
                 componentDims = {

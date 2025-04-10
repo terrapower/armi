@@ -1697,7 +1697,7 @@ class Block(composites.Composite):
 
 class HexBlock(Block):
     """
-    Defines a HexBlock.
+    Defines a Block shaped like a hexagon.
 
     .. impl:: ARMI has the ability to create hex shaped blocks.
         :id: I_ARMI_BLOCK_HEX
@@ -2020,8 +2020,8 @@ class HexBlock(Block):
                 )
 
     def _rotateDisplacement(self, rad: float):
-        # This specifically uses the .get() functionality to avoid an error if this
-        # parameter does not exist.
+        # This specifically uses the .get() functionality to avoid an error if this parameter does
+        # not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
@@ -2041,6 +2041,7 @@ class HexBlock(Block):
                 "are correct!".format(self)
             )
             return
+
         # check wire wrap in contact with clad
         if (
             self.getComponent(Flags.CLAD) is not None
@@ -2053,6 +2054,7 @@ class HexBlock(Block):
                     "".format(self, wwCladGap),
                     single=True,
                 )
+
         # check clad duct overlap
         pinToDuctGap = self.getPinToDuctGap(cold=True)
         # Allow for some tolerance; user input precision may lead to slight negative gaps
@@ -2106,8 +2108,8 @@ class HexBlock(Block):
         if any(c is None for c in (duct, wire, clad)):
             return None
 
-        # note, if nRings was a None, this could be for a non-hex packed fuel assembly
-        # see thermal hydraulic design basis for description of equation
+        # NOTE: If nRings was a None, this could be for a non-hex packed fuel assembly see thermal
+        # hydraulic design basis for description of equation
         pinCenterFlatToFlat = self.getPinCenterFlatToFlat(cold=cold)
         pinOuterFlatToFlat = (
             pinCenterFlatToFlat
@@ -2121,9 +2123,8 @@ class HexBlock(Block):
 
     def getRotationNum(self) -> int:
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
-        return (
-            np.rint(self.p.orientation[2] / 360.0 * 6) % 6
-        )  # assume rotation only in Z
+        # assume rotation only in Z
+        return np.rint(self.p.orientation[2] / 360.0 * 6) % 6
 
     def setRotationNum(self, rotNum: int):
         """
@@ -2162,9 +2163,9 @@ class HexBlock(Block):
             else:
                 symmetryLine = self.core.spatialGrid.overlapsWhichSymmetryLine(indices)
                 # detect if upper edge assemblies are included. Doing this is the only way to know
-                # definitively whether or not the edge assemblies are half-assems or full.
-                # seeing the first one is the easiest way to detect them.
-                # Check it last in the and statement so we don't waste time doing it.
+                # definitively whether or not the edge assemblies are half-assems or full. Seeing
+                # the first one is the easiest way to detect them. Check it last in the and
+                # statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
                 if symmetryLine in [
                     grids.BOUNDARY_0_DEGREES,
@@ -2290,8 +2291,8 @@ class HexBlock(Block):
             wire = self.getComponent(Flags.WIRE)
         except ValueError:
             raise ValueError(
-                "Block {} has multiple clad and wire components,"
-                " so pin pitch is not well-defined.".format(self)
+                f"Block {self} has multiple clad and wire components, so pin pitch is not well-"
+                "defined."
             )
 
         if wire and clad:
@@ -2300,9 +2301,7 @@ class HexBlock(Block):
             )
         else:
             raise ValueError(
-                "Cannot get pin pitch in {} because it does not have a wire and a clad".format(
-                    self
-                )
+                f"Cannot get pin pitch in {self} because it does not have a wire and a clad"
             )
 
     def getWettedPerimeter(self):
@@ -2413,6 +2412,14 @@ class HexBlock(Block):
         duct. The flow area is the inner area of the duct minus the area of the pins and the wire.
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
+
+
+class FilletedHexBlock(HexBlock):
+    """Defines a Block shaped like a hexagon with rounded corners."""
+
+    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (
+        components.FilletedHexagon,
+    )
 
 
 class CartesianBlock(Block):
