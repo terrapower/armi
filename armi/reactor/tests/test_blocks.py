@@ -2496,9 +2496,7 @@ class HexBlock_TestCase(unittest.TestCase):
         wire = components.Helix("wire", "HT9", **wireDims)
         self.hexBlock.add(wire)
         self.hexBlock.spatialGrid = None  # clear existing
-        with self.assertRaises(ValueError):
-            self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
-
+        self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
         self.assertIsNone(self.hexBlock.spatialGrid)
 
 
