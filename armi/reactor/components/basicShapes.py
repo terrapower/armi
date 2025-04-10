@@ -161,9 +161,9 @@ class Hexagon(ShapedComponent):
 
     def getPerimeter(self, Tc=None):
         """Computes the perimeter of the hexagon component in cm."""
-        ip = self.getDimension("ip", Tc)
+        op = self.getDimension("op", Tc)
         mult = self.getDimension("mult", Tc)
-        perimeter = 6 * (ip / math.sqrt(3)) * mult
+        perimeter = 6 * (op / math.sqrt(3)) * mult
         return perimeter
 
     def getPitchData(self):

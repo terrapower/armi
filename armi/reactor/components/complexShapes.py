@@ -176,47 +176,36 @@ class FilletedHexagon(basicShapes.Hexagon):
         self._linkAndStoreDimensions(
             components, op=op, ip=ip, cornerR=cornerR, mult=mult, modArea=modArea
         )
+        assert cornerR >= op / 2, "The radius of curvature is too large."
 
-    def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        # TODO: JOHN: Update or remove if the same
-        sideLength = self.getDimension("op", Tc, cold) / math.sqrt(3)
-        return 2.0 * sideLength
-
-    def getCircleInnerDiameter(self, Tc=None, cold=False):
-        # TODO: JOHN: Update or remove if the same
-        sideLength = self.getDimension("ip", Tc, cold) / math.sqrt(3)
-        return 2.0 * sideLength
+    @staticmethod
+    def _area(D, r):
+        """Helper function, to calculate the area of a hexagon with rounded corners."""
+        area = (math.sqrt(3.0) / 2.0) * D**2
+        area *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D) ** 2
+        return area
 
     def getComponentArea(self, cold=False):
-        """Computes the area for the hexagon component in cm^2."""
-        # TODO: JOHN: Update or remove if the same
+        """Computes the area for the rounded hexagon component in cm^2."""
         op = self.getDimension("op", cold=cold)
         ip = self.getDimension("ip", cold=cold)
+        r = self.getDimension("cornerR", cold=cold)
         mult = self.getDimension("mult")
-        area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
+
+        area = self._area(op, r) - self._area(ip, r)
         area *= mult
         return area
 
     def getPerimeter(self, Tc=None):
-        """Computes the perimeter of the hexagon component in cm."""
-        # TODO: JOHN: Update or remove if the same
-        ip = self.getDimension("ip", Tc)
+        """Computes the perimeter of the rounded hexagon component in cm."""
+        D = self.getDimension("op", Tc)
+        r = self.getDimension("cornerR", cold=cold)
         mult = self.getDimension("mult", Tc)
-        perimeter = 6 * (ip / math.sqrt(3)) * mult
+
+        perimeter = 2 * math.sqrt(3.0) * D
+        perimeter *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D)
+        perimeter *= mult
         return perimeter
-
-    def getPitchData(self):
-        """
-        Return the pitch data that should be used to determine block pitch.
-
-        Notes
-        -----
-        This pitch data should only be used if this is the pitch defining component in
-        a block. The block is responsible for determining which component in it is the
-        pitch defining component.
-        """
-        # TODO: JOHN: Update or remove if the same
-        return self.getDimension("op")
 
 
 class HoledRectangle(basicShapes.Rectangle):
