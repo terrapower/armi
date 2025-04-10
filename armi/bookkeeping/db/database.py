@@ -50,6 +50,7 @@ from typing import (
     Sequence,
     Tuple,
     Type,
+    Union,
 )
 
 import h5py
@@ -891,7 +892,7 @@ class Database:
         return comp
 
     @staticmethod
-    def _getArrayShape(arr: [np.ndarray, List, Tuple]):
+    def _getArrayShape(arr: Union[np.ndarray, List, Tuple]):
         """Get the shape of a np.ndarray, list, or tuple."""
         if isinstance(arr, np.ndarray):
             return arr.shape
