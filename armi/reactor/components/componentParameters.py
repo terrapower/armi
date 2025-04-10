@@ -247,10 +247,6 @@ def getFilletedHexagonParameterDefinitions():
             "cornerR", units=units.CM, description="Radius of curvature of the corners"
         )
 
-        pb.defParam("ip", units=units.CM, description="Inner pitch", default=0.0)
-
-        pb.defParam("op", units=units.CM, description="Outer pitch")
-
     return pDefs
 
 
