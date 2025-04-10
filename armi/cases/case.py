@@ -473,7 +473,7 @@ class Case:
         with DirectoryChanger(self.cs.inputDirectory, dumpOnException=False):
             self._initBurnChain()
             o = operators.factory(self.cs)
-            if not r:
+            if r is None:
                 r = reactors.factory(self.cs, self.bp)
             o.initializeInterfaces(r)
             # Set this here to make sure the full duration of initialization is properly captured.
