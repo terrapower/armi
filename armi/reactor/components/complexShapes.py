@@ -176,7 +176,7 @@ class FilletedHexagon(basicShapes.Hexagon):
         self._linkAndStoreDimensions(
             components, op=op, ip=ip, cornerR=cornerR, mult=mult, modArea=modArea
         )
-        assert cornerR >= op / 2, "The radius of curvature is too large."
+        assert cornerR <= op / 2, "The radius of curvature is too large."
 
     @staticmethod
     def _area(D, r):
@@ -185,11 +185,11 @@ class FilletedHexagon(basicShapes.Hexagon):
         area *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D) ** 2
         return area
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the rounded hexagon component in cm^2."""
-        op = self.getDimension("op", cold=cold)
-        ip = self.getDimension("ip", cold=cold)
-        r = self.getDimension("cornerR", cold=cold)
+        op = self.getDimension("op", cold=cold, Tc=None)
+        ip = self.getDimension("ip", cold=cold, Tc=None)
+        r = self.getDimension("cornerR", cold=cold, Tc=None)
         mult = self.getDimension("mult")
 
         area = self._area(op, r) - self._area(ip, r)

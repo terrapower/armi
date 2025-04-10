@@ -32,6 +32,7 @@ from armi.reactor.components import (
     Cube,
     DerivedShape,
     DifferentialRadialSegment,
+    FilletedHexagon,
     Helix,
     Hexagon,
     HexHoledCircle,
@@ -1422,6 +1423,82 @@ class TestHexagon(TestShapedComponent):
         for i, d in enumerate(expandedDims):
             cur = d in self.component.THERMAL_EXPANSION_DIMS
             self.assertEqual(cur, ref[i])
+
+
+class TestFilletedHexagon(TestShapedComponent):
+    """Test FilletedHexagon shaped component."""
+
+    componentCls = FilletedHexagon
+    componentDims = {
+        "Tinput": 25.0,
+        "Thot": 430.0,
+        "op": 10.0,
+        "ip": 5.0,
+        "mult": 1,
+        "cornerR": 0.2,
+    }
+
+    def test_getPerimeter(self):
+        D = self.component.getDimension("op")
+        r = self.component.getDimension("cornerR")
+        mult = self.component.getDimension("mult")
+
+        ref = 2 * math.sqrt(3.0) * D
+        ref *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D)
+        ref *= mult
+
+        cur = self.component.getPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getBoundingCircleOuterDiameter(self):
+        ref = 2.0 * 10 / math.sqrt(3)
+        cur = self.component.getBoundingCircleOuterDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getCircleInnerDiameter(self):
+        ref = 2.0 * 5.0 / math.sqrt(3)
+        cur = self.component.getCircleInnerDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getComponentArea(self):
+        cur = self.component.getComponentArea()
+        op = self.component.getDimension("op")
+        ip = self.component.getDimension("ip")
+        r = self.component.getDimension("cornerR")
+        mult = self.component.getDimension("mult")
+
+        ref = mult * (FilletedHexagon._area(op, r) - FilletedHexagon._area(ip, r))
+        self.assertAlmostEqual(cur, ref)
+
+    def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a Hexagon."""
+        self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
+
+    def test_dimensionThermallyExpands(self):
+        expandedDims = ["op", "ip", "cornerR", "mult"]
+        ref = [True, True, True, False]
+        for i, d in enumerate(expandedDims):
+            cur = d in self.component.THERMAL_EXPANSION_DIMS
+            self.assertEqual(cur, ref[i])
+
+    def test_filletedMatchesNormal(self):
+        """Prove that if the radius of curvature is 0.0, FilletedHexagon is just a Hexagon."""
+        for ip in np.arange(0.1, 2, 0.1):
+            for op in np.arange(0.3, 6.1, 0.4):
+                componentDims = {
+                    "Tinput": 25.0,
+                    "Thot": 430.0,
+                    "op": op,
+                    "ip": ip,
+                    "mult": 1.0,
+                }
+                f = FilletedHexagon("xyz", "HT9", **componentDims)
+                h = Hexagon("xyz", "HT9", **componentDims)
+
+                self.assertAlmostEqual(f.getPerimeter(), h.getPerimeter(), delta=1e-7)
+                self.assertAlmostEqual(
+                    f.getComponentArea(), h.getComponentArea(), delta=1e-7
+                )
 
 
 class TestHoledHexagon(TestShapedComponent):
