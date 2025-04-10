@@ -2135,7 +2135,6 @@ class TestNegativeVolume(unittest.TestCase):
 
 class HexBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        _ = settings.Settings()
         self.hexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
@@ -2588,7 +2587,6 @@ class TestHexBlockOrientation(unittest.TestCase):
 
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        _ = settings.Settings()
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
         self.ThRZBlock.add(
             components.DifferentialRadialSegment(
