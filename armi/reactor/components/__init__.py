@@ -491,7 +491,7 @@ class DerivedShape(UnshapedComponent):
         if cold:
             # At cold temp, the DerivedShape has the area of the parent minus the other siblings
             parentArea = self.parent.getMaxArea()
-            # NOTE: the assumption is there is only one DerivedShape in each Component
+            # NOTE: Here we assume there is one-and-only-one DerivedShape in each Component
             siblings = sum(
                 [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
             )
@@ -500,7 +500,7 @@ class DerivedShape(UnshapedComponent):
         if Tc is not None:
             # The DerivedShape has the area of the parent minus the other siblings
             parentArea = self.parent.getMaxArea()
-            # NOTE: the assumption is there is only one DerivedShape in each Component
+            # NOTE: Here we assume there is one-and-only-one DerivedShape in each Component
             siblings = sum(
                 [c.getArea(Tc=Tc) for c in self.parent if type(c) != DerivedShape]
             )
