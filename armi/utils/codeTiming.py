@@ -359,7 +359,7 @@ class _Timer:
 
     @property
     def numIterations(self):
-        """If this number seems high remember .start() twice in a row adds a numIterations."""
+        """If this number seems high, remember .start() twice in a row adds an iteration to numIterations."""
         return len(self._times) - 1 if self._times else 0
 
     @property
