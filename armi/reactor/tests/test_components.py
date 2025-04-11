@@ -32,6 +32,7 @@ from armi.reactor.components import (
     Cube,
     DerivedShape,
     DifferentialRadialSegment,
+    FilletedHexagon,
     Helix,
     Hexagon,
     HexHoledCircle,
@@ -124,30 +125,33 @@ class TestComponentFactory(unittest.TestCase):
             :tests: R_ARMI_COMP_DEF
         """
         # populate the class/signature dict, and create a basis attrs
-        attrs = self.getCircleVoidDict()
-        del attrs["shape"]
-        del attrs["od"]
-        del attrs["id"]
-        del attrs["mult"]
+        attrs = {
+            "name": "gap",
+            "Tinput": 25,
+            "Thot": 600,
+            "material": "Void",
+            "isotopics": "",
+        }
 
         for i, (name, klass) in enumerate(ComponentType.TYPES.items()):
             # hack together a dictionary input
             thisAttrs = {k: 1.0 for k in set(klass.INIT_SIGNATURE).difference(attrs)}
+            if "cornerR" in thisAttrs:
+                thisAttrs["cornerR"] /= 20.0
             del thisAttrs["components"]
             thisAttrs.update(attrs)
-            thisAttrs["name"] = "banana{}".format(i)
+            thisAttrs["name"] = f"banana{i}"
             if "modArea" in thisAttrs:
                 thisAttrs["modArea"] = None
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
-                if key not in ["area", "volume", "serialNum"]:  # they get recomputed
+                if key not in ["area", "volume", "serialNum"]:
+                    # they get recomputed
                     self.assertEqual(
                         val,
                         duped.p[key],
-                        msg="Key: {}, val1: {}, val2: {}".format(
-                            key, val, duped.p[key]
-                        ),
+                        msg=f"Key: {key}, val1: {val}, val2: {duped.p[key]}",
                     )
 
     def test_factoryBadShapeName(self):
@@ -1382,9 +1386,9 @@ class TestHexagon(TestShapedComponent):
             :id: T_ARMI_COMP_SHAPES4
             :tests: R_ARMI_COMP_SHAPES
         """
-        ip = self.component.getDimension("ip")
+        op = self.component.getDimension("op")
         mult = self.component.getDimension("mult")
-        ref = 6 * (ip / math.sqrt(3)) * mult
+        ref = 6 * (op / math.sqrt(3)) * mult
         cur = self.component.getPerimeter()
         self.assertAlmostEqual(cur, ref)
 
@@ -1422,6 +1426,83 @@ class TestHexagon(TestShapedComponent):
         for i, d in enumerate(expandedDims):
             cur = d in self.component.THERMAL_EXPANSION_DIMS
             self.assertEqual(cur, ref[i])
+
+
+class TestFilletedHexagon(TestShapedComponent):
+    """Test FilletedHexagon shaped component."""
+
+    componentCls = FilletedHexagon
+    componentDims = {
+        "Tinput": 25.0,
+        "Thot": 430.0,
+        "op": 10.0,
+        "ip": 5.0,
+        "mult": 1,
+        "cornerR": 0.2,
+    }
+
+    def test_getPerimeter(self):
+        D = self.component.getDimension("op")
+        r = self.component.getDimension("cornerR")
+        mult = self.component.getDimension("mult")
+
+        ref = 2 * math.sqrt(3.0) * D
+        ref *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D)
+        ref *= mult
+
+        cur = self.component.getPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getBoundingCircleOuterDiameter(self):
+        ref = 2.0 * 10 / math.sqrt(3)
+        cur = self.component.getBoundingCircleOuterDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getCircleInnerDiameter(self):
+        ref = 2.0 * 5.0 / math.sqrt(3)
+        cur = self.component.getCircleInnerDiameter(cold=True)
+        self.assertAlmostEqual(ref, cur)
+
+    def test_getComponentArea(self):
+        cur = self.component.getComponentArea()
+        op = self.component.getDimension("op")
+        ip = self.component.getDimension("ip")
+        r = self.component.getDimension("cornerR")
+        mult = self.component.getDimension("mult")
+
+        ref = mult * (FilletedHexagon._area(op, r) - FilletedHexagon._area(ip, r))
+        self.assertAlmostEqual(cur, ref)
+
+    def test_thermallyExpands(self):
+        """Test that ARMI can thermally expands a Hexagon."""
+        self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
+
+    def test_dimensionThermallyExpands(self):
+        expandedDims = ["op", "ip", "cornerR", "mult"]
+        ref = [True, True, True, False]
+        for i, d in enumerate(expandedDims):
+            cur = d in self.component.THERMAL_EXPANSION_DIMS
+            self.assertEqual(cur, ref[i])
+
+    def test_filletedMatchesNormal(self):
+        """Prove that if the radius of curvature is 0.0, FilletedHexagon is just a hexagon."""
+        for ip in np.arange(0.1, 1, 0.1):
+            for op in np.arange(1.1, 5, 0.4):
+                componentDims = {
+                    "Tinput": 25.0,
+                    "Thot": 430.0,
+                    "op": op,
+                    "ip": ip,
+                    "mult": 1.0,
+                }
+                f = FilletedHexagon("xyz", "HT9", **componentDims)
+                h = Hexagon("xyz", "HT9", **componentDims)
+
+                self.assertAlmostEqual(f.getPerimeter(), h.getPerimeter(), delta=1e-7)
+                self.assertAlmostEqual(
+                    f.getComponentArea(), h.getComponentArea(), delta=1e-7
+                )
+                self.assertGreaterEqual(h.getArea(), f.getArea() - 1e-7)
 
 
 class TestHoledHexagon(TestShapedComponent):

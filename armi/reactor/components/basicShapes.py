@@ -95,22 +95,24 @@ class Circle(ShapedComponent):
 class Hexagon(ShapedComponent):
     """A Hexagon.
 
+    This hexagonal shape has a hexagonal hole cut out of the center of it. By default, that inner
+    hole has a diameter of zero, making this a solid object with no hole.
+
     .. impl:: Hexagon shaped Component
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation of a hexagonal Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes methods for retrieving geometric
-        dimension information unique to hexagons such as the ``getPerimeter`` and
-        ``getPitchData`` methods.
+        This class provides the implementation of a hexagonal Component. This includes setting key
+        parameters such as its material, temperature, and dimensions. It also includes methods for
+        retrieving geometric dimension information unique to hexagons such as the ``getPerimeter``
+        and ``getPitchData`` methods.
     """
 
     is3D = False
 
-    THERMAL_EXPANSION_DIMS = {"ip", "op"}
-
     pDefs = componentParameters.getHexagonParameterDefinitions()
+
+    THERMAL_EXPANSION_DIMS = {"ip", "op"}
 
     def __init__(
         self,
@@ -149,13 +151,7 @@ class Hexagon(ShapedComponent):
         return 2.0 * sideLength
 
     def getComponentArea(self, cold=False, Tc=None):
-        """
-        Computes the area for the hexagon component in cm^2.
-
-        Notes
-        -----
-        http://www3.wolframalpha.com/input/?i=hexagon
-        """
+        """Computes the area for the hexagon component in cm^2."""
         op = self.getDimension("op", cold=cold, Tc=Tc)
         ip = self.getDimension("ip", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
@@ -165,9 +161,9 @@ class Hexagon(ShapedComponent):
 
     def getPerimeter(self, Tc=None):
         """Computes the perimeter of the hexagon component in cm."""
-        ip = self.getDimension("ip", Tc)
+        op = self.getDimension("op", Tc)
         mult = self.getDimension("mult", Tc)
-        perimeter = 6 * (ip / math.sqrt(3)) * mult
+        perimeter = 6 * (op / math.sqrt(3)) * mult
         return perimeter
 
     def getPitchData(self):
