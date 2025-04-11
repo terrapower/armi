@@ -181,8 +181,11 @@ class FilletedHexagon(basicShapes.Hexagon):
     @staticmethod
     def _area(D, r):
         """Helper function, to calculate the area of a hexagon with rounded corners."""
-        area = (math.sqrt(3.0) / 2.0) * D**2
-        area *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D) ** 2
+        if D <= 0.0:
+            return 0.0
+
+        area = 1.0 - (1.0 - (math.pi / (2.0 * math.sqrt(3)))) * (2 * r / D) ** 2
+        area *= (math.sqrt(3.0) / 2.0) * D**2
         return area
 
     def getComponentArea(self, cold=False, Tc=None):
@@ -195,17 +198,6 @@ class FilletedHexagon(basicShapes.Hexagon):
         area = self._area(op, r) - self._area(ip, r)
         area *= mult
         return area
-
-    def getPerimeter(self, Tc=None):
-        """Computes the perimeter of the rounded hexagon component in cm."""
-        D = self.getDimension("op", Tc)
-        r = self.getDimension("cornerR", Tc)
-        mult = self.getDimension("mult", Tc)
-
-        perimeter = 2 * math.sqrt(3.0) * D
-        perimeter *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D)
-        perimeter *= mult
-        return perimeter
 
 
 class HoledRectangle(basicShapes.Rectangle):

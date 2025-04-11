@@ -104,8 +104,8 @@ class Hexagon(ShapedComponent):
 
         This class provides the implementation of a hexagonal Component. This includes setting key
         parameters such as its material, temperature, and dimensions. It also includes methods for
-        retrieving geometric dimension information unique to hexagons such as the ``getPerimeter``
-        and ``getPitchData`` methods.
+        retrieving geometric dimension information unique to hexagons such as the ``getPitchData``
+        method.
     """
 
     is3D = False
@@ -158,13 +158,6 @@ class Hexagon(ShapedComponent):
         area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
         area *= mult
         return area
-
-    def getPerimeter(self, Tc=None):
-        """Computes the perimeter of the hexagon component in cm."""
-        op = self.getDimension("op", Tc)
-        mult = self.getDimension("mult", Tc)
-        perimeter = 6 * (op / math.sqrt(3)) * mult
-        return perimeter
 
     def getPitchData(self):
         """

@@ -1379,19 +1379,6 @@ class TestHexagon(TestShapedComponent):
     componentCls = Hexagon
     componentDims = {"Tinput": 25.0, "Thot": 430.0, "op": 10.0, "ip": 5.0, "mult": 1}
 
-    def test_getPerimeter(self):
-        """Get perimeter of hexagon.
-
-        .. test:: Hexagon shaped component
-            :id: T_ARMI_COMP_SHAPES4
-            :tests: R_ARMI_COMP_SHAPES
-        """
-        op = self.component.getDimension("op")
-        mult = self.component.getDimension("mult")
-        ref = 6 * (op / math.sqrt(3)) * mult
-        cur = self.component.getPerimeter()
-        self.assertAlmostEqual(cur, ref)
-
     def test_getBoundingCircleOuterDiameter(self):
         ref = 2.0 * 10 / math.sqrt(3)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
@@ -1441,18 +1428,6 @@ class TestFilletedHexagon(TestShapedComponent):
         "cornerR": 0.2,
     }
 
-    def test_getPerimeter(self):
-        D = self.component.getDimension("op")
-        r = self.component.getDimension("cornerR")
-        mult = self.component.getDimension("mult")
-
-        ref = 2 * math.sqrt(3.0) * D
-        ref *= 1 - (1 - (math.pi / (2 * math.sqrt(3)))) * (2 * r / D)
-        ref *= mult
-
-        cur = self.component.getPerimeter()
-        self.assertAlmostEqual(cur, ref)
-
     def test_getBoundingCircleOuterDiameter(self):
         ref = 2.0 * 10 / math.sqrt(3)
         cur = self.component.getBoundingCircleOuterDiameter(cold=True)
@@ -1498,7 +1473,6 @@ class TestFilletedHexagon(TestShapedComponent):
                 f = FilletedHexagon("xyz", "HT9", **componentDims)
                 h = Hexagon("xyz", "HT9", **componentDims)
 
-                self.assertAlmostEqual(f.getPerimeter(), h.getPerimeter(), delta=1e-7)
                 self.assertAlmostEqual(
                     f.getComponentArea(), h.getComponentArea(), delta=1e-7
                 )
