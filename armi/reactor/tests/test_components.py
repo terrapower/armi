@@ -125,30 +125,33 @@ class TestComponentFactory(unittest.TestCase):
             :tests: R_ARMI_COMP_DEF
         """
         # populate the class/signature dict, and create a basis attrs
-        attrs = self.getCircleVoidDict()
-        del attrs["shape"]
-        del attrs["od"]
-        del attrs["id"]
-        del attrs["mult"]
+        attrs = {
+            "name": "gap",
+            "Tinput": 25,
+            "Thot": 600,
+            "material": "Void",
+            "isotopics": "",
+        }
 
         for i, (name, klass) in enumerate(ComponentType.TYPES.items()):
             # hack together a dictionary input
             thisAttrs = {k: 1.0 for k in set(klass.INIT_SIGNATURE).difference(attrs)}
+            if "cornerR" in thisAttrs:
+                thisAttrs["cornerR"] /= 20.0
             del thisAttrs["components"]
             thisAttrs.update(attrs)
-            thisAttrs["name"] = "banana{}".format(i)
+            thisAttrs["name"] = f"banana{i}"
             if "modArea" in thisAttrs:
                 thisAttrs["modArea"] = None
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
-                if key not in ["area", "volume", "serialNum"]:  # they get recomputed
+                if key not in ["area", "volume", "serialNum"]:
+                    # they get recomputed
                     self.assertEqual(
                         val,
                         duped.p[key],
-                        msg="Key: {}, val1: {}, val2: {}".format(
-                            key, val, duped.p[key]
-                        ),
+                        msg=f"Key: {key}, val1: {val}, val2: {duped.p[key]}",
                     )
 
     def test_factoryBadShapeName(self):
@@ -1483,8 +1486,8 @@ class TestFilletedHexagon(TestShapedComponent):
 
     def test_filletedMatchesNormal(self):
         """Prove that if the radius of curvature is 0.0, FilletedHexagon is just a hexagon."""
-        for ip in np.arange(0.1, 2, 0.1):
-            for op in np.arange(0.3, 6.1, 0.4):
+        for ip in np.arange(0.1, 1, 0.1):
+            for op in np.arange(1.1, 5, 0.4):
                 componentDims = {
                     "Tinput": 25.0,
                     "Thot": 430.0,
@@ -1499,6 +1502,7 @@ class TestFilletedHexagon(TestShapedComponent):
                 self.assertAlmostEqual(
                     f.getComponentArea(), h.getComponentArea(), delta=1e-7
                 )
+                self.assertGreaterEqual(h.getArea(), f.getArea() - 1e-7)
 
 
 class TestHoledHexagon(TestShapedComponent):
