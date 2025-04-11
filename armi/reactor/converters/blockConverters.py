@@ -642,9 +642,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
 
         pinComponentFlags = [
             Flags.FUEL,
+            Flags.ANNULAR | Flags.VOID,
             Flags.GAP,
+            Flags.BOND,
             Flags.LINER,
             Flags.CLAD,
+            Flags.WIRE,
+            Flags.CONTROL,
             Flags.REFLECTOR,
             Flags.SHIELD,
             Flags.SLUG,
