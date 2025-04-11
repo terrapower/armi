@@ -75,7 +75,7 @@ class NuclideTests(unittest.TestCase):
             self.assertEqual(pu, puNuc._base)
             length = len(logCapture.getStdout())
             self.assertGreater(length, 15)
-            # now get it with a legitmate same label, length shouldn't change
+            # now get it with a legitimate same label, length shouldn't change
             puNuc = xsNuclides.XSNuclide(None, "PLUTAB")
             puNuc.isotxsMetadata["nuclideId"] = pu.name
             puNuc.updateBaseNuclide()
@@ -182,7 +182,7 @@ class NuclideTests(unittest.TestCase):
         with self.assertRaises(IndexError):
             u235Nuc.getMicroXS("fission", -999)
 
-        # zero returned if you try to grab a non-existant interaction
+        # zero returned if you try to grab a non-existent interaction
         self.assertEqual(u235Nuc.getMicroXS("fake", 1), 0)
 
     def test_getXS(self):

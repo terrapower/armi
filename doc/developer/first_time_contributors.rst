@@ -54,6 +54,6 @@ Also, please check out our (quick) synopsis on good commit messages: :ref:`armi-
 Licensing of Tools
 ==================
 
-Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not to include anything with a license that superceeds our Apache license. For instance, any third-party Python library included in ARMI with a GPL license will make the whole project fall under the GPL license. But a lot of potential users of ARMI will want to keep some of their work private, so we can't allow any GPL tools.
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not to include anything with a license that supersedes our Apache license. For instance, any third-party Python library included in ARMI with a GPL license will make the whole project fall under the GPL license. But a lot of potential users of ARMI will want to keep some of their work private, so we can't allow any GPL tools.
 
 For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-party Python libraries that have MIT or BSD licenses.

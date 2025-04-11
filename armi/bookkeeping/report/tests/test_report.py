@@ -119,7 +119,7 @@ Processor(s):    1 Processor(s) Installed.
         to fail if the test is run on some other OS.
         """
         if "darwin" in sys.platform:
-            # too comlicated to test MacOS in this method
+            # too complicated to test MacOS in this method
             return
 
         out = getSystemInfo()

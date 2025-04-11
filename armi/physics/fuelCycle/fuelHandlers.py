@@ -625,7 +625,7 @@ class FuelHandler:
         Parameters
         ----------
         ringList : list
-            List of integer ring numbers to find assemblies in. Optionally, a string specifiying a
+            List of integer ring numbers to find assemblies in. Optionally, a string specifying a
             special location like the SFP (spent fuel pool)
 
         typeSpec : Flags or iterable of Flags, optional
@@ -863,7 +863,7 @@ class FuelHandler:
         # which, coincidentally is the same time we're at right now at BOC.
         self.r.core.removeAssembly(outgoing)
 
-        # adjust the assembly multiplicity so that it doesnt forget how many it really
+        # adjust the assembly multiplicity so that it does not forget how many it really
         # represents. This allows us to discharge an assembly from any location in
         # fractional-core models where the central location may only be one assembly,
         # whereas other locations are more, and keep proper track of things. In the

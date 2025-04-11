@@ -157,7 +157,7 @@ class TestCompxs(unittest.TestCase):
 
         Sparse matrices can be constructed from three vectors: data, indices, and indptr.
         For column matrix, the row indices for column ``j`` are stored in
-        ``indices[indptr[j]:indptr[j + 1]]`` and the corresponsing data is stored in
+        ``indices[indptr[j]:indptr[j + 1]]`` and the corresponding data is stored in
         ``data[indptr[j]:indptr[j + 1]]``.
 
         See Also

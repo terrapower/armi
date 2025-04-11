@@ -1337,7 +1337,7 @@ class Core(composites.Composite):
         else:
             return {b.getLocation(): b for a in self for b in a}
 
-    # TODO: Can be cleaned up, but need test case to guard agains breakage
+    # TODO: Can be cleaned up, but need test case to guard against breakage
     def getFluxVector(
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):

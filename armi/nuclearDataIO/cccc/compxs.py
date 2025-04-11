@@ -68,7 +68,7 @@ containing the current composition yields the total power in those regions and
 energy group J due to fissions and non-fission absorptions."
 
 The ``d<1,2,3>Multiplier`` values are the first, second, and third dimension
-directional diffusion coefficient multipliers, respectively. Similary, the ``d<1,2,3>Additive``
+directional diffusion coefficient multipliers, respectively. Similarly, the ``d<1,2,3>Additive``
 values are the first, second, and third dimension directional diffusion coefficient
 additive terms, respectively.
 """

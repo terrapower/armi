@@ -78,7 +78,7 @@ class ExpansionData:
         axial expansion target component during initialization.
         see self._isFuelLocked
     expandFromTinputToThot: bool
-        Determines if thermal expansion factors should be caculated from
+        Determines if thermal expansion factors should be calculated from
             - ``c.inputTemperatureInC`` to ``c.temperatureInC`` when ``True``, or
             - some other reference temperature and ``c.temperatureInC`` when ``False``
     """
@@ -224,7 +224,7 @@ class ExpansionData:
         Parameters
         ----------
         c : :py:class:`Component <armi.reactor.components.component.Component>`
-            Component to retrive expansion factor for
+            Component to retrieve expansion factor for
         """
         value = self._expansionFactors.get(c, 1.0)
         return value
@@ -297,8 +297,10 @@ class ExpansionData:
         else:
             candidates = b.getChildrenWithFlags(flagOfInterest)
         if len(candidates) == 0:
-            # if only 1 solid, be smart enought to snag it
-            solidMaterials = getSolidComponents(b)
+            # if only 1 solid, be smart enough to snag it
+            solidMaterials = list(
+                c for c in b if not isinstance(c.material, material.Fluid)
+            )
             if len(solidMaterials) == 1:
                 candidates = solidMaterials
         if len(candidates) == 0:

@@ -636,7 +636,7 @@ class Material:
 
         Notes
         -----
-        This was designed as a convience method for ``checkTempRange``.
+        This was designed as a convenience method for ``checkTempRange``.
         """
         (minT, maxT) = self.propertyValidTemperature[label][0]
         self.checkTempRange(minT, maxT, val, label)

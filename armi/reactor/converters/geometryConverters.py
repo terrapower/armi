@@ -1318,7 +1318,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         runLog.info("Expanding to full core geometry")
 
         # store a copy of the 1/3 geometry grid, so that we can use it to find symmetric
-        # locations, while the core has a full-core grid so that it doesnt yell at us
+        # locations, while the core has a full-core grid so that it does not yell at us
         # for adding stuff outside of the first 1/3
         grid = copy.deepcopy(self._sourceReactor.core.spatialGrid)
 
@@ -1366,7 +1366,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 for b in a:
                     self._scaleBlockVolIntegratedParams(b, "up")
 
-        # set domain after expanding, because it isnt actually full core until it's
+        # set domain after expanding, because it isn't actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
         self._sourceReactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY

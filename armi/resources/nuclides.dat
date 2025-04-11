@@ -15,7 +15,7 @@
 #
 # The mass data is acquired from (1) by parsing the FRDM database provided
 # with RIPL-3. The masses in the FRDM database are given in Mass Excess (MeV)
-# and are coverted to amu by applying the following equation:
+# and are converted to amu by applying the following equation:
 #
 #                  MAMU = A + ME / C
 # 
