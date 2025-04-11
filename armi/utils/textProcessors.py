@@ -544,7 +544,7 @@ class TextProcessor:
                 f = open(fname)
             else:
                 # need this not to fail for detecting when RXSUM doesn't exist, etc.
-                # note: Could make it check before instantiating...
+                # Note: Could make it check before instantiating...
                 raise FileNotFoundError(f"{fname} does not exist.")
         self.f = f
 
@@ -563,14 +563,12 @@ class TextProcessor:
 
     def fsearch(self, pattern, msg=None, killOn=None, textFlag=False):
         """
-        Searches file f for pattern and displays msg when found. Returns line in which
-        pattern is found or FALSE if no pattern is found.
-        Stops searching if finds killOn first.
+        Searches file f for pattern and displays msg when found. Returns line in which pattern is
+        found or FALSE if no pattern is found. Stops searching if finds killOn first.
 
-        If you specify textFlag=True, the search won't use a regular expression (and
-        can't). The basic result is you get less powerful matching capabilities at a
-        huge speedup (10x or so probably, but that's just a guess.) pattern and killOn
-        must be pure text if you do this.
+        If you specify textFlag=True, the search won't use a regular expression (and can't). The
+        basic result is you get less powerful matching capabilities at a huge speedup (10x or so
+        probably, but that's just a guess.) pattern and killOn must be pure text if you do this.
         """
         current = 0
         result = ""

@@ -419,7 +419,7 @@ def _getPhysicalVals(r):
     # get average height
     avgHeight = 0
     for a in fuelA:
-        for b in a.getBlocks(Flags.FUEL):
+        for b in a.iterBlocks(Flags.FUEL):
             try:
                 avgHeight += b.getInputHeight()
             except AttributeError:
@@ -446,7 +446,7 @@ def _getPhysicalVals(r):
 def _getFuelVals(r):
     tOverD = 0.0
     numClad = 0.0
-    for b in r.core.getBlocks(Flags.FUEL):
+    for b in r.core.iterBlocks(Flags.FUEL):
         clad = b.getComponent(Flags.CLAD)
         if clad:
             cladOD = clad.getDimension("od")

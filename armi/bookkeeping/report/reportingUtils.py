@@ -109,14 +109,10 @@ def writeWelcomeHeaders(o, cs):
             includedBlueprints = []
 
         inputInfo = []
-        inputFiles = (
-            [
-                ("Case Settings", cs.caseTitle + ".yaml"),
-                ("Blueprints", cs[CONF_LOADING_FILE]),
-            ]
-            + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
-            + [("Geometry", cs["geomFile"])]
-        )
+        inputFiles = [
+            ("Case Settings", cs.caseTitle + ".yaml"),
+            ("Blueprints", cs[CONF_LOADING_FILE]),
+        ] + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
 
         activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
         for klass, kwargs in activeInterfaces:
@@ -672,7 +668,7 @@ def summarizePinDesign(core):
     designInfo = collections.defaultdict(list)
 
     try:
-        for b in core.getBlocks(Flags.FUEL):
+        for b in core.iterBlocks(Flags.FUEL):
             fuel = b.getComponent(Flags.FUEL)
             duct = b.getComponent(Flags.DUCT)
             clad = b.getComponent(Flags.CLAD)
@@ -830,9 +826,6 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     )
     report.setData(
         "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
     )
     report.setData(
         "Loading File",

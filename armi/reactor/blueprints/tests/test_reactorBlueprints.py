@@ -75,11 +75,50 @@ evst:
       IC IC
 """
 
-GEOM = """<?xml version="1.0" ?>
-<reactor geom="hex" symmetry="third core periodic">
-    <assembly name="IC" pos="1" ring="1"/>
-    <assembly name="IC" pos="2" ring="2"/>
-</reactor>
+SMALL_YAML = """
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+    sfp:
+        type: sfp
+        grid name: sfp
+        origin:
+            x: 1000.0
+            y: 1000.0
+            z: 1000.0
+    evst:
+        type: excore
+        grid name: evst
+        origin:
+            x: 2000.0
+            y: 2000.0
+            z: 2000.0
+grids:
+    core:
+        geom: hex
+        symmetry: third core periodic
+        grid contents:
+            [0, 0]: IC
+            [1, 1]: IC
+    sfp:
+        lattice pitch:
+            x: 25.0
+            y: 25.0
+        geom: cartesian
+        symmetry: full
+        lattice map: |
+          IC IC
+          IC IC
+    evst:
+      lattice pitch:
+          x: 32.0
+          y: 32.0
+      geom: hex
+      symmetry: full
 """
 
 
@@ -97,16 +136,12 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertAlmostEqual(self.systemDesigns["evst"].origin.y, 100)
 
     def _setupReactor(self):
-        fnames = [self._testMethodName + n for n in ["geometry.xml", "sfp-geom.xml"]]
+        fnames = [self._testMethodName + n for n in ["geometry.yaml", "sfp-geom.yaml"]]
         for fn in fnames:
             with open(fn, "w") as f:
-                f.write(GEOM)
+                f.write(SMALL_YAML)
 
-        # test migration from geometry xml files
         cs = settings.Settings()
-        newSettings = {"geomFile": self._testMethodName + "geometry.xml"}
-        cs = cs.modified(newSettings=newSettings)
-
         bp = blueprints.Blueprints.load(
             test_customIsotopics.TestCustomIsotopics.yamlString
         )
