@@ -70,26 +70,21 @@ Equation :eq:`linearExpansionFactor` is the expression used by ARMI in :py:meth:
 Given that thermal expansion (or contraction) of solid components must conserve mass throughout the system, the density of the component is adjusted as a function of temperature based on the following equation, assuming isotropic thermal expansion.
 
 .. math::
-    \rho(T_h) \frac{kg}{m^3} = \frac{\rho(T_0) \frac{kg}{m^3}}{1 + \frac{\Delta L}{L_0}} = \frac{\rho(T_0) \frac{kg}{m^3}}{(1 + \alpha_m (T_h) (T_h - T_0))^3}
+    \rho(T_h) = \frac{\rho(T_0)}{\left(1 + \frac{\Delta L}{L_0}\right)^3} = \frac{\rho(T_0)}{\left(1 + \alpha_m (T_h) (T_h - T_0)\right)^3}
 
-where, :math:`\rho(T_h)` is the component density at the given temperature :math:`T_h`, :math:`\rho(T_0)` is the component density at the reference temperature :math:`T_0`, and :math:`\alpha(T_h)` is the mean coefficient of thermal expansion at the specified temperature :math:`T_h` relative to the material's reference temperature.
+where, :math:`\rho(T_h)` is the component density in :math:`\frac{kg}{m^3}` at the given temperature :math:`T_h`, :math:`\rho(T_0)` is the component density in :math:`\frac{kg}{m^3}` at the reference temperature :math:`T_0`, and :math:`\alpha(T_h)` is the mean coefficient of thermal expansion at the specified temperature :math:`T_h` relative to the material's reference temperature.
 
 An update to mass densities is applied for all solid components given the assumption of isotropic thermal expansion.  Here we assume the masses of non-solid components (e.g., fluids or gases) are allowed to change within the reactor core model based on changes to solid volume changes. For instance, if solids change volume due to temperature changes, there is a change in the amount of volume left for fluid components.
 
 Implementation Discussion and Example of Radial and Axial Thermal Expansion
 ===========================================================================
 
-This section provides an example thermal expansion calculation for a simple cylindrical component in the following figure:
-
-.. figure:: /.static/axial_expansion_simple.png
-
-    Illustration of Simple Cylinder Radial and Axial Thermal Expansion
-
-from a reference temperature of 20°C to 1000°C with example material properties and dimensions as shown in this table:
+This section provides an example thermal expansion calculation for a simple cylindrical component from a reference temperature of 20°C to 1000°C with example material properties and dimensions as shown in Table :numref:`thermal_exp_comp_properties`.
 
 .. list-table:: Example Component Properties for Thermal Expansion
    :widths: 50 50
    :header-rows: 1
+   :name: thermal_exp_comp_properties
 
    * - Property
      - Example
@@ -106,7 +101,14 @@ from a reference temperature of 20°C to 1000°C with example material propertie
    * - Mean Coefficient Thermal Expansion
      - 2 x 10-6 1/°C
 
-This process is performed iteratively for each component as temperatures change. One important note about the thermal expansion implementation is that components are constrained within blocks, so the height of the component is determined by the height of its parent Block. What follows is a simple example illustrating the behavior of thermal expansion for a Block containing a single Component.
+Figure :numref:`therm_exp_illustration` illustrates the thermal expansion phenomena in both the radial and axial directions.
+
+.. figure:: /.static/axial_expansion_simple.png
+   :name: therm_exp_illustration
+
+    Illustration of radial (isotopic) and axial thermal expansion for a cylinder in ARMI.
+
+Thermal expansion calculations are performed for each component in the ARMI reactor data model as component temperatures change. Since components are constrained within blocks, the height of components are determined by the height of their parent block. :numref:`hot_radius` through :nuref:`hot_density` illustrate how the radius, height, volume, density, and mass are updated for a component during thermal expansion.
 
 .. list-table:: Example Calculation of Radial and Axial Thermal Expansion for a Cylindrical Component
    :widths: 33 33 33
@@ -132,23 +134,33 @@ This process is performed iteratively for each component as temperatures change.
      - 0.982 g
 
 .. math::
-    \vec{r} = 0.25 cm \cdot (1 + (2 x 10^-6 \frac{1}{°C})(1000°C − 20°C)) = 0.251 cm
+   :name: hot_radius
+
+    r(T_h) = 0.25 \left(1 + \left(2\times 10^{-6}(1000 − 20)\right) = 0.251 cm
 
 .. math::
-    \vec{r} = 5.0 cm \cdot (1 + (2 x 10^-6 \frac{1}{°C})(1000°C − 20°C)) = 5.01 cm
+   :name: hot_height
+
+    h(T_h) = 5.0 \left(1 + (2\times 10^{-6}(1000 − 20)\right) = 5.01 cm
 
 .. math::
-    \vec{V} = \pi \cdot (0.251 cm)^2 \cdot 5.01 cm = 0.988 cm^3
+   :name: hot_volume
+   
+    V(T_h) = \pi (0.251)^2 5.01 = 0.988 cm^3
 
 .. math::
-    \vec{\rho} = \frac{1.0 \frac{g}{cc}}{(1 + (2 x 10^-6 \frac{1}{°C})(1000°C − 20°C))} = 0.994 \frac{g}{cc}
+   :name: hot_density
+
+    \rho(T_h) = \frac{1.0}{\left(1 + 2\times 10^{-6}(1000 − 20)\right)} = 0.994 \frac{g}{cc}
 
 .. math::
-    \vec{m} = 0.994 \frac{g}{cc} \cdot 0.988 cm^3 = 0.982 g
+   :name: hot_mass
 
-When two or more components exist within the Block, the overall height change of the Block is driven by a target Component (e.g., fuel). The target is selected to ensure some Parameter of interest (e.g., linear heat generation rate) is evaluate correctly. In this case, the height of the Block containing the multiple components is only expanded to meet the axial expansion of the target Component and the remaining solid components have their densities further adjusted to preserve mass within the Assembly.
+    m(T_h) = 0.994 \times 0.988  = 0.982 g
 
-Radial thermal expansion occurs for each component in the Block and mechanical contact of components is not accounted for, meaning that the radial expansion of one Component is independent from the radial expansion of the others. Solid components are linked to gas/fluid components (i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in Component temperatures. Alternatively, the axial thermal expansion of a Block within an Assembly does influence other Block positions. Blocks are dynamically linked in the axial direction. So, while axial thermal expansion evaluations of each Block are treated independently, the axial mesh points are updated to account for the physical material displacements across the entire assembly length
+When two or more components exist within the Block, the overall height change of the Block is driven by an axial expansion "target Component" (e.g., fuel). This target is selected (either automatically based on component flags or manually in the blueprints) to ensure that specific component has its mass conserved post-expansion. Note, the remaining components also have their mass conserved on the assembly-level; however intra-block mass conservation is lost as there is a redistribution of mass between blocks for non-target components.
+
+Radial thermal expansion occurs for each component in a given block. Mechanical contact between components is not accounted for, meaning that the radial expansion of one Component is independent from the radial expansion of the others. Solid components may be linked to gas/fluid components (i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in Component temperatures. Alternatively, the axial thermal expansion of components within a Block do influence the positions of components in neighboring blocks for a given Assembly. So, while axial thermal expansion evaluations of each Block are treated independently, the axial mesh points are updated to account for the physical material displacements across the entire assembly length.
 
 The following two tables provide illustrations of the axial thermal expansion process for an example core assembly. In this example there are four main block types defined: Shield, Fuel, Plenum, and Dummy.
 
@@ -179,8 +191,8 @@ The target components for each Block type are provided in the following table:
 
 The axial thermal expansion algorithm is applied in four steps:
 
-* Step 1: Expand the axial dimensions of target components and non-target components within each block independently.
+* Step 1: Expand the axial dimensions of target component and non-target components within each block independently.
 * Step 2: Align blocks axially such that common components have consistent alignments (e.g., overlapping radial dimensions).
 * Step 3: Assign the block lower and upper elevations to account for the thermal expansion of blocks below each block.
   * Step 3a: Create new mesh lines that track the target component.
-* Step 4: Adjust the “Dummy” block located at the top of the core assembly to maintain a consistent core assembly height before and after axial thermal expansion is applied.
+* Step 4: Adjust the "Dummy" block located at the top of the assembly to maintain a consistent core-wide assembly height before and after axial thermal expansion is applied.
