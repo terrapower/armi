@@ -11,16 +11,17 @@ This document is the software test report (STR) for the ARMI framework.
 Default Test Criteria
 ---------------------
 
-The acceptance tests for ARMI requirements are very uniform. They are all unit tests that were
-designed to be quite linear and straight-forward. Unless the test states otherwise, all of the
-following test criteria apply to each ARMI requirement test. Any deviation from these standard
-conditions will be documented in  :numref:`Section %s <ref_armi_test_trace_matrix>` on a test-by-
-test basis.
+The acceptance tests for ARMI requirements are very uniform. They are all unit tests. Unless the test states otherwise, all of the following test criteria apply to each ARMI requirement test. Any deviation from these standard conditions will be documented in  :numref:`Section %s <ref_armi_test_trace_matrix>` on a test-by-test basis.
+
+This section defines some test attributes that all tests here have in common.
 
 Testing Approach
 ^^^^^^^^^^^^^^^^
 
-This section defines some test attributes that all tests here have in common.
+Software verification testing shall be a part of the software development process and leverage continuous integration (CI) testing to demonstrate the correctness of the software during the development process. CI testing shall occur for each Pull Request (PR) and shall consist of unit testing. No PR will be merged into the main branch until all CI passes successfully.
+
+The ARMI framework provides requirements with unit tests meeting acceptance criteria. Specifically, as the ARMI codebase cannot be run as a stand-alone application without external physics kernels or sensor data, any ARMI system tests will necessarily be limited. Thus, software projects leveraging ARMI capabilities are responsible for qualification of their end-use applications under their respective quality assurance commitments.
+
 
 Planned Test Cases, Sequence, and Identification of Stages Required
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
