@@ -13,7 +13,8 @@
 # limitations under the License.
 
 """
-Components represent geometric objects within an assembly such as fuel, bond, coolant, ducts, wires, etc.
+Components represent geometric objects within an assembly such as fuel, bond, coolant, ducts, wires,
+etc.
 
 This module contains the abstract definition of a Component.
 """
@@ -56,8 +57,8 @@ def componentTypeIsValid(component, name):
 
     Notes
     -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be specfied as a
-      `DerivedShape` if the coolant dimensions are not provided.
+    - `Coolant` components are can no longer be defined as a general `Component` and should be
+      specified as a `DerivedShape` if the coolant dimensions are not provided.
     """
     from armi.reactor.components import NullComponent
 
@@ -103,9 +104,8 @@ class _DimensionLink(tuple):
     def __str__(self):
         """Return a string representation of a dimension link.
 
-        These look like ``otherComponentName.otherDimensionName``.
-        For example, if a link were to a ``fuel`` component's
-        ``od`` param, the link would render as ``fuel.od``.
+        These look like ``otherComponentName.otherDimensionName``. For example, if a link were to a
+        ``fuel`` component's ``od`` param, the link would render as ``fuel.od``.
         """
         return f"{self[0].name}.{self[1]}"
 
@@ -114,10 +114,10 @@ class ComponentType(composites.CompositeModelType):
     """
     ComponetType is a metaclass for storing and initializing Component subclass types.
 
-    The construction of Component subclasses is being done through factories for ease of
-    user input.  As a consequence, the ``__init__`` methods' arguments need to be known
-    in order to conform them to the correct format. Additionally, the constructors
-    arguments can be used to determine the Component subclasses dimensions.
+    The construction of Component subclasses is being done through factories for ease of user input.
+    As a consequence, the ``__init__`` methods' arguments need to be known in order to conform them
+    to the correct format. Additionally, the constructors arguments can be used to determine the
+    Component subclasses dimensions.
 
     Warning
     -------
@@ -190,7 +190,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     Attributes
     ----------
     temperatureInC : float
-        Current temperature of component in celcius.
+        Current temperature of component in celsius.
     inputTemperatureInC : float
         Reference temperature in C at which dimension definitions were input
     temperatureInC : float
@@ -247,7 +247,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.temperatureInC = Thot
         self.material = None
         self.setProperties(material)
-        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating...
+        self.applyMaterialMassFracsToNumberDensities()  # not necessary when duplicating
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
@@ -269,10 +269,11 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def __lt__(self, other):
         """
-        True if a circle encompassing this object has a smaller diameter than one encompassing another component.
+        True if a circle encompassing this object has a smaller diameter than one encompassing
+        another component.
 
-        If the bounding circles for both components have identical size, then revert to checking the inner
-        diameter of each component for sorting.
+        If the bounding circles for both components have identical size, then revert to checking the
+        inner diameter of each component for sorting.
 
         This allows sorting because the Python sort functions only use this method.
         """
@@ -320,9 +321,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             Some Components are fluids and are thus defined by the shapes surrounding
             them. This method cycles through each dimension defining the border of this
             Component and converts the name of that Component to a link to the object
-            itself. This series of links is then used downstream to resolve
-            dimensional information.
-
+            itself. This series of links is then used downstream to resolve dimensional information.
         """
         for dimName in self.DIMENSION_NAMES:
             value = self.p[dimName]
@@ -392,7 +391,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         densityBasedOnParentComposition = self.material.getProperty(
             "pseudoDensity", Tc=self.temperatureInC
         )
-        self.p.numberDensities = densityTools.getNDensFromMasses(
+        self.p.nuclides, self.p.numberDensities = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
 
@@ -412,12 +411,10 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        Call before setTemperature since we need old hot temp.
-        This works well if there is only 1 solid component.
-        If there are multiple components expanding at different rates during thermal
-        expansion this becomes more complicated and, and axial expansion should be used.
+        Call before setTemperature since we need old hot temp. This works well if there is only 1
+        solid component. If there are multiple components expanding at different rates during
+        thermal expansion this becomes more complicated and, and axial expansion should be used.
         Multiple expansion rates cannot trivially be accommodated.
-        See AxialExpansionChanger.
         """
         self.changeNDensByFactor(1.0 / self.getHeightFactor(newHot))
 
@@ -520,11 +517,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        ``self.p.volume`` is not set until this method is called,
-        so under most circumstances it is probably not safe to
-        access ``self.p.volume`` directly. This is because not
-        all components (e.g., ``DerivedShape``) can compute
-        their volume during initialization.
+        ``self.p.volume`` is not set until this method is called, so under most circumstances it is
+        probably not safe to access ``self.p.volume`` directly. This is because not all components
+        (e.g., ``DerivedShape``) can compute their volume during initialization.
         """
         if self.p.volume is None:
             self._updateVolume()
@@ -566,9 +561,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Check for negative area and warn/error when appropriate.
 
-        Negative component area is allowed for Void materials (such as gaps)
-        which may be placed between components that will overlap during thermal expansion
-        (such as liners and cladding and annular fuel).
+        Negative component area is allowed for Void materials (such as gaps) which may be placed
+        between components that will overlap during thermal expansion (such as liners and cladding
+        and annular fuel).
 
         Overlapping is allowed to maintain conservation of atoms while sticking close to the
         as-built geometry. Modules that need true geometries will have to handle this themselves.
@@ -681,7 +676,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         This includes anything that has been specified in here, including trace nuclides.
         """
-        return list(self.p.numberDensities.keys())
+        if self.p.nuclides is None:
+            return []
+        return [nucName.decode() for nucName in self.p.nuclides]
 
     def getNumberDensity(self, nucName):
         """
@@ -697,14 +694,40 @@ class Component(composites.Composite, metaclass=ComponentType):
         number density : float
             number density in atoms/bn-cm.
         """
-        return self.p.numberDensities.get(nucName, 0.0)
+        i = np.where(self.p.nuclides == nucName.encode())[0]
+        if i.size > 0:
+            return self.p.numberDensities[i[0]]
+        else:
+            return 0.0
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
+        byteNucs = np.array([nucName.encode() for nucName in nucNames])
+        nDens = np.zeros(len(byteNucs), dtype=np.float64)
+        nuclideCopy = np.array(self.p.nuclides)
+        nDensCopy = np.array(self.p.numberDensities)
+        if self.p.numberDensities is None:
+            return nDens
+
+        if len(nDens) > len(nDensCopy) / 5:
+            # if there are a lot of indices to get densities for, use reverseIndex lookup
+            reverseIndex = {nuc: i for i, nuc in enumerate(self.p.nuclides)}
+            for i, nuc in enumerate(byteNucs):
+                j = reverseIndex.get(nuc, -1)
+                if j >= 0:
+                    nDens[i] = nDensCopy[j]
+        else:
+            # if it's just a small subset of nuclides, use np.where for direct index lookup
+            for i, nuc in enumerate(byteNucs):
+                j = np.where(nuclideCopy == nuc)[0]
+                if j.size > 0:
+                    nDens[i] = nDensCopy[j[0]]
+
+        return nDens
 
     def _getNdensHelper(self):
-        return dict(self.p.numberDensities)
+        nucs = self.getNuclides()
+        return dict(zip(nucs, self.p.numberDensities)) if len(nucs) > 0 else {}
 
     def setName(self, name):
         """Components use name for type and name."""
@@ -719,9 +742,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_NUCLIDE_FRACS0
             :implements: R_ARMI_COMP_NUCLIDE_FRACS
 
-            The method allows a user or plugin to set the number density of a Component.
-            It also indicates to other processes that may depend on a Component's
-            status about this change via the ``assigned`` attribute.
+            The method allows a user or plugin to set the number density of a Component. It also
+            indicates to other processes that may depend on a Component's status about this change
+            via the ``assigned`` attribute.
 
         Parameters
         ----------
@@ -764,8 +787,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         numberDensities : dict
             nucName: ndens pairs.
         wipe : bool, optional
-            Controls whether the old number densities are wiped. Any nuclide densities not
-            provided in numberDensities will be effectively set to 0.0.
+            Controls whether the old number densities are wiped. Any nuclide densities not provided
+            in numberDensities will be effectively set to 0.0.
 
         Notes
         -----
@@ -781,9 +804,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         This has no effect if the material thermal expansion has no dependence on component
         composition. If this is not desired, `self.p.numberDensities` can be set directly.
         """
-        # prepare to change the densities with knowledge that dims could change due to
-        # material thermal expansion dependence on composition
-        if len(self.p.numberDensities) > 0:
+        # prepare to change the densities with knowledge that dims could change due to material
+        # thermal expansion dependence on composition
+        if self.p.numberDensities.size > 0:
             dLLprev = (
                 self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             )
@@ -795,15 +818,33 @@ class Component(composites.Composite, metaclass=ComponentType):
         try:
             vol = self.getVolume()
         except (AttributeError, TypeError):
-            # either no parent to get height or parent's height is None
-            # which would be AttributeError and TypeError respectively, but other errors could be possible
+            # Either no parent to get height or parent's height is None. Which would be
+            # AttributeError and TypeError respectively, but other errors could be possible.
             vol = None
             area = self.getArea()
 
         # change the densities
         if wipe:
-            self.p.numberDensities = {}  # clear things not passed
-        self.p.numberDensities.update(numberDensities)
+            self.p.numberDensities = None  # clear things not passed
+            self.p.nuclides = None  # clear things not passed
+            self.p.nuclides = np.array(
+                [nucName.encode() for nucName in numberDensities.keys()]
+            )
+            self.p.numberDensities = np.array(list(numberDensities.values()))
+        else:
+            newNucs = []
+            newNumDens = []
+            nucCopy = np.array(self.p.nuclides)
+            nDensCopy = np.array(self.p.numberDensities)
+            for nucName, dens in numberDensities.items():
+                i = np.where(nucCopy == nucName.encode())[0]
+                if i.size > 0:
+                    nDensCopy[i[0]] = dens
+                else:
+                    newNucs.append(nucName.encode())
+                    newNumDens.append(dens)
+            self.p.nuclides = np.append(self.p.nuclides, newNucs)
+            self.p.numberDensities = np.append(nDensCopy, newNumDens)
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
@@ -819,17 +860,14 @@ class Component(composites.Composite, metaclass=ComponentType):
                 factor = area / self.getArea()
             self.changeNDensByFactor(factor)
 
-        # since we're updating the object the param points to but not the param itself, we have to inform
-        # the param system to flag it as modified so it properly syncs during ``syncMpiState``.
+        # since we are updating the object the param points to but not the param itself, we have to
+        # inform the param system to flag it as modified so it syncs during ``syncMpiState``.
         self.p.assigned = parameters.SINCE_ANYTHING
         self.p.paramDefs["numberDensities"].assigned = parameters.SINCE_ANYTHING
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        newDensities = {
-            nuc: dens * factor for nuc, dens in self.p.numberDensities.items()
-        }
-        self.p.numberDensities = newDensities
+        self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):
@@ -851,8 +889,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         Notes
         -----
         Getting mass enrichment on any level higher than this is ambiguous because you may have
-        enriched boron in one pin and enriched uranium in another and blending those doesn't make
-        sense.
+        enriched boron in one pin and uranium in another and blending those doesn't make sense.
         """
         if self.material.enrichedNuclide is None:
             raise ValueError(
@@ -908,8 +945,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         )
         nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         # densities comes from self.p.numberDensities
-        densities = self.getNuclideNumberDensities(nuclideNames)
-        nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        if len(nuclideNames) > 0:
+            densities = self.getNuclideNumberDensities(nuclideNames)
+            nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        else:
+            nDens = {}
         return densityTools.calculateMassDensity(nDens) * volume
 
     def setDimension(self, key, val, retainLink=False, cold=True):
@@ -920,17 +960,16 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION1
             :implements: R_ARMI_COMP_EXPANSION
 
-            Dimensions should be set considering the impact of thermal expansion. This
-            method allows for a user or plugin to set a dimension and indicate if the
-            dimension is for a cold configuration or not. If it is not for a cold
-            configuration, the thermal expansion factor is considered when setting the
-            dimension.
+            Dimensions should be set considering the impact of thermal expansion. This method allows
+            for a user or plugin to set a dimension and indicate if the dimension is for a cold
+            configuration or not. If it is not for a cold configuration, the thermal expansion
+            factor is considered when setting the dimension.
 
-            If the ``retainLink`` argument is ``True``, any Components linked to this
-            one will also have its dimensions changed consistently. After a dimension
-            is updated, the ``clearLinkedCache`` method is called which sets the
-            volume of this Component to ``None``. This ensures that when the volume is
-            next accessed it is recomputed using the updated dimensions.
+            If the ``retainLink`` argument is ``True``, any Components linked to this one will also
+            have its dimensions changed consistently. After a dimension is updated, the
+            ``clearLinkedCache`` method is called which sets the volume of this Component to
+            ``None``. This ensures that when the volume is next accessed it is recomputed using the
+            updated dimensions.
 
         Parameters
         ----------
@@ -939,8 +978,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         val : float
             The value to set on the dimension
         retainLink : bool, optional
-            If True, the val will be applied to the dimension of linked
-            component which indirectly changes this component's dimensions.
+            If True, the val will be applied to the dimension of linked component which indirectly
+            changes this component's dimensions.
         cold : bool, optional
             If True sets the component cold dimension to the specified value.
         """
@@ -969,12 +1008,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_DIMS
             :implements: R_ARMI_COMP_DIMS
 
-            Due to thermal expansion, Component dimensions depend on their temperature.
-            This method retrieves a dimension from the Component at a particular
-            temperature, if provided. If the Component is a LinkedComponent then the
-            dimensions are resolved to ensure that any thermal expansion that has
-            occurred to the Components that the LinkedComponent depends on is reflected
-            in the returned dimension.
+            Due to thermal expansion, Component dimensions depend on their temperature. This method
+            retrieves a dimension from the Component at a particular temperature, if provided. If
+            the Component is a LinkedComponent then the dimensions are resolved to ensure that any
+            thermal expansion that has occurred to the Components that the LinkedComponent depends
+            on is reflected in the returned dimension.
 
         Parameters
         ----------
@@ -1004,10 +1042,9 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         Notes
         -----
-        The inner circle is meaningful for annular shapes, i.e., circle with non-zero ID,
-        hexagon with non-zero IP, etc. For shapes with corners (e.g., hexagon, rectangle, etc)
-        the inner circle intersects the corners of the inner bound, opposed to intersecting
-        the "flats".
+        The inner circle is meaningful for annular shapes, i.e., circle with non-zero ID, hexagon
+        with non-zero IP, etc. For shapes with corners (e.g., hexagon, rectangle, etc) the inner
+        circle intersects the corners of the inner bound, opposed to intersecting the "flats".
         """
         raise NotImplementedError
 
@@ -1052,13 +1089,11 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION0
             :implements: R_ARMI_COMP_EXPANSION
 
-            This method enables the calculation of the thermal expansion factor
-            for a given material. If the material is solid, the difference
-            between ``T0`` and ``Tc`` is used to calculate the thermal expansion
-            factor. If a solid material does not have a linear expansion factor
-            defined and the temperature difference is greater than
-            a predetermined tolerance, an
-            error is raised. Thermal expansion of fluids or custom materials is
+            This method enables the calculation of the thermal expansion factor for a given
+            material. If the material is solid, the difference between ``T0`` and ``Tc`` is used to
+            calculate the thermal expansion factor. If a solid material does not have a linear
+            expansion factor defined and the temperature difference is greater than a predetermined
+            tolerance, an error is raised. Thermal expansion of fluids or custom materials is
             neglected, currently.
 
         Parameters
@@ -1090,8 +1125,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 single=True,
             )
             raise RuntimeError(
-                "Linear expansion percent may not be implemented in the {} material "
-                "class.".format(self.material)
+                f"Linear expansion percent may not be implemented in the {self.material} material "
+                "class."
             )
         return 1.0 + dLL
 
@@ -1113,7 +1148,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 reportGroup = componentReport
                 break
         if not reportGroup:
-            return "No report group designated for {} component.".format(self.getName())
+            return f"No report group designated for {self.getName()} component."
+
         reportGroup.header = [
             "",
             "Tcold ({0})".format(self.inputTemperatureInC),
@@ -1124,7 +1160,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             k: self.p[k]
             for k in self.DIMENSION_NAMES
             if k not in ("modArea", "area") and self.p[k] is not None
-        }  # py3 cannot format None
+        }
         # Set component name and material
         report.setData("Name", [self.getName(), ""], reportGroup)
         report.setData("Material", [self.getProperties().name, ""], reportGroup)
@@ -1188,8 +1224,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             nucName: compToMergeWith.getNumberDensity(nucName)
             for nucName in compToMergeWith.getNuclides()
         }
-        # set the new homogenized number densities from both. Allow
-        # overlapping nuclides.
+        # set the new homogenized number densities from both. Allow overlapping nuclides.
         for nucName in set(meNDens) | set(mergeNDens):
             compToMergeWith.setNumberDensity(
                 nucName, (meNDens.get(nucName, 0.0) + mergeNDens.get(nucName, 0.0))
@@ -1203,8 +1238,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Create and store a backup of the state.
 
-        This needed to be overridden due to linked components which actually have a parameter value of another
-        ARMI component.
+        This needed to be overridden due to linked components which actually have a parameter value
+        of another ARMI component.
         """
         linkedDims = self._getLinkedDimsAndValues()
         composites.Composite.backUp(self)
@@ -1212,7 +1247,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def restoreBackup(self, paramsToApply):
         """
-        Restore the parameters from perviously created backup.
+        Restore the parameters from previously created backup.
 
         This needed to be overridden due to linked components which actually have a parameter value
         of another ARMI component.
@@ -1301,20 +1336,19 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         Return the multigroup neutron flux in [n/cm^2/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
 
         Parameters
         ----------
         adjoint : bool, optional
             Return adjoint flux instead of real
         average : bool, optional
-            If True, will return average flux between latest and previous. Doesn't work
-            for pin detailed.
+            If True, will return average flux between latest and previous. Does not work for pin
+            detailed.
         volume: float, optional
-            The volume-integrated flux is divided by volume before
-            being returned. The user may specify a volume here, or the function
-            will obtain the block volume directly.
+            The volume-integrated flux is divided by volume before being returned. The user may
+            specify a volume here, or the function will obtain the block volume directly.
         gamma : bool, optional
             Whether to return the neutron flux or the gamma flux.
 
@@ -1393,16 +1427,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         Returns
         -------
         np.ndarray
-            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the
-            equivalent to the multiplicity of the component (``self.p.mult``)
-            and ``nGroup`` is the number of energy groups of the flux.
+            A ``(N, nGroup)`` array of pin multigroup fluxes, where ``N`` is the equivalent to the
+            multiplicity of the component (``self.p.mult``) and ``nGroup`` is the number of energy
+            groups of the flux.
 
         Raises
         ------
         ValueError
-            If the location(s) of the component are not aligned with pin indices
-            from the block. This would happen if this component is not actually
-            a pin.
+            If the location(s) of the component are not aligned with pin indices from the block.
+            This would happen if this component is not actually a pin.
         """
         # Get the (i, j, k) location of all pins from the parent block
         indicesAll = {
@@ -1448,9 +1481,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         density = composites.Composite.density(self)
 
         if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case,
-            # defer to Material. Material.density is wrapped to warn if it's attached
-            # to a parent. Avoid that by calling the inner function directly
+            # possible that there are no nuclides in this component yet. In that case, defer to
+            # Material. Material.density is wrapped to warn if it's attached to a parent. Avoid that
+            # by calling the inner function directly
             density = self.material.density.__wrapped__(
                 self.material, Tc=self.temperatureInC
             )
@@ -1468,7 +1501,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         See Also
         --------
-        armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct : LFP object
+        armi.physics.neutronics.fissionProductModel.lumpedFissionProduct.LumpedFissionProduct
         """
         if self.parent:
             return self.parent.getLumpedFissionProductCollection()
@@ -1499,15 +1532,14 @@ class Component(composites.Composite, metaclass=ComponentType):
     def finalizeLoadingFromDB(self):
         """Apply any final actions after creating the component from database.
 
-        This should **only** be called internally by the database loader. Otherwise
-        some properties could be doubly applied.
+        This should **only** be called internally by the database loader. Otherwise some properties
+        could be doubly applied.
 
-        This exists because the theoretical density is initially defined as a material
-        modification, and then stored as a Material attribute. When reading from blueprints,
-        the blueprint loader sets the theoretical density parameter from the Material
-        attribute. Component parameters are also set when reading from the database.
-        But, we need to set the Material attribute so routines that fetch a material's
-        density property account for the theoretical density.
+        This exists because the theoretical density is initially defined as a material modification,
+        and then stored as a Material attribute. When reading from blueprints, the blueprint loader
+        sets the theoretical density parameter from the Material attribute. Component parameters are
+        also set when reading from the database. But, we need to set the Material attribute so
+        routines that fetch a material's density property account for the theoretical density.
         """
         self.material.adjustTD(self.p.theoreticalDensityFrac)
 

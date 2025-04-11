@@ -980,7 +980,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             :id: T_ARMI_ASSEM_HEIGHT_PRES
             :tests: R_ARMI_ASSEM_HEIGHT_PRES
 
-        .. test:: Axial expansion can be prescribed in blueprints for core constuction.
+        .. test:: Axial expansion can be prescribed in blueprints for core construction.
             :id: T_ARMI_INP_COLD_HEIGHT
             :tests: R_ARMI_INP_COLD_HEIGHT
 

@@ -1436,7 +1436,7 @@ class Block_TestCase(unittest.TestCase):
         self.assertIsInstance(inter, components.Component)
 
         with self.assertRaises(KeyError):
-            # this really isnt the responsibility of block, more of Flags, but until this refactor
+            # this really isn't the responsibility of block, more of Flags, but until this refactor
             # is over...
             inter = self.block.getComponent(
                 Flags.fromString("intercoolantlala"), exact=True

@@ -321,7 +321,7 @@ class SolidRectangle(Rectangle):
         # this (and probably be called a HollowRectangle or RectangularShell or
         # whatever), since a solid rectangle is more generic of the two. Then the
         # Parameter definitions for the hollow rectangle could inherit from the ones,
-        # adding the inner dimensions so that we wouln't need to do this here.
+        # adding the inner dimensions so that we wouldn't need to do this here.
         self.p.lengthInner = 0
         self.p.widthInner = 0
 
@@ -429,7 +429,7 @@ class Triangle(ShapedComponent):
 
     Notes
     -----
-    The exact angles of the triangle are undefined. The exact side lenths and angles
+    The exact angles of the triangle are undefined. The exact side lengths and angles
     are not critical to calculation of component area, so area can still be calculated.
     """
 

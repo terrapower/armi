@@ -497,12 +497,20 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
 
     def getNumberDensitiesWithTrace(component, allNucNames):
         """Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature."""
-        return [
-            component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
-            if nucName in component.p.numberDensities
-            else 0.0
-            for nucName in allNucNames
-        ]
+        if component.p.nuclides is None:
+            return [0.0 for _nuc in allNucNames]
+
+        allByteNucs = [nucName.encode() for nucName in allNucNames]
+        ndens = []
+        nucCopy = np.array(component.p.nuclides)
+        nDensCopy = np.array(component.p.numberDensities)
+        for nuc in allByteNucs:
+            i = np.where(nucCopy == nuc)[0]
+            if i.size > 0:
+                ndens.append(max(nDensCopy[i[0]], TRACE_NUMBER_DENSITY))
+            else:
+                ndens.append(0.0)
+        return ndens
 
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())
