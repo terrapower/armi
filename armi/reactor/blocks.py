@@ -1086,7 +1086,7 @@ class Block(composites.Composite):
         This merges on a high level (using number densities). Components will not be merged.
 
         This is used e.g. for inserting a control block partially to get a very tight criticality
-        control.  In this case, a control block would be merged with a duct block. It is also used
+        control. In this case, a control block would be merged with a duct block. It is also used
         when a control rod is specified as a certain length but that length does not fit exactly
         into a full block.
         """
@@ -2186,7 +2186,7 @@ class HexBlock(Block):
 
         In this case, a simple block would be one that has either multiplicity of components equal
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
-        into a given number of hex rings.  Otherwise, do not create a grid for this block.
+        into a given number of hex rings. Otherwise, do not create a grid for this block.
 
         Parameters
         ----------
@@ -2408,16 +2408,19 @@ class HexBlock(Block):
 
     def getFlowArea(self):
         """Return the total flowing coolant area of the block in cm^2."""
-        return self.getComponent(Flags.COOLANT, exact=True).getArea()
+        area = self.getComponent(Flags.COOLANT, exact=True).getArea()
+        for c in self.getComponents(Flags.INTERDUCTCOOLANT, exact=True):
+            area += c.getArea()
+
+        return area
 
     def getHydraulicDiameter(self):
-        r"""
+        """
         Return the hydraulic diameter in this block in cm.
 
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter. In a hex
+        assembly, the wetted perimeter includes the cladding, the wire wrap, and the inside of the
+        duct. The flow area is the inner area of the duct minus the area of the pins and the wire.
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
