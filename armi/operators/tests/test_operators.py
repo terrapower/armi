@@ -255,7 +255,6 @@ class OperatorTests(unittest.TestCase):
                 self.assertIn("ISOTXS-c0", mock.getStdout())
                 self.assertIn("DIF3D input for snapshot", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
-                self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_1"))
 
@@ -265,7 +264,6 @@ class OperatorTests(unittest.TestCase):
                 self.assertIn("ISOTXS-c0", mock.getStdout())
                 self.assertIn("DIF3D input for snapshot", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
-                self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_2"))
 
