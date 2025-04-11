@@ -521,7 +521,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     runLog.error("CURRENT COMPARISON BLOCK:")
                     b.printContents(includeNuclides=False)
 
-                    for c in b.getChildren():
+                    for c in b:
                         runLog.error(
                             "{0} area {1} effective area {2}"
                             "".format(c, c.getArea(), c.getVolume() / b.getHeight())

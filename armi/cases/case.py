@@ -380,10 +380,9 @@ class Case:
                 debug=["dataio"],
             )
             if context.MPI_SIZE > 1:
-                # interestingly, you cannot set the parallel flag in the constructor
-                # without auto-specifying the data suffix. This should enable
-                # parallel coverage with auto-generated data file suffixes and
-                # combinations.
+                # interestingly, you cannot set the parallel flag in the constructor without
+                # auto-specifying the data suffix. This should enable parallel coverage with
+                # auto-generated data file suffixes and combinations.
                 cov.config.parallel = True
             cov.start()
 
@@ -391,8 +390,7 @@ class Case:
 
     @staticmethod
     def _endCoverage(userCovFile, cov=None):
-        """Helper to the Case.run(): stop and report code coverage,
-        if the Settings file says to.
+        """Helper to the Case.run(): stop and report code coverage, if the Settings file says to.
 
         Parameters
         ----------
@@ -454,8 +452,7 @@ class Case:
         return os.path.join(covRcDir, "pyproject.toml")
 
     def _startProfiling(self):
-        """Helper to the Case.run(): start the Python profiling,
-        if the Settings file says to.
+        """Helper to the Case.run(): start the Python profiling, if the Settings file says to.
 
         Returns
         -------
@@ -752,9 +749,8 @@ class Case:
         """
         Write the inputs to disk.
 
-        This allows input objects that have been modified in memory (e.g.
-        for a parameter sweep or migration) to be written out as input
-        for a forthcoming case.
+        This allows input objects that have been modified in memory (e.g. for a parameter sweep or
+        migration) to be written out as input for a forthcoming case.
 
         Parameters
         ----------
@@ -767,8 +763,8 @@ class Case:
 
         Notes
         -----
-        This will rename the ``loadingFile`` and ``geomFile`` to be ``title-blueprints + '.yaml'`` and
-        ``title + '-geom.yaml'`` respectively.
+        This will rename the ``loadingFile`` and ``geomFile`` to be ``title-blueprints + '.yaml'``
+        and ``title + '-geom.yaml'`` respectively.
 
         See Also
         --------
@@ -862,23 +858,22 @@ def copyInterfaceInputs(
     cs, destination: str, sourceDir: Optional[str] = None
 ) -> Dict[str, Union[str, list]]:
     """
-    Ping active interfaces to determine which files are considered "input". This
-    enables developers to add new inputs in a plugin-dependent/ modular way.
+    Ping active interfaces to determine which files are considered "input". This enables developers
+    to add new inputs in a plugin-dependent/ modular way.
 
     This function should now be able to handle the updating of:
 
       - a single file (relative or absolute)
       - a list of files (relative or absolute)
-      - a file entry that has a wildcard processing into multiple files.
-        Glob is used to offer support for wildcards.
+      - a file entry that has a wildcard processing into multiple files. Glob is used to offer
+        support for wildcards.
       - a directory and its contents
 
     If the file paths are absolute, do nothing. The case will be able to find the file.
 
-    In case suites or parameter sweeps, these files often have a sourceDir associated
-    with them that is different from the cs.inputDirectory. So, if relative or wildcard,
-    update the file paths to be absolute in the case settings and copy the file to the
-    destination directory.
+    In case suites or parameter sweeps, these files often have a sourceDir associated with them that
+    is different from the cs.inputDirectory. So, if relative or wildcard, update the file paths to
+    be absolute in the case settings and copy the file to the destination directory.
 
     Parameters
     ----------
@@ -892,16 +887,15 @@ def copyInterfaceInputs(
     Returns
     -------
     dict
-        A new settings object that contains settings for the keys and values that are
-        either an absolute file path, a list of absolute file paths, or the original
-        file path if absolute paths could not be resolved
+        A new settings object that contains settings for the keys and values that are either an
+        absolute file path, a list of absolute file paths, or the original file path if absolute
+        paths could not be resolved.
 
     Notes
     -----
-    Regarding the handling of relative file paths: In the future this could be
-    simplified by adding a concept for a suite root directory, below which it is safe
-    to copy files without needing to update settings that point with a relative path
-    to files that are below it.
+    Regarding the handling of relative file paths: In the future this could be simplified by adding
+    a concept for a suite root directory, below which it is safe to copy files without needing to
+    update settings that point with a relative path to files that are below it.
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
@@ -930,28 +924,25 @@ def copyInterfaceInputs(
             newFiles = []
             for f in files:
                 WILDCARD = False
-                RELATIVE = False
+                EMPTY = False
+                ABSOLUTE = False
                 if "*" in f:
                     WILDCARD = True
-                if ".." in f:
-                    RELATIVE = True
-
+                if not f:
+                    # beware: pathlib.path("") returns "." which can be bad news, so we handle empty
+                    # strings as their own category
+                    EMPTY = True
                 path = pathlib.Path(f)
-                if not WILDCARD and not RELATIVE:
-                    try:
-                        if path.is_absolute() and path.exists():
-                            # Path is absolute, no settings modification or filecopy needed
-                            newFiles.append(path)
-                            continue
-                    except OSError:
-                        pass
+                if not EMPTY and path.is_absolute():
+                    ABSOLUTE = True
 
                 # Attempt to construct an absolute file path
-                sourceFullPath = os.path.join(sourceDirPath, f)
+                srcFullPath = os.path.join(sourceDirPath, f)
+                destFilePath = None
                 if WILDCARD:
                     globFilePaths = [
                         pathlib.Path(os.path.join(sourceDirPath, g))
-                        for g in glob.glob(sourceFullPath)
+                        for g in glob.glob(srcFullPath)
                     ]
                     if len(globFilePaths) == 0:
                         destFilePath = f
@@ -962,22 +953,32 @@ def copyInterfaceInputs(
                                 label, gFile, destination, f
                             )
                             newFiles.append(str(destFilePath))
+                elif EMPTY:
+                    pass
+                elif ABSOLUTE:
+                    if path.exists():
+                        # Path is absolute, no settings modification or filecopy needed
+                        newFiles.append(path)
                 else:
-                    destFilePath = _copyInputsHelper(
-                        label, sourceFullPath, destination, f
-                    )
+                    # treat as a relative path
+                    destFilePath = _copyInputsHelper(label, srcFullPath, destination, f)
                     newFiles.append(str(destFilePath))
 
                 if destFilePath == f:
                     runLog.debug(
-                        f"No input files for `{label}` could be resolved with the "
-                        f"following path: `{sourceFullPath}`. Will not update `{label}`."
+                        f"No input files for `{label}` could be resolved with the following path: "
+                        f"`{srcFullPath}`. Will not update `{label}`."
                     )
 
             # Some settings are a single filename. Others are lists of files. Make
             # sure we are returning what the setting expects
-            if isSetting:
-                if len(files) == 1 and not WILDCARD:
+            if isSetting and len(newFiles):
+                if (
+                    len(files) == 1
+                    and not WILDCARD
+                    and key.name in cs
+                    and not isinstance(cs[key.name], list)
+                ):
                     newSettings[label] = newFiles[0]
                 else:
                     newSettings[label] = newFiles

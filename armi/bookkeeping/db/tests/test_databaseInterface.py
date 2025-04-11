@@ -344,7 +344,7 @@ class TestDatabaseWriter(unittest.TestCase):
         expectedFluxes7 = {}
 
         def setFluxAwesome(cycle, node):
-            for bi, b in enumerate(self.r.core.getBlocks()):
+            for bi, b in enumerate(self.r.core.iterBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
                 if bi == 0:
                     expectedFluxes0[cycle, node] = b.p.flux
@@ -358,8 +358,7 @@ class TestDatabaseWriter(unittest.TestCase):
             if cycle != 0 or node != 2:
                 return
 
-            blocks = self.r.core.getBlocks()
-            b0 = blocks[0]
+            b0 = next(self.r.core.iterBlocks())
 
             db = self.o.getInterface("database")._db
 
@@ -378,15 +377,14 @@ class TestDatabaseWriter(unittest.TestCase):
 
     def test_getHistoryByLocation(self):
         def setFluxAwesome(cycle, node):
-            for bi, b in enumerate(self.r.core.getBlocks()):
+            for bi, b in enumerate(self.r.core.iterBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
 
         def getFluxAwesome(cycle, node):
             if cycle != 1 or node != 2:
                 return
 
-            blocks = self.r.core.getBlocks()
-            b = blocks[0]
+            b = next(self.r.core.iterBlocks())
 
             db = self.o.getInterface("database").database
 
@@ -426,7 +424,7 @@ class TestDatabaseReading(unittest.TestCase):
 
         # update a few parameters
         def writeFlux(cycle, node):
-            for bi, b in enumerate(o.r.core.getBlocks()):
+            for bi, b in enumerate(o.r.core.iterBlocks()):
                 b.p.flux = 1e6 * bi + cycle * 100 + node
                 b.p.mgFlux = np.repeat(b.p.flux / 33, 33)
 
@@ -555,11 +553,11 @@ class TestDatabaseReading(unittest.TestCase):
         with Database(self.dbName, "r") as db:
             r2 = db.load(0, 0)
 
-        for b1, b2 in zip(self.r.core.getBlocks(), r2.core.getBlocks()):
+        for b1, b2 in zip(self.r.core.iterBlocks(), r2.core.iterBlocks()):
             for c1, c2 in zip(sorted(b1), sorted(b2)):
                 self.assertEqual(c1.name, c2.name)
 
-        for bi, b in enumerate(r2.core.getBlocks()):
+        for bi, b in enumerate(r2.core.iterBlocks()):
             assert_allclose(b.p.flux, 1e6 * bi)
 
     def test_variousTypesWork(self):

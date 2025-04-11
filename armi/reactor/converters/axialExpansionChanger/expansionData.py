@@ -288,14 +288,14 @@ class ExpansionData:
         if flagOfInterest is None:
             # Follow expansion of most neutronically important component, fuel then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
-                candidates = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
+                candidates = b.getChildrenWithFlags(targetFlag)
                 if candidates:
                     break
             # some blocks/components are not included in the above list but should still be found
             if not candidates:
                 candidates = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
-            candidates = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
+            candidates = b.getChildrenWithFlags(flagOfInterest)
         if len(candidates) == 0:
             # if only 1 solid, be smart enough to snag it
             solidMaterials = list(

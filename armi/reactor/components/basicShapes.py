@@ -76,11 +76,11 @@ class Circle(ShapedComponent):
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         return min(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the circle component in cm^2."""
-        idiam = self.getDimension("id", cold=cold)
-        od = self.getDimension("od", cold=cold)
-        mult = self.getDimension("mult", cold=cold)
+        idiam = self.getDimension("id", cold=cold, Tc=Tc)
+        od = self.getDimension("od", cold=cold, Tc=Tc)
+        mult = self.getDimension("mult", cold=cold, Tc=Tc)
         area = math.pi * (od**2 - idiam**2) / 4.0
         area *= mult
         return area
@@ -148,7 +148,7 @@ class Hexagon(ShapedComponent):
         sideLength = self.getDimension("ip", Tc, cold) / math.sqrt(3)
         return 2.0 * sideLength
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """
         Computes the area for the hexagon component in cm^2.
 
@@ -156,8 +156,8 @@ class Hexagon(ShapedComponent):
         -----
         http://www3.wolframalpha.com/input/?i=hexagon
         """
-        op = self.getDimension("op", cold=cold)
-        ip = self.getDimension("ip", cold=cold)
+        op = self.getDimension("op", cold=cold, Tc=Tc)
+        ip = self.getDimension("ip", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
         area *= mult
@@ -249,12 +249,12 @@ class Rectangle(ShapedComponent):
         widthI = self.getDimension("widthInner", Tc, cold=cold)
         return math.sqrt(widthI**2 + lengthI**2)
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the rectangle in cm^2."""
-        lengthO = self.getDimension("lengthOuter", cold=cold)
-        widthO = self.getDimension("widthOuter", cold=cold)
-        lengthI = self.getDimension("lengthInner", cold=cold)
-        widthI = self.getDimension("widthInner", cold=cold)
+        lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
+        lengthI = self.getDimension("lengthInner", cold=cold, Tc=Tc)
+        widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * (lengthO * widthO - lengthI * widthI)
         return area
@@ -325,10 +325,10 @@ class SolidRectangle(Rectangle):
         self.p.lengthInner = 0
         self.p.widthInner = 0
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the solid rectangle in cm^2."""
-        lengthO = self.getDimension("lengthOuter", cold=cold)
-        widthO = self.getDimension("widthOuter", cold=cold)
+        lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * (lengthO * widthO)
         return area
@@ -383,10 +383,10 @@ class Square(Rectangle):
             modArea=modArea,
         )
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the square in cm^2."""
-        widthO = self.getDimension("widthOuter", cold=cold)
-        widthI = self.getDimension("widthInner", cold=cold)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
+        widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * (widthO * widthO - widthI * widthI)
         return area
@@ -467,10 +467,10 @@ class Triangle(ShapedComponent):
             components, base=base, height=height, mult=mult, modArea=modArea
         )
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the triangle in cm^2."""
-        base = self.getDimension("base", cold=cold)
-        height = self.getDimension("height", cold=cold)
+        base = self.getDimension("base", cold=cold, Tc=Tc)
+        height = self.getDimension("height", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * base * height / 2.0
         return area

@@ -217,7 +217,7 @@ class FuelHandler:
         if multiplier != 1:
             # handle special case: volume-integrated parameters where symmetry factor is not 1
             if blockLevelMax:
-                paramCollection = a.getBlocks()[0].p
+                paramCollection = a[0].p
             else:
                 paramCollection = a.p
             isVolumeIntegrated = (
@@ -653,7 +653,7 @@ class FuelHandler:
                 f"or otherwise instantiate a SpentFuelPool object as r.excore['sfp']"
             )
         else:
-            sfpAssems = self.r.excore["sfp"].getChildren()
+            sfpAssems = list(self.r.excore["sfp"])
 
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:

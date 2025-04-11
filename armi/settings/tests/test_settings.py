@@ -133,15 +133,15 @@ class TestAddingOptions(unittest.TestCase):
     def setUp(self):
         self.dc = directoryChangers.TemporaryDirectoryChanger()
         self.dc.__enter__()
+        # load in the plugin with extra, added options
+        self.pm = getPluginManagerOrFail()
+        self.pm.register(PluginAddsOptions)
 
     def tearDown(self):
         self.dc.__exit__(None, None, None)
+        self.pm.unregister(PluginAddsOptions)
 
     def test_addingOptions(self):
-        # load in the plugin with extra, added options
-        pm = getPluginManagerOrFail()
-        pm.register(PluginAddsOptions)
-
         # modify the default/text settings YAML file to include neutronicsKernel
         fin = os.path.join(TEST_ROOT, "armiRun.yaml")
         txt = open(fin, "r").read()
