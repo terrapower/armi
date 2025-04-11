@@ -1478,6 +1478,22 @@ class TestFilletedHexagon(TestShapedComponent):
                 )
                 self.assertGreaterEqual(h.getArea(), f.getArea() - 1e-7)
 
+    def test_filletedBecomesACircle(self):
+        """Prove that as the radius of curvature becomes D/2, the shape becomes a circle."""
+        for op in np.arange(1.0, 5.0, 0.5):
+            componentDims = {
+                "Tinput": 425.0,
+                "Thot": 425.0,
+                "op": op,
+                "ip": 0.0,
+                "cornerR": op / 2.0,
+                "mult": 1.0,
+            }
+            f = FilletedHexagon("circleHex", "HT9", **componentDims)
+            self.assertAlmostEqual(
+                f.getComponentArea(), math.pi * (op / 2.0) ** 2, delta=1e-7
+            )
+
 
 class TestHoledHexagon(TestShapedComponent):
     """Test holed hexagon shaped component."""
