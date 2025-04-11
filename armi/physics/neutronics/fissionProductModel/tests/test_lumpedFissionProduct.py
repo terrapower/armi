@@ -171,9 +171,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
 
     def test_getNumberDensities(self):
         o = buildOperatorOfEmptyHexBlocks()
-        assems = o.r.core.getAssemblies(Flags.FUEL)
-        blocks = assems[0].getBlocks(Flags.FUEL)
-        b = blocks[0]
+        b = next(o.r.core.iterBlocks(Flags.FUEL))
         fpDensities = self.lfps.getNumberDensities(objectWithParentDensities=b)
         for fp in ["GE73", "GE74", "GE76", "AS75", "KR85", "MO99", "SM150", "XE135"]:
             self.assertEqual(fpDensities[fp], 0.0)

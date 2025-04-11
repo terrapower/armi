@@ -55,6 +55,7 @@ jobs:
           cd doc
           git submodule init
           git submodule update
+          git fetch
           echo "make html:"
           make html
           echo "make latex:"

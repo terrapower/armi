@@ -172,7 +172,7 @@ class ReportInterface(interfaces.Interface):
         runLog.important(title)
         runLog.important("-" * len(title))
         totFis = 0.0
-        for a in sfp.getChildren():
+        for a in sfp:
             runLog.important(
                 "{assembly:15s} discharged at t={dTime:10f} after {residence:10f} yrs. It entered at cycle: {cycle}. "
                 "It has {fiss:10f} kg (x {mult}) fissile and peak BU={bu:.2f} %.".format(
@@ -196,16 +196,16 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def countAssembliesSFP(sfp):
         """Report on the count of assemblies in the SFP at each timestep."""
-        if not sfp.getChildren():
+        if not len(sfp):
             return
 
         runLog.important("Count:")
         totCount = 0
         thisTimeCount = 0
-        a = sfp.getChildren()[0]
+        a = sfp[0]
         lastTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
-        for a in sfp.getChildren():
+        for a in sfp:
             thisTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
             if thisTime != lastTime:

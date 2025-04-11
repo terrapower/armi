@@ -293,7 +293,7 @@ class Block(composites.Composite):
         Creates a spatialGrid for a Block.
 
         Blocks do not always have a spatialGrid from Blueprints, but some Blocks can have their
-        spatialGrids inferred based on the multiplicty of their components. This would add the
+        spatialGrids inferred based on the multiplicity of their components. This would add the
         ability to create a spatialGrid for a Block and give its children the corresponding
         spatialLocators if certain conditions are met.
 
@@ -624,7 +624,7 @@ class Block(composites.Composite):
             return area
 
         a = 0.0
-        for c in self.getChildren():
+        for c in self:
             myArea = c.getArea(cold=cold)
             a += myArea
         fullArea = a
@@ -812,7 +812,7 @@ class Block(composites.Composite):
 
         # get the highest density comp dont want to sum all because some
         # comps might have very small impurities of boron and adding this
-        # volume wont be conservative for captures per cc.
+        # volume won't be conservative for captures per cc.
         b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
 
         if len(b10Comps) > 1:
@@ -917,7 +917,7 @@ class Block(composites.Composite):
         self._updatePitchComponent(c)
 
     def removeAll(self, recomputeAreaFractions=True):
-        for c in self.getChildren():
+        for c in list(self):
             self.remove(c, recomputeAreaFractions=False)
         if recomputeAreaFractions:  # only do this once
             self.getVolumeFractions()
@@ -1174,7 +1174,7 @@ class Block(composites.Composite):
         raise NotImplementedError  # no geometry can be assumed
 
     def getWireWrapCladGap(self, cold=False):
-        """Return the gap betwen the wire wrap and the clad."""
+        """Return the gap between the wire wrap and the clad."""
         clad = self.getComponent(Flags.CLAD)
         wire = self.getComponent(Flags.WIRE)
         wireOuterRadius = wire.getBoundingCircleOuterDiameter(cold=cold) / 2.0
@@ -1255,7 +1255,7 @@ class Block(composites.Composite):
     def getDimensions(self, dimension):
         """Return dimensional values of the specified dimension."""
         dimVals = set()
-        for c in self.getChildren():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:
@@ -1504,7 +1504,7 @@ class Block(composites.Composite):
         :meth:`getPinCoordinates` - companion for this method.
         """
         items = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
+        for clad in self.iterChildrenWithFlags(Flags.CLAD):
             if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
                 items.extend(clad.spatialLocator)
             else:

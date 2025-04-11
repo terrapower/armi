@@ -15,7 +15,7 @@
 
 This file implements a simple/default representation of such as an ARMI "system". ARMI systems, like
 the core are grids filled with ArmiObjects. This module also includes some helper tools to aid
-transfering spent fuel assemblies from the core to the SFP.
+transferring spent fuel assemblies from the core to the SFP.
 """
 import itertools
 
@@ -77,7 +77,7 @@ class SpentFuelPool(ExcoreStructure):
 
     def getAssembly(self, name):
         """Get a specific assembly by name."""
-        for a in self.getChildren():
+        for a in self:
             if a.getName() == name:
                 return a
 
@@ -123,7 +123,7 @@ class SpentFuelPool(ExcoreStructure):
             The new max Assembly number.
         """
         ind = startIndex
-        for a in self.getChildren():
+        for a in self:
             oldName = a.getName()
             newName = a.makeNameFromAssemNum(ind)
             if oldName == newName:

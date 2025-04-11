@@ -87,7 +87,7 @@ class Assembly(composites.Composite):
         Notes
         -----
         As with other ArmiObjects, Assemblies are sorted based on location. Assemblies are more
-        permissive in the grid consistency checks to accomodate situations where assemblies might be
+        permissive in the grid consistency checks to accommodate situations where assemblies might be
         children of the same Core, but not in the same grid as each other (like in the spent fuel
         pool). In these situations, the operator returns ``False``.  This behavior may lead to some
         strange sorting behavior when two or more Assemblies are being compared that do not live in
@@ -219,10 +219,10 @@ class Assembly(composites.Composite):
         if scalingFactor == 1:
             return
 
-        volIntegratedParamsToScale = self.getBlocks()[0].p.paramDefs.atLocation(
+        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(
             ParamLocation.VOLUME_INTEGRATED
         )
-        for b in self.getBlocks():
+        for b in self:
             for param in volIntegratedParamsToScale:
                 name = param.name
                 if b.p[name] is None or isinstance(b.p[name], str):
@@ -306,10 +306,8 @@ class Assembly(composites.Composite):
         -------
         This is a bit design-specific for pinned assemblies
         """
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
-
         plenumVolume = 0.0
-        for b in plenumBlocks:
+        for b in self.iterChildrenWithFlags(Flags.PLENUM):
             cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
             plenumVolume += (
@@ -319,7 +317,7 @@ class Assembly(composites.Composite):
 
     def getAveragePlenumTemperature(self):
         """Return the average of the plenum block outlet temperatures."""
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
+        plenumBlocks = self.iterChildrenWithFlags(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
         # no plenum blocks, use the top block of the assembly for plenum temperature
@@ -786,6 +784,31 @@ class Assembly(composites.Composite):
         with open(fName, "w") as pkl:
             pickle.dump(self, pkl)
 
+    def iterBlocks(self, typeSpec=None, exact=False):
+        """Produce an iterator over all blocks in this assembly from bottom to top.
+
+        Parameters
+        ----------
+        typeSpec : Flags or list of Flags, optional
+            Restrict returned blocks to have these flags.
+        exact : bool, optional
+            If true, only produce blocks that have those exact flags.
+
+        Returns
+        -------
+        iterable of Block
+
+        See Also
+        --------
+        * :meth:`__iter__` - if no type spec provided, assemblies can be
+          naturally iterated upon.
+        * :meth:`iterChildrenWithFlags` - alternative if you know you have
+           a type spec that isn't ``None``.
+        """
+        if typeSpec is None:
+            return iter(self)
+        return self.iterChildrenWithFlags(typeSpec, exact)
+
     def getBlocks(self, typeSpec=None, exact=False):
         """
         Get blocks in an assembly from bottom to top.
@@ -802,10 +825,7 @@ class Assembly(composites.Composite):
         blocks : list
             List of blocks.
         """
-        if typeSpec is None:
-            return self.getChildren()
-        else:
-            return self.getChildrenWithFlags(typeSpec, exactMatch=exact)
+        return list(self.iterBlocks(typeSpec, exact))
 
     def getBlocksAndZ(self, typeSpec=None, returnBottomZ=False, returnTopZ=False):
         """
@@ -853,36 +873,47 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        return all(
-            b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self.getBlocks()
-        )
+        return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
     def getFirstBlock(self, typeSpec=None, exact=False):
-        bs = self.getBlocks(typeSpec, exact=exact)
-        if bs:
-            return bs[0]
+        """Find the first block that matches the spec.
+
+        Parameters
+        ----------
+        typeSpec : flag or list of flags, optional
+            Specification to require on the returned block.
+        exact : bool, optional
+            Require block to exactly match ``typeSpec``
+
+        Returns
+        -------
+        Block or None
+            First block that matches if such a block could be found.
+        """
+        if typeSpec is None:
+            items = iter(self)
         else:
+            items = self.iterChildrenWithFlags(typeSpec, exact)
+        try:
+            # Create an iterator and attempt to advance it to the first value.
+            return next(items)
+        except StopIteration:
+            # No items found in the iteration -> no blocks match the request
             return None
 
     def getFirstBlockByType(self, typeName):
-        bs = [
-            b
-            for b in self.getChildren(deep=False)
-            if isinstance(b, blocks.Block) and b.getType() == typeName
-        ]
-        if bs:
-            return bs[0]
-        return None
+        blocks = filter(lambda b: b.getType() == typeName, self)
+        try:
+            return next(blocks)
+        except StopIteration:
+            return None
 
-    def getBlockAtElevation(self, elevation):
+    def getBlockAtElevation(self, elevation: float) -> Optional[blocks.Block]:
         """
         Returns the block at a specified axial dimension elevation (given in cm).
 
         If height matches the exact top of the block, the block is considered at that
         height.
-
-        Used as a way to determine what block the control rod will be modifying with a
-        mergeBlocks.
 
         Parameters
         ----------
@@ -891,8 +922,9 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        targetBlock : block
-            The block that exists at the specified height in the reactor
+        targetBlock : block or None
+            The block that exists at the specified height in the reactor. ``None``
+            if a block was not found.
         """
         bottomOfBlock = 0.0
         for b in self:
@@ -1025,7 +1057,7 @@ class Assembly(composites.Composite):
         elevations : array of float
             the elevations from the bottom of the assembly in cm at which you want the point.
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            used in interp1d. interp1d documentation: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
@@ -1071,7 +1103,7 @@ class Assembly(composites.Composite):
         param : str
             the parameter to interpolate
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            used in interp1d. interp1d documentation: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
@@ -1163,7 +1195,7 @@ class Assembly(composites.Composite):
         blockCounter : int
             number of blocks of this type
         """
-        return len(self.getBlocks(blockTypeSpec))
+        return sum(1 for _ in self.iterBlocks(blockTypeSpec))
 
     def getDim(self, typeSpec, dimName):
         """

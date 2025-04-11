@@ -82,7 +82,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self.r.core.p.dpaFullWidthHalfMax = 0.0
         self.r.core.p.elevationOfACLP3Cycles = 0.0
         self.r.core.p.elevationOfACLP7Cycles = 0.0
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.detailedDpaThisCycle = 0.0
             b.p.newDPA = 0.0
 
@@ -256,7 +256,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
             scaledCorePowerDistribution = []
-            for a in self.r.core.getChildren():
+            for a in self.r.core:
                 scaledPower = []
                 assemPower = sum(b.p.power for b in a)
                 for b in a:
@@ -681,7 +681,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def clearFlux(self):
         """Delete flux on all blocks. Needed to prevent stale flux when partially reloading."""
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = []
             b.p.adjMgFlux = []
             b.p.mgFluxGamma = []
@@ -704,7 +704,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         # update the block power param here as well so
         # the ratio/multiplications below are consistent
         currentCorePower = 0.0
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
             b.p.power = np.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
@@ -720,7 +720,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 self.r.core, powerRatio, currentCorePower, renormalizationCorePower
             )
         )
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux *= powerRatio
             b.p.flux *= powerRatio
             b.p.fluxPeak *= powerRatio
@@ -816,7 +816,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         updateFluenceAndDpa : uses values computed here to update cumulative dpa
         """
         if blockList is None:
-            blockList = self.r.core.getBlocks()
+            blockList = self.r.core.iterBlocks()
 
         hasDPA = False
         for b in blockList:

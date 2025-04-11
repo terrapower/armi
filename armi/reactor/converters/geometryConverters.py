@@ -1163,7 +1163,7 @@ class HexToRZThetaConverter(GeometryConverter):
     def _getBlockAtMeshPoint(
         self, innerTheta, outerTheta, innerRadius, outerRadius, innerAxial, outerAxial
     ):
-        for b in self.convReactor.core.getBlocks():
+        for b in self.convReactor.core.iterBlocks():
             blockMidTh, blockMidR, blockMidZ = b.spatialLocator.getGlobalCoordinates(
                 nativeCoords=True
             )
