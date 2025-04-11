@@ -74,7 +74,7 @@ Given that thermal expansion (or contraction) of solid components must conserve 
 
 where, :math:`\rho(T_h)` is the component density at the given temperature :math:`T_h`, :math:`\rho(T_0)` is the component density at the reference temperature :math:`T_0`, and :math:`\alpha(T_h)` is the mean coefficient of thermal expansion at the specified temperature :math:`T_h` relative to the material's reference temperature.
 
-An update to mass densities is applied for all solid components given the assumption of isotropic thermal expansion, whereas the masses of non-solid components (e.g., fluids/gases) are allowed to change within the reactor core model based on the solid component volume changes. This allows for the flowing coolant area and mass to change for system temperature conditions.
+An update to mass densities is applied for all solid components given the assumption of isotropic thermal expansion.  Here we assume the masses of non-solid components (e.g., fluids or gases) are allowed to change within the reactor core model based on changes to solid volume changes. For instance, if solids change volume due to temperature changes, there is a change in the amount of volume left for fluid components.
 
 Implementation Discussion and Example of Radial and Axial Thermal Expansion
 ===========================================================================
@@ -106,7 +106,7 @@ from a reference temperature of 20°C to 1000°C with example material propertie
    * - Mean Coefficient Thermal Expansion
      - 2 x 10-6 1/°C
 
-This process is performed iteratively for each component as temperatures are modified. One important note about the thermal expansion implementation is that components are constrained within blocks, so the height of the component is determined by the height of its parent block. What follows is a simple example illustrating the behavior of thermal expansion for a block containing a single component.
+This process is performed iteratively for each component as temperatures change. One important note about the thermal expansion implementation is that components are constrained within blocks, so the height of the component is determined by the height of its parent Block. What follows is a simple example illustrating the behavior of thermal expansion for a Block containing a single Component.
 
 .. list-table:: Example Calculation of Radial and Axial Thermal Expansion for a Cylindrical Component
    :widths: 33 33 33
@@ -146,9 +146,9 @@ This process is performed iteratively for each component as temperatures are mod
 .. math::
     \vec{m} = 0.994 \frac{g}{cc} \cdot 0.988 cm^3 = 0.982 g
 
-When two or more components exist within the block, the overall height change of the block is driven by a target component (e.g., fuel), where the target is selected to ensure some parameter of interest (e.g., linear heat generation rate) is evaluate correctly. In this case, the height of the block containing the multiple components is only expanded to meet the axial expansion of the target component and the remaining solid components have their densities further adjusted to preserve mass within the assembly.
+When two or more components exist within the Block, the overall height change of the Block is driven by a target Component (e.g., fuel). The target is selected to ensure some Parameter of interest (e.g., linear heat generation rate) is evaluate correctly. In this case, the height of the Block containing the multiple components is only expanded to meet the axial expansion of the target Component and the remaining solid components have their densities further adjusted to preserve mass within the Assembly.
 
-Radial thermal expansion occurs for each component in the block and mechanical contact of components is not accounted for, meaning that the radial expansion of one component is independent from the radial expansion of the others. Solid components are linked to gas/fluid components (i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in component temperatures. Alternatively, the axial thermal expansion of a block within an assembly does influence other block positions. Blocks are dynamically linked in the axial direction. So, while axial thermal expansion evaluations of each block are treated independently, the axial mesh points are updated to account for the physical material displacements across the entire assembly length
+Radial thermal expansion occurs for each component in the Block and mechanical contact of components is not accounted for, meaning that the radial expansion of one Component is independent from the radial expansion of the others. Solid components are linked to gas/fluid components (i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in Component temperatures. Alternatively, the axial thermal expansion of a Block within an Assembly does influence other Block positions. Blocks are dynamically linked in the axial direction. So, while axial thermal expansion evaluations of each Block are treated independently, the axial mesh points are updated to account for the physical material displacements across the entire assembly length
 
 The following two tables provide illustrations of the axial thermal expansion process for an example core assembly. In this example there are four main block types defined: Shield, Fuel, Plenum, and Dummy.
 
@@ -160,7 +160,7 @@ The following two tables provide illustrations of the axial thermal expansion pr
 
     Simplified Illustration of Axial Thermal Expansion Process for a Core Assembly
 
-The target components for each block type are provided in the following table:
+The target components for each Block type are provided in the following table:
 
 .. list-table:: : Example Assignment of Target Components within Blocks
    :widths: 50 50
@@ -177,7 +177,7 @@ The target components for each block type are provided in the following table:
    * - Dummy
      - N/A
 
-The axial thermal expansion algorithm is applied in four (4) main steps:
+The axial thermal expansion algorithm is applied in four steps:
 
 * Step 1: Expand the axial dimensions of target components and non-target components within each block independently.
 * Step 2: Align blocks axially such that common components have consistent alignments (e.g., overlapping radial dimensions).
