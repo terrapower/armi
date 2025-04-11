@@ -1175,14 +1175,13 @@ class Operator:
         """
         Process a snapshot request at this time.
 
-        This copies various physics input and output files to a special folder that
-        follow-on analysis be executed upon later.
+        This copies various physics input and output files to a special folder that follow-on
+        analysis be executed upon later.
 
         Notes
         -----
-        This was originally used to produce MC2/DIF3D inputs for external
-        parties (who didn't have ARMI) to review. Since then, the concept
-        of snapshots has evolved with respect to the
+        This was originally used to produce MC2/DIF3D inputs for external parties (who didn't have
+        ARMI) to review. Since then, the concept of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
@@ -1204,9 +1203,9 @@ class Operator:
         else:
             os.mkdir(newFolder)
 
-        # Moving the cross section files is to a snapshot directory is a reasonable
-        # requirement, but these hard-coded names are not desirable. This is legacy
-        # and should be updated to be more robust for users.
+        # Moving the cross section files is to a snapshot directory is a reasonable requirement, but
+        # these hard-coded names are not desirable. This is legacy and should be updated to be more
+        # robust for users.
         for fileName in os.listdir("."):
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
@@ -1245,9 +1244,6 @@ class Operator:
         pathTools.copyOrWarn("DIF3D output for snapshot", globalFluxOutput, newFolder)
         pathTools.copyOrWarn(
             "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
-        )
-        pathTools.copyOrWarn(
-            "Geometry file for snapshot", self.cs["geomFile"], newFolder
         )
         pathTools.copyOrWarn(
             "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder

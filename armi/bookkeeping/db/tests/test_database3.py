@@ -555,17 +555,15 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_DB_BP
         """
         inputs = self.db.readInputsFromDB()
-        self.assertEqual(len(inputs), 3)
+        self.assertEqual(len(inputs), 2)
 
         # settings
         self.assertGreater(len(inputs[0]), 100)
         self.assertIn("settings:", inputs[0])
 
-        self.assertEqual(len(inputs[1]), 0)
-
         # blueprints
-        self.assertGreater(len(inputs[2]), 100)
-        self.assertIn("blocks:", inputs[2])
+        self.assertGreater(len(inputs[1]), 2400)
+        self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
         self.assertTrue(isinstance(self.db, database.Database))

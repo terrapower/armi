@@ -68,7 +68,6 @@ CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_FRESH_FEED_TYPE = "freshFeedType"
-CONF_GEOM_FILE = "geomFile"
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
@@ -542,12 +541,6 @@ def defineSettings() -> List[setting.Setting]:
             description="The type of fresh fuel added to the core, used in certain pre-defined "
             "fuel shuffling logic sequences.",
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
-        ),
-        setting.Setting(
-            CONF_GEOM_FILE,
-            default="",
-            label="Core Map Input File",
-            description="Input file containing BOL core map",
         ),
         setting.Setting(
             CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
