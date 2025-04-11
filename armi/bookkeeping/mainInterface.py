@@ -41,7 +41,7 @@ def describeInterfaces(_cs):
 
 class MainInterface(interfaces.Interface):
     """
-    Do some basic manipulations, calls, Instantiates the databse.
+    Do some basic manipulations, calls, Instantiates the database.
 
     Notes
     -----
