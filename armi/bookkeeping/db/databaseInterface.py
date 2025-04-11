@@ -103,10 +103,9 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        Main Interface calls this so that the database is available as early as
-        possible in the run. The database interface interacts near the end of the
-        interface stack (so that all the parameters have been updated) while the Main
-        Interface interacts first.
+        Main Interface calls this so that the database is available as early as possible in the run.
+        The database interface interacts near the end of the interface stack (so that all the
+        parameters have been updated) while the Main Interface interacts first.
         """
         if fName is None:
             self._dbPath = pathlib.Path(self.cs.caseTitle + ".h5")
@@ -120,18 +119,7 @@ class DatabaseInterface(interfaces.Interface):
             )
         self._db = Database(self._dbPath, "w")
         self._db.open()
-
-        # Grab geomString here because the DB-level has no access to the reactor or
-        # blueprints or anything.
-        # There's not always a geomFile; we are moving towards the core grid definition
-        # living in the blueprints themselves. In this case, the db doesn't need to store
-        # a geomFile at all.
-        if self.cs["geomFile"]:
-            with open(os.path.join(self.cs.inputDirectory, self.cs["geomFile"])) as f:
-                geomString = f.read()
-        else:
-            geomString = ""
-        self._db.writeInputsToDB(self.cs, geomString=geomString)
+        self._db.writeInputsToDB(self.cs)
 
     def interactEveryNode(self, cycle, node):
         """
@@ -141,8 +129,8 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        - if tight coupling is enabled, the DB will be written in operator.py::Operator::_timeNodeLoop
-          via writeDBEveryNode
+        - If tight coupling is enabled, the DB will be written in ``Operator::_timeNodeLoop`` via
+          writeDBEveryNode.
         """
         if self.o.cs["tightCoupling"]:
             # h5 can't handle overwriting so we skip here and write once the tight coupling loop has completed
