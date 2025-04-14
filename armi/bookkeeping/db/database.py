@@ -55,7 +55,7 @@ from typing import (
 import h5py
 import numpy as np
 
-from armi import context, getApp, meta, runLog, settings
+from armi import context, getApp, getPluginManagerOrFail, meta, runLog, settings
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.layout import (
     DB_VERSION,
@@ -734,6 +734,7 @@ class Database:
 
         cs = cs or self.loadCS(handleInvalids=handleInvalids)
         bp = bp or self.loadBlueprints()
+        getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
         if node < 0:
             numNodes = getNodesPerCycle(cs)[cycle]

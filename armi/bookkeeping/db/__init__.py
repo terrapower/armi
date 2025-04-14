@@ -147,10 +147,10 @@ def loadOperator(
         # so creating a reactor from the database should be included.
         cs = db.loadCS(handleInvalids=handleInvalids)
         thisCase = cases.Case(cs)
-
         r = db.load(
             loadCycle,
             loadNode,
+            cs=cs,
             statePointName=statePointName,
             allowMissing=allowMissing,
             handleInvalids=handleInvalids,
