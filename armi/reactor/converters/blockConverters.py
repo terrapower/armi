@@ -74,7 +74,6 @@ class BlockConverter:
             ),
             single=True,
         )
-        print(f"{soluteName} into {solventName}")
         # break up dimension links since we will be messing with this block's components
         newBlock = copy.deepcopy(self._sourceBlock)
         # cannot pass components directly since the new block will have new components
