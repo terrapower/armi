@@ -2318,7 +2318,7 @@ class ArmiObject(metaclass=CompositeModelType):
             return None
         elif nComp > 1:
             raise ValueError(
-                "More than one component named '{}' in {}".format(self, name)
+                "More than one component named '{}' in {}".format(name, self)
             )
         else:
             return components[0]
