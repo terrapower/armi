@@ -352,6 +352,7 @@ class AverageBlockCollection(BlockCollection):
             newBlock.setNumberDensities(self._getAverageNumberDensities())
 
         newBlock.p.percentBu = self._calcWeightedBurnup()
+        newBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return newBlock
 
@@ -575,6 +576,7 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             )
             for nuc, aDensity in zip(allNucsNames, densities):
                 c.setNumberDensity(nuc, aDensity)
+        repBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return repBlock
 
