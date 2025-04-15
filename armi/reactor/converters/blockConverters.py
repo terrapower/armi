@@ -74,6 +74,7 @@ class BlockConverter:
             ),
             single=True,
         )
+        print(f"{soluteName} into {solventName}")
         # break up dimension links since we will be messing with this block's components
         newBlock = copy.deepcopy(self._sourceBlock)
         # cannot pass components directly since the new block will have new components
@@ -88,9 +89,9 @@ class BlockConverter:
         runLog.debug("removing {}".format(solute))
         # skip recomputation of area fractions because the blocks still have 0 height at this stage and derived
         # shape volume computations will fail
+        solute.mergeNuclidesInto(solvent)
         newBlock.remove(solute, recomputeAreaFractions=False)
         self._sourceBlock = newBlock
-        solute.mergeNuclidesInto(solvent)
 
         # adjust new shape area.
         if solvent.__class__ is components.DerivedShape:
