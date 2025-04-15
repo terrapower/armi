@@ -773,9 +773,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             od=outDiameter,
             mult=1,
         )
-        # set number densities directly to avoid material expansion
-        circle.p.nuclides = baseComponent.p.nuclides
-        circle.p.numberDensities = baseComponent.p.numberDensities
+        circle.setNumberDensities(baseComponent.getNumberDensities())
         circle.p.flags = baseComponent.p.flags
         return circle
 
