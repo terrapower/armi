@@ -81,12 +81,19 @@ def buildSimpleFuelBlock():
 
     return b
 
+
 def buildLinkedFuelBlock():
     """Return a simple hex block containing linked bond."""
     b = blocks.HexBlock("fuel", height=10.0)
 
     fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
-    bondDims = {"Tinput": 25.0, "Thot": 450, "od": "clad.id", "id": "fuel.od", "mult": 127.0}
+    bondDims = {
+        "Tinput": 25.0,
+        "Thot": 450,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
     cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
     ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
     intercoolantDims = {
