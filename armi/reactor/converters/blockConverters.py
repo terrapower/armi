@@ -90,6 +90,7 @@ class BlockConverter:
         # shape volume computations will fail
         newBlock.remove(solute, recomputeAreaFractions=False)
         self._sourceBlock = newBlock
+        solute.mergeNuclidesInto(solvent)
 
         # adjust new shape area.
         if solvent.__class__ is components.DerivedShape:
@@ -122,7 +123,6 @@ class BlockConverter:
             self._verifyExpansion(solute, solvent)
 
         solvent.changeNDensByFactor(oldArea / solvent.getArea())
-        solute.mergeNuclidesInto(solvent)
 
     def _checkInputs(self, soluteName, solventName, solute, solvent):
         if solute is None or solvent is None:
@@ -773,7 +773,9 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             od=outDiameter,
             mult=1,
         )
-        circle.setNumberDensities(baseComponent.getNumberDensities())
+        # set number densities directly to avoid material expansion
+        circle.p.nuclides = baseComponent.p.nuclides
+        circle.p.numberDensities = baseComponent.p.numberDensities
         circle.p.flags = baseComponent.p.flags
         return circle
 
