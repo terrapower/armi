@@ -521,7 +521,7 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     return nvt, nv
 
 
-class CylindricalComponentsAverageBlockCollection(BlockCollection):
+class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
     """
     Creates a representative block for the purpose of cross section generation with a one-
     dimensional cylindrical model.
@@ -570,12 +570,13 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
-        for c, allSimilarComponents in zip(sorted(repBlock), componentsInOrder):
+        for i, (c, allSimilarComponents) in enumerate(zip(sorted(repBlock), componentsInOrder)):
             allNucsNames, densities = self._getAverageComponentNucs(
                 allSimilarComponents, bWeights
             )
             for nuc, aDensity in zip(allNucsNames, densities):
                 c.setNumberDensity(nuc, aDensity)
+            c.temperatureInC = self._getAverageComponentTemperature(i)
         repBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return repBlock
