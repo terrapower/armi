@@ -104,7 +104,7 @@ class TestOperatorSnapshotsSettings(unittest.TestCase):
         self.assertEqual(clazz, OperatorSnapshots)
 
 
-class TestOperatorSnaphotFullCoreExpansion(unittest.TestCase):
+class TestOperatorSnapshotFullCoreExpansion(unittest.TestCase):
     """Test that a snapshot operator can do full core analysis with a 1/3 core DB."""
 
     DB_PATH = Path("test_operator_snapshot_full_core_expansion.h5")
