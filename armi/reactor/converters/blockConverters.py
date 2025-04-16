@@ -88,6 +88,7 @@ class BlockConverter:
         runLog.debug("removing {}".format(solute))
         # skip recomputation of area fractions because the blocks still have 0 height at this stage and derived
         # shape volume computations will fail
+        solute.mergeNuclidesInto(solvent)
         newBlock.remove(solute, recomputeAreaFractions=False)
         self._sourceBlock = newBlock
 
@@ -122,7 +123,6 @@ class BlockConverter:
             self._verifyExpansion(solute, solvent)
 
         solvent.changeNDensByFactor(oldArea / solvent.getArea())
-        solute.mergeNuclidesInto(solvent)
 
     def _checkInputs(self, soluteName, solventName, solute, solvent):
         if solute is None or solvent is None:
@@ -640,6 +640,21 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         """
         pinComponents, nonPins = [], []
 
+        pinComponentFlags = [
+            Flags.FUEL,
+            Flags.ANNULAR | Flags.VOID,
+            Flags.GAP,
+            Flags.BOND,
+            Flags.LINER,
+            Flags.CLAD,
+            Flags.WIRE,
+            Flags.CONTROL,
+            Flags.REFLECTOR,
+            Flags.SHIELD,
+            Flags.SLUG,
+            Flags.PIN,
+        ]
+
         for c in self._sourceBlock:
 
             # If the area of the component is negative than this component should be skipped
@@ -649,10 +664,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             if c.getArea() < 0.0:
                 continue
 
-            if (
-                self._sourceBlock.getNumComponents(c.p.flags)
-                == self._sourceBlock.getNumPins()
-            ):
+            if any(c.hasFlags(f) for f in pinComponentFlags):
                 pinComponents.append(c)
             elif (
                 c.name != "coolant"
