@@ -309,15 +309,15 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        Will load preferentially from the `fileName` if passed. Otherwise will load from
-        existing database in memory or `cs["reloadDBName"]` in that order.
+        Will load preferentially from the ``fileName`` if passed. Otherwise will load from
+        existing database in memory or ``cs["reloadDBName"`]` in that order.
 
         Raises
         ------
         RuntimeError
             If fileName is specified and that  file does not have the time step.
             If fileName is not specified and neither the database in memory, nor the
-            `cs["reloadDBName"]` have the time step specified.
+            ``cs["reloadDBName"]`` have the time step specified.
         """
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
