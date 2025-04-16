@@ -779,7 +779,7 @@ class Database:
                 "temporary and will be removed by 2024."
             )
 
-        if cs[CONF_GROW_TO_FULL_CORE_AFTER_LOAD]:
+        if cs[CONF_GROW_TO_FULL_CORE_AFTER_LOAD] and not root.core.isFullCore:
             root.core.growToFullCore(cs)
 
         return root

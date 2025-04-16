@@ -17,6 +17,7 @@ import os
 import shutil
 import subprocess
 import unittest
+from unittest.mock import Mock, patch
 from glob import glob
 
 import h5py
@@ -199,6 +200,20 @@ class TestDatabase(unittest.TestCase):
         cs = cs.modified(newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True})
         r = self.db.load(0, 0, cs=cs, allowMissing=True)
         self.assertTrue(r.core.isFullCore)
+
+    def test_dontExpandIfFullCoreInDB(self):
+        """Test that a full core reactor in the database is not expanded further."""
+        self.assertFalse(self.r.core.isFullCore)
+        self.db.writeToDB(self.r)
+        cs = self.db.loadCS()
+        cs = cs.modified(newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True})
+        mockGrow = Mock()
+        with (
+            patch("armi.reactor.cores.Core.isFullCore", Mock(return_value=True)),
+            patch("armi.reactor.cores.Core.growToFullCore", mockGrow),
+        ):
+            self.db.load(0, 0, cs=cs)
+        mockGrow.assert_not_called()
 
 
 class TestDatabaseSmaller(unittest.TestCase):
