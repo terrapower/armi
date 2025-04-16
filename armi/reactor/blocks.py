@@ -2213,16 +2213,16 @@ class HexBlock(Block):
 
         # Do some validation: Should we try to create a spatial grid?
         multz = {float(m) for m in mults}
-        if len(multz) == 1 and list(multz)[0] == 1.0:
+        if len(multz) == 1 and 1.0 in multz:
             runLog.extra(
-                f"Will not create a spatialGrid for block {self.p.type}, multiplicities are are all 1.",
+                f"Block {self.p.type} does not need a spatial grid: multiplicities are all 1.",
                 single=True,
             )
             return
         elif len(multz) != 2 or 1.0 not in multz:
             runLog.extra(
-                f"Could not create a spatialGrid for block {self.p.type}, multiplicities are not 1 "
-                f"or N they are {mults}",
+                f"Could not create a spatialGrid for block {self.p.type}, multiplicities are not {{1, N}} "
+                f"they are {mults}",
                 single=True,
             )
             return
