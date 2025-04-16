@@ -120,6 +120,7 @@ class TestOperatorSnaphotFullCoreExpansion(unittest.TestCase):
         )
         dbi.initDB(cls.DB_PATH)
         dbi.writeDBEveryNode()
+        dbi.closeDB()
 
         cls.snapshotSettings: settings.Settings = o.cs.modified(
             newSettings={
