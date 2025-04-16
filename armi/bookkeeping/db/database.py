@@ -76,8 +76,8 @@ from armi.reactor.parameters import parameterCollections
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import (
-    CONF_SORT_REACTOR,
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
+    CONF_SORT_REACTOR,
 )
 from armi.utils import getNodesPerCycle, safeCopy, safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions

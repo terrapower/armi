@@ -14,13 +14,12 @@
 
 """Tests for operator snapshots."""
 import unittest
-from unittest.mock import Mock, patch
 from pathlib import Path
+from unittest.mock import Mock
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.operators import getOperatorClassFromSettings
-from armi.operators.operator import Operator
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
 from armi.testing import loadTestReactor, reduceTestReactorRings

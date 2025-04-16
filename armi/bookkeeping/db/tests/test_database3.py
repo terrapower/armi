@@ -31,8 +31,8 @@ from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.settings.fwSettings.globalSettings import (
-    CONF_SORT_REACTOR,
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
+    CONF_SORT_REACTOR,
 )
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
