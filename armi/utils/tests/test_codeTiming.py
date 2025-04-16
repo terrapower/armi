@@ -53,46 +53,34 @@ class CodeTimingTest(unittest.TestCase):
         t0 = timer.stop()
         self.assertEqual(timer.overStart, 0)
 
-        time.sleep(0.01)
-        t1 = timer.start()
-        self.assertGreater(t1, t0)
-        self.assertEqual(timer.overStart, 0)
+        # run start a few times in a row, to trip the overstart
+        for i in range(5):
+            time.sleep(0.01)
+            t1 = timer.start()
+            self.assertGreater(t1, t0)
+            t0 = t1
+            self.assertEqual(timer.overStart, i)
 
-        time.sleep(0.01)
-        t2 = timer.start()
-        self.assertGreater(t2, t1)
-        self.assertEqual(timer.overStart, 1)
+        # run stop a few times in a row, which is allowed for race conditions
+        for i in range(5):
+            time.sleep(0.01)
+            t2 = timer.stop()
+            self.assertGreater(t2, t1)
+            t1 = t2
+            self.assertEqual(timer.overStart, 3 - i if 3 - i > 0 else 0)
 
-        time.sleep(0.01)
-        t3 = timer.stop()
-        self.assertGreater(t3, t2)
-        self.assertEqual(timer.overStart, 0)
-
-        time.sleep(0.01)
-        t4 = timer.stop()
-        self.assertGreater(t4, t3)
-        self.assertEqual(timer.overStart, 0)
-
-        time.sleep(0.01)
-        t5 = timer.stop()
-        self.assertGreater(t5, t4)
-        self.assertEqual(timer.overStart, 0)
-
+        # start will always work from a stopped state
         time.sleep(0.01)
         t6 = timer.start()
-        self.assertGreater(t6, t5)
+        self.assertGreater(t6, t2)
         self.assertEqual(timer.overStart, 0)
 
+        # start a second timer to show two can run at once
         time.sleep(0.01)
         timer2 = master.endTimer("wazzlewazllewazzzle")
         t7 = timer2.start()
         self.assertGreater(t7, t6)
         self.assertEqual(timer2.overStart, 0)
-
-        time.sleep(0.01)
-        t8 = timer2.start()
-        self.assertGreater(t8, t7)
-        self.assertEqual(timer2.overStart, 1)
 
         # use the timers as context managers
         with timer2:
@@ -101,7 +89,7 @@ class CodeTimingTest(unittest.TestCase):
 
         # There should be one start/stop each, leaving the over start count the same
         self.assertEqual(timer.overStart, 0)
-        self.assertEqual(timer2.overStart, 1)
+        self.assertEqual(timer2.overStart, 0)
 
     def test_propertyAccess(self):
         """Test property access is okay."""
