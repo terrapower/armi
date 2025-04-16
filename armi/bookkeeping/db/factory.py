@@ -30,7 +30,7 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
     dbName: str
         Path to db file, e.g. `baseCase.h5`
     permission: str
-        String defining permission, `r` for read only. See armi.bookeeping.db.permissions
+        String defining permission, `r` for read only. See armi.bookkeeping.db.permissions
     version: str, optional
         Version of database you want to read or write. In most cases ARMI will
         auto-detect. For advanced users.

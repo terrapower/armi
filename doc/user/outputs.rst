@@ -159,9 +159,6 @@ The broad strokes of the database structure is outlined below.
    * - ``/inputs/settings``
      - string
      - A representation of the settings file that was used to create the case
-   * - ``/inputs/geomFile``
-     - string
-     - A representation of the geometry file used to create the case
    * - ``/inputs/blueprints``
      - string
      - A representation of the blueprints file that used to create the case
