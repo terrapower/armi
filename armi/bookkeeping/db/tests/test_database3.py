@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database class."""
-from glob import glob
 import io
 import os
 import shutil
 import subprocess
 import unittest
+from glob import glob
 from unittest.mock import Mock, patch
 
 import h5py
