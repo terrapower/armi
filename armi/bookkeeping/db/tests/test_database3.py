@@ -198,7 +198,7 @@ class TestDatabase(unittest.TestCase):
         self.db.writeToDB(self.r)
         cs = self.db.loadCS()
         cs = cs.modified(newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True})
-        r = self.db.load(0, 0, cs=cs, allowMissing=True)
+        r: Reactor = self.db.load(0, 0, cs=cs)
         self.assertTrue(r.core.isFullCore)
 
     def test_dontExpandIfFullCoreInDB(self):
