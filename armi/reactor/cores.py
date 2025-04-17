@@ -2251,8 +2251,6 @@ class Core(composites.Composite):
                 applySubMesh=True,
             )
 
-        # self.numRings = self.getNumRings()  # TODO: why needed?
-
         self.getNuclideCategories()
 
         # Generate list of flags that are to be stationary during assembly shuffling
@@ -2262,9 +2260,7 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
-
         self.setBlockMassParams()
-
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -2273,8 +2269,8 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined manually in the given Settings file,
-        in the `zoneDefinitions` setting.
+        Build the Zones that are defined manually in the given Settings file, in the
+        `zoneDefinitions` setting.
 
         Parameters
         ----------
@@ -2292,9 +2288,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        This function will just define the Zones it sees in the settings, it does
-        not do any validation against a Core object to ensure those manual zones
-        make sense.
+        This function will just define the Zones it sees in the settings, it does not do any
+        validation against a Core object to ensure those manual zones make sense.
         """
         runLog.debug(
             "Building Zones by manual definitions in `zoneDefinitions` setting"
@@ -2321,8 +2316,8 @@ class Core(composites.Composite):
     ) -> Iterator[blocks.Block]:
         """Iterate over the blocks in the core.
 
-        Useful for operations that just want to find all the blocks in the core
-        with light filtering.
+        Useful for operations that just want to find all the blocks in the core with light
+        filtering.
 
         Parameters
         ----------
@@ -2331,8 +2326,8 @@ class Core(composites.Composite):
         exact: bool, optional
             Strictness on the usage of ``typeSpec`` used in :meth:`armi.reactor.composites.hasFlags`
         predicate: f(block) -> bool, optional
-            Limit the traversal to blocks that pass this predicate. Can be used in addition to ``typeSpec``
-            to perform more advanced filtering.
+            Limit the traversal to blocks that pass this predicate. Can be used in addition to
+            ``typeSpec`` to perform more advanced filtering.
 
         Returns
         -------
