@@ -2012,8 +2012,8 @@ class Core(composites.Composite):
         Parameters
         ----------
         target : float
-            This is the fraction of the total reactor fuel flux compared to the flux in a
-            specific assembly in a ring
+            This is the fraction of the total reactor fuel flux compared to the flux in a specific
+            assembly in a ring
 
         Returns
         -------
@@ -2031,17 +2031,15 @@ class Core(composites.Composite):
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
-            # compare to outer most ring
-            # flatten list into one list of all blocks
+            # Compare to outer most ring. flatten list into one list of all blocks
             blocksInRing = list(
-                itertools.chain(
-                    *[
+                itertools.chain.from_iterable(
+                    [
                         a.iterBlocks(Flags.FUEL)
                         for a in self.getAssembliesInRing(ringNumber)
                     ]
                 )
             )
-            # TODO: itertools.chain.from_iterable(...)
 
             totalPower = self.getTotalBlockParam("flux", objs=allFuelBlocks)
             ringPower = self.getTotalBlockParam("flux", objs=blocksInRing)
