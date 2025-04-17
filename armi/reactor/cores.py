@@ -2203,7 +2203,7 @@ class Core(composites.Composite):
          * It process boosters,
          * sets axial snap lists,
          * checks the geometry,
-         * sets up location tables ( tracks where the initial feeds were (for moderation or something)
+         * sets up location tables (tracks where the initial feeds were (for moderation or something)
 
         See Also
         --------
@@ -2226,9 +2226,8 @@ class Core(composites.Composite):
             )
 
         if dbLoad:
-            # reactor.blueprints.assemblies need to be populated
-            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
-            # but for DB load, this is not called so it must be here.
+            # reactor.blueprints.assemblies need to be populated this normally happens during
+            # blueprint constructAssem. But for DB load, this is not called so it must be here.
             self.parent.blueprints._prepConstruction(cs)
         else:
             # set reactor level meshing params
@@ -2236,8 +2235,8 @@ class Core(composites.Composite):
                 Flags.fromStringIgnoreErrors(t)
                 for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
             ]
-            # some assemblies, like control assemblies, have a non-conforming mesh
-            # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
+            # Some assemblies, like control assemblies, have a non-conforming mesh and should not be
+            # included in self.p.referenceBlockAxialMesh and self.p.axialMesh
             uniformAssems = [
                 a
                 for a in self.getAssemblies()
@@ -2252,7 +2251,7 @@ class Core(composites.Composite):
                 applySubMesh=True,
             )
 
-        self.numRings = self.getNumRings()  # TODO: why needed?
+        # self.numRings = self.getNumRings()  # TODO: why needed?
 
         self.getNuclideCategories()
 
