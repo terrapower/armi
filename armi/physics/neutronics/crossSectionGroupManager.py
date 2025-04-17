@@ -348,7 +348,6 @@ class AverageBlockCollection(BlockCollection):
                 )
                 c.temperatureInC = self._getAverageComponentTemperature(compIndex)
         else:
-            # newBlock.setNumberDensities(self._getAverageNumberDensities()) # TODO: JOHN
             numberDensities = self._getAverageNumberDensities()
             numberDensities.update(
                 {

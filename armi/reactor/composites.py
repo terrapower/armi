@@ -1499,25 +1499,6 @@ class ArmiObject(metaclass=CompositeModelType):
         for child in activeChildren:
             child.setNumberDensity(nucName, dehomogenizedNdens)
 
-    def setNumberDensitiesTODOJOHN(self, numberDensities):  # TODO: JOHN
-        """
-        Set one or more multiple number densities. Reset any non-listed nuclides to 0.0.
-
-        Parameters
-        ----------
-        numberDensities : dict
-            nucName: ndens pairs
-
-        Notes
-        -----
-        We'd like to not have to call setNumberDensity for each nuclide because we do not want to
-        call ``getVolumeFractions`` for each nuclide (it's inefficient).
-        """
-        numberDensities.update(
-            {nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities}
-        )
-        self.updateNumberDensities(numberDensities)
-
     def updateNumberDensities(self, numberDensities):
         """
         Set one or more multiple number densities. Leaves unlisted number densities alone.
@@ -1582,7 +1563,6 @@ class ArmiObject(metaclass=CompositeModelType):
         )
         self.updateNumberDensities(densitiesScaled)
 
-        # self.setNumberDensities(densitiesScaled)  # TODO: JOHN
         # Update detailedNDens
         if self.p.detailedNDens is not None:
             self.p.detailedNDens *= factor
@@ -1596,9 +1576,6 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Set to almost zero, so components remember which nuclides are where.
         """
-        # ndens = {nuc: units.TRACE_NUMBER_DENSITY for nuc in self.getNuclides()}
-        # self.setNumberDensities(ndens) # TODO: JOHN
-
         numberDensities = {
             nuc: units.TRACE_NUMBER_DENSITY for nuc in self.getNuclides()
         }

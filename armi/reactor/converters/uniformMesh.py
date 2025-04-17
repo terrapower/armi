@@ -1547,7 +1547,7 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
         {nuc: 0.0 for nuc in block.getNuclides() if nuc not in totalDensities}
     )
     block.updateNumberDensities(totalDensities)
-    # block.setNumberDensities(dict(totalDensities)) # TODO: JOHN
+
     # Set the volume of each component in the block to `None` so that the volume of each component
     # is recomputed.
     for c in block:
