@@ -848,20 +848,18 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             elif not sourceBlocksInfo:
                 raise ValueError(
-                    "An error occurred when attempting to map to the "
-                    f"results from {sourceAssembly} to {destinationAssembly}. "
-                    f"No blocks in {sourceAssembly} exist between the axial "
-                    f"elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} cm. "
-                    "This a major bug in the uniform mesh converter that should "
-                    "be reported to the developers."
+                    f"An error occurred when attempting to map to the results from "
+                    f"{sourceAssembly} to {destinationAssembly}. No blocks in {sourceAssembly} "
+                    f"exist between the axial elevations of {zLower:<12.5f} cm and {zUpper:<12.5f} "
+                    "cm. This a major bug in the uniform mesh converter that should be reported."
                 )
 
             if mapNumberDensities:
                 setNumberDensitiesFromOverlaps(destBlock, sourceBlocksInfo)
 
-            # Iterate over each of the blocks that were found in the uniform mesh
-            # source assembly within the lower and upper bounds of the destination
-            # block and perform the parameter mapping.
+            # Iterate over each of the blocks that were found in the uniform mesh source assembly
+            # within the lower and upper bounds of the destination block and perform the parameter
+            # mapping.
             if paramMapper is not None:
                 updatedDestVals = collections.defaultdict(float)
                 for sourceBlock, sourceBlockOverlapHeight in sourceBlocksInfo:
@@ -894,14 +892,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     destBlock, updatedDestVals.values(), updatedDestVals.keys()
                 )
 
-        # If requested, the reaction rates will be calculated based on the
-        # mapped neutron flux and the XS library.
+        # If requested, the reaction rates will be calculated based on the mapped neutron flux and
+        # the XS library.
         if calcReactionRates:
             if paramMapper is None:
                 runLog.warning(
-                    f"Reaction rates requested for {destinationAssembly}, but no ParamMapper "
-                    "was provided to setAssemblyStateFromOverlaps(). Reaction rates calculated "
-                    "will reflect the intended result without new parameter values being mapped in."
+                    f"Reaction rates requested for {destinationAssembly}, but no ParamMapper was "
+                    "provided to setAssemblyStateFromOverlaps(). Reaction rates calculated will "
+                    "reflect the intended result without new parameter values being mapped in."
                 )
             core = sourceAssembly.getAncestor(lambda c: isinstance(c, Core))
             if core is not None:
@@ -961,16 +959,16 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             assemsToPlot.append(coreAssems[0])
 
-        # Obtain the plot numbering based on the existing files so that existing plots
-        # are not overwritten.
+        # Obtain the plot numbering based on the existing files so that existing plots are not
+        # overwritten.
         start = 0
         existingFiles = glob.glob(
             f"{self.convReactor.core.name}AssemblyTypes" + "*" + ".png"
         )
-        # This loops over the existing files for the assembly types outputs
-        # and makes a unique integer value so that plots are not overwritten. The
-        # regular expression here captures the first integer as AssemblyTypesX and
-        # then ensures that the numbering in the next enumeration below is 1 above that.
+        # This loops over the existing files for the assembly types outputs and makes a unique
+        # integer value so that plots are not overwritten. The regular expression here captures the
+        # first integer as AssemblyTypesX and then ensures that the numbering in the next
+        # enumeration below is 1 above that.
         for f in existingFiles:
             newStart = int(re.search(r"\d+", f).group())
             if newStart > start:
@@ -998,11 +996,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Notes
         -----
-        The parameters mapped into and out of the uniform mesh will vary depending on
-        the physics kernel using the uniform mesh. The parameters to be mapped in each
-        direction are defined as a class attribute. New options can be created by extending
-        the base class with different class attributes for parameters to map, and applying
-        special modifications to these categorized lists with the `_setParamsToUpdate` method.
+        The parameters mapped into and out of the uniform mesh will vary depending on the physics
+        kernel using the uniform mesh. The parameters to be mapped in each direction are defined as
+        a class attribute. New options can be created by extending the base class with different
+        class attributes for parameters to map, and applying special modifications to these
+        categorized lists with the `_setParamsToUpdate` method.
 
         This base class `_setParamsToUpdate()` method should not be called, so this raises a
         NotImplementedError.
@@ -1010,12 +1008,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         Parameters
         ----------
         direction : str
-            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
-            Different parameters are mapped in each direction.
-
-        Raises
-        ------
-        NotImplementedError
+            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of
+            it. Different parameters are mapped in each direction.
         """
         raise NotImplementedError
 
@@ -1032,10 +1026,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
     def _buildAllUniformAssemblies(self):
         """
-        Loop through each new block for each mesh point and apply conservation of atoms.
-        We use the submesh and allow blocks to be as small as the smallest submesh to
-        avoid unnecessarily diffusing small blocks into huge ones (e.g. control blocks
-        into plenum).
+        Loop through each new block for each mesh point and apply conservation of atoms. We use the
+        submesh and allow blocks to be as small as the smallest submesh to avoid unnecessarily
+        diffusing small blocks into huge ones (e.g. control blocks into plenum).
         """
         runLog.debug(
             f"Creating new assemblies from {self._sourceReactor.core} "
@@ -1072,14 +1065,13 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Notes
         -----
-        This is a basic parameter mapping routine that can be used by most sub-classes.
-        If special mapping logic is required, this method can be defined on sub-classes as necessary.
+        This is a basic parameter mapping routine that can be used by most sub-classes. If special
+        mapping logic is required, this method can be defined on sub-classes as necessary.
         """
         # Map reactor core parameters
         for paramName in self.paramMapper.reactorParamNames:
-            # Check if the source reactor has a value assigned for this
-            # parameter and if so, then apply it. Otherwise, revert back to
-            # the original value.
+            # Check if the source reactor has a value assigned for this parameter and if so, then
+            # apply it. Otherwise, revert back to the original value.
             if (
                 sourceReactor.core.p[paramName]
                 or paramName not in self._cachedReactorCoreParamData
@@ -1101,23 +1093,25 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     calcReactionRates=False,
                 )
 
-            # If requested, the reaction rates will be calculated based on the
-            # mapped neutron flux and the XS library.
+            # If requested, the reaction rates will be calculated based on the mapped neutron flux
+            # and the XS library.
             if self.calcReactionRates:
                 self._calculateReactionRatesEfficient(
                     destReactor.core, sourceReactor.core.p.keff
                 )
 
-        # Clear the cached data after it has been mapped to prevent issues with
-        # holding on to block data long-term.
+        # Clear the cached data after it has been mapped to prevent issues with holding on to block
+        # data long-term.
         self._cachedReactorCoreParamData = {}
 
     @staticmethod
     def _calculateReactionRatesEfficient(core, keff):
         """
-        First, sort blocks into groups by XS type. Then, we just need to grab micros for each XS type once.
+        First, sort blocks into groups by XS type. Then, we just need to grab micros for each XS
+        type once.
 
-        Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
+        Iterate over list of blocks with the given XS type; calculate reaction rates for these
+        blocks.
         """
         xsTypeGroups = collections.defaultdict(list)
         for b in core.iterBlocks():
@@ -1141,16 +1135,15 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Notes
         -----
-        If a block in the assembly does not contain any multi-group flux
-        than the reaction rate calculation for this block will be skipped.
+        If a block in the assembly does not contain any multi-group flux than the reaction rate
+        calculation for this block will be skipped.
         """
         from armi.physics.neutronics.globalFlux import globalFluxInterface
 
         for b in assem:
-            # Checks if the block has a multi-group flux defined and if it
-            # does not then this will skip the reaction rate calculation. This
-            # is captured by the TypeError, due to a `NoneType` divide by float
-            # error.
+            # Checks if the block has a multi-group flux defined and if it does not then this will
+            # skip the reaction rate calculation. This is captured by the TypeError, due to a
+            # `NoneType` divide by float error.
             try:
                 b.getMgFlux()
             except TypeError:
@@ -1168,9 +1161,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
             :id: I_ARMI_FLUX_RX_RATES_BY_XS_ID
             :implements: R_ARMI_FLUX_RX_RATES
 
-            This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that
-            is more efficient when computing reaction rates for a large set of blocks
-            that share a common set of microscopic cross sections.
+            This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that is more
+            efficient when computing reaction rates for a large set of blocks that share a common
+            set of microscopic cross sections.
 
             For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
 
@@ -1182,14 +1175,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
             implemented for a block.
 
         keff : float
-            The keff of the core. This is required to get the neutron production rate correct
-            via the neutron balance statement (since nuSigF has a 1/keff term).
+            The keff of the core. This is required to get the neutron production rate correct via
+            the neutron balance statement (since nuSigF has a 1/keff term).
 
         xsNucDict: Dict[str, XSNuclide]
-            Microscopic cross sections to use in computing the reaction rates. Keys are
-            nuclide names (e.g., "U235") and values are the associated XSNuclide objects
-            from the cross section library, which contain the microscopic cross section
-            data for a given nuclide in the current cross section group.
+            Microscopic cross sections to use in computing the reaction rates. Keys are nuclide
+            names (e.g., "U235") and values are the associated XSNuclide objects from the cross
+            section library, which contain the microscopic cross section data for a given nuclide in
+            the current cross section group.
         """
         for obj in objList:
             rate = collections.defaultdict(float)
@@ -1246,10 +1239,10 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Notes
         -----
-        In some cases, we may want to read flux into a converted reactor from a
-        pre-existing physics output instead of mapping it in from the pre-conversion
-        source reactor. This method can be called after reading that flux in to
-        calculate updated reaction rates derived from that flux.
+        In some cases, we may want to read flux into a converted reactor from a pre-existing physics
+        output instead of mapping it in from the pre-conversion source reactor. This method can be
+        called after reading that flux in to calculate updated reaction rates derived from that
+        flux.
         """
         if self._hasNonUniformAssems:
             for assem in self.convReactor.core.getAssemblies(self._nonUniformMeshFlags):
@@ -1268,21 +1261,20 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
     Notes
     -----
-    This uniform mesh converter is intended for setting up an eigenvalue
-    (fission-source) neutronics solve. There are no block parameters that need
-    to be mapped in for a basic eigenvalue calculation, just number densities.
-    The results of the calculation are mapped out (i.e., back to the non-uniform
-    mesh). The results mapped out include things like flux, power, and reaction
+    This uniform mesh converter is intended for setting up an eigenvalue (fission-source) neutronics
+    solve. There are no block parameters that need to be mapped in for a basic eigenvalue
+    calculation, just number densities. The results of the calculation are mapped out (i.e., back to
+    the non-uniform mesh). The results mapped out include things like flux, power, and reaction
     rates.
 
-    .. warning::
-        If a parameter is calculated by a physics solver while the reactor is in its
-        converted (uniform mesh) state, that parameter *must* be included in the list
-        of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
-        reactor; otherwise, it will be lost. These lists are defined through the
-        `_setParamsToUpdate` method, which uses the `reactorParamMappingCategories` and
-        `blockParamMappingCategories` attributes and applies custom logic to create a list of
-        parameters to be mapped in each direction.
+    Warning
+    -------
+    If a parameter is calculated by a physics solver while the reactor is in its converted (uniform
+    mesh) state, that parameter *must* be included in the list of `reactorParamNames` or
+    `blockParamNames` to be mapped back to the non-uniform reactor; otherwise, it will be lost.
+    These lists are defined through the `_setParamsToUpdate` method, which uses the
+    `reactorParamMappingCategories` and `blockParamMappingCategories` attributes and applies custom
+    logic to create a list of parameters to be mapped in each direction.
     """
 
     reactorParamMappingCategories = {
@@ -1306,9 +1298,8 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
             Case settings object.
 
         calcReactionRates : bool, optional
-            Set to True by default, but if set to False the reaction
-            rate calculation after the neutron flux is remapped will
-            not be calculated.
+            Set to True by default, but if set to False the reaction rate calculation after the
+            neutron flux is remapped will not be calculated.
         """
         UniformMeshGeometryConverter.__init__(self, cs)
         self.calcReactionRates = calcReactionRates
@@ -1319,19 +1310,18 @@ class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
 
         Notes
         -----
-        For the fission-source neutronics calculation, there are no block parameters
-        that need to be mapped in. This function applies additional filters to the
-        list of categories defined in `blockParamMappingCategories[out]` to avoid mapping
-        out cumulative parameters like DPA or burnup. These parameters should not
-        exist on the neutronics uniform mesh assembly anyway, but this filtering
-        provides an added layer of safety to prevent data from being inadvertently
-        overwritten.
+        For the fission-source neutronics calculation, there are no block parameters that need to be
+        mapped in. This function applies additional filters to the list of categories defined in
+        `blockParamMappingCategories[out]` to avoid mapping out cumulative parameters like DPA or
+        burnup. These parameters should not exist on the neutronics uniform mesh assembly anyway,
+        but this filtering provides an added layer of safety to prevent data from being
+        inadvertently overwritten.
 
         Parameters
         ----------
         direction : str
-            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
-            Different parameters are mapped in each direction.
+            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of
+            it. Different parameters are mapped in each direction.
         """
         reactorParamNames = []
         blockParamNames = []
@@ -1374,18 +1364,18 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
     This uniform mesh converter is intended for setting up a fixed-source gamma transport solve.
     Some block parameters from the neutronics solve, such as `b.p.mgFlux`, may need to be mapped
     into the uniform mesh reactor so that the gamma source can be calculated by the ARMI plugin
-    performing gamma transport. Parameters that are updated with gamma transport results, such
-    as `powerGenerated`, `powerNeutron`, and `powerGamma`, need to be mapped back to the
-    non-uniform reactor.
+    performing gamma transport. Parameters that are updated with gamma transport results, such as
+    `powerGenerated`, `powerNeutron`, and `powerGamma`, need to be mapped back to the non-uniform
+    reactor.
 
-    .. warning::
-        If a parameter is calculated by a physics solver while the reactor is in its
-        converted (uniform mesh) state, that parameter *must* be included in the list
-        of `reactorParamNames` or `blockParamNames` to be mapped back to the non-uniform
-        reactor; otherwise, it will be lost. These lists are defined through the
-        `_setParamsToUpdate` method, which uses the `reactorParamMappingCategories` and
-        `blockParamMappingCategories` attributes and applies custom logic to create a list of
-        parameters to be mapped in each direction.
+    Warning
+    -------
+    If a parameter is calculated by a physics solver while the reactor is in its converted (uniform
+    mesh) state, that parameter *must* be included in the list of `reactorParamNames` or
+    `blockParamNames` to be mapped back to the non-uniform reactor; otherwise, it will be lost.
+    These lists are defined through the `_setParamsToUpdate` method, which uses the
+    `reactorParamMappingCategories` and `blockParamMappingCategories` attributes and applies custom
+    logic to create a list of parameters to be mapped in each direction.
     """
 
     reactorParamMappingCategories = {
@@ -1408,18 +1398,18 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
 
         Notes
         -----
-        For gamma transport, only a small subset of neutronics parameters need to be
-        mapped out. The set is defined in this method. There are conditions on the
-        output blockParamMappingCategories: only non-cumulative, gamma parameters are mapped out.
-        This avoids numerical diffusion of cumulative parameters or those created by the
-        initial eigenvalue neutronics solve from being mapped in both directions by the
-        mesh converter for the fixed-source gamma run.
+        For gamma transport, only a small subset of neutronics parameters need to be mapped out. The
+        set is defined in this method. There are conditions on the output
+        blockParamMappingCategories: only non-cumulative, gamma parameters are mapped out. This
+        avoids numerical diffusion of cumulative parameters or those created by the initial
+        eigenvalue neutronics solve from being mapped in both directions by the mesh converter for
+        the fixed-source gamma run.
 
         Parameters
         ----------
         direction : str
-            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of it.
-            Different parameters are mapped in each direction.
+            "in" or "out". The direction of mapping; "in" to the uniform mesh assembly, or "out" of
+            it. Different parameters are mapped in each direction.
         """
         reactorParamNames = []
         blockParamNames = []
@@ -1438,6 +1428,7 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
             )
         else:
             excludeList = b.p.paramDefs.inCategory(parameters.Category.gamma).names
+
         for category in self.blockParamMappingCategories[direction]:
             blockParamNames.extend(
                 [
@@ -1454,19 +1445,17 @@ class GammaUniformMeshConverter(UniformMeshGeometryConverter):
 
 class ParamMapper:
     """
-    Utility for parameter setters/getters that can be used when
-    transferring data from one assembly to another during the mesh
-    conversion process. Stores some data like parameter defaults and
-    properties to save effort of accessing paramDefs many times for
-    the same data.
+    Utility for parameter setters/getters that can be used when transferring data from one assembly
+    to another during the mesh conversion process. Stores some data like parameter defaults and
+    properties to save effort of accessing paramDefs many times for the same data.
     """
 
     def __init__(self, reactorParamNames, blockParamNames, b):
         """
         Initialize the list of parameter defaults.
 
-        The ParameterDefinitionCollection lookup is very slow, so this we do it once
-        and store it as a hashed list.
+        The ParameterDefinitionCollection lookup is very slow, so this we do it once and store it as
+        a hashed list.
         """
         self.paramDefaults = {
             paramName: b.p.pDefs[paramName].default for paramName in blockParamNames
@@ -1479,12 +1468,11 @@ class ParamMapper:
             )
             for paramName in blockParamNames
         }
-        # determine which parameters are peak/max
-        # Unfortunately, these parameters don't tell you WHERE in the block the peak
-        # value occurs. So when mapping block parameters in setAssemblyStateFromOverlaps(),
-        # we will just grab the maximum value over all of the source blocks. This effectively
-        # assumes that all of the source blocks overlap 100% with the destination block,
-        # although this is rarely actually the case.
+        # Determine which parameters are peak/max. Unfortunately, these parameters don't tell you
+        # WHERE in the block the peak value occurs. So when mapping block parameters in
+        # setAssemblyStateFromOverlaps(), we will just grab the maximum value over all of the source
+        # blocks. This effectively assumes that all of the source blocks overlap 100% with the
+        # destination block, although this is rarely actually the case.
         self.isPeak = {
             paramName: b.p.paramDefs[paramName].atLocation(parameters.ParamLocation.MAX)
             for paramName in blockParamNames
@@ -1538,10 +1526,10 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
     r"""
     Set number densities on a block based on overlapping blocks.
 
-    A conservation of number of atoms technique is used to map the non-uniform number densities onto the uniform
-    neutronics mesh. When the number density of a height :math:`H` neutronics mesh block :math:`N^{\prime}` is
-    being computed from one or more blocks in the ARMI mesh with number densities :math:`N_i` and
-    heights :math:`h_i`, the following formula is used:
+    A conservation of number of atoms technique is used to map the non-uniform number densities onto
+    the uniform neutronics mesh. When the number density of a height :math:`H` neutronics mesh block
+    :math:`N^{\prime}` is being computed from one or more blocks in the ARMI mesh with number
+    densities :math:`N_i` and heights :math:`h_i`, the following formula is used:
 
     .. math::
 
@@ -1554,8 +1542,13 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
         heightScaling = overlappingHeightInCm / blockHeightInCm
         for nucName, numberDensity in overlappingBlock.getNumberDensities().items():
             totalDensities[nucName] += numberDensity * heightScaling
-    block.setNumberDensities(dict(totalDensities))
-    # Set the volume of each component in the block to `None` so that the
-    # volume of each component is recomputed.
+
+    totalDensities.update(
+        {nuc: 0.0 for nuc in block.getNuclides() if nuc not in totalDensities}
+    )
+    block.updateNumberDensities(totalDensities)
+    # block.setNumberDensities(dict(totalDensities)) # TODO: JOHN
+    # Set the volume of each component in the block to `None` so that the volume of each component
+    # is recomputed.
     for c in block:
         c.p.volume = None
