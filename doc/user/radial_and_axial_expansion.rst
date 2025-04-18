@@ -185,7 +185,13 @@ are updated for a component during thermal expansion, respectively.
 .. math::
    :name: hot_mass
 
-    m(T_h) = 0.994 \times 0.988  = 0.982 g
+    m(T_h) = 0.994 \times 0.988 = 0.982 g
+
+Radial thermal expansion occurs for each component in a given block. Mechanical contact between
+components is not accounted for, meaning that the radial expansion of one Component is independent
+from the radial expansion of the others. Solid components may be linked to gas/fluid components
+(i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in
+Component temperatures. 
 
 When two or more components exist within the Block, the overall height change of the Block is driven
 by an axial expansion "target Component" (e.g., fuel). This target is selected (either automatically
@@ -194,14 +200,10 @@ mass conserved post-expansion. Note, the remaining components also have their ma
 assembly-level; however intra-block mass conservation is lost as there is a redistribution of mass
 between axially neighboring blocks for non-target components.
 
-Radial thermal expansion occurs for each component in a given block. Mechanical contact between
-components is not accounted for, meaning that the radial expansion of one Component is independent
-from the radial expansion of the others. Solid components may be linked to gas/fluid components
-(i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in
-Component temperatures. Alternatively, the axial thermal expansion of components within a Block do
-influence the positions of components in neighboring blocks for a given Assembly. So, while axial
-thermal expansion evaluations of each Block are treated independently, the axial mesh points are
-updated to account for the physical material displacements across the entire assembly length.
+Alternatively, the axial thermal expansion of components within a Block do influence the positions
+of components in neighboring blocks for a given Assembly. So, while axial thermal expansion
+evaluations of each Block are treated independently, the axial mesh points are updated to account
+for the physical material displacements across the entire assembly length.
 
 The following two tables provide illustrations of the axial thermal expansion process for an example
 core assembly. In this example there are four main block types defined: Shield, Fuel, Plenum, and
