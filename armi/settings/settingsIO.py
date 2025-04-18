@@ -390,7 +390,7 @@ def prompt(statement, question, *options):
         # Use the logger tools to handle user prompts (runLog supports this).
         while response not in responses:
             runLog.LOG.log("prompt", statement)
-            runLog.LOG.log("prompt", f"{question} ({", ".join(responses)}): ")
+            runLog.LOG.log("prompt", "{} ({}): ".format(question, ", ".join(responses)))
             response = sys.stdin.readline().strip().upper()
 
         if response == "CANCEL":
