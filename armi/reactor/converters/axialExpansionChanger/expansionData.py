@@ -297,10 +297,8 @@ class ExpansionData:
         else:
             candidates = b.getChildrenWithFlags(flagOfInterest)
         if len(candidates) == 0:
-            # if only 1 solid, be smart enough to snag it
-            solidMaterials = list(
-                c for c in b if not isinstance(c.material, material.Fluid)
-            )
+            # if only 1 solid, be smart enought to snag it
+            solidMaterials = getSolidComponents(b)
             if len(solidMaterials) == 1:
                 candidates = solidMaterials
         if len(candidates) == 0:
