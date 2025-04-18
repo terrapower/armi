@@ -93,7 +93,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available. (Begining of Life)."""
+        """Initialize the database if the main interface was not available. (Beginning of Life)."""
         if not self._db:
             self.initDB()
 
@@ -133,7 +133,7 @@ class DatabaseInterface(interfaces.Interface):
           writeDBEveryNode.
         """
         if self.o.cs["tightCoupling"]:
-            # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
+            # h5 can't handle overwriting so we skip here and write once the tight coupling loop has completed
             return
         self.writeDBEveryNode()
 
@@ -225,7 +225,7 @@ class DatabaseInterface(interfaces.Interface):
         that the cycle histories prior to `startCycle`/`startNode` are equivalent.
 
         ARMI expects the reload DB to have been made in the same version of ARMI as you
-        are running. ARMI does not gaurantee that a DB from a decade ago will be easily
+        are running. ARMI does not guarantee that a DB from a decade ago will be easily
         used to restart a run.
         """
         reloadDBName = self.cs["reloadDBName"]
