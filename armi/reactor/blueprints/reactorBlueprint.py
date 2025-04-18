@@ -204,7 +204,6 @@ class SystemBlueprint(yamlize.Object):
         runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
-
             # TODO: We should allow for non-Assembly objects/geometries to be loaded into the grid.
             #       For instance, an ex-core grid may define ducts, not just Assemblies.
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
