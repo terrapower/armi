@@ -1307,14 +1307,9 @@ class ArmiObject(metaclass=CompositeModelType):
             # there are no children so no volume or number density
             return [0.0] * len(nucNames)
 
-        densListForEachComp = []
-        for c in self:
-            numberDensityDict = c.getNumberDensities()
-            densListForEachComp.append(
-                [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
-            )
-        nucDensForEachComp = np.array(densListForEachComp)  # c x n
-
+        nucDensForEachComp = np.array(
+            [c.getNuclideNumberDensities(nucNames) for c in self]
+        )  # c x n
         return volumes.dot(nucDensForEachComp) / totalVol
 
     def _getNdensHelper(self):
