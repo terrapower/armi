@@ -2918,30 +2918,27 @@ class Composite(ArmiObject):
         return syncCount
 
     def _syncParameters(self, allSyncData, errors):
-        # ensure no overlap with syncedKeys, use errors to report overlapping data
+        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
         syncedKeys = set()
         for nodeRank, nodeSyncData in enumerate(allSyncData):
             if nodeSyncData is None:
                 continue
-            # nodeSyncData is a list of tuples
+
             for key, val in nodeSyncData.items():
                 if key in syncedKeys:
-                    # TODO: this requires further investigation and should be avoidable.
-                    # this situation results when a composite object is flagged as being
-                    # out of sync, and this parameter was also globally modified and
-                    # readjusted to the original value.
+                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
+                    # was also globally modified and readjusted to the original value.
                     curVal = self.p[key]
                     if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
                             errors[self, key].append(nodeRank)
                     elif curVal != val:
                         errors[self, key].append(nodeRank)
-                        runLog.error(
-                            "in {}, {} differ ({} != {})".format(self, key, curVal, val)
-                        )
+                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
                     continue
                 syncedKeys.add(key)
                 self.p[key] = val
+
         self.clearCache()
         return len(syncedKeys)
 
