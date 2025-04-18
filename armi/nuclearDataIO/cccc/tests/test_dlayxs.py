@@ -306,9 +306,6 @@ class DlayxsTests(unittest.TestCase):
             )
         )
 
-    @unittest.skip(
-        "The TH232, U232, PU238 and PU242 numbers do not agree, likely because they are from ENDV/B VI.8."
-    )
     def test_ENDFVII1DecayConstants(self):
         """Test ENDF/B VII.1 decay constants. Retrieved from ENDF/B VII.1."""
         self._assertDC(
@@ -356,17 +353,6 @@ class DlayxsTests(unittest.TestCase):
             ],
         )
         self._assertDC(
-            "TH232  ",
-            [
-                1.240000e-2,
-                3.340000e-2,
-                1.210000e-1,
-                3.210000e-1,
-                1.210000e0,
-                3.290000e0,
-            ],
-        )
-        self._assertDC(
             "TH233  ",
             [
                 1.310000e-2,
@@ -408,17 +394,6 @@ class DlayxsTests(unittest.TestCase):
                 3.210000e-1,
                 1.210000e0,
                 3.290000e0,
-            ],
-        )
-        self._assertDC(
-            "U232   ",
-            [
-                1.280000e-2,
-                3.500000e-2,
-                1.073000e-1,
-                2.557000e-1,
-                6.626000e-1,
-                2.025400e0,
             ],
         )
         self._assertDC(
@@ -587,17 +562,6 @@ class DlayxsTests(unittest.TestCase):
             ],
         )
         self._assertDC(
-            "PU238  ",
-            [
-                1.330000e-2,
-                3.120000e-2,
-                1.162000e-1,
-                2.888000e-1,
-                8.561000e-1,
-                2.713800e0,
-            ],
-        )
-        self._assertDC(
             "PU239  ",
             [
                 1.327100e-2,
@@ -628,17 +592,6 @@ class DlayxsTests(unittest.TestCase):
                 3.069100e-1,
                 8.701000e-1,
                 3.002800e0,
-            ],
-        )
-        self._assertDC(
-            "PU242  ",
-            [
-                1.360000e-2,
-                3.020000e-2,
-                1.154000e-1,
-                3.042000e-1,
-                8.272000e-1,
-                3.137200e0,
             ],
         )
         self._assertDC(
@@ -930,145 +883,6 @@ class DlayxsTests(unittest.TestCase):
             raise AssertionError(
                 "{} was different,\nexpected:{}\nactual:{}".format(
                     nucName, endfProvidedData, dlayData
-                )
-            )
-        except KeyError:
-            pass
-
-    @unittest.skip(
-        "All the delayNeutronsPerFission data from mcc-v3 does not agree, this may be because they "
-        "are from ENDV/B VI.8."
-    )
-    def test_ENDFVII1NeutronsPerFission(self):
-        """
-        Build delayed nu based on ENDF/B-VII data.
-
-        Notes
-        -----
-        This data was simply retrieved from the NNDC [http://www.nndc.bnl.gov]. U-235 consists of 6 points for delayed
-        nu and all others are only 4 points! Delayed group relative abundances are from G. Robert Keepin "Physics of
-        Nuclear Kinetics" Table 4-7. There are comments there about why the fast fission data is standard.
-        """
-        total = [0.0030] * 3 + [0.0547] * 30
-        self._assertNuDelay(
-            "TH232",
-            [
-                [0.034 * i for i in total],
-                [0.150 * i for i in total],
-                [0.155 * i for i in total],
-                [0.446 * i for i in total],
-                [0.172 * i for i in total],
-                [0.043 * i for i in total],
-            ],
-        )
-
-        total = [0.0042] * 1 + [0.0047] * 2 + [0.0074] * 30
-        self._assertNuDelay(
-            "U233",
-            [
-                [0.086 * i for i in total],
-                [0.274 * i for i in total],
-                [0.227 * i for i in total],
-                [0.317 * i for i in total],
-                [0.073 * i for i in total],
-                [0.023 * i for i in total],
-            ],
-        )
-
-        total = [0.0090] * 3 + [0.0167] * 30
-        self._assertNuDelay(
-            "U235",
-            [
-                [0.038 * i for i in total],
-                [0.213 * i for i in total],
-                [0.188 * i for i in total],
-                [0.407 * i for i in total],
-                [0.128 * i for i in total],
-                [0.026 * i for i in total],
-            ],
-        )
-
-        total = [0.026] * 3 + [0.044] * 30
-        self._assertNuDelay(
-            "U238",
-            [
-                [0.013 * i for i in total],
-                [0.137 * i for i in total],
-                [0.162 * i for i in total],
-                [0.388 * i for i in total],
-                [0.225 * i for i in total],
-                [0.075 * i for i in total],
-            ],
-        )
-
-        total = [0.0043] * 3 + [0.00645] * 30
-        self._assertNuDelay(
-            "PU239",
-            [
-                [0.038 * i for i in total],
-                [0.280 * i for i in total],
-                [0.216 * i for i in total],
-                [0.328 * i for i in total],
-                [0.103 * i for i in total],
-                [0.035 * i for i in total],
-            ],
-        )
-
-        total = [0.00615] * 3 + [0.0090] * 30
-        self._assertNuDelay(
-            "PU240",
-            [
-                [0.028 * i for i in total],
-                [0.273 * i for i in total],
-                [0.192 * i for i in total],
-                [0.350 * i for i in total],
-                [0.128 * i for i in total],
-                [0.029 * i for i in total],
-            ],
-        )
-
-        # Keepin doesn't have any data on relative delayed group abundances for
-        # Pu-241 and Pu-242, and it looks like A.DELAY doesn't either! Let's
-        # assume that the abundances are the same as Pu-240.
-        total = [0.0084] * 3 + [0.0162] * 30
-        self._assertNuDelay(
-            "PU241",
-            [
-                [0.028 * i for i in total],
-                [0.273 * i for i in total],
-                [0.192 * i for i in total],
-                [0.350 * i for i in total],
-                [0.128 * i for i in total],
-                [0.029 * i for i in total],
-            ],
-        )
-
-        total = [0.0115] + [0.0129] + [0.0133] + [0.0153] * 30
-        self._assertNuDelay(
-            "PU242",
-            [
-                [0.028 * i for i in total],
-                [0.273 * i for i in total],
-                [0.192 * i for i in total],
-                [0.350 * i for i in total],
-                [0.128 * i for i in total],
-                [0.029 * i for i in total],
-            ],
-        )
-
-    def _assertNuDelay(self, nucName, endfProvidedData):
-        try:
-            dlayData = self.dlayxs3[
-                nuclideBases.byName[nucName.strip()]
-            ].delayNeutronsPerFission
-            npData = np.array(endfProvidedData)
-            self.assertTrue(np.allclose(dlayData, npData, 1e-3))
-        except AssertionError:
-            # this is reraised because generating the message might take some time to format all the
-            # data from the arrays
-            raise AssertionError(
-                "{} was different,\nexpected:{}\nactual:{}".format(
-                    nucName, npData, dlayData
                 )
             )
         except KeyError:
