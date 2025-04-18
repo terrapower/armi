@@ -260,7 +260,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         self._prepConstruction(cs)
 
-        # TODO: this should be migrated assembly designs instead of assemblies
         if name is not None:
             assem = self.assemblies[name]
         elif specifier is not None:
