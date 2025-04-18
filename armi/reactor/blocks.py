@@ -1100,7 +1100,7 @@ class Block(composites.Composite):
                 nucName, 0.0
             ) + fraction * otherBlockDensities.get(nucName, 0.0)
 
-        self.setNumberDensities(newDensities)
+        self.updateNumberDensities(newDensities)
 
     def getComponentAreaFrac(self, typeSpec):
         """
