@@ -406,11 +406,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateXSOptionGenXS():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GEN_XS)
 
     def migrateXSOptionGlobalFluxActive():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
     queries.append(
@@ -499,11 +499,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateDpaDpaXsSet():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(
