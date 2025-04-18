@@ -438,9 +438,8 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         Used before writing the asciimap from data.
 
-        Add flat-hex specific corner truncation detection that allows
-        some positions to be empty near the corners of the full hex,
-        as is typical for hexagonal core maps.
+        Add flat-hex specific corner truncation detection that allows some positions to be empty
+        near the corners of the full hex, as is typical for hexagonal core maps.
 
         For 1/3 hex, _ijMax represents the outer outline
         """
@@ -453,8 +452,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         maxIWithData = max(iWithData) if iWithData else -1
         self._asciiLinesOffCorner = (self._ijMax - maxIWithData) * 2 - 1
 
-        # in jagged systems we have to also check the neighbor.
-        # TODO: maybe even more corner positions could be left out in very large maps.
+        # in jagged systems we have to also check the neighbor
         nextIWithData = [i for i, j in self.asciiLabelByIndices if j == 1]
         nextMaxIWithData = max(nextIWithData) if nextIWithData else -1
         if nextMaxIWithData == maxIWithData - 1:
@@ -478,8 +476,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
     number of placeholders on the left. This makes this one's
     base computation more complex.
 
-    We also allow all corners to be cut off on these, further
-    complicating things.
+    We also allow all corners to be cut off on these, further complicating things.
     """
 
     def _getIJBaseByAsciiLine(self, asciiLineNum):

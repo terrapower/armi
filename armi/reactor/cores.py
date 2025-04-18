@@ -854,7 +854,6 @@ class Core(composites.Composite):
             )
 
         # determine if the circularRingList has been generated
-        # TODO: make circularRingList a property that is generated on request
         if not self.circularRingList:
             self.circularRingList = self.buildCircularRingDictionary(
                 self._circularRingPitch
@@ -1085,9 +1084,8 @@ class Core(composites.Composite):
             block.getName(): block for block in self.getBlocks(includeAll=True)
         }
 
-    # TODO: (Idea) wrap this in an "if not self.blocksByLocName:"
-    # This will likely fail, but it will help diagnose why property approach
-    # wasn't working correctly
+    # This will likely fail, but it will help diagnose why property approach wasn't working
+    # correctly
     def genBlocksByLocName(self):
         """If self.blocksByLocName is deleted, then this will regenerate it or update it if things change."""
         self.blocksByLocName = {
@@ -1337,7 +1335,6 @@ class Core(composites.Composite):
         else:
             return {b.getLocation(): b for a in self for b in a}
 
-    # TODO: Can be cleaned up, but need test case to guard agains breakage
     def getFluxVector(
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):
@@ -1349,12 +1346,11 @@ class Core(composites.Composite):
         Parameters
         ----------
         energyOrder : int, optional
-            A value of 0 implies that the flux will have all energy groups for
-            the first mesh point, and then all energy groups for the next mesh point, etc.
+            A value of 0 implies that the flux will have all energy groups for the first mesh point,
+            and then all energy groups for the next mesh point, etc.
 
-            A value of 1 implies that the flux will have values for all mesh points
-            of the first energy group first, followed by all mesh points for the second energy
-            group, etc.
+            A value of 1 implies that the flux will have values for all mesh points of the first
+            energy group first, followed by all mesh points for the second energy group, etc.
 
         adjoint : bool, optional
             If True, will return adjoint flux instead of real flux.
@@ -1389,7 +1385,7 @@ class Core(composites.Composite):
             flux.extend(vals)
 
         if energyOrder == 1:
-            # swap order.
+            # swap order
             newFlux = []
             for g in groups:
                 oneGroup = [flux[i] for i in range(g, len(flux), len(groups))]

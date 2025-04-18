@@ -471,7 +471,7 @@ class ArmiObject(metaclass=CompositeModelType):
         for child in self:
             child.clearCache()
 
-    def _getCached(self, name):  # TODO: stop the "returns None" nonsense?
+    def _getCached(self, name):
         """
         Obtain a value from the cache.
 
@@ -483,7 +483,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return self.cached.get(name, None)
 
-    def _setCache(self, name, val):  # TODO: remove me
+    def _setCache(self, name, val):
         """
         Set a value in the cache.
 
