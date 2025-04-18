@@ -29,21 +29,33 @@ class CodeTimingTest(unittest.TestCase):
         codeTiming.MasterTimer._instance = None
 
     def test_methodDefinitions(self):
-        """Test that the timer decorators do not interupt the code being decorated."""
+        """Test that the timer decorators work and don't interupt the code."""
 
         @codeTiming.timed
         def someMethod(boop):
+            time.sleep(0.01)
             return boop
 
         @codeTiming.timed("I have this name")
         def someOtherMethod(boop):
+            time.sleep(0.01)
             return boop
 
+        # verify the decorator allows the code to run
         x = someMethod("dingdong")
         y = someOtherMethod("bingbong")
 
         self.assertEqual(x, "dingdong")
         self.assertEqual(y, "bingbong")
+
+        # verify the decorators work
+        table = codeTiming.MasterTimer.report(inclusionCutoff=0.01, totalTime=True)
+        self.assertIn("  AVERAGE ", table)
+        self.assertIn("  CUMULATIVE ", table)
+        self.assertIn("  NUM ITERS", table)
+        self.assertIn("TIMER REPORTS  ", table)
+        self.assertIn("someMethod", table)
+        self.assertIn("I have this name", table)
 
     def test_countStartsStops(self):
         """Test the start and stop counting logic."""
