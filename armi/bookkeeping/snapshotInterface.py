@@ -84,7 +84,7 @@ class SnapshotInterface(interfaces.Interface):
 
         snapText = ["{0:03d}{1:03d}".format(c, n) for c, n in snapTimeCycleNodePairs]
 
-        # determine if there are new snapshots to add to the setings file
+        # determine if there are new snapshots to add to the settings file
         for snapT in snapText:
             if snapT not in self.cs["dumpSnapshot"]:
                 runLog.info(

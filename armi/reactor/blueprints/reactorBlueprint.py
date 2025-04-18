@@ -136,7 +136,7 @@ class SystemBlueprint(yamlize.Object):
         ValueError
             input error, no grid design provided
         ValueError
-            objects were added to non-existant grid locations
+            objects were added to non-existent grid locations
         """
         runLog.info(f"Constructing the `{self.name}`")
 
@@ -181,7 +181,7 @@ class SystemBlueprint(yamlize.Object):
         system : Composite
             The composite we are building.
         gridDesign : GridBlueprint
-            The defintion of the grid on the object.
+            The definition of the grid on the object.
 
         Returns
         -------
@@ -215,7 +215,7 @@ class SystemBlueprint(yamlize.Object):
 
         if badLocations:
             raise ValueError(
-                f"Attempted to add objects to non-existant locations on the grid: {badLocations}."
+                f"Attempted to add objects to non-existent locations on the grid: {badLocations}."
             )
 
     def _modifyGeometry(self, container, gridDesign):

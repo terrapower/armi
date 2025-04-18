@@ -1657,7 +1657,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         ----------
         blockCollectionByXsGroup : dict, optional
             Mapping between the XS IDs in the core and the block collections. Note that providing this as
-            an arugment will only update the average temperatures of these XS IDs/block collections and will
+            an argument will only update the average temperatures of these XS IDs/block collections and will
             result in other XS ID average temperatures not included to be discarded.
 
         Notes

@@ -157,7 +157,7 @@ class GridBlueprint(yamlize.Object):
         Includes a ``construct`` method, which instantiates an instance of one of the subclasses of
         :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`. This is typically called from
         within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`, which
-        then also associates the individual components in the block with locations specifed in the
+        then also associates the individual components in the block with locations specified in the
         grid.
 
     Attributes
@@ -483,7 +483,7 @@ def _getGridSize(idx) -> Tuple[int, int]:
     Return the number of spaces between the min and max of a collection of (int, int)
     tuples, inclusive.
 
-    This essentially returns the number of grid locations along the i, and j dimesions,
+    This essentially returns the number of grid locations along the i, and j dimensions,
     given the (i,j) indices of each occupied location. This is useful for determining
     certain grid offset behavior.
     """
@@ -621,8 +621,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 gridDesign.latticeMap = None
 
         else:
-            # grid contents were supplied as a dictionary, so we shouldnt even have a
-            # latticeMap, unless it was set explicitly in code somewhere. Discard if there is one.
+            # grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap,
+            # unless it was set explicitly in code somewhere. Discard if there is one.
             gridDesign.latticeMap = None
 
     toSave = bp if full else gridDesigns
