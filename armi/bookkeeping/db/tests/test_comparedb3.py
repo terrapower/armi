@@ -114,9 +114,7 @@ class TestCompareDB3(unittest.TestCase):
             # validate the file exists, and force it to be readable again
             b = h5py.File(db._fullPath, "r")
             self.assertEqual(list(b.keys()), ["inputs"])
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
+            self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
             b.close()
 
             # append to lists
@@ -128,7 +126,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """End-to-end test of compareDatabases() on very simlar databases."""
+        """End-to-end test of compareDatabases() on very similar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT,
@@ -168,9 +166,7 @@ class TestCompareDB3(unittest.TestCase):
             self.assertEqual(len(dbKeys), 3)
             self.assertIn("inputs", dbKeys)
             self.assertIn("c00n00", dbKeys)
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
+            self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
             b.close()
 
             # append to lists

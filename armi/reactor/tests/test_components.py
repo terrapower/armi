@@ -569,7 +569,7 @@ class TestDerivedShape(TestShapedComponent):
 
         self.assertAlmostEqual(totalByParts, totalVolume)
 
-        # test the computeVolume method on the one DerivedShape in thi block
+        # test the computeVolume method on the one DerivedShape in this block
         self.assertAlmostEqual(c.computeVolume(), 1386.5232044586771)
 
 
@@ -854,7 +854,7 @@ class TestCircle(TestShapedComponent):
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
-        """Test that demonstates that the number densities on a component can be modified."""
+        """Test that demonstrates that the number densities on a component can be modified."""
         self.component.p.numberDensities = {"NA23": 1.0}
         self.component.p.detailedNDens = [1.0]
         self.component.p.pinNDens = [1.0]

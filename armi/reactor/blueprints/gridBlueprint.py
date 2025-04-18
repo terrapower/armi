@@ -157,7 +157,7 @@ class GridBlueprint(yamlize.Object):
         Includes a ``construct`` method, which instantiates an instance of one of the subclasses of
         :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`. This is typically called from
         within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`, which
-        then also associates the individual components in the block with locations specifed in the
+        then also associates the individual components in the block with locations specified in the
         grid.
 
     Attributes
@@ -283,15 +283,13 @@ class GridBlueprint(yamlize.Object):
                 # This check is regrettably late. It would be nice if we could validate
                 # that bounds are provided if R-Theta mesh is being used.
                 raise InputError(
-                    "Grid bounds must be provided for `{}` to specify a grid with "
-                    "r-theta components.".format(self.name)
+                    f"Grid bounds must be provided for `{self.name}` to specify a grid with "
+                    "r-theta components."
                 )
             for key in ("theta", "r"):
                 if key not in self.gridBounds:
                     raise InputError(
-                        "{} grid bounds were not provided for `{}`.".format(
-                            key, self.name
-                        )
+                        f"{key} grid bounds were not provided for `{self.name}`."
                     )
 
             # convert to list, otherwise it is a CommentedSeq
@@ -300,8 +298,8 @@ class GridBlueprint(yamlize.Object):
             for lst, name in ((theta, "theta"), (radii, "radii")):
                 if not isMonotonic(lst, "<"):
                     raise InputError(
-                        "Grid bounds for {}:{} is not sorted or contains "
-                        "duplicates. Check blueprints.".format(self.name, name)
+                        f"Grid bounds for {self.name}:{name} is not sorted or contains duplicates. "
+                        "Check blueprints."
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
@@ -348,8 +346,7 @@ class GridBlueprint(yamlize.Object):
         """
         Find the max index in the grid contents.
 
-        Used to limit the size of the spatialGrid. Used to be
-        called maxNumRings.
+        Used to limit the size of the spatialGrid. Used to be called maxNumRings.
         """
         if self.gridContents:
             return max(itertools.chain(*zip(*self.gridContents.keys())))
@@ -486,7 +483,7 @@ def _getGridSize(idx) -> Tuple[int, int]:
     Return the number of spaces between the min and max of a collection of (int, int)
     tuples, inclusive.
 
-    This essentially returns the number of grid locations along the i, and j dimesions,
+    This essentially returns the number of grid locations along the i, and j dimensions,
     given the (i,j) indices of each occupied location. This is useful for determining
     certain grid offset behavior.
     """
@@ -613,8 +610,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             if aMap is not None:
                 # If there is an ascii map available then use it to fill out
                 # the contents of the lattice map section of the grid design.
-                # This also clears out the grid contents so there is not duplicate
-                # data.
+                # This also clears out the grid contents so there is not duplicate data.
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)
@@ -625,9 +621,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 gridDesign.latticeMap = None
 
         else:
-            # grid contents were supplied as a dictionary, so we shouldnt even have a
-            # latticeMap, unless it was set explicitly in code somewhere. Discard if
-            # there is one.
+            # grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap,
+            # unless it was set explicitly in code somewhere. Discard if there is one.
             gridDesign.latticeMap = None
 
     toSave = bp if full else gridDesigns

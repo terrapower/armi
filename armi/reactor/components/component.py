@@ -56,7 +56,7 @@ def componentTypeIsValid(component, name):
 
     Notes
     -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be specfied as a
+    - `Coolant` components are can no longer be defined as a general `Component` and should be specified as a
       `DerivedShape` if the coolant dimensions are not provided.
     """
     from armi.reactor.components import NullComponent
@@ -190,7 +190,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     Attributes
     ----------
     temperatureInC : float
-        Current temperature of component in celcius.
+        Current temperature of component in celsius.
     inputTemperatureInC : float
         Reference temperature in C at which dimension definitions were input
     temperatureInC : float
@@ -1211,7 +1211,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def restoreBackup(self, paramsToApply):
         """
-        Restore the parameters from perviously created backup.
+        Restore the parameters from previously created backup.
 
         This needed to be overridden due to linked components which actually have a parameter value
         of another ARMI component.

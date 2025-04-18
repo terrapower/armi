@@ -68,7 +68,6 @@ CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_FRESH_FEED_TYPE = "freshFeedType"
-CONF_GEOM_FILE = "geomFile"
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
@@ -544,12 +543,6 @@ def defineSettings() -> List[setting.Setting]:
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
         ),
         setting.Setting(
-            CONF_GEOM_FILE,
-            default="",
-            label="Core Map Input File",
-            description="Input file containing BOL core map",
-        ),
-        setting.Setting(
             CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
             default=False,
             label="Expand to Full Core on Snapshot Load",
@@ -579,7 +572,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_START_NODE,
             default=0,
             label="Start Node",
-            description="Timenode number (0 for BOC, etc.) to continue calulation from. "
+            description="Timenode number (0 for BOC, etc.) to continue calculation from. "
             "Database will load from the time step just before.",
             oldNames=[
                 ("loadNode", None),
