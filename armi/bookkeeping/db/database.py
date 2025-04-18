@@ -1512,9 +1512,9 @@ class Database:
         for key, val in attrs.items():
             try:
                 if isinstance(val, h5py.h5r.Reference):
-                    # Old style object reference. If this cannot be dereferenced, it is
-                    # likely because mergeHistory was used to get the current database,
-                    # which does not preserve references.
+                    # Old style object reference. If this cannot be dereferenced, it is likely
+                    # because mergeHistory was used to get the current database, which does not
+                    # preserve references.
                     resolved[key] = group[val]
                 elif isinstance(val, str):
                     m = attr_link.match(val)
@@ -1536,40 +1536,34 @@ def packSpecialData(
     arrayData: [np.ndarray, JaggedArray], paramName: str
 ) -> Tuple[Optional[np.ndarray], Dict[str, Any]]:
     """
-    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format
-    that will.
+    Reduce data that wouldn't otherwise play nicely with HDF5/numpy arrays to a format that will.
 
-    This is the main entry point for conforming "strange" data into something that will
-    both fit into a numpy array/HDF5 dataset, and be recoverable to its original-ish
-    state when reading it back in. This is accomplished by detecting a handful of known
-    offenders and using various HDF5 attributes to store necessary auxiliary data. It is
-    important to keep in mind that the data that is passed in has already been converted
-    to a numpy array, so the top dimension is always representing the collection of
-    composites that are storing the parameters. For instance, if we are dealing with a
-    Block parameter, the first index in the numpy array of data is the block index; so
-    if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
-    where each element is a dictionary. This routine supports a number of different
-    "strange" things:
+    This is the main entry point for conforming "strange" data into something that will both fit
+    into a numpy array/HDF5 dataset, and be recoverable to its original-ish state when reading it
+    back in. This is accomplished by detecting a handful of known offenders and using various HDF5
+    attributes to store necessary auxiliary data. It is important to keep in mind that the data that
+    is passed in has already been converted to a numpy array, so the top dimension is always
+    representing the collection of composites that are storing the parameters. For instance, if we
+    are dealing with a Block parameter, the first index in the numpy array of data is the block
+    index; so if each block has a parameter that is a dictionary, ``data`` would be a ndarray,
+    where each element is a dictionary. This routine supports a number of different things:
 
-    * Dict[str, float]: These are stored by finding the set of all keys for all
-      instances, and storing those keys as a list in an attribute. The data themselves
-      are stored as arrays indexed by object, then key index. Dictionaries lacking data
-      for a key store a nan in it's place. This will work well in instances where most
-      objects have data for most keys.
-    * Jagged arrays: These are stored by concatenating all of the data into a single,
-      one-dimensional array, and storing attributes to describe the shapes of each
-      object's data, and an offset into the beginning of each object's data.
-    * Arrays with ``None`` in them: These are stored by replacing each instance of
-      ``None`` with a magical value that shouldn't be encountered in realistic
-      scenarios.
+    * Dict[str, float]: These are stored by finding the set of all keys for all instances, and
+      storing those keys as a list in an attribute. The data themselves are stored as arrays indexed
+      by object, then key index. Dictionaries lacking data for a key store a nan in it's place. This
+      will work well in instances where most objects have data for most keys.
+    * Jagged arrays: These are stored by concatenating all of the data into a single, one-
+      dimensional array, and storing attributes to describe the shapes of each object's data, and an
+      offset into the beginning of each object's data.
+    * Arrays with ``None`` in them: These are stored by replacing each instance of ``None`` with a
+      magical value that shouldn't be encountered in realistic scenarios.
 
     Parameters
     ----------
     arrayData
-        An ndarray or JaggedArray object storing the data that we want to stuff into
-        the database. If the data is jagged, a special JaggedArray instance is passed
-        in, which contains a 1D array with offsets and shapes.
-
+        An ndarray or JaggedArray object storing the data that we want to stuff into the database.
+        If the data is jagged, a special JaggedArray instance is passed in, which contains a 1D
+        array with offsets and shapes.
     paramName
         The parameter name that we are trying to store. This is mostly used for diagnostics.
 
@@ -1580,8 +1574,8 @@ def packSpecialData(
     if isinstance(arrayData, JaggedArray):
         data = arrayData.flattenedArray
     else:
-        # Check to make sure that we even need to do this. If the numpy data type is
-        # not "O", chances are we have nice, clean data.
+        # Check to make sure that we even need to do this. If the numpy data type is not "O",
+        # chances are we have nice, clean data.
         if arrayData.dtype != "O":
             return arrayData, {}
         else:
@@ -1592,10 +1586,8 @@ def packSpecialData(
     # make a copy of the data, so that the original is unchanged
     data = copy.copy(data)
 
-    # find locations of Nones. The below works for ndarrays, whereas `data == None`
-    # gives a single True/False value
+    # Find locations of Nones.
     nones = np.where([d is None for d in data])[0]
-
     if len(nones) == data.shape[0]:
         # Everything is None, so why bother?
         return None, attrs
@@ -1603,36 +1595,23 @@ def packSpecialData(
     if len(nones) > 0:
         attrs["nones"] = True
 
-    # TODO: this whole if/then/elif/else can be optimized by looping once and then
-    #      determining the correct action
-    # A robust solution would need
-    # to do this on a case-by-case basis, and re-do it any time we want to
-    # write, since circumstances may change. Not only that, but we may need
-    # to perform more than one of these operations to get to an array
-    # that we want to put in the database.
+    # Pack different types of data
     if any(isinstance(d, dict) for d in data):
-        # we're assuming that a dict is {str: float}. We store the union of
-        # all of the keys for all of the objects as a special "keys"
-        # attribute, and store a value for all of those keys for all
-        # objects, whether or not there is actually data associated with
-        # that key (storing a nan when no data). This makes for a simple
-        # approach that is somewhat digestible just looking at the db, and
-        # should be quite efficient in the case where most objects have data for most keys.
+        # We're assuming that a dict is {str: float}.
         attrs["dict"] = True
         keys = sorted({k for d in data for k in d})
         data = np.array([[d.get(k, np.nan) for k in keys] for d in data])
         if data.dtype == "O":
-            # The data themselves are nasty. We could support this, but best to wait for
-            # a credible use case.
             raise TypeError(
-                "Unable to coerce dictionary data into usable numpy array for "
-                "{}".format(paramName)
+                f"Unable to coerce dictionary data into usable numpy array for {paramName}"
             )
+        # We store the union of all of the keys for all of the objects as a special "keys"
+        # attribute, and store a value for all of those keys for all objects, whether or not there
+        # is actually data associated with that key
         attrs["keys"] = np.array(keys).astype("S")
 
         return data, attrs
-
-    if isinstance(arrayData, JaggedArray):
+    elif isinstance(arrayData, JaggedArray):
         attrs["jagged"] = True
         attrs["offsets"] = arrayData.offsets
         attrs["shapes"] = arrayData.shapes
@@ -1648,19 +1627,17 @@ def packSpecialData(
         # looks like 1-D plain-old-data
         data = replaceNonesWithNonsense(data, paramName, nones)
         return data, attrs
-
-    if any(isinstance(d, (tuple, list, np.ndarray)) for d in data):
+    elif any(isinstance(d, (tuple, list, np.ndarray)) for d in data):
         data = replaceNonesWithNonsense(data, paramName, nones)
         return data, attrs
 
     if len(nones) == 0:
         raise TypeError(
-            "Cannot write {} to the database, it did not resolve to a numpy/HDF5 "
-            "type.".format(paramName)
+            f"Cannot write {paramName} to the database, it did not resolve to a numpy/HDF5 type."
         )
 
-    runLog.error("Data unable to find special none value: {}".format(data))
-    raise TypeError("Failed to process special data for {}".format(paramName))
+    runLog.error(f"Data unable to find special none value: {data}")
+    raise TypeError(f"Failed to process special data for {paramName}")
 
 
 def unpackSpecialData(data: np.ndarray, attrs, paramName: str) -> np.ndarray:
