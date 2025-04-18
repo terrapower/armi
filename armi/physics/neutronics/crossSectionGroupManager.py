@@ -693,9 +693,9 @@ class CylindricalComponentsDuctHetAverageBlockCollection(
 
     Notes
     -----
-    The representative block for this collection is the same as the parent. The only difference
-    between the two collection types is that this collection calculates average nuclide temperatures
-    based only on the components that are inside of the duct.
+    The representative block for this collection is the same as the parent. The only difference between
+    the two collection types is that this collection calculates average nuclide temperatures based only
+    on the components that are inside of the duct.
     """
 
     def _getNewBlock(self):

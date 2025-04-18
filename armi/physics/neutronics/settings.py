@@ -106,7 +106,7 @@ def defineSettings():
             default="Neutron",
             label="Global Flux Calculation",
             description="Calculate the global flux at each timestep for the selected particle "
-            "type(s) using the specified neutronics kernel (see Global Flux tab).",
+            "type(s) using the specified neutronics kernel.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -290,7 +290,7 @@ def defineSettings():
             label="Minimum nuclide density",
             description="Density to use for nuclides and fission products at infinite dilution. "
             "This is also used as the minimum density considered for computing macroscopic cross "
-            "sections. It can also be passed to physics plugins.",
+            "sections.",
         ),
         setting.Setting(
             CONF_INFINITE_DILUTE_CUTOFF,
