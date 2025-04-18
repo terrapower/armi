@@ -130,13 +130,13 @@ radial and axial directions.
 .. figure:: /.static/axial_expansion_simple.png
    :name: therm_exp_illustration
 
-    Illustration of radial (isotopic) and axial thermal expansion for a cylinder in ARMI.
+    Illustration of radial (isotropic) and axial thermal expansion for a cylinder in ARMI.
 
 Thermal expansion calculations are performed for each component in the ARMI reactor data model as
 component temperatures change. Since components are constrained within blocks, the height of
 components are determined by the height of their parent block. :numref:`hot_radius` through
 :nuref:`hot_density` illustrate how the radius, height, volume, density, and mass are updated for a
-component during thermal expansion.
+component during thermal expansion, respectively.
 
 .. list-table:: Example Calculation of Radial and Axial Thermal Expansion for a Cylindrical Component
    :widths: 33 33 33
@@ -152,8 +152,8 @@ component during thermal expansion.
      - 5.0 cm
      - 5.01 cm
    * - Volume
-     - 0.982 :math:`cm^3`
-     -  0.988 :math:`cm^3`
+     - 0.982 cc
+     - 0.988 cc
    * - Density
      - 1.0 g/cc
      - 0.994 g/cc
@@ -164,12 +164,12 @@ component during thermal expansion.
 .. math::
    :name: hot_radius
 
-    r(T_h) = 0.25 \left(1 + \left(2\times 10^{-6}(1000 − 20)\right) = 0.251 cm
+    r(T_h) = 0.25 \left(1 + \left(2\times 10^{-6}(1000 − 20)\right)\right) = 0.251 cm
 
 .. math::
    :name: hot_height
 
-    h(T_h) = 5.0 \left(1 + (2\times 10^{-6}(1000 − 20)\right) = 5.01 cm
+    h(T_h) = 5.0 \left(1 + \left((2\times 10^{-6}(1000 − 20)\right)\right) = 5.01 cm
 
 .. math::
    :name: hot_volume
@@ -188,10 +188,10 @@ component during thermal expansion.
 
 When two or more components exist within the Block, the overall height change of the Block is driven
 by an axial expansion "target Component" (e.g., fuel). This target is selected (either automatically
-based on component flags or manually in the blueprints) to ensure that specific component has its
+based on component flags or manually in the blueprints) to ensure that a specific component has its
 mass conserved post-expansion. Note, the remaining components also have their mass conserved on the
 assembly-level; however intra-block mass conservation is lost as there is a redistribution of mass
-between blocks for non-target components.
+between axially neighboring blocks for non-target components.
 
 Radial thermal expansion occurs for each component in a given block. Mechanical contact between
 components is not accounted for, meaning that the radial expansion of one Component is independent
@@ -216,7 +216,7 @@ Dummy.
 
 The target components for each Block type are provided in the following table:
 
-.. list-table:: : Example Assignment of Target Components within Blocks
+.. list-table:: Example Assignment of Target Components within Blocks
    :widths: 50 50
    :header-rows: 1
 
@@ -233,12 +233,14 @@ The target components for each Block type are provided in the following table:
 
 The axial thermal expansion algorithm is applied in four steps:
 
-* Step 1: Expand the axial dimensions of target component and non-target components within each
+# Expand the axial dimensions of target component and non-target components within each
   block independently. 
-* Step 2: Align blocks axially such that common components have consistent alignments (e.g.,
+# Align blocks axially such that common components have consistent alignments (e.g.,
   overlapping radial dimensions).
-* Step 3: Assign the block lower and upper elevations to account for the thermal expansion of blocks
+# Assign the block lower and upper elevations to account for the thermal expansion of blocks
   below each block.
-  * Step 3a: Create new mesh lines that track the target component.
-* Step 4: Adjust the "Dummy" block located at the top of the assembly to maintain a consistent
+
+   #  Create new mesh lines that track the target component.
+
+# Adjust the "Dummy" block located at the top of the assembly to maintain a consistent
   core-wide assembly height before and after axial thermal expansion is applied.
