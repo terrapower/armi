@@ -102,7 +102,7 @@ Implementation Discussion and Example of Radial and Axial Thermal Expansion
 
 This section provides an example thermal expansion calculation for a simple cylindrical component
 from a reference temperature of 20°C to 1000°C with example material properties and dimensions as
-shown in Table :numref:`thermal_exp_comp_properties`.
+shown in the table below.
 
 .. list-table:: Example Component Properties for Thermal Expansion
    :widths: 50 50
@@ -124,19 +124,20 @@ shown in Table :numref:`thermal_exp_comp_properties`.
    * - Mean Coefficient Thermal Expansion
      - 2 x 10-6 1/°C
 
-Figure :numref:`therm_exp_illustration` illustrates the thermal expansion phenomena in both the
-radial and axial directions.
+The figure below illustrates the thermal expansion phenomena in both the radial and axial
+directions.
 
 .. figure:: /.static/axial_expansion_simple.png
    :name: therm_exp_illustration
+   :scale: 50%
 
     Illustration of radial (isotropic) and axial thermal expansion for a cylinder in ARMI.
 
 Thermal expansion calculations are performed for each component in the ARMI reactor data model as
 component temperatures change. Since components are constrained within blocks, the height of
-components are determined by the height of their parent block. :numref:`hot_radius` through
-:nuref:`hot_density` illustrate how the radius, height, volume, density, and mass are updated for a
-component during thermal expansion, respectively.
+components are determined by the height of their parent block. The equations below for
+``hot_radius`` through ``hot_density`` illustrate how the radius, height, volume, density, and mass
+are updated for a component during thermal expansion, respectively.
 
 .. list-table:: Example Calculation of Radial and Axial Thermal Expansion for a Cylindrical Component
    :widths: 33 33 33
@@ -207,6 +208,7 @@ core assembly. In this example there are four main block types defined: Shield, 
 Dummy.
 
 .. figure:: /.static/axial_expansion_components.png
+   :scale: 60%
 
     Illustration of Components for Axial Thermal Expansion Process
 
