@@ -405,7 +405,7 @@ def _checkBlockHeight(b):
 
     Notes
     -----
-    3cm is a presumptive lower threshhold for DIF3D
+    3cm is a presumptive lower threshold for DIF3D
     """
     if b.getHeight() < 3.0:
         runLog.debug(
