@@ -1252,7 +1252,7 @@ class Assembly(composites.Composite):
                 try:
                     b.autoCreateSpatialGrids(parentSpatialGrid)
                 except (ValueError, NotImplementedError) as e:
-                    runLog.warning(str(e), single=True)
+                    runLog.extra(str(e), single=True)
 
 
 class HexAssembly(Assembly):
@@ -1275,8 +1275,7 @@ class HexAssembly(Assembly):
         Parameters
         ----------
         rad : float
-            Counter clockwise rotation in radians. **MUST** be in increments of
-            60 degrees (PI / 3)
+            Counter clockwise rotation in radians. **MUST** be in increments of 60 degrees (PI / 3)
 
         Raises
         ------
