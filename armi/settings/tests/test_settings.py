@@ -291,7 +291,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.unregister(DummySettingPlugin1)
 
         # Now try the same, but adding the plugins in a different order. This is to make
-        # sure that it doesnt matter if the Setting or its Options come first
+        # sure that it doesn't matter if the Setting or its Options come first
         pm.register(DummySettingPlugin2)
         pm.register(DummySettingPlugin1)
         cs = caseSettings.Settings()
@@ -389,7 +389,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         Notes
         -----
-        In particuar, self.schema and self._customSchema on a Setting object are
+        In particular, self.schema and self._customSchema on a Setting object are
         removed by Setting.__getstate__, and that has been a problem in the past.
         """
         # get a baseline: show how the Setting object looks to start
