@@ -409,7 +409,7 @@ class TestTabulateInputs(unittest.TestCase):
             ]
         )
 
-        # the data is a regular dictionry
+        # the data is a regular dictionary
         data = {
             "criticalCrIteration: keffUnc": [9.01234e-05],
             "dif3d: power": [0.00876543],

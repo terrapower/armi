@@ -478,7 +478,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(rRatesReactor), 6)
         self.assertGreater(sum([r for r in rRatesReactor.values()]), 0)
 
-        # test that all different levels of the heirarchy have the same reaction rates
+        # test that all different levels of the hierarchy have the same reaction rates
         for key, val in rRatesBlock.items():
             self.assertAlmostEqual(rRatesAssem[key], val)
             self.assertAlmostEqual(rRatesCore[key], val)

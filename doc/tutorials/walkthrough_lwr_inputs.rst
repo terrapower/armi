@@ -64,7 +64,7 @@ the ``latticeIDs`` section is a list. The component will fill every
 position in the grid that has any of the specifiers in this list.
 
 You will see the `<<: *guide_tube` notation below. This means use the
-specifications of guide_tube, but make the modifications that apear below.
+specifications of guide_tube, but make the modifications that appear below.
 
 .. literalinclude:: ../../armi/tests/c5g7/c5g7-blueprints.yaml
     :language: yaml

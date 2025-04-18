@@ -572,7 +572,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_START_NODE,
             default=0,
             label="Start Node",
-            description="Timenode number (0 for BOC, etc.) to continue calulation from. "
+            description="Timenode number (0 for BOC, etc.) to continue calculation from. "
             "Database will load from the time step just before.",
             oldNames=[
                 ("loadNode", None),

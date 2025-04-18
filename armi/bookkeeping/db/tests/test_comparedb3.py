@@ -126,7 +126,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """End-to-end test of compareDatabases() on very simlar databases."""
+        """End-to-end test of compareDatabases() on very similar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT,
