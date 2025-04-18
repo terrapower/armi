@@ -305,7 +305,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             if not cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 # this is required to set up assemblies so they know how to snap
-                # to the reference mesh. They wont know the mesh to conform to
+                # to the reference mesh. They won't know the mesh to conform to
                 # otherwise....
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]

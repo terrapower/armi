@@ -37,7 +37,7 @@ class InputModifier:
 
     def __init__(self, independentVariable=None):
         """
-        Constuctor.
+        Constructor.
 
         Parameters
         ----------
@@ -81,7 +81,7 @@ class SamplingInputModifier(InputModifier):
         paramType : str
             specify if parameter is 'continuous' or 'discrete'
         bounds : list
-            If continuous, provide floating points [a, b] specifing the inclusive bounds.
+            If continuous, provide floating points [a, b] specifying the inclusive bounds.
             If discrete, provide a list of potential values [a, b, c, ...]
         independentVariable : [type], optional
             Name/value pairs to associate with the independent variable being modified

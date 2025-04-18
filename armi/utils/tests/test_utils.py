@@ -178,7 +178,7 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(classCounts[type(r)], 1)
         self.assertEqual(classCounts[type(r.core)], 1)
 
-        # further validate the Reactor heirarchy is in place
+        # further validate the Reactor hierarchy is in place
         self.assertEqual(len(r.core.getAssemblies()), 1)
         self.assertEqual(len(r.core.getBlocks()), 1)
 

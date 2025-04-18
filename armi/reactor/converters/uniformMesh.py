@@ -126,7 +126,7 @@ class UniformMeshGenerator:
             (``allMeshes``) and then averaging them together using
             ``average1DWithinTolerance``. An attempt to preserve fuel and control
             material boundaries is accomplished by moving fuel region boundaries
-            to accomodate control rod boundaries. Note this behavior only occurs
+            to accommodate control rod boundaries. Note this behavior only occurs
             by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
             being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
 
@@ -205,7 +205,7 @@ class UniformMeshGenerator:
         to the specified "anchor" points in the mesh. The anchor points are built up progressively as the
         appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
-        # filter fuel material boundaries to mininum mesh size
+        # filter fuel material boundaries to minimum mesh size
         filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
             Flags.FUEL
         )
