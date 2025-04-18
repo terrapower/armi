@@ -156,7 +156,7 @@ class Operator:
         self.r = None
         self.cs = cs
         runLog.LOG.startLog(self.cs.caseTitle)
-        self.timer = codeTiming.getMasterTimer()
+        self.timer = codeTiming.MasterTimer.getMasterTimer()
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
