@@ -288,7 +288,6 @@ class Interface:
     concrete class that extends this one.
     """
 
-    # TODO: This is a terrible name.
     function = None
     """
     The function performed by an Interface. This is not required be be defined by implementations of

@@ -34,54 +34,47 @@ class MacroXSGenerator(mpiActions.MpiAction):
         blocks,
         lib,
         buildScatterMatrix,
-        buildOnlyCoolant,
         libType,
         minimumNuclideDensity=0.0,
     ):
         mpiActions.MpiAction.__init__(self)
         self.buildScatterMatrix = buildScatterMatrix
-        self.buildOnlyCoolant = buildOnlyCoolant
         self.libType = libType
         self.lib = lib
         self.blocks = blocks
         self.minimumNuclideDensity = minimumNuclideDensity
 
     def __reduce__(self):
-        # Prevent blocks and lib from being broadcast by passing None to ctor.
-        # Although lib must be broadcast, we need to do it explicitly to
-        # correctly deal with the default lib=None argument in buildMacros(),
-        # which utilizes this action. Default arguments make things more complicated.
+        # Prevent blocks and lib from being broadcast by passing None to ctor. Although lib must be
+        # broadcast, we need to do it explicitly to correctly deal with the default lib=None
+        # argument in buildMacros(), which utilizes this action. Default arguments make things more
+        # complicated.
         return (
             MacroXSGenerator,
             (
                 None,
                 None,
                 self.buildScatterMatrix,
-                self.buildOnlyCoolant,
                 self.libType,
                 self.minimumNuclideDensity,
             ),
         )
 
     def invokeHook(self):
-        # logic here gets messy due to all the default arguments in the calling
-        # method. There exists a large number of permutations to be handled.
-
+        # logic here gets messy due to all the default arguments in the calling method. There exists
+        # a large number of permutations to be handled.
         if context.MPI_RANK == 0:
             allBlocks = self.blocks
             if allBlocks is None:
                 allBlocks = self.r.core.getBlocks()
 
             lib = self.lib or self.r.core.lib
-
         else:
             allBlocks = []
             lib = None
 
         mc = xsCollections.MacroscopicCrossSectionCreator(
-            self.buildScatterMatrix,
-            self.buildOnlyCoolant,
-            self.minimumNuclideDensity,
+            self.buildScatterMatrix, self.minimumNuclideDensity
         )
 
         if context.MPI_SIZE > 1:
@@ -129,7 +122,6 @@ class MacroXSGenerationInterface(interfaces.Interface):
         lib=None,
         bListSome=None,
         buildScatterMatrix=True,
-        buildOnlyCoolant=False,
         libType="micros",
     ):
         """
@@ -175,10 +167,6 @@ class MacroXSGenerationInterface(interfaces.Interface):
             as 'scatter' or 'chi') will be built. Essentially, this option saves
             huge runtime for the fluxRecon module.
 
-        buildOnlyCoolant : Boolean, optional
-            If True, homogenized macro XS will be built only for NA-23. If
-            False, the function runs normally.
-
         libType : str, optional
             The block attribute containing the desired microscopic XS for this
             block: either "micros" for neutron XS or "gammaXS" for gamma XS.
@@ -194,7 +182,6 @@ class MacroXSGenerationInterface(interfaces.Interface):
             bListSome,
             lib,
             buildScatterMatrix,
-            buildOnlyCoolant,
             libType,
             self.minimumNuclideDensity,
         )

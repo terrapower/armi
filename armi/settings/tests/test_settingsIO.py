@@ -48,10 +48,7 @@ class SettingsFailureTests(unittest.TestCase):
         with self.assertRaises(InvalidSettingsFileError):
             cs = settings.caseSettings.Settings()
             reader = settingsIO.SettingsReader(cs)
-            reader.readFromStream(
-                io.StringIO("useless:\n    should_fail"),
-                fmt=settingsIO.SettingsReader.SettingsInputFormat.YAML,
-            )
+            reader.readFromStream(io.StringIO("useless:\n    should_fail"))
 
 
 class SettingsReaderTests(unittest.TestCase):

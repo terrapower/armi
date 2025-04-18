@@ -176,21 +176,15 @@ class IndexLocation(LocationBase):
     """
     An immutable location representing one cell in a grid.
 
-    The locator is intimately tied to a grid and together, they represent
-    a grid cell somewhere in the coordinate system of the grid.
+    The locator is intimately tied to a grid and together, they represent a grid cell somewhere in
+    the coordinate system of the grid.
 
-    ``grid`` is not in the constructor (must be added after construction ) because
-    the extra argument (grid) gives an inconsistency between __init__ and __new__.
-    Unfortunately this decision makes whipping up IndexLocations on the fly awkward.
-    But perhaps that's ok because they should only be created by their grids.
-
-    TODO Is the above correct still? The constructor has an optional ``Grid``
-
+    ``grid`` is not in the constructor (must be added after construction ) because the extra
+    argument (grid) gives an inconsistency between __init__ and __new__. Unfortunately this decision
+    makes whipping up IndexLocations on the fly awkward. But perhaps that's ok because they should
+    only be created by their grids.
     """
 
-    # TODO Maybe __slots__ = LocationBase.__slots__ + ("parentLocation", )
-    # But parentLocation is a property...
-    # Maybe other parts of ARMI set attributes?
     __slots__ = ()
 
     def __add__(self, that: Union[IJKType, "IndexLocation"]) -> "IndexLocation":

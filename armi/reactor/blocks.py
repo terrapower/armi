@@ -101,7 +101,7 @@ class Block(composites.Composite):
         # which component to use to determine block pitch, along with its 'op'
         self._pitchDefiningComponent = (None, 0.0)
 
-        # TODO: what's causing these to have wrong values at BOL?
+        # Manually set some parameters at BOL
         for problemParam in ["THcornTemp", "THedgeTemp"]:
             self.p[problemParam] = []
 
