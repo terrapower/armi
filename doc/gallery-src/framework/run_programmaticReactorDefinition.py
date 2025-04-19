@@ -228,7 +228,7 @@ if __name__ == "__main__":
     # build ARMI objects
     o = case.initializeOperator()
     fig = plotting.plotAssemblyTypes(
-        case.bp,
+        list(case.bp.assemblies.values()),
         None,
         showBlockAxMesh=True,
     )

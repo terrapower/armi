@@ -980,9 +980,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         ):
             assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
             plotting.plotAssemblyTypes(
-                self.convReactor.blueprints,
-                assemPlotName,
                 assemBatch,
+                assemPlotName,
                 maxAssems=6,
                 showBlockAxMesh=True,
             )
