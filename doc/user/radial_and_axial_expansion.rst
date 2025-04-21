@@ -4,14 +4,14 @@ Radial and Axial Expansion and Contraction
 
 ARMI natively supports linear expansion in both the radial and axial dimensions. These expansion
 types function independently of one another and each have their own set of underlying assumptions
-and use-cases. The remainder of this section is described as follows: in Section
-:ref:`thermalExpansion` the methodology used for thermal expansion within ARMI is described.
+and use-cases. Radial expansion happens by default but axial expansion only occurss if the setting
+``inputHeightsConsideredHot`` is set to ``False``.
 
 .. _thermalExpansion:
 
 Thermal Expansion
 =================
-ARMI treats thermal expansion as a linear phenomena using the standard linear expansion relationship,
+ARMI treats thermal expansion as a linear phenomena using a standard linear expansion relationship,
 
 .. math::
     \frac{\Delta L}{L_0} = \alpha(T) \Delta T,
@@ -191,7 +191,8 @@ Radial thermal expansion occurs for each component in a given block. Mechanical 
 components is not accounted for, meaning that the radial expansion of one Component is independent
 from the radial expansion of the others. Solid components may be linked to gas/fluid components
 (i.e., sodium bond, helium) and the gas/fluid area is allowed to expand and contract with changes in
-Component temperatures. 
+Component temperatures. It is worth noting that void components are allowed to have negative areas
+in cases where the expansion of two solid components overlap each other.
 
 When two or more components exist within the Block, the overall height change of the Block is driven
 by an axial expansion "target Component" (e.g., fuel). This target is selected (either automatically
