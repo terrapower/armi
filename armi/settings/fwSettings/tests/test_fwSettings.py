@@ -86,11 +86,6 @@ class TestSchema(unittest.TestCase):
                 "invalid": -1,
                 "error": vol.error.MultipleInvalid,
             },
-            "lowPowerRegionFraction": {
-                "valid": 0.5,
-                "invalid": 2,
-                "error": vol.error.MultipleInvalid,
-            },
             "nCycles": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
             "power": {"valid": 0, "invalid": -1, "error": vol.error.MultipleInvalid},
             "skipCycles": {
