@@ -23,7 +23,6 @@ CONF_DEBUG_DB = "debugDB"
 CONF_RELOAD_DB_NAME = "reloadDBName"
 CONF_LOAD_FROM_DB_EVERY_NODE = "loadFromDBEveryNode"
 CONF_DB_STORAGE_AFTER_CYCLE = "dbStorageAfterCycle"
-CONF_ZERO_OUT_NUCLIDES_NOT_IN_DB = "zeroOutNuclidesNotInDB"
 CONF_SYNC_AFTER_WRITE = "syncDbAfterWrite"
 CONF_FORCE_DB_PARAMS = "forceDbParams"
 
@@ -63,13 +62,6 @@ def defineSettings():
             description="Only store cycles after this cycle in the database (to "
             "save storage space)",
             schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
-        ),
-        setting.Setting(
-            CONF_ZERO_OUT_NUCLIDES_NOT_IN_DB,
-            default=True,
-            label="Load Nuclides Not in Database",
-            description="If a nuclide was added to the problem after a previous case"
-            " was run, deactivate this to let it survive in a restart run",
         ),
         setting.Setting(
             CONF_SYNC_AFTER_WRITE,
