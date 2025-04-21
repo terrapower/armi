@@ -28,7 +28,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import codeTiming, getBurnSteps, getMaxBurnSteps, units
+from armi.utils import getBurnSteps, getMaxBurnSteps, units
 
 ORDER = interfaces.STACK_ORDER.FLUX
 

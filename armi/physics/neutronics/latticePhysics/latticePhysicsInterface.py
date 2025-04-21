@@ -30,7 +30,7 @@ from armi.physics.neutronics.settings import (
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
 )
-from armi.utils import codeTiming, safeCopy
+from armi.utils import safeCopy
 
 LATTICE_PHYSICS = "latticePhysics"
 
