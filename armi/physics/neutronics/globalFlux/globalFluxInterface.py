@@ -558,7 +558,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         self.options: GlobalFluxOptions
         self.geomConverters: Dict[str, geometryConverters.GeometryConverter] = {}
 
-    @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
         """
         Apply geometry conversions to make reactor work in neutronics.
@@ -606,7 +605,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         self.r = neutronicsReactor
 
-    @codeTiming.timed
     def _undoGeometryTransformations(self):
         """
         Restore original data model state and/or apply results to it.

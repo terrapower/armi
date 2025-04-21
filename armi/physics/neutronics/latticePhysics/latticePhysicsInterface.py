@@ -87,7 +87,6 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _getExecutablePath(self):
         raise NotImplementedError
 
-    @codeTiming.timed
     def interactBOL(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
@@ -98,7 +97,6 @@ class LatticePhysicsInterface(interfaces.Interface):
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
             self.updateXSLibrary(cycle)
 
-    @codeTiming.timed
     def interactBOC(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
