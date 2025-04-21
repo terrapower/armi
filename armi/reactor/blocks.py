@@ -2208,6 +2208,10 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
+        # not necessary
+        if self.spatialGrid is not None:
+            return
+
         # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
