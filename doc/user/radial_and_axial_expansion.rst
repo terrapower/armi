@@ -195,16 +195,34 @@ Component temperatures. It is worth noting that void components are allowed to h
 in cases where the expansion of two solid components overlap each other.
 
 When two or more components exist within the Block, the overall height change of the Block is driven
-by an axial expansion "target Component" (e.g., fuel). This target is selected (either automatically
-based on component flags or manually in the blueprints) to ensure that a specific component has its
-mass conserved post-expansion. Note, the remaining components also have their mass conserved on the
-assembly-level; however intra-block mass conservation is lost as there is a redistribution of mass
-between axially neighboring blocks for non-target components.
+by an axial expansion "target Component" (e.g., fuel). Alternatively, the axial thermal expansion of
+components within a Block do influence the positions of components in neighboring blocks for a given
+Assembly. So, while axial thermal expansion evaluations of each Block are treated independently, the
+axial mesh points are updated to account for the physical material displacements across the entire
+assembly length.
 
-Alternatively, the axial thermal expansion of components within a Block do influence the positions
-of components in neighboring blocks for a given Assembly. So, while axial thermal expansion
-evaluations of each Block are treated independently, the axial mesh points are updated to account
-for the physical material displacements across the entire assembly length.
+To properly model the thermal axial expansion, it is necessary for ARMI to know the target
+component in each Block that drives the expansion of the Block as a whole and is guaranteed to
+preserve mass between temperature states. It is necessary to manually specify the target components
+in each Block using the ``axial expansion target component`` block blueprint attribute. The target
+Component in each Block is assigned according to the following ordered precedent, where the target
+Component can be any Component of that material:
+
+1. fuel components
+2. absorber components
+3. steel components
+4. any remaining component
+
+Thus, in fuel blocks the first fuel Component will be the axial expansion target component and will
+preserve fuel mass globally over the reactor and will lead to a slight reduction of the steel mass
+as the temperature increases. The steel mass reduction will take place as temperature increases. The
+steel mass reduction will take place due to the way ARMI handles thermal expansion, using the target
+Component to determine the height of the entire block and adjusting all the components in that block
+to have the same new height while densities are kept at the values corresponding to the current
+temperature. Since steel has a stronger thermal expansion coeficient than does fuel, the steel
+components should in fact expand more than the fuel in real life, but in the ARMI model the steel
+components are restricted to expanding only as high as the target component (fuel). In this model,
+this will manifest in some amount of steel being chopped off at the top of the fuel stack.
 
 The following two tables provide illustrations of the axial thermal expansion process for an example
 core assembly. In this example there are four main block types defined: Shield, Fuel, Plenum, and
