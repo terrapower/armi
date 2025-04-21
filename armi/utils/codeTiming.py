@@ -177,10 +177,21 @@ class MasterTimer:
 
         return [t for t in master.timers.values() if t.isActive]
 
+    def __str__(self):
+        t = self.time()
+        return "{:55s} {:>14.2f} {:>14.2f} {:11}".format("TOTAL TIME", t, t, 1)
+
     @staticmethod
     def report(inclusionCutoff=0.1, totalTime=False):
         """
         Write a string report of the timers.
+
+        This report prints a table that looks something like this:
+
+        TIMER REPORTS                                           CUMULATIVE (s)    AVERAGE (s)   NUM ITERS
+        thing1                                                            0.01           0.01           1
+        thing2                                                            0.01           0.01           1
+        TOTAL TIME                                                        0.02           0.02           1
 
         Parameters
         ----------
@@ -200,11 +211,11 @@ class MasterTimer:
         master = MasterTimer.getMasterTimer()
 
         table = [
-            "{:60s} {:^20} {:^20} {:^8}\t".format(
+            "{:55s} {:^15} {:^15} {:9}".format(
                 "TIMER REPORTS",
                 "CUMULATIVE (s)",
                 "AVERAGE (s)",
-                "NUM ITERS",
+                "NUM ITERS".rjust(9, " "),
             )
         ]
 
@@ -218,6 +229,8 @@ class MasterTimer:
                 continue
             table.append(str(timer))
 
+        # add the total time as the last row
+        table.append(str(master))
         return "\n".join(table)
 
     @staticmethod
@@ -301,7 +314,7 @@ class MasterTimer:
         )
 
         # save and close
-        filename = baseFileName + ".code-timeline.png"
+        filename = f"{baseFileName}.code-timeline.png"
         plt.savefig(filename)
         plt.close()
         return os.path.join(os.getcwd(), filename)
@@ -336,15 +349,15 @@ class _Timer:
         )
 
     def __str__(self):
-        str_ = "{:60s} {:>20.2f} {:>20.2f} {:^8}".format(
-            self.name[:60],
+        s = "{:55s} {:>14.2f} {:>14.2f} {:11}".format(
+            self.name[:55],
             self.time,
             self.time / (self.numIterations + 1),
-            self.numIterations,
+            self.numIterations + 1,
         )
         # needs to come after str generation because it resets the timeSinceReport
         self.reportedTotal = self.time
-        return str_
+        return s
 
     def __enter__(self):
         self.start()

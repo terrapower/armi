@@ -54,6 +54,7 @@ class CodeTimingTest(unittest.TestCase):
         self.assertIn("  CUMULATIVE ", table)
         self.assertIn("  NUM ITERS", table)
         self.assertIn("TIMER REPORTS  ", table)
+        self.assertIn("TOTAL TIME ", table)
         self.assertIn("someMethod", table)
         self.assertIn("I have this name", table)
 
@@ -199,6 +200,6 @@ class CodeTimingTest(unittest.TestCase):
         self.assertIn(name2, table)
 
         lines = table.strip().split("\n")
-        self.assertEqual(len(lines), 3)
+        self.assertEqual(len(lines), 4)
         self.assertEqual(len(lines[1].strip().split()), 4)
         self.assertEqual(len(lines[2].strip().split()), 4)
