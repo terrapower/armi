@@ -105,11 +105,6 @@ class TestSchema(unittest.TestCase):
                 "invalid": -274,
                 "error": vol.error.MultipleInvalid,
             },
-            "dbStorageAfterCycle": {
-                "valid": 0,
-                "invalid": -1,
-                "error": vol.error.MultipleInvalid,
-            },
             "timelineInclusionCutoff": {
                 "valid": 1,
                 "invalid": 105,
