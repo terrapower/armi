@@ -14,7 +14,6 @@
 
 """Settings related to the ARMI database."""
 
-import voluptuous as vol
 
 from armi.settings import setting
 
