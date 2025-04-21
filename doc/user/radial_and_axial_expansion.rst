@@ -99,7 +99,6 @@ volume left for fluid components.
 
 Implementation Discussion and Example of Radial and Axial Thermal Expansion
 ===========================================================================
-
 This section provides an example thermal expansion calculation for a simple cylindrical component
 from a reference temperature of 20°C to 1000°C with example material properties and dimensions as
 shown in the table below.
@@ -201,29 +200,6 @@ Assembly. So, while axial thermal expansion evaluations of each Block are treate
 axial mesh points are updated to account for the physical material displacements across the entire
 assembly length.
 
-To properly model the thermal axial expansion, it is necessary for ARMI to know the target
-component in each Block that drives the expansion of the Block as a whole and is guaranteed to
-preserve mass between temperature states. It is necessary to manually specify the target components
-in each Block using the ``axial expansion target component`` block blueprint attribute. The target
-Component in each Block is assigned according to the following ordered precedent, where the target
-Component can be any Component of that material:
-
-1. fuel components
-2. absorber components
-3. steel components
-4. any remaining component
-
-Thus, in fuel blocks the first fuel Component will be the axial expansion target component and will
-preserve fuel mass globally over the reactor and will lead to a slight reduction of the steel mass
-as the temperature increases. The steel mass reduction will take place as temperature increases. The
-steel mass reduction will take place due to the way ARMI handles thermal expansion, using the target
-Component to determine the height of the entire block and adjusting all the components in that block
-to have the same new height while densities are kept at the values corresponding to the current
-temperature. Since steel has a stronger thermal expansion coeficient than does fuel, the steel
-components should in fact expand more than the fuel in real life, but in the ARMI model the steel
-components are restricted to expanding only as high as the target component (fuel). In this model,
-this will manifest in some amount of steel being chopped off at the top of the fuel stack.
-
 The following two tables provide illustrations of the axial thermal expansion process for an example
 core assembly. In this example there are four main block types defined: Shield, Fuel, Plenum, and
 Dummy.
@@ -267,3 +243,22 @@ The axial thermal expansion algorithm is applied in four steps:
 
 # Adjust the "Dummy" block located at the top of the assembly to maintain a consistent
   core-wide assembly height before and after axial thermal expansion is applied.
+
+
+Mass Conservation
+=================
+To properly model the thermal axial expansion, it is necessary for ARMI to know the target
+component in each Block that drives the expansion of the Block as a whole and is guaranteed to
+preserve mass between temperature states. It is necessary to manually specify the target components
+in each Block using the ``axial expansion target component`` block blueprint attribute.
+
+Thus, in fuel blocks the first fuel Component will be the axial expansion target component and will
+preserve fuel mass globally over the reactor and will lead to a slight reduction of the steel mass
+as the temperature increases. The steel mass reduction will take place as temperature increases. The
+steel mass reduction will take place due to the way ARMI handles thermal expansion, using the target
+Component to determine the height of the entire block and adjusting all the components in that block
+to have the same new height while densities are kept at the values corresponding to the current
+temperature. Since steel has a stronger thermal expansion coeficient than does fuel, the steel
+components should in fact expand more than the fuel in real life, but in the ARMI model the steel
+components are restricted to expanding only as high as the target component (fuel). In this model,
+this will manifest in some amount of steel being chopped off at the top of the fuel stack.
