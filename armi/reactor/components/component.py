@@ -702,10 +702,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Return a list of number densities for the nuc names requested."""
         byteNucs = np.array([nucName.encode() for nucName in nucNames])
         nDens = np.zeros(len(byteNucs), dtype=np.float64)
-        nuclideCopy = np.array(self.p.nuclides)
-        nDensCopy = np.array(self.p.numberDensities)
         if self.p.numberDensities is None:
             return nDens
+
+        nuclideCopy = np.array(self.p.nuclides)
+        nDensCopy = np.array(self.p.numberDensities)
+
+        # arbitrary case where nucNames is the full set of nuclides in the same order
+        if np.array_equal(byteNucs, nuclideCopy):
+            return nDensCopy
 
         if len(nDens) > len(nDensCopy) / 5:
             # if there are a lot of indices to get densities for, use reverseIndex lookup
@@ -941,13 +946,16 @@ class Component(composites.Composite, metaclass=ComponentType):
         volume = self.getVolume() / (
             self.parent.getSymmetryFactor() if self.parent else 1.0
         )
-        nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
-        # densities comes from self.p.numberDensities
-        if len(nuclideNames) > 0:
-            densities = self.getNuclideNumberDensities(nuclideNames)
-            nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+        if nuclideNames is None:
+            nDens = self._getNdensHelper()
         else:
-            nDens = {}
+            nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
+            # densities comes from self.p.numberDensities
+            if len(nuclideNames) > 0:
+                densities = self.getNuclideNumberDensities(nuclideNames)
+                nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+            else:
+                nDens = {}
         return densityTools.calculateMassDensity(nDens) * volume
 
     def setDimension(self, key, val, retainLink=False, cold=True):
