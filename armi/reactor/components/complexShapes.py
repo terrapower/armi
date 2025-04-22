@@ -138,10 +138,9 @@ class HexHoledCircle(basicShapes.Circle):
 
 
 class FilletedHexagon(basicShapes.Hexagon):
-    """Hexagon with rounded corners.
+    """A hexagon with a hexagonal hole cut out of the center of it, where the corners of both the outer and inner hexagons are rounded.
 
-    This shape has a hexagonal hole with rounded corners cut out of the center of it. By default,
-    that inner hole has a diameter of zero, making this a solid object with no hole.
+    By default, the inner hole has a diameter of zero, making this a solid object with no hole.
     """
 
     THERMAL_EXPANSION_DIMS = {"cornerR", "ip", "op"}
