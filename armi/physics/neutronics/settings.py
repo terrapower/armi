@@ -67,11 +67,14 @@ CONF_CLEAR_XS = "clearXS"
 CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
     "disableBlockTypeExclusionInXsGeneration"
 )
-CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
 CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
@@ -291,13 +294,6 @@ def defineSettings():
             description="Density to use for nuclides and fission products at infinite dilution. "
             "This is also used as the minimum density considered for computing macroscopic cross "
             "sections.",
-        ),
-        setting.Setting(
-            CONF_INFINITE_DILUTE_CUTOFF,
-            default=1e-10,
-            label="Infinite Dillute Cutoff",
-            description="Do not model nuclides with density less than this cutoff. "
-            "Used with PARTISN and SERPENT.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,

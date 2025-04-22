@@ -74,7 +74,6 @@ CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_LOAD_STYLE = "loadStyle"
 CONF_LOADING_FILE = "loadingFile"
-CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
@@ -585,13 +584,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Load Style",
             description="Description of how the ARMI case will be initialized",
             options=["fromInput", "fromDB"],
-        ),
-        setting.Setting(
-            CONF_LOW_POWER_REGION_FRACTION,
-            default=0.05,
-            label="Low-power Region Fraction",
-            description="Description needed",
-            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
         ),
         setting.Setting(
             CONF_N_CYCLES,
