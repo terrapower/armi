@@ -708,7 +708,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         nuclideCopy = np.array(self.p.nuclides)
         nDensCopy = np.array(self.p.numberDensities)
 
-        # arbitrary case where nucNames is the full set of nuclides in the same order
+        # trivial case where nucNames is the full set of nuclides in the same order
         if np.array_equal(byteNucs, nuclideCopy):
             return nDensCopy
 
