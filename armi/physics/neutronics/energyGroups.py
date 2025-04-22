@@ -137,6 +137,9 @@ Values are the upper bound of each energy in eV from highest energy to lowest
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
 
+# for calculating fast flux
+GROUP_STRUCTURE["FastFlux"] = [HIGH_ENERGY_EV, FAST_FLUX_THRESHOLD_EV]
+
 # Nuclear Reactor Engineering: Reactor Systems Engineering, Vol. 1
 GROUP_STRUCTURE["4gGlasstoneSesonske"] = [HIGH_ENERGY_EV, 5.00e04, 5.00e02, 6.25e-01]
 
