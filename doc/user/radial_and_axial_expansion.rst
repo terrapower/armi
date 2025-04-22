@@ -92,7 +92,7 @@ temperature :math:`T_0`, and :math:`\alpha(T_h)` is the mean coefficient of ther
 specified temperature :math:`T_h` relative to the material's reference temperature.
 
 An update to mass densities is applied for all solid components given the assumption of isotropic
-thermal expansion.  Here we assume the masses of non-solid components (e.g., fluids or gases) are
+thermal expansion. Here we assume the masses of non-solid components (e.g., fluids or gases) are
 allowed to change within the reactor core model based on changes to solid volume changes. For
 instance, if solids change volume due to temperature changes, there is a change in the amount of
 volume left for fluid components.
@@ -259,10 +259,35 @@ component`` block blueprint attribute. The following logic is used to infer the 
 #. If a Block has :py:data:`flags.flags.PLENUM` or :py:data:`flags.flags.ACLP`, the
    :py:data:`flags.flags.CLAD` Component is hard-coded to be the axial expansion target component.
    If one does not exist, an error is raised.
-#. "Dummy Blocks" are intended to only contain fluid (generally cooling fluid), do not contain solid
-   components, and therefore do not have an axial expansion target component.
+#. "Dummy Blocks" are intended to only contain fluid (generally coolant fluid), and do not contain
+   solid components, and therefore do not have an axial expansion target component.
 
 
 Mass Conservation
 -----------------
-TODO
+Due to the requirement that all components within a Block be the same height, the conservation of
+mass post-axial expansion is not trivial. At the Block-level, the axial expansion target component
+is guaranteed to have its mass conserved post-axial expansion. For pinned-blocks, this is typically
+chosen to be the most neutronically important component; e.g., in a fuel Block this is typically the
+Fuel component. All other components, assuming they expand at a different rate than the fuel, will
+exhibit non-conservation on the Block-level as mass is redistributed across the axially-neighboring
+blocks. However, the mass of all solid components at the assembly-level are designed to be conserved
+if the following are met for a given assembly design.
+
+#. Axial continuity of like-objects. E.g., pins, clad, etc.
+#. Components that may expand at different rates axially terminate in unique blocks
+
+   #. E.g., the clad extends above the termination of the fuel and the radial duct encasing an
+      assembly extends past the termination of the clad.
+
+#. The top-most Block must be a "dummy Block" containing fluid (typically coolant).
+
+See :py:module:`armi.tests.detailedAxialExansion` for an example blueprint which satisfy the above
+requirements.
+
+.. important::
+
+    For sufficiently strong axial thermal gradients, conservation of mass may be lost on the
+    assembly for non-target components, albeit in relatively minor quantities. This is due to the
+    differing temperature between blocks, radial expansion effects, and how mass is redistributed
+    between blocks.
