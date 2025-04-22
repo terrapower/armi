@@ -245,20 +245,24 @@ The axial thermal expansion algorithm is applied in four steps:
   core-wide assembly height before and after axial thermal expansion is applied.
 
 
-Mass Conservation
-=================
-To properly model the thermal axial expansion, it is necessary for ARMI to know the target
-component in each Block that drives the expansion of the Block as a whole and is guaranteed to
-preserve mass between temperature states. It is necessary to manually specify the target components
-in each Block using the ``axial expansion target component`` block blueprint attribute.
+Target Component Logic
+----------------------
+When two or more solid components exist within a Block, the overall height change of the Block is
+driven by an "axial expansion target component" (e.g., fuel). This Component may either be inferred
+from the flags prescribed in the blueprints or manually set using the ``axial expansion target
+component`` block blueprint attribute. The following logic is used to infer the target component:
 
-Thus, in fuel blocks the first fuel Component will be the axial expansion target component and will
-preserve fuel mass globally over the reactor and will lead to a slight reduction of the steel mass
-as the temperature increases. The steel mass reduction will take place as temperature increases. The
-steel mass reduction will take place due to the way ARMI handles thermal expansion, using the target
-Component to determine the height of the entire block and adjusting all the components in that block
-to have the same new height while densities are kept at the values corresponding to the current
-temperature. Since steel has a stronger thermal expansion coeficient than does fuel, the steel
-components should in fact expand more than the fuel in real life, but in the ARMI model the steel
-components are restricted to expanding only as high as the target component (fuel). In this model,
-this will manifest in some amount of steel being chopped off at the top of the fuel stack.
+#. Search Component flags for neutronically important components. These are defined in
+   :py:data:`expansionData.TARGET_FLAGS_IN_PREFERRED_ORDER`.
+#. Compare the Block and Component flags. If a Block and Component contain the same flags, that
+   Component is selected as the axial expansion target Component.
+#. If a Block has :py:data:`flags.flags.PLENUM` or :py:data:`flags.flags.ACLP`, the
+   :py:data:`flags.flags.CLAD` Component is hard-coded to be the axial expansion target component.
+   If one does not exist, an error is raised.
+#. "Dummy Blocks" are intended to only contain fluid (generally cooling fluid), do not contain solid
+   components, and therefore do not have an axial expansion target component.
+
+
+Mass Conservation
+-----------------
+TODO
