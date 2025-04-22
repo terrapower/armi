@@ -153,7 +153,9 @@ class TestPluginRegistration(unittest.TestCase):
                 db = dbi.database
                 db.writeToDB(r)
                 db.close()
-                o = loadOperator(self._testMethodName + ".h5", 0, 0)
+                o = loadOperator(
+                    self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True
+                )
             self.assertTrue(o.cs.beforeReactorConstructionFlag)
         finally:
             pm.unregister(BeforeReactorPlugin)
