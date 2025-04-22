@@ -68,7 +68,6 @@ CONF_OPT_DPA = [
 CONF_CLEAR_XS = "clearXS"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
-CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
@@ -295,13 +294,6 @@ def defineSettings():
             "dilution. This is also used as the minimum density considered for "
             "computing macroscopic cross sections. It can also be passed to physics "
             "plugins.",
-        ),
-        setting.Setting(
-            CONF_INFINITE_DILUTE_CUTOFF,
-            default=1e-10,
-            label="Infinite Dillute Cutoff",
-            description="Do not model nuclides with density less than this cutoff. "
-            "Used with PARTISN and SERPENT.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
