@@ -4,7 +4,7 @@ Radial and Axial Expansion and Contraction
 
 ARMI natively supports linear expansion in both the radial and axial dimensions. These expansion
 types function independently of one another and each have their own set of underlying assumptions
-and use-cases. Radial expansion happens by default but axial expansion only occurss if the setting
+and use-cases. Radial expansion happens by default but axial expansion only occurs if the setting
 ``inputHeightsConsideredHot`` is set to ``False``.
 
 .. _thermalExpansion:
@@ -195,7 +195,7 @@ in cases where the expansion of two solid components overlap each other.
 
 When two or more components exist within the Block, the overall height change of the Block is driven
 by an axial expansion "target Component" (e.g., fuel). Alternatively, the axial thermal expansion of
-components within a Block do influence the positions of components in neighboring blocks for a given
+components within a Block influences the positions of components in axially neighboring blocks for a given
 Assembly. So, while axial thermal expansion evaluations of each Block are treated independently, the
 axial mesh points are updated to account for the physical material displacements across the entire
 assembly length.
