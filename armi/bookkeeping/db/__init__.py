@@ -106,7 +106,7 @@ def loadOperator(
     handleInvalids : bool
         Whether to check for invalid settings. Default True.
     callReactorConstructionHook : bool
-            Flag for whether the beforeReactorConstruction plugin hook should be executed. Default is False.
+        Flag for whether the beforeReactorConstruction plugin hook should be executed. Default is False.
 
     See Also
     --------
