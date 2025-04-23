@@ -155,7 +155,7 @@ class XdmfDumper(dumper.VisFileDumper):
         self._meshH5 = h5py.File(self._baseName + "_mesh.h5", "w")
 
         if self._inputName is None:
-            # we could handle the case where the database wasnt passed by pumping state
+            # we could handle the case where the database wasn't passed by pumping state
             # into a new h5 file, but why?
             raise ValueError("Input database needed to generate XDMF output!")
 

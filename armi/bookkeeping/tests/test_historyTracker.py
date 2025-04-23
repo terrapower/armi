@@ -154,7 +154,7 @@ class TestHistoryTracker(ArmiTestHelper):
         self.assertIsNone(hti._preloadedBlockHistory)
 
     def test_historyParameters(self):
-        """Retrieve various paramaters from the history.
+        """Retrieve various parameters from the history.
 
         .. test:: Demonstrate that various parameters stored at differing time nodes can be recovered.
             :id: T_ARMI_HIST_TRACK1

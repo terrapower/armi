@@ -103,7 +103,7 @@ class TestDatabase(unittest.TestCase):
 
                 self.db.writeToDB(self.r)
 
-        # add some more data that isnt written to the database to test the
+        # add some more data that isn't written to the database to test the
         # DatabaseInterface API
         self.r.p.cycle = 2
         self.r.p.timeNode = 0
@@ -181,11 +181,11 @@ class TestDatabase(unittest.TestCase):
         expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(2)}
         self.assertEqual(expectedSn, hists[testBlock]["serialNum"])
 
-        # cant mix blocks and assems, since they are different distance from core
+        # can't mix blocks and assems, since they are different distance from core
         with self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
 
-        # if requested time step isnt written, return no content
+        # if requested time step isn't written, return no content
         hist = self.dbi.getHistory(
             self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
         )

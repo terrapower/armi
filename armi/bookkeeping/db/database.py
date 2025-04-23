@@ -705,11 +705,12 @@ class Database:
             :implements: R_ARMI_DB_TIME
 
             This method creates a ``Reactor`` object by reading the reactor state out of an ARMI
-            database file. This is done by passing in mandatory arguements that specify the exact
+            database file. This is done by passing in mandatory arguments that specify the exact
             place in time you want to load the reactor from. (That is, the cycle and node numbers.)
             Users can either pass the settings and blueprints directly into this method, or it will
             attempt to read them from the database file. The primary work done here is to read the
-            hierarchy of reactor objects from the file, then reconstruct them in the right order.
+            hierarchy of reactor objects from the data file, then reconstruct them in the correct
+            order.
 
         Parameters
         ----------
@@ -763,7 +764,7 @@ class Database:
         # stitch together
         self._compose(iter(comps), cs)
 
-        # also, make sure to update the global serial number so we don't re-use a number
+        # also, make sure to update the global serial number so we don't reuse a number
         parameterCollections.GLOBAL_SERIAL_NUM = max(
             parameterCollections.GLOBAL_SERIAL_NUM, layout.serialNum.max()
         )
@@ -906,8 +907,9 @@ class Database:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
-            # Only create the group if it doesnt already exist. This happens when re-writing params
-            # in the same time node (e.g. something changed between EveryNode and EOC)
+            # Only create the group if it doesn't already exist. This happens when
+            # re-writing params in the same time node (e.g. something changed between
+            # EveryNode and EOC)
             g = h5group.create_group(groupName, track_order=True)
         else:
             g = h5group[groupName]
@@ -1205,7 +1207,7 @@ class Database:
 
         for h5TimeNodeGroup in self.genTimeStepGroups(timeSteps):
             if "layout" not in h5TimeNodeGroup:
-                # layout hasnt been written for this time step, so we can't get anything useful
+                # layout hasn't been written for this time step, so we can't get anything useful
                 # here. Perhaps the current value is of use, in which case the DatabaseInterface
                 # should be used.
                 continue

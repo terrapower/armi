@@ -137,6 +137,9 @@ Values are the upper bound of each energy in eV from highest energy to lowest
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
 
+# for calculating fast flux
+GROUP_STRUCTURE["FastFlux"] = [HIGH_ENERGY_EV, FAST_FLUX_THRESHOLD_EV]
+
 # Nuclear Reactor Engineering: Reactor Systems Engineering, Vol. 1
 GROUP_STRUCTURE["4gGlasstoneSesonske"] = [HIGH_ENERGY_EV, 5.00e04, 5.00e02, 6.25e-01]
 
@@ -734,7 +737,7 @@ GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
 )
 
 """
-Taken from Table 5.1 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.1 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL21G"] = [
@@ -762,7 +765,7 @@ GROUP_STRUCTURE["ANL21G"] = [
 ]
 
 """
-Taken from Table 5.2 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.2 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL94G"] = [

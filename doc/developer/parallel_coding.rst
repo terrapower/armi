@@ -64,8 +64,8 @@ Now we want to distribute this work to each of the worker processors (and take o
 not just sitting around waiting). This is what ``scatter`` will do. But ``scatter`` requires a list that has
 length exactly equal to the number of processors available. You have some options here. Assuming there are 10
 CPUs, you can either pass the first 10 values out of the list and keep sending groups of  10 values until they
-are all sent (multiple sets of transmitions) or you can split the data up into 10 evenly-populated groups (single
-transmition to each CPU). This is called *load balancing*. 
+are all sent (multiple sets of transmissions) or you can split the data up into 10 evenly-populated groups (single
+transmission to each CPU). This is called *load balancing*. 
 
 ARMI has utilities that can help called :py:func:`armi.utils.iterables.chunk` and :py:func:`armi.utils.iterables.flatten`.
 Given an arbitrary list, ``chunk`` breaks it up into a certain number of chunks and ``unchunk`` does
