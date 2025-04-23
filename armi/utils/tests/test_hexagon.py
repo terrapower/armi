@@ -24,25 +24,13 @@ class TestHexagon(unittest.TestCase):
     """Number of random draws to use in some fuzzy testing"""
 
     def test_hexagon_area(self):
-        """
-        Area of a hexagon.
-
-        .. test:: Hexagonal area is retrievable.
-            :id: T_ARMI_UTIL_HEXAGON0
-            :tests: R_ARMI_UTIL_HEXAGON
-        """
+        """Area of a hexagon."""
         # Calculate area given a pitch
         self.assertEqual(hexagon.area(1), math.sqrt(3.0) / 2)
         self.assertEqual(hexagon.area(2), 4 * math.sqrt(3.0) / 2)
 
     def test_numPositionsInRing(self):
-        """
-        Calculate number of positions in a ring of hexagons.
-
-        .. test:: Compute number of positions in ring.
-            :id: T_ARMI_UTIL_HEXAGON1
-            :tests: R_ARMI_UTIL_HEXAGON
-        """
+        """Calculate number of positions in a ring of hexagons."""
         self.assertEqual(hexagon.numPositionsInRing(1), 1)
         self.assertEqual(hexagon.numPositionsInRing(2), 6)
         self.assertEqual(hexagon.numPositionsInRing(3), 12)

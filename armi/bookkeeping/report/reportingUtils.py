@@ -109,14 +109,10 @@ def writeWelcomeHeaders(o, cs):
             includedBlueprints = []
 
         inputInfo = []
-        inputFiles = (
-            [
-                ("Case Settings", cs.caseTitle + ".yaml"),
-                ("Blueprints", cs[CONF_LOADING_FILE]),
-            ]
-            + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
-            + [("Geometry", cs["geomFile"])]
-        )
+        inputFiles = [
+            ("Case Settings", cs.caseTitle + ".yaml"),
+            ("Blueprints", cs[CONF_LOADING_FILE]),
+        ] + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
 
         activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
         for klass, kwargs in activeInterfaces:
@@ -354,7 +350,7 @@ def _getSystemInfoLinux():
         return ""
 
     # get processor information
-    linuxProcCommands = ["cat /proc/cpuinfo", "lscpu", "lshw -class CPU"]
+    linuxProcCommands = ["lscpu", "cat /proc/cpuinfo", "lshw -class CPU"]
     procInfo = ""
     for cmd in linuxProcCommands:
         procInfo = subprocess.run(
@@ -476,8 +472,8 @@ def writeAssemblyMassSummary(r):
             blockType = b.getType()
             if blockType not in types:
                 types.append(blockType)
-        # if the BOL fuel assem is in the center of the core, its area is 1/3 of the full area b/c it's a sliced assem.
-        # bug: mass came out way high for a case once. 265 MT vs. 92 MT hm.
+        # If the BOL fuel assem is in the center of the core, its area is 1/3 of the full area b/c
+        # its a sliced assem.
 
         # count assemblies
         core = r.core
@@ -672,7 +668,7 @@ def summarizePinDesign(core):
     designInfo = collections.defaultdict(list)
 
     try:
-        for b in core.getBlocks(Flags.FUEL):
+        for b in core.iterBlocks(Flags.FUEL):
             fuel = b.getComponent(Flags.FUEL)
             duct = b.getComponent(Flags.DUCT)
             clad = b.getComponent(Flags.CLAD)
@@ -754,8 +750,7 @@ def summarizePowerPeaking(core):
     avgPDens = maxPowAssem.calcAvgParam("pdens")
     peakPDens = maxPowAssem.getMaxParam("pdens")
     if not avgPDens:
-        # protect against divide-by-zero. Peaking doesnt make sense if there is no
-        # power.
+        # protect against divide-by-zero. Peaking doesn't make sense if there is no power
         return
     axPeakF = peakPDens / avgPDens
 
@@ -830,9 +825,6 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     )
     report.setData(
         "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
     )
     report.setData(
         "Loading File",

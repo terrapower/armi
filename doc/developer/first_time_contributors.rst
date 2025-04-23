@@ -4,9 +4,7 @@ First Time Contributors Guide
 
 The ARMI team strongly encourages developers to contribute to the codebase.
 
-The ARMI framework code is open source, and your contributions will become open source.
-Although fewer laws apply to open source materials because they are publicly-available, you still
-must comply with all applicable laws and regulations.
+The ARMI framework code is open source, and your contributions will become open source. Although fewer laws apply to open source materials because they are publicly-available, you still must comply with all applicable laws and regulations.
 
 Help Wanted
 ===========
@@ -24,9 +22,7 @@ Naturally, you can also look at the open `ARMI issues <https://github.com/terrap
 Testing
 =======
 
-Any contribution must pass all included unit tests. You will frequently have to fix
-tests your code changes break. And you should definitely add tests to cover anything
-new your code does.
+Any contribution must pass all included unit tests. You will frequently have to fix tests your code changes break. And you should definitely add tests to cover anything new your code does.
 
 The ARMI tests are meant to be run using `pytest <https://docs.pytest.org/en/8.0.x/>`_
 locally ::
@@ -49,8 +45,7 @@ The process for opening a PR against ARMI goes something like this:
     b. See ARMIs specific guidance on what makes a "good" Pull Request: :ref:`armi-tooling`.
 5. Actively engage with your PR reviewer's questions and comments.
 
-> Note that a bot will require that you sign our `Contributor License Agreement <https://gist.github.com/youngmit/8654abcf93f309771ae9296abebe9d4a>`_
-before we can accept a pull request from you.
+> Note that a bot will require that you sign our `Contributor License Agreement <https://github.com/terrapower/armi/blob/main/CONTRIBUTING.md>`_ before we can accept a pull request from you.
 
 See our published documentation for a complete guide to our coding standards and practices: :ref:`armi-stds`.
 
@@ -59,11 +54,6 @@ Also, please check out our (quick) synopsis on good commit messages: :ref:`armi-
 Licensing of Tools
 ==================
 
-Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not
-to include anything with a license that superceeds our Apache license. For instance,
-any third-party Python library included in ARMI with a GPL license will make the whole
-project fall under the GPL license. But a lot of potential users of ARMI will want to
-keep some of their work private, so we can't allow any GPL tools.
+Be careful when including any dependency in ARMI (say in the ``pyproject.toml`` file) not to include anything with a license that supersedes our Apache license. For instance, any third-party Python library included in ARMI with a GPL license will make the whole project fall under the GPL license. But a lot of potential users of ARMI will want to keep some of their work private, so we can't allow any GPL tools.
 
-For that reason, it is generally considered best-practice in the ARMI ecosystem to
-only use third-party Python libraries that have MIT or BSD licenses.
+For that reason, it is generally considered best-practice in the ARMI ecosystem to only use third-party Python libraries that have MIT or BSD licenses.

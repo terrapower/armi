@@ -126,7 +126,7 @@ class UniformMeshGenerator:
             (``allMeshes``) and then averaging them together using
             ``average1DWithinTolerance``. An attempt to preserve fuel and control
             material boundaries is accomplished by moving fuel region boundaries
-            to accomodate control rod boundaries. Note this behavior only occurs
+            to accommodate control rod boundaries. Note this behavior only occurs
             by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
             being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
 
@@ -205,7 +205,7 @@ class UniformMeshGenerator:
         to the specified "anchor" points in the mesh. The anchor points are built up progressively as the
         appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
-        # filter fuel material boundaries to mininum mesh size
+        # filter fuel material boundaries to minimum mesh size
         filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
             Flags.FUEL
         )
@@ -940,7 +940,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         blocks = []
         for a in assems:
-            blocks.extend(a.getBlocks())
+            blocks.extend(a)
         firstBlock = blocks[0]
         for paramName in blockParamNames:
             defaultValue = firstBlock.p.pDefs[paramName].default
@@ -1120,7 +1120,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
         """
         xsTypeGroups = collections.defaultdict(list)
-        for b in core.getBlocks():
+        for b in core.iterBlocks():
             xsTypeGroups[b.getMicroSuffix()].append(b)
 
         for xsID, blockList in xsTypeGroups.items():
@@ -1232,7 +1232,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
             if rate["rateFis"] > 0.0:
                 fuelVolFrac = obj.getComponentAreaFrac(Flags.FUEL)
-                obj.p.fisDens = rate["rateFis"] / fuelVolFrac
+                obj.p.fisDens = (
+                    np.nan if fuelVolFrac == 0 else rate["rateFis"] / fuelVolFrac
+                )
                 obj.p.fisDensHom = rate["rateFis"]
             else:
                 obj.p.fisDens = 0.0

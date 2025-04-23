@@ -106,7 +106,7 @@ class Water(Fluid):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------
@@ -156,7 +156,7 @@ class Water(Fluid):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Note
         ----
@@ -179,7 +179,7 @@ class Water(Fluid):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------
@@ -221,7 +221,7 @@ class Water(Fluid):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------
@@ -261,7 +261,7 @@ class Water(Fluid):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------
@@ -291,7 +291,7 @@ class Water(Fluid):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------
@@ -345,7 +345,7 @@ class SaturatedWater(Water):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------
@@ -403,7 +403,7 @@ class SaturatedSteam(Water):
         Tk: float
             temperature in Kelvin
         Tc: float
-            temperature in Celcius
+            temperature in Celsius
 
         Returns
         -------

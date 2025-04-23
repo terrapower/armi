@@ -28,7 +28,7 @@ import numpy as np
 from armi import configure, nuclideBases, settings
 from armi.materials import ht9, sodium, uZr
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import assemblies, blocks, blueprints, geometry, grids, reactors
+from armi.reactor import assemblies, blocks, geometry, grids, reactors
 from armi.reactor.components import Circle, DerivedShape, Hexagon
 from armi.reactor.flags import Flags
 from armi.tests import ISOAA_PATH
@@ -56,7 +56,9 @@ def createDummyReactor():
     Often, a reactor model like this is built directly from input files rather
     than from code as done here.
     """
-    bp = blueprints.Blueprints()
+    from armi.reactor.blueprints import Blueprints
+
+    bp = Blueprints()
     cs = settings.Settings()
 
     r = reactors.Reactor("Reactor", bp)

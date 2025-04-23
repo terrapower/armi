@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from collections import deque
-from math import sqrt
+from math import isclose, sqrt
 from typing import List, Optional, Tuple
 
 import numpy as np
@@ -639,6 +639,6 @@ class HexGrid(StructuredGrid):
             return True
         return (
             isinstance(other, HexGrid)
-            and other.pitch == self.pitch
+            and isclose(self.pitch, other.pitch, rel_tol=1e-4)
             and other.cornersUp == self.cornersUp
         )

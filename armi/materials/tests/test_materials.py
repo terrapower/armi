@@ -95,8 +95,12 @@ class _Material_Test:
         self.assertEqual(dens * 1000.0, densKgM3)
 
     def test_wrappedDensity(self):
-        """Test that the density decorator is applied."""
-        self.assertTrue(hasattr(self.mat.density, "__wrapped__"))
+        """Test that the density decorator is applied to non-fluids."""
+        self.assertEqual(
+            hasattr(self.mat.density, "__wrapped__"),
+            not isinstance(self.mat, materials.Fluid),
+            msg=self.mat,
+        )
 
 
 class MaterialConstructionTests(unittest.TestCase):
@@ -115,10 +119,6 @@ class MaterialFindingTests(unittest.TestCase):
         .. test:: Materials can be grabbed from a list of namespaces.
             :id: T_ARMI_MAT_NAMESPACE0
             :tests: R_ARMI_MAT_NAMESPACE
-
-        .. test:: You can find a material by name.
-            :id: T_ARMI_MAT_NAME
-            :tests: R_ARMI_MAT_NAME
         """
         self.assertIs(
             materials.resolveMaterialClassByName(
@@ -888,23 +888,13 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Void
 
     def test_pseudoDensity(self):
-        """This material has a no pseudo-density.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID0
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material has a no pseudo-density."""
         self.mat.setDefaultMassFracs()
         cur = self.mat.pseudoDensity()
         self.assertEqual(cur, 0.0)
 
     def test_density(self):
-        """This material has no density.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID1
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material has no density."""
         self.assertEqual(self.mat.density(500), 0)
 
         self.mat.setDefaultMassFracs()
@@ -912,23 +902,13 @@ class Void_TestCase(_Material_Test, unittest.TestCase):
         self.assertEqual(cur, 0.0)
 
     def test_linearExpansion(self):
-        """This material does not expand linearly.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID2
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material does not expand linearly."""
         cur = self.mat.linearExpansion(400)
         ref = 0.0
         self.assertEqual(cur, ref)
 
     def test_propertyValidTemperature(self):
-        """This material has no valid temperatures.
-
-        .. test:: There is a void material.
-            :id: T_ARMI_MAT_VOID3
-            :tests: R_ARMI_MAT_VOID
-        """
+        """This material has no valid temperatures."""
         self.assertEqual(len(self.mat.propertyValidTemperature), 0)
 
 
@@ -1727,7 +1707,7 @@ class Alloy200_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.Alloy200
 
     def test_nickleContent(self):
-        """Assert alloy 200 has more than 99% nickle per its spec."""
+        """Assert alloy 200 has more than 99% nickel per its spec."""
         self.assertGreater(self.mat.massFrac["NI"], 0.99)
 
     def test_linearExpansion(self):

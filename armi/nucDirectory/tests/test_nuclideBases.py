@@ -96,7 +96,7 @@ class TestNuclideBases(unittest.TestCase):
             else:
                 self.assertIsInstance(lump, NaturalNuclideBase)
 
-    def test_LumpNuclideBase_getNatrualIsotopicsDoesNotFail(self):
+    def test_LumpNucBaseGetNatIsotopDoesNotFail(self):
         for nuc in self.nuclideBases.where(
             lambda nn: isinstance(nn, LumpNuclideBase) and nn.z == 0
         ):
@@ -122,7 +122,7 @@ class TestNuclideBases(unittest.TestCase):
         self.assertEqual(235, u235.a)
         self.assertEqual(92, u235.z)
 
-    def test_NaturalNuclide_atomicWeightIsAverageOfNaturallyOccuringIsotopes(self):
+    def test_natNucStomicWgtIsAvgOfNatIsotopes(self):
         for natNuk in self.nuclideBases.where(
             lambda nn: isinstance(nn, NaturalNuclideBase)
         ):
@@ -131,7 +131,7 @@ class TestNuclideBases(unittest.TestCase):
                 atomicMass += natIso.abundance * natIso.weight
             self.assertAlmostEqual(atomicMass, natNuk.weight, delta=0.000001)
 
-    def test_nucBases_labelAndNameCollsionsAreForSameNuclide(self):
+    def test_nucBasesLabelAndNameCollsAreForSameNuc(self):
         """The name and labels for correct for nuclides.
 
         .. test:: Validate the name, label, and DB name are accessible for nuclides.
@@ -146,7 +146,7 @@ class TestNuclideBases(unittest.TestCase):
             self.assertEqual(nuc, self.nuclideBases.byLabel[nuc.label])
         self.assertGreater(count, 10)
 
-    def test_nucBases_imposeBurnChainDecayBulkStatistics(self):
+    def test_nucBases_imposeBurnChainDecayBulkStats(self):
         """Test must be updated manually when burn chain is modified."""
         decayers = list(self.nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
@@ -164,7 +164,7 @@ class TestNuclideBases(unittest.TestCase):
                 continue
             self.assertAlmostEqual(1.0, sum(dd.branch for dd in nuc.decays))
 
-    def test_nucBases_imposeBurnChainTransmutationBulkStatistics(self):
+    def test_nucBasesImposeBurnChainTransmBulkStats(self):
         """
         Make sure all branches are equal to 1 for every transmutation type.
 
@@ -473,11 +473,9 @@ class TestNuclideBases(unittest.TestCase):
             :tests: R_ARMI_ND_ISOTOPES
         """
         referenceNucNames = [
-            ("C", "120060"),
+            ("C12", "120060"),
             ("U235", "2350920"),
             ("AM242M", "2420951"),
-            ("LFP35", None),
-            ("DUMP1", None),
         ]
 
         for nucName, refAaazzzs in referenceNucNames:

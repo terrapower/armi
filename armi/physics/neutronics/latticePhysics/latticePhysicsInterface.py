@@ -52,7 +52,7 @@ def setBlockNeutronVelocities(r, neutronVelocities):
     ValueError
         Multi-group neutron velocities was not computed during the cross section calculation.
     """
-    for b in r.core.getBlocks():
+    for b in r.core.iterBlocks():
         xsID = b.getMicroSuffix()
         if xsID not in neutronVelocities:
             raise ValueError(
@@ -418,7 +418,7 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         if self.r.core._lib is not None:
             # justification=r.core.lib property can raise exception or load pre-generated
-            # ISOTXS, but the interface should have responsibilty of loading
+            # ISOTXS, but the interface should have responsibility of loading
             # XS's have already generated for this cycle (maybe during fuel management). Should we update due to
             # changes that occurred during fuel management?
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)

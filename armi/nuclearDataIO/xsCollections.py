@@ -107,7 +107,7 @@ class XSCollection:
 
     Notes
     -----
-    This is a dict so that it can store multiple 0_g "matricies", i.e. vectors. Realistically,
+    This is a dict so that it can store multiple 0_g "matrices", i.e. vectors. Realistically,
     during any given run there will only be a set of groups, e.g. 33.
     """
 
@@ -404,7 +404,7 @@ class MacroscopicCrossSectionCreator:
             Input micros
 
         block : Block
-            Object whos number densities should be used to generate macros
+            Object whose number densities should be used to generate macros
 
         nucNames : list, optional
             List of nuclides to include in the macros. Defaults to all in block.

@@ -16,36 +16,6 @@ r"""
 The reactor package houses the data model used in ARMI to represent the reactor during its
 simulation. It contains definitions of the reactor, assemblies, blocks, components, etc.
 
-The key classes of the reactor package are shown below:
-
-.. _reactor-class-diagram:
-
-.. pyreverse:: armi.reactor -A -k --ignore=
-               assemblyParameters.py,
-               basicShapes.py,
-               blockParameters.py,
-               blueprints,
-               complexShapes.py,
-               componentParameters.py,
-               converters,
-               excoreStructure.py,
-               flags.py,
-               geometry.py,
-               grids.py,
-               parameters,
-               plugins.py,
-               reactorParameters.py,
-               shapes.py,
-               spentFuelPool.py,
-               tests,
-               volumetricShapes.py,
-               zones.py
-    :align: center
-    :alt: Reactor class diagram
-    :width: 90%
-
-    Class inheritance diagram for :py:mod:`armi.reactor`.
-
 See :doc:`/developer/index`.
 """
 

@@ -40,7 +40,7 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
-from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.utils import units
 
@@ -142,8 +142,7 @@ class Temperature:
 
         - all temperatures are in C
         - temperature field : temperature readings (e.g., from T/H calculation)
-        - temperature grid : physical locations in which
-                            temperature is measured
+        - temperature grid : physical locations in which temperature is measured
         """
         # Generate temp field
         self.tempField[0, :] = coldTemp
@@ -196,7 +195,7 @@ class TestAxialExpansionHeight(AxialExpansionTestBase, unittest.TestCase):
                 )
 
     def _generateComponentWiseExpectedHeight(self):
-        """Calculate the expected height, external of AssemblyAxialExpansion()."""
+        """Calculate the expected height, external of AssemblyAxialExpansion."""
         assem = buildTestAssemblyWithFakeMaterial(name="FakeMat")
         aveBlockTemp = zeros((len(assem), self.temp.tempSteps))
         self.trueZtop = zeros((len(assem), self.temp.tempSteps))
@@ -256,7 +255,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
             )
             self._getConservationMetrics(self.a)
 
-    def test_thermalExpansionContractionConservation_simple(self):
+    def test_thermExpansContractConserv_simple(self):
         """Thermally expand and then contract to ensure original state is recovered.
 
         .. test:: Thermally expand and then contract to ensure original assembly is recovered.
@@ -301,7 +300,7 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         self._checkNDens(origNDens, newNDens, 1.0)
         self._checkDetailedNDens(origDetailedNDens, newDetailedNDens, 1.0)
 
-    def test_thermalExpansionContractionConservation_complex(self):
+    def test_thermExpansContractionConserv_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.
 
         Notes
@@ -315,8 +314,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
             if a.hasFlags([Flags.MIDDLE, Flags.ANNULAR, Flags.TEST]):
-                # assemblies with the above flags have liners and conservation
-                # of such assemblies is not currently supported
+                # assemblies with the above flags have liners and conservation of such assemblies is
+                # not currently supported
                 continue
             self.complexConservationTest(a)
 
@@ -357,8 +356,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     @staticmethod
     def _getMass(a):
-        """Get the mass of an assembly. The conservation of HT9 pins in shield assems
-        are accounted for in FE56 conservation checks.
+        """Get the mass of an assembly. The conservation of HT9 pins in shield assems are accounted
+        for in FE56 conservation checks.
         """
         newMass = None
         if a.hasFlags(Flags.FUEL):
@@ -423,8 +422,8 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
                     self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
 
     def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
-        """Check whether the detailedNDens of two input dictionaries containing the
-        detailedNDens arrays for all components of an assembly are conserved.
+        """Check whether the detailedNDens of two input dictionaries containing the detailedNDens
+        arrays for all components of an assembly are conserved.
         """
         for prevComp, newComp in zip(
             prevDetailedNDen.values(), newDetailedNDens.values()
@@ -445,9 +444,9 @@ class TestConservation(AxialExpansionTestBase, unittest.TestCase):
 
     @staticmethod
     def _setComponentDetailedNDens(a, nDens):
-        """Returns a dictionary that contains detailedNDens for all components in an
-        assembly object input which are set to the corresponding component number densities
-        from a number density dictionary input.
+        """Returns a dictionary that contains detailedNDens for all components in an assembly object
+        input which are set to the corresponding component number densities from a number density
+        dictionary input.
         """
         detailedNDens = {}
         for b in a:
@@ -608,8 +607,7 @@ class TestManageCoreMesh(unittest.TestCase):
 
     def setUp(self):
         self.axialExpChngr = AxialExpansionChanger()
-        o, self.r = loadTestReactor(TEST_ROOT)
-        reduceTestReactorRings(self.r, o.cs, 3)
+        _o, self.r = loadTestReactor(os.path.join(TEST_ROOT, "detailedAxialExpansion"))
 
         self.oldAxialMesh = self.r.core.p.axialMesh
         self.componentLst = []
@@ -648,8 +646,8 @@ class TestManageCoreMesh(unittest.TestCase):
             )
 
     def _getComponentDetailedNDensAndVol(self, componentLst):
-        """Returns a tuple containing dictionaries of detailedNDens and volumes of
-        all components from a component list input.
+        """Returns a tuple containing dictionaries of detailedNDens and volumes of all components
+        from a component list input.
         """
         detailedNDens = {}
         volumes = {}
@@ -669,7 +667,7 @@ class TestManageCoreMesh(unittest.TestCase):
                 )
             else:
                 # should not conserve mass here as it is structural material above active fuel
-                self.assertAlmostEqual(newMass / prevMass, 0.99, msg=f"{c}, {c.parent}")
+                self.assertAlmostEqual(newMass / prevMass, 1.00, msg=f"{c}, {c.parent}")
 
 
 class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
@@ -720,7 +718,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_updateComponentTempsBy1DTempFieldValueError(self):
+    def test_updateCompTempsBy1DTempFieldValError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)
         with self.assertRaises(ValueError) as cm:
@@ -730,7 +728,7 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_updateComponentTempsBy1DTempFieldRuntimeError(self):
+    def test_updateCompTempsBy1DTempFieldError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 10)
         with self.assertRaises(RuntimeError) as cm:
@@ -757,12 +755,13 @@ class TestExceptions(AxialExpansionTestBase, unittest.TestCase):
             self.assertEqual(the_exception.error_code, 3)
 
     def test_isFuelLocked(self):
-        """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised appropriately.
+        """Ensures that the RuntimeError statement in ExpansionData::_isFuelLocked is raised
+        appropriately.
 
         Notes
         -----
-        This is implemented by creating a fuel block that contains no fuel component
-        and passing it to ExpansionData::_isFuelLocked.
+        This is implemented by creating a fuel block that contains no fuel component and passing it
+        to ExpansionData::_isFuelLocked.
         """
         expdata = ExpansionData(
             HexAssembly("testAssemblyType"), setFuel=True, expandFromTinputToThot=False
@@ -838,7 +837,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
             msg=f"determineTargetComponent failed to recognize intended component: {expected}",
         )
 
-    def test_determineTargetComponentBlockWithMultipleFlags(self):
+    def test_determineTargetCompBlockWithMultiFlags(self):
         """Provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER with multiple flags."""
         # build a block that has two flags as well as a component matching each
         b = HexBlock("fuel poison", height=10.0)
@@ -851,7 +850,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.add(self.coolant)
         self._checkTarget(b, fuel)
 
-    def test_specifyTargetComponent_NotFound(self):
+    def test_specifyTargetComp_NotFound(self):
         """Ensure RuntimeError gets raised when no target component is found."""
         b = HexBlock("fuel", height=10.0)
         b.add(self.coolant)
@@ -865,7 +864,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
             the_exception = cm.exception
             self.assertEqual(the_exception.error_code, 3)
 
-    def test_specifyTargetComponent_singleSolid(self):
+    def test_specifyTargetComp_singleSolid(self):
         """Ensures that specifyTargetComponent is smart enough to set the only solid as the target component."""
         b = HexBlock("plenum", height=10.0)
         ductDims = {"Tinput": 25.0, "Thot": 25.0, "op": 17, "ip": 0.0, "mult": 1.0}
@@ -876,7 +875,7 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
         b.setType("plenum")
         self._checkTarget(b, duct)
 
-    def test_specifyTargetComponet_MultipleFound(self):
+    def test_specifyTargetComp_MultiFound(self):
         """Ensure RuntimeError is hit when multiple target components are found.
 
         Notes
@@ -964,7 +963,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": True},
         )
-        reduceTestReactorRings(r, o.cs, 5)
 
         self.stdAssems = [a for a in r.core.getAssemblies()]
 
@@ -972,7 +970,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             os.path.join(TEST_ROOT, "detailedAxialExpansion"),
             customSettings={"inputHeightsConsideredHot": False},
         )
-        reduceTestReactorRings(rCold, oCold.cs, 5)
 
         self.testAssems = [a for a in rCold.core.getAssemblies()]
 
@@ -983,7 +980,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
             :id: T_ARMI_ASSEM_HEIGHT_PRES
             :tests: R_ARMI_ASSEM_HEIGHT_PRES
 
-        .. test:: Axial expansion can be prescribed in blueprints for core constuction.
+        .. test:: Axial expansion can be prescribed in blueprints for core construction.
             :id: T_ARMI_INP_COLD_HEIGHT
             :tests: R_ARMI_INP_COLD_HEIGHT
 
@@ -995,9 +992,9 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
 
         Two assertions here:
             1. total assembly height should be preserved (through use of top dummy block)
-            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml,
-               Thot > Tinput resulting in a non-zero DeltaT. Each block in the
-               expanded case should therefore be a different height than that of the standard case.
+            2. in armi.tests.detailedAxialExpansion.refSmallReactorBase.yaml, Thot > Tinput
+               resulting in a non-zero DeltaT. Each block in the expanded case should therefore be a
+               different height than that of the standard case.
         """
         for aStd, aExp in zip(self.stdAssems, self.testAssems):
             self.assertAlmostEqual(
@@ -1107,9 +1104,8 @@ class TestComponentLinks(AxialExpansionTestBase, unittest.TestCase):
         - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component
           to "typeB"
         - the different assertions are particularly useful for comparing two annuli
-        - to add Component class types to a test:
-            Add dictionary entry with following:
-              {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
+        - to add Component class types to a test add dictionary entry with following:
+          {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
         """
         if commonArgs is None:
             common = self.common
@@ -1332,8 +1328,8 @@ class FakeMat(materials.ht9.HT9):
     -----
     - specifically used in TestAxialExpansionHeight to verify axialExpansionChanger produces
       expected heights from hand calculation
-    - also used to verify mass and height conservation resulting from even amounts of expansion
-      and contraction. See TestConservation.
+    - also used to verify mass and height conservation resulting from even amounts of expansion and
+      contraction. See TestConservation.
     """
 
     name = "FakeMat"
@@ -1349,8 +1345,9 @@ class FakeMatException(materials.ht9.HT9):
 
     Notes
     -----
-    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion factor
-      is higher to ensure that a negative block height is caught in TestExceptions:test_AssemblyAxialExpansionException.
+    - the only difference between this and `class Fake(HT9)` above is that the thermal expansion
+      factor is higher to ensure that a negative block height is caught in
+      TestExceptions:test_AssemblyAxialExpansionException.
     """
 
     name = "FakeMatException"

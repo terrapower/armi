@@ -33,6 +33,7 @@ class PassThroughYamlize(yamlize.Object):
 
     @classmethod
     def from_yaml(cls, loader, node, round_trip_data=None):
+        node.value = []
         return yamlize.Object.from_yaml.__func__(
             PassThroughYamlize, loader, node, round_trip_data
         )

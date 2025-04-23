@@ -79,7 +79,8 @@ def createListTable(
 
     Returns
     -------
-        str: RST list-table string
+    str
+        RST list-table string
     """
     # we need valid input data
     assert len(rows) > 1, "Not enough input data."
@@ -110,21 +111,24 @@ def createListTable(
 
 def generateParamTable(klass, fwParams, app=None):
     """
-    Return a string containing one or more restructured text list tables containing
-    parameter descriptions for the passed ArmiObject class.
+    Return a string containing one or more restructured text list tables containing parameter
+    descriptions for the passed ArmiObject class.
 
     Parameters
     ----------
     klass : ArmiObject subclass
         The Class for which parameter tables should be generated
-
     fwParams : ParameterDefinitionCollection
-        A parameter definition collection containing the parameters that are always
-        defined for the passed ``klass``. The rest of the parameters come from the
-        plugins registered with the passed ``app``
-
+        A parameter definition collection containing the parameters that are always defined for the
+        passed ``klass``. The rest of the parameters come from the plugins registered with the
+        passed ``app``
     app : App, optional
         The ARMI-based application to draw plugins from.
+
+    Returns
+    -------
+    str
+        RST-formatted string table
     """
     from armi import apps
 
@@ -142,13 +146,16 @@ def generateParamTable(klass, fwParams, app=None):
                 defs[plugin] = pDefs
 
     headerContent = """
-    .. list-table:: {} Parameters from {{}}
-       :header-rows: 1
-       :widths: 30 40 30
+.. container:: break_before ssp-landscape
 
-       * - Name
-         - Description
-         - Units
+    .. list-table:: {} Parameters from {{}}
+        :class: ssp-tiny
+        :widths: 30 40 30
+        :header-rows: 1
+
+        * - Name
+          - Description
+          - Units
     """.format(
         klass.__name__
     )
@@ -160,9 +167,9 @@ def generateParamTable(klass, fwParams, app=None):
         content.append(f".. _{srcName}-{klass.__name__}-param-table:")
         pluginContent = headerContent.format(srcName)
         for pd in pdefs:
-            pluginContent += f"""   * - {pd.name}
-         - {escapeSpecialCharacters(str(pd.description))}
-         - {escapeSpecialCharacters(pd.units)}
+            pluginContent += f"""    * - {pd.name}
+          - {escapeSpecialCharacters(str(pd.description))}
+          - {escapeSpecialCharacters(pd.units)}
     """
         content.append(pluginContent + "\n")
 

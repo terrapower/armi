@@ -72,7 +72,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         # Set up the global LFPs and check that they are setup.
         self.assertTrue(fpModel._useGlobalLFPs)
         fpModel.interactBOL()
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             if b.isFuel():
                 self.assertTrue(b._lumpedFissionProducts is not None)
             else:
@@ -82,7 +82,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         fpModel.allBlocksNeedAllNucs = False
         fpModel.interactBOL()
         allNucsInProblem = set(r.blueprints.allNuclidesInProblem)
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             if isDepletable(b):
                 if len(allNucsInProblem - set(b.getNuclides())) > 0:
                     break
@@ -151,12 +151,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
         self.assertFalse(self.fpModel._useGlobalLFPs)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
-        """Test that the depletable blocks contain all the MC2-3 modeled nuclides.
-
-        .. test:: Determine if any component is depletable.
-            :id: T_ARMI_DEPL_DEPLETABLE
-            :tests: R_ARMI_DEPL_DEPLETABLE
-        """
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)
@@ -198,7 +193,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
 
         # Check that the depletable blocks have all explicit
         # fission products in them.
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             nuclideList = b.getNuclides()
             if isDepletable(b):
                 for nb in nuclideBases.byMcc3Id.values():

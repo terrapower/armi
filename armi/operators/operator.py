@@ -93,7 +93,7 @@ class Operator:
 
         A major design feature of ARMI is that a run is built from user settings.
         In code, this means that a case ``Settings`` object is passed into this
-        class to intialize an Operator. Conceptually, this means that the
+        class to initialize an Operator. Conceptually, this means that the
         Operator that controls a reactor simulation is defined by user settings.
         Because developers can create their own settings, the user can
         control an ARMI simulation with arbitrary granularity in this way. In
@@ -716,7 +716,7 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accomodate testing
+        This is split off from self.interactAllCoupled to accommodate testing
         """
         # Summarize the coupled results and the convergence status.
         converged = []
@@ -858,7 +858,7 @@ class Operator:
         Order does not matter here because the interfaces added here are disabled and playing supporting
         role so it is not intended to run on the interface stack. They will be called by other interfaces.
 
-        As mentioned in :py:meth:`addInterface`, it may be better to just insantiate utility code
+        As mentioned in :py:meth:`addInterface`, it may be better to just instantiate utility code
         when its needed rather than rely on this system.
         """
         # Make multiple passes in case there's one added that depends on another.
@@ -1149,7 +1149,7 @@ class Operator:
 
         See Also
         --------
-        armi.bookeeping.db.loadOperator:
+        armi.bookkeeping.db.loadOperator:
             A method for loading an operator given a database. loadOperator does not
             require an operator prior to loading the state of the reactor. loadState
             does, and therefore armi.init must be called which requires access to the
@@ -1175,14 +1175,13 @@ class Operator:
         """
         Process a snapshot request at this time.
 
-        This copies various physics input and output files to a special folder that
-        follow-on analysis be executed upon later.
+        This copies various physics input and output files to a special folder that follow-on
+        analysis be executed upon later.
 
         Notes
         -----
-        This was originally used to produce MC2/DIF3D inputs for external
-        parties (who didn't have ARMI) to review. Since then, the concept
-        of snapshots has evolved with respect to the
+        This was originally used to produce MC2/DIF3D inputs for external parties (who didn't have
+        ARMI) to review. Since then, the concept of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
@@ -1204,9 +1203,9 @@ class Operator:
         else:
             os.mkdir(newFolder)
 
-        # Moving the cross section files is to a snapshot directory is a reasonable
-        # requirement, but these hard-coded names are not desirable. This is legacy
-        # and should be updated to be more robust for users.
+        # Moving the cross section files is to a snapshot directory is a reasonable requirement, but
+        # these hard-coded names are not desirable. This is legacy and should be updated to be more
+        # robust for users.
         for fileName in os.listdir("."):
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
@@ -1245,9 +1244,6 @@ class Operator:
         pathTools.copyOrWarn("DIF3D output for snapshot", globalFluxOutput, newFolder)
         pathTools.copyOrWarn(
             "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
-        )
-        pathTools.copyOrWarn(
-            "Geometry file for snapshot", self.cs["geomFile"], newFolder
         )
         pathTools.copyOrWarn(
             "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder

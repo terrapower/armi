@@ -197,7 +197,7 @@ class Flag(metaclass=_FlagMeta):
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
         """Assign values to autos, based on the current state of the class."""
-        # There is some opportunity for code re-use between this and the metaclass...
+        # There is some opportunity for code reuse between this and the metaclass...
         resolved = []
         for field in fields:
             while cls._autoAt in cls._valuesTaken:

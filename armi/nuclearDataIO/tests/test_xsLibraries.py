@@ -336,14 +336,14 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
-    def test_cannotMergeXSLibxWithDifferentGroupStructure(self):
+    def test_cannotMergeXSLibxWithDiffGroupStructure(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
         dummyXsLib.neutronEnergyUpperBounds = np.array([1, 2, 3])
         dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
-    def test_mergeEmptyXSLibWithOtherEssentiallyClonesTheOther(self):
+    def test_mergeEmptyXSLibWithOtherClonesTheOther(self):
         emptyXSLib = xsLibraries.IsotxsLibrary()
         emptyXSLib.merge(self.libAA)
         self.libAA = None
@@ -419,7 +419,8 @@ class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
         # this test does not work for PMATRX, MC**2-v3 does not currently
         pass
 
-    def test_cannotMergeXSLibsWithDifferentGammaGroupStructures(self):
+    def test_cannotMergeXSLibsWithDiffGammaGroups(self):
+        """Test that we cannot merge XS Libs with different Gamma Group Structures."""
         dummyXsLib = xsLibraries.IsotxsLibrary()
         dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):

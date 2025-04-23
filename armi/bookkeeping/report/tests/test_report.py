@@ -119,7 +119,7 @@ Processor(s):    1 Processor(s) Installed.
         to fail if the test is run on some other OS.
         """
         if "darwin" in sys.platform:
-            # too comlicated to test MacOS in this method
+            # too complicated to test MacOS in this method
             return
 
         out = getSystemInfo()
@@ -282,11 +282,6 @@ class TestReportInterface(unittest.TestCase):
 
         self.assertIn("REPORTS BEGIN", rep)
         self.assertIn("REPORTS END", rep)
-
-    def test_writeReports(self):
-        """Test writing html reports."""
-        repInt = reportInterface.ReportInterface(None, None)
-        repInt.writeReports()
 
     def test_distributableReportInt(self):
         repInt = reportInterface.ReportInterface(None, None)

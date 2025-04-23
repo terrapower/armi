@@ -119,7 +119,7 @@ class Material:
     """Name of enriched nuclide to be interpreted by enrichment modification methods"""
 
     modelConst = {}
-    """Constants that may be used in intepolation functions for property lookups"""
+    """Constants that may be used in interpolation functions for property lookups"""
 
     propertyValidTemperature = {}
     """Dictionary of valid temperatures over which the property models are valid in the format
@@ -142,18 +142,7 @@ class Material:
 
     @property
     def name(self):
-        """
-        Getter for the private name attribute of this Material.
-
-        .. impl:: The name of a material is accessible.
-            :id: I_ARMI_MAT_NAME
-            :implements: R_ARMI_MAT_NAME
-
-            Every instance of an ARMI material must have a simple, human-readable string name. And,
-            if possible, we want this string to match the class name. (This, of course, puts some
-            limits on both the string and the class name.) These names are easily retrievable as a
-            class property.
-        """
+        """Getter for the private name attribute of this Material."""
         return self._name
 
     @name.setter
@@ -162,7 +151,7 @@ class Material:
 
         Warning
         -------
-        Some code in ARMI expects the "name" of a meterial matches its class name. So you use this
+        Some code in ARMI expects the "name" of a material matches its class name. So you use this
         method at your own risk.
 
         See Also
@@ -450,7 +439,7 @@ class Material:
     def getTemperatureAtDensity(
         self, targetDensity: float, tempGuessInC: float
     ) -> float:
-        """Get the temperature at which the perturbed density occurs (in Celcius)."""
+        """Get the temperature at which the perturbed density occurs (in Celsius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
@@ -621,7 +610,7 @@ class Material:
 
         Notes
         -----
-        This was designed as a convience method for ``checkTempRange``.
+        This was designed as a convenience method for ``checkTempRange``.
         """
         (minT, maxT) = self.propertyValidTemperature[label][0]
         self.checkTempRange(minT, maxT, val, label)
@@ -731,9 +720,15 @@ class Material:
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
+    def __init_subclass__(cls):
+        # Undo the parent-aware density wrapping. Fluids do not expand in the same way solids, so
+        # Fluid.density(T) is correct. This does not hold for solids because they thermally expand.
+        if hasattr(cls.density, "__wrapped__"):
+            cls.density = cls.density.__wrapped__
+
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
         """Return the factor required to update thermal expansion going from one temperature (in
-        Celcius) to a new temperature.
+        Celsius) to a new temperature.
         """
         rho0 = self.pseudoDensity(Tc=prevTempInC)
         if not rho0:

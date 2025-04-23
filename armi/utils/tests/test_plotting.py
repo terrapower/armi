@@ -48,7 +48,7 @@ class TestPlotting(unittest.TestCase):
     def test_plotDepthMap(self):  # indirectly tests plot face map
         with TemporaryDirectoryChanger():
             # set some params to visualize
-            for i, b in enumerate(self.o.r.core.getBlocks()):
+            for i, b in enumerate(self.o.r.core.iterBlocks()):
                 b.p.percentBu = i / 100
             fName = plotting.plotBlockDepthMap(
                 self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
@@ -87,21 +87,21 @@ class TestPlotting(unittest.TestCase):
             xslib = isotxs.readBinary(ISOAA_PATH)
             self.r.core.lib = xslib
 
-            blockList = self.r.core.getBlocks()
-            for _, b in enumerate(blockList):
+            blocks = self.r.core.getBlocks()
+            for b in blocks:
                 b.p.mgFlux = range(33)
 
-            plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blockList)
+            plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blocks)
             self.assertTrue(os.path.exists("flux.png"))
             plotting.plotBlockFlux(
-                self.r.core, fName="peak.png", bList=blockList, peak=True
+                self.r.core, fName="peak.png", bList=blocks, peak=True
             )
             self._checkFileExists("peak.png")
             plotting.plotBlockFlux(
                 self.r.core,
                 fName="bList2.png",
-                bList=blockList,
-                bList2=blockList,
+                bList=blocks,
+                bList2=blocks,
             )
             self._checkFileExists("bList2.png")
 

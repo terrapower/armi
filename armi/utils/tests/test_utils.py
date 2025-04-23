@@ -158,9 +158,9 @@ class TestGeneralUtils(unittest.TestCase):
         ytick = ([0, 1], ["1", "2"])
         fname = "test_plotMatrix_testfile"
         with directoryChangers.TemporaryDirectoryChanger():
-            utils.plotMatrix(matrix, fname, show=True, title="plot")
-            utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
-            utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
+            utils.plotMatrix(matrix, fname, show=False, title="plot")
+            utils.plotMatrix(matrix, fname, show=False, minV=0, maxV=5, figsize=[3, 4])
+            utils.plotMatrix(matrix, fname, show=False, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
@@ -178,7 +178,7 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(classCounts[type(r)], 1)
         self.assertEqual(classCounts[type(r.core)], 1)
 
-        # further validate the Reactor heirarchy is in place
+        # further validate the Reactor hierarchy is in place
         self.assertEqual(len(r.core.getAssemblies()), 1)
         self.assertEqual(len(r.core.getBlocks()), 1)
 

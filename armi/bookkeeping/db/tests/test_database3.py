@@ -23,6 +23,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db import _getH5File, database, loadOperator
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -98,7 +99,7 @@ class TestDatabase(unittest.TestCase):
 
                 self.db.writeToDB(self.r)
 
-        # add some more data that isnt written to the database to test the
+        # add some more data that isn't written to the database to test the
         # DatabaseInterface API
         self.r.p.cycle = 2
         self.r.p.timeNode = 0
@@ -112,8 +113,8 @@ class TestDatabase(unittest.TestCase):
         """Load a reactor at different time steps, from the database.
 
         .. test:: Load the reactor from the database.
-            :id: T_ARMI_DB_R_LOAD
-            :tests: R_ARMI_DB_R_LOAD
+            :id: T_ARMI_DB_TIME1
+            :tests: R_ARMI_DB_TIME
         """
         self.makeShuffleHistory()
         with self.assertRaises(KeyError):
@@ -176,11 +177,11 @@ class TestDatabase(unittest.TestCase):
         expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(2)}
         self.assertEqual(expectedSn, hists[testBlock]["serialNum"])
 
-        # cant mix blocks and assems, since they are different distance from core
+        # can't mix blocks and assems, since they are different distance from core
         with self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
 
-        # if requested time step isnt written, return no content
+        # if requested time step isn't written, return no content
         hist = self.dbi.getHistory(
             self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
         )
@@ -283,11 +284,24 @@ class TestDatabaseSmaller(unittest.TestCase):
         roundTrip = database.unpackSpecialData(packed, attrs, "testing")
         self._compareArrays(data, roundTrip)
 
+    def test_getArrayShape(self):
+        """Tests a helper method for ``_writeParams``."""
+        base = [1, 2, 3, 4]
+        self.assertEqual(Database._getArrayShape(base), (4,))
+        self.assertEqual(Database._getArrayShape(tuple(base)), (4,))
+        arr = np.array(base)
+        self.assertEqual(Database._getArrayShape(arr), (4,))
+        arr = np.array([base])
+        self.assertEqual(Database._getArrayShape(arr), (1, 4))
+        # not array type
+        self.assertEqual(Database._getArrayShape(1), 1)
+        self.assertEqual(Database._getArrayShape(None), 1)
+
     def test_writeToDB(self):
         """Test writing to the database.
 
         .. test:: Write a single time step of data to the database.
-            :id: T_ARMI_DB_TIME
+            :id: T_ARMI_DB_TIME0
             :tests: R_ARMI_DB_TIME
         """
         self.r.p.cycle = 0
@@ -541,17 +555,15 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_DB_BP
         """
         inputs = self.db.readInputsFromDB()
-        self.assertEqual(len(inputs), 3)
+        self.assertEqual(len(inputs), 2)
 
         # settings
         self.assertGreater(len(inputs[0]), 100)
         self.assertIn("settings:", inputs[0])
 
-        self.assertEqual(len(inputs[1]), 0)
-
         # blueprints
-        self.assertGreater(len(inputs[2]), 100)
-        self.assertIn("blocks:", inputs[2])
+        self.assertGreater(len(inputs[1]), 2400)
+        self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
         self.assertTrue(isinstance(self.db, database.Database))

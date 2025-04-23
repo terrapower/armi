@@ -20,7 +20,7 @@ map the hierarchical Composite Reactor Model to the flat representation in
 :py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
 This module also stores packing/packing tools to support
-:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as datbase
+:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as database
 versioning information.
 """
 
@@ -383,7 +383,7 @@ class Layout:
         """Write a chunk of data to the database.
 
         .. impl:: Write data to the DB for a given time step.
-            :id: I_ARMI_DB_TIME
+            :id: I_ARMI_DB_TIME0
             :implements: R_ARMI_DB_TIME
 
             This method writes a snapshot of the current state of the reactor to the
@@ -393,8 +393,7 @@ class Layout:
             objects are written to the file. Though, this turns out to still be very
             powerful. For instance, the data for all ``HexBlock`` children of a given
             parent are stored contiguously within the ``HexBlock`` group, and will not
-            be interleaved with data from the ``HexBlock`` children of any of the
-            parent's siblings.
+            be interleaved with data from the ``HexBlock`` children of any of the parent's siblings.
         """
         if "layout/type" in h5group:
             # It looks like we have already written the layout to DB, skip for now
@@ -549,7 +548,7 @@ class Layout:
             # handle deeper scenarios. This is a bit tricky. Store the original
             # ancestors for the first generation, since that ultimately contains all of
             # the information that we need. Then in a loop, keep hopping one more layer
-            # of indirection, and indexing into the corresponding locaition in the
+            # of indirection, and indexing into the corresponding location in the
             # original ancestor array
             indexMap = {sn: i for i, sn in enumerate(serialNum)}
             origAncestors = ancestors
@@ -762,7 +761,7 @@ def replaceNonesWithNonsense(
     Notes
     -----
     This only supports situations where the data is a straight-up ``None``, or a valid,
-    database-storable numpy array (or easily convertable to one (e.g. tuples/lists with
+    database-storable numpy array (or easily convertible to one (e.g. tuples/lists with
     numerical values)). This does not support, for instance, a numpy ndarray with some
     Nones in it.
 

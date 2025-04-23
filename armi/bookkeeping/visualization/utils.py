@@ -58,7 +58,7 @@ class VtkMesh:
         offsets : np.ndarray
             A 1-D array containing the index of the first vertex for the next cell
         cellTypes : np.ndarray
-            A 1-D array contining the cell type ID for each cell
+            A 1-D array containing the cell type ID for each cell
         """
         self.vertices = vertices
         self.connectivity = connectivity

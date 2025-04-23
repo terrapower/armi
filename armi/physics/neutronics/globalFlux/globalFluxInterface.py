@@ -82,7 +82,7 @@ class GlobalFluxInterface(interfaces.Interface):
         self.r.core.p.dpaFullWidthHalfMax = 0.0
         self.r.core.p.elevationOfACLP3Cycles = 0.0
         self.r.core.p.elevationOfACLP7Cycles = 0.0
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.detailedDpaThisCycle = 0.0
             b.p.newDPA = 0.0
 
@@ -251,28 +251,12 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         GlobalFluxInterface.interactCoupled(self, iteration)
 
     def getTightCouplingValue(self):
-        """Return the parameter value.
-
-        .. impl:: Return k-eff or assembly-wise power distribution for coupled interactions.
-            :id: I_ARMI_FLUX_COUPLING_VALUE
-            :implements: R_ARMI_FLUX_COUPLING_VALUE
-
-            This method either returns the k-eff or assembly-wise power
-            distribution. If the :py:class:`coupler
-            <armi.interfaces.TightCoupler>` ``parameter`` member is ``"keff"``,
-            then this method returns the computed k-eff from the global flux
-            evaluation. If the ``parameter`` value is ``"power"``, then it
-            returns a list of power distributions in each assembly. The assembly
-            power distributions are lists of values representing the block
-            powers that are normalized to unity based on the assembly total
-            power. If the value is neither ``"keff"`` or ``"power"``, then this
-            method returns ``None``.
-        """
+        """Return the parameter value."""
         if self.coupler.parameter == "keff":
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
             scaledCorePowerDistribution = []
-            for a in self.r.core.getChildren():
+            for a in self.r.core:
                 scaledPower = []
                 assemPower = sum(b.p.power for b in a)
                 for b in a:
@@ -640,7 +624,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         geomConverter = self.geomConverters.get("edgeAssems")
         if geomConverter:
             geomConverter.scaleParamsRelatedToSymmetry(
-                self.r, paramsToScaleSubset=self.options.paramsToScaleSubset
+                self.r.core, paramsToScaleSubset=self.options.paramsToScaleSubset
             )
 
             # Resets the reactor core model to the correct symmetry and removes
@@ -697,7 +681,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def clearFlux(self):
         """Delete flux on all blocks. Needed to prevent stale flux when partially reloading."""
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = []
             b.p.adjMgFlux = []
             b.p.mgFluxGamma = []
@@ -720,7 +704,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         # update the block power param here as well so
         # the ratio/multiplications below are consistent
         currentCorePower = 0.0
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
             b.p.power = np.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
@@ -736,7 +720,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 self.r.core, powerRatio, currentCorePower, renormalizationCorePower
             )
         )
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux *= powerRatio
             b.p.flux *= powerRatio
             b.p.fluxPeak *= powerRatio
@@ -832,7 +816,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         updateFluenceAndDpa : uses values computed here to update cumulative dpa
         """
         if blockList is None:
-            blockList = self.r.core.getBlocks()
+            blockList = self.r.core.iterBlocks()
 
         hasDPA = False
         for b in blockList:
@@ -958,7 +942,7 @@ def computeDpaRate(mgFlux, dpaXs):
             single=True,
             label="negativeDpaPerSecond",
         )
-        # ensure physical meaning of dpaPerSecond, it is likely just slighly negative
+        # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
             raise RuntimeError(
                 "Calculated DPA rate is substantially negative at {}".format(

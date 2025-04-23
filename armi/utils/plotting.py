@@ -243,7 +243,7 @@ def plotFaceMap(
         E.g. ``"{:.1e}"``
 
     legendMap : list, optional
-        A tuple list of (value, lable, decription), to define the data in the legend.
+        A tuple list of (value, label, description), to define the data in the legend.
 
     fontSize : int, optional
         Font size in points
@@ -323,7 +323,7 @@ def plotFaceMap(
         labels = [None] * len(data)
     if len(data) != len(labels):
         raise ValueError(
-            "Data had length {}, but lables had length {}. "
+            "Data had length {}, but labels had length {}. "
             "They should be equal length.".format(len(data), len(labels))
         )
 

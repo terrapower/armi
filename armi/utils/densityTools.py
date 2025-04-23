@@ -279,13 +279,6 @@ def normalizeNuclideList(nuclideVector, normalization=1.0):
     """
     Normalize the nuclide vector.
 
-    .. impl:: Normalize nuclide vector.
-        :id: I_ARMI_UTIL_DENS_TOOLS
-        :implements: R_ARMI_UTIL_DENS_TOOLS
-
-        Given a vector of nuclides ``nuclideVector`` indexed by nuclide identifiers (``nucNames`` or
-        ``nuclideBases``), normalizes to the provided ``normalization`` value.
-
     Parameters
     ----------
     nuclideVector : dict

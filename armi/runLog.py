@@ -572,7 +572,7 @@ class RunLogger(logging.Logger):
         handler.setFormatter(form)
         self.addHandler(handler)
 
-    def log(self, msgType, msg, single=False, label=None, **kwargs):
+    def log(self, msgType, msg, single=False, label=None, *args, **kwargs):
         """
         This is a wrapper around logger.log() that does most of the work.
 

@@ -123,8 +123,8 @@ Example: ::
 
    >>> class MyApp(armi.apps.App):
    ...     def __init__(self):
-   ...         # Adopt the base Framework Plugins. After calling __init__(), they are in
-   ...         # self._pm.
+   ...         # Adopt the base Framework Plugins. After calling
+   ...         # __init__(), they are in self._pm.
    ...         armi.apps.App.__init__(self)
    ...
    ...         # Register our own plugins

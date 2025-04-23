@@ -23,14 +23,17 @@ import copy
 import itertools
 import os
 import time
-from typing import Optional
+from typing import Callable, Iterator, Optional
 
 import numpy as np
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import (
+    assemblies,
+    blocks,
     composites,
+    flags,
     geometry,
     grids,
     parameters,
@@ -55,24 +58,10 @@ from armi.utils.mathematics import average1DWithinTolerance
 
 
 class Core(composites.Composite):
-    r"""
+    """
     Reactor structure made up of assemblies. Could be a Core, spent fuel pool, reactor head, etc.
 
     This has the bulk of the data management operations.
-
-    .. impl:: Represent a reactor core as a composite object.
-        :id: I_ARMI_R_CORE
-        :implements: R_ARMI_R_CORE
-
-        A :py:class:`Core <armi.reactor.reactors.Core>` object is typically a child of a
-        :py:class:`Reactor <armi.reactor.reactors.Reactor>` object. A Reactor should only contain
-        one object of the Core type. The instance attribute name ``r.core`` is reserved for the
-        object representating the active core.
-
-        Most of the operations to retrieve information from the ARMI reactor data model are mediated
-        through Core objects. For example,
-        :py:meth:`getAssemblies() <armi.reactor.reactors.Core.getAssemblies>` is used to get a list
-        of all assemblies in the Core.
 
     Attributes
     ----------
@@ -157,13 +146,7 @@ class Core(composites.Composite):
         return "<{}: {} id:{}>".format(self.__class__.__name__, self.name, id(self))
 
     def __iter__(self):
-        """
-        Override the base Composite __iter__ to produce stable sort order.
-
-        See Also
-        --------
-        getAssemblies()
-        """
+        """Override the base Composite __iter__ to produce stable sort order."""
         return iter(self._children)
 
     @property
@@ -291,12 +274,13 @@ class Core(composites.Composite):
         fissileMass = 0.0
         heavyMetalMass = 0.0
         totalVolume = 0.0
-        numBlocks = len(self.getBlocks())
-        for block in self.getBlocks():
+        numBlocks = 0
+        for block in self.iterBlocks():
             totalMass += block.getMass()
             fissileMass += block.getFissileMass()
             heavyMetalMass += block.getHMMass()
             totalVolume += block.getVolume()
+            numBlocks += 1
         totalMass = totalMass * self.powerMultiplier / 1000.0
         fissileMass = fissileMass * self.powerMultiplier / 1000.0
         heavyMetalMass = heavyMetalMass * self.powerMultiplier / 1000.0
@@ -330,7 +314,7 @@ class Core(composites.Composite):
 
     def setBlockMassParams(self):
         """Set the parameters kgHM and kgFis for each block and calculate Pu fraction."""
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
             b.p.puFrac = (
@@ -594,8 +578,7 @@ class Core(composites.Composite):
         """
         Yield the assemblies that have been added in the current cycle.
 
-        This uses the reactor's cycle parameter and the assemblies' chargeCycle
-        parameters.
+        This uses the reactor's cycle parameter and the assemblies' chargeCycle parameters.
         """
         for a in self:
             if a.p.chargeCycle == self.r.p.cycle:
@@ -603,21 +586,9 @@ class Core(composites.Composite):
 
     def getNumRings(self, indexBased=False):
         """
-        Returns the number of rings in this reactor. Based on location so indexing will start at 1.
+        Returns the number of rings in this reactor. Based on location, so indexing will start at 1.
 
         Circular ring shuffling changes the interpretation of this result.
-
-        .. impl:: Retrieve number of rings in core.
-            :id: I_ARMI_R_NUM_RINGS
-            :implements: R_ARMI_R_NUM_RINGS
-
-            This method determines the number of rings in the reactor. If the
-            setting ``circularRingMode`` is enabled (by default it is false), the
-            assemblies will be grouped into roughly circular rings based on
-            their positions and the number of circular rings is returned.
-            Otherwise, the number of hex rings is returned. This parameter is
-            mostly used to facilitate certain fuel management strategies where
-            the fuel is categorized and moved based on ring indexing.
 
         Warning
         -------
@@ -634,7 +605,7 @@ class Core(composites.Composite):
             return self.getNumHexRings()
 
     def getNumHexRings(self):
-        """Returns the number of hex rings in this reactor. Based on location so indexing will start at 1."""
+        """Return the number of hex rings in the core. Based on location so indexing starts at 1."""
         maxRing = 0
         for a in self.getAssemblies():
             ring, _pos = self.spatialGrid.getRingPos(a.spatialLocator)
@@ -648,14 +619,13 @@ class Core(composites.Composite):
         Parameters
         ----------
         nRings : int
-            The number of hex assembly rings in this core, including
-            partially-complete (non-full) rings.
+            The number of hex assembly rings in this core, including non-ful) rings.
 
         Returns
         -------
         nAssmWithBlanks: int
-            The number of assemblies that WOULD exist in this core if
-            all outer assembly hex rings were "filled out".
+            The number of assemblies that WOULD exist in this core if all outer assembly hex rings
+            were "filled out".
         """
         if self.powerMultiplier == 1:
             return 3 * nRings * (nRings - 1) + 1
@@ -681,7 +651,6 @@ class Core(composites.Composite):
         ----------
         blockTypeSpec : Flags or list of Flags
             The types of blocks to be counted in a single assembly
-
         assemTypeSpec : Flags or list of Flags
             The types of assemblies that are to be examine for the blockTypes of interest. None is
             every assembly.
@@ -689,8 +658,7 @@ class Core(composites.Composite):
         Returns
         -------
         maxBlocks : int
-            The maximum number of blocks of the specified types in a single assembly in the entire
-            core.
+            The maximum number of blocks of the specified types in a single assembly in the core.
         """
         assems = self.getAssemblies(typeSpec=assemTypeSpec)
         try:
@@ -717,11 +685,11 @@ class Core(composites.Composite):
 
     def getFirstFuelBlockAxialNode(self):
         """
-        Determine the offset of the fuel from the grid plate in the assembly
-        with the lowest fuel block.
+        Determine the offset of the fuel from the grid plate in the assembly with the lowest fuel
+        block.
 
-        This assembly will dictate at what block level the SASSYS reactivity
-        coefficients will start to be generated
+        This assembly will dictate at what block level the SASSYS reactivity coefficients will start
+        to be generated
         """
         try:
             return min(
@@ -731,13 +699,7 @@ class Core(composites.Composite):
                 if b.hasFlags(Flags.FUEL)
             )
         except ValueError:
-            """ValueError is thrown if min is called on an empty sequence.
-            Since this is expected to be a rare case, try/except is more
-            efficient than an if/else condition that checks whether the
-            iterator is empty (the latter would require generating a list
-            or tuple, which further adds to the inefficiency). Hence Python's
-            mantra, "It's easier to ask forgiveness than permission." In fact
-            it's quicker to ask forgiveness than permission."""
+            # ValueError is thrown if min is called on an empty sequence.
             return float("inf")
 
     def getAssembliesInRing(
@@ -747,7 +709,7 @@ class Core(composites.Composite):
         exactType=False,
         exclusions=None,
         overrideCircularRingMode=False,
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Returns the assemblies in a specified ring. Definitions of rings can change
         with problem parameters.
@@ -813,7 +775,7 @@ class Core(composites.Composite):
 
     def getAssembliesInSquareOrHexRing(
         self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Returns the assemblies in a specified ring. Definitions of rings can change with problem
         parameters.
@@ -861,7 +823,7 @@ class Core(composites.Composite):
 
     def getAssembliesInCircularRing(
         self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Gets an assemblies within a circular range of the center of the core. This function allows
         for more circular styled assembly shuffling instead of the current hex approach.
@@ -968,18 +930,17 @@ class Core(composites.Composite):
 
             assymap[aName] = assem
 
-    def getAssemblyByName(self, name):
+    def getAssemblyByName(self, name: str) -> assemblies.Assembly:
         """
         Find the assembly that has this name.
 
         .. impl:: Get assembly by name.
-            :id: I_ARMI_R_GET_ASSEM_NAME
-            :implements: R_ARMI_R_GET_ASSEM_NAME
+            :id: I_ARMI_R_GET_ASSEM0
+            :implements: R_ARMI_R_GET_ASSEM
 
             This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
-            with a name matching the
-            value provided as an input parameter to this function. The ``name`` of
-            an assembly is based on the ``assemNum`` parameter.
+            with a name matching the value provided as an input parameter to this function. The
+            ``name`` of an assembly is based on the ``assemNum`` parameter.
 
         Parameters
         ----------
@@ -988,7 +949,7 @@ class Core(composites.Composite):
 
         Returns
         -------
-        assembly
+        Assembly
 
         See Also
         --------
@@ -1005,7 +966,7 @@ class Core(composites.Composite):
         includeAll=False,
         zones=None,
         exact=False,
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Return a list of all the assemblies in the reactor.
 
@@ -1087,7 +1048,7 @@ class Core(composites.Composite):
         )
         return {nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList))}
 
-    def getBlockByName(self, name):
+    def getBlockByName(self, name: str) -> blocks.Block:
         """
         Finds a block based on its name.
 
@@ -1110,7 +1071,7 @@ class Core(composites.Composite):
             self._genBlocksByName()
             return self.blocksByName[name]
 
-    def getBlocksByIndices(self, indices):
+    def getBlocksByIndices(self, indices) -> list[blocks.Block]:
         """Get blocks in assemblies by block indices."""
         blocks = []
         for i, j, k in indices:
@@ -1133,7 +1094,7 @@ class Core(composites.Composite):
             block.getLocation(): block for block in self.getBlocks(includeAll=True)
         }
 
-    def getBlocks(self, bType=None, **kwargs):
+    def getBlocks(self, bType=None, **kwargs) -> list[blocks.Block]:
         """
         Returns an iterator over all blocks in the reactor in order.
 
@@ -1148,7 +1109,7 @@ class Core(composites.Composite):
             assemblies will be returned as well as the ones in the reactor.
 
         kwargs : dict
-            Any keyword argument from R.getAssemblies()
+            Any keyword argument from :meth:`getAssemblies`
 
         Returns
         -------
@@ -1157,14 +1118,15 @@ class Core(composites.Composite):
 
         See Also
         --------
-        getAssemblies : locates the assemblies in the search
+        * :meth:`iterBlocks`: iterator over blocks with limited filtering.
+        * :meth:`getAssemblies` : locates the assemblies in the search
         """
         blocks = [b for a in self.getAssemblies(**kwargs) for b in a]
         if bType:
             blocks = [b for b in blocks if b.hasFlags(bType)]
         return blocks
 
-    def getFirstBlock(self, blockType=None, exact=False):
+    def getFirstBlock(self, blockType=None, exact=False) -> blocks.Block:
         """
         Return the first block of the requested type in the reactor, or return first block.
         exact=True will only match fuel, not testfuel, for example.
@@ -1188,7 +1150,7 @@ class Core(composites.Composite):
 
         return None
 
-    def getFirstAssembly(self, typeSpec=None, exact=False):
+    def getFirstAssembly(self, typeSpec=None, exact=False) -> assemblies.Assembly:
         """
         Gets the first assembly in the reactor.
 
@@ -1226,7 +1188,7 @@ class Core(composites.Composite):
 
     def getAllXsSuffixes(self):
         """Return all XS suffices (e.g. AA, AB, etc.) in the core."""
-        return sorted(set(b.getMicroSuffix() for b in self.getBlocks()))
+        return sorted(set(b.getMicroSuffix() for b in self.iterBlocks()))
 
     def getNuclideCategories(self):
         """
@@ -1375,7 +1337,7 @@ class Core(composites.Composite):
         else:
             return {b.getLocation(): b for a in self for b in a}
 
-    # TODO: Can be cleaned up, but need test case to guard agains breakage
+    # TODO: Can be cleaned up, but need test case to guard against breakage
     def getFluxVector(
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):
@@ -1409,11 +1371,10 @@ class Core(composites.Composite):
             The values you requested. length is NxG.
         """
         flux = []
-        blocks = list(self.getBlocks())
         groups = range(self.lib.numGroups)
 
         # build in order 0
-        for b in blocks:
+        for b in self.iterBlocks():
             if adjoint:
                 vals = b.p.adjMgFlux
             elif extSrc:
@@ -1499,20 +1460,17 @@ class Core(composites.Composite):
         """Returns an assembly or none if given a location string like '001-001'.
 
         .. impl:: Get assembly by location.
-            :id: I_ARMI_R_GET_ASSEM_LOC
-            :implements: R_ARMI_R_GET_ASSEM_LOC
+            :id: I_ARMI_R_GET_ASSEM1
+            :implements: R_ARMI_R_GET_ASSEM
 
-            This method returns the :py:class:`assembly
-            <armi.reactor.core.assemblies.Assembly>` located in the requested
-            location. The location is provided to this method as an input
+            This method returns the :py:class:`assembly <armi.reactor.core.assemblies.Assembly>`
+            located in the requested location. The location is provided to this method as an input
             parameter in a string with the format "001-001". For a :py:class:`HexGrid
-            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates
-            the hexagonal ring and the second number indicates the position
-            within that ring. For a :py:class:`CartesianGrid
-            <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
-            represents the x index and the second number represents the y index.
-            If there is no assembly in the grid at the requested location, this
-            method returns None.
+            <armi.reactor.grids.hexagonal.HexGrid>`, the first number indicates the hexagonal ring
+            and the second number indicates the position within that ring. For a
+            :py:class:`CartesianGrid <armi.reactor.grids.cartesian.CartesianGrid>`, the first number
+            represents the x index and the second number represents the y index. If there is no
+            assembly in the grid at the requested location, this method returns None.
         """
         ring, pos, _ = grids.locatorLabelToIndices(locationString)
         loc = self.spatialGrid.getLocatorFromRingAndPos(ring, pos)
@@ -1523,9 +1481,8 @@ class Core(composites.Composite):
         """
         Find the assembly pitch for the whole core.
 
-        This returns the pitch according to the spatialGrid.
-        To capture any thermal/hydraulic feedback of the core pitch,
-        T/H modules will need to modify the grid pitch directly based
+        This returns the pitch according to the spatialGrid. To capture any thermal/hydraulic
+        feedback of the core pitch, T/H modules will need to modify the grid pitch directly based
         on the relevant mechanical assumptions.
 
         Returns
@@ -1543,11 +1500,10 @@ class Core(composites.Composite):
 
         Return a list of neighboring assemblies.
 
-        For a hexagonal grid, the list begins from the 30 degree point (point 1)
-        then moves counterclockwise around.
+        For a hexagonal grid, the list begins from the 30 degree point (point 1) then moves
+        counterclockwise around.
 
-        For a Cartesian grid, the order of the neighbors is east, north, west,
-        south.
+        For a Cartesian grid, the order of the neighbors is east, north, west, south.
 
         .. impl:: Retrieve neighboring assemblies of a given assembly.
             :id: I_ARMI_R_FIND_NEIGHBORS
@@ -1782,10 +1738,9 @@ class Core(composites.Composite):
 
     def saveAllFlux(self, fName="allFlux.txt"):
         """Dump all flux to file for debugging purposes."""
-        blocks = list(self.getBlocks())
         groups = range(self.lib.numGroups)
         with open(fName, "w") as f:
-            for block in blocks:
+            for block in self.iterBlocks():
                 for gi in groups:
                     f.write(
                         "{:10s} {:10d} {:12.5E} {:12.5E} {:12.5E}\n"
@@ -2046,7 +2001,7 @@ class Core(composites.Composite):
 
     def getMaxNumPins(self):
         """Find max number of pins of any block in the reactor."""
-        return max(b.getNumPins() for b in self.getBlocks())
+        return max(b.getNumPins() for b in self.iterBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
@@ -2071,7 +2026,7 @@ class Core(composites.Composite):
         fluxFraction = 0
         targetRing = numRings
 
-        allFuelBlocks = list(self.getBlocks(Flags.FUEL))
+        allFuelBlocks = self.getBlocks(Flags.FUEL)
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
@@ -2080,7 +2035,7 @@ class Core(composites.Composite):
             blocksInRing = list(
                 itertools.chain(
                     *[
-                        a.getBlocks(Flags.FUEL)
+                        a.iterBlocks(Flags.FUEL)
                         for a in self.getAssembliesInRing(ringNumber)
                     ]
                 )
@@ -2130,7 +2085,7 @@ class Core(composites.Composite):
         num = 0.0
         denom = 0.0
         if not blockList:
-            blockList = list(self.getBlocks())
+            blockList = self.getBlocks()
 
         for b in blockList:
             if flux2Weight:
@@ -2166,7 +2121,7 @@ class Core(composites.Composite):
 
     def setPitchUniform(self, pitchInCm):
         """Set the pitch in all blocks."""
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             b.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
@@ -2260,7 +2215,7 @@ class Core(composites.Composite):
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
 
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             if b.p.molesHmBOL > 0.0:
                 break
         else:
@@ -2359,3 +2314,59 @@ class Core(composites.Composite):
 
         if not len(self.zones):
             runLog.debug("No manual zones defined in `zoneDefinitions` setting")
+
+    def iterBlocks(
+        self,
+        typeSpec: Optional[flags.TypeSpec] = None,
+        exact=False,
+        predicate: Callable[[blocks.Block], bool] = None,
+    ) -> Iterator[blocks.Block]:
+        """Iterate over the blocks in the core.
+
+        Useful for operations that just want to find all the blocks in the core
+        with light filtering.
+
+        Parameters
+        ----------
+        typeSpec: armi.reactor.flags.TypeSpec, optional
+            Limit the traversal to blocks that have these flags.
+        exact: bool, optional
+            Strictness on the usage of ``typeSpec`` used in :meth:`armi.reactor.composites.hasFlags`
+        predicate: f(block) -> bool, optional
+            Limit the traversal to blocks that pass this predicate. Can be used in addition to ``typeSpec``
+            to perform more advanced filtering.
+
+        Returns
+        -------
+        iterator[Block]
+            Iterator over blocks in the core that meet the conditions provided.
+
+        Examples
+        --------
+        Iterate over all fuel blocks::
+
+        >>> for b in r.core.iterBlocks(Flags.FUEL):
+        ...     pass
+
+        See Also
+        --------
+        :meth:`getBlocks` has more control over what is included in the returned list
+        including looking at the spent fuel pool and assemblies that may not exist now
+        but existed at BOL (via :meth:`getAssemblies`). But if you're just interested in
+        the blocks in the core now, maybe with a flag attached to that block, this is what
+        you should use.
+
+        Notes
+        -----
+        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If
+        this is not the case, consider using :meth:`iterChildren`.
+        """
+        if typeSpec is not None:
+            typeChecker = lambda b: b.hasFlags(typeSpec, exact=exact)
+        else:
+            typeChecker = lambda _: True
+        if predicate is not None:
+            blockChecker = lambda b: typeChecker(b) and predicate(b)
+        else:
+            blockChecker = typeChecker
+        return self.iterChildren(generationNum=2, predicate=blockChecker)

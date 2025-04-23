@@ -772,6 +772,17 @@ class TestHexGrid(unittest.TestCase):
             postRotate = base.rotateIndex(loc, rotations=2)
             self.assertIs(postRotate.grid, loc.grid)
 
+    def test_rotatedIndexRoughEqualPitch(self):
+        """Test indices can be rotated in close but not exactly equal grids."""
+        base = grids.HexGrid.fromPitch(1.345)
+        other = grids.HexGrid.fromPitch(base.pitch * 1.00001)
+
+        for i, j in ((0, 0), (1, 1), (2, 1), (-1, 3)):
+            loc = grids.IndexLocation(i, j, k=0, grid=base)
+            fromBase = base.rotateIndex(loc, rotations=2)
+            fromOther = other.rotateIndex(loc, rotations=2)
+            self.assertEqual((fromBase.i, fromBase.j), (fromOther.i, fromOther.j))
+
 
 class TestBoundsDefinedGrid(unittest.TestCase):
     def test_positions(self):

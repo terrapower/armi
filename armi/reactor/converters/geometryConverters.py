@@ -1160,7 +1160,7 @@ class HexToRZThetaConverter(GeometryConverter):
     def _getBlockAtMeshPoint(
         self, innerTheta, outerTheta, innerRadius, outerRadius, innerAxial, outerAxial
     ):
-        for b in self.convReactor.core.getBlocks():
+        for b in self.convReactor.core.iterBlocks():
             blockMidTh, blockMidR, blockMidZ = b.spatialLocator.getGlobalCoordinates(
                 nativeCoords=True
             )
@@ -1315,7 +1315,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
         runLog.info("Expanding to full core geometry")
 
         # store a copy of the 1/3 geometry grid, so that we can use it to find symmetric
-        # locations, while the core has a full-core grid so that it doesnt yell at us
+        # locations, while the core has a full-core grid so that it does not yell at us
         # for adding stuff outside of the first 1/3
         grid = copy.deepcopy(self._sourceReactor.core.spatialGrid)
 
@@ -1357,13 +1357,13 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                         self.listOfVolIntegratedParamsToScale,
                         _,
                     ) = _generateListOfParamsToScale(
-                        self._sourceReactor, paramsToScaleSubset=[]
+                        self._sourceReactor.core, paramsToScaleSubset=[]
                     )
 
                 for b in a:
                     self._scaleBlockVolIntegratedParams(b, "up")
 
-        # set domain after expanding, because it isnt actually full core until it's
+        # set domain after expanding, because it isn't actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
         self._sourceReactor.core.symmetry = geometry.SymmetryType(
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
@@ -1513,6 +1513,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         # Don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh case that has edge
         # assems.
         edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
+
         for a in edgeAssemblies:
             runLog.debug(
                 "Removing edge assembly {} from {} from the reactor without discharging".format(
@@ -1535,7 +1536,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         self.reset()
 
     @staticmethod
-    def scaleParamsRelatedToSymmetry(reactor, paramsToScaleSubset=None):
+    def scaleParamsRelatedToSymmetry(core, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges.
 
@@ -1552,11 +1553,11 @@ class EdgeAssemblyChanger(GeometryChanger):
             "Scaling edge-assembly parameters to account for full hexes instead of two halves"
         )
         completeListOfParamsToScale = _generateListOfParamsToScale(
-            reactor, paramsToScaleSubset
+            core, paramsToScaleSubset
         )
         symmetricAssems = (
-            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
-            reactor.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
+            core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
+            core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
         )
         if not all(symmetricAssems):
             runLog.extra("No edge-assemblies found to scale parameters for.")
@@ -1566,15 +1567,15 @@ class EdgeAssemblyChanger(GeometryChanger):
                 _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale)
 
 
-def _generateListOfParamsToScale(r, paramsToScaleSubset):
+def _generateListOfParamsToScale(core, paramsToScaleSubset):
     fluxParamsToScale = (
-        r.core.getFirstBlock()
+        core.getFirstBlock()
         .p.paramDefs.inCategory(Category.fluxQuantities)
         .inCategory(Category.multiGroupQuantities)
         .names
     )
     listOfVolumeIntegratedParamsToScale = (
-        r.core.getFirstBlock()
+        core.getFirstBlock()
         .p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         .since(SINCE_LAST_GEOMETRY_TRANSFORMATION)
     )

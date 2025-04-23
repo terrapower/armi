@@ -1,25 +1,25 @@
-***********************
-ARMI v0.4 Release Notes
-***********************
+Release Notes for ARMI 0.4
+==========================
+
+These are the release notes for past versions of ARMI, created before our SCR process. They are preserved here for historical record.
 
 ARMI v0.4.0
-===========
+-----------
 Release Date: 2024-07-29
 
 New Features
-------------
+^^^^^^^^^^^^
 #. Conserve mass by component in ``assembly.setBlockMesh()``. (`PR#1665 <https://github.com/terrapower/armi/pull/1665>`_)
 #. Removal of the ``Block.reactor`` property. (`PR#1425 <https://github.com/terrapower/armi/pull/1425>`_)
 #. System information is now also logged on Linux. (`PR#1689 <https://github.com/terrapower/armi/pull/1689>`_)
-#. Reset ``Reactor`` data on worker processors after every interaction to free memory from state distribution.
-   (`PR#1729 <https://github.com/terrapower/armi/pull/1729>`_ and `PR#1750 <https://github.com/terrapower/armi/pull/1750>`_)
+#. Reset ``Reactor`` data on worker processors after every interaction to free memory from state distribution. (`PR#1729 <https://github.com/terrapower/armi/pull/1729>`_ and `PR#1750 <https://github.com/terrapower/armi/pull/1750>`_)
 #. Density can be specified for components via ``custom isotopics`` in the blueprints. (`PR#1745 <https://github.com/terrapower/armi/pull/1745>`_)
 #. Implement a new ``JaggedArray`` class that handles HDF5 interface for jagged data. (`PR#1726 <https://github.com/terrapower/armi/pull/1726>`_)
 #. Adding temperature dependent representative blocks to cross section group manager. (`PR#1987 <https://github.com/terrapower/armi/pull/1987>`_)
 
 
 API Changes
------------
+^^^^^^^^^^^
 #. Replacing the concrete material with a better reference. (`PR#1717 <https://github.com/terrapower/armi/pull/1717>`_)
 #. Adding more detailed time information to logging. (`PR#1796 <https://github.com/terrapower/armi/pull/1796>`_)
 #. Renaming ``structuredgrid.py`` to camelCase. (`PR#1650 <https://github.com/terrapower/armi/pull/1650>`_)
@@ -59,15 +59,15 @@ API Changes
 #. Renaming ``b.p.buGroup`` to ``b.p.envGroup``. Environment group captures both burnup and temperature. (`PR#1987 <https://github.com/terrapower/armi/pull/1987>`_)
 
 Bug Fixes
----------
+^^^^^^^^^
 #. Fixed four bugs with "corners up" hex grids. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
-#. Fixed ``safeCopy`` to work on both Windows and Linux with strict permissions (`PR#1691 <https://github.com/terrapower/armi/pull/1691>`_)
+#. Fixed ``safeCopy`` to work on both Windows and Linux with strict permissions. (`PR#1691 <https://github.com/terrapower/armi/pull/1691>`_)
 #. When creating a new XS group, inherit settings from initial group. (`PR#1653 <https://github.com/terrapower/armi/pull/1653>`_, `PR#1751 <https://github.com/terrapower/armi/pull/1751>`_)
 #. Fixed a bug with ``Core.getReactionRates``. (`PR#1771 <https://github.com/terrapower/armi/pull/1771>`_)
 #. Fixed a bug with interactive versus batch mode checking on windows versus linux. (`PR#1786 <https://github.com/terrapower/armi/pull/1786>`_)
 
 Quality Work
-------------
+^^^^^^^^^^^^
 #. Creating a single-block test reactor, to speed up unit tests. (`PR#1737 <https://github.com/terrapower/armi/pull/1737>`_)
 #. Supporting MacOS in CI. (`PR#1713 <https://github.com/terrapower/armi/pull/1713>`_)
 #. We now enforce a maximum line length of 120 characters, using ``ruff``. (`PR#1646 <https://github.com/terrapower/armi/pull/1646>`_)
@@ -75,7 +75,7 @@ Quality Work
 #. Move ``.coveragerc`` file information into ``pyproject.toml``. (`PR#1692 <https://github.com/terrapower/armi/pull/1692>`_)
 
 Changes that Affect Requirements
---------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #. Removing unused argument to ``Block.coords()``. (`PR#1651 <https://github.com/terrapower/armi/pull/1651>`_)
 #. Touched ``HexGrid`` by adding a "cornersUp" property and fixing two bugs. (`PR#1649 <https://github.com/terrapower/armi/pull/1649>`_)
 #. Very slightly modified the implementation of ``Assembly.add()``. (`PR#1670 <https://github.com/terrapower/armi/pull/1670>`_)

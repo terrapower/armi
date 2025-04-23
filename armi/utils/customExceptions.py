@@ -32,7 +32,7 @@ def info(func):
 
 
 def important(func):
-    """Decorator to write to current log, using the inportant method."""
+    """Decorator to write to current log, using the important method."""
 
     def decorated(*args, **kwargs):
         """Decorated method."""

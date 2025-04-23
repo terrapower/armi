@@ -26,7 +26,7 @@ from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
-from armi.utils import directoryChangers, reportPlotting, units
+from armi.utils import reportPlotting, units
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -138,9 +138,6 @@ class ReportInterface(interfaces.Interface):
         _timelinePlot = self.o.timer.timeline(
             self.cs.caseTitle, self.cs["timelineInclusionCutoff"], total_time=True
         )
-        runLog.debug("Generating report HTML.")
-        self.writeReports()
-        runLog.debug("Report HTML generated successfully.")
         runLog.info(self.printReports())
 
     # --------------------------------------------
@@ -156,12 +153,6 @@ class ReportInterface(interfaces.Interface):
             + str_
             + "\n----------- REPORTS END -----------"
         )
-
-    def writeReports(self):
-        """Renders each report into a document for viewing."""
-        with directoryChangers.ForcedCreationDirectoryChanger("reports"):
-            for report_ in self.reports:
-                report_.writeHTML()
 
     # --------------------------------------------
     #        Ex-Core Summaries
@@ -181,7 +172,7 @@ class ReportInterface(interfaces.Interface):
         runLog.important(title)
         runLog.important("-" * len(title))
         totFis = 0.0
-        for a in sfp.getChildren():
+        for a in sfp:
             runLog.important(
                 "{assembly:15s} discharged at t={dTime:10f} after {residence:10f} yrs. It entered at cycle: {cycle}. "
                 "It has {fiss:10f} kg (x {mult}) fissile and peak BU={bu:.2f} %.".format(
@@ -205,16 +196,16 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def countAssembliesSFP(sfp):
         """Report on the count of assemblies in the SFP at each timestep."""
-        if not sfp.getChildren():
+        if not len(sfp):
             return
 
         runLog.important("Count:")
         totCount = 0
         thisTimeCount = 0
-        a = sfp.getChildren()[0]
+        a = sfp[0]
         lastTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
-        for a in sfp.getChildren():
+        for a in sfp:
             thisTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
             if thisTime != lastTime:

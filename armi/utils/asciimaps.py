@@ -62,7 +62,7 @@ class AsciiMap:
     Base class for maps.
 
     These should be able to read and write ASCII maps loaded either from text
-    or programatically with i,j / specifiers.
+    or programmatically with i,j / specifiers.
     """
 
     def __init__(self):

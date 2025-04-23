@@ -27,13 +27,12 @@ import re
 
 from armi import context, getPluginManagerOrFail, runLog
 from armi.physics import neutronics
-from armi.reactor import geometry, systemLayoutInput
 from armi.settings.settingsIO import (
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
     prompt,
 )
-from armi.utils import directoryChangers, pathTools, safeCopy
+from armi.utils import pathTools, safeCopy
 from armi.utils.mathematics import expandRepeatedFloats
 
 
@@ -170,7 +169,6 @@ class Inspector:
         self.geomType = None
         self.coreSymmetry = None
         self._inspectBlueprints()
-        self._setGeomType()
         self._inspectSettings()
 
         # Gather and attach validators from all plugins
@@ -322,16 +320,6 @@ class Inspector:
     def _csRelativePath(self, filename):
         return os.path.join(self.cs.inputDirectory, filename)
 
-    def _setGeomType(self):
-        if self.cs["geomFile"]:
-            with directoryChangers.DirectoryChanger(
-                self.cs.inputDirectory, dumpOnException=False
-            ):
-                geom = systemLayoutInput.SystemLayoutInput()
-                geom.readGeomFromFile(self.cs["geomFile"])
-
-            self.geomType, self.coreSymmetry = geom.geomType, geom.symmetry
-
     def _correctCyclesToZeroBurnup(self):
         self._assignCS("nCycles", 1)
         self._assignCS("burnSteps", 0)
@@ -343,19 +331,16 @@ class Inspector:
 
     def _checkForBothSimpleAndDetailedCyclesInputs(self):
         """
-        Because the only way to check if a setting has been "entered" is to check
-        against the default, if the user specifies all the simple cycle settings
-        _exactly_ as the defaults, this won't be caught. But, it would be very
-        coincidental for the user to _specify_ all the default values when
-        performing any real analysis.
+        Because the only way to check if a setting has been "entered" is to check against the
+        default, if the user specifies all the simple cycle settings exactly as the defaults, this
+        won't be caught. But, it would be very coincidental for the user to _specify_ all the
+        default values when performing any real analysis.
 
-        Also, we must bypass the `Settings` getter and reach directly
-        into the underlying `__settings` dict to avoid triggering an error
-        at this stage in the run. Otherwise an error will inherently be raised
-        if the detailed cycles input is used because the simple cycles inputs
-        have defaults. We don't care that those defaults are there, we only
-        have a problem with those defaults being _used_, which will be caught
-        later on.
+        Also, we must bypass the `Settings` getter and reach directly into the underlying
+        `__settings` dict to avoid triggering an error at this stage in the run. Otherwise an error
+        will inherently be raised if the detailed cycles input is used because the simple cycles
+        inputs have defaults. We don't care that those defaults are there, we only have a problem
+        with those defaults being _used_, which will be caught later on.
         """
         bothCyclesInputTypesPresent = (
             self.cs._Settings__settings["cycleLength"].value
@@ -700,30 +685,6 @@ class Inspector:
             self.NO_ACTION,
         )
 
-        self.addQuery(
-            lambda: self.cs["geomFile"]
-            and str(self.geomType) not in geometry.VALID_GEOMETRY_TYPE,
-            "{} is not a valid geometry Please update geom type on the geom file. "
-            "Valid (case insensitive) geom types are: {}".format(
-                self.geomType, geometry.VALID_GEOMETRY_TYPE
-            ),
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
-            lambda: self.cs["geomFile"]
-            and not geometry.checkValidGeomSymmetryCombo(
-                self.geomType, self.coreSymmetry
-            ),
-            "{}, {} is not a valid geometry and symmetry combination. Please update "
-            "either geometry or symmetry on the geom file.".format(
-                str(self.geomType), str(self.coreSymmetry)
-            ),
-            "",
-            self.NO_ACTION,
-        )
-
 
 def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None):
     """
@@ -737,7 +698,8 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
         name of the setting to inspect
     initialLambda: None or callable function
         If ``None``, the callable argument for :py:meth:`addQuery` is does the setting's path exist.
-        If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
+        If more complicated callable arguments are needed, they can be passed in as the
+        ``initialLambda`` setting.
     """
     if initialLambda is None:
         initialLambda = lambda: (
@@ -763,10 +725,10 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     ----------
     versionThis: str
         The version of this ARMI, App, or Plugin.
-        This MUST be in the form: 1.2.3
+        This MUST be in the form: 1.2.3.
     versionRequired: str
         The version to compare against, say in a Settings file.
-        This must be in one of the forms: 1.2.3, 1.2, or 1
+        This must be in one of the forms: 1.2.3, 1.2, or 1.
 
     Returns
     -------

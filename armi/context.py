@@ -109,18 +109,22 @@ except ImportError:
     # stick with defaults
     pass
 
-try:
+if sys.platform.startswith("win"):
     # trying a Windows approach
     APP_DATA = os.path.join(os.environ["APPDATA"], "armi")
     APP_DATA = APP_DATA.replace("/", "\\")
-except Exception:
-    # non-Windows
-    APP_DATA = os.path.expanduser("~/.armi")
+else:
+    # non-Windows: /tmp/ if possible, if not home
+    if os.access("/tmp/", os.W_OK):
+        APP_DATA = "/tmp/.armi"
+    else:
+        APP_DATA = os.path.expanduser("~/.armi")
 
 if MPI_NODENAMES.index(MPI_NODENAME) == MPI_RANK:
     if not os.path.isdir(APP_DATA):
         try:
             os.makedirs(APP_DATA)
+            os.chmod(APP_DATA, 0o0777)
         except OSError:
             pass
     if not os.path.isdir(APP_DATA):

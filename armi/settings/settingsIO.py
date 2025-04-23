@@ -145,7 +145,7 @@ class SettingsReader:
         :implements: R_ARMI_SETTINGS_IO_TXT
 
         ARMI uses the YAML standard for settings files. ARMI uses industry-standard
-        ``ruamel.yaml`` Python libraray to read these files. ARMI does not bend or
+        ``ruamel.yaml`` Python library to read these files. ARMI does not bend or
         change the YAML file format standard in any way.
 
     Parameters

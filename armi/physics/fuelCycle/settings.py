@@ -18,7 +18,6 @@ CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
 CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
 CONF_CIRCULAR_RING_MODE = "circularRingMode"
 CONF_CIRCULAR_RING_ORDER = "circularRingOrder"
-CONF_CUSTOM_FUEL_MANAGEMENT_INDEX = "customFuelManagementIndex"
 CONF_FUEL_HANDLER_NAME = "fuelHandlerName"
 CONF_JUMP_RING_NUM = "jumpRingNum"
 CONF_LEVELS_PER_CASCADE = "levelsPerCascade"
@@ -59,15 +58,6 @@ def getFuelCycleSettings():
             description="Order by which locations are sorted in circular rings for equilibrium shuffling",
             label="Eq. circular sort type",
             options=["angle", "distance", "distanceSmart"],
-        ),
-        setting.Setting(
-            CONF_CUSTOM_FUEL_MANAGEMENT_INDEX,
-            default=0,
-            description=(
-                "An index that determines which of various options is used in management. "
-                "Useful for optimization sweeps. "
-            ),
-            label="Custom Shuffling Index",
         ),
         setting.Setting(
             CONF_RUN_LATTICE_BEFORE_SHUFFLING,

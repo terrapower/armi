@@ -68,7 +68,6 @@ CONF_OPT_DPA = [
 CONF_CLEAR_XS = "clearXS"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
-CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
@@ -82,17 +81,7 @@ CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
 
 
 def defineSettings():
-    """Standard function to define settings; for neutronics.
-
-    .. impl:: Users to select if gamma cross sections are generated.
-        :id: I_ARMI_GAMMA_XS
-        :implements: R_ARMI_GAMMA_XS
-
-        A single boolean setting can be used to turn on/off the calculation of gamma
-        cross sections. This is implemented with the usual boolean ``Setting`` logic.
-        The goal here is performance; save the compute time if the analyst doesn't need
-        those cross sections.
-    """
+    """Standard function to define settings; for neutronics."""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -110,7 +99,6 @@ def defineSettings():
                 "ANL2082",
                 "ARMI33",
                 "ARMI45",
-                "CINDER63",
                 "348",
             ],
         ),
@@ -308,13 +296,6 @@ def defineSettings():
             "plugins.",
         ),
         setting.Setting(
-            CONF_INFINITE_DILUTE_CUTOFF,
-            default=1e-10,
-            label="Infinite Dillute Cutoff",
-            description="Do not model nuclides with density less than this cutoff. "
-            "Used with PARTISN and SERPENT.",
-        ),
-        setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
             default=0.0,
             label="Cross Section Burnup Group Tolerance",
@@ -417,11 +398,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateXSOptionGenXS():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GEN_XS)
 
     def migrateXSOptionGlobalFluxActive():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
     queries.append(
@@ -510,11 +491,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateDpaDpaXsSet():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(
