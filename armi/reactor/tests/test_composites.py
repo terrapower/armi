@@ -988,11 +988,9 @@ class TestMiscMethods(unittest.TestCase):
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
 
-
-class TestGetReactionRateDict(unittest.TestCase):
     def test_getReactionRateDict(self):
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(
+        rxRatesDict = self.obj.getReactionRateDict(
             nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
         )
         self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
