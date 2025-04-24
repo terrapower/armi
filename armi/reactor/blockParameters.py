@@ -455,12 +455,6 @@ def getBlockParameterDefinitions():
             description="Structure density coefficient",
         )
 
-        pb.defParam(
-            "rxStructureTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG}",
-            description="Structure temperature coefficient",
-        )
-
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerMass",
