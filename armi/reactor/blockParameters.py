@@ -442,12 +442,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "rxFuelTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG}",
-            description="Fuel temperature coefficient",
-        )
-
-        pb.defParam(
             "rxFuelVoidedTemperatureCoeffPerMass",
             units=f"{units.REACTIVITY}/{units.KG}",
             description="Fuel voided-coolant temperature coefficient",
