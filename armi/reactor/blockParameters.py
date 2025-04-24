@@ -293,13 +293,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "powerRx",
-            units=f"{units.WATTS}/{units.CM}^3",
-            description="Power density of the reactor",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "timeToLimit",
             units=units.DAYS,
             description="Time unit block violates its burnup limit.",
