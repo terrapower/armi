@@ -550,14 +550,6 @@ def _getNeutronicsBlockParams():
             location=ParamLocation.MAX,
         )
 
-        pb.defParam(
-            "ppdensGamma",
-            units=f"{units.WATTS}/{units.CM}^3",
-            description="Peak gamma density",
-            categories=[parameters.Category.gamma],
-            location=ParamLocation.MAX,
-        )
-
     # rx rate params that are derived during mesh conversion.
     # We'd like all things that can be derived from flux and XS to be
     # in this category to minimize numerical diffusion but it is a WIP.
