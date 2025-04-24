@@ -555,13 +555,6 @@ def getBlockParameterDefinitions():
             description="Fuel voided-coolant Doppler constant",
         )
 
-        # STRUCTURE COEFFICIENTS
-        pb.defParam(
-            "rxStructureTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Structure temperature coefficient",
-        )
-
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerTemp",

@@ -532,13 +532,6 @@ def defineCoreParameters():
             description="Fuel Voided-Coolant Doppler Constant",
         )
 
-        # STRUCTURE COEFFICIENTS
-        pb.defParam(
-            "rxStructureTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Structure Temperature Coefficient",
-        )
-
         # COOLANT COEFFICIENTS
         pb.defParam(
             "rxCoolantDensityCoeffPerTemp",
