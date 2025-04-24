@@ -190,13 +190,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "doublingTime",
-            units=units.YEARS,
-            description="""The time it takes to produce enough spent fuel to fuel a daughter 
-            reactor, in effective number of years at full power.""",
-        )
-
-        pb.defParam(
             "fissileMass", units=units.GRAMS, description="Fissile mass of the reactor"
         )
 
