@@ -57,12 +57,6 @@ def defineReactorParameters():
         )
 
         pb.defParam(
-            "lcoe",
-            units=f"{units.USD}/kWh",
-            description="Levelised cost of electricity",
-        )
-
-        pb.defParam(
             "time",
             units=units.YEARS,
             description="Time of reactor life from BOL to current time node",

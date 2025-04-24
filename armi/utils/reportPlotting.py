@@ -476,9 +476,7 @@ def _getTHVals(r):
 
 
 def _getEconVals(r):
-    labels, vals = zip(
-        *[("Feed U", r.p.eFeedMT), ("SWU", r.p.eSWU), ("LCOE", r.p.lcoe)]
-    )
+    labels, vals = zip(*[("Feed U", r.p.eFeedMT), ("SWU", r.p.eSWU)])
     return "Economics", labels, vals
 
 
