@@ -533,12 +533,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "rxFuelTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Fuel Temperature Coefficient",
-        )
-
-        pb.defParam(
             "rxFuelVoidedTemperatureCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Fuel Voided-Coolant Temperature Coefficient",
