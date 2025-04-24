@@ -130,6 +130,7 @@ class TestOperatorSnapshotFullCoreExpansion(unittest.TestCase):
         )
 
     def test_fullCoreFromThirdCore(self):
+        self.assertFalse(self.symmetricReactor.core.isFullCore)
         cs = self.snapshotSettings.modified(
             newSettings={"growToFullCoreOnLoad": True, "dumpSnapshot": ["0000"]}
         )
