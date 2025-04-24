@@ -524,14 +524,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "axExtenNodeHeight",
-            units=units.METERS,
-            description="Axial extension node height",
-            location=ParamLocation.AVERAGE,
-            default=0.0,
-        )
-
-        pb.defParam(
             "blockBeta",
             units=units.UNITLESS,
             description="Beta in each block",
