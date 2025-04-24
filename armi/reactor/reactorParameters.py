@@ -534,12 +534,6 @@ def defineCoreParameters():
 
         # CLAD COEFFICIENTS
         pb.defParam(
-            "rxCladDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Clad Density Coefficient",
-        )
-
-        pb.defParam(
             "rxCladDopplerCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Clad Doppler Coefficient",

@@ -569,12 +569,6 @@ def getBlockParameterDefinitions():
 
         # CLAD COEFFICIENTS
         pb.defParam(
-            "rxCladDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Clad density coefficient",
-        )
-
-        pb.defParam(
             "rxCladDopplerCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Clad Doppler coefficient",
