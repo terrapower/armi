@@ -490,12 +490,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "rxAclpRadialExpansionCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="ACLP Radial Expansion Coefficient",
-        )
-
-        pb.defParam(
             "rxControlRodDrivelineExpansionCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="control rod driveline expansion coefficient",
