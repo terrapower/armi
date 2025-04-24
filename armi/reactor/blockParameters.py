@@ -448,12 +448,6 @@ def getBlockParameterDefinitions():
             description="Clad density coefficient",
         )
 
-        pb.defParam(
-            "rxCladTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG}",
-            description="Clad temperature coefficient",
-        )
-
         # STRUCTURE COEFFICIENTS
         pb.defParam(
             "rxStructureDensityCoeffPerMass",
