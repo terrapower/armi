@@ -569,13 +569,6 @@ def getBlockParameterDefinitions():
         pb.defParam("buLimit", units=units.PERCENT_FIMA, description="Burnup limit")
 
         pb.defParam(
-            "cladACCI",
-            units=units.MICRONS,
-            description="The amount of cladding wastage due to absorber chemical clad interaction",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "convRatio",
             units=units.UNITLESS,
             description="Conversion ratio",
