@@ -630,13 +630,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "powerShapeDelta",
-            units=units.WATTS,
-            description="Change in power shape when core temperature rises.",
-            location=ParamLocation.VOLUME_INTEGRATED,
-        )
-
-        pb.defParam(
             "puFrac",
             units=units.UNITLESS,
             description="Current Pu number density relative to HM at BOL",
