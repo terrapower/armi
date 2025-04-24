@@ -441,12 +441,6 @@ def getBlockParameterDefinitions():
             description="Fuel density coefficient",
         )
 
-        pb.defParam(
-            "rxFuelVoidedTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG}",
-            description="Fuel voided-coolant temperature coefficient",
-        )
-
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerMass",
