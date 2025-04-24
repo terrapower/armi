@@ -104,13 +104,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "percentBuMaxPinLocation",
-            units=units.UNITLESS,
-            description="Peak burnup pin location (integer)",
-            location=ParamLocation.MAX,
-        )
-
-        pb.defParam(
             "residence",
             units=units.DAYS,
             description=(
