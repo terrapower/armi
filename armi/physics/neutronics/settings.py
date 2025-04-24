@@ -40,21 +40,19 @@ CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_INNERS_ = "inners"
 CONF_LOADING_FILE = "loadingFile"
-CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_MCNP_LIB_BASE = "mcnpLibraryVersion"
+CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
-# Used for dpa/dose analysis.
-# TODO: These should be relocated to more design-specific places
+# used by global flux interface
 CONF_ACLP_DOSE_LIMIT = "aclpDoseLimit"
 CONF_DPA_XS_SET = "dpaXsSet"
 CONF_GRID_PLATE_DPA_XS_SET = "gridPlateDpaXsSet"
 CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
 CONF_LOAD_PAD_LENGTH = "loadPadLength"
-
 CONF_OPT_DPA = [
     "",
     "dpa_EBRII_INC600",
@@ -66,18 +64,22 @@ CONF_OPT_DPA = [
 
 # moved from xsSettings
 CONF_CLEAR_XS = "clearXS"
-CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
-CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
-CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
-CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
     "disableBlockTypeExclusionInXsGeneration"
 )
-CONF_XS_KERNEL = "xsKernel"
-CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
+CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
-CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
+CONF_XS_KERNEL = "xsKernel"
+CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 
 
 def defineSettings():
@@ -106,9 +108,8 @@ def defineSettings():
             CONF_GLOBAL_FLUX_ACTIVE,
             default="Neutron",
             label="Global Flux Calculation",
-            description="Calculate the global flux at each timestep for the selected "
-            "particle type(s) using the specified neutronics kernel (see Global Flux "
-            "tab).",
+            description="Calculate the global flux at each timestep for the selected particle "
+            "type(s) using the specified neutronics kernel.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -290,10 +291,9 @@ def defineSettings():
             CONF_MINIMUM_NUCLIDE_DENSITY,
             default=1e-15,
             label="Minimum nuclide density",
-            description="Density to use for nuclides and fission products at infinite "
-            "dilution. This is also used as the minimum density considered for "
-            "computing macroscopic cross sections. It can also be passed to physics "
-            "plugins.",
+            description="Density to use for nuclides and fission products at infinite dilution. "
+            "This is also used as the minimum density considered for computing macroscopic cross "
+            "sections.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
