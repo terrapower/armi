@@ -81,19 +81,21 @@ class OperatorMPI(Operator):
                 )
                 raise
             finally:
-                # If there are other processes, tell them to stop
-                if context.MPI_SIZE > 1:
+                if context.MPI_SIZE > 0:
                     runLog.important(
                         "Stopping all MPI worker nodes and cleaning temps."
                     )
-                    # send the quit command to the workers.
-                    context.MPI_COMM.bcast("quit", root=0)
+                    context.MPI_COMM.bcast(
+                        "quit", root=0
+                    )  # send the quit command to the workers.
                     runLog.debug("Waiting for all nodes to close down")
-                    # wait until they're done cleaning up.
-                    context.MPI_COMM.bcast("finished", root=0)
+                    context.MPI_COMM.bcast(
+                        "finished", root=0
+                    )  # wait until they're done cleaning up.
                     runLog.important("All worker nodes stopped.")
-                # even though we waited, still need more time to close stdout.
-                time.sleep(1)
+                time.sleep(
+                    1
+                )  # even though we waited, still need more time to close stdout.
                 runLog.debug("Main operate finished")
                 runLog.close()  # concatenate all logs.
         else:
