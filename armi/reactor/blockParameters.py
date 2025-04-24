@@ -613,13 +613,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "mchan",
-            units=units.UNITLESS,
-            description="SASSYS/DIF3D-K (external) channel index assignment",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "mreg",
             units=units.UNITLESS,
             description="SASSYS/DIF3D-K radial region index assignment",
