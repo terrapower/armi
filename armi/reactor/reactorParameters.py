@@ -74,22 +74,6 @@ def defineReactorParameters():
             default=0,
         )
 
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
-    ) as pb:
-
-        pb.defParam(
-            "eFeedMT",
-            units=units.MT,
-            description="Total feed material required in reactor economics",
-        )
-
-        pb.defParam(
-            "eSWU",
-            units=f"{units.KG}*SWU",
-            description="Separative work units in reactor economics",
-        )
-
     return pDefs
 
 

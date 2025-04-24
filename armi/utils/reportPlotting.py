@@ -64,7 +64,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         The history tracker interface
     """
     try:
-        data = dbi.getHistory(reactor, params=["cycle", "time", "eFeedMT", "eSWU"])
+        data = dbi.getHistory(reactor, params=["cycle", "time"])
         data.update(
             dbi.getHistory(
                 reactor.core,
@@ -321,7 +321,6 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
         _getMechanicalVals,
         _getFuelVals,
         _getTHVals,
-        _getEconVals,
         _getPhysicalVals,
     ]
     firstReactorVals = {}  # for normalization
@@ -473,11 +472,6 @@ def _getTHVals(r):
         ]
     )
     return "T/H", labels, vals
-
-
-def _getEconVals(r):
-    labels, vals = zip(*[("Feed U", r.p.eFeedMT), ("SWU", r.p.eSWU)])
-    return "Economics", labels, vals
 
 
 def _radarFactory(numVars, frame="circle"):
