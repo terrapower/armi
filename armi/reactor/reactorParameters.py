@@ -206,15 +206,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "maxcladFCCI",
-            units=units.MICRONS,
-            description="The core wide maximum amount of cladding wastage due to fuel chemical "
-            + "clad interaction calculated at the 0-sigma TH HCF temperatures and using the "
-            + "conservative FCCI model",
-            default=0.0,
-        )
-
-        pb.defParam(
             "maxDPA",
             units=units.DPA,
             description="Maximum DPA based on pin-level max if it exists, block level max otherwise",

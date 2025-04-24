@@ -447,7 +447,6 @@ def _getFuelVals(r):
             numClad += 1
     tOverD /= numClad
     data = [
-        ("Max FCCI", r.core.p.maxcladFCCI),
         ("Max BU", r.core.p.maxpercentBu),
         (
             "Smear dens.",
