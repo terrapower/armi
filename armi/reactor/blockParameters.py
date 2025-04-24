@@ -562,12 +562,6 @@ def getBlockParameterDefinitions():
             description="Coolant density coefficient",
         )
 
-        pb.defParam(
-            "rxCoolantTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Coolant temperature coefficient",
-        )
-
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam(

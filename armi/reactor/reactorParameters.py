@@ -539,12 +539,6 @@ def defineCoreParameters():
             description="Coolant Density Coefficient",
         )
 
-        pb.defParam(
-            "rxCoolantTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Coolant Temperature Coefficient",
-        )
-
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
