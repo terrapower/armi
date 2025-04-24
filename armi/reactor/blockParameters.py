@@ -74,12 +74,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "fissileFraction",
-            units=units.UNITLESS,
-            description="Ratio of fissile mass to heavy metal mass at block-level",
-        )
-
-        pb.defParam(
             "molesHmBOLByPin",
             units=f"{units.MOLES}",
             description="Total number of atoms of heavy metal at BOL",

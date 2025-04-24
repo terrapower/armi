@@ -116,7 +116,6 @@ class Block(composites.Composite):
             "fluxAdj",
             "buRate",
             "eqRegion",
-            "fissileFraction",
         ]:
             self.p[problemParam] = 0.0
 
