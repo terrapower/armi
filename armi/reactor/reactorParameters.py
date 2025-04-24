@@ -534,12 +534,6 @@ def defineCoreParameters():
 
         # STRUCTURE COEFFICIENTS
         pb.defParam(
-            "rxStructureDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Structure Density Coefficient",
-        )
-
-        pb.defParam(
             "rxStructureDopplerCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Structure Doppler Coefficient",
