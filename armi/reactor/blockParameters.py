@@ -561,13 +561,6 @@ def getBlockParameterDefinitions():
             description="Structure Doppler constant",
         )
 
-        # CLAD COEFFICIENTS
-        pb.defParam(
-            "rxCladTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Clad temperature coefficient",
-        )
-
         # STRUCTURE COEFFICIENTS
         pb.defParam(
             "rxStructureDensityCoeffPerTemp",
