@@ -567,12 +567,6 @@ def getBlockParameterDefinitions():
             description="Clad Doppler constant",
         )
 
-        pb.defParam(
-            "rxFuelVoidedTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Fuel voided-coolant temperature coefficient",
-        )
-
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerTemp",

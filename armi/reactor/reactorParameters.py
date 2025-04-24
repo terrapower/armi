@@ -532,12 +532,6 @@ def defineCoreParameters():
             description="Fuel Voided-Coolant Doppler Constant",
         )
 
-        pb.defParam(
-            "rxFuelVoidedTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Fuel Voided-Coolant Temperature Coefficient",
-        )
-
         # CLAD COEFFICIENTS
         pb.defParam(
             "rxCladDensityCoeffPerTemp",
