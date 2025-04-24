@@ -252,12 +252,6 @@ def defineCoreParameters():
             description="Full core intrinsic neutron source from spontaneous fissions before a decay period",
         )
 
-        pb.defParam(
-            "totalIntrinsicSourceDecayed",
-            units=f"n/{units.SECONDS}",
-            description="Full core intrinsic source from spontaneous fissions after a decay period",
-        )
-
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
     ) as pb:
