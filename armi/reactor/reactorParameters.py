@@ -544,10 +544,6 @@ def defineCoreParameters():
     ) as pb:
 
         pb.defParam(
-            "boecKeff", units=units.UNITLESS, description="BOEC Keff", default=0.0
-        )
-
-        pb.defParam(
             "cyclics",
             units=units.UNITLESS,
             description=(
