@@ -577,13 +577,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "crWastage",
-            units=units.MICRONS,
-            description="Combines ACCI and clad corrosion for control blocks",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "cyclicNErr",
             units=units.UNITLESS,
             description="Relative error of the block number density",
