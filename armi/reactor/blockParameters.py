@@ -563,12 +563,6 @@ def getBlockParameterDefinitions():
 
         # STRUCTURE COEFFICIENTS
         pb.defParam(
-            "rxStructureDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="Structure Doppler coefficient",
-        )
-
-        pb.defParam(
             "rxStructureTemperatureCoeffPerTemp",
             units=f"{units.REACTIVITY}/{units.DEGK}",
             description="Structure temperature coefficient",
