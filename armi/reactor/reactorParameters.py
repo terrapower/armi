@@ -133,26 +133,6 @@ def defineCoreParameters():
             ),
         )
         pb.defParam(
-            "crWorthRequiredPrimary",
-            default=0.0,
-            units=units.PCM,
-            saveToDB=True,
-            description=(
-                "Worth requirement for the primary control rods in the reactor core to "
-                "achieve safe shutdown."
-            ),
-        )
-        pb.defParam(
-            "crWorthRequiredSecondary",
-            default=0.0,
-            units=units.PCM,
-            saveToDB=True,
-            description=(
-                "Worth requirement for the secondary control rods in the reactor core to "
-                "achieve safe shutdown."
-            ),
-        )
-        pb.defParam(
             "crTransientOverpowerWorth",
             default=0.0,
             units=units.PCM,
