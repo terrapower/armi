@@ -447,7 +447,6 @@ def _getFuelVals(r):
             numClad += 1
     tOverD /= numClad
     data = [
-        ("Max BU", r.core.p.maxpercentBu),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
