@@ -490,12 +490,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "rxControlRodDrivelineExpansionCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK}",
-            description="control rod driveline expansion coefficient",
-        )
-
-        pb.defParam(
             "rxCoreWideCoolantVoidWorth",
             units=f"{units.REACTIVITY}",
             description="Core-Wide Coolant Void Worth",
