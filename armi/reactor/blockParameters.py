@@ -74,15 +74,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "molesHmBOLByPin",
-            units=f"{units.MOLES}",
-            description="Total number of atoms of heavy metal at BOL",
-            default=None,
-            saveToDB=False,
-            location=ParamLocation.CHILDREN,
-        )
-
-        pb.defParam(
             "newDPA",
             units=units.DPA,
             description="Dose in DPA accrued during the current time step",
