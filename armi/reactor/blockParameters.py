@@ -612,13 +612,6 @@ def getBlockParameterDefinitions():
             location=ParamLocation.VOLUME_INTEGRATED,
         )
 
-        pb.defParam(
-            "mreg",
-            units=units.UNITLESS,
-            description="SASSYS/DIF3D-K radial region index assignment",
-            location=ParamLocation.AVERAGE,
-        )
-
         pb.defParam("nPins", units=units.UNITLESS, description="Number of pins")
 
         pb.defParam(
