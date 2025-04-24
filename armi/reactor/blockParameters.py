@@ -599,13 +599,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "intrinsicSourceDecayed",
-            units=units.UNITLESS,
-            description="Intrinsic source from spontaneous fissions after a decay period",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "kgFis",
             units=units.KG,
             description="Mass of fissile material in block",
