@@ -61,7 +61,10 @@ class Settings:
 
     Notes
     -----
-    The actual settings in any instance of this class are immutable.
+    While it is possible to modify case settings during the course of a run, this
+    is highly discouraged because there will be no record of this happening in your
+    results or in the database produced from your run. There is no guarantee that
+    doing so will not cause unexpected problems with your calculation.
     """
 
     defaultCaseTitle = "armi"
