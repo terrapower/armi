@@ -128,10 +128,9 @@ The figure below illustrates the thermal expansion phenomena in both the radial 
 directions.
 
 .. figure:: /.static/axial_expansion_simple.png
-   :name: therm_exp_illustration
    :scale: 50%
 
-    Illustration of radial (isotropic) and axial thermal expansion for a cylinder in ARMI.
+    Illustration of radial and axial thermal expansion for a cylinder in ARMI.
 
 Thermal expansion calculations are performed for each component in the ARMI reactor data model as
 component temperatures change. Since components are constrained within blocks, the height of
