@@ -237,7 +237,7 @@ The axial thermal expansion algorithm is applied in four steps:
 #. Assign the block lower and upper elevations to account for the thermal expansion of blocks
   below each block.
 
-   #.  Create new mesh lines that track the target component.
+   * Create new mesh lines that track the target component.
 
 #. Adjust the "Dummy" block located at the top of the assembly to maintain a consistent
   core-wide assembly height before and after axial thermal expansion is applied.
@@ -275,8 +275,8 @@ if the following are met for a given assembly design.
 #. Axial continuity of like-objects. E.g., pins, clad, etc.
 #. Components that may expand at different rates axially terminate in unique blocks
 
-   #. E.g., the clad extends above the termination of the fuel and the radial duct encasing an
-      assembly extends past the termination of the clad.
+   * E.g., the clad extends above the termination of the fuel and the radial duct encasing an
+     assembly extends past the termination of the clad.
 
 #. The top-most Block must be a "dummy Block" containing fluid (typically coolant).
 
