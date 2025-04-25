@@ -314,9 +314,8 @@ class Operator:
         """
         Return whether we are approaching EOL.
 
-        For the standard operator, this will return true when the current cycle
-        is the last cycle (cs["nCycles"] - 1). Other operators may need to
-        impose different logic.
+        For the standard operator, this will return true when the current cycle is the last cycle
+        (cs["nCycles"] - 1). Other operators may need to impose different logic.
         """
         return self.r.p.cycle == self.cs["nCycles"] - 1
 
@@ -333,7 +332,7 @@ class Operator:
             The Reactor object to attach to this Operator.
         """
         self.r = r
-        r.o = self  # TODO: this is only necessary for fuel-handler hacking
+        r.o = self
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
@@ -587,7 +586,8 @@ class Operator:
 
         Notes
         -----
-        Used within _interactAll to write details between each physics interaction when cs['debugDB'] is enabled.
+        Used within _interactAll to write details between each physics interaction when
+        cs['debugDB'] is enabled.
 
         Parameters
         ----------
@@ -596,8 +596,8 @@ class Operator:
         interfaceName : str
             name of the interface that is interacting (e.g. globalflux, lattice, th)
         statePointIndex : int (optional)
-            used as a counter to make labels that increment throughout an _interactAll call. The result should be fed
-            into the next call to ensure labels increment.
+            used as a counter to make labels that increment throughout an _interactAll call. The
+            result should be fed into the next call to ensure labels increment.
         """
         dbiForDetailedWrite = self.getInterface("database")
         db = dbiForDetailedWrite.database if dbiForDetailedWrite is not None else None
@@ -661,10 +661,9 @@ class Operator:
 
         Notes
         -----
-        If the interfaces are flagged to be reversed at EOL, they are
-        separated from the main stack and appended at the end in reverse
-        order. This allows, for example, an interface that must run
-        first to also run last.
+        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack
+        and appended at the end in reverse order. This allows, for example, an interface that must
+        run first to also run last.
         """
         activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
         self._interactAll("EOL", activeInterfaces)
@@ -716,7 +715,7 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accommodate testing
+        This is split off from self.interactAllCoupled to accommodate testing.
         """
         # Summarize the coupled results and the convergence status.
         converged = []
