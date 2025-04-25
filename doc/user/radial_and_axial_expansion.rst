@@ -80,11 +80,12 @@ Equation :eq:`linearExpansionFactor` is the expression used by ARMI in
     :math:`\frac{L - L_0}{L_0}` in %.
 
 Given that thermal expansion (or contraction) of solid components must conserve mass throughout the
-system, the density of the component is adjusted as a function of temperature based on the following
-equation, assuming isotropic thermal expansion.
+system, the density of the component is adjusted as a function of temperature based on Equation
+:eq:`hot_density`, assuming isotropic thermal expansion.
 
 .. math::
     \rho(T_h) = \frac{\rho(T_0)}{\left(1 + \frac{\Delta L}{L_0}\right)^3} = \frac{\rho(T_0)}{\left(1 + \alpha_m (T_h) (T_h - T_0)\right)^3}
+    :label: hot_density
 
 where, :math:`\rho(T_h)` is the component density in :math:`\frac{kg}{m^3}` at the given temperature
 :math:`T_h`, :math:`\rho(T_0)` is the component density in :math:`\frac{kg}{m^3}` at the reference
