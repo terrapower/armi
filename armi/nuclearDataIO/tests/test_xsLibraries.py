@@ -279,8 +279,8 @@ class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         """
         Utility method for saying what things contain.
 
-        This could just check the contents and the length, but the error produced when you pass shouldNotBeThere
-        is much nicer.
+        This could just check the contents and the length, but the error produced when you pass
+        shouldNotBeThere is much nicer.
         """
         container = set(container)
         self.assertEqual(container, set(shouldBeThere))
@@ -363,34 +363,6 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
 
-    def test_canRemoveIsotopes(self):
-        emptyXSLib = xsLibraries.IsotxsLibrary()
-        emptyXSLib.merge(self.libAA)
-        self.libAA = None
-        emptyXSLib.merge(self.libAB)
-        self.libAB = None
-        for nucId in [
-            "ZR93_7",
-            "ZR95_7",
-            "XE1287",
-            "XE1297",
-            "XE1307",
-            "XE1317",
-            "XE1327",
-            "XE1337",
-            "XE1347",
-            "XE1357",
-            "XE1367",
-        ]:
-            nucLabel = nuclideBases.byMcc3Id[nucId].label
-            del emptyXSLib[nucLabel + "AA"]
-            del emptyXSLib[nucLabel + "AB"]
-        self.assertEqual(
-            set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels)
-        )
-        self.getWriteFunc()(emptyXSLib, self.testFileName)
-        self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
-
 
 class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
@@ -413,11 +385,6 @@ class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
 
     def getLibLumpedPath(self):
         return PMATRX_LUMPED
-
-    @unittest.skip("Do not have data for comparing merged and purged PMATRX")
-    def test_canRemoveIsotopes(self):
-        # this test does not work for PMATRX, MC**2-v3 does not currently
-        pass
 
     def test_cannotMergeXSLibsWithDiffGammaGroups(self):
         """Test that we cannot merge XS Libs with different Gamma Group Structures."""
@@ -449,6 +416,34 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getLibLumpedPath(self):
         return ISOTXS_LUMPED
 
+    def test_canRemoveIsotopes(self):
+        emptyXSLib = xsLibraries.IsotxsLibrary()
+        emptyXSLib.merge(self.libAA)
+        self.libAA = None
+        emptyXSLib.merge(self.libAB)
+        self.libAB = None
+        for nucId in [
+            "ZR93_7",
+            "ZR95_7",
+            "XE1287",
+            "XE1297",
+            "XE1307",
+            "XE1317",
+            "XE1327",
+            "XE1337",
+            "XE1347",
+            "XE1357",
+            "XE1367",
+        ]:
+            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            del emptyXSLib[nucLabel + "AA"]
+            del emptyXSLib[nucLabel + "AB"]
+        self.assertEqual(
+            set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels)
+        )
+        self.getWriteFunc()(emptyXSLib, self.testFileName)
+        self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
+
 
 class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
@@ -471,6 +466,34 @@ class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
 
     def getLibLumpedPath(self):
         return GAMISO_LUMPED
+
+    def test_canRemoveIsotopes(self):
+        emptyXSLib = xsLibraries.IsotxsLibrary()
+        emptyXSLib.merge(self.libAA)
+        self.libAA = None
+        emptyXSLib.merge(self.libAB)
+        self.libAB = None
+        for nucId in [
+            "ZR93_7",
+            "ZR95_7",
+            "XE1287",
+            "XE1297",
+            "XE1307",
+            "XE1317",
+            "XE1327",
+            "XE1337",
+            "XE1347",
+            "XE1357",
+            "XE1367",
+        ]:
+            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            del emptyXSLib[nucLabel + "AA"]
+            del emptyXSLib[nucLabel + "AB"]
+        self.assertEqual(
+            set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels)
+        )
+        self.getWriteFunc()(emptyXSLib, self.testFileName)
+        self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
 class Combined_Merge_Tests(unittest.TestCase):

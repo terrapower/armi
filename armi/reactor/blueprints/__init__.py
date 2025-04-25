@@ -260,7 +260,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         self._prepConstruction(cs)
 
-        # TODO: this should be migrated assembly designs instead of assemblies
         if name is not None:
             assem = self.assemblies[name]
         elif specifier is not None:
@@ -427,15 +426,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
                 # code-specific expansion required based on code and ENDF
                 newNuclides = eleExpand[elemental]
-                # overlay code details onto nuclideFlags for other parts of the code
-                # that will use them.
-                # TODO: would be better if nuclideFlags did this upon reading s.t.
-                # order didn't matter. On the other hand, this is the only place in
-                # the code where NuclideFlags get built and have user settings around
-                # (hence "resolve").
-                # This must be updated because the operative expansion code just uses the flags
-                #
-                # Also, if this element is not in nuclideFlags at all, we just don't add it
+                # Overlay code details onto nuclideFlags for other parts of the code that use them.
+                # Also, if this element is not in nuclideFlags at all, we just don't add it.
                 nuclideFlags[elemental.element.symbol].expandTo = [
                     nb.name for nb in newNuclides
                 ]

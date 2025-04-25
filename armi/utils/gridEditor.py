@@ -1572,19 +1572,9 @@ type, domain, and boundary conditions.
 
 
 class NewGridBlueprintDialog(wx.Dialog):
-    """
-    Dialog box for configuring a new grid blueprint.
+    """Dialog box for configuring a new grid blueprint."""
 
-    TODO
-    ----
-    This can be a closer match to the stuff in geometry.py once that is implemented with
-    enums instead of string constants. Right now, we are sort of shadowing the logic
-    behind ``geometry.VALID_SYMMETRY``, rather that whipping up the logic from
-    ``VALID_SYMMETRY``, which would be `slick`.
-    """
-
-    # these provide stable mappings from the wx.Choice control indices to the respective
-    # geom types
+    # these provide stable mappings from the wx.Choice control indices to the respective geom types
     _geomFromIdx = {
         i: geomType
         for i, geomType in enumerate(

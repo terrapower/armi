@@ -338,7 +338,7 @@ class AverageBlockCollection(BlockCollection):
     def _makeRepresentativeBlock(self):
         """Generate a block that best represents all blocks in group."""
         newBlock = self._getNewBlock()
-        lfpCollection = self._getAverageFuelLFP()
+        lfpCollection = self._getLFP()
         newBlock.setLumpedFissionProducts(lfpCollection)
         # check if components are similar
         if self._performAverageByComponent():
@@ -371,9 +371,8 @@ class AverageBlockCollection(BlockCollection):
         ndens = weights.dot([b.getNuclideNumberDensities(nuclides) for b in blocks])
         return dict(zip(nuclides, ndens))
 
-    def _getAverageFuelLFP(self):
-        """Compute the average lumped fission products."""
-        # TODO: make do actual average of LFPs
+    def _getLFP(self):
+        """Find lumped fission product collection."""
         b = self.getCandidateBlocks()[0]
         return b.getLumpedFissionProductCollection()
 
@@ -388,6 +387,7 @@ class AverageBlockCollection(BlockCollection):
             )
             nvt += nvtBlock * wt
             nv += nvBlock * wt
+
         return nvt, nv
 
     def _getAverageComponentNumberDensities(self, compIndex):
@@ -604,8 +604,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
                 "homogenized"
             )
 
-        # TODO: Using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is undesirably
-        # SFR-centric. This should be generalized in the future, if possible.
+        # NOTE: We are using Fe-56 as a proxy for structure and Na-23 as proxy for coolant is
+        # undesirably SFR-centric. This should be generalized in the future, if possible.
         consistentNucs = {"PU239", "U238", "U235", "U234", "FE56", "NA23", "O16"}
         for c, repC in zip(sorted(b), sorted(repBlock)):
             compString = (
@@ -613,8 +613,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             )
             if c.p.mult != repC.p.mult:
                 raise ValueError(
-                    f"{compString} must have the same multiplicity, but they have."
-                    f"{repC.p.mult} and {c.p.mult}, respectively."
+                    f"{compString} must have the same multiplicity, but they have. {repC.p.mult} "
+                    f"and {c.p.mult}, respectively."
                 )
 
             theseNucs = set(c.getNuclides())
@@ -638,10 +638,12 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             weight = bWeight * c.getArea()
             totalWeight += weight
             densities += weight * np.array(c.getNuclideNumberDensities(allNucNames))
+
         if totalWeight > 0.0:
             weightedDensities = densities / totalWeight
         else:
             weightedDensities = np.zeros_like(densities)
+
         return allNucNames, weightedDensities
 
     def _orderComponentsInGroup(self, repBlock):
