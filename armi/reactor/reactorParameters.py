@@ -57,12 +57,6 @@ def defineReactorParameters():
         )
 
         pb.defParam(
-            "lcoe",
-            units=f"{units.USD}/kWh",
-            description="Levelised cost of electricity",
-        )
-
-        pb.defParam(
             "time",
             units=units.YEARS,
             description="Time of reactor life from BOL to current time node",
@@ -78,28 +72,6 @@ def defineReactorParameters():
             units=units.UNITLESS,
             description="Max number of assemblies created so far in the Reactor (integer)",
             default=0,
-        )
-
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["economics"]
-    ) as pb:
-
-        pb.defParam(
-            "eFeedMT",
-            units=units.MT,
-            description="Total feed material required in reactor economics",
-        )
-
-        pb.defParam(
-            "eFissile",
-            units=units.MT,
-            description="Fissile mass required in reactor economics",
-        )
-
-        pb.defParam(
-            "eSWU",
-            units=f"{units.KG}*SWU",
-            description="Separative work units in reactor economics",
         )
 
     return pDefs
@@ -161,26 +133,6 @@ def defineCoreParameters():
             ),
         )
         pb.defParam(
-            "crWorthRequiredPrimary",
-            default=0.0,
-            units=units.PCM,
-            saveToDB=True,
-            description=(
-                "Worth requirement for the primary control rods in the reactor core to "
-                "achieve safe shutdown."
-            ),
-        )
-        pb.defParam(
-            "crWorthRequiredSecondary",
-            default=0.0,
-            units=units.PCM,
-            saveToDB=True,
-            description=(
-                "Worth requirement for the secondary control rods in the reactor core to "
-                "achieve safe shutdown."
-            ),
-        )
-        pb.defParam(
             "crTransientOverpowerWorth",
             default=0.0,
             units=units.PCM,
@@ -215,13 +167,6 @@ def defineCoreParameters():
             "critSearchSlope",
             units=f"1/{units.DAYS}",
             description="Critical keff search slope",
-        )
-
-        pb.defParam(
-            "doublingTime",
-            units=units.YEARS,
-            description="""The time it takes to produce enough spent fuel to fuel a daughter 
-            reactor, in effective number of years at full power.""",
         )
 
         pb.defParam(
@@ -261,15 +206,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "maxcladFCCI",
-            units=units.MICRONS,
-            description="The core wide maximum amount of cladding wastage due to fuel chemical "
-            + "clad interaction calculated at the 0-sigma TH HCF temperatures and using the "
-            + "conservative FCCI model",
-            default=0.0,
-        )
-
-        pb.defParam(
             "maxDPA",
             units=units.DPA,
             description="Maximum DPA based on pin-level max if it exists, block level max otherwise",
@@ -305,12 +241,6 @@ def defineCoreParameters():
             "totalIntrinsicSource",
             units=f"n/{units.SECONDS}",
             description="Full core intrinsic neutron source from spontaneous fissions before a decay period",
-        )
-
-        pb.defParam(
-            "totalIntrinsicSourceDecayed",
-            units=f"n/{units.SECONDS}",
-            description="Full core intrinsic source from spontaneous fissions after a decay period",
         )
 
     with pDefs.createBuilder(
@@ -698,10 +628,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
-
-        pb.defParam(
-            "boecKeff", units=units.UNITLESS, description="BOEC Keff", default=0.0
-        )
 
         pb.defParam(
             "cyclics",
