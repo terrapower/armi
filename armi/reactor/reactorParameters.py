@@ -357,6 +357,12 @@ def defineCoreParameters():
             description="minimum axial location of the ACLP for 7 cycles at peak dose",
         )
 
+        pb.defParam(
+            "maxpercentBu",
+            units=units.PERCENT_FIMA,
+            description="Max percent burnup on any block in the problem",
+        )
+
         pb.defParam("rxSwing", units=units.PCM, description="Reactivity swing")
 
         pb.defParam(
