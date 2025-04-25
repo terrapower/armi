@@ -128,7 +128,6 @@ The figure below illustrates the thermal expansion phenomena in both the radial 
 directions.
 
 .. figure:: /.static/axial_expansion_simple.png
-   :scale: 50%
 
     Illustration of radial and axial thermal expansion for a cylinder in ARMI.
 
@@ -205,7 +204,6 @@ core assembly. In this example there are four main block types defined: Shield, 
 Dummy.
 
 .. figure:: /.static/axial_expansion_components.png
-   :scale: 60%
 
     Illustration of Components for Axial Thermal Expansion Process
 
