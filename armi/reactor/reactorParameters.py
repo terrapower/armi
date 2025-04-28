@@ -471,13 +471,6 @@ def defineCoreParameters():
             description="Grid Plate Radial Expansion Coefficient",
         )
 
-        # FUEL COEFFICIENTS
-        pb.defParam(
-            "rxFuelDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Doppler Constant",
-        )
-
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
