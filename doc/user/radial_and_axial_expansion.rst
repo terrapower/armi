@@ -231,16 +231,16 @@ The target components for each Block type are provided in the following table:
 The axial thermal expansion algorithm is applied in four steps:
 
 #. Expand the axial dimensions of target component and non-target components within each
-  block independently. 
+   block independently. 
 #. Align blocks axially such that common components have consistent alignments (e.g.,
-  overlapping radial dimensions).
+   overlapping radial dimensions).
 #. Assign the block lower and upper elevations to account for the thermal expansion of blocks
-  below each block.
+   below each block.
 
    * Create new mesh lines that track the target component.
 
 #. Adjust the "Dummy" block located at the top of the assembly to maintain a consistent
-  core-wide assembly height before and after axial thermal expansion is applied.
+   core-wide assembly height before and after axial thermal expansion is applied.
 
 
 Target Component Logic
