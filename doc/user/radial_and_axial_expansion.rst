@@ -134,7 +134,7 @@ directions.
 Thermal expansion calculations are performed for each component in the ARMI reactor data model as
 component temperatures change. Since components are constrained within blocks, the height of
 components are determined by the height of their parent block. The equations below for
-``hot_radius`` through ``hot_density`` illustrate how the radius, height, volume, density, and mass
+:eq:`hot_radius` through :eq:`hot_density` illustrate how the radius, height, volume, density, and mass
 are updated for a component during thermal expansion, respectively.
 
 .. list-table:: Example Calculation of Radial and Axial Thermal Expansion for a Cylindrical Component
@@ -280,8 +280,9 @@ if the following are met for a given assembly design.
 
 #. The top-most Block must be a "dummy Block" containing fluid (typically coolant).
 
-See :py:module:`armi.tests.detailedAxialExpansion` for an example blueprint which satisfy the above
-requirements.
+See `armi.tests.detailedAxialExpansion
+<https://github.com/terrapower/armi/tree/main/armi/tests/detailedAxialExpansion>`_ for an example
+blueprint which satisfy the above requirements.
 
 .. important::
 
