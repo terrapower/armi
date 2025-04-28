@@ -140,10 +140,12 @@ class BlockConverter:
                 "solute: {}, solvent: {}".format(solute, solvent)
             )
         if solute.getArea() < 0:
-            raise ValueError(
-                "Cannot merge solute with negative area into a solvent. "
-                "{} area: {}".format(solute, solute.getArea())
-            )
+            # allow negative-area gap / void
+            if not solute.hasFlags(Flags.GAP):
+                raise ValueError(
+                    "Cannot merge solute with negative area into a solvent. "
+                    "{} area: {}".format(solute, solute.getArea())
+                )
         if solvent.getArea() <= 0:
             raise ValueError(
                 "Cannot merge into a solvent with negative or 0 area. "
@@ -653,6 +655,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             Flags.SHIELD,
             Flags.SLUG,
             Flags.PIN,
+            Flags.POISON,
         ]
 
         for c in self._sourceBlock:
