@@ -414,15 +414,22 @@ def _getMechanicalVals(r):
 def _getPhysicalVals(r):
     avgHeight = 0.0
     fuelA = r.core.getAssemblies(Flags.FUEL)
-    avgHeight = sum(
-        b.getHeight() for a in fuelA for b in a.iterBlocks(Flags.FUEL)
-    ) / len(fuelA)
-    radius = r.core.getCoreRadius()
 
+    # get average height
+    avgHeight = 0
+    for a in fuelA:
+        for b in a.iterBlocks(Flags.FUEL):
+            try:
+                avgHeight += b.getInputHeight()
+            except AttributeError:
+                avgHeight += b.getHeight()
+    avgHeight /= len(fuelA)
+
+    radius = r.core.getCoreRadius()
     labels, vals = list(
         zip(
             *[
-                ("Fuel height", avgHeight),
+                ("Cold fuel height", avgHeight),
                 ("Fuel assems", len(fuelA)),
                 ("Assem weight", r.core.getFirstAssembly(Flags.FUEL).getMass()),
                 ("Core radius", radius),
