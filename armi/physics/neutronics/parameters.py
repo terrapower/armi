@@ -141,22 +141,6 @@ def _getNeutronicsBlockParams():
             default=0.0,
         )
 
-        pb.defParam(
-            "mgFluxSK",
-            units=f"n*{units.CM}/{units.SECONDS}",
-            description=(
-                "multigroup volume-integrated flux stored for multiple time steps in "
-                "spatial kinetics (2-D array)"
-            ),
-            location=ParamLocation.VOLUME_INTEGRATED,
-            saveToDB=False,
-            categories=[
-                parameters.Category.fluxQuantities,
-                parameters.Category.multiGroupQuantities,
-            ],
-            default=None,
-        )
-
         # Not anointing the pin fluxes as a MG quantity, since it has an extra dimension, which
         # could lead to issues, depending on how the multiGroupQuantities category gets used
         pb.defParam(
