@@ -343,17 +343,9 @@ class ArmiObject(metaclass=CompositeModelType):
         sorted. This is useful from the context of the Database classes, so that they can produce a
         stable layout of the serialized composite structure.
 
-<<<<<<< HEAD
-        By default, this sorts using the spatial locator, in K, J, I order, which should give a
-        relatively intuitive order. For safety, it makes sure that the objects being sorted live in
-        the same grid, since it probably doesn't make sense to sort things across containers or
-        scopes. If this ends up being too restrictive, it can probably be relaxed or overridden on
-        specific classes.
-=======
         By default, this sorts using the spatial locator in K, J, I order, which should give a
         relatively intuitive order. It also makes sure that the objects being sorted live in the
         same grid.
->>>>>>> main
         """
         if self.spatialLocator is None or other.spatialLocator is None:
             runLog.error(f"could not compare {self} and {other}")
