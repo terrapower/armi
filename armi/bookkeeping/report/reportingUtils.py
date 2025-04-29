@@ -1054,10 +1054,22 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-    assemsInCore = list(r.blueprints.assemblies.values())
+    assems = []
+    blueprints = r.blueprints
+    for aKey in blueprints.assemDesigns.keys():
+        a = blueprints.constructAssem(cs, name=aKey)
+        # since we will be plotting cold input heights, we need to make sure that
+        # that these new assemblies have access to a blueprints somewhere up the
+        # composite chain. normally this would happen through an assembly's parent
+        # reactor, but because these newly created assemblies are in the load queue,
+        # they will not have a parent reactor. to get around this, we just attach
+        # the blueprints to the assembly directly.
+        a.blueprints = blueprints
+        assems.append(a)
+
     core = r.core
     for plotNum, assemBatch in enumerate(
-        iterables.chunk(assemsInCore, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
+        iterables.chunk(assems, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
         assemPlotImage = copy(report.ASSEM_TYPES)
         assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
@@ -1065,11 +1077,11 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
         plotting.plotAssemblyTypes(
-            core.parent.blueprints,
-            assemPlotName,
             assemBatch,
+            assemPlotName,
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
+            hot=False,
         )
 
     # Create radial core map

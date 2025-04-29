@@ -61,7 +61,10 @@ class Settings:
 
     Notes
     -----
-    The actual settings in any instance of this class are immutable.
+    While it is possible to modify case settings during the course of a run, this
+    is highly discouraged because there will be no record of this happening in your
+    results or in the database produced from your run. There is no guarantee that
+    doing so will not cause unexpected problems with your calculation.
     """
 
     defaultCaseTitle = "armi"
@@ -162,23 +165,20 @@ class Settings:
 
         Notes
         -----
-        Checking the validity of grabbing specific settings at this point,
-        as is done for the SIMPLE_CYCLES_INPUT's, feels
-        a bit intrusive and out of place. In particular, the fact that the check
-        is done every time that a setting is reached for, no matter if it is the
-        setting in question, is quite clunky. In the future, it would be desirable
-        if the settings system were more flexible to control this type of thing
-        at a deeper level.
+        Checking the validity of grabbing specific settings at this point, as is done for the
+        SIMPLE_CYCLES_INPUT's, feels a bit intrusive and out of place. In particular, the fact that
+        the check is done every time that a setting is reached for, no matter if it is the setting
+        in question, is quite clunky. In the future, it would be desirable if the settings system
+        were more flexible to control this type of thing at a deeper level.
         """
         if key not in self.__settings:
             return False, NonexistentSetting(key)
 
         if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
             err = ValueError(
-                "Cannot grab simple cycles information from the case settings "
-                "when detailed cycles information is also entered. In general "
-                "cycles information should be pulled off the operator or parsed "
-                "using the appropriate getter in the utils."
+                "Cannot grab simple cycles information from the case settings when detailed cycles "
+                "information is also entered. In general cycles information should be pulled off "
+                "the operator or parsed using the appropriate getter in the utils."
             )
 
             return False, err
@@ -222,8 +222,8 @@ class Settings:
         """
         Rebuild schema upon unpickling since schema is unpickleable.
 
-        Pickling happens during mpi broadcasts and also
-        during testing where the test reactor is cached.
+        Pickling happens during mpi broadcasts and also during testing where the test reactor is
+        cached.
 
         See Also
         --------
@@ -260,8 +260,8 @@ class Settings:
         """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
         cs._failOnLoad = False
-        # it's not really protected access since it is a new Settings object.
-        # _failOnLoad is set to false, because this new settings object should be independent of the command line
+        # It's not really protected access since it is a new Settings object. _failOnLoad is set to
+        # false, because this new settings object should be independent of the command line
         return cs
 
     def revertToDefaults(self):
@@ -303,12 +303,9 @@ class Settings:
     def _prepToRead(self, fName):
         if self._failOnLoad:
             raise RuntimeError(
-                "Cannot load settings file after processing of command "
-                "line options begins.\nYou may be able to fix this by "
-                "reordering the command line arguments, and making sure "
-                "the settings file `{}` comes before any modified settings.".format(
-                    fName
-                )
+                "Cannot load settings file after processing of command line options begins.\nYou "
+                "may be able to fix this by reordering the command line arguments, and making sure "
+                f"the settings file `{fName}` comes before any modified settings."
             )
         path = pathTools.armiAbsPath(fName)
         return settingsIO.SettingsReader(self), path
@@ -316,21 +313,17 @@ class Settings:
     def loadFromString(self, string, handleInvalids=True):
         """Read in settings from a YAML string.
 
-        Passes the reader back out in case you want to know something about how the
-        reading went like for knowing if a file contained deprecated settings, etc.
+        Passes the reader back out in case you want to know something about how the reading went
+        like for knowing if a file contained deprecated settings, etc.
         """
         if self._failOnLoad:
             raise RuntimeError(
-                "Cannot load settings after processing of command "
-                "line options begins.\nYou may be able to fix this by "
-                "reordering the command line arguments."
+                "Cannot load settings after processing of command line options begins.\nYou may be "
+                "able to fix this by reordering the command line arguments."
             )
 
         reader = settingsIO.SettingsReader(self)
-        fmt = reader.SettingsInputFormat.YAML
-        reader.readFromStream(
-            io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
-        )
+        reader.readFromStream(io.StringIO(string), handleInvalids=handleInvalids)
 
         self.initLogVerbosity()
 
@@ -348,8 +341,8 @@ class Settings:
 
         Notes
         -----
-        This means that creating a Settings object sets the global logging
-        level of the entire code base.
+        This means that creating a Settings object sets the global logging level of the entire code
+        base.
         """
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
@@ -371,11 +364,11 @@ class Settings:
         fName : str
             the file to write to
         style : str (optional)
-            the method of output to be used when creating the file for the current
-            state of settings (short, medium, or full)
+            the method of output to be used when creating the file for the current state of settings
+            (short, medium, or full)
         fromFile : str (optional)
-            if the source file and destination file are different (i.e. for cloning)
-            and the style argument is ``medium``, then this arg is used
+            if the source file and destination file are different (i.e. for cloning) and the style
+            argument is ``medium``, then this arg is used
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
@@ -392,8 +385,8 @@ class Settings:
 
     def getSettingsSetByUser(self, fPath):
         """
-        Grabs the list of settings in the user-defined input file so that the settings
-        can be tracked outside of a Settings object.
+        Grabs the list of settings in the user-defined input file so that the settings can be
+        tracked outside of a Settings object.
 
         Parameters
         ----------
@@ -405,8 +398,8 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-        # We do not want to load these as settings, but just grab the dictionary straight
-        # from the settings file to know which settings are user-defined
+        # We do not want to load these as settings, but just grab the dictionary straight from the
+        # settings file to know which settings are user-defined.
         with open(fPath, "r") as stream:
             yaml = YAML()
             yaml.allow_duplicate_keys = False
@@ -440,8 +433,8 @@ class Settings:
         return writer
 
     def updateEnvironmentSettingsFrom(self, otherCs):
-        """Updates the environment settings in this object based on some other cs
-        (from the GUI, most likely).
+        """Updates the environment settings in this object based on some other cs (from the GUI,
+        most likely).
 
         Parameters
         ----------
