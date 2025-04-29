@@ -198,7 +198,7 @@ and temperatures.
 Making the (dummy) flux kernel
 ------------------------------
 In a previous tutorial, we made a function that sets a dummy flux to all parts of the core
-based on a radial distance from the origin. Here we will re-use that code but package it
+based on a radial distance from the origin. Here we will reuse that code but package it
 more formally so that ARMI can actually run it for us from a user perspective.
 
 The interface is responsible largely for scheduling activities to run at various time
@@ -361,7 +361,7 @@ Several output files should have been created in the run directory from that pas
 Most important is the ``anl-afci-177.h5`` HDF5 binary database file. You can use this file
 to bring the ARMI state back to any state point from the run for analysis.
 
-To vizualize the output in a 3D graphics program like `ParaView <https://www.paraview.org/Wiki/ParaView>`_
+To visualize the output in a 3D graphics program like `ParaView <https://www.paraview.org/Wiki/ParaView>`_
 or `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_,
 you can run the ARMI ``vis-file`` entry point, like this::
 
@@ -369,7 +369,7 @@ you can run the ARMI ``vis-file`` entry point, like this::
 
 This creates several ``VTK`` files covering different time steps and levels of abstraction
 (assembly vs. block params). If you load up the block file and plot one of the output
-params (such as ``THcoolantAverageT`` you can see the outlet temperature going nicely
+params (such as ``THcoolantOutletT`` you can see the outlet temperature going nicely
 from 360 |deg|\ C  to 510 |deg|\ C (as expected given our simple TH solver).
 
 
@@ -406,7 +406,7 @@ There are two parts to defining a :py:class:`UserPlugin <armi.plugins.UserPlugin
 
 Define the UserPlugin in Python
 -------------------------------
-This can be done by sublassing :py:class:`armi.plugins.UserPlugin`:
+This can be done by subclassing :py:class:`armi.plugins.UserPlugin`:
 
 .. code-block:: python
 

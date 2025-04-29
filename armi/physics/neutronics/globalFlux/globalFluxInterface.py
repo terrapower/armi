@@ -942,7 +942,7 @@ def computeDpaRate(mgFlux, dpaXs):
             single=True,
             label="negativeDpaPerSecond",
         )
-        # ensure physical meaning of dpaPerSecond, it is likely just slighly negative
+        # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
             raise RuntimeError(
                 "Calculated DPA rate is substantially negative at {}".format(

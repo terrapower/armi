@@ -90,7 +90,7 @@ class ResolveParametersMeta(type):
     ``Block.paramCollectionType``. The ``BlockParameterCollection`` class will itself be
     a subclass of ``ArmiObjectParameterCollection``, which it would have found from the
     ``Composite`` class from which the ``Block`` class inherits. The ``Composite``
-    calss, on the other hand, would have obtained the ``ArmiObjectParameterCollection``
+    class, on the other hand, would have obtained the ``ArmiObjectParameterCollection``
     from it's parent (``ArmiObject``), since it does not have a ``pDefs`` attribute of
     its own.
     """
@@ -98,7 +98,7 @@ class ResolveParametersMeta(type):
     def __new__(mcl, name, bases, attrs):
         assert (
             attrs.get("paramCollectionType") is None
-        ), "{} already has paramter collection".format(name)
+        ), "{} already has parameter collection".format(name)
         baseCollections = [
             b.paramCollectionType for b in bases if hasattr(b, "paramCollectionType")
         ]

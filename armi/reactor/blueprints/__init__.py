@@ -64,7 +64,6 @@ The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
 """
 import copy
-import os
 import pathlib
 import traceback
 import typing
@@ -84,7 +83,7 @@ from armi import (
 )
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-from armi.reactor import assemblies, geometry, systemLayoutInput
+from armi.reactor import assemblies
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
@@ -100,7 +99,6 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
     CONF_DETAILED_AXIAL_EXPANSION,
-    CONF_GEOM_FILE,
     CONF_INPUT_HEIGHTS_HOT,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
 )
@@ -262,7 +260,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         self._prepConstruction(cs)
 
-        # TODO: this should be migrated assembly designs instead of assemblies
         if name is not None:
             assem = self.assemblies[name]
         elif specifier is not None:
@@ -307,7 +304,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             if not cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 # this is required to set up assemblies so they know how to snap
-                # to the reference mesh. They wont know the mesh to conform to
+                # to the reference mesh. They won't know the mesh to conform to
                 # otherwise....
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
@@ -429,15 +426,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
                 # code-specific expansion required based on code and ENDF
                 newNuclides = eleExpand[elemental]
-                # overlay code details onto nuclideFlags for other parts of the code
-                # that will use them.
-                # TODO: would be better if nuclideFlags did this upon reading s.t.
-                # order didn't matter. On the other hand, this is the only place in
-                # the code where NuclideFlags get built and have user settings around
-                # (hence "resolve").
-                # This must be updated because the operative expansion code just uses the flags
-                #
-                # Also, if this element is not in nuclideFlags at all, we just don't add it
+                # Overlay code details onto nuclideFlags for other parts of the code that use them.
+                # Also, if this element is not in nuclideFlags at all, we just don't add it.
                 nuclideFlags[elemental.element.symbol].expandTo = [
                     nb.name for nb in newNuclides
                 ]
@@ -576,20 +566,8 @@ def migrate(bp: Blueprints, cs):
     """
     Apply migrations to the input structure.
 
-    This is a good place to perform migrations that address changes to the system design
-    description (settings, blueprints, geom file). We have access to all three here, so
-    we can even move stuff between files. Namely, this:
-
-     * creates a grid blueprint to represent the core layout from the old ``geomFile``
-       setting, and applies that grid to a ``core`` system.
-     * moves the radial and azimuthal submesh values from the ``geomFile`` to the
-       assembly designs, but only if they are uniform (this is limiting, but could be
-       made more sophisticated in the future, if there is need)
-
-    This allows settings-driven core map to still be used for backwards compatibility.
-    At some point once the input stabilizes, we may wish to move this out to the
-    dedicated migration portion of the code, and not perform the migration so
-    implicitly.
+    This is a good place to perform migrations that address changes to the system design description
+    (settings, blueprints). We have access both here, so we can even move stuff between files.
     """
     from armi.reactor.blueprints import gridBlueprint
 
@@ -601,37 +579,7 @@ def migrate(bp: Blueprints, cs):
     if "core" in [rd.name for rd in bp.gridDesigns]:
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
-    geom = systemLayoutInput.SystemLayoutInput()
-    geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs[CONF_GEOM_FILE]))
-    gridDesigns = geom.toGridBlueprints("core")
-    for design in gridDesigns:
-        bp.gridDesigns[design.name] = design
-
     if "core" in [rd.name for rd in bp.systemDesigns]:
-        raise ValueError(
-            "Core map is defined in both the ``geometry`` setting and in "
-            "the blueprints file. Only one definition may exist. "
-            "Update inputs."
-        )
+        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
+
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
-
-    if geom.geomType in (geometry.GeomType.RZT, geometry.GeomType.RZ):
-        aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
-        radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
-
-        if len(aziMeshes) > 1 or len(radMeshes) > 1:
-            raise ValueError(
-                "The system layout described in {} has non-uniform "
-                "azimuthal and/or radial submeshing. This migration is currently "
-                "only smart enough to handle a single radial and single azimuthal "
-                "submesh for all assemblies.".format(cs[CONF_GEOM_FILE])
-            )
-        radMesh = next(iter(radMeshes))
-        aziMesh = next(iter(aziMeshes))
-
-        for _, aDesign in bp.assemDesigns.items():
-            aDesign.radialMeshPoints = radMesh
-            aDesign.azimuthalMeshPoints = aziMesh
-
-    # TODO: write out the migrated file. At the moment this messes up the case
-    # title and doesn't yet have the other systems in place so this isn't the right place.

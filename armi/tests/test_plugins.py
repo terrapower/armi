@@ -172,7 +172,7 @@ class TestPluginBasics(unittest.TestCase):
         # create a block
         b = Block("fuel", height=10.0)
 
-        # unless a plugin has registerd a param, it doesn't exist
+        # unless a plugin has registered a param, it doesn't exist
         with self.assertRaises(AttributeError):
             b.p.fakeParam
 

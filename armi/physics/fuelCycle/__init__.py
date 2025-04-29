@@ -36,7 +36,7 @@ ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
 
 class FuelHandlerPlugin(plugins.ArmiPlugin):
-    """The build-in ARMI fuel management plugin."""
+    """The built-in ARMI fuel management plugin."""
 
     @staticmethod
     @plugins.HOOKIMPL

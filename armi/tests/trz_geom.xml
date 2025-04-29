@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<!--
--->
-<reactor geom="ThetaRZ" symmetry="full core">
-<assembly theta1="0" theta2="360.0" rad1="0" rad2="2.0" name="IC" azimuthalMesh="1" radialMesh="1"/>
-<assembly theta1="0" theta2="180" rad1="2.0" rad2="3.0" name="MC" azimuthalMesh="1" radialMesh="1"/>
-<assembly theta1="180" theta2="360" rad1="2.0" rad2="3.0" name="MC" azimuthalMesh="1" radialMesh="1"/>
-<assembly theta1="0" theta2="360" rad1="3.0" rad2="4.0" name="OC" azimuthalMesh="1" radialMesh="1"/>
-</reactor>

@@ -14,15 +14,15 @@
 """
 GUI elements for manipulating grid layout and contents.
 
-This provides a handful of classes which provide wxPython Controls for manipulating
-grids and grid Blueprints.
+This provides a handful of classes which provide wxPython Controls for manipulating grids and grid
+Blueprints.
 
 The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 
     $ python -m armi grids
 
-If you have an existing set of input files, pass in the blueprints input file
-as the first argument and the system will load up the associated grid, e.g.::
+If you have an existing set of input files, pass in the blueprints input file as the first argument
+and the system will load up the associated grid, e.g.::
 
     $ python -m armi grids FFTF-blueprints.yaml
 
@@ -32,28 +32,24 @@ as the first argument and the system will load up the associated grid, e.g.::
 
     An example of the Grid Editor being used on a FFTF input file
 
-
 **Known Issues**
 
-* There is no action stack or undo functionality. Save frequently if you want to
-  recover previous states
+* There is no action stack or undo functionality. Save frequently if you want to recover previous
+  states
 
-* Cartesian grids are supported, but not rendered as nicely as their Hex counterparts.
-  The "through center assembly" case is not rendered properly with the half-assemblies
-  that lie along the edges.
+* Cartesian grids are supported, but not rendered as nicely as their Hex counterparts. The "through
+  center assembly" case is not rendered properly with the half-assemblies that lie along the edges.
 
-* The controls are optimized for manipulating a Core layout, displaying an "Assembly
-  palette" that contains the Assembly designs found in the top-level blueprints. A little
-  extra work and this could also be made to manipulate block grids or other things.
+* The controls are optimized for manipulating a Core layout, displaying an "Assembly palette" that
+  contains the Assembly designs found in the top-level blueprints. A little extra work and this
+  could also be made to manipulate block grids or other things.
 
-* Assembly colors are derived from the set of flags applied to them, but the mapping of
-  colors to flags is not particularly rich, and there isn't anything to disambiguate
-  between assemblies of different design, but the same flags.
+* Assembly colors are derived from the set of flags applied to them, but the mapping of colors to
+  flags is not particularly rich, and there isn't anything to disambiguate between assemblies of
+  different design, but the same flags.
 
-* No proper zoom support, and object sizes are fixed and don't accommodate long
-  specifiers.
+* No proper zoom support, and object sizes are fixed and don't accommodate long specifiers.
 """
-
 import colorsys
 import enum
 import io
@@ -78,10 +74,10 @@ from armi.utils import hexagon, textProcessors
 UNIT_SIZE = 50  # pixels per assembly
 UNIT_MARGIN = 40  # offset applied to the draw area margins
 
-# The color to use for each object is based on the flags that that object has. All
-# applicable colors will be blended together to produce the final color for the object.
-# There are also plans to apply brush styles like cross-hatching or the like, which is
-# what the Nones are for below. Future work to employ these. Colors are RGB fractions.
+# The color to use for each object is based on the flags that that object has. All applicable colors
+# will be blended together to produce the final color for the object. There are also plans to apply
+# brush styles like cross-hatching or the like, which is what the Nones are for below. Future work
+# to employ these. Colors are RGB fractions.
 FLAG_STYLES = {
     # Red
     Flags.FUEL: (np.array([1.0, 0.0, 0.0]), None),
@@ -106,8 +102,8 @@ FLAG_STYLES = {
     Flags.DRIVER: (np.array([0.8, 0.8, 0.8]), None),
 }
 
-# RGB weights for calculating luminance. We use this to decide whether we should put
-# white or black text on top of the color. These come from CCIR 601
+# RGB weights for calculating luminance. We use this to decide whether we should put white or black
+# text on top of the color. These come from CCIR 601
 LUMINANCE_WEIGHTS = np.array([0.3, 0.59, 0.11])
 
 
@@ -175,8 +171,8 @@ def _drawShape(
     bold: bool = True,
 ):
     """
-    Draw a shape to the passed DC, given its GeomType and other relevant information.
-    Return the bounding box.
+    Draw a shape to the passed DC, given its GeomType and other relevant information. Return the
+    bounding box.
 
     Parameters
     ----------
@@ -341,9 +337,8 @@ class _PathControl(wx.Panel):
     def __init__(self, parent, viewer=None):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY)
 
-        # Direct link to the main viz control. This avoids having to reach up and back
-        # down for an instance, with all of the structural assumptions that that
-        # requires.
+        # Direct link to the main viz control. This avoids having to reach up and back down for an
+        # instance, with all of the structural assumptions that that requires.
         self._viewer = viewer
 
         self._needsIncrement = False
@@ -416,8 +411,8 @@ class _PathControl(wx.Panel):
 
 class _AssemblyPalette(wx.ScrolledWindow):
     """
-    Collection of toggle controls for each defined AssemblyBlueprint, as well as some
-    extra controls for configuring fuel shuffling paths.
+    Collection of toggle controls for each defined AssemblyBlueprint, as well as some extra controls
+    for configuring fuel shuffling paths.
     """
 
     def __init__(
@@ -453,9 +448,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
         # keyed on ID
         self.assemButtons = dict()
-
         self.buttonIdBySpecifier = {None: None}
-
         self.activeAssemID: Optional[int] = None
 
         for key, design in self.assemDesigns.items():
@@ -540,17 +533,14 @@ class _AssemblyPalette(wx.ScrolledWindow):
         This makes sure that the right selector button is activated, and switches the
         GUI mode into the proper one based on whether an assembly design is selected, or
         the fuel path controls.
-
-        Notice that the
         """
         if self.assemButtons[event.GetId()].GetValue():
-            # the button that generated the event is "on" (the ToggleButton assumes its
-            # new value before the event is propagated). We need to select whichever
-            # button it was.
+            # The button that generated the event is "on" (the ToggleButton assumes its new value
+            # before the event is propagated). We need to select whichever button it was.
             setTo = event.GetId()
         else:
-            # the button that generated the event is off, implying that the user clicked
-            # on the previously-selected button. Clear the active selection
+            # The button that generated the event is off, implying that the user clicked on the
+            # previously-selected button. Clear the active selection
             setTo = None
 
         self._setActiveAssemID(setTo)
@@ -582,10 +572,10 @@ class _AssemblyPalette(wx.ScrolledWindow):
         """
         Return the assembly design of fuel path tuple that a client should set.
 
-        This differs from ``getSelectedAssem`` in that it can incorporate more logic to
-        enforce certain rules, such as performing increments, masking things off based
-        on other state etc., whereas ``getSelectedAssem`` should be more dumb and just
-        return the state of the controls themselves.
+        This differs from ``getSelectedAssem`` in that it can incorporate more logic to enforce
+        certain rules, such as performing increments, masking things off based on other state etc.,
+        whereas ``getSelectedAssem`` should be more dumb and just return the state of the controls
+        themselves.
         """
         if self.activeAssemID in self.assemDesignsById:
             # We have an assembly design activated. return it
@@ -612,30 +602,30 @@ class GridGui(wx.ScrolledWindow):
     """
     Visual editor for grid blueprints.
 
-    This is the actual viewer that displays the grid and grid blueprints contents, and
-    responds to mouse events. Under the hood, it uses a wx.PseudoDC to handle the
-    drawing, which provides the following benefits over a regular DC:
+    This is the actual viewer that displays the grid and grid blueprints contents, and responds to
+    mouse events. Under the hood, it uses a wx.PseudoDC to handle the drawing, which provides the
+    following benefits over a regular DC:
 
-     * Drawn objects can be associated with an ID, allowing parts of the drawing to be
-       modified or cleared without having to re-draw everything.
-     * The IDs associated with the objects can be used to distinguish what was clicked
-       on in a mouse event (though the support for this isn't super great, so we do have
-       to do some of our own object disambiguation).
+     * Drawn objects can be associated with an ID, allowing parts of the drawing to be modified or
+       cleared without having to re-draw everything.
+     * The IDs associated with the objects can be used to distinguish what was clicked on in a mouse
+       event (though the support for this isn't super great, so we do have to do some of our own
+       object disambiguation).
 
-    The ``drawGrid()`` method is used to re-draw the entire geometry, whereas the
-    ``applyAssem()`` method may be used to update a single assembly.
+    The ``drawGrid()`` method is used to re-draw the entire geometry, whereas the ``applyAssem()``
+    method may be used to update a single assembly.
     """
 
     class Mode(enum.IntEnum):
         """
         Enumeration for what type of objects are currently being manipulated.
 
-        This can either be SPECIFIER, for laying out the initial core layout, or PATH
-        for manipulating fuel shuffling paths.
+        This can either be SPECIFIER, for laying out the initial core layout, or PATH for
+        manipulating fuel shuffling paths.
         """
 
-        # We use these values to map between selections in GUI elements, so don't go
-        # changing them willy-nilly
+        # We use these values to map between selections in GUI elements, so do not go changing them
+        # willy-nilly.
         SPECIFIER = 0
         POSITION_IJ = 1
         POSITION_RINGPOS = 2
@@ -667,8 +657,7 @@ class GridGui(wx.ScrolledWindow):
 
         bp : set of grid blueprints, optional
             This should be the ``gridDesigns`` section of a root Blueprints object. If
-            not provided, a dictionary will be created with an empty "core" grid
-            blueprint.
+            not provided, a dictionary will be created with an empty "core" grid blueprint.
         """
         wx.ScrolledWindow.__init__(
             self, parent, wx.ID_ANY, (0, 0), size=(250, 150), style=wx.BORDER_DEFAULT
@@ -1583,19 +1572,9 @@ type, domain, and boundary conditions.
 
 
 class NewGridBlueprintDialog(wx.Dialog):
-    """
-    Dialog box for configuring a new grid blueprint.
+    """Dialog box for configuring a new grid blueprint."""
 
-    TODO
-    ----
-    This can be a closer match to the stuff in geometry.py once that is implemented with
-    enums instead of string constants. Right now, we are sort of shadowing the logic
-    behind ``geometry.VALID_SYMMETRY``, rather that whipping up the logic from
-    ``VALID_SYMMETRY``, which would be `slick`.
-    """
-
-    # these provide stable mappings from the wx.Choice control indices to the respective
-    # geom types
+    # these provide stable mappings from the wx.Choice control indices to the respective geom types
     _geomFromIdx = {
         i: geomType
         for i, geomType in enumerate(

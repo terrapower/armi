@@ -1,4 +1,0 @@
-<?xml version="1.0" ?>
-<reactor geom="hex" symmetry="third core periodic">
-	<assembly name="IC" pos="1" ring="1"/>
-</reactor>

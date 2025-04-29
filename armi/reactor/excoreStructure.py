@@ -23,7 +23,7 @@ from armi.reactor.composites import Composite
 
 
 class ExcoreStructure(Composite):
-    """This is meant as the simplest baseclass neede to represent an ex-core reactor thing.
+    """This is meant as the simplest baseclass needed to represent an ex-core reactor thing.
 
     An ex-core structure is expected to:
 
