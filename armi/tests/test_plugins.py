@@ -28,12 +28,15 @@ from armi import (
     settings,
     utils,
 )
+from armi.bookkeeping.db import loadOperator
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.neutronics import NeutronicsPlugin
 from armi.reactor.blocks import Block
 from armi.reactor.converters.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class PluginFlags1(plugins.ArmiPlugin):
@@ -126,18 +129,36 @@ class TestPluginRegistration(unittest.TestCase):
         # By default, make sure we get the armi-shipped expansion class
         self.assertIs(first, AxialExpansionChanger)
         pm.register(SillyAxialPlugin)
-        second = pm.hook.getAxialExpansionChanger()
-        # Registering a plugin that implements the hook means we get that plugin's axial expander
-        self.assertIs(second, SillyAxialExpansionChanger)
+        try:
+            second = pm.hook.getAxialExpansionChanger()
+            # Registering a plugin that implements the hook means we get that plugin's axial expander
+            self.assertIs(second, SillyAxialExpansionChanger)
+        finally:
+            pm.unregister(SillyAxialPlugin)
 
     def test_beforeReactorConstructionHook(self):
         """Test that plugin hook successfully injects code before reactor initialization."""
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
-        o = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )[0]
-        self.assertTrue(o.cs.beforeReactorConstructionFlag)
+        try:
+            o, r = loadTestReactor(
+                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            )
+            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+
+            # Check that hook is called for database loading
+            with TemporaryDirectoryChanger():
+                dbi = DatabaseInterface(r, o.cs)
+                dbi.initDB(fName=self._testMethodName + ".h5")
+                db = dbi.database
+                db.writeToDB(r)
+                db.close()
+                o = loadOperator(
+                    self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True
+                )
+            self.assertTrue(o.cs.beforeReactorConstructionFlag)
+        finally:
+            pm.unregister(BeforeReactorPlugin)
 
 
 class TestPluginBasics(unittest.TestCase):
