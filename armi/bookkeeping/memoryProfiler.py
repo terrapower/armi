@@ -378,12 +378,10 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = context.MPI_NODENAME
-        # no psutil, no memory diagnostics.
-        # TODO: Ideally, we could cut MemoryProfiler entirely, but it is referred to
-        # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
         self.processVirtualMemoryInMB: Optional[float] = None
+        # no psutil, no memory diagnostics
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
             self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)
