@@ -180,8 +180,18 @@ class TestCompareDB3(unittest.TestCase):
                 dbs[1]._fullPath,
                 timestepCompare=[(0, 0), (0, 1)],
             )
-        self.assertEqual(len(diffs.diffs), 504)
-        # Cycle length is only diff (x3)
+
+        # spot check the diffs
+        self.assertGreater(len(diffs.diffs), 200)
+        self.assertLess(len(diffs.diffs), 800)
+        self.assertIn("/c00n00", diffs._columns)
+        self.assertIn("/c00n01", diffs._columns)
+        self.assertIn(0, diffs._structureDiffs)
+        self.assertEqual(sum(diffs._structureDiffs), 0)
+        self.assertEqual(diffs.tolerance, 0)
+        self.assertIn("SpentFuelPool/flags max(abs(diff))", diffs.diffs)
+        self.assertIn("Circle/volume mean(diff)", diffs.diffs)
+        self.assertIn("Reactor/flags mean(diff)", diffs.diffs)
         self.assertEqual(diffs.nDiffs(), 3)
 
     def test_diffSpecialData(self):

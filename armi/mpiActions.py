@@ -521,16 +521,13 @@ class DistributeStateAction(MpiAction):
             DistributeStateAction._distributeParamAssignments()
 
             if self._skipInterfaces:
-                self.o.reattach(self.r, cs)  # may be redundant?
+                self.o.reattach(self.r, cs)
             else:
                 self._distributeInterfaces()
 
-            # lastly, make sure the reactor knows it is up to date
-            # the operator/interface attachment may invalidate some of the cache, but since
-            # all the underlying data is the same, ultimately all state should be (initially) the
-            # same.
-            # TODO: this is an indication we need to revamp either how the operator attachment works
-            # or how the interfaces are distributed.
+            # Lastly, make sure the reactor knows it is up to date. The operator/interface
+            # attachment may invalidate some of the cache, but since all the underlying data is the
+            # same, ultimately all state should be (initially) the same.
             self.r._markSynchronized()
 
         except (pickle.PicklingError, TypeError) as error:
