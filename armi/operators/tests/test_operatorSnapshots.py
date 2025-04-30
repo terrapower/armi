@@ -22,6 +22,7 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.operators import getOperatorClassFromSettings
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
+from armi.tests import TEST_ROOT
 from armi.testing import loadTestReactor, reduceTestReactorRings
 
 
@@ -111,9 +112,7 @@ class TestOperatorSnapshotFullCoreExpansion(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        o, cls.symmetricReactor = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
-        )
+        o, cls.symmetricReactor = loadTestReactor(TEST_ROOT)
         reduceTestReactorRings(cls.symmetricReactor, o.cs, maxNumRings=2)
         dbi: DatabaseInterface = next(
             filter(lambda i: isinstance(i, DatabaseInterface), o.interfaces)
