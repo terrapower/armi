@@ -133,9 +133,9 @@ directions.
 
 Thermal expansion calculations are performed for each component in the ARMI reactor data model as
 component temperatures change. Since components are constrained within blocks, the height of
-components are determined by the height of their parent block. The equations below for
-:eq:`hot_radius` through :eq:`hot_density` illustrate how the radius, height, volume, density, and mass
-are updated for a component during thermal expansion, respectively.
+components are determined by the height of their parent block. Equations :eq:`hot_radius` through 
+:eq:`hot_density` illustrate how the radius, height, volume, density, and mass are updated for 
+a Component during thermal expansion, respectively.
 
 .. list-table:: Example Calculation of Radial and Axial Thermal Expansion for a Cylindrical Component
    :widths: 33 33 33
