@@ -116,7 +116,6 @@ class Block(composites.Composite):
             "fluxAdj",
             "buRate",
             "eqRegion",
-            "fissileFraction",
         ]:
             self.p[problemParam] = 0.0
 
@@ -2186,7 +2185,7 @@ class HexBlock(Block):
 
         In this case, a simple block would be one that has either multiplicity of components equal
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
-        into a given number of hex rings.  Otherwise, do not create a grid for this block.
+        into a given number of hex rings. Otherwise, do not create a grid for this block.
 
         Parameters
         ----------
@@ -2208,15 +2207,28 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
+        # not necessary
+        if self.spatialGrid is not None:
+            return
+
         # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
-        if len(mults) != 2 or 1 not in mults:
-            raise ValueError(
-                "Could not create a spatialGrid for block {}, multiplicities are not 1 or N they are {}".format(
-                    self.p.type, mults
-                )
+        # Do some validation: Should we try to create a spatial grid?
+        multz = {float(m) for m in mults}
+        if len(multz) == 1 and 1.0 in multz:
+            runLog.extra(
+                f"Block {self.p.type} does not need a spatial grid: multiplicities are all 1.",
+                single=True,
             )
+            return
+        elif len(multz) != 2 or 1.0 not in multz:
+            runLog.extra(
+                f"Could not create a spatialGrid for block {self.p.type}, multiplicities are not {{1, N}} "
+                f"they are {mults}",
+                single=True,
+            )
+            return
 
         # build the grid, from pitch and orientation
         if isinstance(systemSpatialGrid, grids.HexGrid):

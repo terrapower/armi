@@ -56,7 +56,7 @@ from typing import (
 import h5py
 import numpy as np
 
-from armi import context, getApp, meta, runLog, settings
+from armi import context, getApp, getPluginManagerOrFail, meta, runLog, settings
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.bookkeeping.db.layout import (
     DB_VERSION,
@@ -693,6 +693,7 @@ class Database:
         statePointName=None,
         allowMissing=False,
         handleInvalids=True,
+        callReactorConstructionHook=False,
     ):
         """Load a new reactor from a DB at (cycle, node).
 
@@ -729,6 +730,8 @@ class Database:
             with undefined parameters. Default False.
         handleInvalids : bool
             Whether to check for invalid settings. Default True.
+        callReactorConstructionHook : bool
+            Flag for whether the beforeReactorConstruction plugin hook should be executed. Default is False.
 
         Returns
         -------
@@ -739,6 +742,9 @@ class Database:
 
         cs = cs or self.loadCS(handleInvalids=handleInvalids)
         bp = bp or self.loadBlueprints()
+
+        if callReactorConstructionHook:
+            getPluginManagerOrFail().hook.beforeReactorConstruction(cs=cs)
 
         if node < 0:
             numNodes = getNodesPerCycle(cs)[cycle]

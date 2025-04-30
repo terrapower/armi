@@ -369,7 +369,7 @@ you can run the ARMI ``vis-file`` entry point, like this::
 
 This creates several ``VTK`` files covering different time steps and levels of abstraction
 (assembly vs. block params). If you load up the block file and plot one of the output
-params (such as ``THcoolantAverageT`` you can see the outlet temperature going nicely
+params (such as ``THcoolantOutletT`` you can see the outlet temperature going nicely
 from 360 |deg|\ C  to 510 |deg|\ C (as expected given our simple TH solver).
 
 
