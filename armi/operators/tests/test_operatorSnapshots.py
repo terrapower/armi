@@ -61,8 +61,8 @@ class TestOperatorSnapshots(unittest.TestCase):
     def test_mainOperate(self):
         # Mock some tooling that we aren't testing
         self.o.interactBOL = lambda: None
-        self.o.getInterface = (
-            lambda s: self.dbi if s == "database" else super().getInterface(s)
+        self.o.getInterface = lambda s: (
+            self.dbi if s == "database" else super().getInterface(s)
         )
 
         self.assertEqual(self.r.core.p.power, 0.0)
