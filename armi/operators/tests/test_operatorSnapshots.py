@@ -22,8 +22,9 @@ from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.operators import getOperatorClassFromSettings
 from armi.operators.runTypes import RunTypes
 from armi.operators.snapshots import OperatorSnapshots
-from armi.tests import TEST_ROOT
+from armi.settings.fwSettings.globalSettings import CONF_GROW_TO_FULL_CORE_AFTER_LOAD
 from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.tests import TEST_ROOT
 
 
 class TestOperatorSnapshots(unittest.TestCase):
@@ -131,7 +132,10 @@ class TestOperatorSnapshotFullCoreExpansion(unittest.TestCase):
     def test_fullCoreFromThirdCore(self):
         self.assertFalse(self.symmetricReactor.core.isFullCore)
         cs = self.snapshotSettings.modified(
-            newSettings={"growToFullCoreOnLoad": True, "dumpSnapshot": ["0000"]}
+            newSettings={
+                CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True,
+                "dumpSnapshot": ["0000"],
+            }
         )
         o = getOperatorClassFromSettings(cs)(cs)
         self.assertIsInstance(o, OperatorSnapshots)
