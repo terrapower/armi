@@ -205,27 +205,9 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "betad",
-            units=units.UNITLESS,
-            description="Delayed neutron beta",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "chi",
             units=units.UNITLESS,
             description="Energy distribution of fission neutrons",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "chid",
-            units=units.UNITLESS,
-            description="Energy distribution of delayed fission neutrons",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
@@ -743,14 +725,6 @@ def _getNeutronicsCoreParams():
             "kInf",
             units=units.UNITLESS,
             description="k-infinity",
-            default=0.0,
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "refKeff",
-            units=units.UNITLESS,
-            description="Reference unperturbed keff",
             default=0.0,
             location=ParamLocation.AVERAGE,
         )
