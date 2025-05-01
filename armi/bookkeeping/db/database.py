@@ -50,6 +50,7 @@ from typing import (
     Sequence,
     Tuple,
     Type,
+    Union,
 )
 
 import h5py
@@ -74,7 +75,10 @@ from armi.reactor.composites import ArmiObject
 from armi.reactor.parameters import parameterCollections
 from armi.reactor.reactorParameters import makeParametersReadOnly
 from armi.reactor.reactors import Core, Reactor
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.settings.fwSettings.globalSettings import (
+    CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
+    CONF_SORT_REACTOR,
+)
 from armi.utils import getNodesPerCycle, safeCopy, safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions
 
@@ -782,6 +786,9 @@ class Database:
                 "temporary and will be removed by 2024."
             )
 
+        if cs[CONF_GROW_TO_FULL_CORE_AFTER_LOAD] and not root.core.isFullCore:
+            root.core.growToFullCore(cs)
+
         return root
 
     def loadReadOnly(self, cycle, node, statePointName=None):
@@ -892,7 +899,7 @@ class Database:
         return comp
 
     @staticmethod
-    def _getArrayShape(arr: [np.ndarray, List, Tuple]):
+    def _getArrayShape(arr: Union[np.ndarray, List, Tuple]):
         """Get the shape of a np.ndarray, list, or tuple."""
         if isinstance(arr, np.ndarray):
             return arr.shape
