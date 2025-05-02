@@ -473,13 +473,6 @@ def defineCoreParameters():
             default=0,
         )
 
-        pb.defParam(
-            "maxCyclicNErr",
-            units=units.UNITLESS,
-            description="Maximum relative number density error",
-            default=0.0,
-        )
-
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
