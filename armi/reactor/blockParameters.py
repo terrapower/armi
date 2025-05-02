@@ -367,13 +367,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "eqCascade",
-            units=units.UNITLESS,
-            description="Cascade number in repetitive equilibrium shuffling fuel management.",
-            default=-1,
-        )
-
-        pb.defParam(
             "id",
             units=units.UNITLESS,
             description="Inner diameter of the Block.",
@@ -480,13 +473,6 @@ def getBlockParameterDefinitions():
             units=units.UNITLESS,
             description="Conversion ratio",
             categories=["detailedAxialExpansion"],
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "cyclicNErr",
-            units=units.UNITLESS,
-            description="Relative error of the block number density",
             location=ParamLocation.AVERAGE,
         )
 

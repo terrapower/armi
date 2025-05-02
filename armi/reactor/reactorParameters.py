@@ -164,12 +164,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "critSearchSlope",
-            units=f"1/{units.DAYS}",
-            description="Critical keff search slope",
-        )
-
-        pb.defParam(
             "fissileMass", units=units.GRAMS, description="Fissile mass of the reactor"
         )
 
@@ -185,12 +179,6 @@ def defineCoreParameters():
             saveToDB=True,
             default=0.0,
             description="Uncontrolled k-effective for the reactor core (with control rods fully removed).",
-        )
-
-        pb.defParam(
-            "lastKeff",
-            units=units.UNITLESS,
-            description="Previously calculated Keff for potential keff convergence",
         )
 
         pb.defParam(
