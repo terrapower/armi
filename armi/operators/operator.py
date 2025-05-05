@@ -156,7 +156,7 @@ class Operator:
         self.r = None
         self.cs = cs
         runLog.LOG.startLog(self.cs.caseTitle)
-        self.timer = codeTiming.getMasterTimer()
+        self.timer = codeTiming.MasterTimer.getMasterTimer()
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
@@ -499,9 +499,7 @@ class Operator:
                 memBefore.broadcast()
                 memBefore.invoke(self, self.r, self.cs)
 
-            interactionMessage = " {} interacting with {} ".format(
-                interactionName, interface.name
-            )
+            interactionMessage = f"{interface.name}.{interactionName}"
             with self.timer.getTimer(interactionMessage):
                 interactMethod = getattr(interface, interactMethodName)
                 halt = halt or interactMethod(*args)

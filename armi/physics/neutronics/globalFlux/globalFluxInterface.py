@@ -28,7 +28,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import codeTiming, getBurnSteps, getMaxBurnSteps, units
+from armi.utils import getBurnSteps, getMaxBurnSteps, units
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -558,7 +558,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         self.options: GlobalFluxOptions
         self.geomConverters: Dict[str, geometryConverters.GeometryConverter] = {}
 
-    @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
         """
         Apply geometry conversions to make reactor work in neutronics.
@@ -606,7 +605,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         self.r = neutronicsReactor
 
-    @codeTiming.timed
     def _undoGeometryTransformations(self):
         """
         Restore original data model state and/or apply results to it.
