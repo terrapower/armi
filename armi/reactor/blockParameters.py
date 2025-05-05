@@ -87,14 +87,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "percentBuMax",
-            units=units.PERCENT_FIMA,
-            description="Maximum percentage in a single pin of the initial heavy metal "
-            "atoms that have been fissioned",
-            location=ParamLocation.MAX,
-        )
-
-        pb.defParam(
             "residence",
             units=units.DAYS,
             description=(
@@ -410,13 +402,6 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam(
-            "fissileDestroyed",
-            units=f"atoms/(bn*{units.CM})",
-            description="Fissile atoms destroyed in last depletion step (not net!)",
-            location=ParamLocation.AVERAGE,
-        )
-
         pb.defParam("buLimit", units=units.PERCENT_FIMA, description="Burnup limit")
 
         pb.defParam(
@@ -457,13 +442,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam("nPins", units=units.UNITLESS, description="Number of pins")
-
-        pb.defParam(
-            "newDPAPeak",
-            units=units.DPA,
-            description="The peak DPA accumulated in the last burn step",
-            location=ParamLocation.MAX,
-        )
 
         pb.defParam(
             "percentBuPeak",

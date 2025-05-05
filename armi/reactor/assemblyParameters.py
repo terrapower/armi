@@ -23,19 +23,6 @@ from armi.utils import units
 def getAssemblyParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
 
-    with pDefs.createBuilder() as pb:
-
-        pb.defParam(
-            "powerDecay",
-            setter=isNumpyArray("powerDecay"),
-            units=units.WATTS,
-            description="List of decay heats at each time step specified in "
-            "decayHeatCalcTimesInSeconds setting.",
-            saveToDB=True,
-            location=ParamLocation.AVERAGE,
-            default=None,
-        )
-
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
 
         pb.defParam(

@@ -169,18 +169,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "loadPadDpaAvg",
-            units=units.DPA,
-            description="The highest average dpa in any load pad",
-        )
-
-        pb.defParam(
-            "loadPadDpaPeak",
-            units=units.DPA,
-            description="The peak dpa in any load pad",
-        )
-
-        pb.defParam(
             "maxDPA",
             units=units.DPA,
             description="Maximum DPA based on pin-level max if it exists, block level max otherwise",
@@ -210,12 +198,6 @@ def defineCoreParameters():
             "peakGridDpaAt60Years",
             units=units.DPA,
             description="Grid plate peak dpa after 60 years irradiation",
-        )
-
-        pb.defParam(
-            "totalIntrinsicSource",
-            units=f"n/{units.SECONDS}",
-            description="Full core intrinsic neutron source from spontaneous fissions before a decay period",
         )
 
     with pDefs.createBuilder(
@@ -258,12 +240,6 @@ def defineCoreParameters():
             description="BOL Power density of the reactor core, in units of Watts per"
             "grams of Heavy Metal Mass. After the BOL, the power parameter will be set, "
             "and this will entirely overridden by that.",
-        )
-
-        pb.defParam(
-            "powerDecay",
-            units=units.WATTS,
-            description="Decay power from decaying radionuclides",
         )
 
         pb.defParam(
