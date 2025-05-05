@@ -191,9 +191,9 @@ class FilletedHexagon(basicShapes.Hexagon):
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the rounded hexagon component in cm^2."""
-        op = self.getDimension("op", cold=cold, Tc)
-        ip = self.getDimension("ip", cold=cold, Tc)
-        r = self.getDimension("cornerR", cold=cold, Tc)
+        op = self.getDimension("op", cold, Tc)
+        ip = self.getDimension("ip", cold, Tc)
+        r = self.getDimension("cornerR", cold, Tc)
         mult = self.getDimension("mult")
 
         area = self._area(op, r) - self._area(ip, r)
