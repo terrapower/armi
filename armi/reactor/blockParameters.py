@@ -16,7 +16,7 @@
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
-from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
+from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
@@ -53,9 +53,7 @@ def getBlockParameterDefinitions():
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "
                 "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
-                "This param keeps the hi-fi and low-fi depletion values from interfering. "
-                "See core.p.detailedNucKeys for keys. "
-                # could move to external physic plugin
+                "This param keeps the hi-fi and low-fi depletion values from interfering."
             ),
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -65,13 +63,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(
         default=0.0, location=ParamLocation.AVERAGE, categories=["depletion"]
     ) as pb:
-
-        pb.defParam(
-            "burnupMWdPerKg",
-            units=f"{units.MWD}/{units.KG}",
-            description="Burnup in MWd/kg of initial heavy metal",
-            categories=["cumulative"],
-        )
 
         pb.defParam(
             "newDPA",
@@ -143,32 +134,6 @@ def getBlockParameterDefinitions():
                 "(includes full volume of any components with B10)"
             ),
         )
-
-    pDefs.add(
-        Parameter(
-            name="depletionMatrix",
-            units=units.UNITLESS,
-            description="Full BurnMatrix objects containing transmutation and decay info about this block.",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-            setter=NoDefault,
-            categories=set(),
-        )
-    )
-
-    pDefs.add(
-        Parameter(
-            name="cycleAverageBurnMatrix",
-            units=units.UNITLESS,
-            description="Integrated burn matrix mapping this block from its BOC to EOC number densities.",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-            setter=NoDefault,
-            categories=set(),
-        )
-    )
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
@@ -449,20 +414,6 @@ def getBlockParameterDefinitions():
             "fissileDestroyed",
             units=f"atoms/(bn*{units.CM})",
             description="Fissile atoms destroyed in last depletion step (not net!)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fissileBefore",
-            units=f"atoms/(bn*{units.CM})",
-            description="Fissile atoms at beginning of last depletion step (could be substep!)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fissileAfter",
-            units=f"atoms/(bn*{units.CM})",
-            description="Fissile atoms at end of last depletion step (could be substep!)",
             location=ParamLocation.AVERAGE,
         )
 

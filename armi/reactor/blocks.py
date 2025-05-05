@@ -109,8 +109,6 @@ class Block(composites.Composite):
             "residence",
             "bondRemoved",
             "fluence",
-            "fastFluence",
-            "fastFluencePeak",
             "displacementX",
             "displacementY",
             "fluxAdj",

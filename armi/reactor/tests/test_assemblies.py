@@ -700,8 +700,6 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getBlockData(self):
         paramDict = {
             "timeToLimit": 40.0,
-            "fastFluence": 1.01,
-            "fastFluencePeak": 50.0,
             "power": 10000.0,
             "envGroup": 4,
             "residence": 3.145,

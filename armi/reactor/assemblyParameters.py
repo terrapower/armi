@@ -138,9 +138,7 @@ def getAssemblyParameterDefinitions():
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "
                 "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
-                "This param keeps the hi-fi and low-fi depletion values from interfering. "
-                "See core.p.detailedNucKeys for keys. "
-                # Could be moved to external physics plugin
+                "This param keeps the hi-fi and low-fi depletion values from interfering."
             ),
             saveToDB=True,
             default=None,

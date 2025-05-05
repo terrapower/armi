@@ -15,7 +15,6 @@
 """Reactor parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 
 
@@ -79,18 +78,6 @@ def defineReactorParameters():
 
 def defineCoreParameters():
     pDefs = parameters.ParameterDefinitionCollection()
-
-    with pDefs.createBuilder() as pb:
-        pb.defParam(
-            "detailedNucKeys",
-            setter=isNumpyArray("detailedNucKeys"),
-            units=units.UNITLESS,
-            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and 
-            a.p.detailedNDens.ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable
-            states.""",
-            saveToDB=True,
-            default=None,
-        )
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
         pb.defParam(
@@ -476,13 +463,6 @@ def defineCoreParameters():
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
-
-        pb.defParam(
-            "breedingRatio",
-            units=units.UNITLESS,
-            description="Breeding ratio of the reactor",
-            default=0.0,
-        )
 
         pb.defParam(
             "ConvRatioCore",
