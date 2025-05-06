@@ -114,7 +114,7 @@ class _RunLog:
             If this is zero, we are in the parent process, otherwise child process.
             This should not be adjusted after instantiation.
         """
-        rank = "" if mpiRank == 0 else "-{:>03d}".format(mpiRank)
+        rank = "" if mpiRank == 0 else f"-{mpiRank:>03d}"
 
         # NOTE: using ordereddict so we can get right order of options in GUI
         return collections.OrderedDict(
@@ -210,7 +210,7 @@ class _RunLog:
         except KeyError:
             log_strs = list(self.logLevels.keys())
             raise KeyError(
-                "{} is not a valid verbosity level: {}".format(level, log_strs)
+                f"{level} is not a valid verbosity level: {log_strs}"
             )
 
     def setVerbosity(self, level):
@@ -249,7 +249,7 @@ class _RunLog:
                         self._verbosity = self._logLevelNumbers[i]
                         break
         else:
-            raise TypeError("Invalid verbosity rank {}.".format(level))
+            raise TypeError(f"Invalid verbosity rank {level}.")
 
         # Finally, set the log level
         if self.logger is not None:
@@ -343,7 +343,7 @@ def concatenateLogs(logDir=None):
         info("No log files found to concatenate.")
         return
 
-    info("Concatenating {0} log files".format(len(stdoutFiles)))
+    info(f"Concatenating {len(stdoutFiles)} log files")
 
     # default worker log name if none is found
     caseTitle = "armi-workers"
@@ -356,7 +356,7 @@ def concatenateLogs(logDir=None):
                 caseTitle = candidate
                 break
 
-    combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
+    combinedLogName = os.path.join(logDir, f"{caseTitle}-mpi.log")
     with open(combinedLogName, "w") as workerLog:
         workerLog.write(
             "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
@@ -670,7 +670,7 @@ class RunLogger(logging.Logger):
         for label, count in sorted(
             dupsFilter.warningCounts.items(), key=operator.itemgetter(1)
         ):
-            self.info("  {0:^10s}   {1:^25s}".format(str(count), str(label)))
+            self.info(f"  {str(count):^10s}   {str(label):^25s}")
         self.info("------------------------------------")
 
         # TODO: JOHN: Inject totals line
@@ -724,7 +724,7 @@ def createLogDir(logDir: str = None) -> None:
     while not os.path.exists(logDir):
         loopCounter += 1
         if loopCounter > (OS_SECONDS_TIMEOUT / secondsWait):
-            raise OSError("Was unable to create the log directory: {}".format(logDir))
+            raise OSError(f"Was unable to create the log directory: {logDir}")
 
         time.sleep(secondsWait)
 
