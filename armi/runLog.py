@@ -647,13 +647,19 @@ class RunLogger(logging.Logger):
             return
 
         # sort by labcollections.defaultdict(lambda: 1)
+        total = 0
         for label, count in sorted(
             dupsFilter.warningCounts.items(), key=operator.itemgetter(1), reverse=True
         ):
             self.info(f"  {str(count):^10s}   {str(label):^25s}")
+            total += count
         self.info("------------------------------------")
 
-        # TODO: JOHN: Inject totals line
+        # add a totals line
+        self.info(
+            "  {0:^10s}   {1:^25s}".format(str(total), str("Total Number of Warnings"))
+        )
+        self.info("------------------------------------")
 
     def setVerbosity(self, intLevel):
         """A helper method to try to partially support the local, historical method of the same name."""
