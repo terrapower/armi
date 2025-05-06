@@ -2582,69 +2582,6 @@ class TestHexBlockOrientation(unittest.TestCase):
         self.assertAlmostEqual(ratio, 2 / math.sqrt(3), delta=0.0001)
 
 
-class TestFilletedHexBlock(unittest.TestCase):
-    def setUp(self):
-        self.block = blocks.FilletedHexBlock("TestFilletedHexBlock")
-        self.op = 70.6
-        self.ip = 70.0
-        self.cornerR = 0.25
-        dims = {
-            "Tinput": 273.0,
-            "Thot": 273.0,
-            "op": self.op,
-            "ip": self.ip,
-            "cornerR": self.cornerR,
-            "mult": 1.0,
-        }
-        self.comp = components.FilletedHexagon("duct", "UZr", **dims)
-        self.block.add(self.comp)
-        self.block.add(
-            components.Circle(
-                "clad", "HT9", Tinput=273.0, Thot=273.0, od=0.1, mult=169.0
-            )
-        )
-        self.block.add(
-            components.Circle(
-                "wire", "HT9", Tinput=273.0, Thot=273.0, od=0.01, mult=169.0
-            )
-        )
-        self.block.add(
-            components.DerivedShape("coolant", "Sodium", Tinput=273.0, Thot=273.0)
-        )
-        self.r = tests.getEmptyHexReactor()
-        self.block.autoCreateSpatialGrids(self.r.core.spatialGrid)
-        a = makeTestAssembly(1, 1)
-        a.add(self.block)
-        loc1 = self.r.core.spatialGrid[0, 1, 0]
-        self.r.core.add(a, loc1)
-
-    def test_getArea(self):
-        a1 = self.block.getArea()
-        a0 = self.comp.getArea()
-        self.assertGreaterEqual(a1, a0)
-
-    def test_getNumPins(self):
-        self.assertEqual(self.block.getNumPins(), 169)
-
-    def test_component_type(self):
-        pitch_comp_type = self.block.PITCH_COMPONENT_TYPE[0]
-        self.assertEqual(pitch_comp_type.__name__, "FilletedHexagon")
-
-    def test_getDuctPitch(self):
-        ductIP = self.block.getDuctIP()
-        self.assertAlmostEqual(self.ip, ductIP)
-        ductOP = self.block.getDuctOP()
-        self.assertAlmostEqual(self.op, ductOP)
-
-    def test_getPinCenterFlatToFlat(self):
-        nRings = hexagon.numRingsToHoldNumCells(self.block.getNumPins())
-        pinPitch = self.block.getPinPitch()
-        pinCenterCornerToCorner = 2 * (nRings - 1) * pinPitch
-        pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
-        f2f = self.block.getPinCenterFlatToFlat()
-        self.assertAlmostEqual(pinCenterFlatToFlat, f2f)
-
-
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")

@@ -2426,14 +2426,6 @@ class HexBlock(Block):
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
 
-class FilletedHexBlock(HexBlock):
-    """Defines a Block shaped like a hexagon with rounded corners."""
-
-    PITCH_COMPONENT_TYPE: ClassVar[_PitchDefiningComponent] = (
-        components.FilletedHexagon,
-    )
-
-
 class CartesianBlock(Block):
     PITCH_DIMENSION = "widthOuter"
     PITCH_COMPONENT_TYPE = components.Rectangle
