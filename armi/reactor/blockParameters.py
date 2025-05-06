@@ -427,13 +427,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam(
-            "avgFuelTemp",
-            units=units.DEGC,
-            description="Average fuel temperature.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "assemNum",
             units=units.UNITLESS,
             description="Index that refers, nominally, to the assemNum parameter of the containing "

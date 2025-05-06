@@ -593,7 +593,6 @@ def writeCycleSummary(core):
     runLog.important("Cycle {0} Summary:".format(cycle))
     avgBu = core.calcAvgParam("percentBu", typeSpec=Flags.FUEL, generationNum=2)
     str_.append("Core Average Burnup: {0}".format(avgBu))
-    str_.append("Idealized Outlet Temperature {}".format(core.p.THoutletTempIdeal))
     str_.append("End of Cycle {0:02d}. Timestamp: {1} ".format(cycle, time.ctime()))
 
     runLog.info("\n".join(str_))
@@ -604,7 +603,7 @@ def setNeutronBalancesReport(core):
 
     Parameters
     ----------
-    core  : armi.reactor.reactors.Core
+    core : armi.reactor.reactors.Core
     """
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
