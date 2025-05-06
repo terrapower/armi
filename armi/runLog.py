@@ -168,8 +168,8 @@ class _RunLog:
 
     def log(self, msgType, msg, single=False, label=None, **kwargs):
         """
-        This is a wrapper around logger.log() that does most of the work and is
-        used by all message passers (e.g. info, warning, etc.).
+        This is a wrapper around logger.log() that does most of the work and is used by all message
+        passers (e.g. info, warning, etc.).
 
         In this situation, we do the mangling needed to get the log level to the correct number.
         And we do some custom string manipulation so we can handle de-duplicating warnings.
@@ -185,7 +185,7 @@ class _RunLog:
 
     def getDuplicatesFilter(self):
         """
-        The top-level ARMI logger should have a no duplicates filter
+        The top-level ARMI logger should have a no duplicates filter.
         If it exists, find it.
         """
         if not self.logger or not isinstance(self.logger, logging.Logger):
@@ -236,9 +236,9 @@ class _RunLog:
         if isinstance(level, str):
             self._verbosity = self.getLogVerbosityRank(level)
         elif isinstance(level, int):
-            # The logging module does strange things if you set the log level to something other than DEBUG, INFO, etc
-            # So, if someone tries, we HAVE to set the log level at a canonical value.
-            # Otherwise, nearly all log statements will be silently dropped.
+            # The logging module does strange things if you set the log level to something other
+            # than DEBUG, INFO, etc. So, if someone tries, we HAVE to set the log level at a
+            # canonical value. Otherwise, nearly all log statements will be silently dropped.
             if level in self._logLevelNumbers:
                 self._verbosity = level
             elif level < self._logLevelNumbers[0]:
@@ -326,15 +326,13 @@ def concatenateLogs(logDir=None):
         :id: I_ARMI_LOG_MPI
         :implements: R_ARMI_LOG_MPI
 
-        The log files are plain text files. Since ARMI is frequently run in parallel,
-        the situation arises where each ARMI process generates its own plain text log
-        file. This function combines the separate log files, per process, into one log
-        file.
+        The log files are plain text files. Since ARMI is frequently run in parallel, the situation
+        arises where each ARMI process generates its own plain text log file. This function combines
+        the separate log files, per process, into one log file.
 
-        The files are written in numerical order, with the lead process stdout first
-        then the lead process stderr. Then each other process is written to the
-        combined file, in order, stdout then stderr. Finally, the original stdout and
-        stderr files are deleted.
+        The files are written in numerical order, with the lead process stdout first then the lead
+        process stderr. Then each other process is written to the combined file, in order, stdout
+        then stderr. Finally, the original stdout and stderr files are deleted.
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -383,7 +381,7 @@ def concatenateLogs(logDir=None):
             try:
                 os.remove(stdoutName)
             except OSError:
-                warning("Could not delete {0}".format(stdoutName))
+                warning(f"Could not delete {stdoutName}")
 
             # then print the stderr messages for that child process
             stderrName = stdoutName[:-3] + "err"
@@ -400,7 +398,7 @@ def concatenateLogs(logDir=None):
                 try:
                     os.remove(stderrName)
                 except OSError:
-                    warning("Could not delete {0}".format(stderrName))
+                    warning(f"Could not delete {stderrName}")
 
 
 # Here are all the module-level functions that should be used for most outputs.
@@ -462,6 +460,7 @@ class DeduplicationFilter(logging.Filter):
         logging.Filter.__init__(self, *args, **kwargs)
         self.singleMessageCounts = {}
         self.singleWarningMessageCounts = {}
+        self.warningCounts = {}
 
     def filter(self, record):
         # determine if this is a "do not duplicate" message
@@ -476,6 +475,7 @@ class DeduplicationFilter(logging.Filter):
                 # the "label" default is None, which needs to be replaced
                 label = msg if label is None else label
 
+                # TODO: JOHN: does self.singleWarningMessageCounts need to exist?
                 if label not in self.singleWarningMessageCounts:
                     self.singleWarningMessageCounts[label] = 1
                 else:
@@ -489,6 +489,17 @@ class DeduplicationFilter(logging.Filter):
                 else:
                     self.singleMessageCounts[label] += 1
                     return False
+
+        # track all warnings, for warning report
+        if record.levelno in (logging.WARNING, logging.CRITICAL):
+            # if this is from the custom logger, it will have a "label"
+            label = getattr(record, "label", msg)
+            # the "label" default is None, which needs to be replaced
+            label = msg if label is None else label
+
+            if label not in self.warningCounts:
+                self.warningCounts[label] = 0
+            self.warningCounts[label] += 1
 
         # Handle some special string-mangling we want to do, for multi-line messages
         whiteSpace = _RunLog.getWhiteSpace(context.MPI_RANK)
@@ -657,10 +668,12 @@ class RunLogger(logging.Logger):
 
         # sort by labcollections.defaultdict(lambda: 1)
         for label, count in sorted(
-            dupsFilter.singleWarningMessageCounts.items(), key=operator.itemgetter(1)
+            dupsFilter.warningCounts.items(), key=operator.itemgetter(1)
         ):
             self.info("  {0:^10s}   {1:^25s}".format(str(count), str(label)))
         self.info("------------------------------------")
+
+        # TODO: JOHN: Inject totals line
 
     def setVerbosity(self, intLevel):
         """A helper method to try to partially support the local, historical method of the same name."""
