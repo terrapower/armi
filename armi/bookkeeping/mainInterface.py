@@ -155,8 +155,8 @@ class MainInterface(interfaces.Interface):
 
     def interactBOC(self, cycle=None):
         """Typically the first interface to interact beginning of cycle."""
-        runLog.important("Beginning of Cycle {0}".format(cycle))
-        runLog.LOG.clearSingleWarnings()
+        runLog.important(f"Beginning of Cycle {cycle}")
+        runLog.LOG.clearSinglLogs()
 
         if self.cs["reallySmallRun"]:
             self.cleanLastCycleFiles()

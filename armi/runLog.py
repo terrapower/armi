@@ -183,16 +183,13 @@ class _RunLog:
         self.logger.log(msgLevel, msg, single=single, label=label)
 
     def getDuplicatesFilter(self):
-        """
-        The top-level ARMI logger should have a no duplicates filter.
-        If it exists, find it.
-        """
+        """If it exists, find the top-level ARMI logger 'should have a no duplicates' filter."""
         if not self.logger or not isinstance(self.logger, logging.Logger):
             return None
 
         return self.logger.getDuplicatesFilter()
 
-    def clearSingleWarnings(self):
+    def clearSinglLogs(self):
         """Reset the single warned list so we get messages again."""
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter:
