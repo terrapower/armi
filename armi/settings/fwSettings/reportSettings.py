@@ -18,7 +18,6 @@ import voluptuous as vol
 
 from armi.settings import setting
 
-
 CONF_GEN_REPORTS = "genReports"
 CONF_ASSEM_POW_SUMMARY = "assemPowSummary"
 CONF_SUMMARIZE_ASSEM_DESIGN = "summarizeAssemDesign"
@@ -26,6 +25,7 @@ CONF_TIMELINE_INCLUSION_CUTOFF = "timelineInclusionCutoff"
 
 
 def defineSettings():
+    """Define settings for the interface."""
     settings = [
         setting.Setting(
             CONF_GEN_REPORTS,

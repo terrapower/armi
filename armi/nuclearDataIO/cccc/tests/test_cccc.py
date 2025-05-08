@@ -15,8 +15,6 @@
 import io
 import unittest
 
-import six
-
 from armi.nuclearDataIO import cccc
 
 
@@ -104,4 +102,4 @@ class CcccAsciiRecordTests(CcccBinaryRecordTests):
         cls.readerClass = cccc.AsciiRecordReader
 
     def setUp(self):
-        self.streamCls = six.StringIO
+        self.streamCls = io.StringIO

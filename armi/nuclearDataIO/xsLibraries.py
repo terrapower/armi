@@ -31,9 +31,7 @@ _ISOTXS_EXT = "ISO"
 
 def compare(lib1, lib2):
     """Compare two XSLibraries, and return True if equal, or False if not."""
-    from armi.nuclearDataIO.cccc import isotxs
-    from armi.nuclearDataIO.cccc import gamiso
-    from armi.nuclearDataIO.cccc import pmatrx
+    from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 
     equal = True
     # check the nuclides
@@ -127,7 +125,7 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         isosWithSuffix = [
             iso
             for iso in isosToMerge
-            if re.match(f".*ISO[A-Z]{{2}}F?{xsLibrarySuffix}$", iso)
+            if re.match(f".*ISO[A-Za-z]{{2}}F?{xsLibrarySuffix}$", iso)
         ]
         isosToMerge = [
             iso
@@ -177,10 +175,8 @@ def mergeXSLibrariesInWorkingDirectory(
         An alternate directory in which to search for files other than the working directory. The main purpose
         of this is for testing, but it could also be useful to users.
     """
-    from armi.nuclearDataIO.cccc import isotxs
-    from armi.nuclearDataIO.cccc import gamiso
-    from armi.nuclearDataIO.cccc import pmatrx
     from armi import nuclearDataIO
+    from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 
     baseDir = alternateDirectory or os.getcwd()
     globPath = os.path.join(baseDir, _ISOTXS_EXT + "*")
@@ -193,7 +189,7 @@ def mergeXSLibrariesInWorkingDirectory(
     for xsLibFilePath in sorted(xsLibFiles):
         try:
             # get XS ID from the cross section library name
-            xsID = re.search("ISO([A-Z0-9]{2})", xsLibFilePath).group(1)
+            xsID = re.search("ISO([A-Z0-9a-z]{2})", xsLibFilePath).group(1)
         except AttributeError:
             # if glob has matched something that is not actually an ISOXX file,
             # the .group() call will fail

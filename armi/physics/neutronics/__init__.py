@@ -33,12 +33,11 @@ independent interfaces:
 # ruff: noqa: F401, E402
 from enum import IntEnum
 
-import numpy
-import tabulate
+import numpy as np
 
-from armi import plugins
-from armi import runLog
+from armi import plugins, runLog
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
+from armi.utils import tabulate
 
 
 class NeutronicsPlugin(plugins.ArmiPlugin):
@@ -60,13 +59,20 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
+        """Define parameters for the plugin."""
         from armi.physics.neutronics import parameters as neutronicsParameters
 
         return neutronicsParameters.getNeutronicsParameterDefinitions()
 
     @staticmethod
     @plugins.HOOKIMPL
+    def defineParameterRenames():
+        return {"buGroup": "envGroup", "buGroupNum": "envGroupNum"}
+
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineEntryPoints():
+        """Define entry points for the plugin."""
         from armi.physics.neutronics import diffIsotxs
 
         entryPoints = [diffIsotxs.CompareIsotxsLibraries]
@@ -76,8 +82,9 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
-        from armi.physics.neutronics import settings as neutronicsSettings
+        """Define settings for the plugin."""
         from armi.physics.neutronics import crossSectionSettings
+        from armi.physics.neutronics import settings as neutronicsSettings
         from armi.physics.neutronics.fissionProductModel import (
             fissionProductModelSettings,
         )
@@ -96,10 +103,10 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @plugins.HOOKIMPL
     def defineSettingsValidators(inspector):
         """Implementation of settings inspections for neutronics settings."""
-        from armi.physics.neutronics.settings import getNeutronicsSettingValidators
         from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
             getFissionProductModelSettingValidators,
         )
+        from armi.physics.neutronics.settings import getNeutronicsSettingValidators
 
         settingsValidators = getNeutronicsSettingValidators(inspector)
         settingsValidators.extend(getFissionProductModelSettingValidators(inspector))
@@ -108,6 +115,7 @@ class NeutronicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def onProcessCoreLoading(core, cs, dbLoad):
+        """Called whenever a Core object is newly built."""
         applyEffectiveDelayedNeutronFractionToCore(core, cs)
 
     @staticmethod
@@ -128,7 +136,6 @@ from armi.physics.neutronics.const import (
     NEUTRONGAMMA,
     RESTARTFILES,
 )
-
 
 # ARC and CCCC cross section file format names
 COMPXS = "COMPXS"
@@ -244,29 +251,31 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
             )
 
         core.p.beta = sum(beta)
-        core.p.betaComponents = numpy.array(beta)
-        core.p.betaDecayConstants = numpy.array(decayConstants)
+        core.p.betaComponents = np.array(beta)
+        core.p.betaDecayConstants = np.array(decayConstants)
 
         reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
-        reportTableData.append(
-            ("Group-wise Delayed Neutron Fractions", core.p.betaComponents)
-        )
-        reportTableData.append(
-            ("Group-wise Precursor Decay Constants", core.p.betaDecayConstants)
-        )
+        for i, betaComponent in enumerate(core.p.betaComponents):
+            reportTableData.append(
+                (f"Group {i} Delayed Neutron Fractions", betaComponent)
+            )
+        for i, decayConstant in enumerate(core.p.betaDecayConstants):
+            reportTableData.append(
+                ("Group {i} Precursor Decay Constants", decayConstant)
+            )
 
     # Report to the user the values were not applied.
     if not reportTableData and (beta is not None or decayConstants is not None):
         runLog.warning(
             f"Delayed neutron fraction(s) - {beta} and decay constants"
-            " - {decayConstants} have not been applied."
+            f" - {decayConstants} have not been applied."
         )
     else:
         runLog.extra(
             tabulate.tabulate(
-                tabular_data=reportTableData,
+                data=reportTableData,
                 headers=["Component", "Value"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 

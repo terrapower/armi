@@ -21,34 +21,34 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "armi"
-version = "0.2.9"
+version = "0.5.1"
 description = "An open-source nuclear reactor analysis automation framework that helps design teams increase efficiency and quality."
 license = {file = "LICENSE.md"}
-requires-python = ">3.6"
+requires-python = ">3.8"
 readme = "README.rst"
 authors = [
     { name="TerraPower, LLC", email="armi-devs@terrapower.com" },
 ]
 dependencies = [
-    "configparser",
-    "coverage",
-    "h5py>=3.0,<=3.9",
-    "htmltree",
-    "matplotlib",
-    "numpy>=1.21,<=1.23.5",
-    "ordered-set",
-    "pillow",
-    "pluggy",
-    "pyDOE",
-    "pyevtk",
-    "ruamel.yaml<=0.17.21",
-    "ruamel.yaml.clib<=0.2.7",
-    "scipy",
-    "tabulate",
-    "toml>0.9.5",
-    "voluptuous",
-    "xlrd",
-    "yamlize==0.7.1",
+    "coverage>=7.2.0", # Code coverage tool. Sadly baked into every Case.
+    "h5py>=3.0,<=3.9 ; python_version < '3.11.0'",
+    "h5py>=3.9 ; python_version >= '3.11.0'", # Needed because our database files are H5 format
+    "matplotlib>=3.5.3,<3.8.0 ; python_version < '3.11.0'",
+    "matplotlib>=3.5.3 ; python_version >= '3.11.0'", # Important plotting library
+    "numpy>=1.21", # Important math library
+    "ordered-set>=3.1.1", # A useful data structure
+    "pluggy>=1.2.0", # Central tool behind the ARMI Plugin system
+    "pyDOE>=0.3.8", # We import a Latin-hypercube algorithm to explore a phase space
+    "pyevtk>=1.2.0", # Handles binary VTK visualization files
+    "python-dateutil>=2.2", # To read a datetime string more easily.
+    "ruamel.yaml ; python_version >= '3.11.0'", # Our foundational YAML library
+    "ruamel.yaml.clib ; python_version >= '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml.clib<=0.2.7 ; python_version < '3.11.0'", # C-based core of ruamel below
+    "ruamel.yaml<=0.17.21 ; python_version < '3.11.0'", # Our foundational YAML library
+    "scipy>=1.7.0", # Used for curve-fitting and matrix math
+    "toml>0.9.5", # Needed to parse the pyproject.toml file
+    "voluptuous>=0.12.1", # Used to validate YAML data files
+    "yamlize==0.7.1", # Custom YAML-to-object library
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -58,11 +58,11 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
@@ -78,43 +78,48 @@ grids = ["wxpython==4.2.1"]
 memprof = ["psutil"]
 mpi = ["mpi4py"]
 test = [
-    "black==22.6.0",
-    "docutils",
-    "ipykernel",
-    "jupyter-contrib-nbextensions",
-    "jupyter_client",
-    "nbconvert",
-    "pytest",
-    "pytest-cov",
-    "pytest-html",
-    "pytest-xdist",
-    "ruff==0.0.272",
+    "black==22.6.0", # Code formatter (version-pinned)
+    "ipykernel>=6.0.0", # IPython Kernel (We run test notebooks from the doc tutorials.)
+    "jupyter_client>=7.0.0", # Reference implementation of the Jupyter protocol
+    "nbconvert>=7.0.0", # Converting Jupyter Notebooks to other formats
+    "nbformat>=5.5.0", # Jupyter Notebook reader
+    "pytest-cov>=4.0.0", # coverage plugin
+    "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
+    "pytest>=7.0.0", # Our primary test tooling
+    "ruff==0.5.1", # Linting and code formatting (version-pinned)
 ]
 docs = [
-#######################################################################
-# These are most specified that usual, because Sphinx docs seem to be
-# quite fragile limited <7 by sphinx-rtd-theme at the moment.
-#
-# sphinx-rtd-theme requires docutils <0.19 but sphinx dropped support
-# for 0.18 in 6.0.0 so we're stuck at these versions.
-#
-# We are only building our docs with Python 3.9.
-#######################################################################
-    "Sphinx==5.3.0",
-    "docutils==0.18.1",
-    "sphinx-rtd-theme==1.2.2", # Read-The-Docs theme for Sphinx
-    "nbsphinx==0.9.2", # Parses Jupyter notebooks
-    "nbsphinx-link==1.3.0", # Adds Jupyter NBs to Sphinx source root
-    "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
-    "sphinxcontrib-apidoc==0.3.0", # More easily document our API
-    "sphinxext-opengraph==0.8.2", # Generates OpenGraph metadata to make good-looking cards on social media
-    "sphinx-needs==1.2.2", # Requirements traceability matrices for QA
-    "sphinxcontrib-plantuml==0.25", # UML support in sphinx-needs
+######################################################################################
+# These are most specified that usual, because Sphinx docs seem to be quite fragile. #
+#                                                                                    #
+# Officially, we build our docs with Python 3.13.                                    #
+######################################################################################
+    "docutils==0.21.2", # Needed by sphinx-rtd-them
+    "ipykernel>=6.0.0", # iPython kernel to run Jupyter notebooks
+    "Jinja2==3.1.5", # Used in numpydoc and nbconvert
+    "nbsphinx-link==1.3.1", # Adds Jupyter NBs to Sphinx source root
+    "nbsphinx==0.9.6", # Parses Jupyter notebooks
     "pandoc", # Must be in the path (to convert file formats)
-    "ipykernel==6.25.1", # iPython kernel to run Jupyter notebooks
-    "pylint==2.17.5", # Generates UML diagrams
-    "Jinja2==3.0.3", # Used in numpydoc and nbconvert
-    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors 
+    "pylint", # Generates UML diagrams
+    "pypdf==5.3.1", # Generating a single PDF file for the Sphinx documentation
+    "setuptools",  # needed for conf.py tooling
+    "sphinx-data-viewer==0.1.5",
+    "sphinx-gallery==0.13.0", # Builds an HTML version of a Python script and puts it into a gallery
+    "sphinx-needs==4.2.0", # Requirements traceability matrices for QA
+    "sphinx-rtd-theme==3.0.2", # Read-The-Docs theme for Sphinx
+    "sphinx-test-reports==1.1.0", # sphinx-needs test reports in the STR
+    "Sphinx==7.4.7", # central library used to build our docs
+    "sphinxcontrib-apidoc==0.5.0", # More easily document our API
+    "sphinxcontrib-applehelp==2.0.0",
+    "sphinxcontrib-devhelp==2.0.0",
+    "sphinxcontrib-htmlhelp==2.1.0",
+    "sphinxcontrib-jquery==4.1", # Handle missing jquery errors
+    "sphinxcontrib-jsmath==1.0.1",
+    "sphinxcontrib-plantuml==0.30", # UML support in sphinx-needs
+    "sphinxcontrib-qthelp==2.0.0",
+    "sphinxcontrib-serializinghtml==2.0.0",
+    "sphinxext-opengraph==0.9.1", # Generates OpenGraph metadata to make cards for social media
+    "unittest-xml-reporting==3.2.0", # Allows us to generate junit XML test reports
 ]
 
 [project.scripts]
@@ -129,48 +134,13 @@ find = {}
 #######################################################################
 [tool.ruff]
 # This is the exact version of Ruff we use.
-required-version = "0.0.272"
+required-version = "0.5.1"
 
-# Assume Python 3.9
-target-version = "py39"
+# Assume Python 3.13
+target-version = "py313"
 
-# Setting line-length to 88 to match Black
-line-length = 88
-
-# Enable pycodestyle (E) and Pyflakes (F) codes by default.
-# D - NumPy docstring rules
-# N801 - Class name should use CapWords convention
-# SIM - code simplification rules
-# TID - tidy imports
-# TODO: We want to support PLW0603 - don't use the global keyword
-select = ["E", "F", "D", "N801", "SIM", "TID"]
-
-# Ruff rules we ignore (for now) because they are not 100% automatable
-#
-# D100 - Missing docstring in public module
-# D101 - Missing docstring in public class
-# D102 - Missing docstring in public method
-# D103 - Missing docstring in public function
-# D106 - Missing docstring in public nested class
-# D401 - First line of docstring should be in imperative mood
-# D404 - First word of the docstring should not be "This"
-# SIM102 - Use a single if statement instead of nested if statements
-# SIM105 - Use contextlib.suppress({exception}) instead of try-except-pass
-# SIM108 - Use ternary operator {contents} instead of if-else-block
-# SIM114 - Combine if branches using logical or operator
-# SIM115 - Use context handler for opening files
-# SIM117 - Use a single with statement with multiple contexts instead of nested with statements
-
-# Ruff rules we ignore because we don't want them
-#
-# D105 - we don't need to document well-known magic methods
-# D205 - 1 blank line required between summary line and description
-# E501 - line length, because we use Black for that
-# E731 - we can use lambdas however we want
-# RUF100 - no unused noqa statements (not consistent enough yet)
-# SIM118 - this does not work where we overload the .keys() method
-#
-ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E501", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
+# Setting line-length to 120 (though blacks default is 88)
+line-length = 120
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
@@ -194,11 +164,47 @@ exclude = [
     "buck-out",
     "build",
     "dist",
+    "doc/tutorials/armi-example-app",
     "node_modules",
     "venv",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+# Enable pycodestyle (E) and Pyflakes (F) codes by default.
+# D - NumPy docstring rules
+# I - Sorting imports
+# N801 - Class name should use CapWords convention
+# SIM - code simplification rules
+# TID - tidy imports
+select = ["D", "E", "F", "I", "N801", "SIM", "TID"]
+
+# Ruff rules we ignore (for now) because they are not 100% automatable
+#
+# D100 - Missing docstring in public module
+# D101 - Missing docstring in public class
+# D102 - Missing docstring in public method
+# D103 - Missing docstring in public function
+# D106 - Missing docstring in public nested class
+# D401 - First line of docstring should be in imperative mood
+# D404 - First word of the docstring should not be "This"
+# SIM102 - Use a single if statement instead of nested if statements
+# SIM105 - Use contextlib.suppress({exception}) instead of try-except-pass
+# SIM108 - Use ternary operator {contents} instead of if-else-block
+# SIM114 - Combine if branches using logical or operator
+# SIM115 - Use context handler for opening files
+# SIM117 - Use a single with statement with multiple contexts instead of nested with statements
+
+# Ruff rules we ignore because we don't want them
+#
+# D105 - we don't need to document well-known magic methods
+# D205 - 1 blank line required between summary line and description
+# E731 - we can use lambdas however we want
+# RUF100 - no unused noqa statements (not consistent enough yet)
+# SIM118 - this does not work where we overload the .keys() method
+#
+ignore = ["D100", "D101", "D102", "D103", "D105", "D106", "D205", "D401", "D404", "E731", "RUF100", "SIM102", "SIM105", "SIM108", "SIM114", "SIM115", "SIM117", "SIM118"]
+
+[tool.ruff.lint.per-file-ignores]
 # D1XX - enforces writing docstrings
 # E741 - ambiguous variable name
 # N - We have our own naming conventions for unit tests.
@@ -206,10 +212,10 @@ exclude = [
 "*/tests/*" = ["D1", "E741", "N", "SLF001"]
 "doc/gallery-src/*" = ["D400"]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.pydocstyle]
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
 
@@ -223,6 +229,48 @@ addopts = "--durations=30 --tb=native"
 filterwarnings = [
     "ignore: the matrix subclass is not the recommended way:PendingDeprecationWarning",
 ]
+
+[tool.coverage.run]
+exclude_also = [
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    "armi/utils/tests/test_gridGui.py",
+    "venv/",
+    ]
+source = ["armi"]
+parallel = true
+# Change default .coverage file to something that doesn't have a dot
+# because some Windows services can't handle dots.
+data_file = "coverage_results.cov"
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+omit = [
+    "*/tests/*",
+    "armi/cli/gridGui.py",
+    "armi/utils/gridEditor.py",
+    ]
+
+exclude_also = [
+    # Don't complain about missing debug-only code:
+    "def __repr__",
+    "if self\\.debug",
+
+    # Don't complain if non-runnable code isn't run:
+    "if __name__ == .__main__.:",
+
+    # Don't complain about missing type checking-only code:
+    "if TYPE_CHECKING",
+
+    # Don't complain if tests don't hit defensive assertion code:
+    "except ImportError",
+    "pass",
+    "raise AssertionError",
+    "raise KeyboardInterrupt",
+    "raise NotImplementedError",
+    ]
+
+ignore_errors = true
 
 
 #######################################################################
@@ -270,36 +318,33 @@ armi = [
     "physics/neutronics/tests/ISOXA",
     "physics/neutronics/tests/rzmflxYA",
     "resources/*",
-    "resources/**/*",
     "tests/1DslabXSByCompTest.yaml",
+    "tests/anl-afci-177/anl-afci-177-blueprints.yaml",
+    "tests/anl-afci-177/anl-afci-177-coreMap.yaml",
+    "tests/anl-afci-177/anl-afci-177-fuelManagement.py",
+    "tests/anl-afci-177/anl-afci-177.yaml",
     "tests/armiRun-SHUFFLES.txt",
     "tests/armiRun.yaml",
+    "tests/c5g7",
+    "tests/c5g7/c5g7-blueprints.yaml",
+    "tests/c5g7/c5g7-settings.yaml",
     "tests/COMPXS.ascii",
     "tests/detailedAxialExpansion/armiRun.yaml",
     "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
     "tests/detailedAxialExpansion/refSmallReactor.yaml",
     "tests/detailedAxialExpansion/refSmallReactorBase.yaml",
-    "tests/geom.xml",
-    "tests/geom1Assem.xml",
     "tests/ISOAA",
-    "tests/refOneBlockReactor.yaml",
     "tests/refSmallCartesian.yaml",
     "tests/refSmallCoreGrid.yaml",
     "tests/refSmallReactor.yaml",
     "tests/refSmallReactorBase.yaml",
     "tests/refSmallSfpGrid.yaml",
     "tests/refTestCartesian.yaml",
-    "tests/sfpGeom.yaml",
-    "tests/ThRZGeom.xml",
-    "tests/ThRZloading.yaml",
-    "tests/ThRZSettings.yaml",
-    "tests/trz_geom.xml",
+    "tests/smallestTestReactor/armiRunSmallest.yaml",
+    "tests/smallestTestReactor/refOneBlockReactor.yaml",
+    "tests/smallestTestReactor/refSmallestReactor.yaml",
     "tests/tutorials",
-    "tests/tutorials/anl-afci-177-blueprints.yaml",
-    "tests/tutorials/anl-afci-177-coreMap.yaml",
-    "tests/tutorials/anl-afci-177-fuelManagement.py",
-    "tests/tutorials/anl-afci-177.yaml",
     "tests/tutorials/data_model.ipynb",
     "tests/zpprTest.yaml",
-    "tests/zpprTestGeom.xml",
+    "tests/zpprTestGeom.yaml",
 ]

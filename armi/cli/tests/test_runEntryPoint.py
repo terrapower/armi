@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for run cli entry point."""
-from shutil import copyfile
+import logging
 import os
 import sys
 import unittest
+from shutil import copyfile
 
+from armi import runLog
 from armi.__main__ import main
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.visualization.entryPoint import VisFileEntryPoint
 from armi.cli.checkInputs import CheckInputEntryPoint, ExpandBlueprints
 from armi.cli.clone import CloneArmiRunCommandBatch, CloneSuiteCommand
 from armi.cli.compareCases import CompareCases, CompareSuites
-from armi.cli.database import ConvertDB, ExtractInputs, InjectInputs
+from armi.cli.database import ExtractInputs, InjectInputs
 from armi.cli.entryPoint import EntryPoint
 from armi.cli.migrateInputs import MigrateInputs
 from armi.cli.modify import ModifyCaseSettingsCommand
@@ -30,18 +33,68 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
+from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
 
 
+def buildTestDB(fileName, numNodes=1, numCycles=1):
+    """This function builds a (super) simple test DB.
+
+    Notes
+    -----
+    This needs to be run inside a temp directory.
+
+    Parameters
+    ----------
+    fileName : str
+        The file name (not path) we want for the ARMI test DB.
+    numNodes : int, optional
+        The number of nodes we want in the DB, default 1.
+    numCycles : int, optional
+        The number of cycles we want in the DB, default 1.
+
+    Returns
+    -------
+    str
+        Database file name.
+    """
+    o, r = loadTestReactor(
+        TEST_ROOT,
+        inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+    )
+
+    # create the tests DB
+    dbi = DatabaseInterface(r, o.cs)
+    dbi.initDB(fName=f"{fileName}.h5")
+    db = dbi.database
+
+    # populate the db with something
+    r.p.cycle = 0
+    for node in range(abs(numNodes)):
+        for cycle in range(abs(numCycles)):
+            r.p.timeNode = node
+            r.p.cycle = cycle
+            r.p.cycleLength = 100
+            db.writeToDB(r)
+
+    db.close()
+    return f"{fileName}.h5"
+
+
 class TestInitializationEntryPoints(unittest.TestCase):
     def test_entryPointInitialization(self):
-        """Tests the initialization of all subclasses of `EntryPoint`."""
+        """Tests the initialization of all subclasses of `EntryPoint`.
+
+        .. test:: Test initialization of many basic CLIs.
+            :id: T_ARMI_CLI_GEN0
+            :tests: R_ARMI_CLI_GEN
+        """
         entryPoints = getEntireFamilyTree(EntryPoint)
 
         # Comparing to a minimum number of entry points, in case more are added.
-        self.assertGreater(len(entryPoints), 16)
+        self.assertGreater(len(entryPoints), 15)
 
         for e in entryPoints:
             entryPoint = e()
@@ -71,14 +124,21 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         self.assertEqual(ci.name, "check-input")
         self.assertEqual(ci.args.patterns, ["/path/to/fake.yaml"])
         self.assertEqual(ci.args.skip_checks, True)
-        self.assertEqual(ci.args.generate_design_summary, False)
 
     def test_checkInputEntryPointInvoke(self):
+        """Test the "check inputs" entry point.
+
+        .. test:: A working CLI child class, to validate inputs.
+            :id: T_ARMI_CLI_GEN1
+            :tests: R_ARMI_CLI_GEN
+        """
         ci = CheckInputEntryPoint()
         ci.addOptions()
         ci.parse_args([ARMI_RUN_PATH])
 
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_checkInputEntryPointInvoke")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
 
             ci.invoke()
@@ -124,6 +184,12 @@ class TestCloneArmiRunCommandBatch(unittest.TestCase):
             self.assertNotIn("availabilityFactor", txt)
 
     def test_cloneArmiRunCommandBatchInvokeMedium(self):
+        """Test the "clone armi run" batch entry point, on medium detail.
+
+        .. test:: A working CLI child class, to clone a run.
+            :id: T_ARMI_CLI_GEN2
+            :tests: R_ARMI_CLI_GEN
+        """
         # Test medium write style
         ca = CloneArmiRunCommandBatch()
         ca.addOptions()
@@ -154,54 +220,31 @@ class TestCloneSuiteCommand(unittest.TestCase):
 
 class TestCompareCases(unittest.TestCase):
     def test_compareCasesBasics(self):
-        cc = CompareCases()
-        cc.addOptions()
-        cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+        with TemporaryDirectoryChanger():
+            cc = CompareCases()
+            cc.addOptions()
+            cc.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
 
-        self.assertEqual(cc.name, "compare")
-        self.assertIsNone(cc.args.timestepCompare)
-        self.assertIsNone(cc.args.weights)
+            self.assertEqual(cc.name, "compare")
+            self.assertIsNone(cc.args.timestepCompare)
+            self.assertIsNone(cc.args.weights)
+
+            with self.assertRaises(ValueError):
+                # The "fake" files do exist, so this should fail.
+                cc.invoke()
 
 
 class TestCompareSuites(unittest.TestCase):
     def test_compareSuitesBasics(self):
-        cs = CompareSuites()
-        cs.addOptions()
-        cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5"])
+        with TemporaryDirectoryChanger():
+            cs = CompareSuites()
+            cs.addOptions()
+            cs.parse_args(["/path/to/fake1.h5", "/path/to/fake2.h5", "-I"])
 
-        self.assertEqual(cs.name, "compare-suites")
-        self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
-        self.assertIsNone(cs.args.weights)
-
-
-class TestConvertDB(unittest.TestCase):
-    def test_convertDbBasics(self):
-        cdb = ConvertDB()
-        cdb.addOptions()
-        cdb.parse_args(["/path/to/fake.h5"])
-
-        self.assertEqual(cdb.name, "convert-db")
-        self.assertEqual(cdb.args.output_version, "3")
-        self.assertIsNone(cdb.args.nodes)
-
-        # Since the file is fake, invoke() should exit early.
-        with mockRunLogs.BufferLog() as mock:
-            cdb.args.nodes = [1, 2, 3]
-            with self.assertRaises(ValueError):
-                cdb.invoke()
-            self.assertIn("Converting the", mock.getStdout())
-
-    def test_convertDbOutputVersion(self):
-        cdb = ConvertDB()
-        cdb.addOptions()
-        cdb.parse_args(["/path/to/fake.h5", "--output-version", "XtView"])
-        self.assertEqual(cdb.args.output_version, "2")
-
-    def test_convertDbOutputNodes(self):
-        cdb = ConvertDB()
-        cdb.addOptions()
-        cdb.parse_args(["/path/to/fake.h5", "--nodes", "(1,2)"])
-        self.assertEqual(cdb.args.nodes, [(1, 2)])
+            self.assertEqual(cs.name, "compare-suites")
+            self.assertEqual(cs.args.reference, "/path/to/fake1.h5")
+            self.assertTrue(cs.args.skip_inspection)
+            self.assertIsNone(cs.args.weights)
 
 
 class TestExpandBlueprints(unittest.TestCase):
@@ -215,6 +258,8 @@ class TestExpandBlueprints(unittest.TestCase):
 
         # Since the file is fake, invoke() should exit early.
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_expandBlueprintsBasics")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
             ebp.invoke()
             self.assertIn("does not exist", mock.getStdout())
@@ -222,18 +267,36 @@ class TestExpandBlueprints(unittest.TestCase):
 
 class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
-        ei = ExtractInputs()
-        ei.addOptions()
-        ei.parse_args(["/path/to/fake"])
+        with TemporaryDirectoryChanger() as newDir:
+            # build test DB
+            o, r = loadTestReactor(
+                inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+            )
+            dbi = DatabaseInterface(r, o.cs)
+            dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
+            dbi.initDB(fName=dbPath)
+            db = dbi.database
+            db.writeToDB(r)
 
-        self.assertEqual(ei.name, "extract-inputs")
-        self.assertEqual(ei.args.output_base, "/path/to/fake")
+            # init the CLI
+            ei = ExtractInputs()
+            ei.addOptions()
+            ei.parse_args([dbPath])
 
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            with self.assertRaises(FileNotFoundError):
-                # The "fake" file doesn't exist, so this should fail.
+            # test the CLI initialization
+            self.assertEqual(ei.name, "extract-inputs")
+            self.assertEqual(ei.args.output_base, dbPath[:-3])
+
+            # run the CLI on a test DB, verify it worked via logging
+            with mockRunLogs.BufferLog() as mock:
+                runLog.LOG.startLog("test_extractInputsBasics")
+                runLog.LOG.setVerbosity(logging.INFO)
+                self.assertEqual("", mock.getStdout())
                 ei.invoke()
+                self.assertIn("Writing settings to", mock.getStdout())
+                self.assertIn("Writing blueprints to", mock.getStdout())
+
+            db.close()
 
 
 class TestInjectInputs(unittest.TestCase):
@@ -251,6 +314,8 @@ class TestInjectInputs(unittest.TestCase):
         ii.parse_args(["/path/to/fake.h5"])
 
         with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_injectInputsInvokeIgnore")
+            runLog.LOG.setVerbosity(logging.INFO)
             self.assertEqual("", mock.getStdout())
             ii.invoke()
             self.assertIn("No settings", mock.getStdout())
@@ -265,11 +330,9 @@ class TestInjectInputs(unittest.TestCase):
             ii.parse_args(["/path/to/fake.h5", "--blueprints", bp])
 
             # invoke and check log
-            with mockRunLogs.BufferLog() as mock:
-                self.assertEqual("", mock.getStdout())
-                with self.assertRaises(FileNotFoundError):
-                    # The "fake.h5" doesn't exist, so this should fail.
-                    ii.invoke()
+            with self.assertRaises(FileNotFoundError):
+                # The "fake.h5" doesn't exist, so this should fail.
+                ii.invoke()
 
 
 class TestMigrateInputs(unittest.TestCase):
@@ -304,31 +367,29 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
             for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
                 copyfile(os.path.join(TEST_ROOT, fileName), fileName)
 
-            # pass in --numProcessors=333
-            mcs.parse_args(["--numProcessors=333", "--rootDir", ".", "armiRun.yaml"])
+            # pass in --nTasks=333
+            mcs.parse_args(["--nTasks=333", "--rootDir", ".", "armiRun.yaml"])
 
             # invoke the CLI
             mcs.invoke()
 
-            # validate the change to numProcessors was made
+            # validate the change to nTasks was made
             txt = open("armiRun.yaml", "r").read()
-            self.assertIn("numProcessors: 333", txt)
+            self.assertIn("nTasks: 333", txt)
+
+
+class MockFakeReportsEntryPoint(ReportsEntryPoint):
+    name = "MockFakeReport"
+
+    def invoke(self):
+        return "mock fake"
 
 
 class TestReportsEntryPoint(unittest.TestCase):
-    def test_reportsEntryPointBasics(self):
-        rep = ReportsEntryPoint()
-        rep.addOptions()
-        rep.parse_args(["-h5db", "/path/to/fake.h5"])
-
-        self.assertEqual(rep.name, "report")
-        self.assertEqual(rep.settingsArgument, "optional")
-
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            with self.assertRaises(ValueError):
-                # The "fake.h5" doesn't exist, so this should fail.
-                rep.invoke()
+    def test_cleanArgs(self):
+        rep = MockFakeReportsEntryPoint()
+        result = rep.invoke()
+        self.assertEqual(result, "mock fake")
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
@@ -341,6 +402,10 @@ class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
 
         self.assertEqual(com.name, "diff-isotxs")
         self.assertIsNone(com.settingsArgument)
+
+        with self.assertRaises(FileNotFoundError):
+            # The provided files don't exist, so this should fail.
+            com.invoke()
 
 
 class TestRunEntryPoint(unittest.TestCase):
@@ -376,17 +441,63 @@ class TestRunSuiteCommand(unittest.TestCase):
     def test_runSuiteCommandBasics(self):
         rs = RunSuiteCommand()
         rs.addOptions()
-        rs.parse_args(["/path/to/fake.yaml"])
+        rs.parse_args(["/path/to/fake.yaml", "-l"])
 
         self.assertEqual(rs.name, "run-suite")
         self.assertIsNone(rs.settingsArgument)
 
+        # test the invoke method
+        with mockRunLogs.BufferLog() as mock:
+            runLog.LOG.startLog("test_runSuiteCommandBasics")
+            runLog.LOG.setVerbosity(logging.INFO)
+            self.assertEqual("", mock.getStdout())
+            rs.invoke()
+            self.assertIn("Finding potential settings files", mock.getStdout())
+            self.assertIn("Checking for valid settings", mock.getStdout())
+            self.assertIn("Primary Log Verbosity", mock.getStdout())
+
 
 class TestVisFileEntryPointCommand(unittest.TestCase):
     def test_visFileEntryPointBasics(self):
-        vf = VisFileEntryPoint()
-        vf.addOptions()
-        vf.parse_args(["/path/to/fake.h5"])
+        with TemporaryDirectoryChanger() as newDir:
+            # build test DB
+            self.o, self.r = loadTestReactor(
+                TEST_ROOT,
+                customSettings={"reloadDBName": "reloadingDB.h5"},
+                inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+            )
+            reduceTestReactorRings(self.r, self.o.cs, maxNumRings=2)
+            self.dbi = DatabaseInterface(self.r, self.o.cs)
+            dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
+            self.dbi.initDB(fName=dbPath)
+            self.db = self.dbi.database
+            self.db.writeToDB(self.r)
 
-        self.assertEqual(vf.name, "vis-file")
-        self.assertIsNone(vf.settingsArgument)
+            # create Viz entry point
+            vf = VisFileEntryPoint()
+            vf.addOptions()
+            vf.parse_args([dbPath])
+
+            self.assertEqual(vf.name, "vis-file")
+            self.assertIsNone(vf.settingsArgument)
+
+            # test the invoke method
+            with mockRunLogs.BufferLog() as mock:
+                runLog.LOG.startLog("test_visFileEntryPointBasics")
+                runLog.LOG.setVerbosity(logging.INFO)
+                self.assertEqual("", mock.getStdout())
+
+                vf.invoke()
+
+                desired = "Creating visualization file for cycle 0, time node 0..."
+                self.assertIn(desired, mock.getStdout())
+
+            # test the parse method (using the same DB to save time)
+            vf = VisFileEntryPoint()
+            vf.parse([dbPath])
+            self.assertIsNone(vf.args.nodes)
+            self.assertIsNone(vf.args.min_node)
+            self.assertIsNone(vf.args.max_node)
+            self.assertEqual(vf.args.output_name, "test_visFileEntryPointBasics")
+
+            self.db.close()

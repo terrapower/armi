@@ -63,7 +63,7 @@ blocks:
             op: 16.75
     other fuel: &block_fuel_other
         grid name: fuelgrid
-        flags: fuel test
+        flags: fuel test depletable
         fuel:
             shape: Circle
             material: UZr
@@ -280,7 +280,12 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertIs(grid[locators[0].getCompleteIndices()], locators[0])
 
     def test_blockLattice(self):
-        """Make sure constructing a block with grid specifiers works as a whole."""
+        """Make sure constructing a block with grid specifiers works as a whole.
+
+        .. test:: Create block with blueprint file.
+            :id: T_ARMI_BP_BLOCK
+            :tests: R_ARMI_BP_BLOCK
+        """
         aDesign = self.blueprints.assemDesigns.bySpecifier["IC"]
         a = aDesign.construct(self.cs, self.blueprints)
         fuelBlock = a.getFirstBlock(Flags.FUEL)
@@ -301,6 +306,13 @@ class TestGriddedBlock(unittest.TestCase):
         self.assertEqual(duct.getDimension("mult"), 1.0)
 
     def test_explicitFlags(self):
+        """
+        Test flags are created from blueprint file.
+
+        .. test:: Nuc flags can define depletable objects.
+            :id: T_ARMI_BP_NUC_FLAGS0
+            :tests: R_ARMI_BP_NUC_FLAGS
+        """
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints
         )
@@ -312,13 +324,14 @@ class TestGriddedBlock(unittest.TestCase):
         )
 
         self.assertTrue(b1.hasFlags(Flags.FUEL, exact=True))
-        self.assertTrue(b2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
+        self.assertTrue(
+            b2.hasFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True)
+        )
 
         self.assertEqual(a1.p.flags, Flags.FUEL)
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
 
-    # TODO: This test passes, but shouldn't.
     def test_densityConsistentWithComponentConstructor(self):
         a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
             self.cs, self.blueprints

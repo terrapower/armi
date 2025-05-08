@@ -18,18 +18,18 @@ fuel processing (in fluid systems).
 The :py:class:`FuelHandlerInterface` instantiates a ``FuelHandler``, which is typically a user-defined
 subclass the :py:class:`FuelHandler` object in custom shuffle-logic input files.
 Users point to the code modules with their custom fuel handlers using the
-``shuffleLogic`` and ``fuelHandlerName`` settings, as described in :doc:`/user/inputs/fuel_management`.
+``shuffleLogic`` and ``fuelHandlerName`` settings, as described in :ref:`fuel-management-input`.
 These subclasses override ``chooseSwaps`` that determine
 the particular shuffling of a case.
 
 This module also handles repeat shuffles when doing a restart.
 """
 # ruff: noqa: F401
+import inspect
 import os
 import re
-import warnings
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
@@ -37,6 +37,7 @@ from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
 from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
 from armi.reactor.flags import Flags
+from armi.reactor.parameters import ParamLocation
 from armi.utils.customExceptions import InputError
 
 
@@ -54,19 +55,9 @@ class FuelHandler:
     """
 
     def __init__(self, operator):
-        # we need access to the operator to find the core, get settings, grab
-        # other interfaces, etc.
+        # we need access to the operator to find the core, get settings, grab other interfaces, etc.
         self.o = operator
         self.moved = []
-        self._handleBackwardsCompatibility()
-
-    def _handleBackwardsCompatibility(self):
-        # prepSearch used to be part of the API but is deprecated. This will
-        # trigger a warning if it's implemented.
-        # We have to do this hack until we phase out old inputs.
-        # This basically asks: "Did the custom subclass override prepSearch?"
-        if self.prepSearch.__func__ is not FuelHandler.prepSearch:
-            self.prepSearch()
 
     @property
     def cycle(self):
@@ -124,7 +115,7 @@ class FuelHandler:
             # The user can choose the algorithm method name directly in the settings
             if hasattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG]):
                 rotationMethod = getattr(rotAlgos, self.cs[CONF_ASSEMBLY_ROTATION_ALG])
-                rotationMethod()
+                rotationMethod(self)
             else:
                 raise RuntimeError(
                     "FuelHandler {0} does not have a rotation algorithm called {1}.\n"
@@ -184,7 +175,7 @@ class FuelHandler:
 
         This is the default shuffle control function. Usually you would override this
         with your own in a custom shuffleLogic.py file. For more details about how this
-        works, refer to :doc:`/user/inputs/fuel_management`.
+        works, refer to :ref:`fuel-management-input`.
 
         This will get bound to the default FuelHandler as a static method below. This is
         done to allow a user to mix and match FuelHandler class implementations and
@@ -204,30 +195,41 @@ class FuelHandler:
         """Aux function to run before XS generation (do moderation, etc)."""
         pass
 
-    def prepSearch(self, *args, **kwargs):
+    @staticmethod
+    def _compareAssem(candidate, current):
+        """Check whether the candidate assembly should replace the current ideal assembly.
+
+        Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide whether the
+        candidate is better than the current ideal. This first compares the diff1 and diff2 values.
+        If diff1 is sufficiently less than diff2, a1 wins, returning True. Otherwise, False. If
+        diff1 and diff2 are sufficiently close, the assembly with the lesser assemNum wins. This
+        should result in a more stable comparison than on floating-point comparisons alone.
         """
-        Optional method that can be implemented in preparation of shuffling.
+        if np.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
+            return candidate[1].p.assemNum < current[1].p.assemNum
+        else:
+            return candidate[0] < current[0]
 
-        Often used to prepare the scope of a shuffling branch search.
+    @staticmethod
+    def _getParamMax(a, paramName, blockLevelMax=True):
+        """Get assembly/block-level maximum parameter value in assembly."""
+        multiplier = a.getSymmetryFactor()
+        if multiplier != 1:
+            # handle special case: volume-integrated parameters where symmetry factor is not 1
+            if blockLevelMax:
+                paramCollection = a[0].p
+            else:
+                paramCollection = a.p
+            isVolumeIntegrated = (
+                paramCollection.paramDefs[paramName].location
+                == ParamLocation.VOLUME_INTEGRATED
+            )
+            multiplier = a.getSymmetryFactor() if isVolumeIntegrated else 1.0
 
-        Notes
-        -----
-        This was used historically to keep a long-lived fuel handler in sync
-        with the reactor and can now technically be removed from the API, but
-        many historical fuel management inputs still expect it to be called
-        by the framework, so here it remains. New developments should
-        avoid using it. Most code using it has been refactored to just use
-        a ``_prepSearch`` private method.
-
-        It now should not be used and will trigger a DeprecationWarning
-        in the constructor. It's still here because old user-input code
-        calls the parent's prepSearch, which is this.
-        """
-        warnings.warn(
-            "`FuelHandler.prepSearch` is being deprecated from the framework. Please "
-            "change your fuel management input to call this method directly.",
-            DeprecationWarning,
-        )
+        if blockLevelMax:
+            return a.getChildParamValues(paramName).max() * multiplier
+        else:
+            return a.p[paramName] * multiplier
 
     def findAssembly(
         self,
@@ -276,12 +278,11 @@ class FuelHandler:
             multiplier. For example, if you wanted an assembly that had a bu close to half of
             assembly bob, you'd give param='percentBu', compareTo=(bob,0.5) If you want one with a
             bu close to 0.3, you'd do param='percentBu',compareTo=0.3. Yes, if you give a (float,
-            multiplier) tuple, the code will make fun of you for not doing your own math, but will
-            still operate as expected.
+            multiplier) tuple the code will still work as expected.
 
         forceSide : bool, optional
             requires the found assembly to have either 1: higher, -1: lower, None: any param than
-             compareTo
+            compareTo
 
         exclusions : list, optional
             List of assemblies that will be excluded from the search
@@ -292,24 +293,20 @@ class FuelHandler:
 
         maxParam : float or list, optional
             a parameter to compare to maxVal for setting upper bounds of acceptable assemblies.
-            If list,
-            must correspond to parameters in maxVal in order.
+            If list, must correspond to parameters in maxVal in order.
 
         minVal : float or list, optional
             a value or a (parameter, multiplier) tuple for setting lower bounds
 
-            For instance, if minParam = 'timeToLimit' and minVal=10, only assemblies with
-            timeToLimit higher than 10 will be returned.  (Of course, there is also maxParam and
-            maxVal)
+            For instance, if minParam='timeToLimit' and minVal=10, only assemblies with timeToLimit
+            higher than 10 will be returned. (Of course, there is also maxParam and maxVal)
 
         maxVal : float or list, optional
             a value or a (parameter, multiplier) tuple for setting upper bounds
 
         mandatoryLocations : list, optional
-            a list of string-representations of locations in the core for limiting the search to
-            several places
-
-            Any locations also included in `excludedLocations` will be excluded.
+            A list of string-representations of locations in the core for limiting the search to
+            several places. Any locations also included in `excludedLocations` will be excluded.
 
         excludedLocations : list, optional
             a list of string-representations of locations in the core that will be excluded from
@@ -346,20 +343,19 @@ class FuelHandler:
             default: false.
 
         findFromSfp : bool, optional
-            if true, will look in the spent-fuel pool instead of in the core.
+            If true, will look in the spent-fuel pool instead of in the core.
 
         maxNumAssems : int, optional
             The maximum number of assemblies to return. Only relevant if findMany==True
 
         circularRingFlag : bool, optional
-            A flag to toggle on using rings that are based on distance from the center of the
-            reactor
+            Toggle using rings that are based on distance from the center of the reactor
 
         Notes
         -----
-        The call signature on this method may have gotten slightly out of hand as
-        valuable capabilities were added in fuel management studies. For additional expansion,
-        it may be worth reconsidering the design of these query operations ;).
+        The call signature on this method may have gotten slightly out of hand as valuable
+        capabilities were added in fuel management studies. For additional expansion, it may be
+        worth reconsidering the design of these query operations.
 
         Returns
         -------
@@ -368,38 +364,18 @@ class FuelHandler:
 
         Examples
         --------
-        feed = self.findAssembly(targetRing=4,
-                                 width=(0,0),
-                                 param='maxPercentBu',
-                                 compareTo=100,
-                                 typeSpec=Flags.FEED | Flags.FUEL)
+        This returns the feed fuel assembly in ring 4 that has a burnup closest to 100%
+        (the highest burnup assembly)::
 
-        returns the feed fuel assembly in ring 4 that has a burnup closest to 100% (the highest
-        burnup assembly)
+            feed = self.findAssembly(targetRing=4,
+                                     width=(0,0),
+                                     param='maxPercentBu',
+                                     compareTo=100,
+                                     typeSpec=Flags.FEED | Flags.FUEL)
+
         """
-
-        def compareAssem(candidate, current):
-            """Check whether the candidate assembly should replace the current ideal
-            assembly.
-
-            Given a candidate tuple (diff1, a1) and current tuple (diff2, a2), decide
-            whether the candidate is better than the current ideal. This first compares
-            the diff1 and diff2 values. If diff1 is sufficiently less than diff2, a1
-            wins, returning True. Otherwise, False. If diff1 and diff2 are sufficiently
-            close, the assembly with the lesser assemNum wins. This should result in a
-            more stable comparison than on floating-point comparisons alone.
-            """
-            if numpy.isclose(candidate[0], current[0], rtol=1e-8, atol=1e-8):
-                return candidate[1].p.assemNum < current[1].p.assemNum
-            else:
-                return candidate[0] < current[0]
-
-        def getParamWithBlockLevelMax(a, paramName):
-            if blockLevelMax:
-                return a.getChildParamValues(paramName).max()
-            return a.p[paramName]
-
-        assemList = []  # list for storing multiple results if findMany is true.
+        # list for storing multiple results if findMany is true.
+        assemList = []
 
         # process input arguments
         if targetRing is None:
@@ -448,7 +424,7 @@ class FuelHandler:
             compVal = compareTo * mult
         elif param:
             # assume compareTo is an assembly
-            compVal = getParamWithBlockLevelMax(compareTo, param) * mult
+            compVal = FuelHandler._getParamMax(compareTo, param, blockLevelMax) * mult
 
         if coords:
             # find the assembly closest to xt,yt if coords are given without considering params.
@@ -497,12 +473,16 @@ class FuelHandler:
                         if isinstance(minVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMinVal = (
-                                getParamWithBlockLevelMax(a, minVal[0]) * minVal[1]
+                                FuelHandler._getParamMax(a, minVal[0], blockLevelMax)
+                                * minVal[1]
                             )
                         else:
                             realMinVal = minVal
 
-                        if getParamWithBlockLevelMax(a, minParam) < realMinVal:
+                        if (
+                            FuelHandler._getParamMax(a, minParam, blockLevelMax)
+                            < realMinVal
+                        ):
                             # this assembly does not meet the minVal specifications. Skip it.
                             innocent = False
                             break  # for speed (not a big deal here)
@@ -517,12 +497,16 @@ class FuelHandler:
                         if isinstance(maxVal, tuple):
                             # tuple turned in. it's a multiplier and a param
                             realMaxVal = (
-                                getParamWithBlockLevelMax(a, maxVal[0]) * maxVal[1]
+                                FuelHandler._getParamMax(a, maxVal[0], blockLevelMax)
+                                * maxVal[1]
                             )
                         else:
                             realMaxVal = maxVal
 
-                        if getParamWithBlockLevelMax(a, maxParam) > realMaxVal:
+                        if (
+                            FuelHandler._getParamMax(a, maxParam, blockLevelMax)
+                            > realMaxVal
+                        ):
                             # this assembly has a maxParam that's higher than maxVal and therefore
                             # doesn't qualify. skip it.
                             innocent = False
@@ -541,37 +525,31 @@ class FuelHandler:
                         # this assembly is in the excluded location list. skip it.
                         continue
 
-                # only continue of the Assembly is in a Zone
-                if zoneList:
-                    found = False  # guilty until proven innocent
-                    for zone in zoneList:
-                        if a.getLocation() in zone:
-                            # great! it's in there, so we'll accept this assembly
-                            found = True  # innocent
-                            break
-                    if not found:
-                        # this assembly is not in any of the zones in the zone list. skip it.
-                        continue
+                # only process of the Assembly is in a Zone
+                if not self.isAssemblyInAZone(zoneList, a):
+                    continue
 
                 # Now find the assembly with the param closest to the target val.
                 if param:
-                    diff = abs(getParamWithBlockLevelMax(a, param) - compVal)
+                    diff = abs(
+                        FuelHandler._getParamMax(a, param, blockLevelMax) - compVal
+                    )
 
                     if (
                         forceSide == 1
-                        and getParamWithBlockLevelMax(a, param) > compVal
-                        and compareAssem((diff, a), minDiff)
+                        and FuelHandler._getParamMax(a, param, blockLevelMax) > compVal
+                        and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=1, so that means look in rings further out
                         minDiff = (diff, a)
                     elif (
                         forceSide == -1
-                        and getParamWithBlockLevelMax(a, param) < compVal
-                        and compareAssem((diff, a), minDiff)
+                        and FuelHandler._getParamMax(a, param, blockLevelMax) < compVal
+                        and FuelHandler._compareAssem((diff, a), minDiff)
                     ):
                         # forceSide=-1, so that means look in rings closer in from the targetRing
                         minDiff = (diff, a)
-                    elif compareAssem((diff, a), minDiff):
+                    elif FuelHandler._compareAssem((diff, a), minDiff):
                         # no preference of which side, just take the one with the closest param.
                         minDiff = (diff, a)
                 else:
@@ -618,6 +596,21 @@ class FuelHandler:
         else:
             return minDiff[1]
 
+    @staticmethod
+    def isAssemblyInAZone(zoneList, a):
+        """Does the given assembly in one of these zones."""
+        if zoneList:
+            # ruff: noqa: SIM110
+            for zone in zoneList:
+                if a.getLocation() in zone:
+                    # Success!
+                    return True
+
+            return False
+        else:
+            # A little counter-intuitively, if there are no zones, we return True.
+            return True
+
     def _getAssembliesInRings(
         self,
         ringList,
@@ -626,13 +619,13 @@ class FuelHandler:
         exclusions=None,
         circularRingFlag=False,
     ):
-        r"""
+        """
         find assemblies in particular rings.
 
         Parameters
         ----------
         ringList : list
-            List of integer ring numbers to find assemblies in. Optionally, a string specifiying a
+            List of integer ring numbers to find assemblies in. Optionally, a string specifying a
             special location like the SFP (spent fuel pool)
 
         typeSpec : Flags or iterable of Flags, optional
@@ -652,15 +645,15 @@ class FuelHandler:
         assemblyList : list
             List of assemblies in each ring of the ringList. [[a1,a2,a3],[a4,a5,a6,a7],...]
         """
-        if "SFP" in ringList and self.r.sfp is None:
+        if "SFP" in ringList and self.r.excore.get("sfp") is None:
             sfpAssems = []
             runLog.warning(
                 f"{self} can't pull from SFP; no SFP is attached to the reactor {self.r}."
                 "To get assemblies from an SFP, you must add an SFP system to the blueprints"
-                f"or otherwise instantiate a SpentFuelPool object as r.sfp"
+                f"or otherwise instantiate a SpentFuelPool object as r.excore['sfp']"
             )
         else:
-            sfpAssems = self.r.sfp.getChildren()
+            sfpAssems = list(self.r.excore["sfp"])
 
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
@@ -711,14 +704,30 @@ class FuelHandler:
         return assemblyList
 
     def swapAssemblies(self, a1, a2):
-        r"""
-        Moves a whole assembly from one place to another.
+        """Moves a whole assembly from one place to another.
+
+        .. impl:: User-specified blocks can be left in place during within-core swaps.
+            :id: I_ARMI_SHUFFLE_STATIONARY0
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved, the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary via the
+            ``stationaryBlockFlags`` case setting. Using these flags, blocks are gathered from each
+            assembly which should remain stationary and checked to make sure that both assemblies
+            have the same number and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove` and
+            :py:meth:`~armi.reactor.assemblies.Assembly.insert` methods are used to swap the
+            stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take place. Through this
+            process, the stationary blocks remain in the same core location.
 
         Parameters
         ----------
-        a1 : Assembly
+        a1 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The first assembly
-        a2 : Assembly
+        a2 : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
             The second assembly
 
         See Also
@@ -800,8 +809,33 @@ class FuelHandler:
             assembly2.insert(assem2BlockIndex, assem1Block)
 
     def dischargeSwap(self, incoming, outgoing):
-        r"""
-        Removes one assembly from the core and replace it with another assembly.
+        """Removes one assembly from the core and replace it with another assembly.
+
+        .. impl:: User-specified blocks can be left in place for the discharge swap.
+            :id: I_ARMI_SHUFFLE_STATIONARY1
+            :implements: R_ARMI_SHUFFLE_STATIONARY
+
+            Before assemblies are moved, the ``_transferStationaryBlocks`` class method is called to
+            check if there are any block types specified by the user as stationary via the
+            ``stationaryBlockFlags`` case setting. Using these flags, blocks are gathered from each
+            assembly which should remain stationary and checked to make sure that both assemblies
+            have the same number and same height of stationary blocks. If not, return an error.
+
+            If all checks pass, the :py:meth:`~armi.reactor.assemblies.Assembly.remove` and
+            :py:meth:`~armi.reactor.assemblies.Assembly.insert` methods are used to swap the
+            stationary blocks between the two assemblies.
+
+            Once this process is complete, the actual assembly movement can take place. Through this
+            process, the stationary blocks from the outgoing assembly remain in the original core
+            position, while the stationary blocks from the incoming assembly are discharged with the
+            outgoing assembly.
+
+        Parameters
+        ----------
+        incoming : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting swapped into the core.
+        outgoing : :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+            The assembly getting discharged out the core.
 
         See Also
         --------
@@ -829,18 +863,18 @@ class FuelHandler:
         # which, coincidentally is the same time we're at right now at BOC.
         self.r.core.removeAssembly(outgoing)
 
-        # adjust the assembly multiplicity so that it doesnt forget how many it really
+        # adjust the assembly multiplicity so that it does not forget how many it really
         # represents. This allows us to discharge an assembly from any location in
         # fractional-core models where the central location may only be one assembly,
         # whereas other locations are more, and keep proper track of things. In the
         # future, this mechanism may be used to handle symmetry in general.
         outgoing.p.multiplicity = len(loc.getSymmetricEquivalents()) + 1
 
-        if self.r.sfp is not None:
-            if incoming in self.r.sfp.getChildren():
+        if self.r.excore.get("sfp") is not None:
+            if incoming in self.r.excore["sfp"].getChildren():
                 # pull it out of the sfp if it's in there.
                 runLog.extra("removing {0} from the sfp".format(incoming))
-                self.r.sfp.remove(incoming)
+                self.r.excore["sfp"].remove(incoming)
 
         incoming.p.multiplicity = 1
         self.r.core.add(incoming, loc)
@@ -848,6 +882,11 @@ class FuelHandler:
     def swapCascade(self, assemList):
         """
         Perform swaps on a list of assemblies.
+
+        Parameters
+        ----------
+        assemList: list
+            A list of assemblies to be shuffled.
 
         Notes
         -----
@@ -863,22 +902,21 @@ class FuelHandler:
         # first check for duplicates
         for assem in assemList:
             if assemList.count(assem) != 1:
-                runLog.extra("Warning: %s is in the cascade more than once!" % assem)
+                runLog.warning(f"{assem} is in the cascade more than once.")
 
-        # now swap.
+        # now swap
         levels = len(assemList)
         for level in range(levels - 1):
             if not assemList[level + 1]:
-                # If None in the cascade, just skip it. this will lead to slightly unintended shuffling if
-                # the user wasn't careful enough. Their problem.
-                runLog.extra(
-                    "Skipping level %d in the cascade because it is none" % (level + 1)
+                runLog.info(
+                    f"Skipping level {level + 1} in the cascade because it is None. Be careful, "
+                    "this might cause an unexpected shuffling order."
                 )
                 continue
             self.swapAssemblies(assemList[0], assemList[level + 1])
 
     def repeatShufflePattern(self, explicitRepeatShuffles):
-        r"""
+        """
         Repeats the fuel management from a previous ARMI run.
 
         Parameters
@@ -971,7 +1009,10 @@ class FuelHandler:
             elif "assembly" in line:
                 # this is the new load style where an actual assembly type is written to the shuffle logic
                 # due to legacy reasons, the assembly type will be put into group 4
-                pat = r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type ([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                pat = (
+                    r"([A-Za-z0-9!\-]+) moved to ([A-Za-z0-9!\-]+) with assembly type "
+                    + r"([A-Za-z0-9!\s]+)\s*(ANAME=\S+)?\s*with enrich list: (.+)"
+                )
                 m = re.search(pat, line)
                 if not m:
                     raise InputError(
@@ -1290,17 +1331,17 @@ class FuelHandler:
             # not only use the proper assembly type but also adjust the enrichment.
             if assemblyName:
                 # get this assembly from the SFP
-                loadAssembly = self.r.sfp.getAssembly(assemblyName)
+                if self.r.excore.get("sfp") is None:
+                    loadAssembly = None
+                else:
+                    loadAssembly = self.r.excore["sfp"].getAssembly(assemblyName)
+
                 if not loadAssembly:
-                    runLog.error(
-                        "the required assembly {0} is not found in the SFP. It contains: {1}"
-                        "".format(assemblyName, self.r.sfp.getChildren())
+                    msg = (
+                        f"The required assembly {assemblyName} is not found in the SFP."
                     )
-                    raise RuntimeError(
-                        "the required assembly {0} is not found in the SFP.".format(
-                            loadAssembly
-                        )
-                    )
+                    runLog.error(msg)
+                    raise RuntimeError(msg)
             else:
                 # create a new assembly from the BOL assem templates and adjust the enrichment
                 loadAssembly = self.r.core.createAssemblyOfType(
@@ -1360,7 +1401,7 @@ class FuelHandler:
             currentCoords = a.spatialLocator.getGlobalCoordinates()
             oldCoords = self.oldLocations.get(a.getName(), None)
             if oldCoords is None:
-                oldCoords = numpy.array((-50, -50, 0))
+                oldCoords = np.array((-50, -50, 0))
             elif any(currentCoords != oldCoords):
                 arrows.append((oldCoords, currentCoords))
 

@@ -1,0 +1,27 @@
+!include refOneBlockReactor.yaml
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+    Spent Fuel Pool:
+        type: sfp
+        grid name: sfp
+        origin:
+            x: 5000.0
+            y: 5000.0
+            z: 6000.0
+grids:
+    core:
+      geom: hex_corners_up
+      lattice map: |
+        IC
+      symmetry: full
+    sfp:
+      geom: cartesian
+      symmetry: full
+      lattice pitch:
+        x: 32.0
+        y: 32.0

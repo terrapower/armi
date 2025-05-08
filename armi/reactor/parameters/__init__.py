@@ -71,6 +71,17 @@ of any such types. The type within a given array should be homogeneous. Examples
     >>> b.p.fuelTemp = numpy.array(range(217), dtype=float)
     >>> b.p.fuelTemp[58] = 600
 
+The parameter attributes can be access via the ``paramDefs`` property. Perhaps a user is
+curious about the units of a block parameter:
+
+    >>> defs = b.p.paramDefs
+    >>> defs["heightBOL"]
+    <ParamDef name:heightBOL collectionType:BlockParameterCollection units:cm assigned:29>
+
+    # Or, more simply:
+    >>> defs["heightBOL"].units
+    'cm'
+
 .. note::
 
     There have been many discussions on what the specific name of this module/system
@@ -179,43 +190,38 @@ Design Considerations
     * - Parameters are just fancy properties with meta data.
       - Implementing the descriptor interface on a :py:class:`Parameter` removes the
         need to construct a :py:class:`Parameter` without a name, then come back through
-        with the ``applyParameters()`` class method to apply the
+        with the ``applyParameters()`` method to apply the
         :py:class:`Parameter` as a descriptor.
 
 .. _thefreedictionary: http://www.thefreedictionary.com/parameter
 .. _Meriam-Webster: http://www.merriam-webster.com/dictionary/parameter
 """
 # ruff: noqa: F401
-from armi.reactor.parameters.parameterCollections import (
-    ParameterCollection,
-    collectPluginParameters,
-)
-from armi.reactor.parameters.parameterCollections import applyAllParameters
-from armi.reactor.parameters.parameterDefinitions import (
-    ParameterDefinitionCollection,
-    Parameter,
-)
-
-from armi.reactor.parameters.parameterDefinitions import (
-    SINCE_INITIALIZATION,
-    SINCE_LAST_DISTRIBUTE_STATE,
-    SINCE_LAST_GEOMETRY_TRANSFORMATION,
-    SINCE_BACKUP,
-    SINCE_ANYTHING,
-    NEVER,
-    Serializer,
-    Category,
-    ParamLocation,
-    NoDefault,
-    ALL_DEFINITIONS,
-)
-
 from armi.reactor.parameters.exceptions import (
     ParameterDefinitionError,
     ParameterError,
     UnknownParameterError,
 )
-
+from armi.reactor.parameters.parameterCollections import (
+    ParameterCollection,
+    applyAllParameters,
+    collectPluginParameters,
+)
+from armi.reactor.parameters.parameterDefinitions import (
+    ALL_DEFINITIONS,
+    NEVER,
+    SINCE_ANYTHING,
+    SINCE_BACKUP,
+    SINCE_INITIALIZATION,
+    SINCE_LAST_DISTRIBUTE_STATE,
+    SINCE_LAST_GEOMETRY_TRANSFORMATION,
+    Category,
+    NoDefault,
+    Parameter,
+    ParameterDefinitionCollection,
+    ParamLocation,
+    Serializer,
+)
 
 forType = ALL_DEFINITIONS.forType
 inCategory = ALL_DEFINITIONS.inCategory
@@ -225,7 +231,7 @@ since = ALL_DEFINITIONS.since
 
 
 def reset():
-    """Reset the status of all parameter definintions.
+    """Reset the status of all parameter definitions.
 
     This may become necessary when the state of the global parameter definitions becomes
     invalid.  Typically this happens when running multiple cases for the same import of

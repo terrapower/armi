@@ -15,35 +15,32 @@
 r"""
 This module contains the code necessary to represent parameter definitions.
 
-``ParameterDefinition``\ s are the metadata that describe specific parameters, and aid in
-enforcing certain rules upon the parameters themselves and the parameter collections
-that contain them.
+``ParameterDefinition``\ s are the metadata that describe specific parameters, and aid in enforcing
+certain rules upon the parameters themselves and the parameter collections that contain them.
 
-This module also describes the ``ParameterDefinitionCollection`` class, which serves as
-a specialized container to manage related parameter definitions.
+This module also describes the ``ParameterDefinitionCollection`` class, which serves as a
+specialized container to manage related parameter definitions.
 
 See Also
 --------
 armi.reactor.parameters
 """
-from typing import Any, Dict, Optional, Sequence, Tuple, Type
 import enum
 import functools
 import re
+from typing import Any, Dict, Optional, Sequence, Tuple, Type
 
-import numpy
+import numpy as np
 
-from armi import runLog
 from armi.reactor.flags import Flags
-from armi.reactor.parameters.exceptions import ParameterError, ParameterDefinitionError
+from armi.reactor.parameters.exceptions import ParameterDefinitionError, ParameterError
 
 # bitwise masks for high-speed operations on the `assigned` attribute
 # see: https://web.archive.org/web/20120225043338/http://www.vipan.com/htdocs/bitwisehelp.html
 # Note that the various operations are responsible for clearing the flags on the events.
 # These should be interpreted as:
 #   The Parameter or ParameterCollection has been modified SINCE_<time-description>
-# In order for that to happen, the flags need to be cleared when the <time-description>
-# begins.
+# In order for that to happen, the flags need to be cleared when the <time-description> begins.
 SINCE_INITIALIZATION = 1
 SINCE_LAST_DISTRIBUTE_STATE = 4
 SINCE_LAST_GEOMETRY_TRANSFORMATION = 8
@@ -69,9 +66,12 @@ class Category:
     * `fluxQuantities` parameters are related to neutron or gamma flux
     * `neutronics` parameters are calculated in a neutronics global flux solve
     * `gamma` parameters are calculated in a fixed-source gamma solve
-    * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the uniform mesh back to the non-uniform mesh
-    * `reactivity coefficients` parameters are related to reactivity coefficient or kinetics parameters for kinetics solutions
-    * `thermal hydraulics` parameters come from a thermal hydraulics physics plugin (e.g., flow rates, temperatures, etc.)
+    * `detailedAxialExpansion` parameters are marked as such so that they are mapped from the
+       uniform mesh back to the non-uniform mesh
+    * `reactivity coefficients` parameters are related to reactivity coefficient or kinetics
+       parameters for kinetics solutions
+    * `thermal hydraulics` parameters come from a thermal hydraulics physics plugin (e.g., flow
+       rates, temperatures, etc.)
     """
 
     depletion = "depletion"
@@ -104,7 +104,9 @@ class ParamLocation(enum.Flag):
 
 
 class NoDefault:
-    """Class used to allow distinction between not setting a default and setting a default of ``None``."""
+    """Class used to allow distinction between not setting a default and setting a default of
+    ``None``.
+    """
 
     def __init__(self):
         raise NotImplementedError("You cannot create an instance of NoDefault")
@@ -121,15 +123,14 @@ class Serializer:
     r"""
     Abstract class describing serialize/deserialize operations for Parameter data.
 
-    Parameters need to be stored to and read from database files. This currently
-    requires that the Parameter data be converted to a numpy array of a datatype
-    supported by the ``h5py`` package. Some parameters may contain data that are not
-    trivially representable in numpy/HDF5, and need special treatment. Subclassing
-    ``Serializer`` and setting it as a ``Parameter``\ s ``serializer`` allows for special
-    operations to be performed on the parameter values as they are stored to the
-    database or read back in.
+    Parameters need to be stored to and read from database files. This currently requires that the
+    Parameter data be converted to a numpy array of a datatype supported by the ``h5py`` package.
+    Some parameters may contain data that are not trivially representable in numpy/HDF5, and need
+    special treatment. Subclassing ``Serializer`` and setting it as a ``Parameter``\ s
+    ``serializer`` allows for special operations to be performed on the parameter values as they are
+    stored to the database or read back in.
 
-    The ``Database3`` already knows how to handle certain cases where the data are not
+    The ``Database`` already knows how to handle certain cases where the data are not
     straightforward to get into a numpy array, such as when:
 
       - There are ``None``\ s.
@@ -137,42 +138,54 @@ class Serializer:
       - The dimensions of the values stored on each object are inconsistent (e.g.,
         "jagged" arrays)
 
-    So, in these cases, a Serializer is not needed. Serializers are necessary for when
-    the actual data need to be converted to a native data type (e.g., int, float, etc.)
-    For example, we use a Serializer to handle writing ``Flags`` to the Database, as
-    they tend to be too big to fit into a system-native integer.
+    So, in these cases, a Serializer is not needed. Serializers are necessary for when the actual
+    data need to be converted to a native data type (e.g., int, float, etc). For example, we use a
+    Serializer to handle writing ``Flags`` to the Database, as they tend to be too big to fit into a
+    system-native integer.
 
     .. important::
 
-        Defining a Serializer for a Parameter in part defines the underlying
-        representation of the data within a database file; the data stored in a database
-        are sensitive to the code that wrote them. Changing the method that a Serializer
-        uses to pack or unpack data may break compatibility with old databse files.
-        Therefore, Serializers should be dilligent about signalling changes by updating
-        their version. It is also good practice, whenever possible, to support reading
-        old versions so that database files written by old versions can still be read.
+        Defining a Serializer for a Parameter in part defines the underlying representation of the
+        data within a database file; the data stored in a database are sensitive to the code that
+        wrote them. Changing the method that a Serializer uses to pack or unpack data may break
+        compatibility with old database files. Therefore, Serializers should be diligent about
+        signaling changes by updating their version. It is also good practice, whenever possible,
+        to support reading old versions so that database files written by old versions can still be
+        read.
+
+    .. impl:: Users can define custom parameter serializers.
+        :id: I_ARMI_PARAM_SERIALIZE
+        :implements: R_ARMI_PARAM_SERIALIZE
+
+        Important physical parameters are stored in every ARMI object. These parameters represent
+        the plant's state during execution of the model. Currently, this requires that the
+        parameters be serializable to a numpy array of a datatype supported by the ``h5py`` package
+        so that the data can be written to, and subsequently read from, an HDF5 file.
+
+        This class allows for these parameters to be serialized in a custom manner by providing
+        interfaces for packing and unpacking parameter data. The user or downstream plugin is able
+        to specify how data is serialized if that data is not naturally serializable.
 
     See Also
     --------
-    armi.bookkeeping.db.database3.packSpecialData
-    armi.bookkeeping.db.database3.unpackSpecialData
+    armi.bookkeeping.db.database.packSpecialData
+    armi.bookkeeping.db.database.unpackSpecialData
     armi.reactor.flags.FlagSerializer
     """
 
-    # This will accompany the packed data as an attribute when written, and will be
-    # provided to the unpack() method when reading. If the underlying format of the data
-    # changes, make sure to change this.
+    # This will accompany the packed data as an attribute when written, and will be provided to the
+    # unpack() method when reading. If the underlying format of the data changes, make sure to
+    # change this.
     version: Optional[str] = None
 
     @staticmethod
-    def pack(data: Sequence[any]) -> Tuple[numpy.ndarray, Dict[str, any]]:
+    def pack(data: Sequence[any]) -> Tuple[np.ndarray, Dict[str, any]]:
         """
-        Given unpacked data, return packed data and a dictionary of attributes needed to
-        unpack it.
+        Given unpacked data, return packed data and a dictionary of attributes needed to unpack it.
 
-        The should perform the fundamental packing operation, returning the packed data
-        and any metadata ("attributes") that would be necessary to unpack the data. The
-        class's version is always stored, so no need to provide it as an attribute.
+        This should perform the fundamental packing operation, returning the packed data and any
+        metadata ("attributes") that would be necessary to unpack the data. The class's version is
+        always stored, so no need to provide it as an attribute.
 
         See Also
         --------
@@ -182,7 +195,7 @@ class Serializer:
 
     @classmethod
     def unpack(
-        cls, data: numpy.ndarray, version: Any, attrs: Dict[str, any]
+        cls, data: np.ndarray, version: Any, attrs: Dict[str, any]
     ) -> Sequence[any]:
         """Given packed data and attributes, return the unpacked data."""
         raise NotImplementedError()
@@ -203,10 +216,35 @@ def isNumpyArray(paramStr):
     """
 
     def setParameter(selfObj, value):
-        if value is None or isinstance(value, numpy.ndarray):
+        if value is None or isinstance(value, np.ndarray):
             setattr(selfObj, "_p_" + paramStr, value)
         else:
-            setattr(selfObj, "_p_" + paramStr, numpy.array(value))
+            setattr(selfObj, "_p_" + paramStr, np.array(value))
+
+    return setParameter
+
+
+def isNumpyF32Array(paramStr: str):
+    """Helper meta-function to create a method that sets a Parameter value to a 32 bit float NumPy array.
+
+    Parameters
+    ----------
+    paramStr
+        Name of the Parameter we want to set.
+
+    Returns
+    -------
+    function
+        A setter method on the Parameter class to force the value to be a 32 bit NumPy array.
+    """
+
+    def setParameter(selfObj, value):
+        if value is None:
+            # allow default of None to exist
+            setattr(selfObj, "_p_" + paramStr, value)
+        else:
+            # force to 32 bit
+            setattr(selfObj, "_p_" + paramStr, np.array(value, dtype=np.float32))
 
     return setParameter
 
@@ -217,11 +255,11 @@ class Parameter:
 
     _validName = re.compile("^[a-zA-Z0-9_]+$")
 
-    # Using slots because Parameters are pretty static and mostly POD. __slots__ make
-    # this official, and offer some performance benefits in memory (not too important;
-    # there aren't that many instances of Parameter to begin with) and attribute access
-    # time (more important, since we need to go through Parameter objects to get to a
-    # specific parameter's value in a ParameterCollection)
+    # Using slots because Parameters are pretty static and mostly POD. __slots__ make this official,
+    # and offer some performance benefits in memory (not too important; there aren't that many
+    # instances of Parameter to begin with) and attribute access time (more important, since we need
+    # to go through Parameter objects to get to a specific parameter's value in a
+    # ParameterCollection)
     __slots__ = (
         "name",
         "fieldName",
@@ -251,16 +289,12 @@ class Parameter:
         categories,
         serializer: Optional[Type[Serializer]] = None,
     ):
-        assert self._validName.match(name), "{} is not a valid param name".format(name)
         # nonsensical to have a serializer with no intention of saving to DB
         assert not (serializer is not None and not saveToDB)
         assert serializer is None or saveToDB
-        # TODO: This warning is temporary. At some point, it will become an AssertionError.
-        if not len(description):
-            runLog.warning(
-                f"DeprecationWarning: Parameter {name} defined without description.",
-                single=True,
-            )
+        assert self._validName.match(name), "{} is not a valid param name".format(name)
+        assert len(description), f"Parameter {name} defined without description."
+
         self.collectionType = _Undefined
         self.name = name
         self.fieldName = "_p_" + name
@@ -285,8 +319,8 @@ class Parameter:
                 value = getattr(p_self, self.fieldName)
                 if value is NoDefault:
                     raise ParameterError(
-                        "Cannot get value for parameter `{}` in `{}` as no default has "
-                        "been defined, and no value has been assigned.".format(
+                        "Cannot get value for parameter `{}` in `{}` as no default has been "
+                        "defined, and no value has been assigned.".format(
                             self.name, type(p_self)
                         )
                     )
@@ -327,20 +361,30 @@ class Parameter:
 
         Notes
         -----
-        We do not check to see if ``cls != None``. This is an optimization choice, that
-        someone may deem unnecessary. As a result, unlike Python's ``property`` class, a
-        subclass cannot override the getter method.
+        We do not check to see if ``cls != None``. This is an optimization choice, that someone may
+        deem unnecessary. As a result, unlike Python's ``property`` class, a subclass cannot
+        override the getter method.
         """
         return self._getter(obj)
 
     def setter(self, setter):
         """Decorator method for assigning setter.
 
+        .. impl:: Provide a way to signal if a parameter needs updating across processes.
+            :id: I_ARMI_PARAM_PARALLEL
+            :implements: R_ARMI_PARAM_PARALLEL
+
+            Parameters need to be handled properly during parallel code execution. This includes
+            notifying processes if a parameter has been updated by another process. This method
+            allows for setting a parameter's value as well as an attribute that signals whether this
+            parameter has been updated. Future processes will be able to query this attribute so
+            that the parameter's status is properly communicated.
+
         Notes
         -----
-        Unlike the traditional Python ``property`` class, this does not return a new
-        instance of a ``Parameter``; therefore it cannot be reassigned in the same way
-        that a Python ``property`` can be.
+        Unlike the traditional Python ``property`` class, this does not return a new instance of a
+        ``Parameter``; therefore it cannot be reassigned in the same way that a Python ``property``
+        can be.
 
         Examples
         --------
@@ -402,6 +446,10 @@ class Parameter:
         """True if parameter is defined at location."""
         return self.location and self.location & loc
 
+    def hasCategory(self, category: str) -> bool:
+        """True if a parameter has a specific category."""
+        return category in self.categories
+
 
 class ParameterDefinitionCollection:
     """
@@ -409,14 +457,13 @@ class ParameterDefinitionCollection:
 
     Notes
     -----
-    ``_representedTypes`` is used to detect if this ``ParameterDefinitionCollection``
-    contains definitions for only one type. If the collection only exists for 1 type,
-    the lookup (``__getitem__``) can short circuit O(n) logic for O(1) dictionary
-    lookup.
+    ``_representedTypes`` is used to detect if this ``ParameterDefinitionCollection`` contains
+    definitions for only one type. If the collection only exists for 1 type, the lookup
+    (``__getitem__``) can short circuit O(n) logic for O(1) dictionary lookup.
     """
 
-    # Slots are not being used here as an attempt at optimization. Rather, they serve to
-    # add some needed rigidity to the parameter system.
+    # Slots are not being used here as an attempt at optimization. Rather, they serve to add some
+    # needed rigidity to the parameter system.
     __slots__ = ("_paramDefs", "_paramDefDict", "_representedTypes", "_locked")
 
     def __init__(self):
@@ -436,15 +483,15 @@ class ParameterDefinitionCollection:
 
         Notes
         -----
-        This method might break if the collection is for multiple composite types, and
-        there exists a parameter with the same name in multiple types.
+        This method might break if the collection is for multiple composite types, and there exists
+        a parameter with the same name in multiple types.
         """
         # O(1) lookup if there is only 1 type, could still raise a KeyError
         if len(self._representedTypes) == 1:
             return self._paramDefDict[name, next(iter(self._representedTypes))]
 
-        # "matches" only checks for the same name, while the add method checks both name
-        # and collectionType
+        # "matches" only checks for the same name, while the add method checks both name and
+        # collectionType
         matches = [pd for pd in self if pd.name == name]
         if len(matches) != 1:
             raise KeyError(
@@ -457,7 +504,7 @@ class ParameterDefinitionCollection:
         return matches[0]
 
     def add(self, paramDef):
-        r"""Add a :py:class:`Parameter` to this collection."""
+        """Add a :py:class:`Parameter` to this collection."""
         assert not self._locked, "This ParameterDefinitionCollection has been locked."
         self._paramDefs.append(paramDef)
         self._paramDefDict[paramDef.name, paramDef.collectionType] = paramDef
@@ -481,8 +528,8 @@ class ParameterDefinitionCollection:
         assert self is not other
         if other is None:
             raise ValueError(
-                f"Cannot extend {self} with `None`. "
-                "Ensure return value of parameter definitions returns something."
+                f"Cannot extend {self} with `None`. Ensure return value of parameter definitions "
+                "returns something."
             )
         for pd in other:
             self.add(pd)
@@ -498,8 +545,8 @@ class ParameterDefinitionCollection:
         """
         Make a param definition collection with all defs defined at a specific location.
 
-        Parameters can be defined at various locations within their container
-        based on :py:class:`ParamLocation`. This allows selection by those values.
+        Parameters can be defined at various locations within their container based on
+        :py:class:`ParamLocation`. This allows selection by those values.
         """
         return self._filter(lambda pd: pd.atLocation(paramLoc))
 
@@ -519,7 +566,7 @@ class ParameterDefinitionCollection:
         return self._filter(lambda pd: not (pd.assigned & mask))
 
     def forType(self, compositeType):
-        r"""
+        """
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions for a
         specific composite type.
         """
@@ -545,16 +592,16 @@ class ParameterDefinitionCollection:
             pd.assigned |= mask
 
     def byNameAndType(self, name, compositeType):
-        r"""Get a :py:class:`Parameter` by compositeType and name."""
+        """Get a :py:class:`Parameter` by compositeType and name."""
         return self._paramDefDict[name, compositeType.paramCollectionType]
 
     def byNameAndCollectionType(self, name, collectionType):
-        r"""Get a :py:class:`Parameter` by collectionType and name."""
+        """Get a :py:class:`Parameter` by collectionType and name."""
         return self._paramDefDict[name, collectionType]
 
     @property
     def categories(self):
-        r"""Get the categories of all the :py:class:`~Parameter` instances within this collection."""
+        """Get the categories of all the :py:class:`~Parameter` instances within this collection."""
         categories = set()
         for paramDef in self:
             categories |= paramDef.categories
@@ -575,10 +622,19 @@ class ParameterDefinitionCollection:
         """
         Get a list of acceptable parameters to store to the database for a level of the data model.
 
+        .. impl:: Filter parameters to write to DB.
+            :id: I_ARMI_PARAM_DB
+            :implements: R_ARMI_PARAM_DB
+
+            This method is called when writing the parameters to the database file. It queries the
+            parameter's ``saveToDB`` attribute to ensure that this parameter is desired for saving
+            to the database file. It returns a list of parameters that should be included in the
+            database write operation.
+
         Parameters
         ----------
         assignedMask : int
-            a bitmask to down-filter which params to use based on how "stale" they are.
+            A bitmask to down-filter which params to use based on how "stale" they are.
         """
         mask = assignedMask or SINCE_ANYTHING
         return [p for p in self if p.saveToDB and p.assigned & mask]
@@ -588,8 +644,8 @@ class ParameterDefinitionCollection:
         Create an associated object that can create definitions into this collection.
 
         Using the returned ParameterBuilder will add all defined parameters to this
-        ParameterDefinitionCollection, using the passed arguments as defaults. Arguments
-        should be valid arguments to ``ParameterBuilder.__init__()``
+        ParameterDefinitionCollection, using the passed arguments as defaults. Arguments should be
+        valid arguments to ``ParameterBuilder.__init__()``
         """
         paramBuilder = ParameterBuilder(*args, **kwargs)
         paramBuilder.associateParameterDefinitionCollection(self)
@@ -640,9 +696,9 @@ class ParameterBuilder:
         """
         Associate this parameter factory with a specific ParameterDefinitionCollection.
 
-        Subsequent calls to defParam will automatically add the created
-        ParameterDefinitions to this ParameterDefinitionCollection. This results in a
-        cleaner syntax when defining many ParameterDefinitions.
+        Subsequent calls to defParam will automatically add the created ParameterDefinitions to this
+        ParameterDefinitionCollection. This results in a cleaner syntax when defining many
+        ParameterDefinitions.
         """
         self._paramDefs = paramDefs
 
@@ -702,10 +758,9 @@ class ParameterBuilder:
 
         Notes
         -----
-        It is not possible to initialize the parameter on the class this method would be
-        used on, because there is no instance (i.e. self) when this method is run.
-        However, this method could access a globally available set of definitions, if
-        one existed.
+        It is not possible to initialize the parameter on the class this method would be used on,
+        because there is no instance (i.e. self) when this method is run. However, this method could
+        access a globally available set of definitions, if one existed.
         """
         self._assertDefaultIsProperType(default)
         if location is None and self._defaultLocation is None:
@@ -731,7 +786,6 @@ class ParameterBuilder:
         return paramDef
 
 
-# Container for all parameter definition collections that have been bound to an
-# ArmiObject or subclass. These are added from the applyParameters() class method on
-# the ParameterCollection class.
+# Container for all parameter definition collections that have been bound to an ArmiObject or
+# subclass. These are added from the applyParameters() method on the ParameterCollection class.
 ALL_DEFINITIONS = ParameterDefinitionCollection()

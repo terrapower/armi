@@ -43,22 +43,22 @@ the parameters are expected to be different. Specifically the following:
   even if the code hasn't changed.
 
 """
-from typing import Sequence, Optional, Pattern, Tuple
 import collections
 import os
 import re
 import traceback
+from typing import Optional, Pattern, Sequence, Tuple
 
-from tabulate import tabulate
 import h5py
-import numpy
+import numpy as np
 
 from armi import runLog
-from armi.bookkeeping.db import database3
-from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db import database
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.factory import databaseFactory
 from armi.bookkeeping.db.permissions import Permissions
 from armi.reactor.composites import ArmiObject
+from armi.utils.tabulate import tabulate
 
 
 class OutputWriter:
@@ -179,7 +179,7 @@ def compareDatabases(
     with OutputWriter(outputName) as out:
         ref = databaseFactory(refFileName, Permissions.READ_ONLY_FME)
         src = databaseFactory(srcFileName, Permissions.READ_ONLY_FME)
-        if not isinstance(ref, Database3) or not isinstance(src, Database3):
+        if not isinstance(ref, Database) or not isinstance(src, Database):
             raise TypeError(
                 "This database comparer only knows how to deal with database version "
                 "3; received {} and {}".format(type(ref), type(src))
@@ -329,7 +329,7 @@ def _diffSpecialData(
     diffResults.addStructureDiffs(nDiffs)
 
     if not keysMatch:
-        diffResults.addDiff(name, name, numpy.inf, numpy.inf, numpy.inf)
+        diffResults.addDiff(name, name, np.inf, np.inf, np.inf)
         return
 
     if srcData.attrs.get("dict", False):
@@ -341,7 +341,7 @@ def _diffSpecialData(
     for k, srcAttr in srcData.attrs.items():
         refAttr = refData.attrs[k]
 
-        if isinstance(srcAttr, numpy.ndarray) and isinstance(refAttr, numpy.ndarray):
+        if isinstance(srcAttr, np.ndarray) and isinstance(refAttr, np.ndarray):
             srcFlat = srcAttr.flatten()
             refFlat = refAttr.flatten()
             if len(srcFlat) != len(refFlat):
@@ -363,8 +363,8 @@ def _diffSpecialData(
         return
 
     try:
-        src = database3.unpackSpecialData(srcData[()], srcData.attrs, paramName)
-        ref = database3.unpackSpecialData(refData[()], refData.attrs, paramName)
+        src = database.unpackSpecialData(srcData[()], srcData.attrs, paramName)
+        ref = database.unpackSpecialData(refData[()], refData.attrs, paramName)
     except Exception:
         runLog.error(
             f"Unable to unpack special data for paramName {paramName}. "
@@ -374,17 +374,14 @@ def _diffSpecialData(
 
     diff = []
     for dSrc, dRef in zip(src.tolist(), ref.tolist()):
-        if isinstance(dSrc, numpy.ndarray) and isinstance(dRef, numpy.ndarray):
+        if isinstance(dSrc, np.ndarray) and isinstance(dRef, np.ndarray):
             if dSrc.shape != dRef.shape:
                 out.writeln("Shapes did not match for {}".format(refData))
-                diffResults.addDiff(
-                    compName, paramName, numpy.inf, numpy.inf, numpy.inf
-                )
+                diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
-            # make sure not to try to compare empty arrays. Numpy is mediocre at
-            # these; they are super degenerate and cannot participate in concatenation.
-            # Why?
+            # Make sure not to try to compare empty arrays. Numpy is mediocre at these;
+            # they are super degenerate and cannot participate in concatenation.
             if 0 not in dSrc.shape:
                 # Use the mean of the two to calc relative error. This is more robust to
                 # changes that cause one of the values to be zero, while the other is
@@ -395,7 +392,7 @@ def _diffSpecialData(
 
         if (dSrc is None) ^ (dRef is None):
             out.writeln("Mismatched Nones for {} in {}".format(paramName, compName))
-            diff.append([numpy.inf])
+            diff.append([np.inf])
             continue
 
         if dSrc is None:
@@ -410,12 +407,12 @@ def _diffSpecialData(
             if dSrc == dRef:
                 diff.append([0.0])
             else:
-                diff.append([numpy.inf])
+                diff.append([np.inf])
 
     if diff:
         try:
-            diff = [numpy.array(d).flatten() for d in diff]
-            diff = numpy.concatenate(diff)
+            diff = [np.array(d).flatten() for d in diff]
+            diff = np.concatenate(diff)
         except ValueError as e:
             out.writeln(
                 "Failed to concatenate diff data for {} in {}: {}".format(
@@ -424,10 +421,10 @@ def _diffSpecialData(
             )
             out.writeln("Because: {}".format(e))
             return
-        absDiff = numpy.abs(diff)
-        mean = numpy.nanmean(diff)
-        absMax = numpy.nanmax(absDiff)
-        absMean = numpy.nanmean(absDiff)
+        absDiff = np.abs(diff)
+        mean = np.nanmean(diff)
+        absMax = np.nanmax(absDiff)
+        absMean = np.nanmean(absDiff)
 
         diffResults.addDiff(compName, paramName, absMean, mean, absMax)
 
@@ -448,21 +445,21 @@ def _diffSimpleData(ref: h5py.Dataset, src: h5py.Dataset, diffResults: DiffResul
             runLog.error("Failed to compare {} in {}".format(paramName, compName))
             runLog.error("source: {}".format(src))
             runLog.error("reference: {}".format(ref))
-            diff = numpy.array([numpy.inf])
+            diff = np.array([np.inf])
     except ValueError:
         runLog.error("Failed to compare {} in {}".format(paramName, compName))
         runLog.error("source: {}".format(src))
         runLog.error("reference: {}".format(ref))
-        diff = numpy.array([numpy.inf])
+        diff = np.array([np.inf])
 
     if 0 in diff.shape:
         # Empty list, no diff
         return
 
-    absDiff = numpy.abs(diff)
-    mean = numpy.nanmean(diff)
-    absMax = numpy.nanmax(absDiff)
-    absMean = numpy.nanmean(absDiff)
+    absDiff = np.abs(diff)
+    mean = np.nanmean(diff)
+    absMax = np.nanmax(absDiff)
+    absMean = np.nanmean(absDiff)
 
     diffResults.addDiff(compName, paramName, absMean, mean, absMax)
 
@@ -501,9 +498,7 @@ def _compareComponentData(
                     paramName, refSpecial, srcSpecial
                 )
             )
-            diffResults.addDiff(
-                refGroup.name, paramName, numpy.inf, numpy.inf, numpy.inf
-            )
+            diffResults.addDiff(refGroup.name, paramName, np.inf, np.inf, np.inf)
             continue
 
         if srcSpecial or refSpecial:

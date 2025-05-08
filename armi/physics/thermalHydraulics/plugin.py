@@ -20,10 +20,8 @@ and heat transfer.
 """
 
 
-from armi import plugins
+from armi import interfaces, plugins
 from armi.physics.thermalHydraulics import settings
-from armi import interfaces
-
 
 ORDER = interfaces.STACK_ORDER.THERMAL_HYDRAULICS
 
@@ -52,6 +50,7 @@ class ThermalHydraulicsPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
+        """Define additional parameters for the reactor data model."""
         from armi.physics.thermalHydraulics import parameters
 
         return parameters.getParameterDefinitions()

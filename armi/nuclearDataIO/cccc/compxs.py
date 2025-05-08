@@ -46,7 +46,6 @@ See Also
 
 Examples
 --------
-::
     >>> from armi.nuclearDataIO import compxs
     >>> lib = compxs.readBinary('COMPXS')
     >>> r0 = lib.regions[0]
@@ -69,23 +68,24 @@ containing the current composition yields the total power in those regions and
 energy group J due to fissions and non-fission absorptions."
 
 The ``d<1,2,3>Multiplier`` values are the first, second, and third dimension
-directional diffusion coefficient multipliers, respectively. Similary, the ``d<1,2,3>Additive``
+directional diffusion coefficient multipliers, respectively. Similarly, the ``d<1,2,3>Additive``
 values are the first, second, and third dimension directional diffusion coefficient
 additive terms, respectively.
 """
-from scipy.sparse import csc_matrix
 from traceback import format_exc
-import numpy
+
+import numpy as np
+from scipy.sparse import csc_matrix
 
 from armi import runLog
 from armi.nuclearDataIO import cccc
-from armi.utils.properties import unlockImmutableProperties, lockImmutableProperties
-from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.nuclearDataIO.nuclearFileMetadata import (
-    RegionXSMetadata,
     COMPXS_POWER_CONVERSION_FACTORS,
     REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF,
+    RegionXSMetadata,
 )
+from armi.nuclearDataIO.xsCollections import XSCollection
+from armi.utils.properties import lockImmutableProperties, unlockImmutableProperties
 
 
 def _getRegionIO():
@@ -162,7 +162,7 @@ class _CompxsIO(cccc.Stream):
 
     See Also
     --------
-    armi.nuclearDataIO.cccc.isotxs._IsotxsIO
+    armi.nuclearDataIO.cccc.isotxs.IsotxsIO
     """
 
     _METADATA_TAGS = (
@@ -223,7 +223,7 @@ class _CompxsIO(cccc.Stream):
 
         See Also
         --------
-        armi.nuclearDataIO.cccc.isotxs._IsotxsIO.readWrite : reading/writing ISOTXS files
+        armi.nuclearDataIO.cccc.isotxs.IsotxsIO.readWrite : reading/writing ISOTXS files
         """
         runLog.info(
             "{} macroscopic cross library {}".format(
@@ -239,7 +239,7 @@ class _CompxsIO(cccc.Stream):
                 regionIO = _getRegionIO()(region, self, self._lib)
                 regionIO.rwRegionData()
             self._rw5DRecord()
-        except:  # noqa: bare-except
+        except Exception:
             raise OSError(
                 "Failed to {} {} \n\n\n{}".format(
                     "read" if self._isReading else "write", self, format_exc()
@@ -452,9 +452,9 @@ class _CompxsScatterMatrix:
         self.indptr.append(len(dataj) + self.indptr[-1])
 
     def makeSparse(self, sparseFunc=csc_matrix):
-        self.data = numpy.array(self.data, dtype="d")
-        self.indices = numpy.array(self.indices, dtype="d")
-        self.indptr = numpy.array(self.indptr, dtype="d")
+        self.data = np.array(self.data, dtype="d")
+        self.indices = np.array(self.indices, dtype="d")
+        self.indptr = np.array(self.indptr, dtype="d")
         return sparseFunc((self.data, self.indices, self.indptr), shape=self.shape)
 
 
@@ -571,14 +571,14 @@ class CompxsRegion:
         :py:meth:`makeScatteringMatrices`
         """
         for xs in self._primaryXS:
-            self.macros[xs] = numpy.zeros(numGroups)
+            self.macros[xs] = np.zeros(numGroups)
 
         self.macros.totalScatter = _CompxsScatterMatrix((numGroups, numGroups))
 
         if self.metadata["chiFlag"]:
-            self.macros.fission = numpy.zeros(numGroups)
-            self.macros.nuSigF = numpy.zeros(numGroups)
-            self.macros.chi = numpy.zeros((numGroups, self.metadata["chiFlag"]))
+            self.macros.fission = np.zeros(numGroups)
+            self.macros.nuSigF = np.zeros(numGroups)
+            self.macros.chi = np.zeros((numGroups, self.metadata["chiFlag"]))
 
         if self._getFileMetadata()["maxScatteringOrder"]:
             for scatterOrder in range(
@@ -590,7 +590,7 @@ class CompxsRegion:
 
         for datum in REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF:
             self.metadata[datum] = (
-                numpy.zeros(numGroups) if "Additive" in datum else numpy.ones(numGroups)
+                np.zeros(numGroups) if "Additive" in datum else np.ones(numGroups)
             ).tolist()
 
     def makeScatteringMatrices(self):

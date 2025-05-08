@@ -13,39 +13,38 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
-import numpy as np
+import math
 import pathlib
 import random
 import unittest
+
+import numpy as np
 from numpy.testing import assert_allclose
 
-from armi import settings
-from armi import tests
-from armi.reactor import assemblies
-from armi.reactor import blueprints
-from armi.reactor import components
-from armi.reactor import parameters
-from armi.reactor import reactors
-from armi.reactor import geometry
-from armi.reactor.assemblies import (
-    blocks,
-    copy,
-    Flags,
-    grids,
-    HexAssembly,
-    math,
-    numpy,
-    runLog,
-)
-from armi.tests import TEST_ROOT, mockRunLogs
-from armi.utils import directoryChangers
-from armi.utils import textProcessors
-from armi.reactor.tests import test_reactors
+from armi import settings, tests
 from armi.physics.neutronics.settings import (
     CONF_LOADING_FILE,
     CONF_XS_KERNEL,
 )
-
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    components,
+    geometry,
+    parameters,
+    reactors,
+)
+from armi.reactor.assemblies import (
+    Flags,
+    HexAssembly,
+    copy,
+    grids,
+    runLog,
+)
+from armi.reactor.tests import test_reactors
+from armi.tests import TEST_ROOT, mockRunLogs
+from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
 
@@ -133,7 +132,7 @@ def buildTestAssemblies():
     assemblieObjs = []
     for numBlocks, blockTemplate in zip([1, 1, 5, 4], [block, block2, block, block]):
         assembly = assemblies.HexAssembly("testAssemblyType")
-        assembly.spatialGrid = grids.axialUnitGrid(numBlocks)
+        assembly.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
         assembly.spatialGrid.armiObject = assembly
         for _i in range(numBlocks):
             newBlock = copy.deepcopy(blockTemplate)
@@ -183,7 +182,7 @@ def makeTestAssembly(
 ):
     coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
-    a.spatialGrid = grids.axialUnitGrid(numBlocks)
+    a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
     a.spatialGrid.armiObject = a
     a.spatialLocator = coreGrid[2, 2, 0]
     return a
@@ -204,13 +203,12 @@ class Assembly_TestCase(unittest.TestCase):
         )
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
-        self.r.core.add(self.assembly)
 
         # Use these if they are needed
         self.blockParams = {
             "height": self.height,
             "bondRemoved": 0.0,
-            "buGroupNum": 0,
+            "envGroupNum": 0,
             "buLimit": 35,
             "buRate": 0.0,
             "eqRegion": -1,
@@ -221,7 +219,7 @@ class Assembly_TestCase(unittest.TestCase):
             "residence": 4.0,
             "smearDensity": 0.6996721711791459,
             "timeToLimit": 2.7e5,
-            "xsTypeNum": 40,
+            "xsTypeNum": 65,
             "zbottom": 97.3521,
             "ztop": 111.80279999999999,
         }
@@ -229,7 +227,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.blockSettings = {
             "axMesh": 1,
             "bondBOL": 0.0028698019026172574,
-            "buGroup": "A",
+            "envGroup": "A",
             "height": 14.4507,
             "molesHmAtBOL": 65.8572895758245,
             "nHMAtBOL": 0.011241485251783766,
@@ -267,7 +265,12 @@ class Assembly_TestCase(unittest.TestCase):
             self.assembly.add(b)
             self.blockList.append(b)
 
+        self.r.core.add(self.assembly)
         self.assembly.calculateZCoords()
+
+    def test_isOnWhichSymmetryLine(self):
+        line = self.assembly.isOnWhichSymmetryLine()
+        self.assertEqual(line, 2)
 
     def test_notesParameter(self):
         self.assertEqual(self.assembly.p.notes, "")
@@ -319,10 +322,18 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_add(self):
         a = makeTestAssembly(1, 1)
-        b = blocks.HexBlock("TestBlock")
-        a.add(b)
-        self.assertIn(b, a)
-        self.assertEqual(b.parent, a)
+
+        # successfully add some Blocks to an Assembly
+        for n in range(3):
+            self.assertEqual(len(a), n)
+            b = blocks.HexBlock("TestBlock")
+            a.add(b)
+            self.assertIn(b, a)
+            self.assertEqual(b.parent, a)
+            self.assertEqual(len(a), n + 1)
+
+        with self.assertRaises(TypeError):
+            a.add(blocks.CartesianBlock("Test Cart Block"))
 
     def test_moveTo(self):
         ref = self.r.core.spatialGrid.getLocatorFromRingAndPos(3, 10)
@@ -332,6 +343,35 @@ class Assembly_TestCase(unittest.TestCase):
 
         cur = self.assembly.spatialLocator
         self.assertEqual(cur, ref)
+
+    def test_scaleParamsWhenMoved(self):
+        """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
+        blockParams = {
+            # volume integrated parameters
+            "massHmBOL": 9.0,
+            "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
+            "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
+            "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
+        }
+        for b in self.assembly.iterBlocks(Flags.FUEL):
+            b.p.update(blockParams)
+
+        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
+        locator = self.r.core.spatialGrid[i, j, 0]
+        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+        self.assembly.moveTo(locator)
+        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+        for b in self.assembly.iterBlocks(Flags.FUEL):
+            # float
+            assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
+            # np.ndarray
+            assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
+            # list
+            assert_allclose(
+                np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3
+            )
+            # string
+            self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
 
     def test_getName(self):
         cur = self.assembly.getName()
@@ -344,34 +384,33 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, ref)
 
     def test_getLocation(self):
+        """
+        Test for getting string location of assembly.
+
+        .. test:: Assembly location is retrievable.
+            :id: T_ARMI_ASSEM_POSI0
+            :tests: R_ARMI_ASSEM_POSI
+        """
         cur = self.assembly.getLocation()
         ref = str("005-003")
         self.assertEqual(cur, ref)
 
     def test_getArea(self):
+        """Tests area calculation for hex assembly."""
+        # Default case: for assemblies with no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertEqual(a.getArea(), 1)
+
+        # more realistic case: a hex block/assembly
         cur = self.assembly.getArea()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getVolume(self):
+        """Tests volume calculation for hex assembly."""
         cur = self.assembly.getVolume()
         ref = math.sqrt(3) / 2.0 * self.hexDims["op"] ** 2 * self.height * NUM_BLOCKS
         places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_doubleResolution(self):
-        b = self.assembly[0]
-        initialHeight = b.p.heightBOL
-        self.assembly.doubleResolution()
-        cur = len(self.assembly.getBlocks())
-        ref = 2 * len(self.blockList)
-        self.assertEqual(cur, ref)
-
-        cur = self.assembly.getBlocks()[0].getHeight()
-        ref = self.height / 2.0
-        places = 6
-        self.assertNotEqual(initialHeight, b.p.heightBOL)
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_adjustResolution(self):
@@ -432,6 +471,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getHeight(self):
+        """Test height of assembly calculation."""
         cur = self.assembly.getHeight()
         ref = self.height * NUM_BLOCKS
         places = 6
@@ -451,24 +491,12 @@ class Assembly_TestCase(unittest.TestCase):
         ref = sum(bi.getMass(["U235", "PU239"]) for bi in self.assembly)
         self.assertAlmostEqual(cur, ref)
 
-    def test_getPuFrac(self):
-        puAssem = self.assembly.getPuFrac()
-        fuelBlock = self.assembly[1]
-        puBlock = fuelBlock.getPuFrac()
-        self.assertAlmostEqual(puAssem, puBlock)
-
-        #
-        fuelComp = fuelBlock.getComponent(Flags.FUEL)
-        fuelComp.setNumberDensity("PU239", 0.012)
-        self.assertGreater(self.assembly.getPuFrac(), puAssem)
-        self.assertGreater(fuelBlock.getPuFrac(), puAssem)
-
     def test_getMass(self):
         mass0 = self.assembly.getMass("U235")
         mass1 = sum(bi.getMass("U235") for bi in self.assembly)
         self.assertAlmostEqual(mass0, mass1)
 
-        fuelBlock = self.assembly.getBlocks(Flags.FUEL)[0]
+        fuelBlock = next(self.assembly.iterBlocks(Flags.FUEL))
         blockU35Mass = fuelBlock.getMass("U235")
         fuelBlock.setMass("U235", 2 * blockU35Mass)
         self.assertAlmostEqual(fuelBlock.getMass("U235"), blockU35Mass * 2)
@@ -476,15 +504,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         fuelBlock.setMass("U238", 0.0)
         self.assertAlmostEqual(blockU35Mass * 2, fuelBlock.getMass("U235"))
-
-    def test_getZrFrac(self):
-        self.assertAlmostEqual(self.assembly.getZrFrac(), 0.1)
-
-    def test_getMaxUraniumMassEnrich(self):
-        baseEnrich = self.assembly[0].getUraniumMassEnrich()
-        self.assertAlmostEqual(self.assembly.getMaxUraniumMassEnrich(), baseEnrich)
-        self.assembly[2].setNumberDensity("U235", 2e-1)
-        self.assertGreater(self.assembly.getMaxUraniumMassEnrich(), baseEnrich)
 
     def test_getAge(self):
         res = 5.0
@@ -504,7 +523,6 @@ class Assembly_TestCase(unittest.TestCase):
 
         # add some blocks with a component
         for _i in range(assemNum2):
-
             self.hexDims = {
                 "Tinput": 273.0,
                 "Thot": 273.0,
@@ -586,8 +604,8 @@ class Assembly_TestCase(unittest.TestCase):
 
         for refBlock, curBlock in zip(self.assembly, assembly2):
             numNucs = 0
-            for nuc in self.assembly.getAncestorWithFlags(
-                Flags.REACTOR
+            for nuc in self.assembly.getAncestor(
+                lambda c: isinstance(c, reactors.Reactor)
             ).blueprints.allNuclidesInProblem:
                 numNucs += 1
                 # Block level density
@@ -613,7 +631,7 @@ class Assembly_TestCase(unittest.TestCase):
                     continue
                 ref = refBlock.p[refParam]
                 cur = curBlock.p[refParam]
-                if isinstance(cur, numpy.ndarray):
+                if isinstance(cur, np.ndarray):
                     self.assertTrue((cur == ref).all())
                 else:
                     if refParam == "location":
@@ -640,14 +658,14 @@ class Assembly_TestCase(unittest.TestCase):
                 continue
             ref = self.assembly.p[param]
             cur = assembly2.p[param]
-            if isinstance(cur, numpy.ndarray):
+            if isinstance(cur, np.ndarray):
                 assert_allclose(cur, ref)
             else:
                 self.assertEqual(cur, ref)
 
-        # Block level reactor and parent
+        # Block level core and parent
         for b in assembly2:
-            self.assertEqual(b.r, None)
+            self.assertEqual(b.core, None)
             self.assertEqual(b.parent, assembly2)
 
     def test_hasFlags(self):
@@ -685,7 +703,7 @@ class Assembly_TestCase(unittest.TestCase):
             "fastFluence": 1.01,
             "fastFluencePeak": 50.0,
             "power": 10000.0,
-            "buGroup": 4,
+            "envGroup": 4,
             "residence": 3.145,
             "eqRegion": -1,
             "id": 299.0,
@@ -700,17 +718,14 @@ class Assembly_TestCase(unittest.TestCase):
         for param in paramDict:
             cur = list(self.assembly.getChildParamValues(param))
             ref = []
-            x = 0
-            for b in self.blockList:
-                ref.append(self.blockList[x].p[param])
-                x += 1
-            places = 6
-            self.assertAlmostEqual(cur, ref, places=places)
+            for i, b in enumerate(self.blockList):
+                ref.append(self.blockList[i].p[param])
+            self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getMaxParam(self):
-
         for bi, b in enumerate(self.assembly):
             b.p.power = bi
+
         self.assertAlmostEqual(
             self.assembly.getMaxParam("power"), len(self.assembly) - 1
         )
@@ -721,7 +736,6 @@ class Assembly_TestCase(unittest.TestCase):
         self.assembly[2].p.power = 10.0
 
         heights = self.assembly.getElevationsMatchingParamValue("power", 15.0)
-
         self.assertListEqual(heights, [12.5, 20.0])
 
     def test_calcAvgParam(self):
@@ -745,9 +759,9 @@ class Assembly_TestCase(unittest.TestCase):
             # Set the 1st block to have higher params than the rest.
             self.blockParamsTemp = {}
             for key, val in self.blockParams.items():
-                b.p[key] = self.blockParamsTemp[key] = (
-                    val * i
-                )  # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                # Iterate with i in self.assemNum, so higher assemNums get the high values.
+                if key != "xsTypeNum":  # must keep valid
+                    b.p[key] = self.blockParamsTemp[key] = val * i
 
             b.setHeight(self.height)
             b.setType("fuel")
@@ -785,7 +799,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_reattach(self):
         # Remake original assembly
         self.assembly = makeTestAssembly(self.assemNum, self.assemNum)
-        self.assertEqual(0, len(self.assembly.getBlocks()))
+        self.assertEqual(0, len(self.assembly))
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -813,8 +827,8 @@ class Assembly_TestCase(unittest.TestCase):
 
             self.assembly.add(b)
 
-        self.assertEqual(self.assemNum, len(self.assembly.getBlocks()))
-        for b in self.assembly.getBlocks():
+        self.assertEqual(self.assemNum, len(self.assembly))
+        for b in self.assembly:
             self.assertEqual("fuel", b.getType())
 
     def test_reestablishBlockOrder(self):
@@ -836,6 +850,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(cur, 3)
 
     def test_getDim(self):
+        """Tests dimensions are retrievable."""
+        # quick test, if there are no blocks
+        a = HexAssembly("TestAssem", assemNum=10)
+        self.assertIsNone(a.getDim(Flags.FUEL, "op"))
+
+        # more interesting test, with blocks
         cur = self.assembly.getDim(Flags.FUEL, "op")
         ref = self.hexDims["op"]
         places = 6
@@ -849,7 +869,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(self.assembly.getDominantMaterial().getName(), ref)
 
     def test_iteration(self):
-        r"""Tests the ability to doubly-loop over assemblies (under development)."""
+        """Tests the ability to doubly-loop over assemblies (under development)."""
         a = self.assembly
 
         for bi, b in enumerate(a):
@@ -884,7 +904,6 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_getBlocksBetweenElevations(self):
         # assembly should have 3 blocks of 10 cm in it
-
         blocksAndHeights = self.assembly.getBlocksBetweenElevations(0, 10)
         self.assertEqual(blocksAndHeights[0], (self.assembly[0], 10.0))
 
@@ -927,35 +946,29 @@ class Assembly_TestCase(unittest.TestCase):
             for b in self.assembly:
                 b.p.percentBu = None
             self.assertTrue(
-                numpy.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
+                np.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
             )
 
             # multiDimensional param
             for b, flux in zip(self.assembly, [[1, 10], [2, 8], [3, 6]]):
                 b.p.mgFlux = flux
             self.assertTrue(
-                numpy.allclose(
-                    [2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0)
-                )
+                np.allclose([2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0))
             )
             self.assertTrue(
-                numpy.allclose(
-                    [1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
             for b in self.assembly:
                 b.p.mgFlux = [0.0] * 2
             self.assertTrue(
-                numpy.allclose(
-                    [0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)
-                )
+                np.allclose([0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
             )
 
             # single value param at corner
             for b, temp in zip(self.assembly, [100, 200, 300]):
                 b.p.THcornTemp = [temp + iCorner for iCorner in range(6)]
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
-            self.assertTrue(numpy.allclose([200, 201, 202, 203, 204, 205], value))
+            self.assertTrue(np.allclose([200, 201, 202, 203, 204, 205], value))
         finally:
             percentBuDef.location = originalLoc
 
@@ -969,7 +982,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertTrue(modifiedAssem.hasContinuousCoolantChannel())
 
     def test_carestianCoordinates(self):
-        """Check the coordinates of the assembly within the core with a CarestianGrid."""
+        """Check the coordinates of the assembly within the core with a CarestianGrid.
+
+        .. test:: Cartesian coordinates are retrievable.
+            :id: T_ARMI_ASSEM_POSI1
+            :tests: R_ARMI_ASSEM_POSI
+        """
         a = makeTestAssembly(
             numBlocks=1,
             assemNum=1,
@@ -1000,7 +1018,12 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(averagePlenumTemp, self.assembly.getAveragePlenumTemperature())
 
     def test_rotate(self):
-        """Test rotation of an assembly spatial objects."""
+        """Test rotation of an assembly spatial objects.
+
+        .. test:: An assembly can be rotated about its z-axis.
+            :id: T_ARMI_ROTATE_HEX_ASSEM
+            :tests: R_ARMI_ROTATE_HEX
+        """
         a = makeTestAssembly(1, 1)
         b = blocks.HexBlock("TestBlock")
         b.p.THcornTemp = [400, 450, 500, 550, 600, 650]
@@ -1012,24 +1035,25 @@ class Assembly_TestCase(unittest.TestCase):
         a.add(b)
         a.rotate(math.radians(120))
         # test list rotation
-        self.assertEqual(a.getBlocks()[0].p.THcornTemp, rotTemp)
-        self.assertAlmostEqual(a.getBlocks()[0].p.displacementX, rotX)
-        self.assertAlmostEqual(a.getBlocks()[0].p.displacementY, rotY)
+        b = a[0]
+        self.assertEqual(b.p.THcornTemp, rotTemp)
+        self.assertAlmostEqual(b.p.displacementX, rotX)
+        self.assertAlmostEqual(b.p.displacementY, rotY)
 
         b.p.THcornTemp = np.array([400, 450, 500, 550, 600, 650])
         rotTemp = np.array([600, 650, 400, 450, 500, 550])
         a.rotate(math.radians(120))
         # test np.ndarray rotation
         for i in range(len(b.p.THcornTemp)):
-            self.assertEqual(a.getBlocks()[0].p.THcornTemp[i], rotTemp[i])
+            self.assertEqual(b.p.THcornTemp[i], rotTemp[i])
 
         # test that floats and ints are left alone
         b.p.THcornTemp = 3
         a.rotate(math.radians(120))
-        self.assertEqual(a.getBlocks()[0].p.THcornTemp, 3)
+        self.assertEqual(b.p.THcornTemp, 3)
         b.p.THcornTemp = 4.0
         a.rotate(math.radians(120))
-        self.assertEqual(a.getBlocks()[0].p.THcornTemp, 4.0)
+        self.assertEqual(b.p.THcornTemp, 4.0)
 
         # check that TypeError is raised for unexpected data type
         b.p.THcornTemp = "bad data"
@@ -1062,22 +1086,73 @@ class Assembly_TestCase(unittest.TestCase):
             a.rotate(math.radians(120))
             self.assertIn("No rotation method defined", mock.getStdout())
 
+        with self.assertRaisesRegex(ValueError, expected_regex="60 degree"):
+            a.rotate(math.radians(40))
+
+    def test_assem_block_types(self):
+        """Test that all children of an assembly are blocks, ordered from top to bottom.
+
+        .. test:: Validate child types of assembly are blocks, ordered from top to bottom.
+            :id: T_ARMI_ASSEM_BLOCKS
+            :tests: R_ARMI_ASSEM_BLOCKS
+        """
+        coords = []
+        for b in self.assembly.iterBlocks():
+            # Confirm children are blocks
+            self.assertIsInstance(b, blocks.Block)
+
+            # get coords from the child blocks
+            coords.append(b.getLocation())
+
+        # get the Z-coords for each block
+        zCoords = [int(c.split("-")[-1]) for c in coords]
+
+        # verify the blocks are ordered top-to-bottom, vertically
+        for i in range(1, len(zCoords)):
+            self.assertGreater(zCoords[i], zCoords[i - 1])
+
+    def test_assem_hex_type(self):
+        """Test that all children of a hex assembly are hexagons."""
+        for b in self.assembly:
+
+            # For a hex assem, confirm they are of type "Hexagon"
+            pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
+            self.assertEqual(pitch_comp_type.__name__, "Hexagon")
+
+    def test_getBIndexFromZIndex(self):
+        # make sure the axMesh parameters are set in our test block
+        for b in self.assembly:
+            b.p.axMesh = 1
+
+        for zIndex in range(6):
+            bIndex = self.assembly.getBIndexFromZIndex(zIndex * 0.5)
+            self.assertEqual(bIndex, math.ceil(zIndex / 2) if zIndex < 5 else -1)
+
+    def test_getElevationBoundariesByBlockType(self):
+        elevations = self.assembly.getElevationBoundariesByBlockType()
+        self.assertEqual(elevations, [0.0, 10.0, 10.0, 20.0, 20.0, 30.0])
+
 
 class AssemblyInReactor_TestCase(unittest.TestCase):
     def setUp(self):
         self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockIgniter(self):
+    def test_snapAxialMeshToRefConsMassBasedOnBlockIgn(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
         grid = self.r.core.spatialGrid
 
-        ################################
-        # examine mass change in igniterFuel
-        ################################
+        # 1. examine mass change in igniterFuel
+
         igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
+        for b in igniterFuel.iterBlocks(Flags.FUEL):
+            fuelComp = b.getComponent(Flags.FUEL)
+            # add isotopes from clad and coolant to fuel component to test mass conservation
+            # mass should only be conserved within fuel component, not over the whole block
+            fuelComp.setNumberDensity("FE56", 1e-10)
+            fuelComp.setNumberDensity("NA23", 1e-10)
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
         coolMass = 0
@@ -1090,6 +1165,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1 = b.getHMMass()
         igniterZircMass1 = b.getMass("ZR")
         igniterFuelBlockMass = b.getMass()
+        igniterDuctMass = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMass = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1101,9 +1178,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
-        #############################
-        # check igniter mass after expansion
-        #############################
+        # 2. check igniter mass after expansion
+
         # gridplate, fuel, fuel, fuel, plenum
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1115,6 +1191,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         b = igniterFuel[1]
         igniterHMMass1AfterExpand = b.getHMMass()
         igniterZircMass1AfterExpand = b.getMass("ZR")
+        igniterDuctMassAfterExpand = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterExpand = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1125,6 +1203,14 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterMassGrid, igniterMassGridAfterExpand, 7)
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterExpand, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterExpand, 7)
+        # demonstrate that the duct and coolant mass are not conserved.
+        # number density stays constant, mass is scaled by ratio of new to old height
+        self.assertAlmostEqual(
+            igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7
+        )
+        self.assertAlmostEqual(
+            igniterCoolMass, igniterCoolMassAfterExpand * 25.0 / 26.0, 7
+        )
         # Note the masses are linearly different by the amount that the plenum shrunk
         self.assertAlmostEqual(
             igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7
@@ -1134,9 +1220,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
-        #############################
-        # check igniter mass after shrink to original
-        #############################
+        # 3. check igniter mass after shrink to original
+
         # gridplate, fuel, fuel, fuel, plenum
         b = igniterFuel[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1150,6 +1235,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterHMMass1AfterShrink = b.getHMMass()
         igniterZircMass1AfterShrink = b.getMass("ZR")
         igniterFuelBlockMassAfterShrink = b.getMass()
+        igniterDuctMassAfterShrink = b.getComponent(Flags.DUCT).getMass()
+        igniterCoolMassAfterShrink = b.getComponent(Flags.COOLANT).getMass()
 
         coolMass = 0
         b = igniterFuel[4]
@@ -1162,9 +1249,11 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterHMMass1, igniterHMMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterShrink, 7)
         self.assertAlmostEqual(igniterFuelBlockMass, igniterFuelBlockMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterDuctMass, igniterDuctMassAfterShrink, 7)
+        self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterShrink, 7)
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterShrink, 7)
 
-    def test_snapAxialMeshToReferenceConservingMassBasedOnBlockShield(self):
+    def test_snapAxialMesh2RefConsMassBasedOnBlockShield(self):
         originalMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         refMesh = [26.0, 52.0, 79.0, 108.0, 175.0]
 
@@ -1172,9 +1261,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         grid = self.r.core.spatialGrid
         i, j = grid.getIndicesFromRingAndPos(9, 2)
 
-        ################################
-        # examine mass change in radial shield
-        ################################
+        # 1. examine mass change in radial shield
+
         a = self.r.core.childrenByLocator[grid[i, j, 0]]
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
@@ -1202,9 +1290,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
-        ################################
-        # examine mass change in radial shield after expansion
-        ################################
+        # 2. examine mass change in radial shield after expansion
+
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()
@@ -1242,9 +1329,8 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         for a in self.r.core.getAssemblies():
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
-        ################################
-        # examine mass change in radial shield after shrink to original
-        ################################
+        # 3. examine mass change in radial shield after shrink to original
+
         # gridplate, axial shield, axial shield, axial shield, plenum
         b = a[0]
         coolantNucs = b.getComponent(Flags.COOLANT).getNuclides()

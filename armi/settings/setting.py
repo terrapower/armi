@@ -17,24 +17,21 @@ System to handle basic configuration settings.
 
 Notes
 -----
-Rather than having subclases for each setting type, we simply derive
-the type based on the type of the default, and we enforce it with
-schema validation. This also allows for more complex schema validation
-for settings that are more complex dictionaries (e.g. XS, rx coeffs, etc.).
-
-One reason for complexity of the previous settings implementation was
-good interoperability with the GUI widgets.
+The type of each setting is derived from the type of the default
+value. When users set values to their settings, ARMI enforces
+these types with schema validation. This also allows for more
+complex schema validation for settings that are more complex
+dictionaries (e.g. XS, rx coeffs).
 """
-from collections import namedtuple
-from typing import List, Optional, Tuple
 import copy
 import datetime
+from collections import namedtuple
+from typing import List, Optional, Tuple
 
 import voluptuous as vol
 
 from armi import runLog
 from armi.reactor.flags import Flags
-
 
 # Options are used to imbue existing settings with new Options. This allows a setting
 # like `neutronicsKernel` to strictly enforce options, even though the plugin that
@@ -48,24 +45,26 @@ class Setting:
     """
     A particular setting.
 
-    Setting objects hold all associated information of a setting in ARMI and should
-    typically be accessed through the Settings class methods rather than directly. The
-    exception being the SettingAdapter class designed for additional GUI related
-    functionality.
+    .. impl:: The setting default is mandatory.
+        :id: I_ARMI_SETTINGS_DEFAULTS
+        :implements: R_ARMI_SETTINGS_DEFAULTS
 
-    Setting subclasses can implement custom ``load`` and ``dump`` methods
-    that can enable serialization (to/from dicts) of custom objects. When
-    you set a setting's value, the value will be unserialized into
-    the custom object and when you call ``dump``, it will be serialized.
-    Just accessing the value will return the actual object in this case.
+        Setting objects hold all associated information of a setting in ARMI and should
+        typically be accessed through the Settings methods rather than directly.
+        Settings require a mandatory default value.
 
+        Setting subclasses can implement custom ``load`` and ``dump`` methods that can
+        enable serialization (to/from dicts) of custom objects. When you set a
+        setting's value, the value will be unserialized into the custom object and when
+        you call ``dump``, it will be serialized. Just accessing the value will return
+        the actual object in this case.
     """
 
     def __init__(
         self,
         name,
         default,
-        description=None,
+        description,
         label=None,
         options=None,
         schema=None,
@@ -83,7 +82,7 @@ class Setting:
             the setting's name
         default : object
             The setting's default value
-        description : str, optional
+        description : str
             The description of the setting
         label : str, optional
             the shorter description used for the ARMI GUI
@@ -113,6 +112,9 @@ class Setting:
             will result in errors, requiring to user to update their input by hand to
             use more current settings.
         """
+        assert description, f"Setting {name} defined without description."
+        assert description != "None", f"Setting {name} defined without description."
+
         self.name = name
         self.description = description or name
         self.label = label or name
@@ -121,13 +123,12 @@ class Setting:
         self.subLabels = subLabels
         self.isEnvironment = isEnvironment
         self.oldNames: List[Tuple[str, Optional[datetime.date]]] = oldNames or []
-
         self._default = default
+        self._value = copy.deepcopy(default)  # break link from _default
         # Retain the passed schema so that we don't accidentally stomp on it in
         # addOptions(), et.al.
         self._customSchema = schema
         self._setSchema()
-        self._value = copy.deepcopy(default)  # break link from _default
 
     @property
     def underlyingType(self):
@@ -235,7 +236,7 @@ class Setting:
         """
         Return a serializable version of this setting's value.
 
-        Override to define custom deserializers for custom/compund settings.
+        Override to define custom deserializers for custom/compound settings.
         """
         return self._value
 

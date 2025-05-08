@@ -117,7 +117,7 @@ class TestPmatrx(unittest.TestCase):
         ]
         self.assertTrue((energies == self.lib.gammaEnergyUpperBounds).all())
 
-    def test_pmatrxNeutronEneries(self):
+    def test_pmatrxNeutronEnergies(self):
         energies = [
             14190675.0,
             10000000.0,
@@ -201,7 +201,12 @@ class TestProductionMatrix_FromWritten(TestPmatrx):
     """
 
     def test_writtenIsIdenticalToOriginal(self):
-        """Make sure our writer produces something identical to the original."""
+        """Make sure our writer produces something identical to the original.
+
+        .. test:: Test reading and writing PMATRIX files.
+            :id: T_ARMI_NUCDATA_PMATRX
+            :tests: R_ARMI_NUCDATA_PMATRX
+        """
         origLib = pmatrx.readBinary(test_xsLibraries.PMATRX_AA)
 
         fname = self._testMethodName + "temp-aa.pmatrx"

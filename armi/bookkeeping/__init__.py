@@ -20,11 +20,13 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        from armi.bookkeeping import (
+            historyTracker,
+            mainInterface,
+            memoryProfiler,
+            snapshotInterface,
+        )
         from armi.bookkeeping.db import databaseInterface
-        from armi.bookkeeping import historyTracker
-        from armi.bookkeeping import memoryProfiler
-        from armi.bookkeeping import mainInterface
-        from armi.bookkeeping import snapshotInterface
         from armi.bookkeeping.report import reportInterface
 
         interfaceInfo = []
@@ -44,9 +46,6 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         from armi.cli import database
 
         entryPoints = []
-        # Disabling ConvertDB because there is no other format to convert between. The
-        # entry point is rather general so leaving this here so we don't forget about it
-        # entryPoints.append(database.ConvertDB)
         entryPoints.append(database.ExtractInputs)
         entryPoints.append(database.InjectInputs)
         entryPoints.append(visualization.VisFileEntryPoint)
@@ -78,8 +77,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate
         """
-        from armi.bookkeeping import memoryProfiler
         from armi import mpiActions
+        from armi.bookkeeping import memoryProfiler
 
         if isinstance(cmd, mpiActions.MpiAction):
             for donotReset in (
@@ -92,23 +91,3 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                     return False
 
         return True
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def getReportContents(r, cs, report, stage, blueprint):
-        """
-        Generate general report content. Where diagrams/tables
-        not specific to additional plugins comes together.
-
-        Currently only happening at End and Begin stage because no content gathered
-        in these sections is used to create a graph across time.
-        """
-        from armi.bookkeeping.report import newReports as reports
-        from armi.bookkeeping.report import newReportUtils
-
-        if stage == reports.ReportStage.Begin:
-            newReportUtils.insertGeneralReportContent(cs, r, report, stage)
-            if blueprint is not None:
-                newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
-        elif stage == reports.ReportStage.End:
-            newReportUtils.insertEndOfLifeContent(r, report)

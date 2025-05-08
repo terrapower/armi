@@ -18,44 +18,38 @@ The base ARMI App class.
 This module defines the :py:class:`App` class, which is used to configure the ARMI
 Framework for a specific application. An ``App`` implements a simple interface for
 customizing much of the Framework's behavior.
-
-.. admonition:: Historical Fun Fact
-
-    This pattern is used by many frameworks as a way of encapsulating what would
-    otherwise be global state. The ARMI Framework has historically made heavy use of
-    global state (e.g., :py:mod:`armi.nucDirectory.nuclideBases`), and it will take
-    quite a bit of effort to refactor the code to access such things through an App
-    object. We are planning to do this, but for now this App class is somewhat
-    rudimentary.
 """
 # ruff: noqa: E402
-from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
 import sys
+from typing import Dict, List, Optional, Tuple
 
-from armi import context, plugins, pluginManager, meta, settings
+from armi import context, meta, pluginManager, plugins, settings
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
-from armi.settings import fwSettings
-from armi.settings import Setting
+from armi.settings import Setting, fwSettings
 
 
 class App:
     """
-    The main point of customization for the ARMI Framework.
+    The highest-level of abstraction for defining what happens during an ARMI run.
 
-    The App class is intended to be subclassed in order to customize the functionality
-    and look-and-feel of the ARMI Framework for a specific use case. An App contains a
-    plugin manager, which should be populated in ``__init__()`` with a collection of
-    plugins that are deemed suitable for a given application, as well as other methods
-    which provide further customization.
+    .. impl:: An App has a plugin manager.
+        :id: I_ARMI_APP_PLUGINS
+        :implements: R_ARMI_APP_PLUGINS
 
-    The base App class is also a good place to expose some more convenient ways to get
-    data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
-    pain, as the results returned by the individual plugins may need to be merged and/or
-    checked for errors. Adding that logic here reduces boilerplate throughout the rest
-    of the code.
+        The App class is intended to be subclassed in order to customize the functionality
+        and look-and-feel of the ARMI Framework for a specific use case. An App contains a
+        plugin manager, which should be populated in ``__init__()`` with a collection of
+        plugins that are deemed suitable for a given application, as well as other methods
+        which provide further customization.
+
+        The base App class is also a good place to expose some more convenient ways to get
+        data out of the Plugin API; calling the ``pluggy`` hooks directly can sometimes be a
+        pain, as the results returned by the individual plugins may need to be merged and/or
+        checked for errors. Adding that logic here reduces boilerplate throughout the rest
+        of the code.
     """
 
     name = "armi"
@@ -81,14 +75,14 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        from armi import cli
-        from armi import bookkeeping
-        from armi.physics import fuelCycle
-        from armi.physics import fuelPerformance
-        from armi.physics import neutronics
-        from armi.physics import safety
-        from armi.physics import thermalHydraulics
-        from armi import reactor
+        from armi import bookkeeping, cli, reactor
+        from armi.physics import (
+            fuelCycle,
+            fuelPerformance,
+            neutronics,
+            safety,
+            thermalHydraulics,
+        )
 
         self._pm = plugins.getNewPluginManager()
         for plugin in (
@@ -127,12 +121,11 @@ class App:
             setting.name: setting for setting in fwSettings.getFrameworkSettings()
         }
 
-        # The optionsCache stores options that may have come from a plugin before the
-        # setting to which they apply. Whenever a new setting is added, we check to see
-        # if there are any options in the cache, popping them out and adding them to the
-        # setting.  If all plugins' settings have been processed and the cache is not
-        # empty, that's an error, because a plugin must have provided options to a
-        # setting that doesn't exist.
+        # The optionsCache stores options that may have come from a plugin before the setting to
+        # which they apply. Whenever a new setting is added, we check to see if there are any
+        # options in the cache, popping them out and adding them to the setting. If all plugins'
+        # settings have been processed and the cache is not empty, that's an error, because a plugin
+        # must have provided options to a setting that doesn't exist.
         optionsCache: Dict[str, List[settings.Option]] = collections.defaultdict(list)
         defaultsCache: Dict[str, settings.Default] = {}
 
@@ -194,11 +187,10 @@ class App:
         """
         Return the parameter renames from all registered plugins.
 
-        This renders a merged dictionary containing all parameter renames from all of
-        the registered plugins. It also performs simple error checking. The result of
-        this operation is cached, since it is somewhat expensive to perform. If the App
-        detects that its plugin manager's set of registered plugins has changed, the
-        cache will be invalidated and recomputed.
+        This renders a merged dictionary containing all parameter renames from all of the registered
+        plugins. It also performs simple error checking. The result of this operation is cached,
+        since it is somewhat expensive to perform. If the App detects that its plugin manager's set
+        of registered plugins has changed, the cache will be invalidated and recomputed.
         """
         cacheInvalid = False
         if self._paramRenames is not None:

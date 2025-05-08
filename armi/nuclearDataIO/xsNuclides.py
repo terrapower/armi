@@ -14,11 +14,11 @@
 
 r"""
 This module contains cross section nuclides, which are a wrapper around the
-:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects contain
-cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
+:py:class:`~armi.nucDirectory.nuclideBases.INuclide` objects. The cross section nuclide objects
+contain cross section information from a specific calculation (e.g. neutron, or gamma cross sections).
 
-:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file can be
-reconstructed.
+:py:class:`XSNuclide` objects also contain meta data from the original file, so that another file
+can be reconstructed.
 
 .. warning::
     :py:class:`XSNuclide` objects should only be created by reading data into
@@ -26,9 +26,7 @@ reconstructed.
     index (i.e. "PU39AA").
 """
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import xsCollections
-from armi.nuclearDataIO import xsLibraries
-from armi.nuclearDataIO import nuclearFileMetadata
+from armi.nuclearDataIO import nuclearFileMetadata, xsCollections, xsLibraries
 from armi.utils.customExceptions import warn_when_root
 
 
@@ -95,7 +93,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         self._base = nuclideBase
 
     def getMicroXS(self, interaction, group):
-        r"""Returns the microscopic xs as the ISOTXS value if it exists or a 0 since it doesn't."""
+        """Returns the microscopic xs as the ISOTXS value if it exists or a 0 since it doesn't."""
         if interaction in self.micros.__dict__:
             try:
                 return self.micros[interaction][group]
@@ -109,7 +107,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
             return 0
 
     def getXS(self, interaction):
-        r"""Get the cross section of a particular interaction.
+        """Get the cross section of a particular interaction.
 
         See Also
         --------
@@ -240,10 +238,9 @@ def plotScatterMatrix(scatterMatrix, scatterTypeLabel="", fName=None):
     pyplot.colorbar()
     if fName:
         pyplot.savefig(fName)
+        pyplot.close()
     else:
         pyplot.show()
-
-    pyplot.close()
 
 
 def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
@@ -260,7 +257,6 @@ def plotCompareScatterMatrix(scatterMatrix1, scatterMatrix2, fName=None):
     pyplot.colorbar()
     if fName:
         pyplot.savefig(fName)
+        pyplot.close()
     else:
         pyplot.show()
-
-    pyplot.close()

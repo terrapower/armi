@@ -17,13 +17,14 @@ Mixed-oxide (MOX) ceramic fuel.
 
 A definitive source for these properties is [#ornltm20002]_.
 
-.. [#ornltm20002] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov, et.al. 
-    Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
+.. [#ornltm20002] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of
+    Irradiation. S.G. Popov, et.al.  Oak Ridge National Laboratory.
+    ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
 """
 from armi import runLog
-from armi.materials.uraniumOxide import UraniumOxide
 from armi.materials import material
+from armi.materials.uraniumOxide import UraniumOxide
 from armi.nucDirectory import nucDir
 
 
@@ -31,8 +32,8 @@ class MOX(UraniumOxide):
     """
     MOX fuel.
 
-    Some parameters (density, thermal conductivity, etc) are inherited from UraniumOxide.
-    These parameters are sufficiently equivalent to pure UO2 in the literature to leave them unchanged.
+    Some parameters (density, thermal conductivity, etc) are inherited from UraniumOxide. These
+    parameters are sufficiently equivalent to pure UO2 in the literature to leave them unchanged.
 
     Specific MOX mixtures may be defined in blueprints under custom isotopics.
     """

@@ -16,6 +16,24 @@
 This module provides fundamental element information to be used throughout the framework
 and applications.
 
+.. impl:: A tool for querying basic data for elements of the periodic table.
+    :id: I_ARMI_ND_ELEMENTS0
+    :implements: R_ARMI_ND_ELEMENTS
+
+    The :py:mod:`elements <armi.nucDirectory.elements>` module defines the
+    :py:class:`Element <armi.nucDirectory.elements.Element>` class which acts as
+    a data structure for organizing information about an individual element,
+    including number of protons, name, chemical symbol, phase (at STP), periodic
+    table group, standard weight, and a list of isotope :py:class:`nuclideBase
+    <armi.nucDirectory.nuclideBases.NuclideBase>` instances. The module includes
+    a factory that generates the :py:class:`Element
+    <armi.nucDirectory.elements.Element>` instances by reading from the
+    ``elements.dat`` file stored in the ARMI resources folder.  When an
+    :py:class:`Element <armi.nucDirectory.elements.Element>` instance is
+    initialized, it is added to a set of global dictionaries that are keyed by
+    number of protons, element name, and element symbol. The module includes
+    several helper functions for querying these global dictionaries.
+
 The element class structure is outlined :ref:`here <elements-class-diagram>`.
 
 .. _elements-class-diagram:
@@ -53,7 +71,7 @@ Retrieve gaseous elements at Standard Temperature and Pressure (STP):
 
 
 Retrieve elements that are classified as actinides:
- 
+
  >>> elements.getElementsByChemicalGroup(elements.ChemicalGroup.ACTINIDE)
     [<Element  AC (Z=89), Actinium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
      <Element  TH (Z=90), Thorium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>,
@@ -72,46 +90,48 @@ Retrieve elements that are classified as actinides:
      <Element  LR (Z=103), Lawrencium, ChemicalGroup.ACTINIDE, ChemicalPhase.SOLID>]
 
 
-For specific data on nuclides within each element, refer to the 
-:ref:`nuclide bases summary table <nuclide-bases-table>`.
+.. only:: html
 
+    For specific data on nuclides within each element, refer to the
+    :ref:`nuclide bases summary table <nuclide-bases-table>`.
 
-.. exec::
-    from tabulate import tabulate
-    from armi.nucDirectory import elements
+    .. exec::
+        from armi.nucDirectory import elements
+        from armi.utils.tabulate import tabulate
+        from dochelpers import createTable
 
-    attributes = ['z',
-                  'name',
-                  'symbol',
-                  'phase',
-                  'group',
-                  'is naturally occurring?',
-                  'is heavy metal?',
-                  'num. nuclides',]
+        attributes = ['z',
+                    'name',
+                    'symbol',
+                    'phase',
+                    'group',
+                    'is naturally occurring?',
+                    'is heavy metal?',
+                    'num. nuclides',]
 
-    def getAttributes(element):
-        return [
-            f'``{element.z}``',
-            f'``{element.name}``',
-            f'``{element.symbol}``',
-            f'``{element.phase}``',
-            f'``{element.group}``',
-            f'``{element.isNaturallyOccurring()}``',
-            f'``{element.isHeavyMetal()}``',
-            f'``{len(element.nuclides)}``',
-        ]
+        def getAttributes(element):
+            return [
+                f'``{element.z}``',
+                f'``{element.name}``',
+                f'``{element.symbol}``',
+                f'``{element.phase}``',
+                f'``{element.group}``',
+                f'``{element.isNaturallyOccurring()}``',
+                f'``{element.isHeavyMetal()}``',
+                f'``{len(element.nuclides)}``',
+            ]
 
-    sortedElements = sorted(elements.byZ.values())
-    return create_table(tabulate(tabular_data=[getAttributes(elem) for elem in sortedElements],
-                                 headers=attributes,
-                                 tablefmt='rst'),
-                        caption='List of elements')
-
+        sortedElements = sorted(elements.byZ.values())
+        return createTable(tabulate(data=[getAttributes(elem) for elem in sortedElements],
+                                    headers=attributes,
+                                    tableFmt='rst'),
+                           caption='List of elements',
+                           label='nuclide-bases-table')
 """
 
 import os
-from typing import List
 from enum import Enum
+from typing import List
 
 from armi import context
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
@@ -148,6 +168,23 @@ class Element:
     def __init__(self, z, symbol, name, phase="UNKNOWN", group="UNKNOWN"):
         """
         Creates an instance of an Element.
+
+        .. impl:: An element of the periodic table.
+            :id: I_ARMI_ND_ELEMENTS1
+            :implements: R_ARMI_ND_ELEMENTS
+
+            The :py:class:`Element <armi.nucDirectory.elements.Element>` class
+            acts as a data structure for organizing information about an
+            individual element, including number of protons, name, chemical
+            symbol, phase (at STP), periodic table group, standard weight, and a
+            list of isotope
+            :py:class:`nuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+            instances.
+
+            The :py:class:`Element <armi.nucDirectory.elements.Element>` class
+            has a few methods for appending additional isotopes, checking
+            whether an isotope is naturally occurring, retrieving the natural
+            isotopic abundance, or whether the element is a heavy metal.
 
         Parameters
         ----------

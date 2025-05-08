@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Globally accessible exception definitions for better granularity on exception behavior and exception handling behavior."""
+"""
+Globally accessible exception definitions for better granularity on exception behavior and
+exception handling behavior.
+"""
+from inspect import getframeinfo, stack
+
 from armi import runLog
-from inspect import stack, getframeinfo
 
 
 def info(func):
@@ -28,7 +32,7 @@ def info(func):
 
 
 def important(func):
-    """Decorator to write to current log, using the inportant method."""
+    """Decorator to write to current log, using the important method."""
 
     def decorated(*args, **kwargs):
         """Decorated method."""
@@ -60,7 +64,7 @@ def _message_when_root(func):
 
 
 def warn_when_root(func):
-    r"""Decorates a method to produce a warning message only on the root node."""
+    """Decorates a method to produce a warning message only on the root node."""
     return _message_when_root(warn(func))
 
 
@@ -99,15 +103,18 @@ class SettingException(Exception):
 
 
 class InvalidSettingsStopProcess(SettingException):
-    """Exception raised when setting file contains invalid settings and user aborts or process is uninteractive."""
+    """
+    Exception raised when setting file contains invalid settings and user aborts or process is
+    uninteractive.
+    """
 
     def __init__(self, reader):
         msg = "Input settings file {}".format(reader.inputPath)
         if reader.liveVersion != reader.inputVersion:
             msg += (
                 '\n\twas made with version "{0}" which differs from the current version "{1}." '
-                'Either create the input file with the "{1}", or switch to a development version of ARMI.'
-                "".format(reader.inputVersion, reader.liveVersion)
+                'Either create the input file with the "{1}", or switch to a development version '
+                "of ARMI.".format(reader.inputVersion, reader.liveVersion)
             )
         if reader.invalidSettings:
             msg += (

@@ -1,5 +1,6 @@
+************
 Entry Points
-============
+************
 
 **Entry Points** are like the verbs that your App can *do*.
 The :py:mod:`built-in entry points <armi.cli>`
@@ -42,10 +43,10 @@ with the code you'd like to run upon invocation of this entry point.
 
     class SampleEntryPoint(entryPoint.EntryPoint):
         """
-        Entry point title here
+        Entry point title here.
 
-        Long description of entry point here. This will actually get picked up and used
-        as the help text on the command line itself!
+        Long description of entry point here. This will get picked
+        up and used as the help text on the command line itself!
         """
 
         name = "do-my-thing"

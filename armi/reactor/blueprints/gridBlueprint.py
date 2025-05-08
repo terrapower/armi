@@ -14,20 +14,17 @@
 """
 Input definitions for Grids.
 
-Grids are given names which can be referred to on other input structures
-(like core maps and pin maps).
+Grids are given names which can be referred to on other input structures (like core maps and pin
+maps).
 
-These are in turn interpreted into concrete things at lower levels. For
-example:
+These are in turn interpreted into concrete things at lower levels. For example:
 
-* Core map lattices get turned into :py:mod:`armi.reactor.grids`,
-  which get set to ``core.spatialGrid``.
-* Block pin map lattices get applied to the components to provide
-  some subassembly spatial details
+* Core map lattices get turned into :py:mod:`armi.reactor.grids`, which get set to
+  ``core.spatialGrid``.
+* Block pin map lattices get applied to the components to provide some subassembly spatial details.
 
-Lattice inputs here are floating in space. Specific dimensions
-and anchor points are handled by the lower-level objects definitions. This
-is intended to maximize lattice reusability.
+Lattice inputs here are floating in space. Specific dimensions and anchor points are handled by the
+lower-level objects definitions. This is intended to maximize lattice reusability.
 
 See Also
 --------
@@ -102,23 +99,21 @@ Examples
                            IC   MC   MC   OC   RR
                          IC   IC   MC   PC   RR   SH
 
-
 """
 import copy
-from io import StringIO
 import itertools
+from io import StringIO
 from typing import Tuple
 
-import numpy
+import numpy as np
 import yamlize
 from ruamel.yaml import scalarstring
 
-from armi.utils.customExceptions import InputError
-from armi.utils import asciimaps
-from armi.utils.mathematics import isMonotonic
-from armi.reactor import geometry, grids
-from armi.reactor import blueprints
 from armi import runLog
+from armi.reactor import blueprints, geometry, grids
+from armi.utils import asciimaps
+from armi.utils.customExceptions import InputError
+from armi.utils.mathematics import isMonotonic
 
 
 class Triplet(yamlize.Object):
@@ -138,11 +133,32 @@ class GridBlueprint(yamlize.Object):
     """
     A grid input blueprint.
 
-    These directly build Grid objects and contain information about
-    how to populate the Grid with child ArmiObjects for the Reactor Model.
+    These directly build Grid objects and contain information about how to populate the Grid with
+    child ArmiObjects for the Reactor Model.
 
-    The grids get origins either from a parent block (for pin lattices)
-    or from a System (for Cores, SFPs, and other components).
+    The grids get origins either from a parent block (for pin lattices) or from a System (for Cores,
+    SFPs, and other components).
+
+    .. impl:: Define a lattice map in reactor core.
+        :id: I_ARMI_BP_GRID
+        :implements: R_ARMI_BP_GRID
+
+        Defines a yaml construct that allows the user to specify a grid from within their blueprints
+        file, including a name, geometry, dimensions, symmetry, and a map with the relative
+        locations of components within that grid.
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being used in key-value pairs within the
+        :py:class:`~armi.reactor.blueprints.gridBlueprint.Grid` class, which is imported and used as
+        an attribute within the larger :py:class:`~armi.reactor.blueprints.Blueprints` class.
+
+        Includes a ``construct`` method, which instantiates an instance of one of the subclasses of
+        :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`. This is typically called from
+        within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`, which
+        then also associates the individual components in the block with locations specified in the
+        grid.
 
     Attributes
     ----------
@@ -153,17 +169,16 @@ class GridBlueprint(yamlize.Object):
     latticeMap : str
         An asciimap representation of the lattice contents
     latticeDimensions : Triplet
-        An x/y/z Triplet with grid dimensions in cm. This is used to specify a uniform
-        grid, such as Cartesian or Hex. Mutually exclusive with gridBounds.
+        An x/y/z Triplet with grid dimensions in cm. This is used to specify a uniform grid, such as
+        Cartesian or Hex. Mutually exclusive with gridBounds.
     gridBounds : dict
-        A dictionary containing explicit grid boundaries. Specific keys used will depend
-        on the type of grid being defined. Mutually exclusive with latticeDimensions.
+        A dictionary containing explicit grid boundaries. Specific keys used will depend on the type
+        of grid being defined. Mutually exclusive with latticeDimensions.
     symmetry : str
         A string defining the symmetry mode of the grid
     gridContents : dict
-        A {(i,j): str} dictionary mapping spatialGrid indices
-        in 2-D to string specifiers of what's supposed to be in the grid.
-
+        A {(i,j): str} dictionary mapping spatialGrid indices in 2-D to string specifiers of what's
+        supposed to be in the grid.
     """
 
     name = yamlize.Attribute(key="name", type=str)
@@ -182,10 +197,9 @@ class GridBlueprint(yamlize.Object):
             )
         ),
     )
-    # gridContents is the final form of grid contents information;
-    # it is set regardless of how the input is read. When writing, we attempt to
-    # preserve the input mode and write ascii map if that was what was originally
-    # provided.
+    # gridContents is the final form of grid contents information; it is set regardless of how the
+    # input is read. When writing, we attempt to preserve the input mode and write ascii map if that
+    # was what was originally provided.
     gridContents = yamlize.Attribute(key="grid contents", type=dict, default=None)
 
     @gridContents.validator
@@ -221,9 +235,9 @@ class GridBlueprint(yamlize.Object):
         setattr this is only needed for when you want to make this object from a non-YAML
         source.
 
-        .. warning:: This is a Yamlize object, so ``__init__`` never really gets called.
-               Only ``__new__`` does.
-
+        Warning
+        -------
+        This is a Yamlize object, so ``__init__`` never really gets called. Only ``__new__`` does.
         """
         self.name = name
         self.geom = str(geom)
@@ -236,8 +250,8 @@ class GridBlueprint(yamlize.Object):
     @property
     def readFromLatticeMap(self):
         """
-        This is implemented as a property, since as a Yamlize object, __init__ is not
-        always called and we have to lazily evaluate its default value.
+        This is implemented as a property, since as a Yamlize object, ``__init__`` is not always called
+        and we have to lazily evaluate its default value.
         """
         return getattr(self, "_readFromLatticeMap", False)
 
@@ -255,9 +269,8 @@ class GridBlueprint(yamlize.Object):
         """
         Build spatial grid.
 
-        If you do not enter latticeDimensions, a unit grid will be produced which must
-        be adjusted to the proper dimensions (often by inspection of children) at a
-        later time.
+        If you do not enter ``latticeDimensions``, a unit grid will be produced which must be adjusted
+        to the proper dimensions (often by inspection of children) at a later time.
         """
         symmetry = (
             geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
@@ -270,25 +283,23 @@ class GridBlueprint(yamlize.Object):
                 # This check is regrettably late. It would be nice if we could validate
                 # that bounds are provided if R-Theta mesh is being used.
                 raise InputError(
-                    "Grid bounds must be provided for `{}` to specify a grid with "
-                    "r-theta components.".format(self.name)
+                    f"Grid bounds must be provided for `{self.name}` to specify a grid with "
+                    "r-theta components."
                 )
             for key in ("theta", "r"):
                 if key not in self.gridBounds:
                     raise InputError(
-                        "{} grid bounds were not provided for `{}`.".format(
-                            key, self.name
-                        )
+                        f"{key} grid bounds were not provided for `{self.name}`."
                     )
 
             # convert to list, otherwise it is a CommentedSeq
-            theta = numpy.array(self.gridBounds["theta"])
-            radii = numpy.array(self.gridBounds["r"])
+            theta = np.array(self.gridBounds["theta"])
+            radii = np.array(self.gridBounds["r"])
             for lst, name in ((theta, "theta"), (radii, "radii")):
                 if not isMonotonic(lst, "<"):
                     raise InputError(
-                        "Grid bounds for {}:{} is not sorted or contains "
-                        "duplicates. Check blueprints.".format(self.name, name)
+                        f"Grid bounds for {self.name}:{name} is not sorted or contains duplicates. "
+                        "Check blueprints."
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
@@ -297,7 +308,7 @@ class GridBlueprint(yamlize.Object):
             spatialGrid = grids.HexGrid.fromPitch(
                 pitch,
                 numRings=maxIndex + 2,
-                pointedEndUp=geom == geometry.HEX_CORNERS_UP,
+                cornersUp=geom == geometry.HEX_CORNERS_UP,
             )
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of
@@ -335,8 +346,7 @@ class GridBlueprint(yamlize.Object):
         """
         Find the max index in the grid contents.
 
-        Used to limit the size of the spatialGrid. Used to be
-        called maxNumRings.
+        Used to limit the size of the spatialGrid. Used to be called maxNumRings.
         """
         if self.gridContents:
             return max(itertools.chain(*zip(*self.gridContents.keys())))
@@ -347,11 +357,12 @@ class GridBlueprint(yamlize.Object):
         """
         Unfold the blueprints to represent full symmetry.
 
-        .. note:: This relatively rudimentary, and copies entries from the
-            currently-represented domain to their corresponding locations in full
-            symmetry.  This may not produce the desired behavior for some scenarios,
-            such as when expanding fuel shuffling paths or the like. Future work may
-            make this more sophisticated.
+        Notes
+        -----
+        This relatively rudimentary, and copies entries from the currently-represented domain to
+        their corresponding locations in full symmetry. This may not produce the desired behavior
+        for some scenarios, such as when expanding fuel shuffling paths or the like. Future work may
+        make this more sophisticated.
         """
         if (
             geometry.SymmetryType.fromAny(self.symmetry).domain
@@ -401,8 +412,8 @@ class GridBlueprint(yamlize.Object):
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.
 
-        This update the gridContents attribute, which is a dict mapping grid i,j,k
-        indices to textual specifiers (e.g. ``IC``))
+        This update the gridContents attribute, which is a dict mapping grid i,j,k indices to
+        textual specifiers (e.g. ``IC``))
         """
         self.readFromLatticeMap = True
         symmetry = geometry.SymmetryType.fromStr(self.symmetry)
@@ -472,7 +483,7 @@ def _getGridSize(idx) -> Tuple[int, int]:
     Return the number of spaces between the min and max of a collection of (int, int)
     tuples, inclusive.
 
-    This essentially returns the number of grid locations along the i, and j dimesions,
+    This essentially returns the number of grid locations along the i, and j dimensions,
     given the (i,j) indices of each occupied location. This is useful for determining
     certain grid offset behavior.
     """
@@ -523,17 +534,34 @@ def _filterOutsideDomain(gridBp):
 
 
 def saveToStream(stream, bluep, full=False, tryMap=False):
-    """Save the blueprints to the passed stream.
+    """
+    Save the blueprints to the passed stream.
 
-    This can save either the entire blueprints, or just the `grids:` section of the
-    blueprints, based on the passed ``full`` argument. Saving just the grid
-    blueprints can be useful when cobbling blueprints together with !include flags.
+    This can save either the entire blueprints, or just the `grids:` section of the blueprints,
+    based on the passed ``full`` argument. Saving just the grid blueprints can be useful when
+    cobbling blueprints together with !include flags.
 
-    stream: file output stream of some kind
-    bluep: armi.reactor.blueprints.Blueprints, or Grids
-    full: bool ~ Is this a full output file, or just a partial/grids?
-    tryMap: regardless of input form, attempt to output as a lattice map. let's face it;
-    they're prettier.
+    .. impl:: Write a blueprint file from a blueprint object.
+        :id: I_ARMI_BP_TO_DB
+        :implements: R_ARMI_BP_TO_DB
+
+        First makes a copy of the blueprints that are passed in. Then modifies any grids specified
+        in the blueprints into a canonical lattice map style, if needed. Then uses the ``dump``
+        method that is inherent to all ``yamlize`` subclasses to write the blueprints to the given
+        ``stream`` object.
+
+        If called with the ``full`` argument, the entire blueprints is dumped. If not, only the
+        grids portion is dumped.
+
+    Parameters
+    ----------
+    stream :
+        file output stream of some kind
+    bluep : armi.reactor.blueprints.Blueprints, or Grids
+    full : bool
+        Is this a full output file, or just a partial/grids?
+    tryMap : bool
+        regardless of input form, attempt to output as a lattice map
     """
     # To save, we want to try our best to output our grid blueprints in the lattice
     # map style. However, we do not want to wreck the state that the current
@@ -582,8 +610,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             if aMap is not None:
                 # If there is an ascii map available then use it to fill out
                 # the contents of the lattice map section of the grid design.
-                # This also clears out the grid contents so there is not duplicate
-                # data.
+                # This also clears out the grid contents so there is not duplicate data.
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)
@@ -594,9 +621,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 gridDesign.latticeMap = None
 
         else:
-            # grid contents were supplied as a dictionary, so we shouldnt even have a
-            # latticeMap, unless it was set explicitly in code somewhere. Discard if
-            # there is one.
+            # grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap,
+            # unless it was set explicitly in code somewhere. Discard if there is one.
             gridDesign.latticeMap = None
 
     toSave = bp if full else gridDesigns

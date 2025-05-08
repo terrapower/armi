@@ -12,15 +12,15 @@ analyzing ARMI output files, etc.
    :maxdepth: 2
    :numbered:
 
-   user_install
-   inputs/index
-   outputs/index
+   inputs
+   outputs
    manual_data_access
    reactor_parameters_report
    core_parameters_report
    component_parameters_report
    assembly_parameters_report
    block_parameters_report
+   spatial_block_parameters
    physics_coupling
    radial_and_axial_expansion
    accessingEntryPoints

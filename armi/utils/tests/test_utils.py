@@ -13,33 +13,59 @@
 # limitations under the License.
 
 """Testing some utility functions."""
-from collections import defaultdict
+import os
 import unittest
+from collections import defaultdict
 
 import numpy as np
 
 from armi import utils
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
+from armi.testing import loadTestReactor
+from armi.tests import mockRunLogs
 from armi.utils import (
+    codeTiming,
     directoryChangers,
-    getPowerFractions,
-    getCycleNames,
     getAvailabilityFactors,
-    getStepLengths,
-    getCycleLengths,
     getBurnSteps,
+    getCumulativeNodeNum,
+    getCycleLengths,
+    getCycleNames,
+    getCycleNodeFromCumulativeNode,
+    getCycleNodeFromCumulativeStep,
+    getFileSHA1Hash,
     getMaxBurnSteps,
     getNodesPerCycle,
-    getCycleNodeFromCumulativeStep,
-    getCycleNodeFromCumulativeNode,
+    getPowerFractions,
     getPreviousTimeNode,
-    getCumulativeNodeNum,
+    getStepLengths,
     hasBurnup,
+    safeCopy,
+    safeMove,
 )
 
 
 class TestGeneralUtils(unittest.TestCase):
+    def test_getFileSHA1Hash(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            path = "test.txt"
+            with open(path, "w") as f1:
+                f1.write("test")
+            sha = getFileSHA1Hash(path)
+            self.assertIn("a94a8", sha)
+
+    def test_getFileSHA1HashDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            pathDir = "testDir"
+            path1 = os.path.join(pathDir, "test1.txt")
+            path2 = os.path.join(pathDir, "test2.txt")
+            os.mkdir(pathDir)
+            for i, path in enumerate([path1, path2]):
+                with open(path, "w") as f1:
+                    f1.write(f"test{i}")
+            sha = getFileSHA1Hash(pathDir)
+            self.assertIn("ccd13", sha)
+
     def test_mergeableDictionary(self):
         mergeableDict = utils.MergeableDict()
         normalDict = {"luna": "thehusky", "isbegging": "fortreats", "right": "now"}
@@ -132,22 +158,16 @@ class TestGeneralUtils(unittest.TestCase):
         ytick = ([0, 1], ["1", "2"])
         fname = "test_plotMatrix_testfile"
         with directoryChangers.TemporaryDirectoryChanger():
-            utils.plotMatrix(matrix, fname, show=True, title="plot")
-            utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
-            utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
+            utils.plotMatrix(matrix, fname, show=False, title="plot")
+            utils.plotMatrix(matrix, fname, show=False, minV=0, maxV=5, figsize=[3, 4])
+            utils.plotMatrix(matrix, fname, show=False, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
-        """Tests the classesInHierarchy utility.
-
-        .. test:: Tests that the Reactor is stored heirarchically
-           :id: T_REACTOR_HIERARCHY_0
-           :links: R_REACTOR_HIERARCHY
-
-           This test shows that the Blocks and Assemblies are stored
-           heirarchically inside the Core, which is inside the Reactor object.
-        """
+        """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor()
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -158,9 +178,94 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(classCounts[type(r)], 1)
         self.assertEqual(classCounts[type(r.core)], 1)
 
-        # further validate the Reactor heirarchy is in place
-        self.assertGreater(len(r.core.getAssemblies()), 50)
-        self.assertGreater(len(r.core.getBlocks()), 200)
+        # further validate the Reactor hierarchy is in place
+        self.assertEqual(len(r.core.getAssemblies()), 1)
+        self.assertEqual(len(r.core.getBlocks()), 1)
+
+    def test_codeTiming(self):
+        """Test that codeTiming preserves function attributes when it wraps a function."""
+
+        @codeTiming.timed
+        def testFunc():
+            """Test function docstring."""
+            pass
+
+        self.assertEqual(getattr(testFunc, "__doc__"), "Test function docstring.")
+        self.assertEqual(getattr(testFunc, "__name__"), "testFunc")
+
+    def test_safeCopy(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeCopy(file1, "dir2")
+                self.assertIn("Copied", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeCopy(file2, "dir2")
+                self.assertIn("Copied", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMove(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file1, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file2, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMoveDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                safeMove("dir1", "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("dir1", mock.getStdout())
+                self.assertIn("dir2", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
 
 
 class CyclesSettingsTests(unittest.TestCase):

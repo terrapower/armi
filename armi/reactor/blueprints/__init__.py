@@ -22,7 +22,7 @@ custom material properties or basic structures like the assemblies in use.
 This is essentially a wrapper for a yaml loader.
 The given yaml file is expected to rigidly adhere to given key:value pairings.
 
-See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
+See the :ref:`blueprints documentation <bp-input-file>` for more details.
 
 The file structure is expectation is::
 
@@ -64,57 +64,53 @@ The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
 """
 import copy
-import os
 import pathlib
 import traceback
 import typing
 
-from ruamel.yaml import CLoader, RoundTripLoader
 import ordered_set
-import tabulate
 import yamlize
 import yamlize.objects
+from ruamel.yaml import CLoader, RoundTripLoader
 
-from armi import context
-from armi import getPluginManager, getPluginManagerOrFail
-from armi import plugins
-from armi import runLog
-from armi.nucDirectory import nuclideBases
-from armi.reactor import assemblies
-from armi.reactor import geometry
-from armi.reactor import systemLayoutInput
-from armi.reactor.flags import Flags
-from armi.scripts import migration
-from armi.utils.customExceptions import InputError
-from armi.utils import textProcessors
-from armi.settings.fwSettings.globalSettings import (
-    CONF_DETAILED_AXIAL_EXPANSION,
-    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
-    CONF_INPUT_HEIGHTS_HOT,
-    CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
-    CONF_GEOM_FILE,
+from armi import (
+    context,
+    getPluginManager,
+    getPluginManagerOrFail,
+    migration,
+    plugins,
+    runLog,
 )
+from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
-
-# NOTE: using non-ARMI-standard imports because these are all a part of this package,
-# and using the module imports would make the attribute definitions extremely long
-# without adding detail
+from armi.reactor import assemblies
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
-from armi.reactor.blueprints.componentBlueprint import ComponentGroups
-from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
+from armi.reactor.blueprints.componentBlueprint import (
+    ComponentGroups,
+    ComponentKeyedList,
+)
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
-from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
+from armi.reactor.blueprints.reactorBlueprint import SystemBlueprint, Systems
 from armi.reactor.converters import axialExpansionChanger
+from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import (
+    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
+    CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
+    CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_INPUT_HEIGHTS_HOT,
+    CONF_NON_UNIFORM_ASSEM_FLAGS,
+)
+from armi.utils import tabulate, textProcessors
+from armi.utils.customExceptions import InputError
 
 context.BLUEPRINTS_IMPORTED = True
 context.BLUEPRINTS_IMPORT_CONTEXT = "".join(traceback.format_stack())
 
 
 def loadFromCs(cs, roundTrip=False):
-    r"""Function to load Blueprints based on supplied ``CaseSettings``."""
+    """Function to load Blueprints based on supplied ``Settings``."""
     from armi.utils import directoryChangers
 
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
@@ -155,7 +151,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
         else:
             pluginSections = pm.hook.defineBlueprintsSections()
             for plug in pluginSections:
-                for (attrName, section, resolver) in plug:
+                for attrName, section, resolver in plug:
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
@@ -171,13 +167,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 
 
 class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
-    """
-    Base Blueprintsobject representing all the subsections in the input file.
-
-    .. impl:: ARMI represents a user-specified reactor by providing a "Blueprint" YAML interface.
-        :id: I_REACTOR_0
-        :links: R_REACTOR
-    """
+    """Base Blueprintsobject representing all the subsections in the input file."""
 
     nuclideFlags = yamlize.Attribute(
         key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
@@ -241,7 +231,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Used to apply various modeling options when constructing an assembly.
 
         name : str (optional, and should be exclusive with specifier)
@@ -270,7 +260,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         self._prepConstruction(cs)
 
-        # TODO: this should be migrated assembly designs instead of assemblies
         if name is not None:
             assem = self.assemblies[name]
         elif specifier is not None:
@@ -315,7 +304,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             if not cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 # this is required to set up assemblies so they know how to snap
-                # to the reference mesh. They wont know the mesh to conform to
+                # to the reference mesh. They won't know the mesh to conform to
                 # otherwise....
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
@@ -336,10 +325,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     for a in list(self.assemblies.values())
                     if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
-                axialExpansionChanger.expandColdDimsToHot(
-                    assemsToExpand,
-                    cs[CONF_DETAILED_AXIAL_EXPANSION],
-                )
+                axialExpander = getPluginManagerOrFail().hook.getAxialExpansionChanger()
+                if axialExpander is not None:
+                    axialExpander.expandColdDimsToHot(
+                        assemsToExpand,
+                        cs[CONF_DETAILED_AXIAL_EXPANSION],
+                    )
 
             getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
                 assemblies=self.assemblies.values(), cs=cs
@@ -435,15 +426,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
                 # code-specific expansion required based on code and ENDF
                 newNuclides = eleExpand[elemental]
-                # overlay code details onto nuclideFlags for other parts of the code
-                # that will use them.
-                # TODO: would be better if nuclideFlags did this upon reading s.t.
-                # order didn't matter. On the other hand, this is the only place in
-                # the code where NuclideFlags get built and have user settings around
-                # (hence "resolve").
-                # This must be updated because the operative expansion code just uses the flags
-                #
-                # Also, if this element is not in nuclideFlags at all, we just don't add it
+                # Overlay code details onto nuclideFlags for other parts of the code that use them.
+                # Also, if this element is not in nuclideFlags at all, we just don't add it.
                 nuclideFlags[elemental.element.symbol].expandTo = [
                     nb.name for nb in newNuclides
                 ]
@@ -489,7 +473,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                             ),
                         ]
                     ],
-                    tablefmt="plain",
+                    tableFmt="plain",
                 ),
                 single=True,
             )
@@ -527,7 +511,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     runLog.error("CURRENT COMPARISON BLOCK:")
                     b.printContents(includeNuclides=False)
 
-                    for c in b.getChildren():
+                    for c in b:
                         runLog.error(
                             "{0} area {1} effective area {2}"
                             "".format(c, c.getArea(), c.getVolume() / b.getHeight())
@@ -556,7 +540,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     @classmethod
     def load(cls, stream, roundTrip=False):
-        """This class method is a wrapper around the `yamlize.Object.load()` method.
+        """This method is a wrapper around the `yamlize.Object.load()` method.
 
         The reason for the wrapper is to allow us to default to `Cloader`. Essentially,
         the `CLoader` class is 10x faster, but doesn't allow for "round trip" (read-
@@ -582,20 +566,8 @@ def migrate(bp: Blueprints, cs):
     """
     Apply migrations to the input structure.
 
-    This is a good place to perform migrations that address changes to the system design
-    description (settings, blueprints, geom file). We have access to all three here, so
-    we can even move stuff between files. Namely, this:
-
-     * creates a grid blueprint to represent the core layout from the old ``geomFile``
-       setting, and applies that grid to a ``core`` system.
-     * moves the radial and azimuthal submesh values from the ``geomFile`` to the
-       assembly designs, but only if they are uniform (this is limiting, but could be
-       made more sophisticated in the future, if there is need)
-
-    This allows settings-driven core map to still be used for backwards compatibility.
-    At some point once the input stabilizes, we may wish to move this out to the
-    dedicated migration portion of the code, and not perform the migration so
-    implicitly.
+    This is a good place to perform migrations that address changes to the system design description
+    (settings, blueprints). We have access both here, so we can even move stuff between files.
     """
     from armi.reactor.blueprints import gridBlueprint
 
@@ -607,42 +579,7 @@ def migrate(bp: Blueprints, cs):
     if "core" in [rd.name for rd in bp.gridDesigns]:
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
-    geom = systemLayoutInput.SystemLayoutInput()
-    geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs[CONF_GEOM_FILE]))
-    gridDesigns = geom.toGridBlueprints("core")
-    for design in gridDesigns:
-        bp.gridDesigns[design.name] = design
-
     if "core" in [rd.name for rd in bp.systemDesigns]:
-        raise ValueError(
-            "Core map is defined in both the ``geometry`` setting and in "
-            "the blueprints file. Only one definition may exist. "
-            "Update inputs."
-        )
+        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
+
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
-
-    if geom.geomType in (geometry.GeomType.RZT, geometry.GeomType.RZ):
-        aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
-        radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
-
-        if len(aziMeshes) > 1 or len(radMeshes) > 1:
-            raise ValueError(
-                "The system layout described in {} has non-uniform "
-                "azimuthal and/or radial submeshing. This migration is currently "
-                "only smart enough to handle a single radial and single azimuthal "
-                "submesh for all assemblies.".format(cs[CONF_GEOM_FILE])
-            )
-        radMesh = next(iter(radMeshes))
-        aziMesh = next(iter(aziMeshes))
-
-        for _, aDesign in bp.assemDesigns.items():
-            aDesign.radialMeshPoints = radMesh
-            aDesign.azimuthalMeshPoints = aziMesh
-
-    # Someday: write out the migrated file. At the moment this messes up the case
-    # title and doesn't yet have the other systems in place so this isn't the right place.
-
-
-#     cs.writeToXMLFile(cs.caseTitle + '.migrated.xml')
-#     with open(os.path.split(cs['loadingFile'])[0] + '.migrated.' + '.yaml', 'w') as loadingFile:
-#         blueprints.Blueprints.dump(bp, loadingFile)

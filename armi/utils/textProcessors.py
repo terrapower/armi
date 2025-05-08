@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utility classes and functions for manipulating text files."""
-import os
-import re
 import io
+import os
 import pathlib
-from typing import List, Tuple, Union, Optional, TextIO
+import re
+from typing import List, Optional, TextIO, Tuple, Union
 
 from armi import runLog
-
 
 _INCLUDE_CTOR = False
 _INCLUDE_RE = re.compile(r"^([^#]*\s+)?!include\s+(.*)\n?$")
@@ -225,7 +224,7 @@ def findYamlInclusions(
             except ValueError:
                 # Can't make a relative path. IMO, pathlib gives up a little too early,
                 # but we still probably want to decay to absolute paths if the files
-                # arent in the same tree.
+                # aren't in the same tree.
                 path = (mark.relativeTo / path).absolute()
 
         normalizedIncludes.append((path, mark))
@@ -273,7 +272,7 @@ class SequentialReader:
     :code:`match`.
 
     This pattern makes it easy to cycle through repetitive output in a very fast manner.
-    For example, if you had a text file with consistent chuncks of information that
+    For example, if you had a text file with consistent chunks of information that
     always started with the same text followed by information, you could do something
     like this:
 
@@ -304,7 +303,6 @@ class SequentialReader:
         ----------
         text : str
             text to find within the file
-
         warning : str
             An warning message to issue.
 
@@ -316,7 +314,8 @@ class SequentialReader:
         self._textWarnings.append((text, warning))
 
     def raiseErrorOnFindingText(self, text, error):
-        """Add a text search for every line of the file, if the text is found the specified error will be raised.
+        """Add a text search for every line of the file, if the text is found the specified error
+        will be raised.
 
         This is important for determining if errors occurred while searching for text.
 
@@ -335,7 +334,8 @@ class SequentialReader:
         self._textErrors.append((text, error))
 
     def raiseErrorOnFindingPattern(self, pattern, error):
-        """Add a pattern search for every line of the file, if the pattern is found the specified error will be raised.
+        """Add a pattern search for every line of the file, if the pattern is found the specified
+        error will be raised.
 
         This is important for determining if errors occurred while searching for text.
 
@@ -379,7 +379,7 @@ class SequentialReader:
         if self._stream is not None:
             try:
                 self._stream.close()
-            except:  # noqa: bare-except
+            except Exception:
                 # We really don't care if anything fails here, plus an exception in exit is ignored anyway
                 pass
         self._stream = None
@@ -397,7 +397,7 @@ class SequentialReader:
         Returns
         -------
         matched : bool
-            Boolean inidcating whether or not the pattern matched
+            Boolean indicating whether or not the pattern matched
         """
         self.match = None
         while True:
@@ -421,7 +421,7 @@ class SequentialReader:
         Returns
         -------
         matched : bool
-            Boolean inidcating whether or not the pattern matched
+            Boolean indicating whether or not the pattern matched
         """
         while True:
             self.match = re.search(pattern, self.line)
@@ -444,7 +444,7 @@ class SequentialReader:
         Returns
         -------
         matched : bool
-            Boolean inidcating whether or not the pattern matched
+            Boolean indicating whether or not the pattern matched
         """
         self.match = re.search(pattern, self.line)
         if self.match is None:
@@ -495,7 +495,7 @@ class SequentialStringIOReader(SequentialReader):
     :code:`match`.
 
     This pattern makes it easy to cycle through repetitive output in a very fast manner.
-    For example, if you had a text file with consistent chuncks of information that
+    For example, if you had a text file with consistent chunks of information that
     always started with the same text followed by information, you could do something
     like this:
 
@@ -544,17 +544,12 @@ class TextProcessor:
                 f = open(fname)
             else:
                 # need this not to fail for detecting when RXSUM doesn't exist, etc.
-                # note: Could make it check before instantiating...
+                # Note: Could make it check before instantiating...
                 raise FileNotFoundError(f"{fname} does not exist.")
-        if not highMem:
-            # keep the file on disk, read as necessary
-            self.f = f
-        else:
-            # read all of f into memory and set up a list that remembers where it is.
-            self.f = SmartList(f)
+        self.f = f
 
     def reset(self):
-        r"""Rewinds the file so you can search through it again."""
+        """Rewinds the file so you can search through it again."""
         self.f.seek(0)
 
     def __repr__(self):
@@ -567,15 +562,13 @@ class TextProcessor:
         pass
 
     def fsearch(self, pattern, msg=None, killOn=None, textFlag=False):
-        r"""
-        Searches file f for pattern and displays msg when found. Returns line in which
-        pattern is found or FALSE if no pattern is found.
-        Stops searching if finds killOn first.
+        """
+        Searches file f for pattern and displays msg when found. Returns line in which pattern is
+        found or FALSE if no pattern is found. Stops searching if finds killOn first.
 
-        If you specify textFlag=True, the search won't use a regular expression (and
-        can't). The basic result is you get less powerful matching capabilities at a
-        huge speedup (10x or so probably, but that's just a guess.) pattern and killOn
-        must be pure text if you do this.
+        If you specify textFlag=True, the search won't use a regular expression (and can't). The
+        basic result is you get less powerful matching capabilities at a huge speedup (10x or so
+        probably, but that's just a guess.) pattern and killOn must be pure text if you do this.
         """
         current = 0
         result = ""
@@ -616,42 +609,3 @@ class TextProcessor:
                 result = ""
 
         return result
-
-
-class SmartList:
-    r"""A list that does stuff like files do i.e. remembers where it was, can seek, etc.
-    Actually this is pretty slow. so much for being smart. nice idea though.
-    """
-
-    def __init__(self, f):
-        self.lines = f.readlines()
-        self.position = 0
-        self.name = f.name
-        self.length = len(self.lines)
-
-    def __getitem__(self, index):
-        return self.lines[index]
-
-    def __setitem__(self, index, line):
-        self.lines[index] = line
-
-    def next(self):
-        if self.position >= self.length:
-            self.position = 0
-            raise StopIteration
-        else:
-            c = self.position
-            self.position += 1
-            return self.lines[c]
-
-    def __iter__(self):
-        return self
-
-    def __len__(self):
-        return len(self.lines)
-
-    def seek(self, line):
-        self.position = line
-
-    def close(self):
-        pass

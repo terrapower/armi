@@ -16,16 +16,17 @@
 import copy
 import unittest
 
-from armi import cli
-from armi import configure
-from armi import context
-from armi import getApp
-from armi import getDefaultPluginManager
-from armi import isStableReleaseVersion
-from armi import meta
-from armi import plugins
-from armi.reactor.flags import Flags
+from armi import (
+    configure,
+    context,
+    getApp,
+    getDefaultPluginManager,
+    isStableReleaseVersion,
+    meta,
+    plugins,
+)
 from armi.__main__ import main
+from armi.reactor.flags import Flags
 
 
 class TestPlugin1(plugins.ArmiPlugin):
@@ -166,7 +167,7 @@ class TestApps(unittest.TestCase):
         settings = app.getSettings()
 
         self.assertGreater(len(settings), 100)
-        self.assertEqual(settings["numProcessors"].value, 1)
+        self.assertEqual(settings["nTasks"].value, 1)
         self.assertEqual(settings["nCycles"].value, 1)
 
     def test_splashText(self):
@@ -212,15 +213,26 @@ class TestApps(unittest.TestCase):
         armi._ignoreConfigures = old
 
 
-class TestArmi(unittest.TestCase):
+class TestArmiHighLevel(unittest.TestCase):
     """Tests for functions in the ARMI __init__ module."""
 
-    def test_getDefaultPlugMan(self):
+    def test_getDefaultPluginManager(self):
+        """Test the default plugin manager.
+
+        .. test:: The default application consists of a list of default plugins.
+            :id: T_ARMI_APP_PLUGINS
+            :tests: R_ARMI_APP_PLUGINS
+        """
         pm = getDefaultPluginManager()
         pm2 = getDefaultPluginManager()
 
         self.assertNotEqual(pm, pm2)
-        self.assertIn(cli.EntryPointsPlugin, pm.get_plugins())
+        pluginsList = "".join([str(p) for p in pm.get_plugins()])
+
+        self.assertIn("BookkeepingPlugin", pluginsList)
+        self.assertIn("EntryPointsPlugin", pluginsList)
+        self.assertIn("NeutronicsPlugin", pluginsList)
+        self.assertIn("ReactorPlugin", pluginsList)
 
     def test_overConfigured(self):
         with self.assertRaises(RuntimeError):

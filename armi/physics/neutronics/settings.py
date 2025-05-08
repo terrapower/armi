@@ -16,21 +16,16 @@
 import os
 
 from armi import runLog
-from armi.operators import settingsValidation
+from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import NEUTRON
 from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
-from armi.scripts.migration.crossSectionBlueprintsToSettings import (
-    migrateCrossSectionsFromBlueprints,
-)
-from armi.physics.neutronics import LatticePhysicsFrequency
-from armi.settings import setting
-from armi.utils import directoryChangers
+from armi.settings import setting, settingsValidation
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
     CONF_RUN_TYPE,
 )
-
+from armi.utils import directoryChangers
 
 CONF_BC_COEFFICIENT = "bcCoefficient"
 CONF_BOUNDARIES = "boundaries"
@@ -45,20 +40,19 @@ CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_INNERS_ = "inners"
 CONF_LOADING_FILE = "loadingFile"
+CONF_MCNP_LIB_BASE = "mcnpLibraryVersion"
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
-# Used for dpa/dose analysis.
-# TODO: These should be relocated to more design-specific places
+# used by global flux interface
 CONF_ACLP_DOSE_LIMIT = "aclpDoseLimit"
 CONF_DPA_XS_SET = "dpaXsSet"
 CONF_GRID_PLATE_DPA_XS_SET = "gridPlateDpaXsSet"
 CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
 CONF_LOAD_PAD_LENGTH = "loadPadLength"
-
 CONF_OPT_DPA = [
     "",
     "dpa_EBRII_INC600",
@@ -70,23 +64,26 @@ CONF_OPT_DPA = [
 
 # moved from xsSettings
 CONF_CLEAR_XS = "clearXS"
-CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
-CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
-CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
-CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
-CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
     "disableBlockTypeExclusionInXsGeneration"
 )
-CONF_XS_KERNEL = "xsKernel"
-CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
+CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
-CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
+CONF_XS_KERNEL = "xsKernel"
+CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 
 
 def defineSettings():
-    """Standard function to define settings - for neutronics."""
+    """Standard function to define settings; for neutronics."""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -104,7 +101,6 @@ def defineSettings():
                 "ANL2082",
                 "ARMI33",
                 "ARMI45",
-                "CINDER63",
                 "348",
             ],
         ),
@@ -112,9 +108,8 @@ def defineSettings():
             CONF_GLOBAL_FLUX_ACTIVE,
             default="Neutron",
             label="Global Flux Calculation",
-            description="Calculate the global flux at each timestep for the selected "
-            "particle type(s) using the specified neutronics kernel (see Global Flux "
-            "tab).",
+            description="Calculate the global flux at each timestep for the selected particle "
+            "type(s) using the specified neutronics kernel.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -123,8 +118,8 @@ def defineSettings():
             label="Multigroup Cross Sections Generation",
             description="Generate multigroup cross sections for the selected particle "
             "type(s) using the specified lattice physics kernel (see Lattice Physics "
-            "tab). When not set, the XS library will be auto-loaded from an existing ISOTXS "
-            "within then working directory and fail if the ISOTXS does not exist.",
+            "tab). When not set, the XS library will be auto-loaded from an existing "
+            "ISOTXS in the working directory, but fail if there is no ISOTXS.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -166,6 +161,13 @@ def defineSettings():
             enforcedOptions=True,
         ),
         setting.Setting(
+            CONF_MCNP_LIB_BASE,
+            default="ENDF/B-VII.1",
+            description="Library name for MCNP cross sections. ENDF/B-VII.1 is the default library.",
+            label="ENDF data library version to use for MCNP Analysis",
+            options=["ENDF/B-V.0", "ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
+        ),
+        setting.Setting(
             CONF_NEUTRONICS_TYPE,
             default="real",
             label="Neutronics Type",
@@ -176,7 +178,7 @@ def defineSettings():
             CONF_EIGEN_PROB,
             default=True,
             label="Eigenvalue Problem",
-            description="Whether this is a eigenvalue problem or a fixed source problem",
+            description="Is this a eigenvalue problem or a fixed source problem?",
         ),
         setting.Setting(
             CONF_EXISTING_FIXED_SOURCE,
@@ -197,7 +199,8 @@ def defineSettings():
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
-            description="Convergence criteria for calculating the eigenvalue in the global flux solver",
+            description="Convergence criteria for calculating the eigenvalue in the "
+            "global flux solver",
         ),
         setting.Setting(
             CONF_EPS_FSAVG,
@@ -217,8 +220,8 @@ def defineSettings():
             label="Load pad elevation (cm)",
             description=(
                 "The elevation of the bottom of the above-core load pad (ACLP) in cm "
-                "from the bottom of the upper grid plate. Used for calculating the load "
-                "pad dose"
+                "from the bottom of the upper grid plate. Used for calculating the "
+                "load pad dose"
             ),
         ),
         setting.Setting(
@@ -231,7 +234,8 @@ def defineSettings():
             CONF_ACLP_DOSE_LIMIT,
             default=80.0,
             label="ALCP dose limit",
-            description="Dose limit in dpa used to position the above-core load pad (if one exists)",
+            description="Dose limit in dpa used to position the above-core load pad"
+            "(if one exists)",
         ),
         setting.Setting(
             CONF_RESTART_NEUTRONICS,
@@ -249,7 +253,8 @@ def defineSettings():
             CONF_INNERS_,
             default=0,
             label="Inner Iterations",
-            description="XY and Axial partial current sweep inner iterations. 0 lets the neutronics code pick a default.",
+            description="XY and Axial partial current sweep inner iterations. 0 lets "
+            "the neutronics code pick a default.",
         ),
         setting.Setting(
             CONF_GRID_PLATE_DPA_XS_SET,
@@ -278,7 +283,8 @@ def defineSettings():
             CONF_MINIMUM_FISSILE_FRACTION,
             default=0.045,
             label="Minimum Fissile Fraction",
-            description="Minimum fissile fraction (fissile number densities / heavy metal number densities).",
+            description="Minimum fissile fraction (fissile number densities / heavy "
+            "metal number densities).",
             oldNames=[("mc2.minimumFissileFraction", None)],
         ),
         setting.Setting(
@@ -286,26 +292,23 @@ def defineSettings():
             default=1e-15,
             label="Minimum nuclide density",
             description="Density to use for nuclides and fission products at infinite dilution. "
-            + "This is also used as the minimum density considered for computing macroscopic cross "
-            + "sections. It can also be passed to physics plugins.",
-        ),
-        setting.Setting(
-            CONF_INFINITE_DILUTE_CUTOFF,
-            default=1e-10,
-            label="Infinite Dillute Cutoff",
-            description="Do not model nuclides with density less than this cutoff. Used with PARTISN and SERPENT.",
+            "This is also used as the minimum density considered for computing macroscopic cross "
+            "sections.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
             default=0.0,
             label="Cross Section Burnup Group Tolerance",
-            description="Burnup window for computing cross sections. If the prior cross sections were computed within the window, new cross sections will not be generated and the prior calculated cross sections will be used.",
+            description="Burnup window for computing cross sections. If the prior "
+            "cross sections were computed within the window, new cross sections will "
+            "not be generated and the prior calculated cross sections will be used.",
         ),
         setting.Setting(
             CONF_XS_BLOCK_REPRESENTATION,
             default="Average",
             label="Cross Section Block Averaging Method",
-            description="The type of averaging to perform when creating cross sections for a group of blocks",
+            description="The type of averaging to perform when creating cross "
+            "sections for a group of blocks",
             options=[
                 "Median",
                 "Average",
@@ -317,7 +320,9 @@ def defineSettings():
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
             default=False,
             label="Include All Block Types in XS Generation",
-            description="Use all blocks in a cross section group when generating a representative block. When this is disabled only `fuel` blocks will be considered",
+            description="Use all blocks in a cross section group when generating a "
+            "representative block. When this is disabled only `fuel` blocks will be "
+            "considered",
         ),
         setting.Setting(
             CONF_XS_KERNEL,
@@ -330,7 +335,8 @@ def defineSettings():
             CONF_LATTICE_PHYSICS_FREQUENCY,
             default="BOC",
             label="Frequency of lattice physics updates",
-            description="Define the frequency at which cross sections are updated with new lattice physics interactions.",
+            description="Define the frequency at which cross sections are updated with "
+            "new lattice physics interactions.",
             options=[opt.name for opt in list(LatticePhysicsFrequency)],
             enforcedOptions=True,
         ),
@@ -344,7 +350,8 @@ def defineSettings():
             CONF_XS_BUCKLING_CONVERGENCE,
             default=1e-05,
             label="Buckling Convergence Criteria",
-            description="Convergence criteria for the buckling iteration if it is available in the lattice physics solver",
+            description="Convergence criteria for the buckling iteration if it is "
+            "available in the lattice physics solver",
             oldNames=[
                 ("mc2BucklingConvergence", None),
                 ("bucklingConvergence", None),
@@ -354,7 +361,8 @@ def defineSettings():
             CONF_XS_EIGENVALUE_CONVERGENCE,
             default=1e-05,
             label="Eigenvalue Convergence Criteria",
-            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
+            description="Convergence criteria for the eigenvalue in the lattice "
+            "physics kernel",
         ),
     ]
 
@@ -390,11 +398,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateXSOptionGenXS():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GEN_XS)
 
     def migrateXSOptionGlobalFluxActive():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
     queries.append(
@@ -483,11 +491,11 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateDpaDpaXsSet():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(
@@ -510,20 +518,6 @@ def getNeutronicsSettingValidators(inspector):
             ),
             "Would you like to auto-correct this to the full name?",
             migrateDpaGridPlate,
-        )
-    )
-
-    queries.append(
-        settingsValidation.Query(
-            lambda: inspector.cs[CONF_LOADING_FILE]
-            and _blueprintsHasOldXSInput(inspector),
-            "The specified blueprints input file '{0}' contains compound cross section settings. "
-            "".format(inspector.cs[CONF_LOADING_FILE]),
-            "Automatically move them to the settings file, {}? WARNING: if multiple settings files point "
-            "to this blueprints input you must manually update the others.".format(
-                inspector.cs.path
-            ),
-            lambda: migrateCrossSectionsFromBlueprints(inspector.cs),
         )
     )
 

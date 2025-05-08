@@ -58,7 +58,7 @@ also be provided in the module-level docstrings.
 
 .. [CCCC-IV] R. Douglas O'Dell, "Standard Interface Files and Procedures for Reactor Physics
              Codes, Version IV," LA-6941-MS, Los Alamos National Laboratory (September 1977).
-             Web. doi:10.2172/5369298. (`OSTI <https://www.osti.gov/biblio/5369298>`_)
+             Web. doi:10.2172/5369298. (`OSTI <https://www.osti.gov/biblio/5369298>`__)
 
 Using the system
 ----------------
@@ -115,4 +115,4 @@ has since been updated significantly to both read and write the files.
 This was originally inspired by Prof. James Paul Holloway's alpha
 release of ccccutils written in c++ from 2001.
 """
-from .cccc import *  # noqa: unused-import
+from armi.nuclearDataIO.cccc.cccc import *  # noqa: F403

@@ -12,31 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Global flux interface provide a base class for all neutronics tools that compute the neutron and/or photon flux."""
+"""The Global flux interface provide a base class for all neutronics tools that compute the neutron
+and/or photon flux.
+"""
 import math
 from typing import Dict, Optional
 
-import numpy
-import scipy.integrate
+import numpy as np
 
-from armi import interfaces
-from armi import runLog
-from armi.physics import constants
-from armi.physics import executers
-from armi.physics import neutronics
-from armi.reactor import geometry
-from armi.reactor import reactors
+from armi import interfaces, runLog
+from armi.physics import constants, executers, neutronics
+from armi.physics.neutronics.globalFlux import RX_ABS_MICRO_LABELS, RX_PARAM_NAMES
+from armi.reactor import geometry, reactors
 from armi.reactor.blocks import Block
-from armi.reactor.converters import geometryConverters
-from armi.reactor.converters import uniformMesh
+from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import units, codeTiming, getMaxBurnSteps
+from armi.utils import getBurnSteps, getMaxBurnSteps, units
 
 ORDER = interfaces.STACK_ORDER.FLUX
-
-RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
-RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]
 
 
 class GlobalFluxInterface(interfaces.Interface):
@@ -83,12 +77,12 @@ class GlobalFluxInterface(interfaces.Interface):
 
     def interactBOC(self, cycle=None):
         interfaces.Interface.interactBOC(self, cycle)
-        self.r.core.p.rxSwing = 0.0  # zero out rxSwing until EOC.
+        self.r.core.p.rxSwing = 0.0  # zero out rxSwing until last time node.
         self.r.core.p.maxDetailedDpaThisCycle = 0.0  # zero out cumulative params
         self.r.core.p.dpaFullWidthHalfMax = 0.0
         self.r.core.p.elevationOfACLP3Cycles = 0.0
         self.r.core.p.elevationOfACLP7Cycles = 0.0
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.detailedDpaThisCycle = 0.0
             b.p.newDPA = 0.0
 
@@ -100,27 +94,47 @@ class GlobalFluxInterface(interfaces.Interface):
         is up to date with the reactor state.
         """
         interfaces.Interface.interactEveryNode(self, cycle, node)
-
-        if self.r.p.timeNode == 0:
-            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+        self._setRxSwingRelatedParams()
 
     def interactCoupled(self, iteration):
         """Runs during a tightly-coupled physics iteration to updated the flux and power."""
         interfaces.Interface.interactCoupled(self, iteration)
-        if self.r.p.timeNode == 0:
-            self._bocKeff = self.r.core.p.keff  # track boc keff for rxSwing param.
+        self._setRxSwingRelatedParams()
 
-    def interactEOC(self, cycle=None):
-        interfaces.Interface.interactEOC(self, cycle)
-        if self._bocKeff is not None:
-            self.r.core.p.rxSwing = (
-                (self.r.core.p.keff - self._bocKeff)
-                / self._bocKeff
-                * units.ABS_REACTIVITY_TO_PCM
+    def _setRxSwingRelatedParams(self):
+        """Set Params Related to Rx Swing."""
+        if self.r.p.timeNode == 0:
+            # track boc uncontrolled keff for rxSwing param.
+            self._bocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+
+        # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
+        lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
+        if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
+
+            eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
+            swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
+            self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
+            runLog.info(
+                f"BOC Uncontrolled keff: {self._bocKeff},  "
+                f"EOC Uncontrolled keff: {self.r.core.p.keffUnc}, "
+                f"Cycle Reactivity Swing: {self.r.core.p.rxSwing} pcm"
             )
 
-    def _checkEnergyBalance(self):
-        """Check that there is energy balance between the power generated and the specified power is the system."""
+    def checkEnergyBalance(self):
+        """Check that there is energy balance between the power generated and the specified power.
+
+        .. impl:: Validate the energy generation matches user specifications.
+            :id: I_ARMI_FLUX_CHECK_POWER
+            :implements: R_ARMI_FLUX_CHECK_POWER
+
+            This method checks that the global power computed from flux
+            evaluation matches the global power specified from the user within a
+            tolerance; if it does not, a ``ValueError`` is raised. The
+            global power from the flux solve is computed by summing the
+            block-wise power in the core. This value is then compared to the
+            user-specified power and raises an error if relative difference is
+            above :math:`10^{-5}`.
+        """
         powerGenerated = (
             self.r.core.calcTotalParam(
                 "power", calcBasedOnFullObj=False, generationNum=2
@@ -242,7 +256,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
             return self.r.core.p.keff
         if self.coupler.parameter == "power":
             scaledCorePowerDistribution = []
-            for a in self.r.core.getChildren():
+            for a in self.r.core:
                 scaledPower = []
                 assemPower = sum(b.p.power for b in a)
                 for b in a:
@@ -333,6 +347,25 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
 
 class GlobalFluxOptions(executers.ExecutionOptions):
     """Data structure representing common options in Global Flux Solvers.
+
+    .. impl:: Options for neutronics solvers.
+        :id: I_ARMI_FLUX_OPTIONS
+        :implements: R_ARMI_FLUX_OPTIONS
+
+        This class functions as a data structure for setting and retrieving
+        execution options for performing flux evaluations, these options
+        involve:
+
+        * What sort of problem is to be solved, i.e. real/adjoint,
+          eigenvalue/fixed-source, neutron/gamma, boundary conditions
+        * Convergence criteria for iterative algorithms
+        * Geometry type and mesh conversion details
+        * Specific parameters to be calculated after flux has been evaluated
+
+        These options can be retrieved by directly accessing class members. The
+        options are set by specifying a :py:class:`Settings
+        <armi.settings.caseSettings.Settings>` object and optionally specifying
+        a :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
 
     Attributes
     ----------
@@ -442,9 +475,9 @@ class GlobalFluxOptions(executers.ExecutionOptions):
             CONF_XS_KERNEL,
         )
         from armi.settings.fwSettings.globalSettings import (
-            CONF_PHYSICS_FILES,
-            CONF_NON_UNIFORM_ASSEM_FLAGS,
             CONF_DETAILED_AXIAL_EXPANSION,
+            CONF_NON_UNIFORM_ASSEM_FLAGS,
+            CONF_PHYSICS_FILES,
         )
 
         self.kernelName = cs[CONF_NEUTRONICS_KERNEL]
@@ -505,6 +538,19 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
     and copying certain user-defined files back to the working directory on error
     or completion. Given all these options and possible needs for information from
     global flux, this class provides a unified interface to everything.
+
+    .. impl:: Ensure the mesh in the reactor model is appropriate for neutronics solver execution.
+        :id: I_ARMI_FLUX_GEOM_TRANSFORM
+        :implements: R_ARMI_FLUX_GEOM_TRANSFORM
+
+        The primary purpose of this class is perform geometric and mesh
+        transformations on the reactor model to ensure a flux evaluation can
+        properly perform. This includes:
+
+        * Applying a uniform axial mesh for the 3D flux solve
+        * Expanding symmetrical geometries to full-core if necessary
+        * Adding/removing edge assemblies if necessary
+        * Undoing any transformations that might affect downstream calculations
     """
 
     def __init__(self, options: GlobalFluxOptions, reactor):
@@ -512,7 +558,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         self.options: GlobalFluxOptions
         self.geomConverters: Dict[str, geometryConverters.GeometryConverter] = {}
 
-    @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
         """
         Apply geometry conversions to make reactor work in neutronics.
@@ -560,7 +605,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         self.r = neutronicsReactor
 
-    @codeTiming.timed
     def _undoGeometryTransformations(self):
         """
         Restore original data model state and/or apply results to it.
@@ -578,7 +622,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         geomConverter = self.geomConverters.get("edgeAssems")
         if geomConverter:
             geomConverter.scaleParamsRelatedToSymmetry(
-                self.r, paramsToScaleSubset=self.options.paramsToScaleSubset
+                self.r.core, paramsToScaleSubset=self.options.paramsToScaleSubset
             )
 
             # Resets the reactor core model to the correct symmetry and removes
@@ -635,7 +679,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
 
     def clearFlux(self):
         """Delete flux on all blocks. Needed to prevent stale flux when partially reloading."""
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = []
             b.p.adjMgFlux = []
             b.p.mgFluxGamma = []
@@ -658,9 +702,9 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         # update the block power param here as well so
         # the ratio/multiplications below are consistent
         currentCorePower = 0.0
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
-            b.p.power = numpy.dot(
+            b.p.power = np.dot(
                 b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
             )
             b.p.flux = sum(b.getMgFlux())
@@ -674,7 +718,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 self.r.core, powerRatio, currentCorePower, renormalizationCorePower
             )
         )
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux *= powerRatio
             b.p.flux *= powerRatio
             b.p.fluxPeak *= powerRatio
@@ -770,7 +814,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         updateFluenceAndDpa : uses values computed here to update cumulative dpa
         """
         if blockList is None:
-            blockList = self.r.core.getBlocks()
+            blockList = self.r.core.iterBlocks()
 
         hasDPA = False
         for b in blockList:
@@ -824,346 +868,41 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
                 a.p.kInf = totalSrc / totalAbs  # assembly average k-inf.
 
 
-class DoseResultsMapper(GlobalFluxResultMapper):
-    """
-    Updates fluence and dpa when time shifts.
-
-    Often called after a depletion step. It is invoked using :py:meth:`apply() <.DoseResultsMapper.apply>`.
-
-    Parameters
-    ----------
-    depletionSeconds: float, required
-        Length of depletion step in units of seconds
-
-    options: GlobalFluxOptions, required
-        Object describing options used by the global flux solver. A few attributes from
-        this object are used to run the methods in DoseResultsMapper. An example
-        attribute is aclpDoseLimit.
-
-    Notes
-    -----
-    We attempted to make this a set of stateless functions but the requirement of various
-    options made it more of a data passing task than we liked. So it's just a lightweight
-    and ephemeral results mapper.
-    """
-
-    def __init__(self, depletionSeconds, options):
-        self.success = False
-        self.options = options
-        self.cs = self.options.cs
-        self.r = None
-        self.depletionSeconds = depletionSeconds
-
-    def apply(self, reactor, blockList=None):
-        """
-        Invokes :py:meth:`updateFluenceAndDpa() <.DoseResultsMapper.updateFluenceAndDpa>`
-        for a provided Reactor object.
-
-        Parameters
-        ----------
-        reactor: Reactor, required
-            ARMI Reactor object
-
-        blockList: list, optional
-            List of ARMI blocks to be processed by the class. If no blocks are provided, then
-            blocks returned by :py:meth:`getBlocks() <.reactors.Core.getBlocks>` are used.
-
-        Returns
-        -------
-        None
-        """
-        runLog.extra("Updating fluence and dpa on reactor based on depletion step.")
-        self.r = reactor
-        self.updateFluenceAndDpa(self.depletionSeconds, blockList=blockList)
-
-    def updateFluenceAndDpa(self, stepTimeInSeconds, blockList=None):
-        r"""
-        Updates the fast fluence and the DPA of the blocklist.
-
-        The dpa rate from the previous timestep is used to compute the dpa here.
-
-        There are several items of interest computed here, including:
-            * detailedDpa: The average DPA of a block
-            * detailedDpaPeak: The peak dpa of a block, considering axial and radial peaking
-                The peaking is based either on a user-provided peaking factor (computed in a
-                pin reconstructed rotation study) or the nodal flux peaking factors
-            * dpaPeakFromFluence: fast fluence * fluence conversion factor (old and inaccurate).
-                Used to be dpaPeak
-
-        Parameters
-        ----------
-        stepTimeInSeconds : float
-            Time in seconds that the cycle ran at the current mgFlux
-
-        blockList : list, optional
-            blocks to be updated. Defaults to all blocks in core
-
-        See Also
-        --------
-        updateDpaRate : updates the DPA rate used here to compute actual dpa
-        """
-        blockList = blockList or self.r.core.getBlocks()
-
-        if not blockList[0].p.fluxPeak:
-            runLog.warning(
-                "no fluxPeak parameter on this model. Peak DPA will be equal to average DPA. "
-                "Perhaps you are not running a nodal approximation."
-            )
-
-        for b in blockList:
-            b.p.residence += stepTimeInSeconds / units.SECONDS_PER_DAY
-            b.p.fluence += b.p.flux * stepTimeInSeconds
-            b.p.fastFluence += b.p.flux * stepTimeInSeconds * b.p.fastFluxFr
-            b.p.fastFluencePeak += b.p.fluxPeak * stepTimeInSeconds * b.p.fastFluxFr
-
-            # update detailed DPA based on dpa rate computed at LAST timestep.
-            # new incremental DPA increase for duct distortion interface (and eq)
-            b.p.newDPA = b.p.detailedDpaRate * stepTimeInSeconds
-            b.p.newDPAPeak = b.p.detailedDpaPeakRate * stepTimeInSeconds
-
-            # use = here instead of += because we need the param system to notice the change for syncronization.
-            b.p.detailedDpa = b.p.detailedDpa + b.p.newDPA
-            b.p.detailedDpaPeak = b.p.detailedDpaPeak + b.p.newDPAPeak
-            b.p.detailedDpaThisCycle = b.p.detailedDpaThisCycle + b.p.newDPA
-
-            # increment point dpas
-            # this is specific to hex geometry, but they are general neutronics block parameters
-            # if it is a non-hex block, this should be a no-op
-            if b.p.pointsCornerDpaRate is not None:
-                if b.p.pointsCornerDpa is None:
-                    b.p.pointsCornerDpa = numpy.zeros((6,))
-                b.p.pointsCornerDpa = (
-                    b.p.pointsCornerDpa + b.p.pointsCornerDpaRate * stepTimeInSeconds
-                )
-            if b.p.pointsEdgeDpaRate is not None:
-                if b.p.pointsEdgeDpa is None:
-                    b.p.pointsEdgeDpa = numpy.zeros((6,))
-                b.p.pointsEdgeDpa = (
-                    b.p.pointsEdgeDpa + b.p.pointsEdgeDpaRate * stepTimeInSeconds
-                )
-
-            if self.options.dpaPerFluence:
-                # do the less rigorous fluence -> DPA conversion if the user gave a factor.
-                b.p.dpaPeakFromFluence = (
-                    b.p.fastFluencePeak * self.options.dpaPerFluence
-                )
-
-            # Set burnup peaking
-            # b.p.percentBu/buRatePeak is expected to have been updated elsewhere (depletion)
-            # (this should run AFTER burnup has been updated)
-            # try to find the peak rate first
-            peakRate = None
-            if b.p.buRatePeak:
-                # best case scenario, we have peak burnup rate
-                peakRate = b.p.buRatePeak
-            elif b.p.buRate:
-                # use whatever peaking factor we can find if just have rate
-                peakRate = b.p.buRate * self.getBurnupPeakingFactor(b)
-
-            # If peak rate found, use to calc peak burnup; otherwise scale burnup
-            if peakRate:
-                # peakRate is in per day
-                peakRatePerSecond = peakRate / units.SECONDS_PER_DAY
-                b.p.percentBuPeak = (
-                    b.p.percentBuPeak + peakRatePerSecond * stepTimeInSeconds
-                )
-            else:
-                # No rate, make bad assumption.... assumes peaking is same at each position through shuffling/irradiation history...
-                runLog.warning(
-                    "Scaling burnup by current peaking factor... This assumes peaking "
-                    "factor was constant through shuffling/irradiation history.",
-                    single=True,
-                )
-                b.p.percentBuPeak = b.p.percentBu * self.getBurnupPeakingFactor(b)
-
-        for a in self.r.core.getAssemblies():
-            a.p.daysSinceLastMove += stepTimeInSeconds / units.SECONDS_PER_DAY
-
-        self.updateMaxDpaParams()
-        self.updateCycleDoseParams()
-        self.updateLoadpadDose()
-
-    def updateCycleDoseParams(self):
-        r"""Updates reactor params based on the amount of dose (detailedDpa) accrued this cycle.
-
-        Params updated include:
-
-        * maxDetailedDpaThisCycle
-        * dpaFullWidthHalfMax
-        * elevationOfACLP3Cycles
-        * elevationOfACLP7Cycles
-
-        These parameters are left as zeroes at BOC because no dose has been accumulated yet.
-        """
-        cycle = self.r.p.cycle
-        timeNode = self.r.p.timeNode
-
-        if timeNode <= 0:
-            return
-
-        daysIntoCycle = sum(self.r.o.stepLengths[cycle][:timeNode])
-        cycleLength = self.r.p.cycleLength
-
-        maxDetailedDpaThisCycle = 0.0
-        peakDoseAssem = None
-        for a in self.r.core:
-            if a.getMaxParam("detailedDpaThisCycle") > maxDetailedDpaThisCycle:
-                maxDetailedDpaThisCycle = a.getMaxParam("detailedDpaThisCycle")
-                peakDoseAssem = a
-        self.r.core.p.maxDetailedDpaThisCycle = maxDetailedDpaThisCycle
-
-        if peakDoseAssem is None:
-            return
-
-        doseHalfMaxHeights = peakDoseAssem.getElevationsMatchingParamValue(
-            "detailedDpaThisCycle", maxDetailedDpaThisCycle / 2.0
-        )
-        if len(doseHalfMaxHeights) != 2:
-            runLog.warning(
-                "Something strange with detailedDpaThisCycle shape in {}, "
-                "non-2 number of values matching {}".format(
-                    peakDoseAssem, maxDetailedDpaThisCycle / 2.0
-                )
-            )
-        else:
-            self.r.core.p.dpaFullWidthHalfMax = (
-                doseHalfMaxHeights[1] - doseHalfMaxHeights[0]
-            )
-
-        aclpDoseLimit = self.options.aclpDoseLimit
-        aclpDoseLimit3 = aclpDoseLimit / 3.0 * (daysIntoCycle / cycleLength)
-        aclpLocations3 = peakDoseAssem.getElevationsMatchingParamValue(
-            "detailedDpaThisCycle", aclpDoseLimit3
-        )
-        if len(aclpLocations3) != 2:
-            runLog.warning(
-                "Something strange with detailedDpaThisCycle shape in {}"
-                ", non-2 number of values matching {}".format(
-                    peakDoseAssem, aclpDoseLimit / 3.0
-                )
-            )
-        else:
-            self.r.core.p.elevationOfACLP3Cycles = aclpLocations3[1]
-
-        aclpDoseLimit7 = aclpDoseLimit / 7.0 * (daysIntoCycle / cycleLength)
-        aclpLocations7 = peakDoseAssem.getElevationsMatchingParamValue(
-            "detailedDpaThisCycle", aclpDoseLimit7
-        )
-        if len(aclpLocations7) != 2:
-            runLog.warning(
-                "Something strange with detailedDpaThisCycle shape in {}, "
-                "non-2 number of values matching {}".format(
-                    peakDoseAssem, aclpDoseLimit / 7.0
-                )
-            )
-        else:
-            self.r.core.p.elevationOfACLP7Cycles = aclpLocations7[1]
-
-    def updateLoadpadDose(self):
-        """
-        Summarize the dose in DPA of the above-core load pad.
-
-        This sets the following reactor params:
-
-        * loadPadDpaPeak : the peak dpa in any load pad
-        * loadPadDpaAvg : the highest average dpa in any load pad
-
-        .. warning:: This only makes sense for cores with load
-            pads on their assemblies.
-
-        See Also
-        --------
-        _calcLoadPadDose : computes the load pad dose
-
-        """
-        peakPeak, peakAvg = self._calcLoadPadDose()
-        if peakPeak is None:
-            return
-        self.r.core.p.loadPadDpaAvg = peakAvg[0]
-        self.r.core.p.loadPadDpaPeak = peakPeak[0]
-        str_ = [
-            "Above-core load pad (ACLP) summary. It starts at {0} cm above the "
-            "bottom of the grid plate".format(self.options.loadPadElevation)
-        ]
-        str_.append(
-            "The peak ACLP dose is     {0} DPA in {1}".format(peakPeak[0], peakPeak[1])
-        )
-        str_.append(
-            "The max avg. ACLP dose is {0} DPA in {1}".format(peakAvg[0], peakAvg[1])
-        )
-        runLog.info("\n".join(str_))
-
-    def _calcLoadPadDose(self):
-        r"""
-        Determines some dose information on the load pads if they exist.
-
-        Expects a few settings to be present in cs
-            loadPadElevation : float
-                The bottom of the load pad's elevation in cm above the bottom of
-                the (upper) grid plate.
-            loadPadLength : float
-                The axial length of the load pad to average over
-
-        This builds axial splines over the assemblies and then integrates them
-        over the load pad.
-
-        The assumptions are that detailedDpa is the average, defined in the center
-        and detailedDpaPeak is the peak, also defined in the center of blocks.
-
-        Parameters
-        ----------
-        core  : armi.reactor.reactors.Core
-        cs : armi.settings.caseSettings.Settings
-
-        Returns
-        -------
-        peakPeak : tuple
-            A (peakValue, peakAssem) tuple
-        peakAvg : tuple
-            a (avgValue, avgAssem) tuple
-
-        See Also
-        --------
-        writeLoadPadDoseSummary : prints out the dose
-        Assembly.getParamValuesAtZ : gets the parameters at any arbitrary z point
-
-        """
-        loadPadBottom = self.options.loadPadElevation
-        loadPadLength = self.options.loadPadLength
-        if not loadPadBottom or not loadPadLength:
-            # no load pad dose requested
-            return None, None
-
-        peakPeak = (0.0, None)
-        peakAvg = (0.0, None)
-        loadPadTop = loadPadBottom + loadPadLength
-
-        zrange = numpy.linspace(loadPadBottom, loadPadTop, 100)
-        for a in self.r.core.getAssemblies(Flags.FUEL):
-            # scan over the load pad to find the peak dpa
-            # no caching.
-            peakDose = max(
-                a.getParamValuesAtZ("detailedDpaPeak", zrange, fillValue="extrapolate")
-            )
-            # restrict to fuel because control assemblies go nuts in dpa.
-            integrand = a.getParamOfZFunction("detailedDpa", fillValue="extrapolate")
-            returns = scipy.integrate.quad(integrand, loadPadBottom, loadPadTop)
-            avgDose = (
-                float(returns[0]) / loadPadLength
-            )  # convert to float in case it's an ndarray
-
-            # track max doses
-            if peakDose > peakPeak[0]:
-                peakPeak = (peakDose, a)
-            if avgDose > peakAvg[0]:
-                peakAvg = (avgDose, a)
-
-        return peakPeak, peakAvg
-
-
 def computeDpaRate(mgFlux, dpaXs):
     r"""
     Compute the DPA rate incurred by exposure of a certain flux spectrum.
+
+    .. impl:: Compute DPA rates.
+        :id: I_ARMI_FLUX_DPA
+        :implements: R_ARMI_FLUX_DPA
+
+        This method calculates DPA rates using the inputted multigroup flux and DPA cross sections.
+        Displacements calculated by displacement cross-section:
+
+        .. math::
+            :nowrap:
+
+            \begin{aligned}
+            \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
+            &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
+            &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
+            &= \#/\text{cm}^3/s
+            \end{aligned}
+
+
+        ::
+
+            DPA rate = displacement density rate / (number of atoms/cc)
+                    = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
+                    = flux * barn * 1e-24
+
+
+        .. math::
+
+            \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
+
+        the number density of the structural material cancels out. It's in the macroscopic
+        cross-section and in the original number of atoms.
 
     Parameters
     ----------
@@ -1178,37 +917,10 @@ def computeDpaRate(mgFlux, dpaXs):
     dpaPerSecond : float
         The dpa/s in this material due to this flux
 
-    Notes
-    -----
-    Displacements calculated by displacement XS
-
-    .. math::
-
-          \text{Displacement rate} &= \phi N_{\text{HT9}} \sigma  \\
-          &= (\#/\text{cm}^2/s) \cdot (1/cm^3) \cdot (\text{barn})\\
-          &= (\#/\text{cm}^5/s) \cdot  \text{(barn)} * 10^{-24} \text{cm}^2/\text{barn} \\
-          &= \#/\text{cm}^3/s
-
-
-    ::
-
-        DPA rate = displacement density rate / (number of atoms/cc)
-                 = dr [#/cm^3/s] / (nHT9)  [1/cm^3]
-                 = flux * barn * 1e-24 
-
-
-    .. math::
-
-        \frac{\text{dpa}}{s}  = \frac{\phi N \sigma}{N} = \phi * \sigma
-
-    the Number density of the structural material cancels out. It's in the macroscopic 
-    XS and in the original number of atoms.
-
     Raises
     ------
     RuntimeError
        Negative dpa rate.
-
     """
     displacements = 0.0
     if len(mgFlux) != len(dpaXs):
@@ -1228,7 +940,7 @@ def computeDpaRate(mgFlux, dpaXs):
             single=True,
             label="negativeDpaPerSecond",
         )
-        # ensure physical meaning of dpaPerSecond, it is likely just slighly negative
+        # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
             raise RuntimeError(
                 "Calculated DPA rate is substantially negative at {}".format(
@@ -1244,6 +956,40 @@ def calcReactionRates(obj, keff, lib):
     r"""
     Compute 1-group reaction rates for this object (usually a block).
 
+    .. impl:: Return the reaction rates for a given ArmiObject
+        :id: I_ARMI_FLUX_RX_RATES
+        :implements: R_ARMI_FLUX_RX_RATES
+
+        This method computes 1-group reaction rates for the inputted
+        :py:class:`ArmiObject <armi.reactor.composites.ArmiObject>` These
+        reaction rates include:
+
+        * fission
+        * nufission
+        * n2n
+        * absorption
+
+        Scatter could be added as well. This function is quite slow so it is
+        skipped for now as it is uncommonly needed.
+
+        Reaction rates are:
+
+        .. math::
+
+            \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma
+            \phi
+
+        The units of :math:`N \sigma \phi` are::
+
+            [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
+
+        The group-averaged microscopic cross section is:
+
+        .. math::
+
+            \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E)
+            dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
+
     Parameters
     ----------
     obj : Block
@@ -1257,34 +1003,6 @@ def calcReactionRates(obj, keff, lib):
 
     lib : XSLibrary
         Microscopic cross sections to use in computing the reaction rates.
-
-    Notes
-    -----
-    Values include:
-
-    * Fission
-    * nufission
-    * n2n
-    * absorption
-
-    Scatter could be added as well. This function is quite slow so it is
-    skipped for now as it is uncommonly needed.
-
-    Reaction rates are:
-
-    .. math::
-
-        \Sigma \phi = \sum_{\text{nuclides}} \sum_{\text{energy}} \Sigma \phi
-
-    The units of :math:`N \sigma \phi` are::
-
-        [#/bn-cm] * [bn] * [#/cm^2/s] = [#/cm^3/s]
-
-    The group-averaged microscopic cross section is:
-
-    .. math::
-
-        \sigma_g = \frac{\int_{E g}^{E_{g+1}} \phi(E)  \sigma(E) dE}{\int_{E_g}^{E_{g+1}} \phi(E) dE}
     """
     rate = {}
     for simple in RX_PARAM_NAMES:

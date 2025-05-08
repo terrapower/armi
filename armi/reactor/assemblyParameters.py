@@ -82,35 +82,34 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "chargeFis",
             units=units.KG,
-            description="Fissile mass in assembly when it most recently entered the core."
-            " If the assembly was discharged and then re-charged, this value will only"
-            " reflect the most recent charge.",
+            description="Fissile mass in assembly when it most recently entered the core. If the "
+            "assembly was discharged and then re-charged, this value will only reflect the most "
+            "recent charge.",
         )
 
         pb.defParam(
             "chargeTime",
             units=units.YEARS,
-            description="Time at which this assembly most recently entered the core."
-            " If the assembly was discharged and then re-charged, this value will only"
-            " reflect the most recent charge.",
+            description="Time at which this assembly most recently entered the core. If the "
+            "assembly was discharged and then re-charged, this value will only reflect the most "
+            "recent charge.",
             default=parameters.NoDefault,
         )
 
         pb.defParam(
             "multiplicity",
             units=units.UNITLESS,
-            description="The number of physical assemblies that the associated object "
-            "represents. This is typically 1, but may need to change when the assembly "
-            "is moved between containers with different types of symmetry. For "
-            "instance, if an assembly moves from a Core with 1/3rd symmetry into a "
-            "spent-fuel pool with full symmetry, rather than splitting the assembly "
-            "into 3, the multiplicity can be set to 3. For now, this is a bit of a "
-            "hack to make fuel handling work; multiplicity in the 1/3 core should "
-            "be 3 to begin with, in which case this parameter could be used as the "
-            "primary means of handling symmetry and fractional domains throughout "
-            "ARMI. We will probably roll that out once the dust settles on some of "
-            "this SFP work. For now, the Core stores multiplicity as 1 always, since "
-            "the powerMultiplier to adjust to full-core quantities.",
+            description="The number of physical assemblies that the associated object represents. "
+            "This is typically 1, but may need to change when the assembly is moved between "
+            "containers with different types of symmetry. For instance, if an assembly moves from "
+            "a Core with 1/3rd symmetry into a spent-fuel pool with full symmetry, rather than "
+            "splitting the assembly into 3, the multiplicity can be set to 3. For now, this is a "
+            "bit of a hack to make fuel handling work; multiplicity in the 1/3 core should be 3 to "
+            "begin with, in which case this parameter could be used as the primary means of "
+            "handling symmetry and fractional domains throughout ARMI. We will probably roll that "
+            "out once the dust settles on some of this SFP work. For now, the Core stores "
+            "multiplicity as 1 always, since the powerMultiplier to adjust to full-core "
+            "quantities.",
             default=1,
         )
 
@@ -149,7 +148,7 @@ def getAssemblyParameterDefinitions():
 
         def _enforceNotesRestrictions(self, value):
             """Enforces that notes can only be of type str with max length of 1000."""
-            if type(value) != str:
+            if type(value) is not str:
                 runLog.error(
                     "Values stored in the `notes` parameter must be strings of less"
                     " than 1000 characters!"
@@ -168,10 +167,9 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "notes",
             units=units.UNITLESS,
-            description="A string with notes about the assembly, limited to 1000 characters."
-            " This parameter is not meant to store data. Needlessly storing large strings"
-            " on this parameter for every assembly is potentially unwise from a memory"
-            " perspective.",
+            description="A string with notes about the assembly, limited to 1000 characters. This "
+            "parameter is not meant to store data. Needlessly storing large strings on this "
+            "parameter for every assembly is potentially unwise from a memory perspective.",
             saveToDB=True,
             default="",
             setter=_enforceNotesRestrictions,
@@ -185,8 +183,9 @@ def getAssemblyParameterDefinitions():
             "crCriticalFraction",
             units=units.UNITLESS,
             description=(
-                "The insertion fraction when the control rod assembly is in its critical configuration. "
-                "Note that the default of -1.0 is a trigger for this value not being set yet."
+                "The insertion fraction when the control rod assembly is in its critical "
+                "configuration. Note that the default of -1.0 is a trigger for this value not "
+                "being set yet."
             ),
             saveToDB=True,
             default=-1.0,
@@ -204,9 +203,9 @@ def getAssemblyParameterDefinitions():
             "crInsertedElevation",
             units=units.CM,
             description=(
-                "The elevation of the furthest-most insertion point of a control rod assembly. For a control rod assembly "
-                "inserted from the top, this will be the lower tip of the bottom-most moveable section in the assembly when "
-                "fully inserted."
+                "The elevation of the furthest-most insertion point of a control rod assembly. For "
+                "a control rod assembly inserted from the top, this will be the lower tip of the "
+                "bottom-most moveable section in the assembly when fully inserted."
             ),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
@@ -223,9 +222,9 @@ def getAssemblyParameterDefinitions():
             "crWithdrawnElevation",
             units=units.CM,
             description=(
-                "The elevation of the tip of a control rod assembly when it is fully withdrawn. For a control rod assembly "
-                "inserted from the top, this will be the lower tip of the bottom-most moveable section in the assembly when "
-                "fully withdrawn."
+                "The elevation of the tip of a control rod assembly when it is fully withdrawn. "
+                "For a control rod assembly inserted from the top, this will be the lower tip of "
+                "the bottom-most moveable section in the assembly when fully withdrawn."
             ),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
@@ -320,37 +319,9 @@ def getAssemblyParameterDefinitions():
         pb.defParam("assemNum", units=units.UNITLESS, description="Assembly number")
 
         pb.defParam(
-            "axExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Axial swelling reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "coolFlowingWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Flowing coolant reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "coolWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Coolant reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "dischargeTime",
             units=units.YEARS,
             description="Time the Assembly was removed from the Reactor.",
-        )
-
-        pb.defParam(
-            "fuelWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Fuel reactivity",
-            location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
@@ -360,20 +331,6 @@ def getAssemblyParameterDefinitions():
             default="Default",
             saveToDB=True,
             categories=[parameters.Category.assignInBlueprints],
-        )
-
-        pb.defParam(
-            "radExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Radial swelling reactivity",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "structWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Structure reactivity",
-            location=ParamLocation.AVERAGE,
         )
 
     with pDefs.createBuilder(categories=["radialGeometry"]) as pb:

@@ -14,37 +14,20 @@
 """Unit tests for Case and CaseSuite objects."""
 import copy
 import cProfile
-import io
 import logging
 import os
 import platform
 import unittest
 
-from armi import cases
-from armi import context
-from armi import getApp
-from armi import interfaces
-from armi import plugins
-from armi import runLog
-from armi import settings
+import h5py
+
+from armi import cases, context, getApp, interfaces, plugins, runLog, settings
+from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.reactor import blueprints
-from armi.reactor import systemLayoutInput
-from armi.tests import ARMI_RUN_PATH
-from armi.tests import mockRunLogs
-from armi.tests import TEST_ROOT
+from armi.reactor.tests import test_reactors
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
-
-
-GEOM_INPUT = """<?xml version="1.0" ?>
-<reactor geom="hex" symmetry="third core periodic">
-    <assembly name="A1" pos="1"  ring="1"/>
-    <assembly name="A2" pos="2"  ring="2"/>
-    <assembly name="A3" pos="1"  ring="2"/>
-</reactor>
-"""
-# This gets made into a StringIO multiple times because
-# it gets read multiple times.
 
 BLUEPRINT_INPUT = """
 nuclide flags:
@@ -74,42 +57,37 @@ blocks:
             od: 1.1
             material: SS316
     fuel 2: *fuel_1
-    block 3: *fuel_1                                        # non-fuel blocks
-    block 4: {<<: *fuel_1}                                  # non-fuel blocks
-    block 5: {fuel: *fuel_1_fuel, clad: *fuel_1_clad}       # non-fuel blocks
+    block 3: *fuel_1                                   # non-fuel blocks
+    block 4: {<<: *fuel_1}                             # non-fuel blocks
+    block 5: {fuel: *fuel_1_fuel, clad: *fuel_1_clad}  # non-fuel blocks
 assemblies: {}
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+grids:
+    core:
+        geom: hex
+        symmetry: third core periodic
+        grid contents:
+            [0, 0]: A1
+            [1, 0]: A2
+            [1, 1]: A3
 """
 
 
 class TestArmiCase(unittest.TestCase):
     """Class to tests armi.cases.Case methods."""
 
-    def test_summarizeDesign(self):
-        """
-        Ensure that the summarizeDesign method runs.
-
-        Any assertions are bonus.
-        """
-        with directoryChangers.TemporaryDirectoryChanger():
-            cs = settings.Settings(ARMI_RUN_PATH)
-            cs = cs.modified(newSettings={"verbosity": "important"})
-            case = cases.Case(cs)
-            c2 = case.clone()
-            c2.summarizeDesign()
-            self.assertTrue(
-                os.path.exists(
-                    os.path.join("{}-reports".format(c2.cs.caseTitle), "index.html")
-                )
-            )
-
     def test_independentVariables(self):
         """Ensure that independentVariables added to a case move with it."""
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
         cs = settings.Settings(ARMI_RUN_PATH)
         cs = cs.modified(newSettings={"verbosity": "important"})
-        baseCase = cases.Case(cs, bp=bp, geom=geom)
+        baseCase = cases.Case(cs, bp=bp)
         with directoryChangers.TemporaryDirectoryChanger():
             vals = {"cladThickness": 1, "control strat": "good", "enrich": 0.9}
             case = baseCase.clone()
@@ -135,10 +113,7 @@ class TestArmiCase(unittest.TestCase):
         covRcDir = os.path.abspath(context.PROJECT_ROOT)
         # Don't actually copy the file, just check the file paths match
         covRcFile = case._getCoverageRcFile(userCovFile="", makeCopy=False)
-        if platform.system() == "Windows":
-            self.assertEqual(covRcFile, os.path.join(covRcDir, "coveragerc"))
-        else:
-            self.assertEqual(covRcFile, os.path.join(covRcDir, ".coveragerc"))
+        self.assertEqual(covRcFile, os.path.join(covRcDir, "pyproject.toml"))
 
         userFile = "UserCovRc"
         covRcFile = case._getCoverageRcFile(userCovFile=userFile, makeCopy=False)
@@ -199,6 +174,17 @@ class TestArmiCase(unittest.TestCase):
             self.assertTrue(isinstance(prof, cProfile.Profile))
 
     def test_run(self):
+        """
+        Test running a case.
+
+        .. test:: There is a generic mechanism to allow simulation runs.
+            :id: T_ARMI_CASE
+            :tests: R_ARMI_CASE
+
+        .. test:: Test case settings object is created, settings can be edited, and case can run.
+            :id: T_ARMI_SETTING
+            :tests: R_ARMI_SETTING
+        """
         with directoryChangers.TemporaryDirectoryChanger():
             cs = settings.Settings(ARMI_RUN_PATH)
             newSettings = {
@@ -222,7 +208,10 @@ class TestArmiCase(unittest.TestCase):
 
                 self.assertIn("Triggering BOL Event", mock.getStdout())
                 self.assertIn("xsGroups", mock.getStdout())
-                self.assertIn("Completed EveryNode - cycle 0", mock.getStdout())
+                self.assertIn(
+                    "Completed EveryNode - timestep: cycle 0, node 0, year 0.00 Event",
+                    mock.getStdout(),
+                )
 
     def test_clone(self):
         testTitle = "CLONE_TEST"
@@ -267,15 +256,13 @@ class TestCaseSuiteDependencies(unittest.TestCase):
     def setUp(self):
         self.suite = cases.CaseSuite(settings.Settings())
 
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(GEOM_INPUT))
         bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
 
-        self.c1 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+        self.c1 = cases.Case(cs=settings.Settings(), bp=bp)
         self.c1.cs.path = "c1.yaml"
         self.suite.add(self.c1)
 
-        self.c2 = cases.Case(cs=settings.Settings(), geom=geom, bp=bp)
+        self.c2 = cases.Case(cs=settings.Settings(), bp=bp)
         self.c2.cs.path = "c2.yaml"
         self.suite.add(self.c2)
 
@@ -284,17 +271,22 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             _clone = self.suite.clone("test_clone")
 
-    def test_dependenciesWithObscurePaths(self):
+    def test_checkInputs(self):
         """
-        Test directory dependence.
+        Test the checkInputs() method on a couple of cases.
 
-        .. tip:: This should be updated to use the Python pathlib
-            so the tests can work in both Linux and Windows identically.
+        .. test:: Check the ARMI inputs for consistency and validity.
+            :id: T_ARMI_CASE_CHECK
+            :tests: R_ARMI_CASE_CHECK
         """
+        self.c1.checkInputs()
+        self.c2.checkInputs()
+
+    def test_dependenciesWithObscurePaths(self):
+        """Test directory dependence for strangely-written file paths (escape characters)."""
         checks = [
             ("c1.yaml", "c2.yaml", "c1.h5", True),
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", "c1.h5", False),
-            # below doesn't work due to some windows path obscurities
             (r"\\case\1\c1.yaml", r"\\case\2\c2.yaml", r"..\1\c1.h5", False),
         ]
         if platform.system() == "Windows":
@@ -313,7 +305,7 @@ class TestCaseSuiteDependencies(unittest.TestCase):
                         r"c2.yaml",
                         r".\c1.h5",
                         True,
-                    ),  # py bug in 3.6.4 and 3.7.1 fails here
+                    ),
                     (
                         r"\\cas\es\1\c1.yaml",
                         r"\\cas\es\2\c2.yaml",
@@ -393,6 +385,13 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.assertIn(self.c1, self.c2.dependencies)
 
     def test_explicitDependency(self):
+        """
+        Test dependencies for case suites.
+
+        .. test:: Dependence allows for one case to start after the completion of another.
+            :id: T_ARMI_CASE_SUITE
+            :tests: R_ARMI_CASE_SUITE
+        """
         self.c1.addExplicitDependency(self.c2)
 
         self.assertIn(self.c2, self.c1.dependencies)
@@ -402,9 +401,70 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c1.title = "new_bob"
         self.assertEqual(self.c1.title, "new_bob")
 
-    def test_buildCommand(self):
-        cmd = self.c1.buildCommand()
-        self.assertEqual(cmd, 'python -u  -m armi run "c1.yaml"')
+
+class TestCaseSuiteComparison(unittest.TestCase):
+    """CaseSuite.compare() tests."""
+
+    def setUp(self):
+        self.td = directoryChangers.TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
+    def test_compareNoDiffs(self):
+        """As a baseline, this test should always reveal zero diffs."""
+        # build two super-simple H5 files for testing
+        o, r = test_reactors.loadTestReactor(
+            TEST_ROOT,
+            customSettings={"reloadDBName": "reloadingDB.h5"},
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml",
+        )
+
+        suites = []
+        for _i in range(2):
+            # Build the cases
+            suite = cases.CaseSuite(settings.Settings())
+
+            bp = blueprints.Blueprints.load(BLUEPRINT_INPUT)
+
+            c1 = cases.Case(cs=settings.Settings(), bp=bp)
+            c1.cs.path = "c1.yaml"
+            suite.add(c1)
+
+            c2 = cases.Case(cs=settings.Settings(), bp=bp)
+            c2.cs.path = "c2.yaml"
+            suite.add(c2)
+
+            suites.append(suite)
+
+            # create two DBs, identical but for file names
+            tmpDir = os.getcwd()
+            dbs = []
+            for i in range(1, 3):
+                # create the tests DB
+                dbi = DatabaseInterface(r, o.cs)
+                dbi.initDB(fName=f"{tmpDir}/c{i}.h5")
+                db = dbi.database
+
+                # validate the file exists, and force it to be readable again
+                b = h5py.File(db._fullPath, "r")
+                self.assertEqual(list(b.keys()), ["inputs"])
+                self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
+                b.close()
+
+                # append to lists
+                dbs.append(db)
+
+            # do a comparison that should have no diffs
+            diff = c1.compare(c2)
+            self.assertEqual(diff, 0)
+
+        diff = suites[0].compare(suites[1])
+        self.assertEqual(diff, 0)
+
+        diff = suites[1].compare(suites[0])
+        self.assertEqual(diff, 0)
 
 
 class TestExtraInputWriting(unittest.TestCase):
@@ -418,8 +478,8 @@ class TestExtraInputWriting(unittest.TestCase):
             case = baseCase.clone()
             case.writeInputs()
             self.assertTrue(os.path.exists(cs[CONF_SHUFFLE_LOGIC]))
-            # Availability factor is in the original settings file but since it is a
-            # default value, gets removed for the write-out
+            # Availability factor is in the original settings file but since it is a default value,
+            # gets removed for the write-out
             txt = open("armiRun.yaml", "r").read()
             self.assertNotIn("availabilityFactor", txt)
             self.assertIn("armiRun-blueprints.yaml", txt)
@@ -427,16 +487,16 @@ class TestExtraInputWriting(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             case = baseCase.clone(writeStyle="medium")
             case.writeInputs(writeStyle="medium")
-            # Availability factor is in the original settings file and it is a default
-            # value. While "short" (default writing style) removes, "medium" should not
+            # Availability factor is in the original settings file and it is a default value. While
+            # "short" (default writing style) removes, "medium" should not
             txt = open("armiRun.yaml", "r").read()
             self.assertIn("availabilityFactor", txt)
 
 
 class MultiFilesInterfaces(interfaces.Interface):
     """
-    A little test interface that adds a setting that we need to test copyInterfaceInputs
-    with multiple files.
+    A little test interface that adds a setting that we need to test copyInterfaceInputs with
+    multiple files.
     """
 
     name = "MultiFilesInterfaces"
@@ -447,10 +507,26 @@ class MultiFilesInterfaces(interfaces.Interface):
         return {settingName: cs[settingName]}
 
 
+class TestPluginWithDuplicateSetting(plugins.ArmiPlugin):
+    @staticmethod
+    @plugins.HOOKIMPL
+    def defineSettings():
+        """Define a duplicate setting."""
+        return [
+            settings.setting.Setting(
+                "power",
+                default=123,
+                label="power",
+                description="duplicate power",
+            )
+        ]
+
+
 class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             settings.setting.Setting(
                 "multipleFilesSetting",
@@ -463,6 +539,7 @@ class TestPluginForCopyInterfacesMultipleFiles(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        """A plugin is mostly just a vehicle to add Interfaces to an Application."""
         return [
             interfaces.InterfaceInfo(
                 interfaces.STACK_ORDER.PREPROCESSING,
@@ -509,8 +586,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(destFilePath, os.path.basename(newFilePath))
 
-        # test with bad file path, should return original file
-        # ensure we are not in TEST_ROOT
+        # test with bad file path, should return original file ensure we are not in TEST_ROOT
         with directoryChangers.TemporaryDirectoryChanger() as newDir:
             destFilePath = cases.case._copyInputsHelper(
                 testSetting,
@@ -521,7 +597,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertFalse(os.path.exists(destFilePath))
             self.assertEqual(destFilePath, shuffleFile)
 
-    def test_copyInterfaceInputs_singleFile(self):
+    def test_copyInterfaceInputsSingleFile(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
@@ -535,7 +611,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
 
-    def test_copyInterfaceInputs_nonFilePath(self):
+    def test_copyInterfaceInputsNonFilePath(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         fakeShuffle = "fakeFile.py"
@@ -549,7 +625,31 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertFalse(os.path.exists(newSettings[testSetting]))
             self.assertEqual(newSettings[testSetting], fakeShuffle)
 
-    def test_copyInterfaceInputs_multipleFiles(self):
+    def test_copyInterfaceInputs_emptyFilePath(self):
+        testSetting = CONF_SHUFFLE_LOGIC
+        cs = settings.Settings(ARMI_RUN_PATH)
+        fakeShuffle = ""
+        cs = cs.modified(newSettings={testSetting: fakeShuffle})
+
+        # ensure we are not in TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            with self.assertRaises(KeyError):
+                # shouldn't process this setting as anything to worry about, so it won't be added to the dict
+                _shuffleLogic = newSettings[testSetting]
+
+    def test_failOnDuplicateSetting(self):
+        """That that if a plugin attempts to add a duplicate setting, it raises an error."""
+        # register the new Plugin
+        app = getApp()
+        app.pluginManager.register(TestPluginWithDuplicateSetting)
+
+        with self.assertRaises(ValueError):
+            _ = settings.Settings(ARMI_RUN_PATH)
+
+    def test_copyInterfaceInputsMultipleFiles(self):
         # register the new Plugin
         app = getApp()
         app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
@@ -578,7 +678,36 @@ class TestCopyInterfaceInputs(unittest.TestCase):
                 self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(newSettings[testSetting], settingFiles)
 
-    def test_copyInterfaceInputs_wildcardFile(self):
+    def test_copyInterfaceInputsOneFile(self):
+        # register the new Plugin
+        app = getApp()
+        app.pluginManager.register(TestPluginForCopyInterfacesMultipleFiles)
+
+        pluginPath = (
+            "armi.cases.tests.test_cases.TestPluginForCopyInterfacesMultipleFiles"
+        )
+        settingFiles = ["COMPXS.ascii"]
+        testName = "test_copyInterfaceInputsOneFile"
+        testSetting = "multipleFilesSetting"
+
+        cs = settings.Settings(ARMI_RUN_PATH)
+        cs = cs.modified(
+            caseTitle=testName,
+            newSettings={testName: [pluginPath]},
+        )
+        cs = cs.modified(newSettings={testSetting: settingFiles})
+
+        # ensure we are not in TEST_ROOT
+        with directoryChangers.TemporaryDirectoryChanger() as newDir:
+            newSettings = cases.case.copyInterfaceInputs(
+                cs, destination=newDir.destination
+            )
+            newFilePaths = [os.path.join(newDir.destination, f) for f in settingFiles]
+            for newFilePath in newFilePaths:
+                self.assertTrue(os.path.exists(newFilePath))
+            self.assertEqual(newSettings[testSetting], settingFiles)
+
+    def test_copyInterfaceInputsWildcardFile(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         # Use something that isn't the shuffle logic file in the case settings
@@ -606,7 +735,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertFalse(os.path.exists(newSettings[testSetting][0]))
             self.assertEqual(newSettings[testSetting], [wcFile])
 
-    def test_copyInterfaceInputs_relPath(self):
+    def test_copyInterfaceInputsRelPath(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]
@@ -622,7 +751,7 @@ class TestCopyInterfaceInputs(unittest.TestCase):
             self.assertTrue(os.path.exists(newFilePath))
             self.assertEqual(newSettings[testSetting], os.path.basename(newFilePath))
 
-    def test_copyInterfaceInputs_absPath(self):
+    def test_copyInterfaceInputsAbsPath(self):
         testSetting = CONF_SHUFFLE_LOGIC
         cs = settings.Settings(ARMI_RUN_PATH)
         shuffleFile = cs[testSetting]

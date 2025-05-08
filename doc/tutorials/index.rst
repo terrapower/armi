@@ -1,3 +1,5 @@
+.. _armi-tutorials:
+
 #########
 Tutorials
 #########

@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, NoReturn, Tuple
+from typing import NoReturn, Optional, Tuple
 
-import numpy
+import numpy as np
 
 from armi.reactor import geometry
-
 from armi.reactor.grids.locations import IJType
-from armi.reactor.grids.structuredgrid import StructuredGrid
+from armi.reactor.grids.structuredGrid import StructuredGrid
 
 
 class CartesianGrid(StructuredGrid):
@@ -67,10 +66,6 @@ class CartesianGrid(StructuredGrid):
         Grid example where the axes lie between the "center assemblies" (even-by-even).
         Note that ring 1 has four locations, and that the center of the (0, 0)-index
         location is offset from the origin.
-
-    .. impl:: ARMI supports a Cartesian mesh.
-       :id: I_REACTOR_MESH_1
-       :links: R_REACTOR_MESH
     """
 
     @classmethod
@@ -98,7 +93,7 @@ class CartesianGrid(StructuredGrid):
             An object in a Composite model that the Grid should be bound to.
         """
         unitSteps = ((width, 0.0, 0.0), (0.0, height, 0.0), (0, 0, 0))
-        offset = numpy.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
+        offset = np.array((width / 2.0, height / 2.0, 0.0)) if isOffset else None
         return cls(
             unitSteps=unitSteps,
             unitStepLimits=((-numRings, numRings), (-numRings, numRings), (0, 1)),
@@ -232,12 +227,12 @@ class CartesianGrid(StructuredGrid):
         """
         xwOld = self._unitSteps[0][0]
         ywOld = self._unitSteps[1][1]
-        self._unitSteps = numpy.array(((xw, 0.0, 0.0), (0.0, yw, 0.0), (0, 0, 0)))[
+        self._unitSteps = np.array(((xw, 0.0, 0.0), (0.0, yw, 0.0), (0, 0, 0)))[
             self._stepDims
         ]
         newOffsetX = self._offset[0] * xw / xwOld
         newOffsetY = self._offset[1] * yw / ywOld
-        self._offset = numpy.array((newOffsetX, newOffsetY, 0.0))
+        self._offset = np.array((newOffsetX, newOffsetY, 0.0))
 
     def getSymmetricEquivalents(self, indices):
         symmetry = self.symmetry  # construct the symmetry object once up top

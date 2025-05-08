@@ -13,10 +13,10 @@
 # limitations under the License.
 
 """Inconel X750."""
-import numpy
+import numpy as np
 
-from armi.utils.units import getTc
 from armi.materials.material import Material
+from armi.utils.units import getTc
 
 
 class InconelX750(Material):
@@ -40,7 +40,8 @@ class InconelX750(Material):
         Material.__init__(self)
         self.refDens = 8.28  # g/cc
         # Only density measurement presented in the reference.
-        # Presumed to be performed at 21C since this was the reference temperature for linear expansion measurements.
+        # Presumed to be performed at 21C since this was the reference temperature for linear
+        # expansion measurements.
 
     def setDefaultMassFracs(self):
         massFracs = {
@@ -62,8 +63,8 @@ class InconelX750(Material):
 
     def polyfitThermalConductivity(self, power=2):
         r"""
-        Calculates the coefficients of a polynomial fit for thermalConductivity.
-        Based on data from http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf
+        Calculates the coefficients of a polynomial fit for thermalConductivity. Based on data from
+        https://web.archive.org/web/20170215105917/http://www.specialmetals.com:80/documents/Inconel%20alloy%20X-750.pdf
         Fits a polynomial to the data set and returns the coefficients.
 
         Parameters
@@ -103,7 +104,7 @@ class InconelX750(Material):
             22.21,
             23.65,
         ]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(k), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(k), power).tolist()
 
     def thermalConductivity(self, Tk=None, Tc=None):
         r"""
@@ -143,7 +144,7 @@ class InconelX750(Material):
         """
         Tc = [21.1, 93.3, 204.4, 315.6, 426.7, 537.8, 648.9, 760.0, 871.1]
         cp = [431.2, 456.4, 485.7, 502.4, 523.4, 544.3, 573.6, 632.2, 715.9]
-        return numpy.polyfit(numpy.array(Tc), numpy.array(cp), power).tolist()
+        return np.polyfit(np.array(Tc), np.array(cp), power).tolist()
 
     def heatCapacity(self, Tk=None, Tc=None):
         r"""
@@ -206,9 +207,7 @@ class InconelX750(Material):
 
         Tc.insert(0, refTempC)
 
-        return numpy.polyfit(
-            numpy.array(Tc), numpy.array(linExpPercent), power
-        ).tolist()
+        return np.polyfit(np.array(Tc), np.array(linExpPercent), power).tolist()
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         r"""
@@ -234,11 +233,12 @@ class InconelX750(Material):
         r"""
         From http://www.specialmetals.com/documents/Inconel%20alloy%20X-750.pdf.
 
-        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100 to convert
-        from percent strain to strain, then differentiated with respect to temperature to find the correlation
-        for instantaneous linear expansion.
+        Using the correlation for linearExpansionPercent, the 2nd order polynomial is divided by 100
+        to convert from percent strain to strain, then differentiated with respect to temperature to
+        find the correlation for instantaneous linear expansion.
 
-        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion correlation is 2*a/100*Tc + b/100
+        i.e. for a linearExpansionPercent correlation of a*Tc**2 + b*Tc + c, the linearExpansion
+        correlation is 2*a/100*Tc + b/100
 
         2*(6.8378e-7/100.0)*Tc + 1.056e-3/100.0
 

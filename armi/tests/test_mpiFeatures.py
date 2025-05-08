@@ -24,30 +24,28 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-from distutils.spawn import find_executable
 import os
+import shutil
 import unittest
+from unittest.mock import patch
 
-from armi import context
-from armi import mpiActions
-from armi import settings
+from armi import context, mpiActions, settings
 from armi.interfaces import Interface
 from armi.mpiActions import DistributeStateAction
 from armi.operators import OperatorMPI
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.reactor import blueprints
-from armi.reactor import reactors
+from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 # determine if this is a parallel run, and MPI is installed
 MPI_EXE = None
-if find_executable("mpiexec.exe") is not None:
+if shutil.which("mpiexec.exe") is not None:
     MPI_EXE = "mpiexec.exe"
-elif find_executable("mpiexec") is not None:
+elif shutil.which("mpiexec") is not None:
     MPI_EXE = "mpiexec"
 
 MPI_COMM = context.MPI_COMM
@@ -89,20 +87,44 @@ class FailingInterface3(Interface):
         return False
 
 
+class MockInterface(Interface):
+    name = "mockInterface"
+
+    def interactInit(self):
+        pass
+
+
 class MpiOperatorTests(unittest.TestCase):
     """Testing the MPI parallelization operator."""
 
     def setUp(self):
-        self.old_op, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.old_op, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.o = OperatorMPI(cs=self.old_op.cs)
         self.o.r = self.r
 
+    @patch("armi.operators.Operator.operate")
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
-    def test_basicOperatorMPI(self):
-        self.o.operate()
+    def test_basicOperatorMPI(self, mockOpMpi):
+        """Test we can drive a parallel operator.
+
+        .. test:: Run a parallel operator.
+            :id: T_ARMI_OPERATOR_MPI0
+            :tests: R_ARMI_OPERATOR_MPI
+        """
+        with mockRunLogs.BufferLog() as mock:
+            self.o.operate()
+            self.assertIn("OperatorMPI.operate", mock.getStdout())
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_primaryException(self):
+        """Test a custom interface that only fails on the main process.
+
+        .. test:: Run a parallel operator that fails online on the main process.
+            :id: T_ARMI_OPERATOR_MPI1
+            :tests: R_ARMI_OPERATOR_MPI
+        """
         self.o.removeAllInterfaces()
         failer = FailingInterface1(self.o.r, self.o.cs)
         self.o.addInterface(failer)
@@ -122,6 +144,31 @@ class MpiOperatorTests(unittest.TestCase):
             self.assertRaises(Exception, self.o.operate)
         else:
             self.o.operate()
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_finalizeInteract(self):
+        """Test to make sure workers are reset after interface interactions."""
+        # Add a random number of interfaces
+        interface = MockInterface(self.o.r, self.o.cs)
+        self.o.addInterface(interface)
+
+        with mockRunLogs.BufferLog() as mock:
+            if context.MPI_RANK == 0:
+                self.o.interactAllInit()
+                context.MPI_COMM.bcast("quit", root=0)
+                context.MPI_COMM.bcast("finished", root=0)
+            else:
+                self.o.workerOperate()
+
+            logMessage = (
+                "Workers have been reset."
+                if context.MPI_RANK == 0
+                else "Workers are being reset."
+            )
+            numCalls = len(
+                [line for line in mock.getStdout().splitlines() if logMessage in line]
+            )
+            self.assertGreaterEqual(numCalls, 1)
 
 
 # these two must be defined up here so that they can be pickled
@@ -300,3 +347,21 @@ class MpiPathToolsTests(unittest.TestCase):
             pathTools.cleanPath(dir3, mpiRank=context.MPI_RANK)
             MPI_COMM.barrier()
             self.assertFalse(os.path.exists(dir3))
+
+
+class TestContextMpi(unittest.TestCase):
+    """Parallel tests for the Context module."""
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_rank(self):
+        self.assertGreater(context.MPI_RANK, -1)
+
+    @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
+    def test_nonNoneData(self):
+        self.assertGreater(len(context.APP_DATA), 0)
+        self.assertGreater(len(context.DOC), 0)
+        self.assertGreater(len(context.getFastPath()), 0)
+        self.assertGreater(len(context.PROJECT_ROOT), 0)
+        self.assertGreater(len(context.RES), 0)
+        self.assertGreater(len(context.ROOT), 0)
+        self.assertGreater(len(context.USER), 0)

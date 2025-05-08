@@ -15,20 +15,24 @@
 """
 The MPI-aware variant of the standard ARMI operator.
 
-See :py:class:`~armi.operators.operator.Operator` for the parent class.
+.. impl:: There is an MPI-aware variant of the ARMI Operator.
+    :id: I_ARMI_OPERATOR_MPI
+    :implements: R_ARMI_OPERATOR_MPI
 
-This sets up the main Operator on the primary MPI node and initializes worker
-processes on all other MPI nodes. At certain points in the run, particular interfaces
-might call into action all the workers. For example, a depletion or
-subchannel T/H module may ask the MPI pool to perform a few hundred
-independent physics calculations in parallel. In many cases, this can
-speed up the overall execution of an analysis manyfold, if a big enough
-computer or computer cluster is available. 
+    This sets up the main Operator on the primary MPI node and initializes
+    worker processes on all other MPI nodes. At certain points in the run,
+    particular interfaces might call into action all the workers. For
+    example, a depletion or subchannel T/H module may ask the MPI pool to
+    perform a few hundred independent physics calculations in parallel. In
+    many cases, this can speed up the overall execution of an analysis,
+    if a big enough computer or computing cluster is available.
+
+    See :py:class:`~armi.operators.operator.Operator` for the parent class.
 
 Notes
 -----
 This is not *yet* smart enough to use shared memory when the MPI
-tasks are on the same machine. Everything goes through MPI. This can 
+tasks are on the same machine. Everything goes through MPI. This can
 be optimized as needed.
 """
 import gc
@@ -37,10 +41,7 @@ import re
 import time
 import traceback
 
-from armi import context
-from armi import getPluginManager
-from armi import mpiActions
-from armi import runLog
+from armi import context, getPluginManager, mpiActions, runLog
 from armi.operators.operator import Operator
 from armi.reactor import reactors
 
@@ -80,21 +81,19 @@ class OperatorMPI(Operator):
                 )
                 raise
             finally:
-                if context.MPI_SIZE > 0:
+                # If there are other processes, tell them to stop
+                if context.MPI_SIZE > 1:
                     runLog.important(
                         "Stopping all MPI worker nodes and cleaning temps."
                     )
-                    context.MPI_COMM.bcast(
-                        "quit", root=0
-                    )  # send the quit command to the workers.
+                    # send the quit command to the workers.
+                    context.MPI_COMM.bcast("quit", root=0)
                     runLog.debug("Waiting for all nodes to close down")
-                    context.MPI_COMM.bcast(
-                        "finished", root=0
-                    )  # wait until they're done cleaning up.
+                    # wait until they're done cleaning up.
+                    context.MPI_COMM.bcast("finished", root=0)
                     runLog.important("All worker nodes stopped.")
-                time.sleep(
-                    1
-                )  # even though we waited, still need more time to close stdout.
+                # even though we waited, still need more time to close stdout.
+                time.sleep(1)
                 runLog.debug("Main operate finished")
                 runLog.close()  # concatenate all logs.
         else:
@@ -159,6 +158,8 @@ class OperatorMPI(Operator):
                 note = context.MPI_COMM.bcast("wait", root=0)
                 if note != "wait":
                     raise RuntimeError('did not get "wait". Got {0}'.format(note))
+            elif cmd == "reset":
+                runLog.extra("Workers are being reset.")
             else:
                 # we don't understand the command on our own. check the interfaces
                 # this allows all interfaces to have their own custom operation code.
@@ -185,16 +186,32 @@ class OperatorMPI(Operator):
                             cmd
                         )
                     )
+
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)
             # only reset if all the plugins agree to reset
-            if all(resetFlags):
+            if all(resetFlags) or cmd == "reset":
                 self._resetWorker()
 
             # might be an mpi action which has a reactor and everything, preventing
             # garbage collection
             del cmd
             gc.collect()
+
+    def _finalizeInteract(self):
+        """Inherited member called after each interface has completed its interact.
+
+        This will force all the workers to clear their reactor data so that it
+        isn't carried around to the next interact.
+
+        Notes
+        -----
+        This is only called on the root processor. Worker processors will know
+        what to do with the "reset" broadcast.
+        """
+        if context.MPI_SIZE > 1:
+            context.MPI_COMM.bcast("reset", root=0)
+            runLog.extra("Workers have been reset.")
 
     def _resetWorker(self):
         """
@@ -209,17 +226,23 @@ class OperatorMPI(Operator):
 
         .. warning:: This should build empty non-core systems too.
         """
-        xsGroups = self.getInterface("xsGroups")
-        if xsGroups:
-            xsGroups.clearRepresentativeBlocks()
+        # Nothing to do if we never had anything
+        if self.r is None:
+            return
+
         cs = self.cs
         bp = self.r.blueprints
         spatialGrid = self.r.core.spatialGrid
+        spatialGrid.armiObject = None
+        xsGroups = self.getInterface("xsGroups")
+        if xsGroups:
+            xsGroups.clearRepresentativeBlocks()
         self.detach()
         self.r = reactors.Reactor(cs.caseTitle, bp)
         core = reactors.Core("Core")
         self.r.add(core)
         core.spatialGrid = spatialGrid
+        core.spatialGrid.armiObject = core
         self.reattach(self.r, cs)
 
     @staticmethod

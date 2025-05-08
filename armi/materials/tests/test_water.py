@@ -15,7 +15,7 @@
 """Unit tests for water materials."""
 import unittest
 
-from armi.materials.water import SaturatedWater, SaturatedSteam, Water
+from armi.materials.water import SaturatedSteam, SaturatedWater, Water
 
 
 class Test_Water(unittest.TestCase):
@@ -26,6 +26,10 @@ class Test_Water(unittest.TestCase):
         Reproduce verification results from IAPWS-IF97 for water at 0C.
 
         http://www.iapws.org/relguide/supsat.pdf
+
+        .. test:: There is a base class for fluid materials.
+            :id: T_ARMI_MAT_FLUID0
+            :tests: R_ARMI_MAT_FLUID
         """
         water = SaturatedWater()
         steam = SaturatedSteam()

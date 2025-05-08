@@ -1,7 +1,7 @@
-
 ====
 ARMI
 ====
+
 .. image:: .static/armi-logo.png
 
 .. toctree::
@@ -9,21 +9,18 @@ ARMI
    :maxdepth: 2
 
    installation
-   gallery/index
-   tutorials/index
    user/index
    developer/index
+   gallery/index
+   tutorials/index
    release/index
+   qa_docs/index
    glossary
    API Docs <.apidocs/modules>
 
-
 .. include:: ../README.rst
-
 
 *  :doc:`glossary`
 *  :ref:`genindex`
 *  :ref:`modindex`
 *  :ref:`search`
-
-

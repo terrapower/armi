@@ -44,16 +44,15 @@ Or change the log level the same way:
 
     runLog.setVerbosity('debug')
 """
-from glob import glob
 import collections
 import logging
 import operator
 import os
 import sys
 import time
+from glob import glob
 
 from armi import context
-
 
 # global constants
 _ADD_LOG_METHOD_STR = """def {0}(self, message, *args, **kws):
@@ -322,6 +321,20 @@ def concatenateLogs(logDir=None):
     Concatenate the armi run logs and delete them.
 
     Should only ever be called by parent.
+
+    .. impl:: Log files from different processes are combined.
+        :id: I_ARMI_LOG_MPI
+        :implements: R_ARMI_LOG_MPI
+
+        The log files are plain text files. Since ARMI is frequently run in parallel,
+        the situation arises where each ARMI process generates its own plain text log
+        file. This function combines the separate log files, per process, into one log
+        file.
+
+        The files are written in numerical order, with the lead process stdout first
+        then the lead process stderr. Then each other process is written to the
+        combined file, in order, stdout then stderr. Finally, the original stdout and
+        stderr files are deleted.
     """
     if logDir is None:
         logDir = LOG_DIR
@@ -330,14 +343,6 @@ def concatenateLogs(logDir=None):
     stdoutFiles = sorted(glob(os.path.join(logDir, "*.stdout")))
     if not len(stdoutFiles):
         info("No log files found to concatenate.")
-
-        # If the log dir is empty, we can delete it.
-        try:
-            os.rmdir(logDir)
-        except:  # noqa: bare-except
-            # low priority concern: it's an empty log dir.
-            pass
-
         return
 
     info("Concatenating {0} log files".format(len(stdoutFiles)))
@@ -348,8 +353,10 @@ def concatenateLogs(logDir=None):
         stdoutFile = os.path.normpath(stdoutPath).split(os.sep)[-1]
         prefix = STDOUT_LOGGER_NAME + "."
         if stdoutFile[0 : len(prefix)] == prefix:
-            caseTitle = stdoutFile.split(".")[-3]
-            break
+            candidate = stdoutFile.split(".")[-3]
+            if len(candidate) > 0:
+                caseTitle = candidate
+                break
 
     combinedLogName = os.path.join(logDir, "{}-mpi.log".format(caseTitle))
     with open(combinedLogName, "w") as workerLog:
@@ -494,6 +501,45 @@ class RunLogger(logging.Logger):
 
     1. Giving users the option to de-duplicate warnings
     2. Piping stderr to a log file
+
+    .. impl:: A simulation-wide log, with user-specified verbosity.
+        :id: I_ARMI_LOG
+        :implements: R_ARMI_LOG
+
+        Log statements are any text a user wants to record during a run. For instance,
+        basic notifications of what is happening in the run, simple warnings, or hard
+        errors. Every log message has an associated log level, controlled by the
+        "verbosity" of the logging statement in the code. In the ARMI codebase, you
+        can see many examples of logging:
+
+        .. code-block:: python
+
+            runLog.error("This sort of error might usually terminate the run.")
+            runLog.warning("Users probably want to know.")
+            runLog.info("This is the usual verbosity.")
+            runLog.debug("This is only logged during a debug run.")
+
+        The full list of logging levels is defined in ``_RunLog.getLogLevels()``, and
+        the developer specifies the verbosity of a run via ``_RunLog.setVerbosity()``.
+
+        At the end of the ARMI-based simulation, the analyst will have a full record of
+        potentially interesting information they can use to understand their run.
+
+    .. impl:: Logging is done to the screen and to file.
+        :id: I_ARMI_LOG_IO
+        :implements: R_ARMI_LOG_IO
+
+        This logger makes it easy for users to add log statements to and ARMI
+        application, and ARMI will control the flow of those log statements. In
+        particular, ARMI overrides the normal Python logging tooling, to allow
+        developers to pipe their log statements to both screen and file. This works for
+        stdout and stderr.
+
+        At any place in the ARMI application, developers can interject a plain text
+        logging message, and when that code is hit during an ARMI simulation, the text
+        will be piped to screen and a log file. By default, the ``logging`` module only
+        logs to screen, but ARMI adds a ``FileHandler`` in the ``RunLog`` constructor
+        and in ``_RunLog.startLog``.
     """
 
     FMT = "%(levelname)s%(message)s"
@@ -526,7 +572,7 @@ class RunLogger(logging.Logger):
         handler.setFormatter(form)
         self.addHandler(handler)
 
-    def log(self, msgType, msg, single=False, label=None, **kwargs):
+    def log(self, msgType, msg, single=False, label=None, *args, **kwargs):
         """
         This is a wrapper around logger.log() that does most of the work.
 

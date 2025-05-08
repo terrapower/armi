@@ -1,49 +1,48 @@
 ************
 Installation
 ************
+
 This section will guide you through installing the ARMI Framework on your machine.
 
 Prerequisites
--------------
+=============
 These instructions target users with some software development knowledge. In
 particular, we assume familiarity with `Python <https://www.python.org/>`__,
 `virtual environments <https://docs.python.org/3/tutorial/venv.html>`_, and `Git <https://git-scm.com/>`_.
 
 You must have the following installed before proceeding:
 
-* `Python <https://www.python.org/downloads/>`__ version 3.6 or later (preferably 64-bit)
+* `Python <https://www.python.org/downloads/>`__ version 3.9 or newer.
 
   .. admonition:: The right Python command
 
-     Python 2 and Python 3 often co-exist on the same system. Whether the
-     ``python`` command refers to Python 2 or 3 depends on operating system and
-     configuration. Under some circumstances ``python3`` or ``pip3`` will need
-     to be used in place of ``python`` or ``pip`` to target the correct
-     version. You can verify your version by running ``python -VV``.  You can
-     also refer to the Python executable with a full path.
+     Python 2 and Python 3 often co-exist on the same system. Whether the ``python`` command refers
+     to Python 2 or 3 depends on operating system and configuration. Under some circumstances
+     ``python3`` or ``pip3`` will need to be used in place of ``python`` or ``pip`` to target the
+     correct version. You can verify your version by running ``python -VV``. You can also refer to
+     the Python executable with a full path.
 
 You also likely need the following for interacting with the source code repository:
 
 * `Git <https://git-scm.com/>`_
 
 Preparing a Virtual Environment
--------------------------------
-While not *technically* required, we highly recommend installing ARMI into a `virtual
-environment <https://docs.python.org/3/library/venv.html>`_  to assist in dependency
-management.  In short, virtual environments are a mechanism by which a Python user can
-maintain separate sets of Python packages for various applications on the same machine.
-This prevents dependencies from various tools conflicting with one another. ARMI has a lot
-of requirements and may conflict with other libraries on your system unless you do this
-step.
+===============================
+While not *technically* required, we highly recommend installing ARMI into a `virtual environment
+<https://docs.python.org/3/library/venv.html>`_  to assist in dependency management. In short,
+virtual environments are a mechanism by which a Python user can maintain separate sets of Python
+packages for various applications on the same machine. This prevents dependencies from various tools
+conflicting with one another. ARMI has a lot of requirements and may conflict with other libraries
+on your system unless you do this step.
 
-Start a terminal and navigate to the directory you'd like to install ARMI into.
-To create a new virtual environment, use a command like::
+Start a terminal and navigate to the directory you'd like to install ARMI into. To create a new
+virtual environment, use a command like::
 
     $ python -m venv armi-venv
 
-The result is a folder named ``armi-venv``, which contains a minimal set of Python
-packages, and a set of scripts for activating and deactivating that environment.
-To activate the environment, invoke the appropriate script. On Windows::
+The result is a folder named ``armi-venv``, which contains a minimal set of Python packages, and a
+set of scripts for activating and deactivating that environment. To activate the environment, invoke
+the appropriate script. On Windows::
 
     $ armi-venv\Scripts\activate.bat
 
@@ -59,11 +58,23 @@ library. On Linux, doing so will require some MPI development libraries
 (e.g. ``sudo apt install libopenmpi-dev``).
 
 Getting the code
-----------------
+================
 Choose one of the following two installation methods depending on your needs.
 
+Step 0: Update PIP
+------------------
+In order to use the commands below, you're going to want to use a version of ``pip>=22.1``.
+Two common ways of solving that are::
+
+    (armi-venv) $ pip install pip>=22.1
+
+or, in most cases::
+
+    (armi-venv) $ pip install -U pip
+
+
 Option 1: Install as a library
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 If you plan on running ARMI without viewing or modifying source code, you may
 install it with ``pip``, which will automatically discover and install the
 dependencies. This is useful for quick evaluations or to use it as a dependency
@@ -71,8 +82,9 @@ in another project::
 
    	(armi-venv) $ pip install https://github.com/terrapower/armi/archive/main.zip
 
+
 Option 2: Install as a repository (for developers)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------------------------
 If you'd like to view or change the ARMI source code (common!), you need to
 clone the ARMI source and then install its dependencies. Clone the ARMI source code from
 the git repository with::
@@ -85,7 +97,7 @@ the git repository with::
 Now install ARMI with all its dependencies::
 
     (armi-venv) $ cd armi
-    (armi-venv) $ pip install -e .[test]
+    (armi-venv) $ pip install -e ".[test]"
 
 .. tip:: If you don't want to install ARMI into your venv, you will need to add the ARMI source
 	location to your system's ``PYTHONPATH`` environment variable so that
@@ -96,7 +108,7 @@ Now install ARMI with all its dependencies::
 
 
 Verifying installation
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 Check the installation status by running::
 
     (armi-venv) $ armi
@@ -121,11 +133,11 @@ If it works, congrats! So far so good.
 
 
 Optional Setup
---------------
+==============
 This subsection provides setup for optional items.
 
 GUI input
-^^^^^^^^^
+---------
 To use the :py:mod:`graphical core-map editor <armi.utils.gridEditor>` you will need to also install
 `wxPython <https://wxpython.org/pages/downloads/index.html>`_. This is not installed
 by default during armi installation because it can cause installation complexities on some platforms.
@@ -134,7 +146,7 @@ In any case, all GUI dependencies can be installed by::
     (armi-venv) $ pip install armi[grids]
 
 GUI output
-^^^^^^^^^^
+----------
 ARMI can write VTK and XDMF output files which can be viewed in tools such as
 `ParaView <https://www.paraview.org/>`_ and
 `VisIT <https://wci.llnl.gov/simulation/computer-codes/visit>`_. Download and install those

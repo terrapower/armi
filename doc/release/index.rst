@@ -1,17 +1,5 @@
+#############
 Release Notes
-=============
+#############
 
-Each ARMI release has a set of corresponding notes, found within this section.
-
-.. warning:: As ARMI transitions from an internal system to open source, we
-    will be improving the formality of our release process. At the moment the
-    updates and release cadence are lacking.
-
-----------
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-   :reversed:
-
-   *
+You can find a simplified version of the ARMI `Release Notes here <https://github.com/terrapower/armi/releases>`_. However, to meet our rigorous quality processes, you can look in the :doc:`/qa_docs/scr/index` section for the fully detailed software change log.

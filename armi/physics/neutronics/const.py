@@ -31,9 +31,8 @@ ULTRA_FINE_GROUP_LETHARGY_WIDTH = 1.0 / 120.0
 # LOWEST_ENERGY_EV cannot be zero due to integrating lethargy, and lethargy is undefined at 0.0
 # The lowest lower boundary of many group structures such as any WIMS, SCALE or CASMO
 # is 1e-5 eV, therefore it is chosen here. This number must be lower than all of the
-# defined group structures, and as of this writing the lowest in this module is cinder63 with a
-# lowest upper boundary of 5e-3 eV. The chosen 1e-5 eV is rather arbitrary but expected to be low
-# enough to  support other group structures. For fast reactors, there will be
+# defined group structures. The chosen 1e-5 eV is rather arbitrary but expected to be low
+# enough to support other group structures. For fast reactors, there will be
 # no sensitivity at all to this value since there is no flux in this region.
 LOWEST_ENERGY_EV = 1.0e-5
 

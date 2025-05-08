@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities related to profiling code."""
-
 import copy
+import functools
 import os
 import time
 
@@ -24,7 +24,7 @@ def timed(*args):
 
     Examples
     --------
-    ::
+    Here are some examples of using this method::
 
         @timed # your timer will be called the module+method name
         def mymethod(stuff):
@@ -36,9 +36,7 @@ def timed(*args):
     """
 
     def time_decorator(func):
-        time_decorator.__doc__ = func.__doc__
-        time_decorator.__name__ = func.__name__
-
+        @functools.wraps(func)
         def time_wrapper(*args, **kwargs):
             generated_name = "::".join(
                 [
@@ -64,24 +62,17 @@ def timed(*args):
         return time_decorator
     else:
         raise ValueError(
-            "The timed decorator has been misused. Input args were {}".format(args)
+            f"The timed decorator has been misused. Input args were {args}"
         )
 
 
-def getMasterTimer():
-    """Duplicate function to the MasterTimer.getMasterTimer method.
-
-    Provided for convenience and developer preference of which to use
-    """
-    return MasterTimer.getMasterTimer()
-
-
 class MasterTimer:
+    """A code timing interface, this class is designed to be a singleton."""
 
     _instance = None
 
     def __init__(self):
-        if MasterTimer._instance:
+        if MasterTimer._instance is not None:
             raise RuntimeError(
                 "{} is a pseudo singleton, do not attempt to make more than one.".format(
                     self.__class__.__name__
@@ -90,58 +81,62 @@ class MasterTimer:
         MasterTimer._instance = self
 
         self.timers = {}
-
         self.start_time = time.time()
         self.end_time = None
 
     @staticmethod
     def getMasterTimer():
-        if not MasterTimer._instance:
+        """Primary method that users need get access to the MasterTimer singleton."""
+        if MasterTimer._instance is None:
             MasterTimer()
+
         return MasterTimer._instance
 
     @staticmethod
-    def getTimer(event_name):
+    def getTimer(eventName):
         """Return a timer with no special action take.
 
         ``with timer: ...`` friendly!
         """
         master = MasterTimer.getMasterTimer()
 
-        if event_name in master.timers:
-            timer = master.timers[event_name]
+        if eventName in master.timers:
+            timer = master.timers[eventName]
         else:
-            timer = _Timer(event_name, False)
+            timer = _Timer(eventName, False)
+            master.timers[eventName] = timer
         return timer
 
     @staticmethod
-    def startTimer(event_name):
+    def startTimer(eventName):
         """Return a timer with a start call, or a newly made started timer.
 
         ``with timer: ...`` unfriendly!
         """
         master = MasterTimer.getMasterTimer()
 
-        if event_name in master.timers:
-            timer = master.timers[event_name]
+        if eventName in master.timers:
+            timer = master.timers[eventName]
             timer.start()
         else:
-            timer = _Timer(event_name, True)
+            timer = _Timer(eventName, True)
+            master.timers[eventName] = timer
         return timer
 
     @staticmethod
-    def endTimer(event_name):
+    def endTimer(eventName):
         """Return a timer with a stop call, or a newly made unstarted timer.
 
         ``with timer: ...`` unfriendly!
         """
         master = MasterTimer.getMasterTimer()
 
-        if event_name in master.timers:
-            timer = master.timers[event_name]
+        if eventName in master.timers:
+            timer = master.timers[eventName]
             timer.stop()
         else:
-            timer = _Timer(event_name, False)
+            timer = _Timer(eventName, False)
+            master.timers[eventName] = timer
         return timer
 
     @staticmethod
@@ -168,7 +163,7 @@ class MasterTimer:
         master = MasterTimer.getMasterTimer()
 
         for timer in master.timers.values():
-            timer.over_start = 0  # deal with what recursion may have caused
+            timer.overStart = 0  # deal with what recursion may have caused
             timer.stop()
 
         _Timer._frozen = True
@@ -177,107 +172,125 @@ class MasterTimer:
 
     @staticmethod
     def getActiveTimers():
+        """Get all the timers for processes that are still active."""
         master = MasterTimer.getMasterTimer()
 
         return [t for t in master.timers.values() if t.isActive]
 
+    def __str__(self):
+        t = self.time()
+        return "{:55s} {:>14.2f} {:>14.2f} {:11}".format("TOTAL TIME", t, t, 1)
+
     @staticmethod
-    def report(inclusion_cutoff=0.1, total_time=False):
-        r"""
+    def report(inclusionCutoff=0.1, totalTime=False):
+        """
         Write a string report of the timers.
+
+        This report prints a table that looks something like this:
+
+        TIMER REPORTS                                           CUMULATIVE (s)    AVERAGE (s)   NUM ITERS
+        thing1                                                            0.01           0.01           1
+        thing2                                                            0.01           0.01           1
+        TOTAL TIME                                                        0.02           0.02           1
 
         Parameters
         ----------
-        inclusion_cutoff : float, optional
+        inclusionCutoff : float, optional
             Will not show results that have less than this fraction of the total time.
-        total_time : bool, optional
-            Use either the ratio of total time or time since last report for consideration against the cutoff
+        totalTime : bool, optional
+            Use the ratio of total time or time since last report to compare against the cutoff.
 
         See Also
         --------
         armi.utils.codeTiming._Timer.__str__ : prints out the results for each individual line item
+
+        Returns
+        -------
+        str : Plain-text table report on the timers.
         """
         master = MasterTimer.getMasterTimer()
 
         table = [
-            "{:60s} {:^20} {:^20} {:^20} {:^8} {}\t".format(
+            "{:55s} {:^15} {:^15} {:9}".format(
                 "TIMER REPORTS",
-                "SINCE LAST (s)",
                 "CUMULATIVE (s)",
                 "AVERAGE (s)",
-                "PAUSES",
-                "ACTIVE",
+                "NUM ITERS".rjust(9, " "),
             )
         ]
 
         for timer in sorted(master.timers.values(), key=lambda x: x.time):
-            if total_time:
-                time_ratio = timer.time / master.time()
+            if totalTime:
+                timeRatio = timer.time / master.time()
             else:
-                time_ratio = timer.timeSinceReport / master.time()
-            if time_ratio < inclusion_cutoff:
+                timeRatio = timer.timeSinceReport / master.time()
+
+            if timeRatio < inclusionCutoff:
                 continue
             table.append(str(timer))
 
+        # add the total time as the last row
+        table.append(str(master))
         return "\n".join(table)
 
     @staticmethod
-    def timeline(base_file_name, inclusion_cutoff=0.1, total_time=False):
-        r"""Produces a timeline graphic of the timers.
+    def timeline(baseFileName, inclusionCutoff=0.1, totalTime=False):
+        """Produces a timeline graphic of the timers.
 
         Parameters
         ----------
-        base_file_name : str
-            whatever the leading file path should be
-            this method generates the same file extension for every image to add to the base
-        inclusion_cutoff : float, optional
+        baseFileName : str
+            Whatever the leading file path should be.
+            This method generates the same file extension for every image to add to the base.
+        inclusionCutoff : float, optional
             Will not show results that have less than this fraction of the total time.
-        total_time : bool, optional
-            Use either the ratio of total time or time since last report for consideration against the cutoff
+        totalTime : bool, optional
+            Use the ratio of total time or time since last report to compare against the cutoff.
+
+        Returns
+        -------
+        str : Path to the saved plot file.
         """
         import matplotlib.pyplot as plt
         import numpy as np
 
         # initial set up
         master = MasterTimer.getMasterTimer()
-        cur_time = master.time()
+        curTime = master.time()
 
         color_map = plt.cm.jet
 
-        y_values = []  # list of heights
-        y_level = 0  # height of the timelines
-        names = []
-        x_starts = []
-        x_stops = []
         colors = []
+        names = []
+        xStarts = []
+        xStops = []
+        yLevel = 0  # height of the timelines
+        yValues = []  # list of heights
 
         # plot content gather
         for timer in sorted(master.timers.values(), key=lambda x: x.name):
-            if total_time:
-                time_ratio = timer.time / master.time()
+            if totalTime:
+                timeRatio = timer.time / master.time()
             else:
-                time_ratio = timer.timeSinceReport / master.time()
-            if time_ratio < inclusion_cutoff:
+                timeRatio = timer.timeSinceReport / master.time()
+            if timeRatio < inclusionCutoff:
                 continue
 
-            y_level += 1
+            yLevel += 1
             names.append(timer.name)
-            for time_pair in timer.times:
-                y_values.append(y_level)
-                x_starts.append(time_pair[0])
-                x_stops.append(time_pair[1])
-                colors.append(color_map(time_ratio))
+            for timePair in timer.times:
+                colors.append(color_map(timeRatio))
+                xStarts.append(timePair[0])
+                xStops.append(timePair[1])
+                yValues.append(yLevel)
 
-        # plot set up
-        # might not be necessary to scale the width with the height like this
+        # plot set up: might not be necessary to scale the width with the height like this
         plt.figure(
             figsize=(3 + len(master.timers.values()), (3 + len(master.timers.values())))
         )
-        plt.axis([0.0, cur_time, 0.0, y_level + 1])
+        plt.axis([0.0, curTime, 0.0, yLevel + 1])
         plt.xlabel("Time (s)")
-        plt.yticks(
-            np.arange(y_level + 1), [""] + names
-        )  # offset needed for some reason
+        plt.yticks(np.arange(yLevel + 1), [""] + names)
         _loc, labels = plt.yticks()
         for tick in labels:
             tick.set_fontsize(40)
@@ -285,44 +298,44 @@ class MasterTimer:
         plt.tight_layout()
 
         # plot content draw
-        plt.hlines(y_values, x_starts, x_stops, colors)
+        plt.hlines(yValues, xStarts, xStops, colors)
 
-        def flatMerge(
-            l1, l2=None
-        ):  # duplicate a list flatly or merge them flatly (no tuples compared to zip)
+        def flatMerge(l1, l2=None):
+            # duplicate a list flatly or merge them flatly (no tuples compared to zip)
             return [item for sublist in zip(l1, l2 or l1) for item in sublist]
 
-        ymin = [y - 0.3 for y in y_values]
-        ymax = [y + 0.3 for y in y_values]
+        ymin = [y - 0.3 for y in yValues]
+        ymax = [y + 0.3 for y in yValues]
         plt.vlines(
-            flatMerge(x_starts, x_stops),
+            flatMerge(xStarts, xStops),
             flatMerge(ymin),
             flatMerge(ymax),
             flatMerge(colors),
         )
 
-        # done
-        filename = base_file_name + ".code-timeline.png"
+        # save and close
+        filename = f"{baseFileName}.code-timeline.png"
         plt.savefig(filename)
         plt.close()
         return os.path.join(os.getcwd(), filename)
 
 
 class _Timer:
-    r"""Code timer to call at various points to measure performance.
+    """Code timer to call at various points to measure performance.
 
-    see MasterTimer.getTimer() for construction
+    See Also
+    --------
+    MasterTimer.getTimer() for construction
     """
 
-    _frozen = False  # if the master timer stops, all timers must freeze, with no thaw (how would that make sense in a run?)
+    # If the master timer stops, all timers must freeze with no thaw.
+    _frozen = False
 
     def __init__(self, name, start):
         self.name = name
-        MasterTimer.getMasterTimer().timers[self.name] = self
-
         self._active = False
         self._times = []  # [(start, end), (start, end)...]
-        self.over_start = 0  # necessary for recursion tracking
+        self.overStart = 0  # necessary for recursion tracking
         self.reportedTotal = (
             0.0  # time elapsed since last asked to report time in __str__
         )
@@ -331,22 +344,20 @@ class _Timer:
             self.start()
 
     def __repr__(self):
-        return "<{} name:'{}' pauses:{} active:{} time:{}>".format(
-            self.__class__.__name__, self.name, self.pauses, self.isActive, self.time
+        return "<{} name:'{}' num iterations:{} time:{}>".format(
+            self.__class__.__name__, self.name, self.numIterations, self.time
         )
 
     def __str__(self):
-        str_ = "{:60s} {:>20.2f} {:>20.2f} {:>20.2f} {:^8} {}".format(
-            self.name[:60],
-            self.timeSinceReport,
+        s = "{:55s} {:>14.2f} {:>14.2f} {:11}".format(
+            self.name[:55],
             self.time,
-            self.time / (self.pauses + 1),
-            self.pauses,
-            self.isActive,
+            self.time / (self.numIterations + 1),
+            self.numIterations + 1,
         )
         # needs to come after str generation because it resets the timeSinceReport
         self.reportedTotal = self.time
-        return str_
+        return s
 
     def __enter__(self):
         self.start()
@@ -356,11 +367,12 @@ class _Timer:
 
     @property
     def isActive(self):
+        """Return True if the code for this timer still running."""
         return self._active
 
     @property
-    def pauses(self):
-        """If this number seems high remember .start() twice in a row adds a pause."""
+    def numIterations(self):
+        """If this number seems high, remember .start() twice in a row adds an iteration to numIterations."""
         return len(self._times) - 1 if self._times else 0
 
     @property
@@ -375,7 +387,7 @@ class _Timer:
 
     @property
     def times(self):
-        """List of time start and stop pairs, if active the current time is used as the last stop."""
+        """List of time start / stop pairs, if active the current time is used as the last stop."""
         if self.isActive:
             times = copy.deepcopy(self._times)
             times[-1] = (self._times[-1][0], MasterTimer.time())
@@ -383,38 +395,50 @@ class _Timer:
         else:
             return self._times
 
-    def _open_time_pair(self, cur_time):
-        self._times.append((cur_time, None))
+    def _openTimePair(self, curTime):
+        self._times.append((curTime, None))
 
-    def _close_time_pair(self, cur_time):
-        self._times[-1] = (self._times[-1][0], cur_time)
+    def _closeTimePair(self, curTime):
+        self._times[-1] = (self._times[-1][0], curTime)
 
     def start(self):
-        cur_time = MasterTimer.time()
+        """Start this Timer.
+
+        Returns
+        -------
+        float : Time stamp for the current time / start time.
+        """
+        curTime = MasterTimer.time()
 
         if self._frozen:
-            return cur_time
+            return curTime
         elif self.isActive:
             # call was made on an active timer, we're now over-started
-            self.over_start += 1
-            self._close_time_pair(cur_time)
+            self.overStart += 1
+            self._closeTimePair(curTime)
 
         self._active = True
-        self._open_time_pair(cur_time)
+        self._openTimePair(curTime)
 
-        return cur_time
+        return curTime
 
     def stop(self):
-        cur_time = MasterTimer.time()
+        """Stop this Timer.
+
+        Returns
+        -------
+        float : Time stamp for the current time / stop time.
+        """
+        curTime = MasterTimer.time()
 
         if self._frozen:
-            return cur_time
+            return curTime
 
-        if self.over_start:
+        if self.overStart:
             # can't end the timer as it's over-started
-            self.over_start -= 1
+            self.overStart -= 1
         elif self.isActive:
             self._active = False
-            self._close_time_pair(cur_time)
+            self._closeTimePair(curTime)
 
-        return cur_time
+        return curTime

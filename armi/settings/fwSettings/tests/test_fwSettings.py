@@ -26,7 +26,7 @@ class TestSchema(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
         self.settings = {
-            "numProcessors": {
+            "nTasks": {
                 "valid": 1,
                 "invalid": -1,
                 "error": vol.error.MultipleInvalid,
@@ -86,16 +86,6 @@ class TestSchema(unittest.TestCase):
                 "invalid": -1,
                 "error": vol.error.MultipleInvalid,
             },
-            "lowPowerRegionFraction": {
-                "valid": 0.5,
-                "invalid": 2,
-                "error": vol.error.MultipleInvalid,
-            },
-            "mpiTasksPerNode": {
-                "valid": 0,
-                "invalid": -1,
-                "error": vol.error.MultipleInvalid,
-            },
             "nCycles": {"valid": 1, "invalid": -1, "error": vol.error.MultipleInvalid},
             "power": {"valid": 0, "invalid": -1, "error": vol.error.MultipleInvalid},
             "skipCycles": {
@@ -113,11 +103,6 @@ class TestSchema(unittest.TestCase):
             "Tout": {
                 "valid": -272,
                 "invalid": -274,
-                "error": vol.error.MultipleInvalid,
-            },
-            "dbStorageAfterCycle": {
-                "valid": 0,
-                "invalid": -1,
                 "error": vol.error.MultipleInvalid,
             },
             "timelineInclusionCutoff": {

@@ -162,6 +162,15 @@ class CompareSuites(CompareCases):
             default=[],
             help="Pattern to search for inputs to ignore.",
         )
+        self.parser.add_argument(
+            "--skip-inspection",
+            "-I",
+            action="store_true",
+            default=False,
+            help="Skip inspection. By default, setting files are checked for integrity and consistency. These "
+            "checks result in needing to manually resolve a number of differences. Using this option will "
+            "suppress the inspection step.",
+        )
 
     def invoke(self):
         from armi import cases
@@ -188,6 +197,7 @@ class CompareSuites(CompareCases):
             rootDir=self.args.reference,
             patterns=allTests,
             ignorePatterns=self.args.ignore,
+            skipInspection=self.args.skip_inspection,
         )
 
         cmpSuite = cases.CaseSuite(self.cs)
@@ -195,6 +205,7 @@ class CompareSuites(CompareCases):
             rootDir=self.args.comparison,
             patterns=self.args.patterns,
             ignorePatterns=self.args.ignore,
+            skipInspection=self.args.skip_inspection,
         )
 
         nIssues = refSuite.compare(
@@ -206,4 +217,4 @@ class CompareSuites(CompareCases):
         )
 
         if nIssues > 0:
-            sys.exit(nIssues)
+            sys.exit(1)

@@ -16,39 +16,40 @@ r"""
 The ``CaseSuite`` object is responsible for running, and executing a set of user inputs.  Many
 entry points redirect into ``CaseSuite`` methods, such as ``clone``, ``compare``, and ``submit``.
 
-Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can
-be used to collect a series of cases
-and submit them to a cluster for execution. Furthermore, a ``CaseSuite`` can be used to gather
-executed cases for post-analysis.
+Used in conjunction with the :py:class:`~armi.cases.case.Case` object, ``CaseSuite`` can be used to
+collect a series of cases and submit them to a cluster for execution. Furthermore, a ``CaseSuite``
+can be used to gather executed cases for post-analysis.
 
-``CaseSuite``\ s should allow ``Cases`` to be added from totally separate directories.
-This is useful for plugin-informed in-use testing as well as other things.
+``CaseSuite``\ s should allow ``Cases`` to be added from totally separate directories. This is
+useful for plugin-informed testing as well as other things.
 
 See Also
 --------
 armi.cases.case : An individual item of a case suite.
 """
 import os
-from typing import Optional, Sequence
 import traceback
+from typing import Optional, Sequence
 
-import tabulate
-
-from armi import runLog
-from armi import settings
+from armi import runLog, settings
 from armi.cases import case as armicase
-from armi.utils import directoryChangers
+from armi.utils import directoryChangers, tabulate
 
 
 class CaseSuite:
     """
     A CaseSuite is a collection of possibly related Case objects.
 
-    A CaseSuite is intended to be both a pre-processing and post-processing tool to
-    facilitate case generation and analysis. Under most circumstances one may wish to
-    subclass a CaseSuite to meet the needs of a specific calculation.
+    .. impl:: CaseSuite allows for one case to start after another completes.
+        :id: I_ARMI_CASE_SUITE
+        :implements: R_ARMI_CASE_SUITE
 
-    A CaseSuite is a collection that is keyed off Case titles.
+        The CaseSuite object allows multiple, often related,
+        :py:class:`~armi.cases.case.Case` objects to be run sequentially. A CaseSuite
+        is intended to be both a pre-processing or a post-processing tool to facilitate
+        case generation and analysis. Under most circumstances one may wish to subclass
+        a CaseSuite to meet the needs of a specific calculation. A CaseSuite is a
+        collection that is keyed off Case titles.
     """
 
     def __init__(self, cs):
@@ -83,12 +84,18 @@ class CaseSuite:
         return len(self._cases)
 
     def discover(
-        self, rootDir=None, patterns=None, ignorePatterns=None, recursive=True
+        self,
+        rootDir=None,
+        patterns=None,
+        ignorePatterns=None,
+        recursive=True,
+        skipInspection=False,
     ):
         """
-        Finds case objects by searching for a pattern of inputs, and adds them to the suite.
+        Finds case objects by searching for a pattern of file paths, and adds them to
+        the suite.
 
-        This searches for CaseSettings input files and loads them to create Case objects.
+        This searches for Settings input files and loads them to create Case objects.
 
         Parameters
         ----------
@@ -100,6 +107,8 @@ class CaseSuite:
             file patterns to exclude matching file names
         recursive : bool, optional
             if True, recursively search for settings files
+        skipInspection : bool, optional
+            if True, skip running the check inputs
         """
         csFiles = settings.recursivelyLoadSettingsFiles(
             rootDir or os.path.abspath(os.getcwd()),
@@ -111,7 +120,8 @@ class CaseSuite:
 
         for cs in csFiles:
             case = armicase.Case(cs=cs, caseSuite=self)
-            case.checkInputs()
+            if not skipInspection:
+                case.checkInputs()
             self.add(case)
 
     def echoConfiguration(self):
@@ -120,8 +130,8 @@ class CaseSuite:
 
         Notes
         -----
-        Some of these printouts won't make sense for all users, and may
-        make sense to be delegated to the plugins/app.
+        Some of these printouts won't make sense for all users, and may make sense to
+        be delegated to the plugins/app.
         """
         for setting in self.cs.environmentSettings:
             runLog.important(
@@ -142,7 +152,7 @@ class CaseSuite:
                     for c in self
                 ],
                 headers=["Title", "Enabled", "Dependencies"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
@@ -152,8 +162,8 @@ class CaseSuite:
 
         Creates a clone for each case within a CaseSuite. If ``oldRoot`` is not
         specified, then each case clone is made in a directory with the title of the
-        case. If ``oldRoot`` is specified, then a relative path from ``oldRoot`` will be
-        used to determine a new relative path to the current directory ``oldRoot``.
+        case. If ``oldRoot`` is specified, then a relative path from ``oldRoot`` will
+        be used to determine a new relative path to the current directory ``oldRoot``.
 
         Parameters
         ----------
@@ -197,16 +207,17 @@ class CaseSuite:
         """
         Run each case, one after the other.
 
-        .. warning: Suite running may not work yet if the cases have interdependencies.
-                    We typically run on a HPC but are still working on a platform
-                    independent way of handling HPCs.
+        Warning
+        -------
+        Suite running may not work yet if the cases have interdependencies. We typically run on a
+        HPC but are still working on a platform independent way of handling HPCs.
         """
         for ci, case in enumerate(self):
             runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
             with directoryChangers.DirectoryChanger(case.directory):
                 try:
                     case.run()
-                except:  # noqa: bare-except
+                except Exception:
                     # allow all errors and continue to next run
                     runLog.error(f"{case} failed during execution.")
                     traceback.print_exc()
@@ -296,7 +307,7 @@ class CaseSuite:
                 tabulate.tabulate(
                     [["Integration test directory: {}".format(os.getcwd())]],
                     ["SUMMARIZED INTEGRATION TEST DIFFERENCES:"],
-                    tablefmt=fmt,
+                    tableFmt=fmt,
                 )
             )
         )
@@ -307,10 +318,11 @@ class CaseSuite:
             userFile, refFile, caseIssues = tableResults[testName]
             data.append((testName, userFile, refFile, caseIssues))
             totalDiffs += caseIssues
-        print(tabulate.tabulate(data, header, tablefmt=fmt))
+
+        print(tabulate.tabulate(data, header, tableFmt=fmt))
         print(
             tabulate.tabulate(
-                [["Total number of differences: {}".format(totalDiffs)]], tablefmt=fmt
+                [["Total number of differences: {}".format(totalDiffs)]], tableFmt=fmt
             )
         )
 

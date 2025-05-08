@@ -28,18 +28,15 @@ There is one included fuel cycle plugin: The Fuel Handler.
 
 The fuel handler plugin moves fuel around in a reactor.
 """
-from armi import interfaces
-from armi import operators
-from armi import plugins
+from armi import interfaces, operators, plugins
 from armi.operators import RunTypes
-from armi.physics.fuelCycle import fuelHandlers
-from armi.physics.fuelCycle import settings
+from armi.physics.fuelCycle import fuelHandlers, settings
 
 ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
 
 class FuelHandlerPlugin(plugins.ArmiPlugin):
-    """The build-in ARMI fuel management plugin."""
+    """The built-in ARMI fuel management plugin."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -71,6 +68,7 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return settings.getFuelCycleSettings()
 
     @staticmethod

@@ -54,6 +54,7 @@ class MpiDirectoryChanger(directoryChangers.DirectoryChanger):
 
     def close(self):
         cdma = _ChangeDirectoryMpiAction(self.initial)
+        cdma = cdma.broadcast(cdma)
         cdma.invoke(None, None, None)
 
 

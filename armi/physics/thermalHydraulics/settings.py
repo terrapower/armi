@@ -34,7 +34,7 @@ def defineSettings():
         ),
         setting.Setting(
             CONF_TH_KERNEL,
-            default=False,
+            default="",
             label="Thermal Hydraulics Kernel",
             description="Name of primary T/H solver in this run",
         ),

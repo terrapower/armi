@@ -45,7 +45,7 @@ assemblies:
         xs types: [A]
 """
 
-    def test_componentInitializationIncompleteBurnChain(self):
+    def test_componentInitIncompleteBurnChain(self):
         nuclideFlagsFuelWithBurn = (
             inspect.cleandoc(
                 r"""
@@ -65,10 +65,10 @@ assemblies:
         with self.assertRaises(ValueError):
             bp.constructAssem(cs, "assembly")
 
-    def test_componentInitializationControlCustomIsotopics(self):
+    def test_componentInitControlCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
-                r"""
+                """
             nuclide flags:
                 U234: {burn: true, xs: true}
                 U235: {burn: true, xs: true}
@@ -99,7 +99,7 @@ assemblies:
     def test_autoDepletable(self):
         nuclideFlags = (
             inspect.cleandoc(
-                r"""
+                """
             nuclide flags:
                 U234: {burn: true, xs: true}
                 U235: {burn: true, xs: true}
@@ -157,7 +157,7 @@ assemblies:
         # More robust test, but worse unittest.py output when it fails
         self.assertTrue(c.hasFlags(Flags.FUEL | Flags.TEST))
 
-    def test_componentInitializationAmericiumCustomIsotopics(self):
+    def test_componentInitAmericiumCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -248,7 +248,7 @@ assemblies:
         for nuc in unexpectedNuclides:
             self.assertNotIn(nuc, a[0][0].getNuclides())
 
-    def test_componentInitializationThoriumBurnCustomIsotopics(self):
+    def test_componentInitThoriumBurnCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -307,7 +307,7 @@ assemblies:
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
 
-    def test_componentInitializationThoriumNoBurnCustomIsotopics(self):
+    def test_componentInitThoriumNoBurnCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""

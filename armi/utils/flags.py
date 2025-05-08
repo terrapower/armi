@@ -23,16 +23,12 @@ support extension. We also considered the ``aenum`` package, which permits exten
 ``Enum`` classes, but unfortunately does not support extension of ``Flags``. So, we had to
 make our own. This is a much simplified version of what comes with ``aenum``, but still
 provides most of the safety and functionality.
-
-There is an `issue <https://bitbucket.org/stoneleaf/aenum/issues/27/>`_ on the ``aenum``
-bitbucket site to track ``Flag`` extension.
 """
 import math
+from typing import Dict, List, Sequence, Tuple, Union
 
-from typing import Dict, Union, Sequence, List, Tuple
 
-
-class auto:  # noqa: invalid-class-name
+class auto:  # noqa: N801
     """
     Empty class for requesting a lazily-evaluated automatic field value.
 
@@ -94,6 +90,7 @@ class _FlagMeta(type):
 
         # Auto fields have been resolved, so now collect all ints
         allFields = {name: val for name, val in attrs.items() if isinstance(val, int)}
+        allFields = {n: v for n, v in allFields.items() if not _FlagMeta.isdunder(n)}
         flagClass._nameToValue = allFields
         flagClass._valuesTaken = set(val for _, val in allFields.items())
         flagClass._autoAt = autoAt
@@ -106,6 +103,10 @@ class _FlagMeta(type):
             setattr(flagClass, name, instance)
 
         return flagClass
+
+    @staticmethod
+    def isdunder(s):
+        return s.startswith("__") and s.endswith("__")
 
     def __getitem__(cls, key):
         """
@@ -122,9 +123,22 @@ class Flag(metaclass=_FlagMeta):
     """
     A collection of bitwise flags.
 
-    This is intended to emulate ``enum.Flag``, except with the possibility of extension
-    after the class has been defined. Most docs for ``enum.Flag`` should be relevant here,
-    but there are sure to be occasional differences.
+    This is intended to emulate ``enum.Flag``, except with the possibility of extension after the
+    class has been defined. Most docs for ``enum.Flag`` should be relevant here, but there are sure
+    to be occasional differences.
+
+    .. impl:: No two flags have equivalence.
+        :id: I_ARMI_FLAG_DEFINE
+        :implements: R_ARMI_FLAG_DEFINE
+
+        A bitwise flag class intended to emulate the standard library's ``enum.Flag``, with the
+        added functionality that it allows for extension after the class has been defined. Each Flag
+        is unique; no two Flags are equivalent.
+
+        Note that while Python allows for arbitrary-width integers, exceeding the system-native
+        integer size can lead to challenges in storing data, e.g. in an HDF5 file. In this case, the
+        ``from_bytes()`` and ``to_bytes()`` methods are provided to represent a Flag's values in
+        smaller chunks so that writeability can be maintained.
 
     .. warning::
         Python features arbitrary-width integers, allowing one to represent an
@@ -183,7 +197,7 @@ class Flag(metaclass=_FlagMeta):
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
         """Assign values to autos, based on the current state of the class."""
-        # There is some opportunity for code re-use between this and the metaclass...
+        # There is some opportunity for code reuse between this and the metaclass...
         resolved = []
         for field in fields:
             while cls._autoAt in cls._valuesTaken:
@@ -219,11 +233,19 @@ class Flag(metaclass=_FlagMeta):
             This alters the class that it is called upon! Existing instances should see
             the new data, since classes are mutable.
 
+        .. impl:: Set of flags are extensible without loss of uniqueness.
+            :id: I_ARMI_FLAG_EXTEND0
+            :implements: R_ARMI_FLAG_EXTEND
+
+            A class method to extend a ``Flag`` with a vector of provided additional ``fields``,
+            with field names as keys, without loss of uniqueness. Values for the additional
+            ``fields`` can be explicitly specified, or an instance of ``auto`` can be supplied.
+
         Parameters
         ----------
         fields : dict
-            A dictionary containing field names as keys, and their desired values, or
-            an instance of ``auto`` as values.
+            A dictionary containing field names as keys, and their desired values, or an instance of
+            ``auto`` as values.
 
         Example
         -------
@@ -251,8 +273,8 @@ class Flag(metaclass=_FlagMeta):
 
         This is useful when storing Flags in a data type of limited size. Python ints
         can be of arbitrary size, while most other systems can only represent integers
-        of 32 or 64 bits. For compatibiliy, this function allows to convert the flags to
-        a sequence of single-byte elements.
+        of 32 or 64 bits. For compatibility, this function allows to convert the flags
+        to a sequence of single-byte elements.
 
         Note that this uses snake_case to mimic the method on the Python-native int
         type.

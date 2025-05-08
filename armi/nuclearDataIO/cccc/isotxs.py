@@ -18,7 +18,7 @@ This module reads and writes ISOTXS files.
 ISOTXS is a binary file that contains multigroup microscopic cross sections.
 ISOTXS stands for  *Isotope Cross Sections*.
 
-ISOTXS files are often created by a lattice physics code such as MC2 or DRAGON and 
+ISOTXS files are often created by a lattice physics code such as MC2 or DRAGON and
 used as input to a global flux solver such as DIF3D.
 
 This module implements reading and writing of the
@@ -37,16 +37,14 @@ Examples
 
 """
 
-import traceback
 import itertools
+import traceback
 
-import numpy
+import numpy as np
 from scipy import sparse
 
 from armi import runLog
-from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import xsNuclides
-from armi.nuclearDataIO import xsLibraries
+from armi.nuclearDataIO import cccc, xsLibraries, xsNuclides
 from armi.utils import properties
 
 # scattering block definitions from ISOTXS
@@ -69,9 +67,8 @@ def compareSet(fileNames, tolerance=0.0, verbose=False):
     comparisons = []
 
     xsLibs = [readBinary(fileName) for fileName in fileNames]
-    for thisXSLib, thatXSLib in itertools.combinations(
-        xsLibs, 2
-    ):  # all unique combinations with 2 itmes
+    for thisXSLib, thatXSLib in itertools.combinations(xsLibs, 2):
+        # all unique combinations with 2 items
         runLog.info(
             "\n*****\n*****comparing {} and {}\n*****".format(thisXSLib, thatXSLib)
         )
@@ -101,7 +98,7 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
     Notes
     -----
     Tolerance allows the user to ignore small changes that may be caused by
-    small library differences or floating point cacluations
+    small library differences or floating point calculations
     the closer to zero the more differences will be shown
     10**-5 is a good tolerance to use if not using default.
     Verbose shows the XS matrixes that are not equal
@@ -123,13 +120,14 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
                 runLog.warning(warning.format(nuc2, 2, 1))
             equal = False
             continue
-        equal &= compareNuclideXS(nuc1, nuc2, tolerance, verbose)
+        nucEqual = compareNuclideXS(nuc1, nuc2, tolerance, verbose, nucName)
+        equal &= nucEqual
     return equal
 
 
-def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False):
+def compareNuclideXS(nuc1, nuc2, tolerance=0.0, verbose=False, nucName=""):
     equal = nuc1.isotxsMetadata.compare(nuc2.isotxsMetadata, nuc1, nuc2)
-    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose)
+    equal &= nuc1.micros.compare(nuc2.micros, [], tolerance, verbose, nucName=nucName)
     return equal
 
 
@@ -187,7 +185,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
     return any(dummyNuclideKeysAddedToLibrary)
 
 
-class _IsotxsIO(cccc.Stream):
+class IsotxsIO(cccc.Stream):
     """
     A semi-abstract stream for reading and writing to a :py:class:`~armi.nuclearDataIO.isotxs.Isotxs`.
 
@@ -263,6 +261,54 @@ class _IsotxsIO(cccc.Stream):
             self._metadata["label"] = self._FILE_LABEL
 
     def readWrite(self):
+        """Read and write ISOTSX file.
+
+        .. impl:: Tool to read and write ISOTXS files.
+            :id: I_ARMI_NUCDATA_ISOTXS
+            :implements: R_ARMI_NUCDATA_ISOTXS
+
+            Reading and writing ISOTXS files is performed using the general
+            nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. Reading/writing a ISOTXS file is performed
+            through the following steps:
+
+            #. Read/write file ID record
+            #. Read/write file 1D record, which includes:
+
+                * Number of energy groups (``NGROUP``)
+                * Maximum number of up-scatter groups (``MAXUP``)
+                * Maximum number of down-scatter groups (``MAXDN``)
+                * Maximum scattering order (``MAXORD``)
+                * File-wide specification on fission spectrum type, i.e. vector
+                  or matrix (``ICHIST``)
+                * Maximum number of blocks of scattering data (``MSCMAX``)
+                * Subblocking control for scatter matrices (``NSBLOK``)
+
+            #. Read/write file 2D record, which includes:
+
+                * Library IDs for each isotope (``HSETID(I)``)
+                * Isotope names (``HISONM(I)``)
+                * Global fission spectrum (``CHI(J)``) if file-wide spectrum is
+                  specified (``ICHIST`` = 1)
+                * Energy group structure (``EMAX(J)`` and ``EMIN``)
+                * Locations of each nuclide record in the file (``LOCA(I)``)
+
+                    .. note::
+
+                        The offset data is not read from the binary file because
+                        the ISOTXS reader can dynamically calculate the offset
+                        itself. Therefore, during a read operation, this data is
+                        ignored.
+
+            #. Read/write file 4D record for each nuclide, which includes
+               isotope-dependent, group-independent data.
+            #. Read/write file 5D record for each nuclide, which includes
+               principal cross sections.
+            #. Read/write file 6D record for each nuclide, which includes
+               fission spectrum if it is flagged as a matrix (``ICHI`` > 1).
+            #. Read/write file 7D record for each nuclide, which includes the
+               scattering matrices.
+        """
         self._rwMessage()
         properties.unlockImmutableProperties(self._lib)
         try:
@@ -279,7 +325,7 @@ class _IsotxsIO(cccc.Stream):
                     self._lib[nucLabel] = nuc
                 nuclideIO = self._getNuclideIO()(nuc, self, self._lib)
                 nuclideIO.rwNuclide()
-        except:  # noqa: bare-except
+        except Exception:
             raise OSError(
                 "Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc())
             )
@@ -322,8 +368,8 @@ class _IsotxsIO(cccc.Stream):
 
         Notes
         -----
-        Contains isotope names, global chi distribution, energy group structure, and locations of each nuclide record
-        in the file
+        Contains isotope names, global chi distribution, energy group structure, and locations of
+        each nuclide record in the file
         """
         with self.createRecord() as record:
             # skip "merger   test..." string
@@ -363,8 +409,9 @@ class _IsotxsIO(cccc.Stream):
 
         Notes
         -----
-        This is not used within ARMI, because it can compute it arbitrarily. Other codes use this to seek to a
-        specific position within an ISOTXS file.
+        The offset data is not read from the binary file because the ISOTXS
+        reader can dynamically calculate the offset itself. Therefore, during a
+        read operation, this data is ignored.
         """
         recordsPerNuclide = [
             self._computeNumIsotxsRecords(nuc) for nuc in self._lib.nuclides
@@ -381,10 +428,10 @@ class _IsotxsIO(cccc.Stream):
         return numRecords
 
 
-readBinary = _IsotxsIO.readBinary
-readAscii = _IsotxsIO.readAscii
-writeBinary = _IsotxsIO.writeBinary
-writeAscii = _IsotxsIO.writeAscii
+readBinary = IsotxsIO.readBinary
+readAscii = IsotxsIO.readAscii
+writeBinary = IsotxsIO.writeBinary
+writeAscii = IsotxsIO.writeAscii
 
 
 class _IsotxsNuclideIO:
@@ -393,7 +440,7 @@ class _IsotxsNuclideIO:
 
     Notes
     -----
-    This is to be used in conjunction with an _IsotxsIO object.
+    This is to be used in conjunction with an IsotxsIO object.
     """
 
     def __init__(self, nuclide, isotxsIO, lib):
@@ -642,7 +689,7 @@ class _IsotxsNuclideIO:
         if scatter is None:
             # we're reading.
             scatter = sparse.csr_matrix(
-                (numpy.array(dataVals), indices, indptr), shape=(ng, ng)
+                (np.array(dataVals), indices, indptr), shape=(ng, ng)
             )
             scatter.eliminate_zeros()
             self._setScatterMatrix(blockNumIndex, scatter)
@@ -665,7 +712,7 @@ class _IsotxsNuclideIO:
             A index of the scatter matrix.
         """
         try:
-            return numpy.where(self._metadata["scatFlag"] == scatterType)[0][0]
+            return np.where(self._metadata["scatFlag"] == scatterType)[0][0]
         except IndexError:
             return None
 
@@ -705,8 +752,9 @@ class _IsotxsNuclideIO:
         """
         Get the scatter matrix for a particular blockNum.
 
-        Note: This is stupid and the logic should be combined with _setScatterMatrix.
-        Please recommend a better way to do it during code review.
+        Notes
+        -----
+        This logic could be combined with _setScatterMatrix.
         """
         if blockNumIndex == self._getElasticScatterBlockNumIndex():
             scatterMatrix = self._getMicros().elasticScatter

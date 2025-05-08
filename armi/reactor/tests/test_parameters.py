@@ -11,14 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the Parameters class."""
+"""Tests for assorted Parameters tools."""
 import copy
-import traceback
+import os
 import unittest
+from glob import glob
+from shutil import copyfile
 
-from armi import context
-from armi.reactor import composites
 from armi.reactor import parameters
+from armi.reactor.reactorParameters import makeParametersReadOnly
+from armi.testing import loadTestReactor
+from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class MockComposite:
@@ -65,6 +69,78 @@ class ParameterTests(unittest.TestCase):
 
             with self.assertRaises(AssertionError):
                 fail = pDefs.createBuilder(default={})
+
+    def test_writeSomeParamsToDB(self):
+        """
+        This tests the ability to specify which parameters should be
+        written to the database. It assumes that the list returned by
+        ParameterDefinitionCollection.toWriteToDB() is used to filter for which
+        parameters to include in the database.
+
+        .. test:: Restrict parameters from DB write.
+            :id: T_ARMI_PARAM_DB
+            :tests: R_ARMI_PARAM_DB
+
+        .. test:: Ensure that new parameters can be defined.
+            :id: T_ARMI_PARAM0
+            :tests: R_ARMI_PARAM
+        """
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam("write_me", "units", "description", "location", default=42)
+            pb.defParam("and_me", "units", "description", "location", default=42)
+            pb.defParam(
+                "dont_write_me",
+                "units",
+                "description",
+                "location",
+                default=42,
+                saveToDB=False,
+            )
+        db_params = pDefs.toWriteToDB(32)
+        self.assertListEqual(["write_me", "and_me"], [p.name for p in db_params])
+
+    def test_serializer_pack_unpack(self):
+        """
+        This tests the ability to add a serializer to a parameter instantiation line.
+        It assumes that if this parameter is not None, that the pack and unpack methods
+        will be called during storage to and reading from the database. See
+        database._writeParams for an example use of this functionality.
+
+        .. test:: Custom parameter serializer
+            :id: T_ARMI_PARAM_SERIALIZE
+            :tests: R_ARMI_PARAM_SERIALIZE
+        """
+
+        class TestSerializer(parameters.Serializer):
+            @staticmethod
+            def pack(data):
+                array = [d + 1 for d in data]
+                return array
+
+            @staticmethod
+            def unpack(data):
+                array = [d - 1 for d in data]
+                return array
+
+        param = parameters.Parameter(
+            name="myparam",
+            units="kg",
+            description="a param",
+            location=None,
+            saveToDB=True,
+            default=[1],
+            setter=None,
+            categories=None,
+            serializer=TestSerializer(),
+        )
+        param.assigned = [1]
+
+        packed = param.serializer.pack(param.assigned)
+        unpacked = param.serializer.unpack(packed)
+
+        self.assertEqual(packed, [2])
+        self.assertEqual(unpacked, [1])
 
     def test_paramPropertyDoesNotConflict(self):
         class Mock(parameters.ParameterCollection):
@@ -145,6 +221,13 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual("encapsulated", mock.noSetter)
 
     def test_setter(self):
+        """Test the Parameter setter() tooling, that signifies if a Parameter has been updated.
+
+        .. test:: Tooling that allows a Parameter to signal it needs to be updated across processes.
+            :id: T_ARMI_PARAM_PARALLEL0
+            :tests: R_ARMI_PARAM_PARALLEL
+        """
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -173,6 +256,7 @@ class ParameterTests(unittest.TestCase):
             print(mock.n)
         with self.assertRaises(parameters.ParameterError):
             print(mock.nPlus1)
+
         mock.n = 15
         self.assertEqual(15, mock.n)
         self.assertEqual(16, mock.nPlus1)
@@ -180,9 +264,16 @@ class ParameterTests(unittest.TestCase):
         mock.nPlus1 = 22
         self.assertEqual(21, mock.n)
         self.assertEqual(22, mock.nPlus1)
-        self.assertTrue(all(pd.assigned for pd in mock.paramDefs))
+        self.assertTrue(all(pd.assigned != parameters.NEVER for pd in mock.paramDefs))
 
     def test_setterGetterBasics(self):
+        """Test the Parameter setter/getter tooling, through the lifecycle of a Parameter being updated.
+
+        .. test:: Tooling that allows a Parameter to signal it needs to be updated across processes.
+            :id: T_ARMI_PARAM_PARALLEL1
+            :tests: R_ARMI_PARAM_PARALLEL
+        """
+
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -289,7 +380,7 @@ class ParameterTests(unittest.TestCase):
             set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs))
         )
 
-    def test_cannotDefineParameterWithSameNameForCollectionSubclass(self):
+    def test_cannotDefineParamSameNameCollectionSubclass(self):
         class MockPCParent(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -304,7 +395,8 @@ class ParameterTests(unittest.TestCase):
 
             _ = MockPCChild()
 
-        # same name along a different branch from the base ParameterCollection should be fine
+        # same name along a different branch from the base ParameterCollection should
+        # be fine
         class MockPCUncle(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -371,14 +463,31 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(p2.categories, set(["awesome", "stuff", "bacon"]))
         self.assertEqual(p3.categories, set(["bacon"]))
 
+        for p in [p1, p2, p3]:
+            self._testCategoryConsistency(p)
+
         self.assertEqual(set(pc.paramDefs.inCategory("awesome")), set([p1, p2]))
         self.assertEqual(set(pc.paramDefs.inCategory("stuff")), set([p1, p2]))
         self.assertEqual(set(pc.paramDefs.inCategory("bacon")), set([p2, p3]))
 
+    def _testCategoryConsistency(self, p: parameters.Parameter):
+        for category in p.categories:
+            self.assertTrue(p.hasCategory(category))
+        self.assertFalse(p.hasCategory("this_shouldnot_exist"))
+
     def test_parameterCollectionsHave__slots__(self):
-        """Make sure something is implemented to prevent accidental creation of attributes."""
+        """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
-            set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
+            set(
+                [
+                    "_hist",
+                    "_backup",
+                    "assigned",
+                    "_p_serialNum",
+                    "serialNum",
+                    "readOnly",
+                ]
+            ),
             set(parameters.ParameterCollection._slots),
         )
 
@@ -386,12 +495,6 @@ class ParameterTests(unittest.TestCase):
             pass
 
         pc = MockPC()
-        # No longer protecting against __dict__ access. If someone REALLY wants to
-        # staple something to a parameter collection with no guarantees of anything,
-        # that's on them
-        # with self.assertRaises(AttributeError):
-        #     pc.__dict__["foo"] = 5
-
         with self.assertRaises(AssertionError):
             pc.whatever = 22
 
@@ -425,237 +528,104 @@ class ParameterTests(unittest.TestCase):
             pcc.whatever = 33
 
 
-class MockSyncPC(parameters.ParameterCollection):
-    pDefs = parameters.ParameterDefinitionCollection()
-    with pDefs.createBuilder(
-        default=0.0, location=parameters.ParamLocation.AVERAGE
-    ) as pb:
-        pb.defParam("param1", "units", "p1 description", categories=["cat1"])
-        pb.defParam("param2", "units", "p2 description", categories=["cat2"])
-        pb.defParam("param3", "units", "p3 description", categories=["cat3"])
+class ParamCollectionWhere(unittest.TestCase):
+    """Tests for ParameterCollection.where."""
 
-
-def makeComp(name):
-    c = composites.Composite(name)
-    c.p = MockSyncPC()
-    return c
-
-
-class SynchronizationTests:
-    """Some unit tests that must be run with mpirun instead of the standard unittest system."""
-
-    def setUp(self):
-        self.r = makeComp("reactor")
-        self.r.core = makeComp("core")
-        self.r.add(self.r.core)
-        for ai in range(context.MPI_SIZE * 4):
-            a = makeComp("assembly{}".format(ai))
-            self.r.core.add(a)
-            for bi in range(10):
-                a.add(makeComp("block{}-{}".format(ai, bi)))
-        self.comps = [self.r.core] + self.r.core.getChildren(deep=True)
-        for pd in MockSyncPC().paramDefs:
-            pd.assigned = parameters.NEVER
-
-    def tearDown(self):
-        del self.r
-
-    def run(self, testNamePrefix="mpitest_"):
-        with open("mpitest{}.temp".format(context.MPI_RANK), "w") as self.l:
-            for methodName in sorted(dir(self)):
-                if methodName.startswith(testNamePrefix):
-                    self.write("{}.{}".format(self.__class__.__name__, methodName))
-                    try:
-                        self.setUp()
-                        getattr(self, methodName)()
-                    except Exception:
-                        self.write("failed, big time")
-                        traceback.print_exc(file=self.l)
-                        self.write("*** printed exception")
-                        try:
-                            self.tearDown()
-                        except:  # noqa: bare-except
-                            pass
-
-            self.l.write("done.")
-
-    def write(self, msg):
-        self.l.write("{}\n".format(msg))
-        self.l.flush()
-
-    def assertRaises(self, exceptionType):
-        class ExceptionCatcher:
-            def __enter__(self):
-                pass
-
-            def __exit__(self, exc_type, exc_value, traceback):
-                if exc_type is exceptionType:
-                    return True
-                raise AssertionError(
-                    "Expected {}, but got {}".format(exceptionType, exc_type)
-                )
-
-        return ExceptionCatcher()
-
-    def assertEqual(self, expected, actual):
-        if expected != actual:
-            raise AssertionError(
-                "(expected) {} != {} (actual)".format(expected, actual)
+    class ScopeParamCollection(parameters.ParameterCollection):
+        pDefs = parameters.ParameterDefinitionCollection()
+        with pDefs.createBuilder() as pb:
+            pb.defParam(
+                name="empty",
+                description="Bare",
+                location=None,
+                categories=None,
+                units="",
+            )
+            pb.defParam(
+                name="keff",
+                description="keff",
+                location=parameters.ParamLocation.VOLUME_INTEGRATED,
+                categories=[parameters.Category.neutronics],
+                units="",
+            )
+            pb.defParam(
+                name="cornerFlux",
+                description="corner flux",
+                location=parameters.ParamLocation.CORNERS,
+                categories=[
+                    parameters.Category.neutronics,
+                ],
+                units="",
+            )
+            pb.defParam(
+                name="edgeTemperature",
+                description="edge temperature",
+                location=parameters.ParamLocation.EDGES,
+                categories=[parameters.Category.thermalHydraulics],
+                units="",
             )
 
-    def assertNotEqual(self, expected, actual):
-        if expected == actual:
-            raise AssertionError(
-                "(expected) {} == {} (actual)".format(expected, actual)
+    @classmethod
+    def setUpClass(cls) -> None:
+        """Define a couple useful parameters with categories, locations, etc."""
+        cls.pc = cls.ScopeParamCollection()
+
+    def test_onCategory(self):
+        """Test the use of Parameter.hasCategory on filtering."""
+        names = {"keff", "cornerFlux"}
+        for p in self.pc.where(
+            lambda pd: pd.hasCategory(parameters.Category.neutronics)
+        ):
+            self.assertTrue(p.hasCategory(parameters.Category.neutronics), msg=p)
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty!")
+
+    def test_onLocation(self):
+        """Test the use of Parameter.atLocation in filtering."""
+        names = {"edgeTemperature"}
+        for p in self.pc.where(
+            lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)
+        ):
+            self.assertTrue(p.atLocation(parameters.ParamLocation.EDGES), msg=p)
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty!")
+
+    def test_complicated(self):
+        """Test a multi-condition filter."""
+        names = {"cornerFlux"}
+
+        def check(p: parameters.Parameter) -> bool:
+            return p.atLocation(parameters.ParamLocation.CORNERS) and p.hasCategory(
+                parameters.Category.neutronics
             )
 
-    def mpitest_noConflicts(self):
-        for ci, comp in enumerate(self.comps):
-            if ci % context.MPI_SIZE == context.MPI_RANK:
-                comp.p.param1 = (context.MPI_RANK + 1) * 30.0
-            else:
-                self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param1)
+        for p in self.pc.where(check):
+            self.assertTrue(check(p), msg=p)
+            names.remove(p.name)
+        self.assertFalse(names, msg=f"{names=} should be empty")
 
-        self.assertEqual(len(self.comps), self.r.syncMpiState())
 
-        for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
+class TestMakeParametersReadOnly(unittest.TestCase):
+    def test_makeParametersReadOnly(self):
+        with TemporaryDirectoryChanger():
+            # copy test reactor to local
+            yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+            for yamlFile in yamls:
+                copyfile(yamlFile, os.path.basename(yamlFile))
 
-    def mpitest_noConflicts_setByString(self):
-        """Make sure params set by string also work with sync."""
-        for ci, comp in enumerate(self.comps):
-            if ci % context.MPI_SIZE == context.MPI_RANK:
-                comp.p.param2 = (context.MPI_RANK + 1) * 30.0
-            else:
-                self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param2)
+            # load some random test reactor
+            _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
 
-        self.assertEqual(len(self.comps), self.r.syncMpiState())
+            # prove we can edit various params at will
+            r.core.p.keff = 1.01
+            b = r.core.getFirstBlock()
+            b.p.power = 123.4
 
-        for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param2)
+            makeParametersReadOnly(r)
 
-    def mpitest_withConflicts(self):
-        self.r.core.p.param1 = (context.MPI_RANK + 1) * 99.0
-        with self.assertRaises(ValueError):
-            self.r.syncMpiState()
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
 
-    def mpitest_withConflictsButSameValue(self):
-        self.r.core.p.param1 = (context.MPI_SIZE + 1) * 99.0
-        self.r.syncMpiState()
-        self.assertEqual((context.MPI_SIZE + 1) * 99.0, self.r.core.p.param1)
-
-    def mpitest_noConflictsMaintainWithStateRetainer(self):
-        assigned = []
-        with self.r.retainState(parameters.inCategory("cat1")):
-            for ci, comp in enumerate(self.comps):
-                comp.p.param2 = 99 * ci
-                if ci % context.MPI_SIZE == context.MPI_RANK:
-                    comp.p.param1 = (context.MPI_RANK + 1) * 30.0
-                    assigned.append(parameters.SINCE_ANYTHING)
-                else:
-                    self.assertNotEqual((context.MPI_RANK + 1) * 30.0, comp.p.param1)
-                    assigned.append(parameters.NEVER)
-
-            # 1st inside state retainer
-            self.assertEqual(
-                True, all(c.p.assigned == parameters.SINCE_ANYTHING for c in self.comps)
-            )
-
-        # confirm outside state retainer
-        self.assertEqual(assigned, [c.p.assigned for ci, c in enumerate(self.comps)])
-
-        # this rank's "assigned" components are not assigned on the workers, and so will be updated
-        self.assertEqual(len(self.comps), self.r.syncMpiState())
-
-        for ci, comp in enumerate(self.comps):
-            self.assertEqual((ci % context.MPI_SIZE + 1) * 30.0, comp.p.param1)
-
-    def mpitest_conflictsMaintainWithStateRetainer(self):
-        with self.r.retainState(parameters.inCategory("cat2")):
-            for _, comp in enumerate(self.comps):
-                comp.p.param2 = 99 * context.MPI_RANK
-
-        with self.assertRaises(ValueError):
-            self.r.syncMpiState()
-
-    def mpitest_rxCoeffsProcess(self):
-        """This test mimics the process for rxCoeffs when doing distributed doppler."""
-
-        def do():
-            # we will do this over 4 passes (there are 4 * MPI_SIZE assemblies)
-            for passNum in range(4):
-                with self.r.retainState(parameters.inCategory("cat2")):
-                    self.r.p.param3 = "hi"
-                    for c in self.comps:
-                        c.p.param1 = (
-                            99 * context.MPI_RANK
-                        )  # this will get reset after state retainer
-                    a = self.r.core[passNum * context.MPI_SIZE + context.MPI_RANK]
-                    a.p.param2 = context.MPI_RANK * 20.0
-                    for b in a:
-                        b.p.param2 = context.MPI_RANK * 10.0
-
-                    for ai, a2 in enumerate(self.r):
-                        if ai % context.MPI_SIZE != context.MPI_RANK:
-                            assert "param2" not in a2.p
-
-                    self.assertEqual(parameters.SINCE_ANYTHING, param1.assigned)
-                    self.assertEqual(parameters.SINCE_ANYTHING, param2.assigned)
-                    self.assertEqual(parameters.SINCE_ANYTHING, param3.assigned)
-                    self.assertEqual(parameters.SINCE_ANYTHING, a.p.assigned)
-
-                    self.r.syncMpiState()
-
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        param1.assigned,
-                    )
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        param2.assigned,
-                    )
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        param3.assigned,
-                    )
-                    self.assertEqual(
-                        parameters.SINCE_ANYTHING
-                        & ~parameters.SINCE_LAST_DISTRIBUTE_STATE,
-                        a.p.assigned,
-                    )
-
-                self.assertEqual(parameters.NEVER, param1.assigned)
-                self.assertEqual(parameters.SINCE_ANYTHING, param2.assigned)
-                self.assertEqual(parameters.NEVER, param3.assigned)
-                self.assertEqual(parameters.SINCE_ANYTHING, a.p.assigned)
-                do_assert(passNum)
-
-        param1 = self.r.p.paramDefs["param1"]
-        param2 = self.r.p.paramDefs["param2"]
-        param3 = self.r.p.paramDefs["param3"]
-
-        def do_assert(passNum):
-            # ensure all assemblies and blocks set values for param2, but param1 is empty
-            for rank in range(context.MPI_SIZE):
-                a = self.r.core[passNum * context.MPI_SIZE + rank]
-                assert "param1" not in a.p
-                assert "param3" not in a.p
-                self.assertEqual(rank * 20, a.p.param2)
-                for b in a:
-                    self.assertEqual(rank * 10, b.p.param2)
-                    assert "param1" not in b.p
-                    assert "param3" not in b.p
-
-        if context.MPI_RANK == 0:
-            with self.r.retainState(parameters.inCategory("cat2")):
-                context.MPI_COMM.bcast(self.r)
-                do()
-                [do_assert(passNum) for passNum in range(4)]
-            [do_assert(passNum) for passNum in range(4)]
-        else:
-            del self.r
-            self.r = context.MPI_COMM.bcast(None)
-            do()
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1

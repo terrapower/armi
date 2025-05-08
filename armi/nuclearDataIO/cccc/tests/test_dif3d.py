@@ -13,7 +13,6 @@
 # limitations under the License.
 
 """Test reading/writing of DIF3D binary input."""
-
 import os
 import unittest
 
@@ -37,14 +36,24 @@ class TestDif3dSimpleHexz(unittest.TestCase):
         cls.df = dif3d.Dif3dStream.readBinary(SIMPLE_HEXZ_DIF3D)
 
     def test__rwFileID(self):
-        """Verify the file identification info."""
+        """Verify the file identification info.
+
+        .. test:: Test reading DIF3D files.
+            :id: T_ARMI_NUCDATA_DIF3D0
+            :tests: R_ARMI_NUCDATA_DIF3D
+        """
         self.assertEqual(self.df.metadata["HNAME"], "DIF3D")
         self.assertEqual(self.df.metadata["HUSE1"], "")
         self.assertEqual(self.df.metadata["HUSE2"], "")
         self.assertEqual(self.df.metadata["VERSION"], 1)
 
     def test__rwFile1DRecord(self):
-        """Verify the rest of the metadata."""
+        """Verify the rest of the metadata.
+
+        .. test:: Test reading DIF3D files.
+            :id: T_ARMI_NUCDATA_DIF3D1
+            :tests: R_ARMI_NUCDATA_DIF3D
+        """
         TITLE_A6 = ["3D Hex", "-Z to", "genera", "te NHF", "LUX fi", "le"]
         EXPECTED_TITLE = TITLE_A6 + [""] * 5
         for i in range(dif3d.TITLE_RANGE):
@@ -133,7 +142,12 @@ class TestDif3dSimpleHexz(unittest.TestCase):
         self.assertEqual(self.df.fiveD, None)
 
     def test_writeBinary(self):
-        """Verify binary equivalence of written DIF3D file."""
+        """Verify binary equivalence of written DIF3D file.
+
+        .. test:: Test writing DIF3D files.
+            :id: T_ARMI_NUCDATA_DIF3D2
+            :tests: R_ARMI_NUCDATA_DIF3D
+        """
         with TemporaryDirectoryChanger():
             dif3d.Dif3dStream.writeBinary(self.df, "DIF3D2")
             with open(SIMPLE_HEXZ_DIF3D, "rb") as f1, open("DIF3D2", "rb") as f2:

@@ -17,25 +17,72 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
-import copy
+import functools
+import traceback
 import warnings
 
+import numpy as np
 from scipy.optimize import fsolve
-import numpy
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
-from armi.utils.units import getTk, getTc
+from armi.utils.units import getTc, getTk
 
 # globals
 FAIL_ON_RANGE = False
 
 
-class Material:
+def parentAwareDensityRedirect(f):
+    """Wrap Material.density to warn people about potential problems.
+
+    If a Material is linked to a Component, ``Material.density`` may produce
+    different results from ``Component.density``. The component's density
+    is considered the source of truth because it incorporates changes in volume,
+    composition, and temperature in concert with the state of the reactor.
     """
-    A material is made up of elements or isotopes. It has bulk properties like mass density.
+
+    @functools.wraps(f)
+    def inner(self: "Material", *args, **kwargs) -> float:
+        if self.parent is not None:
+            stack = traceback.extract_stack()
+            # last entry is here, second to last is what called this
+            caller = stack[-2]
+            label = f"Found call to Material.density in {caller.filename} at line {caller.lineno}"
+            runLog.warning(
+                f"{label}. Calls to Material.density when attached to a component have the potential to induce "
+                "subtle differences as Component.density and Material.density can diverge.",
+                single=True,
+                label=label,
+            )
+        return f(self, *args, **kwargs)
+
+    return inner
+
+
+class Material:
+    r"""
+    A material is made up of elements or isotopes. It has bulk properties like density.
+
+    .. impl:: The abstract material class.
+        :id: I_ARMI_MAT_PROPERTIES
+        :implements: R_ARMI_MAT_PROPERTIES
+
+        The ARMI Materials library is based on the Object-Oriented Programming design approach, and
+        uses this generic ``Material`` base class. In this class we define a large number of
+        material properties like density, heat capacity, or linear expansion coefficient. Specific
+        materials then subclass this base class to assign particular values to those properties.
+
+    .. impl:: Materials generate nuclide mass fractions at instantiation.
+        :id: I_ARMI_MAT_FRACS
+        :implements: R_ARMI_MAT_FRACS
+
+        An ARMI material is meant to be able to represent real world materials that might be used in
+        the construction of a nuclear reactor. As such, they are not just individual nuclides, but
+        practical materials like a particular concrete, steel, or water. One of the main things that
+        will be needed to describe such a material is the exact nuclide fractions. As such, the
+        constructor of every Material subclass attempts to set these mass fractions.
 
     Attributes
     ----------
@@ -44,19 +91,23 @@ class Material:
     massFrac : dict
         Mass fractions for all nuclides in the material keyed on the nuclide symbols
     refDens : float
-        A reference density used by some materials, for instance `SimpleSolid`s,
-        during thermal expansion
+        A reference density used by some materials, for instance `SimpleSolid`\ s, during thermal
+        expansion
     theoreticalDensityFrac : float
-        Fraction of the material's density in reality, which is commonly different
-        from 1.0 in solid materials due to the manufacturing process.
-        Can often be set from the blueprints input via the TD_frac material modification.
-        For programmatic setting, use `adjustTD()`.
+        Fraction of the material's density in reality, which is commonly different from 1.0 in solid
+        materials due to the manufacturing process. Can often be set from the blueprints input via
+        the TD_frac material modification. For programmatic setting, use `adjustTD()`.
 
     Notes
     -----
     Specific material classes may have many more attributes specific to the implementation
     for that material.
     """
+
+    def __init_subclass__(cls) -> None:
+        # Apply the density decorator to every subclass
+        if not hasattr(cls.density, "__wrapped__"):
+            cls.density = parentAwareDensityRedirect(cls.density)
 
     DATA_SOURCE = "ARMI"
     """Indication of where the material is loaded from (may be plugin name)"""
@@ -68,7 +119,7 @@ class Material:
     """Name of enriched nuclide to be interpreted by enrichment modification methods"""
 
     modelConst = {}
-    """Constants that may be used in intepolation functions for property lookups"""
+    """Constants that may be used in interpolation functions for property lookups"""
 
     propertyValidTemperature = {}
     """Dictionary of valid temperatures over which the property models are valid in the format
@@ -104,8 +155,8 @@ class Material:
 
         Warning
         -------
-        Some code in ARMI expects the "name" of a meterial matches its
-        class name. So you use this method at your own risk.
+        Some code in ARMI expects the "name" of a material matches its class name. So you use this
+        method at your own risk.
 
         See Also
         --------
@@ -172,8 +223,7 @@ class Material:
         """
         The instantaneous linear expansion coefficient (dL/L)/dT.
 
-        This is used for reactivity coefficients, etc. but will not affect
-        density or dimensions.
+        This is used for reactivity coefficients, etc. but will not affect density or dimensions.
 
         See Also
         --------
@@ -208,8 +258,7 @@ class Material:
 
     def linearExpansionFactor(self, Tc: float, T0: float) -> float:
         """
-        Return a dL/L factor relative to T0 instead of the material-dependent reference
-        temperature.
+        Return a dL/L factor relative to T0 instead of the material-dependent reference temperature.
 
         Notes
         -----
@@ -254,9 +303,8 @@ class Material:
 
         Notes
         -----
-        This will try to convert the provided ``massFrac`` into a float
-        for assignment. If the conversion cannot occur then an error
-        will be thrown.
+        This will try to convert the provided ``massFrac`` into a float for assignment. If the
+        conversion cannot occur then an error will be thrown.
         """
         try:
             massFrac = float(massFrac)
@@ -292,10 +340,11 @@ class Material:
         """
         Change the mass fraction of the specified nuclide.
 
-        This adjusts the mass fraction of a specified nuclide relative to other nuclides of the same element. If there
-        are no other nuclides within the element, then it is enriched relative to the entire material. For example,
-        enriching U235 in UZr would enrich U235 relative to U238 and other naturally occurring uranium isotopes.
-        Likewise, enriching ZR in UZr would enrich ZR relative to uranium.
+        This adjusts the mass fraction of a specified nuclide relative to other nuclides of the same
+        element. If there are no other nuclides within the element, then it is enriched relative to
+        the entire material. For example, enriching U235 in UZr would enrich U235 relative to U238
+        and other naturally occurring uranium isotopes. Likewise, enriching ZR in UZr would enrich
+        ZR relative to uranium.
 
         The method maintains a constant number of atoms, and adjusts ``refDens`` accordingly.
 
@@ -318,8 +367,8 @@ class Material:
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
-        massDensities = numpy.array([self.massFrac[nuc] for nuc in nucsNames]) * density
-        atomicMasses = numpy.array(
+        massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
+        atomicMasses = np.array(
             [nuclideBases.byName[nuc].weight for nuc in nucsNames]
         )  # in AMU
         molesPerCC = massDensities / atomicMasses  # item-wise division
@@ -334,16 +383,16 @@ class Material:
             if isinstance(
                 nuclideBases.byName[nuclideName], nuclideBases.NaturalNuclideBase
             ) or nuclideBases.isMonoIsotopicElement(nuclideName):
-                # if there are not any other nuclides, assume we are enriching an entire element
-                # consequently, allIndicesUpdated is no longer the element's indices, but the materials indices
+                # If there are not any other nuclides, assume we are enriching an entire element.
+                # Consequently, allIndicesUpdated is no longer the element's indices, but the
+                # materials indices
                 allIndicesUpdated = range(len(nucsNames))
             else:
                 raise ValueError(  # could be warning if problematic
-                    "Nuclide {} was to be enriched in material {}, but there were no other isotopes of "
-                    "that element. Could not assume the enrichment of the entire element as there were "
-                    "other possible isotopes that did not exist in this material.".format(
-                        nuclideName, self
-                    )
+                    "Nuclide {} was to be enriched in material {}, but there were no other "
+                    "isotopes of that element. Could not assume the enrichment of the entire "
+                    "element as there were other possible isotopes that did not exist in this "
+                    "material.".format(nuclideName, self)
                 )
 
         if massFraction == 1.0:
@@ -357,8 +406,8 @@ class Material:
                 onlyOneOtherFracToDetermine = len(allIndicesUpdated) == 2
                 if not onlyOneOtherFracToDetermine:
                     raise ValueError(
-                        "Material {} has too many masses set to zero. cannot enrich {} to {}. Current "
-                        "mass fractions: {}".format(
+                        "Material {} has too many masses set to zero. cannot enrich {} to {}. "
+                        "Current mass fractions: {}".format(
                             self, nuclideName, massFraction, self.massFrac
                         )
                     )
@@ -387,7 +436,7 @@ class Material:
         updatedDensity = updatedMassDensities.sum()
         massFracs = updatedMassDensities / updatedDensity
 
-        if not numpy.isclose(sum(massFracs), 1.0, atol=1e-10):
+        if not np.isclose(sum(massFracs), 1.0, atol=1e-10):
             raise RuntimeError(
                 f"The mass fractions {massFracs} in {self} do not sum to 1.0."
             )
@@ -402,11 +451,11 @@ class Material:
     def getTemperatureAtDensity(
         self, targetDensity: float, tempGuessInC: float
     ) -> float:
-        """Get the temperature at which the perturbed density occurs (in Celcius)."""
+        """Get the temperature at which the perturbed density occurs (in Celsius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
         # is a numpy array if fsolve is called
-        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC))
+        tAtTargetDensity = float(fsolve(densFunc, tempGuessInC)[0])
         return tAtTargetDensity
 
     @property
@@ -469,9 +518,8 @@ class Material:
 
         Notes
         -----
-        Since refDens is specified at the material-dep reference case, we don't
-        need to specify the reference temperature. It is already consistent with linearExpansion
-        Percent.
+        Since refDens is specified at the material-dep reference case, we don't need to specify the
+        reference temperature. It is already consistent with linearExpansion Percent.
         - p*(dp/p(T) + 1) =p*( p + dp(T) )/p = p + dp(T) = p(T)
         - dp/p = (1-(1 + dL/L)**3)/(1 + dL/L)**3
         """
@@ -546,15 +594,15 @@ class Material:
 
         Notes
         -----
-        self.massFrac are modified mass fractions that may not add up to 1.0
-        (for instance, after a axial expansion, the modified mass fracs will sum to less than one.
-        The alternative is to put a multiplier on the density. They're mathematically equivalent.
+        self.massFrac are modified mass fractions that may not add up to 1.0 (for instance, after a
+        axial expansion, the modified mass fracs will sum to less than one. The alternative is to
+        put a multiplier on the density. They're mathematically equivalent.
 
-        This function returns the normalized mass fraction (they will add to 1.0) as long as
-        the mass fracs are modified only by get and setMassFrac
+        This function returns the normalized mass fraction (they will add to 1.0) as long as the
+        mass fracs are modified only by get and setMassFrac
 
-        This is a performance-critical method as it is called millions of times in a
-        typical ARMI run.
+        This is a performance-critical method as it is called millions of times in a typical ARMI
+        run.
 
         See Also
         --------
@@ -574,9 +622,6 @@ class Material:
             # the nuc isn't in the mass Frac vector
             pass
 
-    def getMassFracCopy(self):
-        return copy.deepcopy(self.massFrac)
-
     def checkPropertyTempRange(self, label, val):
         """Checks if the given property / value combination fall between the min and max valid
         temperatures provided in the propertyValidTemperature object.
@@ -591,14 +636,16 @@ class Material:
 
         Notes
         -----
-        This was designed as a convience method for ``checkTempRange``.
+        This was designed as a convenience method for ``checkTempRange``.
         """
         (minT, maxT) = self.propertyValidTemperature[label][0]
         self.checkTempRange(minT, maxT, val, label)
 
     def checkTempRange(self, minT, maxT, val, label=""):
         """
-        Checks if the given temperature (val) is between the minT and maxT temperature limits supplied.
+        Checks if the given temperature (val) is between the minT and maxT temperature limits
+        supplied.
+
         Label identifies what material type or element is being evaluated in the check.
 
         Parameters
@@ -616,7 +663,7 @@ class Material:
             msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(
                 val, minT, maxT, self.name, label
             )
-            if FAIL_ON_RANGE or numpy.isnan(val):
+            if FAIL_ON_RANGE or np.isnan(val):
                 runLog.error(msg)
                 raise ValueError
             else:
@@ -655,13 +702,11 @@ class Material:
 
         Notes
         -----
-        This method is the only reason Materials still have self.parent.
-        Essentially, we want to change that, but right now the logic for finding
-        nuclides in the Reactor is recursive and considers Materials first.
-        The bulk of the work in finally removing this method will come in
-        downstream repos, where users have fully embraced this method and call
-        it directly in many, many places.
-        Please do not use this method, as it is being deprecated.
+        This method is the only reason Materials still have self.parent. Essentially, we want to
+        change that, but right now the logic for finding nuclides in the Reactor is recursive and
+        considers Materials first. The bulk of the work in finally removing this method will come in
+        downstream repos, where users have fully embraced this method and call it directly in many,
+        many places. Please do not use this method, as it is being deprecated.
         """
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
         return self.parent.getNuclides()
@@ -675,8 +720,9 @@ class Material:
         deltaT = linearChange / linearExpansion
         if not quiet:
             runLog.info(
-                f"The linear expansion for {self.getName()} at initial temperature of {Tc} C is {linearExpansion}.\n"
-                f"A change in density of {(densityFrac - 1.0) * 100.0} percent at would require a change in temperature of {deltaT} C.",
+                f"The linear expansion for {self.getName()} at initial temperature of {Tc} C is "
+                f"{linearExpansion}.\nA change in density of {(densityFrac - 1.0) * 100.0} percent "
+                "at would require a change in temperature of {deltaT} C.",
                 single=True,
             )
         return deltaT
@@ -700,8 +746,16 @@ class Material:
 class Fluid(Material):
     """A material that fills its container. Could also be a gas."""
 
+    def __init_subclass__(cls):
+        # Undo the parent-aware density wrapping. Fluids do not expand in the same way solids, so
+        # Fluid.density(T) is correct. This does not hold for solids because they thermally expand.
+        if hasattr(cls.density, "__wrapped__"):
+            cls.density = cls.density.__wrapped__
+
     def getThermalExpansionDensityReduction(self, prevTempInC, newTempInC):
-        """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
+        """Return the factor required to update thermal expansion going from one temperature (in
+        Celsius) to a new temperature.
+        """
         rho0 = self.pseudoDensity(Tc=prevTempInC)
         if not rho0:
             return 1.0
@@ -711,6 +765,15 @@ class Fluid(Material):
     def linearExpansion(self, Tk=None, Tc=None):
         """For void, lets just not allow temperature changes to change dimensions
         since it is a liquid it will fill its space.
+
+        .. impl:: Fluid materials are not thermally expandable.
+            :id: I_ARMI_MAT_FLUID
+            :implements: R_ARMI_MAT_FLUID
+
+            ARMI does not model thermal expansion of fluids. The ``Fluid`` superclass therefore sets
+            the thermal expansion coefficient to zero. All fluids subclassing  the ``Fluid``
+            material will inherit this method which sets the linear expansion coefficient to zero at
+            all temperatures.
         """
         return 0.0
 
@@ -724,8 +787,8 @@ class Fluid(Material):
         deltaT = tAtPerturbedDensity - Tc
         if not quiet:
             runLog.info(
-                "A change in density of {} percent in {} at an initial temperature of {} C would require "
-                "a change in temperature of {} C.".format(
+                "A change in density of {} percent in {} at an initial temperature of {} C would "
+                "require a change in temperature of {} C.".format(
                     (densityFrac - 1.0) * 100.0, self.getName(), Tc, deltaT
                 ),
                 single=True,
@@ -778,9 +841,8 @@ class SimpleSolid(Material):
 
         Notes
         -----
-        This only method only works for Simple Solid Materials which assumes
-        the density function returns 'free expansion' density as a function
-        temperature
+        This only method only works for Simple Solid Materials which assumes the density function
+        returns 'free expansion' density as a function temperature
         """
         density1 = self.density(Tk=self.refTempK)
         density2 = self.density(Tk=Tk, Tc=Tc)
@@ -827,13 +889,13 @@ class FuelMaterial(Material):
 
         Notes
         -----
-        This is often overridden to insert customized material modification parameters
-        but then this parent should always be called at the end in case users want to
-        use this style of custom input.
+        This is often overridden to insert customized material modification parameters but then this
+        parent should always be called at the end in case users want to use this style of custom
+        input.
 
-        This is only applied to materials considered fuel so we don't apply these
-        kinds of parameters to coolants and structural material, which are often
-        not parameterized with any kind of enrichment.
+        This is only applied to materials considered fuel so we don't apply these kinds of
+        parameters to coolants and structural material, which are often not parameterized with any
+        kind of enrichment.
         """
         if class1_wt_frac:
             if not 0 <= class1_wt_frac <= 1:
@@ -854,8 +916,8 @@ class FuelMaterial(Material):
                 )
             if class1_custom_isotopics == class2_custom_isotopics:
                 runLog.warning(
-                    "The custom isotopics specified for the class1/class2 materials"
-                    f" are both '{class1_custom_isotopics}'. You are not actually blending anything!"
+                    "The custom isotopics specified for the class1/class2 materials are both "
+                    f"'{class1_custom_isotopics}'. You are not actually blending anything!"
                 )
 
             self.class1_wt_frac = class1_wt_frac
@@ -870,8 +932,8 @@ class FuelMaterial(Material):
 
         Only adjust heavy metal.
 
-        This may also be needed for building charge assemblies during reprocessing, but
-        will take input from the SFP rather than from the input external feeds.
+        This may also be needed for building charge assemblies during reprocessing, but will take
+        input from the SFP rather than from the input external feeds.
         """
         class1Isotopics = customIsotopics[self.class1_custom_isotopics]
         class2Isotopics = customIsotopics[self.class2_custom_isotopics]

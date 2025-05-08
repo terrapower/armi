@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Thermal Hydraulics package."""
-from .plugin import ThermalHydraulicsPlugin  # noqa: unused-import
+from armi.physics.thermalHydraulics.plugin import ThermalHydraulicsPlugin  # noqa: F401

@@ -25,12 +25,13 @@ This module contains a variety of ``InputModifier`` objects as well, which are e
 of how you can modify inputs for parameter sweeping. Power-users will generally make
 their own ``Modifier``\ s that are design-specific.
 """
-from collections import Counter
-from pyDOE import lhs
-from typing import List
 import copy
 import os
 import random
+from collections import Counter
+from typing import List
+
+from pyDOE import lhs
 
 from armi.cases import suite
 
@@ -45,19 +46,32 @@ class SuiteBuilder:
     """
     Class for constructing a CaseSuite from combinations of modifications on base inputs.
 
+    .. impl:: A generic tool to modify user inputs on multiple cases.
+        :id: I_ARMI_CASE_MOD0
+        :implements: R_ARMI_CASE_MOD
+
+        This class provides the capability to create a :py:class:`~armi.cases.suite.CaseSuite` based
+        on programmatic perturbations/modifications to case settings. It works by being constructed
+        with a base or nominal :py:class:`~armi.cases.case.Case` object. Children classes then
+        append the ``self.modifierSets`` member. Each entry in ``self.modifierSets`` is a
+        :py:class:`~armi.cases.inputModifiers.inputModifiers.InputModifier` representing a case to
+        add to the suite by specifying modifications to the settings of the base case.
+        :py:meth:`SuiteBuilder.buildSuite` is then invoked, returning an instance of the
+        :py:class:`~armi.cases.suite.CaseSuite` containing all the cases with modified settings.
+
     Attributes
     ----------
     baseCase : armi.cases.case.Case
         A Case object to perturb
 
     modifierSets : list(tuple(InputModifier))
-        Contains a list of tuples of ``InputModifier`` instances. A single case is
-        constructed by running a series (the tuple) of InputModifiers on the case.
+        Contains a list of tuples of ``InputModifier`` instances. A single case is constructed by
+        running a series (the tuple) of InputModifiers on the case.
 
     Notes
     -----
-    This is public such that someone could pop an item out of the list if it
-    is known to not work, or be unnecessary.
+    This is public such that someone could pop an item out of the list if it is known to not work,
+    or be unnecessary.
     """
 
     def __init__(self, baseCase):
@@ -86,11 +100,10 @@ class SuiteBuilder:
 
         Parameters
         ----------
-        inputModifiers : list(callable(CaseSettings, Blueprints, SystemLayoutInput))
+        inputModifiers : list(callable(Settings, Blueprints, SystemLayoutInput))
             A list of callable objects with the signature
-            ``(CaseSettings, Blueprints, SystemLayoutInput)``. When these objects are called
-            they should perturb the settings, blueprints, and/or geometry by some amount determined
-            by their construction.
+            ``(Settings, Blueprints, SystemLayoutInput)``. When these objects are called they should
+            perturb the settings or blueprints by some amount determined by their construction.
         """
         raise NotImplementedError
 
@@ -117,7 +130,7 @@ class SuiteBuilder:
             and a tuple of InputModifiers used to edit the case. This should be enough information
             for someone to derive a meaningful name.
 
-            The function should return a string specifying the path of the ``CaseSettings``, this
+            The function should return a string specifying the path of the ``Settings``, this
             allows the user to specify the directories where each case will be run.
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
@@ -168,7 +181,7 @@ class SuiteBuilder:
                     )
 
                 previousMods.append(type(mod))
-                case.cs, case.bp, case.geom = mod(case.cs, case.bp, case.geom)
+                case.cs, case.bp = mod(case.cs, case.bp)
                 case.independentVariables.update(mod.independentVariable)
 
             case.cs.path = namingFunc(index, case, modList)
@@ -199,9 +212,9 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     self.settingName = settingName
                     self.value = value
 
-                def __call__(self, cs, bp, geom):
-                    cs = cs.modified(newSettings={settignName: value})
-                    return cs, bp, geom
+                def __call__(self, cs, bp):
+                    cs = cs.modified(newSettings={self.settingName: self.value})
+                    return cs, bp
 
             builder = FullFactorialSuiteBuilder(someCase)
             builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
@@ -209,14 +222,21 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
 
         would result in 6 cases:
 
+        +-------+------------------+------------------+
         | Index | ``settingName1`` | ``settingName2`` |
-        | ----- | ---------------- | ---------------- |
+        +=======+==================+==================+
         | 0     | 1                | 3                |
+        +-------+------------------+------------------+
         | 1     | 2                | 3                |
+        +-------+------------------+------------------+
         | 2     | 1                | 4                |
+        +-------+------------------+------------------+
         | 3     | 2                | 4                |
+        +-------+------------------+------------------+
         | 4     | 1                | 5                |
+        +-------+------------------+------------------+
         | 5     | 2                | 5                |
+        +-------+------------------+------------------+
 
         See Also
         --------
@@ -246,7 +266,6 @@ class FullFactorialSuiteBuilderNoisy(FullFactorialSuiteBuilder):
         self.noiseFraction = noiseFraction
 
     def addDegreeOfFreedom(self, inputModifiers):
-
         new = []
         for newMod in inputModifiers:
             for existingModSet in self.modifierSets:
@@ -286,9 +305,9 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     self.settingName = settingName
                     self.value = value
 
-                def __call__(self, cs, bp, geom):
-                    cs = cs.modified(newSettings={settignName: value})
-                    return cs, bp, geom
+                def __call__(self, cs, bp):
+                    cs = cs.modified(newSettings={self.settignName: self.value})
+                    return cs, bp
 
             builder = SeparateEffectsSuiteBuilder(someCase)
             builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
@@ -296,13 +315,19 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
 
         would result in 5 cases:
 
+        +-------+------------------+------------------+
         | Index | ``settingName1`` | ``settingName2`` |
-        | ----- | ---------------- | ---------------- |
+        +=======+==================+==================+
         | 0     | 1                | default          |
+        +-------+------------------+------------------+
         | 1     | 2                | default          |
+        +-------+------------------+------------------+
         | 2     | default          | 3                |
+        +-------+------------------+------------------+
         | 3     | default          | 4                |
+        +-------+------------------+------------------+
         | 4     | default          | 5                |
+        +-------+------------------+------------------+
 
         See Also
         --------
@@ -334,12 +359,10 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         """
         Add a degree of freedom to the SuiteBuilder.
 
-        Unlike other types of suite builders, only one instance of a
-        modifier class should be added. This is because the Latin Hypercube
-        Sampling will automatically perturb the values and produce modifier
-        sets internally. A settings modfier class passed to this method
-        need include bounds by which the LHS algorithm can perturb the input
-        parameters.
+        Unlike other types of suite builders, only one instance of a modifier class should be added.
+        This is because the Latin Hypercube Sampling will automatically perturb the values and
+        produce modifier sets internally. A settings modifier class passed to this method need
+        include bounds by which the LHS algorithm can perturb the input parameters.
 
         For example::
 
@@ -353,11 +376,11 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
                 ):
                     super().__init__(name, paramType, bounds)
 
-                def __call__(self, cs, bp, geom):
+                def __call__(self, cs, bp):
                     ...
 
-        If the modifier is discrete then bounds specifies a list of options
-        the values can take. If continuous, then bounds specifies a range of values.
+        If the modifier is discrete then bounds specifies a list of options the values can take. If
+        continuous, then bounds specifies a range of values.
         """
         names = [mod.name for mod in self.modifierSets + inputModifiers]
 
@@ -369,10 +392,9 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
                     duplicateNames.append(key)
 
             raise ValueError(
-                "Only a single input parameter should be inserted as an input modifer "
-                + "since cases are added through Latin Hypercube Sampling.\n"
-                + "Each inputModifier adds a dimension to the Latin Hypercube and "
-                + "represents a single input variable.\n"
+                "Only a single input parameter should be inserted as an input modifier since cases "
+                + "are added through Latin Hypercube Sampling.\nEach inputModifier adds a "
+                + "a dimension to the Latin Hypercube and represents a single input variable.\n"
                 + f"{duplicateNames} have duplicates. "
             )
 
@@ -393,12 +415,11 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             and a tuple of InputModifiers used to edit the case. This should be enough information
             for someone to derive a meaningful name.
 
-            The function should return a string specifying the path of the ``CaseSettings``, this
+            The function should return a string specifying the path of the ``Settings``, this
             allows the user to specify the directories where each case will be run.
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
             ``<0000>`` is the four-digit case index, and ``<title>`` is the ``baseCase.title``.
-
 
         Raises
         ------

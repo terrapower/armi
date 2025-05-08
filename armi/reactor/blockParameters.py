@@ -13,15 +13,13 @@
 # limitations under the License.
 
 """Parameter definitions for Blocks."""
-import six
-
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation, Parameter, NoDefault
+from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
-from armi.utils.units import ASCII_LETTER_A
+from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
 
 
 def getBlockParameterDefinitions():
@@ -33,8 +31,8 @@ def getBlockParameterDefinitions():
             "orientation",
             units=units.DEGREES,
             description=(
-                "Triple representing rotations counterclockwise around each spatial axis. For example, "
-                "a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
+                "Triple representing rotations counterclockwise around each spatial axis. For "
+                "example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
             ),
             default=None,
         )
@@ -76,45 +74,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "fissileFraction",
-            units=units.UNITLESS,
-            description="Ratio of fissile mass to heavy metal mass at block-level",
-        )
-
-        pb.defParam(
-            "molesHmBOL",
-            units=f"{units.MOLES}",
-            description="Total number of atoms of heavy metal at BOL assuming a full assembly",
-        )
-
-        pb.defParam(
-            "massHmBOL",
-            units=units.GRAMS,
-            description="Mass of heavy metal at BOL",
-        )
-
-        pb.defParam(
-            "initialB10ComponentVol",
-            units=f"{units.CM}^3",
-            description="cc's of un-irradiated, cold B10 containing component (includes full volume if any B10)",
-        )
-
-        pb.defParam(
-            "molesHmBOLByPin",
-            units=f"{units.MOLES}",
-            description="Total number of atoms of heavy metal at BOL",
-            default=None,
-            saveToDB=False,
-            location=ParamLocation.CHILDREN,
-        )
-
-        pb.defParam(
-            "molesHmNow",
-            units=f"{units.MOLES}",
-            description="Total number of atoms of heavy metal",
-        )
-
-        pb.defParam(
             "newDPA",
             units=units.DPA,
             description="Dose in DPA accrued during the current time step",
@@ -145,24 +104,44 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "percentBuMaxPinLocation",
-            units=units.UNITLESS,
-            description="Peak burnup pin location (integer)",
-            location=ParamLocation.MAX,
-        )
-
-        pb.defParam(
-            "percentBuMin",
-            units=units.PERCENT_FIMA,
-            description="Minimum percentage of the initial heavy metal atoms that have been fissioned",
-            location=ParamLocation.MAX,
-        )
-
-        pb.defParam(
             "residence",
             units=units.DAYS,
-            description="Duration that a block has been in the core multiplied by the fraction of full power generated in that time.",
+            description=(
+                "Duration that a block has been in the core multiplied by the fraction "
+                "of full power generated in that time."
+            ),
             categories=["cumulative"],
+        )
+
+    with pDefs.createBuilder(
+        default=0.0, location=ParamLocation.VOLUME_INTEGRATED, categories=["depletion"]
+    ) as pb:
+
+        pb.defParam(
+            "molesHmNow",
+            units=f"{units.MOLES}",
+            description="Total number of atoms of heavy metal",
+        )
+
+        pb.defParam(
+            "molesHmBOL",
+            units=f"{units.MOLES}",
+            description="Total number of atoms of heavy metal at BOL.",
+        )
+
+        pb.defParam(
+            "massHmBOL",
+            units=units.GRAMS,
+            description="Mass of heavy metal at BOL",
+        )
+
+        pb.defParam(
+            "initialB10ComponentVol",
+            units=f"{units.CM}^3",
+            description=(
+                "cc's of un-irradiated, cold B10 containing component "
+                "(includes full volume of any components with B10)"
+            ),
         )
 
     pDefs.add(
@@ -193,53 +172,66 @@ def getBlockParameterDefinitions():
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
-        def buGroup(self, buGroupChar):
-            if isinstance(buGroupChar, (int, float)):
-                intValue = int(buGroupChar)
+        def envGroup(self, envGroupChar):
+            if isinstance(envGroupChar, (int, float)):
+                intValue = int(envGroupChar)
                 runLog.warning(
-                    f"Attempting to set `b.p.buGroup` to int value ({buGroupChar}). Possibly loading from old database",
+                    f"Attempting to set `b.p.envGroup` to int value ({envGroupChar})."
+                    "Possibly loading from old database",
                     single=True,
-                    label="bu group as int " + str(intValue),
+                    label="env group as int " + str(intValue),
                 )
-                self.buGroupNum = intValue
+                self.envGroupNum = intValue
                 return
-            elif not isinstance(buGroupChar, six.string_types):
+            elif not isinstance(envGroupChar, str):
                 raise Exception(
-                    f"Wrong type for buGroupChar {buGroupChar}: {type(buGroupChar)}"
+                    f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}"
                 )
 
-            buGroupNum = ord(buGroupChar) - ASCII_LETTER_A
-            self._p_buGroup = buGroupChar
-            self._p_buGroupNum = buGroupNum
-            buGroupNumDef = parameters.ALL_DEFINITIONS["buGroupNum"]
-            buGroupNumDef.assigned = parameters.SINCE_ANYTHING
+            if envGroupChar.islower():
+                # if lower case find the distance from lowercase a and add the span of A to Z
+                lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A + 1  # 26
+                envGroupNum = ord(envGroupChar) - ASCII_LETTER_a + lowerCaseOffset
+            else:
+                envGroupNum = ord(envGroupChar) - ASCII_LETTER_A
+            self._p_envGroup = envGroupChar
+            self._p_envGroupNum = envGroupNum
+            envGroupNumDef = parameters.ALL_DEFINITIONS["envGroupNum"]
+            envGroupNumDef.assigned = parameters.SINCE_ANYTHING
 
         pb.defParam(
-            "buGroup",
+            "envGroup",
             units=units.UNITLESS,
-            description="The burnup group letter of this block",
+            description="The environment group letter of this block",
             default="A",
-            setter=buGroup,
+            setter=envGroup,
         )
 
-        def buGroupNum(self, buGroupNum):
-            if buGroupNum > 26:
+        def envGroupNum(self, envGroupNum):
+            # support capital and lowercase alpha chars (52= 26*2)
+            if envGroupNum > 52:
                 raise RuntimeError(
-                    "Invalid bu group number ({}): too many groups. 26 is the max.".format(
-                        buGroupNum
+                    "Invalid env group number ({}): too many groups. 52 is the max.".format(
+                        envGroupNum
                     )
                 )
-            self._p_buGroupNum = buGroupNum
-            self._p_buGroup = chr(buGroupNum + ASCII_LETTER_A)
-            buGroupDef = parameters.ALL_DEFINITIONS["buGroup"]
-            buGroupDef.assigned = parameters.SINCE_ANYTHING
+            self._p_envGroupNum = envGroupNum
+            lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A
+            if envGroupNum > lowerCaseOffset:
+                envGroupNum = envGroupNum - (lowerCaseOffset + 1)
+                self._p_envGroup = chr(envGroupNum + ASCII_LETTER_a)
+            else:
+                self._p_envGroup = chr(envGroupNum + ASCII_LETTER_A)
+            envGroupDef = parameters.ALL_DEFINITIONS["envGroup"]
+            envGroupDef.assigned = parameters.SINCE_ANYTHING
 
         pb.defParam(
-            "buGroupNum",
+            "envGroupNum",
             units=units.UNITLESS,
-            description="An integer representation of the burnup group, linked to buGroup.",
+            description="An integer representation of the environment group "
+            "(burnup/temperature/etc.). linked to envGroup.",
             default=0,
-            setter=buGroupNum,
+            setter=envGroupNum,
         )
 
         pb.defParam(
@@ -345,7 +337,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "axialExpTargetComponent",
             units=units.UNITLESS,
-            description="The name of the target component used for axial expansion and contraction of solid components.",
+            description=(
+                "The name of the target component used for axial expansion and "
+                "contraction of solid components."
+            ),
             default="",
             saveToDB=True,
         )
@@ -429,371 +424,6 @@ def getBlockParameterDefinitions():
             saveToDB=True,
         )
 
-    with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.AVERAGE,
-        categories=["reactivity coefficients"],
-    ) as pb:
-
-        pb.defParam(
-            "VoideddopplerWorth",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Distributed Voided Doppler constant.",
-        )
-
-        pb.defParam(
-            "dopplerWorth",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Distributed Doppler constant.",
-        )
-
-        pb.defParam(
-            "fuelWorth",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Reactivity worth of fuel material per unit mass",
-        )
-
-        pb.defParam(
-            "fuelWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Fuel reactivity",
-        )
-
-        pb.defParam(
-            "structWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Structure reactivity",
-        )
-
-        pb.defParam(
-            "radExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Radial swelling reactivity",
-        )
-
-        pb.defParam(
-            "coolWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Coolant reactivity",
-        )
-
-        pb.defParam(
-            "coolFlowingWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Flowing coolant reactivity",
-        )
-
-        pb.defParam(
-            "axExpWorthPT",
-            units=f"{units.PCM}/{units.PERCENT}/{units.CM}^3",
-            description="Axial swelling reactivity",
-        )
-
-        pb.defParam(
-            "coolantWorth",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Reactivity worth of coolant material per unit mass",
-        )
-
-        pb.defParam(
-            "cladWorth",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Reactivity worth of clad material per unit mass",
-        )
-
-        pb.defParam(
-            "rxAxialCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Axial temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxAxialCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Axial power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxCoolantCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Coolant temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxCoolantCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Coolant power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxDopplerCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Doppler temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxDopplerCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Doppler power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Fuel temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Fuel power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxNetCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxNetCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net power reactivity coefficient",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "rxNetPosNeg",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net temperature reactivity coefficient: positive or negative",
-        )
-
-        pb.defParam(
-            "rxNetPosNegPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Net power reactivity coefficient: positive or negative",
-        )
-
-        pb.defParam(
-            "rxRadialCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Radial temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxRadialCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Radial power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxStructCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Structure temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxStructCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Structure power reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxVoidedDopplerCentsPerK",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Voided Doppler temperature reactivity coefficient",
-        )
-
-        pb.defParam(
-            "rxVoidedDopplerCentsPerPow",
-            units=f"{units.CENTS}/{units.DEGK}",
-            description="Voided Doppler power reactivity coefficient",
-        )
-
-    with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.AVERAGE,
-        categories=[
-            "reactivity coefficients",
-            "spatially dependent",
-            "mass normalized",
-        ],
-    ) as pb:
-
-        # FUEL COEFFICIENTS
-        pb.defParam(
-            "rxFuelDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Fuel Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Doppler Constant",
-        )
-
-        pb.defParam(
-            "rxFuelVoidedDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Fuel Voided-Coolant Constant",
-        )
-
-        pb.defParam(
-            "rxFuelTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Fuel Temperature Coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelVoidedTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Fuel Voided-Coolant Temperature Coefficient",
-        )
-
-        # CLAD COEFFICIENTS
-        pb.defParam(
-            "rxCladDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Clad Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxCladDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Clad Doppler Constant",
-        )
-
-        pb.defParam(
-            "rxCladTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Clad Temperature Coefficient",
-        )
-
-        # STRUCTURE COEFFICIENTS
-        pb.defParam(
-            "rxStructureDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Structure Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxStructureDopplerConstant",
-            units=f"{units.REACTIVITY}*{units.DEGK}^(n-1)",
-            description="Structure Doppler Constant",
-        )
-
-        pb.defParam(
-            "rxStructureTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Structure Temperature Coefficient",
-        )
-
-        # COOLANT COEFFICIENTS
-        pb.defParam(
-            "rxCoolantDensityCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Coolant Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxCoolantTemperatureCoeffPerMass",
-            units=f"{units.REACTIVITY}/{units.KG})",
-            description="Coolant Temperature Coefficient",
-        )
-
-    with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.VOLUME_INTEGRATED,
-        categories=[
-            "reactivity coefficients",
-            "spatially dependent",
-            "temperature normalized",
-        ],
-    ) as pb:
-
-        # FUEL COEFFICIENTS
-        pb.defParam(
-            "rxFuelDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Doppler Coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelVoidedDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Voided-Coolant Doppler Coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Temperature Coefficient",
-        )
-
-        pb.defParam(
-            "rxFuelVoidedTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Fuel Voided-Coolant Temperature Coefficient",
-        )
-
-        # CLAD COEFFICIENTS
-        pb.defParam(
-            "rxCladDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Clad Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxCladDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Clad Doppler Coefficient",
-        )
-
-        pb.defParam(
-            "rxCladTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Clad Temperature Coefficient",
-        )
-
-        # STRUCTURE COEFFICIENTS
-        pb.defParam(
-            "rxStructureDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Structure Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxStructureDopplerCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Structure Doppler Coefficient",
-        )
-
-        pb.defParam(
-            "rxStructureTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Structure Temperature Coefficient",
-        )
-
-        # COOLANT COEFFICIENTS
-        pb.defParam(
-            "rxCoolantDensityCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Coolant Density Coefficient",
-        )
-
-        pb.defParam(
-            "rxCoolantTemperatureCoeffPerTemp",
-            units=f"{units.REACTIVITY}/{units.DEGK})",
-            description="Coolant Temperature Coefficient",
-        )
-
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam(
@@ -806,35 +436,12 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "assemNum",
             units=units.UNITLESS,
-            description="Index that refers, nominally, to the assemNum parameter of "
-            "the containing Assembly object. This is stored on the Block to aid in "
-            "visualizing shuffle patterns and the like, and should not be used within "
-            "the code. These are not guaranteed to be consistent with the containing "
-            "Assembly, so they should not be used as a reliable means to reconstruct "
-            "the model.",
+            description="Index that refers, nominally, to the assemNum parameter of the containing "
+            "Assembly object. This is stored on the Block to aid in visualizing shuffle patterns "
+            "and the like, and should not be used within the code. These are not guaranteed to be "
+            "consistent with the containing Assembly, so they should not be used as a reliable "
+            "means to reconstruct the model.",
             categories=[parameters.Category.retainOnReplacement],
-        )
-
-        pb.defParam(
-            "axExtenNodeHeight",
-            units=units.METERS,
-            description="Axial extension node height",
-            location=ParamLocation.AVERAGE,
-            default=0.0,
-        )
-
-        pb.defParam(
-            "blockBeta",
-            units=units.UNITLESS,
-            description="Beta in each block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "blockF",
-            units=f"1/{units.CM}^5/{units.SECONDS}^2",
-            description="Adjoint-weighted fission source in each block",
-            location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
@@ -869,13 +476,6 @@ def getBlockParameterDefinitions():
         pb.defParam("buLimit", units=units.PERCENT_FIMA, description="Burnup limit")
 
         pb.defParam(
-            "cladACCI",
-            units=units.MICRONS,
-            description="The amount of cladding wastage due to absorber chemical clad interaction",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "convRatio",
             units=units.UNITLESS,
             description="Conversion ratio",
@@ -884,44 +484,9 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "coolRemFrac",
-            units=units.UNITLESS,
-            description="Fractional sodium density change for each block",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "crWastage",
-            units=units.MICRONS,
-            description="Combines ACCI and clad corrosion for control blocks",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "cyclicNErr",
             units=units.UNITLESS,
             description="Relative error of the block number density",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "deltaTclad",
-            units=f"{units.DEGK}/{units.PERCENT}",
-            description=r"Change in fuel temperature due to 1% rise in power.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "deltaTduct",
-            units=f"{units.DEGK}/{units.PERCENT}",
-            description=r"Change in fuel temperature due to 1% rise in power.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "deltaTfuel",
-            units=f"{units.DEGK}/{units.PERCENT}",
-            description=r"Change in fuel temperature due to 1% rise in power.",
             location=ParamLocation.AVERAGE,
         )
 
@@ -941,13 +506,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "intrinsicSourceDecayed",
-            units=units.UNITLESS,
-            description="Intrinsic source from spontaneous fissions after a decay period",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "kgFis",
             units=units.KG,
             description="Mass of fissile material in block",
@@ -959,20 +517,6 @@ def getBlockParameterDefinitions():
             units=units.KG,
             description="Mass of heavy metal in block",
             location=ParamLocation.VOLUME_INTEGRATED,
-        )
-
-        pb.defParam(
-            "mchan",
-            units=units.UNITLESS,
-            description="SASSYS/DIF3D-K (external) channel index assignment",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "mreg",
-            units=units.UNITLESS,
-            description="SASSYS/DIF3D-K radial region index assignment",
-            location=ParamLocation.AVERAGE,
         )
 
         pb.defParam("nPins", units=units.UNITLESS, description="Number of pins")
@@ -989,13 +533,7 @@ def getBlockParameterDefinitions():
             units=units.PERCENT_FIMA,
             description="Peak percentage of the initial heavy metal atoms that have been fissioned",
             location=ParamLocation.MAX,
-        )
-
-        pb.defParam(
-            "powerShapeDelta",
-            units=units.WATTS,
-            description="Change in power shape when core temperature rises.",
-            location=ParamLocation.VOLUME_INTEGRATED,
+            categories=["cumulative", "eq cumulative shift"],
         )
 
         pb.defParam(
@@ -1008,7 +546,10 @@ def getBlockParameterDefinitions():
         pb.defParam(
             "smearDensity",
             units=units.UNITLESS,
-            description="Smear density of fuel pins in this block. Defined as the ratio of fuel area to total space inside cladding.",
+            description=(
+                "Smear density of fuel pins in this block. Defined as the ratio of fuel "
+                "area to total space inside cladding."
+            ),
             location=ParamLocation.AVERAGE,
         )
 

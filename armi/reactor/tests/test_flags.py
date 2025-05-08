@@ -26,9 +26,68 @@ class TestFlags(unittest.TestCase):
         self._help_fromString(flags.Flags.fromStringIgnoreErrors)
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("invalid"), flags.Flags(0))
 
-    def test_toString(self):
+    def test_fromStringWithNumbers(self):
+        # testing pure numbers
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("1"), flags.Flags(0))
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("7"), flags.Flags(0))
+
+        # testing fuel naming logic
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("Fuel1"), flags.Flags.FUEL)
+        self.assertEqual(
+            flags.Flags.fromStringIgnoreErrors("Fuel123"), flags.Flags.FUEL
+        )
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("fuel 1"), flags.Flags.FUEL)
+        self.assertEqual(
+            flags.Flags.fromStringIgnoreErrors("fuel 123"), flags.Flags.FUEL
+        )
+
+    def test_flagsDefinedWithNumbers(self):
+        """Test that if we DEFINE flags with numbers in them, those are treated as exceptions."""
+        # define flags TYPE1 and TYPE1B (arbitrary example)
+        flags.Flags.extend({"TYPE1": flags.auto(), "TYPE1B": flags.auto()})
+
+        # verify that these flags are correctly found
+        self.assertEqual(flags.Flags["TYPE1"], flags.Flags.TYPE1)
+        self.assertEqual(flags.Flags["TYPE1B"], flags.Flags.TYPE1B)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("type1"), flags.Flags.TYPE1)
+        self.assertEqual(
+            flags.Flags.fromStringIgnoreErrors("Type1b"), flags.Flags.TYPE1B
+        )
+
+        # the more complicated situation where our exceptions are mixed with the usual flag logic
+        self.assertEqual(
+            flags.Flags.fromString("type1 fuel"), flags.Flags.TYPE1 | flags.Flags.FUEL
+        )
+
+        self.assertEqual(
+            flags.Flags.fromString("type1 fuel 123 bond"),
+            flags.Flags.TYPE1 | flags.Flags.FUEL | flags.Flags.BOND,
+        )
+
+        self.assertEqual(
+            flags.Flags.fromString("type1 fuel123 bond"),
+            flags.Flags.TYPE1 | flags.Flags.FUEL | flags.Flags.BOND,
+        )
+
+    def test_flagsToAndFromString(self):
+        """
+        Convert flag to and from string for serialization.
+
+        .. test:: Convert flag to a string.
+            :id: T_ARMI_FLAG_TO_STR
+            :tests: R_ARMI_FLAG_TO_STR
+        """
         f = flags.Flags.FUEL
         self.assertEqual(flags.Flags.toString(f), "FUEL")
+        self.assertEqual(f, flags.Flags.fromString("FUEL"))
+
+    def test_toStringAlphabetical(self):
+        """Ensure that, for multiple flags, toString() returns them in alphabetical order."""
+        flagz = flags.Flags.AXIAL | flags.Flags.LOWER
+        self.assertEqual(flags.Flags.toString(flagz), "AXIAL LOWER")
+
+        flagz = flags.Flags.LOWER | flags.Flags.AXIAL
+        self.assertEqual(flags.Flags.toString(flagz), "AXIAL LOWER")
 
     def test_fromStringStrict(self):
         self._help_fromString(flags.Flags.fromString)
@@ -42,8 +101,7 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(method("bond1"), flags.Flags.BOND)
         self.assertEqual(method("bond 2"), flags.Flags.BOND)
         self.assertEqual(method("fuel test"), flags.Flags.FUEL | flags.Flags.TEST)
-        # test the more strict GRID conversion, which can cause collisions with
-        # GRID_PLATE
+        # test the more strict GRID conversion, which can cause collisions with GRID_PLATE
         self.assertEqual(
             flags.Flags.fromStringIgnoreErrors("grid_plate"), flags.Flags.GRID_PLATE
         )
@@ -79,7 +137,7 @@ class TestFlags(unittest.TestCase):
             self.assertEqual(flags.Flags.fromString(exampleInput), flag)
 
     def test_convertsStringsWithNonFlags(self):
-        # Useful for varifying block / assembly names convert to Flags.
+        # Useful for verifying block / assembly names convert to Flags.
         self.assertEqual(
             flags.Flags.fromStringIgnoreErrors("banana bond banana"), flags.Flags.BOND
         )

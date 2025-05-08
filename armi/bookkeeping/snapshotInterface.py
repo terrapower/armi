@@ -27,11 +27,8 @@ What in particular is done is dependent on the case settings and the collection 
 
 Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defaultSnapshots``.
 """
-from armi import interfaces
-from armi import runLog
-from armi import operators
+from armi import interfaces, operators, runLog
 from armi.utils import getStepLengths
-
 
 ORDER = interfaces.STACK_ORDER.POSTPROCESSING
 
@@ -42,7 +39,21 @@ def describeInterfaces(cs):
 
 
 class SnapshotInterface(interfaces.Interface):
-    """Snapshot managerial interface."""
+    """
+    Snapshot managerial interface.
+
+    .. impl:: Save extra data to be saved from a run, at specified time nodes.
+        :id: I_ARMI_SNAPSHOT0
+        :implements: R_ARMI_SNAPSHOT
+
+        This is a special :py:class:`Interface <armi.interfaces.Interface>` that is
+        designed to run along all the other Interfaces during a simulation, to save off
+        important or helpful data. By default, this is designed to be used with the
+        ``"defaultSnapshots"`` and ``""dumpSnapshot""`` settings. These settings were
+        added so users can control if snapshot data will be recorded during their run.
+        Broadly, this class is implemented to run the Operator method
+        :py:meth:`o.snapshotRequest <armi.operators.Operator.snapshotRequest>`.
+    """
 
     name = "snapshot"
 
@@ -73,7 +84,7 @@ class SnapshotInterface(interfaces.Interface):
 
         snapText = ["{0:03d}{1:03d}".format(c, n) for c, n in snapTimeCycleNodePairs]
 
-        # determine if there are new snapshots to add to the setings file
+        # determine if there are new snapshots to add to the settings file
         for snapT in snapText:
             if snapT not in self.cs["dumpSnapshot"]:
                 runLog.info(

@@ -58,82 +58,81 @@ FILE_SPEC_1D_KEYS_VARIANT11 = (
 
 class NHFLUX(cccc.DataContainer):
     """
-    An abstraction of a NHFLUX file. This format is defined in the DIF3D manual. Note
-    that the format for DIF3D-Nodal and DIF3D-VARIANT are not the same. The VARIANT
-    NHFLUX format has recently changed, so this reader is only compatible with files
-    produced by v11.0 of the solver.
-
-    .. warning::
-        DIF3D outputs NHFLUX at every time node, but REBUS outputs NHFLUX only at every cycle.
-
-    See also [VARIANT-95]_ and [VARIANT-2014]_.
-
-    .. [VARIANT-95] G. Palmiotti, E. E. Lewis, and C. B. Carrico, VARIANT: VARIational
-       Anisotropic Nodal Transport for Multidimensional Cartesian and Hexagonal Geometry
-       Calculation, ANL-95/40, Argonne National Laboratory, Argonne, IL (October 1995).
-
-    .. [VARIANT-2014] Smith, M. A., Lewis, E. E., and Shemon, E. R. DIF3D-VARIANT 11.0: A
-       Decade of Updates. United States: N. p., 2014. Web. doi:10.2172/1127298.
-       https://publications.anl.gov/anlpubs/2014/04/78313.pdf
+    An abstraction of a NHFLUX file. This format is defined in the DIF3D manual. Note that the
+    format for DIF3D-Nodal and DIF3D-VARIANT are not the same. The VARIANT NHFLUX format has
+    recently changed, so this reader is only compatible with files produced by v11.0 of the solver.
 
     Attributes
     ----------
     metadata : file control
-        The NHFLUX file control info (sort of global for this library). This is the contents
-        of the 1D data block on the file.
+        The NHFLUX file control info (sort of global for this library). This is the contents of the
+        1D data block on the file.
 
     incomingPointersToAllAssemblies: 2-D list of floats
-        This is an index map for the "internal surfaces" between DIF3D nodal
-        indexing and DIF3D GEODST indexing. It can be used to process incoming partial
-        currents. This uses the same ordering as the geodstCoordMap attribute.
+        This is an index map for the "internal surfaces" between DIF3D nodal indexing and DIF3D
+        GEODST indexing. It can be used to process incoming partial currents. This uses the same
+        ordering as the geodstCoordMap attribute.
 
     externalCurrentPointers : list of ints
-        This is an index map for the "external surfaces" between DIF3D nodal
-        indexing and DIF3D GEODST indexing. "External surfaces" are important because they
-        contain the INCOMING partial currents from the outer reactor boundary. This uses
-        the same ordering as geodstCoordMap, except that each assembly now has multiple
-        subsequent indices. For example, for a hexagonal core, if hex of index n (0 to N-1)
-        has a surface of index k (0 to 5) that lies on the vacuum boundary, then the index
-        of that surface is N*6 + k + 1.
+        This is an index map for the "external surfaces" between DIF3D nodal indexing and DIF3D
+        GEODST indexing. "External surfaces" are important because they contain the INCOMING partial
+        currents from the outer reactor boundary. This uses the same ordering as geodstCoordMap,
+        except that each assembly now has multiple subsequent indices. For example, for a hexagonal
+        core, if hex of index n (0 to N-1) has a surface of index k (0 to 5) that lies on the vacuum
+        boundary, then the index of that surface is N*6 + k + 1.
 
     geodstCoordMap : list of ints
-        This is an index map between DIF3D nodal and DIF3D GEODST. It is
-        necessary for interpreting the ordering of flux and partial current data in the
-        NHFLUX file. Note that this mapping between DIF3D-Nodal and DIF3D-VARIANT is not
-        the same.
+        This is an index map between DIF3D nodal and DIF3D GEODST. It is necessary for interpreting
+        the ordering of flux and partial current data in the NHFLUX file. Note that this mapping
+        between DIF3D-Nodal and DIF3D-VARIANT is not the same.
 
     outgoingPCSymSeCPointers: list of ints
-        This is an index map for the outpgoing partial currents on the symmetric and sector
-        lateral boundary. It is only present for DIF3D-VARIANT for hexagonal cores.
+        This is an index map for the outpgoing partial currents on the symmetric and sector lateral
+        boundary. It is only present for DIF3D-VARIANT for hexagonal cores.
 
     ingoingPCSymSeCPointers: list of ints
-        This is an index map for the ingoing (or incoming) partial currents on the symmetric
-        and sector lateral boundary. It is only present for DIF3D-VARIANT for hexagonal cores.
+        This is an index map for the ingoing (or incoming) partial currents on the symmetric and
+        sector lateral boundary. It is only present for DIF3D-VARIANT for hexagonal cores.
 
     fluxMomentsAll : 4-D list of floats
-        This contains all the flux moments for all core assemblies. The jth planar flux moment
-        of assembly i in group g in axial node k is fluxMoments[i][k][j][g]. The
-        assemblies are ordered according to the geodstCoordMap attribute. For DIF3D-VARIANT,
-        this includes both even and odd parity moments.
+        This contains all the flux moments for all core assemblies. The jth planar flux moment of
+        assembly i in group g in axial node k is fluxMoments[i][k][j][g]. The assemblies are ordered
+        according to the geodstCoordMap attribute. For DIF3D-VARIANT, this includes both even and
+        odd parity moments.
 
     partialCurrentsHexAll : 5-D list of floats
         This contains all the OUTGOING partial currents for all core assemblies. The OUTGOING
         partial current on surface j in assembly i in axial node k in group g is
         partialCurrentsHex[i][k][j][g][m], where m=0. The assemblies are ordered according to the
-        geodstCoordMap attribute. For DIF3D-VARIANT, higher-order data is available for the
-        m axis.
+        geodstCoordMap attribute. For DIF3D-VARIANT, higher-order data is available for the m axis.
 
     partialCurrentsHex_extAll : 4-D list of floats
-        This contains all the INCOMING partial currents on "external surfaces", which are
-        adjacent to the reactor outer boundary (usually vacuum). Internal reflective surfaces
-        are NOT included in this! These "external surfaces" are ordered according to
-        externalCurrentPointers. For DIF3D-VARIANT, higher-order data is available for the
-        last axis.
+        This contains all the INCOMING partial currents on "external surfaces", which are adjacent
+        to the reactor outer boundary (usually vacuum). Internal reflective surfaces are NOT
+        included in this! These "external surfaces" are ordered according to
+        externalCurrentPointers. For DIF3D-VARIANT, higher-order data is available for the last
+        axis.
 
     partialCurrentsZAll : 5-D list of floats
-        This contains all the upward and downward partial currents for all core assemblies
-        The assemblies are ordered according to the geodstCoordMap attribute. For DIF3D-VARIANT,
-        higher-order data is available for the last axis.
+        This contains all the upward and downward partial currents for all core assemblies. The
+        assemblies are ordered according to the geodstCoordMap attribute. For DIF3D-VARIANT, higher-
+        order data is available for the last axis.
+
+    Warning
+    -------
+    DIF3D outputs NHFLUX at every time node, but REBUS outputs NHFLUX only at every cycle.
+
+    See Also
+    --------
+    [VARIANT-95]_ and [VARIANT-2014]_.
+
+    .. [VARIANT-95] G. Palmiotti, E. E. Lewis, and C. B. Carrico, VARIANT: VARIational Anisotropic
+       Nodal Transport for Multidimensional Cartesian and Hexagonal Geometry Calculation, ANL-95/40,
+       Argonne National Laboratory, Argonne, IL (October 1995).
+
+    .. [VARIANT-2014] Smith, M. A., Lewis, E. E., and Shemon, E. R. DIF3D-VARIANT 11.0: A Decade of
+       Updates. United States: N. p., 2014. Web. doi:10.2172/1127298.
+       https://publications.anl.gov/anlpubs/2014/04/78313.pdf
     """
 
     def __init__(self, fName="NHFLUX", variant=False, numDataSetsToRead=1):
@@ -146,8 +145,8 @@ class NHFLUX(cccc.DataContainer):
             Filename of the NHFLUX binary file to be read.
 
         variant : bool, optional
-            Whether or not this NHFLUX/NAFLUX file has the DIF3D-VARIANT output format, which
-            is different than the DIF3D-Nodal format.
+            Whether or not this NHFLUX/NAFLUX file has the DIF3D-VARIANT output format, which is
+            different than the DIF3D-Nodal format.
         """
         cccc.DataContainer.__init__(self)
 
@@ -181,8 +180,8 @@ class NHFLUX(cccc.DataContainer):
     def partialCurrentsHex(self):
         """
         For DIF3D-Nodal, this property is almost always equivalent to the attribute
-        `partialCurrentsHex`. For DIF3D-VARIANT, this property returns the zeroth-order
-        moment of the outgoing radial currents.
+        ``partialCurrentsHex``. For DIF3D-VARIANT, this property returns the zeroth-order moment of
+        the outgoing radial currents.
 
         Read-only property (there is no setter).
         """
@@ -217,11 +216,11 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         return NHFLUX()
 
     def readWrite(self):
-        r"""
+        """
         Read everything from the DIF3D binary file NHFLUX.
 
-        Read all surface-averaged partial currents, all planar moments, and the DIF3D
-        nodal coordinate mapping system.
+        Read all surface-averaged partial currents, all planar moments, and the DIF3D nodal
+        coordinate mapping system.
 
         Notes
         -----
@@ -231,18 +230,17 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         Parameters
         ----------
         numDataSetsToRead : int, optional
-            The number of whole-core flux data sets included in this NHFLUX/NAFLUX file
-            that one wishes to be read. Some NHFLUX/NAFLUX files, such as NAFLUX files
-            written by SASSYS/DIF3D-K, contain more than one flux data set. Each data set
-            overwrites the previous one on the NHFLUX class object, which will contain only the
-            numDataSetsToRead-th data set. The first numDataSetsToRead-1 data sets are essentially
-            skipped over.
+            The number of whole-core flux data sets included in this NHFLUX/NAFLUX file that one
+            wishes to be read. Some NHFLUX/NAFLUX files, such as NAFLUX files written by
+            SASSYS/DIF3D-K, contain more than one flux data set. Each data set overwrites the
+            previous one on the NHFLUX class object, which will contain only the
+            ``numDataSetsToRead-th`` data set. The first numDataSetsToRead-1 data sets are
+            essentially skipped over.
         """
         self._rwFileID()
         self._rwBasicFileData1D()
 
-        # This control info only exists for VARIANT. We can only process entries with 0
-        # or 1.
+        # This control info only exists for VARIANT. We can only process entries with 0 or 1.
         if self._metadata["variantFlag"] and self._metadata["iwnhfl"] == 2:
             msg = (
                 "This reader can only read VARIANT NHFLUX files where 'iwnhfl'=0 (both "
@@ -413,7 +411,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         Examples
         --------
-        geodstCoordMap[NodalIndex] = geodstIndex
+            geodstCoordMap[NodalIndex] = geodstIndex
 
         See Also
         --------
@@ -619,9 +617,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         return surfCurrents
 
     def _getEnergyGroupIndex(self, g):
-        r"""
-        Real fluxes stored in NHFLUX have "normal" (or "forward") energy groups.
-        Also see the subclass method NAFLUX.getEnergyGroupIndex().
+        """
+        Real fluxes stored in NHFLUX have "normal" (or "forward") energy groups. Also see the
+        subclass method NAFLUX.getEnergyGroupIndex().
         """
         return g
 
@@ -634,7 +632,7 @@ class NafluxStream(NhfluxStream):
     """
 
     def _getEnergyGroupIndex(self, g):
-        r"""Adjoint fluxes stored in NAFLUX have "reversed" (or "backward") energy groups."""
+        """Adjoint fluxes stored in NAFLUX have "reversed" (or "backward") energy groups."""
         ng = self._metadata["ngroup"]
         return ng - g - 1
 
@@ -645,7 +643,7 @@ class NhfluxStreamVariant(NhfluxStream):
 
     Notes
     -----
-    Can be deleted after have the NHFLUX data container be the public interface
+    Can be deleted after have the NHFLUX data container be the public interface.
     """
 
     @staticmethod
@@ -659,7 +657,7 @@ class NafluxStreamVariant(NafluxStream):
 
     Notes
     -----
-    Can be deleted after have the NHFLUX data container be the public interface
+    Can be deleted after have the NHFLUX data container be the public interface.
     """
 
     @staticmethod
@@ -668,9 +666,9 @@ class NafluxStreamVariant(NafluxStream):
 
 
 def getNhfluxReader(adjointFlag, variantFlag):
-    r"""
-    Returns the appropriate DIF3D nodal flux binary file reader class,
-    either NHFLUX (real) or NAFLUX (adjoint).
+    """
+    Returns the appropriate DIF3D nodal flux binary file reader class, either NHFLUX (real) or
+    NAFLUX (adjoint).
     """
     if adjointFlag:
         reader = NafluxStreamVariant if variantFlag else NafluxStream

@@ -36,21 +36,20 @@ See Also
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
-from typing import Optional
 import gc
 import sys
-import tabulate
+from os import cpu_count
+from typing import Optional
 
-from armi import context
-from armi import interfaces
-from armi import mpiActions
-from armi import runLog
+from armi import context, interfaces, mpiActions, runLog
 from armi.reactor.composites import ArmiObject
+from armi.utils import tabulate
+from armi.utils.customExceptions import NonexistentSetting
 
 try:
+    # psutil is an optional requirement, since it doesn't support MacOS very well
     import psutil
 
-    # psutil is an optional requirement, since it doesnt support MacOS very well
     _havePsutil = True
 except ImportError:
     runLog.warning(
@@ -68,6 +67,25 @@ def describeInterfaces(cs):
     return (MemoryProfiler, {})
 
 
+def getTotalJobMemory(nTasks, cpusPerTask):
+    """Function to calculate the total memory of a job. This is a constant during a simulation."""
+    cpuPerNode = cpu_count()
+    ramPerCpuGB = psutil.virtual_memory().total / (1024**3) / cpuPerNode
+    jobMem = nTasks * cpusPerTask * ramPerCpuGB
+    return jobMem
+
+
+def getCurrentMemoryUsage():
+    """This scavenges the memory profiler in ARMI to get the current memory usage."""
+    memUsageAction = PrintSystemMemoryUsageAction()
+    memUsageAction.broadcast()
+    smpu = SystemAndProcessMemoryUsage()
+    memUsages = memUsageAction.gather(smpu)
+    # Grab virtual memory instead of physical. There is a large discrepancy, we will be conservative
+    memoryUsageInMB = sum([mu.processVirtualMemoryInMB for mu in memUsages])
+    return memoryUsageInMB
+
+
 class MemoryProfiler(interfaces.Interface):
 
     name = "memoryProfiler"
@@ -78,6 +96,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
+        self.printCurrentMemoryState()
         mpiAction = PrintSystemMemoryUsageAction()
         mpiAction.broadcast().invoke(self.o, self.r, self.cs)
         mpiAction.printUsage("BOL SYS_MEM")
@@ -88,6 +107,8 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEveryNode(self, cycle, node):
+        self.printCurrentMemoryState()
+
         mp = PrintSystemMemoryUsageAction()
         mp.broadcast()
         mp.invoke(self.o, self.r, self.cs)
@@ -101,10 +122,30 @@ class MemoryProfiler(interfaces.Interface):
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
 
     def interactEOL(self):
-        r"""End of life hook. Good place to wrap up or print out summary outputs."""
+        """End of life hook. Good place to wrap up or print out summary outputs."""
         if self.cs["debugMem"]:
             mpiAction = ProfileMemoryUsageAction("EOL")
             mpiAction.broadcast().invoke(self.o, self.r, self.cs)
+
+    def printCurrentMemoryState(self):
+        """Print the current memory footprint and available memory."""
+        try:
+            cpusPerTask = self.cs["cpusPerTask"]
+        except NonexistentSetting:
+            runLog.extra(
+                "To view memory consumed, remaining available, and total allocated for a case, "
+                "add the setting 'cpusPerTask' to your application."
+            )
+            return
+        nTasks = self.cs["nTasks"]
+        totalMemoryInGB = getTotalJobMemory(nTasks, cpusPerTask)
+        currentMemoryUsageInGB = getCurrentMemoryUsage() / 1024
+        availableMemoryInGB = totalMemoryInGB - currentMemoryUsageInGB
+        runLog.info(
+            f"Currently using {currentMemoryUsageInGB} GB of memory. "
+            f"There is {availableMemoryInGB} GB of memory left. "
+            f"There is a total allocation of {totalMemoryInGB} GB."
+        )
 
     def displayMemoryUsage(self, timeDescription):
         r"""
@@ -141,11 +182,13 @@ class MemoryProfiler(interfaces.Interface):
                     "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
                 )
 
-        if self.r.sfp is not None:
-            runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.sfp)))
+        if self.r.excore.get("sfp") is not None:
+            runLog.important(
+                "SFP has {:4d} ArmiObjects".format(len(self.r.excore["sfp"]))
+            )
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """Scans thorugh ARMI model for duplicate objects."""
+        """Scans through ARMI model for duplicate objects."""
         if self.r is None:
             return
         uniqueIds = set()
@@ -335,19 +378,22 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = context.MPI_NODENAME
-        # no psutil, no memory diagnostics.
-        # TODO: Ideally, we could cut MemoryProfiler entirely, but it is referred to
-        # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
+        self.processVirtualMemoryInMB: Optional[float] = None
+        # no psutil, no memory diagnostics
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
-            self.processMemoryInMB = psutil.Process().memory_info().rss / (1012.0**2)
+            self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)
+            self.processVirtualMemoryInMB = psutil.Process().memory_info().vms / (
+                1024.0**2
+            )
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
             self.percentNodeRamUsed -= other.percentNodeRamUsed
             self.processMemoryInMB -= other.processMemoryInMB
+            self.processVirtualMemoryInMB -= other.processVirtualMemoryInMB
         return self
 
 
@@ -429,6 +475,6 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                     "Average System RAM Usage",
                     "Processor Memory Usage (MB)",
                 ],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )

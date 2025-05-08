@@ -15,22 +15,24 @@
 import io
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
 from armi import settings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.crossSectionSettings import CONF_BLOCK_REPRESENTATION
-from armi.physics.neutronics.crossSectionSettings import CONF_GEOM
-from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
-from armi.physics.neutronics.crossSectionSettings import XSSettingDef
-from armi.physics.neutronics.crossSectionSettings import XSSettings
-from armi.physics.neutronics.crossSectionSettings import xsSettingsValidator
-from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
-from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
-    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+from armi.physics.neutronics.crossSectionSettings import (
+    CONF_BLOCK_REPRESENTATION,
+    CONF_GEOM,
+    XSModelingOptions,
+    XSSettingDef,
+    XSSettings,
+    xsSettingsValidator,
 )
+from armi.physics.neutronics.settings import (
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+    CONF_XS_BLOCK_REPRESENTATION,
+)
+from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
 from armi.settings import caseSettings
 
 
@@ -118,8 +120,10 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("YA", xsModel)
         self.assertEqual(xsModel["YA"].geometry, "0D")
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
+        self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
+        self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
 
-    def test_setDefaultSettingsByLowestBuGroupHomogeneous(self):
+    def test_setDefSettingsByLowestEnvGroupHomog(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xs = XSSettings()
@@ -145,7 +149,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("JB", xs)
         self.assertNotEqual(xs["JD"], xs["JB"])
 
-    def test_setDefaultSettingsByLowestBuGroupOneDimensional(self):
+    def test_setDefSettingsByLowestEnvGroup1D(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xsModel = XSSettings()
@@ -177,7 +181,13 @@ class TestCrossSectionSettings(unittest.TestCase):
         """Test that optional key shows up with default value."""
         cs = settings.Settings()
         xsModel = XSSettings()
-        da = XSModelingOptions("DA", geometry="1D cylinder", meshSubdivisionsPerCm=1.0)
+        da = XSModelingOptions(
+            "DA",
+            geometry="1D cylinder",
+            meshSubdivisionsPerCm=1.0,
+            ductHeterogeneous=True,
+            traceIsotopeThreshold=1.0e-5,
+        )
         xsModel["DA"] = da
         xsModel.setDefaults(
             cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -185,6 +195,9 @@ class TestCrossSectionSettings(unittest.TestCase):
         )
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
+        self.assertEqual(xsModel["DA"].ductHeterogeneous, True)
+        self.assertEqual(xsModel["DA"].traceIsotopeThreshold, 1.0e-5)
+        self.assertEqual(xsModel["DA"].mergeIntoFuel, [])
 
     def test_badCrossSections(self):
         with self.assertRaises(TypeError):
@@ -207,7 +220,7 @@ class TestCrossSectionSettings(unittest.TestCase):
             xsSettingsValidator({"AAA": {CONF_BLOCK_REPRESENTATION: "Average"}})
 
 
-class Test_XSSettings(unittest.TestCase):
+class TestXSSettings(unittest.TestCase):
     def test_yamlIO(self):
         """Ensure we can read/write this custom setting object to yaml."""
         yaml = YAML()

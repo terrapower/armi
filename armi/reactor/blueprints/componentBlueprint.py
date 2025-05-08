@@ -13,19 +13,18 @@
 # limitations under the License.
 
 """
-This module defines the ARMI input for a component definition, and code for constructing an ARMI ``Component``.
+This module defines the ARMI input for a component definition, and code for constructing an ARMI
+``Component``.
 
 Special logic is required for handling component links.
 """
 import yamlize
 
-from armi import runLog
-from armi import materials
-from armi.reactor import components
-from armi.reactor import composites
+from armi import materials, runLog
+from armi.nucDirectory import nuclideBases
+from armi.reactor import components, composites
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
-from armi.nucDirectory import nuclideBases
 
 COMPONENT_GROUP_SHAPE = "group"
 
@@ -69,11 +68,11 @@ class ComponentDimension(yamlize.Object):
     @classmethod
     def to_yaml(cls, dumper, self, _rtd=None):
         """
-        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end up with a
-        ``{value: ...}`` dictionary.
+        Override the ``Yamlizable.to_yaml`` to remove the object-like behavior, otherwise we'd end
+        up with a ``{value: ...}`` dictionary.
 
-        This allows someone to programmatically edit the component dimensions without using the ``ComponentDimension``
-        class.
+        This allows someone to programmatically edit the component dimensions without using the
+        ``ComponentDimension`` class.
         """
         if not isinstance(self, cls):
             self = cls(self)
@@ -117,8 +116,36 @@ class ComponentDimension(yamlize.Object):
 
 class ComponentBlueprint(yamlize.Object):
     """
-    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to enable serialization
-    to and from YAML.
+    This class defines the inputs necessary to build ARMI component objects. It uses ``yamlize`` to
+    enable serialization to and from YAML.
+
+    .. impl:: Construct component from blueprint file.
+        :id: I_ARMI_BP_COMP
+        :implements: R_ARMI_BP_COMP
+
+        Defines a yaml construct that allows the user to specify attributes of a component from
+        within their blueprints file, including a name, flags, shape, material and/or isotopic
+        vector, input temperature, corresponding component dimensions, and ID for placement in a
+        block lattice (see :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint`).
+        Component dimensions that can be defined for a given component are dependent on the
+        component's ``shape`` attribute, and the dimensions defining each shape can be found in the
+        :py:mod:`~armi.reactor.components` module.
+
+        Limited validation on the inputs is performed to ensure that the component shape corresponds
+        to a valid shape defined by the ARMI application.
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
+
+        Is implemented as part of a blueprints file by being imported and used as an attribute
+        within the larger :py:class:`~armi.reactor.blueprints.Blueprints` class. Can also be used
+        within the :py:class:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint` class to
+        enable specification of components directly within the "blocks" portion of the blueprint
+        file.
+
+        Includes a ``construct`` method, which instantiates an instance of
+        :py:class:`~armi.reactor.components.component.Component` with the characteristics specified
+        in the blueprints (see :need:`I_ARMI_MAT_USER_INPUT1`).
     """
 
     name = yamlize.Attribute(type=str)
@@ -157,8 +184,37 @@ class ComponentBlueprint(yamlize.Object):
     mergeWith = yamlize.Attribute(type=str, default=None)
     area = yamlize.Attribute(type=float, default=None)
 
-    def construct(self, blueprint, matMods):
-        """Construct a component or group."""
+    def construct(self, blueprint, matMods, inputHeightsConsideredHot):
+        """Construct a component or group.
+
+        .. impl:: User-defined on material alterations are applied here.
+            :id: I_ARMI_MAT_USER_INPUT1
+            :implements: R_ARMI_MAT_USER_INPUT
+
+            Allows for user input to impact a component's materials by applying
+            the "material modifications" section of a blueprints file (see :need:`I_ARMI_MAT_USER_INPUT0`)
+            to the material during construction. This takes place during lower
+            calls to ``_conformKwargs()`` and subsequently ``_constructMaterial()``,
+            which operate using the component blueprint and associated material
+            modifications from the component's block.
+
+            Within ``_constructMaterial()``, the material class is resolved into a material
+            object by calling :py:func:`~armi.materials.resolveMaterialClassByName`.
+            The ``applyInputParams()`` method of that material class is then called,
+            passing in the associated material modifications data, which the material
+            class can then use to modify the isotopics as necessary.
+
+        Parameters
+        ----------
+        blueprint : Blueprints
+            Blueprints object containing various detailed information, such as nuclides to model
+
+        matMods : dict
+            Material modifications to apply to the component.
+
+        inputHeightsConsideredHot : bool
+            See the case setting of the same name.
+        """
         runLog.debug("Constructing component {}".format(self.name))
         kwargs = self._conformKwargs(blueprint, matMods)
         shape = self.shape.lower().strip()
@@ -167,7 +223,9 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = composites.Composite(self.name)
             for groupedComponent in group:
                 componentDesign = blueprint.componentDesigns[groupedComponent.name]
-                component = componentDesign.construct(blueprint, matMods=dict())
+                component = componentDesign.construct(
+                    blueprint, {}, inputHeightsConsideredHot
+                )
                 # override free component multiplicity if it's set based on the group definition
                 component.setDimension("mult", groupedComponent.mult)
                 _setComponentFlags(component, self.flags, blueprint)
@@ -178,7 +236,91 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
+            constructedObject.p.theoreticalDensityFrac = (
+                constructedObject.material.getTD()
+            )
+
+        self._setComponentCustomDensity(
+            constructedObject,
+            blueprint,
+            matMods,
+            inputHeightsConsideredHot,
+        )
+
         return constructedObject
+
+    def _setComponentCustomDensity(
+        self, comp, blueprint, matMods, inputHeightsConsideredHot
+    ):
+        """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
+        if self.isotopics is None:
+            # No custom isotopics specified
+            return
+
+        densityFromCustomIsotopic = blueprint.customIsotopics[self.isotopics].density
+        if densityFromCustomIsotopic is None:
+            # Nothing to do
+            return
+
+        if densityFromCustomIsotopic <= 0:
+            runLog.error(
+                "A zero or negative density was specified in a custom isotopics input. "
+                "This is not permitted, if a 0 density material is needed, use 'Void'. "
+                f"The component is {comp} and the isotopics entry is {self.isotopics}."
+            )
+            raise ValueError(
+                "A zero or negative density was specified in the custom isotopics for a component"
+            )
+
+        mat = materials.resolveMaterialClassByName(self.material)()
+        if not isinstance(mat, materials.Custom):
+            # check for some problem cases
+            if "TD_frac" in matMods.keys():
+                runLog.error(
+                    f"Both TD_frac and a custom isotopic with density {blueprint.customIsotopics[self.isotopics]} "
+                    f"has been specified for material {self.material}. This is an overspecification."
+                )
+            if not mat.density(Tc=self.Tinput) > 0:
+                runLog.error(
+                    f"A custom density has been assigned to material '{self.material}', which has no baseline "
+                    "density. Only materials with a starting density may be assigned a density. "
+                    "This comes up e.g. if isotopics are assigned to 'Void'."
+                )
+                raise ValueError(
+                    "Cannot apply custom densities to materials without density."
+                )
+
+            # Apply a density scaling to account for the temperature change between
+            # Tinput and Thot
+            if isinstance(mat, materials.Fluid):
+                densityRatio = densityFromCustomIsotopic / mat.density(
+                    Tc=comp.inputTemperatureInC
+                )
+            else:
+                # for solids we need to consider if the input heights are hot or
+                # cold, in order to get the density correct.
+                # There may be a better place in the initialization to determine
+                # if the block height will be interpreted as hot dimensions, which would
+                # allow us to not have to pass the case settings down this far
+                dLL = mat.linearExpansionFactor(
+                    Tc=comp.temperatureInC, T0=comp.inputTemperatureInC
+                )
+                if inputHeightsConsideredHot:
+                    f = 1.0 / (1 + dLL) ** 2
+                else:
+                    f = 1.0 / (1 + dLL) ** 3
+
+                scaledDensity = comp.density() / f
+                densityRatio = densityFromCustomIsotopic / scaledDensity
+
+            comp.changeNDensByFactor(densityRatio)
+
+            runLog.important(
+                "A custom material density was specified in the custom isotopics for non-custom "
+                f"material {mat}. The component density has been altered to "
+                f"{comp.density()} at temperature {comp.temperatureInC} C",
+                single=True,
+            )
 
     def _conformKwargs(self, blueprint, matMods):
         """This method gets the relevant kwargs to construct the component."""
@@ -236,10 +378,18 @@ class ComponentBlueprint(yamlize.Object):
             try:
                 # update material with updated input params from blueprints file.
                 mat.applyInputParams(**matMods)
-            except TypeError:
-                # This component does not accept material modification inputs of the names passed in
-                # Keep going since the modification could work for another component
-                pass
+            except TypeError as ee:
+                errorMessage = ee.args[0]
+                if "got an unexpected keyword argument" in errorMessage:
+                    # This component does not accept material modification inputs of the names passed in
+                    # Keep going since the modification could work for another component
+                    pass
+                else:
+                    raise ValueError(
+                        f"Something went wrong in applying the material modifications {matMods} "
+                        f"to component {self.name}.\n"
+                        f"Error message is: \n{errorMessage}."
+                    )
 
         expandElementals(mat, blueprint)
 
@@ -287,10 +437,28 @@ def insertDepletableNuclideKeys(c, blueprint):
     """
     Auto update number density keys on all DEPLETABLE components.
 
+    .. impl:: Insert any depletable blueprint flags onto this component.
+        :id: I_ARMI_BP_NUC_FLAGS0
+        :implements: R_ARMI_BP_NUC_FLAGS
+
+        This is called during the component construction process for each component from within
+        :py:meth:`~armi.reactor.blueprints.componentBlueprint.ComponentBlueprint.construct`.
+
+        For a given initialized component, check its flags to determine if it has been marked as
+        depletable. If it is, use
+        :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain` to
+        apply the user-specifications in the "nuclide flags" section of the blueprints to the
+        Component such that all active isotopes and derivatives of those isotopes in the burn chain
+        are initialized to have an entry in the component's ``numberDensities`` dictionary.
+
+        Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``, may trigger
+        modifications to the active nuclides specified by the user in the "nuclide flags" section of
+        the blueprints.
+
     Notes
     -----
-    This should be moved to a neutronics/depletion plugin hook but requires some
-    refactoring in how active nuclides and reactors are initialized first.
+    This should be moved to a neutronics/depletion plugin hook but requires some refactoring in how
+    active nuclides and reactors are initialized first.
 
     See Also
     --------
@@ -311,8 +479,8 @@ class ComponentKeyedList(yamlize.KeyedList):
 
     This is used within the ``components:`` main entry of the blueprints.
 
-    This is *not* (yet) used when components are defined within a block blueprint.
-    That is handled in the blockBlueprint construct method.
+    This is *not* (yet) used when components are defined within a block blueprint. That is handled
+    in the blockBlueprint construct method.
     """
 
     item_type = ComponentBlueprint

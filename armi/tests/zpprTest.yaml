@@ -1,10 +1,23 @@
 metadata:
   version: uncontrolled
 settings:
+# global
+  Tin: 20.0
+  Tout: 20.0
   buGroups:
     - 100
   burnSteps: 0
   comment: ZPPR test case
+  cycleLength: 365.25
+  loadingFile: zpprTestGeom.yaml
+  mpiTasksPerNode: 6
+  nTasks: 12
+  outputFileExtension: pdf
+  power: 75000000.0
+  sortReactor: false # zpprs dont sor the right way. need better component sorting for slab...
+  verbosity: extra
+
+# cross section
   crossSectionControl:
     AA:
       geometry: 1D slab
@@ -27,21 +40,8 @@ settings:
       numInternalRings: 1
       numExternalRings: 1
       meshSubdivisionsPerCm: 10
-  cycleLength: 365.25
-  economics: false
-  epsCyclic: 1.0
+
+# neutronics
   epsEig: 1e-10
   genXS: Neutron
-  geomFile: zpprTestGeom.xml
-  loadingFile: 1DslabXSByCompTest.yaml
-  max2SigmaCladIDT: 630.0
-  maxFlowZones: 12
-  mpiTasksPerNode: 6
-  numProcessors: 12
-  outputFileExtension: pdf
-  power: 75000000.0
-  sortReactor: false # zpprs dont sor the right way. need better component sorting for slab...
-  Tin: 20.0
-  Tout: 20.0
-  verbosity: extra
   xsBlockRepresentation: ComponentAverage1DSlab

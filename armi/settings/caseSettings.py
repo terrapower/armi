@@ -14,30 +14,25 @@
 
 """
 This defines a Settings object that acts mostly like a dictionary. It
-is meant to be treated mostly like a singleton, where each custom ARMI
-object has access to it. It contains global user settings like the core
-power level, the input file names, the number of cycles to run, the run type,
-the environment setup, and hundreds of other things.
+is meant so that each ARMI run has one-and-only-one Settings object. It records
+user settings like the core power level, the input file names, the number of cycles to
+run, the run type, the environment setup, and hundreds of other things.
 
-A settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
+A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
-
-A primary case settings is created as ``masterCs``.
 """
 import io
 import logging
 import os
 from copy import copy, deepcopy
+
 from ruamel.yaml import YAML
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.settings import settingsIO
 from armi.settings.setting import Setting
 from armi.utils import pathTools
 from armi.utils.customExceptions import NonexistentSetting
-
-DEP_WARNING = "Deprecation Warning: Settings will not be mutable mid-run: {}"
 
 SIMPLE_CYCLES_INPUTS = {
     "availabilityFactor",
@@ -51,24 +46,32 @@ SIMPLE_CYCLES_INPUTS = {
 
 class Settings:
     """
-    A container for global settings, such as case title, power level, and many run options.
+    A container for run settings, such as case title, power level, and many more.
 
-    It is accessible to most ARMI objects through self.cs (for 'Case Settings').
-    It acts largely as a dictionary, and setting values are accessed by keys.
+    .. impl:: Settings are used to define an ARMI run.
+        :id: I_ARMI_SETTING0
+        :implements: R_ARMI_SETTING
 
-    The settings object has a 1-to-1 correspondence with the ARMI settings input file.
-    This file may be created by hand or by the GUI in submitter.py.
+        The Settings object is accessible to most ARMI objects through self.cs
+        (for 'case settings'). It acts largely as a dictionary, and setting values
+        are accessed by keys.
+
+        The Settings object has a 1-to-1 correspondence with the ARMI settings
+        input file. This file may be created by hand or by a GUI.
 
     Notes
     -----
-    The actual settings in any instance of this class are immutable.
+    While it is possible to modify case settings during the course of a run, this
+    is highly discouraged because there will be no record of this happening in your
+    results or in the database produced from your run. There is no guarantee that
+    doing so will not cause unexpected problems with your calculation.
     """
 
     defaultCaseTitle = "armi"
 
     def __init__(self, fName=None):
         """
-        Instantiate a settings object.
+        Instantiate a Settings object.
 
         Parameters
         ----------
@@ -108,7 +111,21 @@ class Settings:
 
     @property
     def caseTitle(self):
-        """Getter for settings case title."""
+        """Getter for settings case title.
+
+        .. impl:: Define a case title to go with the settings.
+            :id: I_ARMI_SETTINGS_META0
+            :implements: R_ARMI_SETTINGS_META
+
+            Every Settings object has a "case title"; a string for users to
+            help identify their run. This case title is used in log file
+            names, it is printed during a run, it is frequently used to
+            name the settings file. It is designed to be an easy-to-use
+            and easy-to-understand way to keep track of simulations. The
+            general idea here is that the average analyst that is using
+            ARMI will run many ARMI-based simulations, and there needs
+            to be an easy to identify them all.
+        """
         if not self.path:
             return self.defaultCaseTitle
         else:
@@ -148,23 +165,20 @@ class Settings:
 
         Notes
         -----
-        Checking the validity of grabbing specific settings at this point,
-        as is done for the SIMPLE_CYCLES_INPUT's, feels
-        a bit intrusive and out of place. In particular, the fact that the check
-        is done every time that a setting is reached for, no matter if it is the
-        setting in question, is quite clunky. In the future, it would be desirable
-        if the settings system were more flexible to control this type of thing
-        at a deeper level.
+        Checking the validity of grabbing specific settings at this point, as is done for the
+        SIMPLE_CYCLES_INPUT's, feels a bit intrusive and out of place. In particular, the fact that
+        the check is done every time that a setting is reached for, no matter if it is the setting
+        in question, is quite clunky. In the future, it would be desirable if the settings system
+        were more flexible to control this type of thing at a deeper level.
         """
         if key not in self.__settings:
             return False, NonexistentSetting(key)
 
         if key in SIMPLE_CYCLES_INPUTS and self.__settings["cycles"].value != []:
             err = ValueError(
-                "Cannot grab simple cycles information from the case settings "
-                "when detailed cycles information is also entered. In general "
-                "cycles information should be pulled off the operator or parsed "
-                "using the appropriate getter in the utils."
+                "Cannot grab simple cycles information from the case settings when detailed cycles "
+                "information is also entered. In general cycles information should be pulled off "
+                "the operator or parsed using the appropriate getter in the utils."
             )
 
             return False, err
@@ -208,8 +222,8 @@ class Settings:
         """
         Rebuild schema upon unpickling since schema is unpickleable.
 
-        Pickling happens during mpi broadcasts and also
-        during testing where the test reactor is cached.
+        Pickling happens during mpi broadcasts and also during testing where the test reactor is
+        cached.
 
         See Also
         --------
@@ -246,8 +260,8 @@ class Settings:
         """Return a duplicate copy of this settings object."""
         cs = deepcopy(self)
         cs._failOnLoad = False
-        # it's not really protected access since it is a new Settings object.
-        # _failOnLoad is set to false, because this new settings object should be independent of the command line
+        # It's not really protected access since it is a new Settings object. _failOnLoad is set to
+        # false, because this new settings object should be independent of the command line
         return cs
 
     def revertToDefaults(self):
@@ -289,12 +303,9 @@ class Settings:
     def _prepToRead(self, fName):
         if self._failOnLoad:
             raise RuntimeError(
-                "Cannot load settings file after processing of command "
-                "line options begins.\nYou may be able to fix this by "
-                "reordering the command line arguments, and making sure "
-                "the settings file `{}` comes before any modified settings.".format(
-                    fName
-                )
+                "Cannot load settings file after processing of command line options begins.\nYou "
+                "may be able to fix this by reordering the command line arguments, and making sure "
+                f"the settings file `{fName}` comes before any modified settings."
             )
         path = pathTools.armiAbsPath(fName)
         return settingsIO.SettingsReader(self), path
@@ -302,21 +313,17 @@ class Settings:
     def loadFromString(self, string, handleInvalids=True):
         """Read in settings from a YAML string.
 
-        Passes the reader back out in case you want to know something about how the
-        reading went like for knowing if a file contained deprecated settings, etc.
+        Passes the reader back out in case you want to know something about how the reading went
+        like for knowing if a file contained deprecated settings, etc.
         """
         if self._failOnLoad:
             raise RuntimeError(
-                "Cannot load settings after processing of command "
-                "line options begins.\nYou may be able to fix this by "
-                "reordering the command line arguments."
+                "Cannot load settings after processing of command line options begins.\nYou may be "
+                "able to fix this by reordering the command line arguments."
             )
 
         reader = settingsIO.SettingsReader(self)
-        fmt = reader.SettingsInputFormat.YAML
-        reader.readFromStream(
-            io.StringIO(string), handleInvalids=handleInvalids, fmt=fmt
-        )
+        reader.readFromStream(io.StringIO(string), handleInvalids=handleInvalids)
 
         self.initLogVerbosity()
 
@@ -334,8 +341,8 @@ class Settings:
 
         Notes
         -----
-        This means that creating a Settings object sets the global logging
-        level of the entire code base.
+        This means that creating a Settings object sets the global logging level of the entire code
+        base.
         """
         if context.MPI_RANK == 0:
             runLog.setVerbosity(self["verbosity"])
@@ -357,11 +364,11 @@ class Settings:
         fName : str
             the file to write to
         style : str (optional)
-            the method of output to be used when creating the file for the current
-            state of settings (short, medium, or full)
+            the method of output to be used when creating the file for the current state of settings
+            (short, medium, or full)
         fromFile : str (optional)
-            if the source file and destination file are different (i.e. for cloning)
-            and the style argument is ``medium``, then this arg is used
+            if the source file and destination file are different (i.e. for cloning) and the style
+            argument is ``medium``, then this arg is used
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
@@ -378,8 +385,8 @@ class Settings:
 
     def getSettingsSetByUser(self, fPath):
         """
-        Grabs the list of settings in the user-defined input file so that the settings
-        can be tracked outside of a Settings object.
+        Grabs the list of settings in the user-defined input file so that the settings can be
+        tracked outside of a Settings object.
 
         Parameters
         ----------
@@ -391,8 +398,8 @@ class Settings:
         userSettingsNames : list
             The settings names read in from a yaml settings file
         """
-        # We do not want to load these as settings, but just grab the dictionary straight
-        # from the settings file to know which settings are user-defined
+        # We do not want to load these as settings, but just grab the dictionary straight from the
+        # settings file to know which settings are user-defined.
         with open(fPath, "r") as stream:
             yaml = YAML()
             yaml.allow_duplicate_keys = False
@@ -417,7 +424,7 @@ class Settings:
 
         Returns
         -------
-        writer : SettingsWriter object
+        writer : SettingsWriter
         """
         writer = settingsIO.SettingsWriter(
             self, style=style, settingsSetByUser=settingsSetByUser
@@ -426,12 +433,12 @@ class Settings:
         return writer
 
     def updateEnvironmentSettingsFrom(self, otherCs):
-        r"""Updates the environment settings in this object based on some other cs
-        (from the GUI, most likely).
+        """Updates the environment settings in this object based on some other cs (from the GUI,
+        most likely).
 
         Parameters
         ----------
-        otherCs : Settings object
+        otherCs : Settings
             A cs object that environment settings will be inherited from.
 
         This enables users to run tests with their environment rather than the reference environment
@@ -453,7 +460,9 @@ class Settings:
                 elif key in settings.__settings:
                     settings.__settings[key].setValue(val)
                 else:
-                    settings.__settings[key] = Setting(key, val)
+                    settings.__settings[key] = Setting(
+                        key, val, description="Description from cs.modified()"
+                    )
 
         return settings
 

@@ -14,8 +14,8 @@
 
 """Hafnium is an element that has high capture cross section across multiple isotopes."""
 
-from armi.nucDirectory import nucDir
 from armi.materials.material import SimpleSolid
+from armi.nucDirectory import nucDir
 
 
 class Hafnium(SimpleSolid):

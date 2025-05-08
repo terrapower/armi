@@ -28,7 +28,7 @@ Examples
 """
 from enum import Enum
 
-import numpy
+import numpy as np
 
 from armi.nuclearDataIO import cccc
 
@@ -144,9 +144,9 @@ class RzfluxStream(cccc.StreamWithDataContainer):
         if self._data.groupFluxes is None:
             # initialize all-zeros here before reading now that we
             # have the matrix dimension metadata available.
-            self._data.groupFluxes = numpy.zeros(
+            self._data.groupFluxes = np.zeros(
                 (ng, nz),
-                dtype=numpy.float32,
+                dtype=np.float32,
             )
         for bi in range(nb):
             jLow, jUp = cccc.getBlockBandwidth(bi + 1, nz, nb)

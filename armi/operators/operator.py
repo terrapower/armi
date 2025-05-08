@@ -21,51 +21,48 @@ certain number of cycles with a certain number of timenodes per cycle.
 This is analogous to a real reactor operating over some period of time,
 often from initial startup, through the various cycles, and out to
 the end of plant life.
-
-.. impl:: ARMI controls the time flow of the reactor, by running a sequence of Interfaces at each time step.
-   :id: I_EVOLVING_STATE_0
-   :links: R_EVOLVING_STATE
 """
 import collections
 import os
 import re
-import shutil
 import time
+from typing import Tuple
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
-from armi.operators import settingsValidation
 from armi.operators.runTypes import RunTypes
 from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
+from armi.settings import settingsValidation
 from armi.settings.fwSettings.globalSettings import (
+    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
+    CONF_DEFERRED_INTERFACE_NAMES,
+    CONF_DEFERRED_INTERFACES_CYCLE,
     CONF_TIGHT_COUPLING,
     CONF_TIGHT_COUPLING_MAX_ITERS,
-    CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
 )
-from armi.utils import codeTiming
 from armi.utils import (
-    pathTools,
-    getPowerFractions,
+    codeTiming,
     getAvailabilityFactors,
-    getStepLengths,
-    getCycleLengths,
     getBurnSteps,
-    getMaxBurnSteps,
+    getCycleLengths,
     getCycleNames,
+    getMaxBurnSteps,
+    getPowerFractions,
+    getStepLengths,
+    pathTools,
 )
 
 
 class Operator:
     """
-    Orchestrates an ARMI run, building all the pieces, looping through the interfaces, and manipulating the reactor.
+    Orchestrate an ARMI run, building all the pieces, looping through the interfaces,
+    and manipulating the reactor.
 
-    This Standard Operator loops over a user-input number of cycles, each with a
+    This Operator loops over a user-input number of cycles, each with a
     user-input number of subcycles (called time nodes). It calls a series of
     interaction hooks on each of the
     :py:class:`~armi.interfaces.Interface` in the Interface Stack.
@@ -77,9 +74,37 @@ class Operator:
 
     .. note:: The :doc:`/developer/guide` has some additional narrative on this topic.
 
+    .. impl:: An operator will have a reactor object to communicate between plugins.
+        :id: I_ARMI_OPERATOR_COMM
+        :implements: R_ARMI_OPERATOR_COMM
+
+        A major design feature of ARMI is that the Operator orchestrates the
+        simulation, and as part of that, the Operator has access to the
+        Reactor data model. In code, this just means the reactor object is
+        a mandatory attribute of an instance of the Operator. But conceptually,
+        this means that while the Operator drives the simulation of the
+        reactor, all code has access to the same copy of the reactor data
+        model. This is a crucial idea that allows disparate external nuclear
+        models to interact; they interact with the ARMI reactor data model.
+
+    .. impl:: An operator is built from user settings.
+        :id: I_ARMI_OPERATOR_SETTINGS
+        :implements: R_ARMI_OPERATOR_SETTINGS
+
+        A major design feature of ARMI is that a run is built from user settings.
+        In code, this means that a case ``Settings`` object is passed into this
+        class to initialize an Operator. Conceptually, this means that the
+        Operator that controls a reactor simulation is defined by user settings.
+        Because developers can create their own settings, the user can
+        control an ARMI simulation with arbitrary granularity in this way. In
+        practice, settings common control things like: how many cycles a
+        reactor is being modeled for, how many timesteps are to be modeled
+        per time node, the verbosity of the logging during the run, and
+        which modeling steps (such as economics) will be run.
+
     Attributes
     ----------
-    cs : CaseSettings object
+    cs : Settings
             Global settings that define the run.
 
     cycleNames : list of str
@@ -120,7 +145,7 @@ class Operator:
 
         Parameters
         ----------
-        cs : CaseSettings object
+        cs : Settings
             Global settings that define the run.
 
         Raises
@@ -131,7 +156,7 @@ class Operator:
         self.r = None
         self.cs = cs
         runLog.LOG.startLog(self.cs.caseTitle)
-        self.timer = codeTiming.getMasterTimer()
+        self.timer = codeTiming.MasterTimer.getMasterTimer()
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
@@ -169,6 +194,23 @@ class Operator:
 
     @property
     def stepLengths(self):
+        """
+        Calculate step lengths.
+
+        .. impl:: Calculate step lengths from cycles and burn steps.
+            :id: I_ARMI_FW_HISTORY
+            :implements: R_ARMI_FW_HISTORY
+
+            In all computational modeling of physical systems, it is
+            necessary to break time into discrete chunks. In reactor
+            modeling, it is common to first break the time a reactor
+            is simulated for into the practical cycles the reactor
+            runs. And then those cycles are broken down into smaller
+            chunks called burn steps. The final step lengths this
+            method returns is a two-tiered list, where primary indices
+            correspond to the cycle and secondary indices correspond to
+            the length of each intra-cycle step (in days).
+        """
         if not self._stepLengths:
             self._stepLengths = getStepLengths(self.cs)
             if self._stepLengths == [] and self.cs["nCycles"] == 1:
@@ -272,9 +314,8 @@ class Operator:
         """
         Return whether we are approaching EOL.
 
-        For the standard operator, this will return true when the current cycle
-        is the last cycle (cs["nCycles"] - 1). Other operators may need to
-        impose different logic.
+        For the standard operator, this will return true when the current cycle is the last cycle
+        (cs["nCycles"] - 1). Other operators may need to impose different logic.
         """
         return self.r.p.cycle == self.cs["nCycles"] - 1
 
@@ -291,7 +332,7 @@ class Operator:
             The Reactor object to attach to this Operator.
         """
         self.r = r
-        r.o = self  # TODO: this is only necessary for fuel-handler hacking
+        r.o = self
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
@@ -424,7 +465,7 @@ class Operator:
         if writeDB:
             # database has not yet been written, so we need to write it.
             dbi = self.getInterface("database")
-            dbi.writeDBEveryNode(cycle, timeNode)
+            dbi.writeDBEveryNode()
 
     def _interactAll(self, interactionName, activeInterfaces, *args):
         """
@@ -442,9 +483,7 @@ class Operator:
 
         halt = False
 
-        cycleNodeTag = self._expandCycleAndTimeNodeArgs(
-            *args, interactionName=interactionName
-        )
+        cycleNodeTag = self._expandCycleAndTimeNodeArgs(interactionName)
         runLog.header(
             "===========  Triggering {} Event ===========".format(
                 interactionName + cycleNodeTag
@@ -452,9 +491,7 @@ class Operator:
         )
 
         for statePointIndex, interface in enumerate(activeInterfaces, start=1):
-            self.printInterfaceSummary(
-                interface, interactionName, statePointIndex, *args
-            )
+            self.printInterfaceSummary(interface, interactionName, statePointIndex)
 
             # maybe make this a context manager
             if printMemUsage:
@@ -462,9 +499,7 @@ class Operator:
                 memBefore.broadcast()
                 memBefore.invoke(self, self.r, self.cs)
 
-            interactionMessage = " {} interacting with {} ".format(
-                interactionName, interface.name
-            )
+            interactionMessage = f"{interface.name}.{interactionName}"
             with self.timer.getTimer(interactionMessage):
                 interactMethod = getattr(interface, interactMethodName)
                 halt = halt or interactMethod(*args)
@@ -483,6 +518,9 @@ class Operator:
                     )
                 )
 
+            # Allow inherited classes to clean up things after an interaction
+            self._finalizeInteract()
+
         runLog.header(
             "===========  Completed {} Event ===========\n".format(
                 interactionName + cycleNodeTag
@@ -491,41 +529,53 @@ class Operator:
 
         return halt
 
-    def printInterfaceSummary(self, interface, interactionName, statePointIndex, *args):
+    def _finalizeInteract(self):
+        """Member called after each interface has completed its interaction.
+
+        Useful for cleaning up data.
+        """
+        pass
+
+    def printInterfaceSummary(self, interface, interactionName, statePointIndex):
         """
         Log which interaction point is about to be executed.
 
         This looks better as multiple lines but it's a lot easier to grep as one line.
         We leverage newlines instead of long banners to save disk space.
         """
-        nodeInfo = self._expandCycleAndTimeNodeArgs(
-            *args, interactionName=interactionName
-        )
+        nodeInfo = self._expandCycleAndTimeNodeArgs(interactionName)
         line = "=========== {:02d} - {:30s} {:15s} ===========".format(
             statePointIndex, interface.name, interactionName + nodeInfo
         )
         runLog.header(line)
 
-    @staticmethod
-    def _expandCycleAndTimeNodeArgs(*args, interactionName):
+    def _expandCycleAndTimeNodeArgs(self, interactionName):
         """Return text annotating information for current run event.
 
         Notes
         -----
         - Init, BOL, EOL: empty
-        - Everynode: (cycle, time node)
-        - BOC: cycle number
-        - Coupling: iteration number
+        - Everynode: cycle, time node
+        - BOC, EOC: cycle number
+        - Coupled: cycle, time node, iteration number
         """
-        cycleNodeInfo = ""
-        if args:
-            if len(args) == 1:
-                if interactionName == "Coupled":
-                    cycleNodeInfo = f" - iteration {args[0]}"
-                elif interactionName in ("BOC", "EOC"):
-                    cycleNodeInfo = f" - cycle {args[0]}"
-            else:
-                cycleNodeInfo = f" - cycle {args[0]}, node {args[1]}"
+        if interactionName == "Coupled":
+            cycleNodeInfo = (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+                f"year {'{0:.2f}'.format(self.r.p.time)} - iteration "
+                f"{self.r.core.p.coupledIteration}"
+            )
+        elif interactionName in ("BOC", "EOC"):
+            cycleNodeInfo = f" - timestep: cycle {self.r.p.cycle}"
+            # - timestep: cycle 2
+        elif interactionName in ("Init", "BOL", "EOL"):
+            cycleNodeInfo = ""
+        else:
+            cycleNodeInfo = (
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
+                f"year {'{0:.2f}'.format(self.r.p.time)}"
+            )
+
         return cycleNodeInfo
 
     def _debugDB(self, interactionName, interfaceName, statePointIndex=0):
@@ -534,7 +584,8 @@ class Operator:
 
         Notes
         -----
-        Used within _interactAll to write details between each physics interaction when cs['debugDB'] is enabled.
+        Used within _interactAll to write details between each physics interaction when
+        cs['debugDB'] is enabled.
 
         Parameters
         ----------
@@ -543,8 +594,8 @@ class Operator:
         interfaceName : str
             name of the interface that is interacting (e.g. globalflux, lattice, th)
         statePointIndex : int (optional)
-            used as a counter to make labels that increment throughout an _interactAll call. The result should be fed
-            into the next call to ensure labels increment.
+            used as a counter to make labels that increment throughout an _interactAll call. The
+            result should be fed into the next call to ensure labels increment.
         """
         dbiForDetailedWrite = self.getInterface("database")
         db = dbiForDetailedWrite.database if dbiForDetailedWrite is not None else None
@@ -563,8 +614,7 @@ class Operator:
 
     def interactAllInit(self):
         """Call interactInit on all interfaces in the stack after they are initialized."""
-        allInterfaces = self.interfaces[:]  # copy just in case
-        self._interactAll("Init", allInterfaces)
+        self._interactAll("Init", self.getInterfaces())
 
     def interactAllBOL(self, excludedInterfaceNames=()):
         """
@@ -572,30 +622,15 @@ class Operator:
 
         All enabled or bolForce interfaces will be called excluding interfaces with excludedInterfaceNames.
         """
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if (ii.enabled() or ii.bolForce()) and ii.name not in excludedInterfaceNames
-        ]
-        activeInterfaces = [
-            ii
-            for ii in activeInterfaces
-            if ii.name not in self.cs["deferredInterfaceNames"]
-        ]
+        activeInterfaces = self.getActiveInterfaces("BOL", excludedInterfaceNames)
         self._interactAll("BOL", activeInterfaces)
 
     def interactAllBOC(self, cycle):
         """Interact at beginning of cycle of all enabled interfaces."""
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        if cycle < self.cs["deferredInterfacesCycle"]:
-            activeInterfaces = [
-                ii
-                for ii in activeInterfaces
-                if ii.name not in self.cs["deferredInterfaceNames"]
-            ]
+        activeInterfaces = self.getActiveInterfaces("BOC", cycle=cycle)
         return self._interactAll("BOC", activeInterfaces, cycle)
 
-    def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=None):
+    def interactAllEveryNode(self, cycle, tn, excludedInterfaceNames=()):
         """
         Call the interactEveryNode hook for all enabled interfaces.
 
@@ -609,55 +644,54 @@ class Operator:
             The time node that is currently being run (0 for BOC, etc.)
         excludedInterfaceNames : list, optional
             Names of interface names that will not be interacted with.
-
         """
-        excludedInterfaceNames = excludedInterfaceNames or ()
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if ii.enabled() and ii.name not in excludedInterfaceNames
-        ]
+        activeInterfaces = self.getActiveInterfaces("EveryNode", excludedInterfaceNames)
         self._interactAll("EveryNode", activeInterfaces, cycle, tn)
 
-    def interactAllEOC(self, cycle, excludedInterfaceNames=None):
+    def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
-        excludedInterfaceNames = excludedInterfaceNames or ()
-        activeInterfaces = [
-            ii
-            for ii in self.interfaces
-            if ii.enabled() and ii.name not in excludedInterfaceNames
-        ]
+        activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
-    def interactAllEOL(self):
+    def interactAllEOL(self, excludedInterfaceNames=()):
         """
         Run interactEOL for all enabled interfaces.
 
         Notes
         -----
-        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack and appended
-        at the end in reverse order. This allows, for example, an interface that must run first to also run last.
+        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack
+        and appended at the end in reverse order. This allows, for example, an interface that must
+        run first to also run last.
         """
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-        interfacesAtEOL = [ii for ii in activeInterfaces if not ii.reverseAtEOL]
-        activeReverseInterfaces = [ii for ii in activeInterfaces if ii.reverseAtEOL]
-        interfacesAtEOL.extend(reversed(activeReverseInterfaces))
-        self._interactAll("EOL", interfacesAtEOL)
+        activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
+        self._interactAll("EOL", activeInterfaces)
 
     def interactAllCoupled(self, coupledIteration):
         """
-        Interact for tight physics coupling over all enabled interfaces.
+        Run all interfaces that are involved in tight physics coupling.
 
-        Tight coupling implies operator-split iterations between two or more physics solvers at the same solution
-        point in time. For example, a flux solution might be computed, then a temperature solution, and then
-        another flux solution based on updated temperatures (which updated densities, dimensions, and Doppler).
+        .. impl:: Physics coupling is driven from Operator.
+            :id: I_ARMI_OPERATOR_PHYSICS1
+            :implements: R_ARMI_OPERATOR_PHYSICS
 
-        This is distinct from loose coupling, which would simply uses the temperature values from the previous timestep
-        in the current flux solution. It's also distinct from full coupling where all fields are solved simultaneously.
-        ARMI supports tight and loose coupling.
+            This method runs all the interfaces that are defined as part
+            of the tight physics coupling of the reactor. Then it returns
+            if the coupling has converged or not.
+
+            Tight coupling implies the operator has split iterations
+            between two or more physics solvers at the same solution point
+            in simulated time. For example, a flux solution might be
+            computed, then a temperature solution, and then another flux
+            solution based on updated temperatures (which updates
+            densities, dimensions, and Doppler).
+
+            This is distinct from loose coupling, which simply uses
+            the temperature values from the previous timestep in the
+            current flux solution. It's also distinct from full coupling
+            where all fields are solved simultaneously. ARMI supports
+            tight and loose coupling.
         """
-        activeInterfaces = [ii for ii in self.interfaces if ii.enabled()]
-
+        activeInterfaces = self.getActiveInterfaces("Coupled")
         # Store the previous iteration values before calling interactAllCoupled
         # for each interface.
         for interface in activeInterfaces:
@@ -665,7 +699,6 @@ class Operator:
                 interface.coupler.storePreviousIterationValue(
                     interface.getTightCouplingValue()
                 )
-
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
         return self._checkTightCouplingConvergence(activeInterfaces)
@@ -680,7 +713,7 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accomodate testing
+        This is split off from self.interactAllCoupled to accommodate testing.
         """
         # Summarize the coupled results and the convergence status.
         converged = []
@@ -822,7 +855,7 @@ class Operator:
         Order does not matter here because the interfaces added here are disabled and playing supporting
         role so it is not intended to run on the interface stack. They will be called by other interfaces.
 
-        As mentioned in :py:meth:`addInterface`, it may be better to just insantiate utility code
+        As mentioned in :py:meth:`addInterface`, it may be better to just instantiate utility code
         when its needed rather than rely on this system.
         """
         # Make multiple passes in case there's one added that depends on another.
@@ -920,7 +953,13 @@ class Operator:
         return candidateI
 
     def interfaceIsActive(self, name):
-        """True if named interface exists and is active."""
+        """True if named interface exists and is enabled.
+
+        Notes
+        -----
+        This logic is significantly simpler that getActiveInterfaces. This logic only
+        touches the enabled() flag, but doesn't take into account the case settings.
+        """
         i = self.getInterface(name)
         return i and i.enabled()
 
@@ -928,11 +967,81 @@ class Operator:
         """
         Get list of interfaces in interface stack.
 
+        .. impl:: An operator will expose an ordered list of interfaces.
+            :id: I_ARMI_OPERATOR_INTERFACES
+            :implements: R_ARMI_OPERATOR_INTERFACES
+
+            This method returns an ordered list of instances of the Interface
+            class. This list is useful because at any time node in the
+            reactor simulation, these interfaces will be called in
+            sequence to perform various types of calculations. It is
+            important to note that this Operator instance has a list of
+            Plugins, and each of those Plugins potentially defines
+            multiple Interfaces. And these Interfaces define their own
+            order, separate from the ordering of the Plugins.
+
         Notes
         -----
         Returns a copy so you can manipulate the list in an interface, like dependencies.
         """
         return self.interfaces[:]
+
+    def getActiveInterfaces(
+        self,
+        interactState: str,
+        excludedInterfaceNames: Tuple[str] = (),
+        cycle: int = 0,
+    ):
+        """Retrieve the interfaces which are active for a given interaction state.
+
+        Parameters
+        ----------
+        interactState: str
+            A string dictating which interaction state the interfaces should be pulled for.
+        excludedInterfaceNames: Tuple[str]
+            A tuple of strings dictating which interfaces should be manually skipped.
+        cycle: int
+            The given cycle. 0 by default.
+
+        Returns
+        -------
+        activeInterfaces: List[Interfaces]
+            The interfaces deemed active for the given interactState.
+        """
+        # Validate the inputs
+        if excludedInterfaceNames is None:
+            excludedInterfaceNames = ()
+
+        if interactState not in ("BOL", "BOC", "EveryNode", "EOC", "EOL", "Coupled"):
+            raise ValueError(f"{interactState} is an unknown interaction state!")
+
+        # Ensure the interface is enabled.
+        enabled = lambda i: i.enabled()
+        if interactState == "BOL":
+            enabled = lambda i: i.enabled() or i.bolForce()
+
+        # Ensure the name of the interface isn't in some exclusion list.
+        nameCheck = lambda i: True
+        if interactState in ("EveryNode", "EOC", "EOL"):
+            nameCheck = lambda i: i.name not in excludedInterfaceNames
+        elif interactState == "BOC" and cycle < self.cs[CONF_DEFERRED_INTERFACES_CYCLE]:
+            nameCheck = lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+        elif interactState == "BOL":
+            nameCheck = (
+                lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
+                and i.name not in excludedInterfaceNames
+            )
+
+        # Finally, find the active interfaces.
+        activeInterfaces = [i for i in self.interfaces if enabled(i) and nameCheck(i)]
+
+        # Special Case: At EOL we reverse the order of some interfaces.
+        if interactState == "EOL":
+            actInts = [ii for ii in activeInterfaces if not ii.reverseAtEOL]
+            actInts.extend(reversed([ii for ii in activeInterfaces if ii.reverseAtEOL]))
+            activeInterfaces = actInts
+
+        return activeInterfaces
 
     def reattach(self, r, cs=None):
         """Add links to globally-shared objects to this operator and all interfaces.
@@ -963,6 +1072,8 @@ class Operator:
         """
         if self.r:
             self.r.o = None
+            for comp in self.r:
+                comp.parent = None
         self.r = None
         for i in self.interfaces:
             i.o = None
@@ -1035,7 +1146,7 @@ class Operator:
 
         See Also
         --------
-        armi.bookeeping.db.loadOperator:
+        armi.bookkeeping.db.loadOperator:
             A method for loading an operator given a database. loadOperator does not
             require an operator prior to loading the state of the reactor. loadState
             does, and therefore armi.init must be called which requires access to the
@@ -1061,14 +1172,13 @@ class Operator:
         """
         Process a snapshot request at this time.
 
-        This copies various physics input and output files to a special folder that
-        follow-on analysis be executed upon later.
+        This copies various physics input and output files to a special folder that follow-on
+        analysis be executed upon later.
 
         Notes
         -----
-        This was originally used to produce MC2/DIF3D inputs for external
-        parties (who didn't have ARMI) to review. Since then, the concept
-        of snapshots has evolved with respect to the
+        This was originally used to produce MC2/DIF3D inputs for external parties (who didn't have
+        ARMI) to review. Since then, the concept of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
@@ -1090,9 +1200,9 @@ class Operator:
         else:
             os.mkdir(newFolder)
 
-        # Moving the cross section files is to a snapshot directory is a reasonable
-        # requirement, but these hard-coded names are not desirable. This is legacy
-        # and should be updated to be more robust for users.
+        # Moving the cross section files is to a snapshot directory is a reasonable requirement, but
+        # these hard-coded names are not desirable. This is legacy and should be updated to be more
+        # robust for users.
         for fileName in os.listdir("."):
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
@@ -1102,16 +1212,15 @@ class Operator:
                     )
                 else:
                     newFile = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
-                # add the cycle and timenode to the XS input file names so that a rx-coeff case that runs
-                # in here won't overwrite them.
-                shutil.copy(fileName, os.path.join(newFolder, newFile))
+                # add the cycle and timenode to the XS input file names so that a rx-coeff case that
+                # runs in here won't overwrite them.
+                pathTools.copyOrWarn(
+                    fileName, fileName, os.path.join(newFolder, newFile)
+                )
             if "rzmflx" in fileName:
                 pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
-        fileNamePossibilities = [
-            f"ISOTXS-c{cycle}n{node}",
-            f"ISOTXS-c{cycle}",
-        ]
+        fileNamePossibilities = [f"ISOTXS-c{cycle}n{node}", f"ISOTXS-c{cycle}"]
         if iteration is not None:
             fileNamePossibilities = [
                 f"ISOTXS-c{cycle}n{node}i{iteration}"
@@ -1134,20 +1243,7 @@ class Operator:
             "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
         )
         pathTools.copyOrWarn(
-            "Geometry file for snapshot", self.cs["geomFile"], newFolder
-        )
-        pathTools.copyOrWarn(
             "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder
-        )
-        pathTools.copyOrWarn(
-            "Flow history for snapshot",
-            self.cs.caseTitle + ".flow_history.txt",
-            newFolder,
-        )
-        pathTools.copyOrWarn(
-            "Pressure history for snapshot",
-            self.cs.caseTitle + ".pressure_history.txt",
-            newFolder,
         )
 
     @staticmethod

@@ -24,13 +24,12 @@ import re
 import shutil
 import sys
 import tempfile
-import threading
 import time
 
 from armi import runLog
 from armi.utils import iterables
-from armi.utils.flags import Flag  # noqa: unused-import
-from armi.utils.mathematics import *  # noqa: undefined-local-with-import-star
+from armi.utils.flags import Flag  # noqa: F401
+from armi.utils.mathematics import *  # noqa: F403
 
 # Read in file 1 MB at a time to reduce memory burden of reading entire file at once
 _HASH_BUFFER_SIZE = 1024 * 1024
@@ -38,37 +37,33 @@ _HASH_BUFFER_SIZE = 1024 * 1024
 
 def getFileSHA1Hash(filePath, digits=40):
     """
-    Generate a SHA-1 hash of the input file.
+    Generate a SHA-1 hash of input files.
 
     Parameters
     ----------
     filePath : str
-        Path to file to obtain the SHA-1 hash
+        Path to file or directory to obtain the SHA-1 hash
     digits : int, optional
         Number of digits to include in the hash (40 digit maximum for SHA-1)
     """
     sha1 = hashlib.sha1()
-    with open(filePath, "rb") as f:
-        while True:
-            data = f.read(_HASH_BUFFER_SIZE)
-            if not data:
-                break
-            sha1.update(data)
+    filesToHash = []
+    if os.path.isdir(filePath):
+        for root, _, files in os.walk(filePath):
+            for file in sorted(files):
+                filesToHash.append(os.path.join(root, file))
+    else:
+        filesToHash.append(filePath)
+
+    for file in filesToHash:
+        with open(file, "rb") as f:
+            while True:
+                data = f.read(_HASH_BUFFER_SIZE)
+                if not data:
+                    break
+                sha1.update(data)
 
     return sha1.hexdigest()[:digits]
-
-
-def copyWithoutBlocking(src, dest):
-    """
-    Copy a file in a separate thread to avoid blocking while IO completes.
-
-    Useful for copying large files while ARMI moves along.
-    """
-    files = "{} to {}".format(src, dest)
-    runLog.extra("Copying (without blocking) {}".format(files))
-    t = threading.Thread(target=shutil.copy, args=(src, dest))
-    t.start()
-    return t
 
 
 def getPowerFractions(cs):
@@ -186,7 +181,7 @@ def _getStepAndCycleLengths(cs):
 
     Notes
     -----
-    Using this method directly is more effecient than calling `getStepLengths`
+    Using this method directly is more efficient than calling `getStepLengths`
     and `getCycleLengths` separately, but it is probably more clear to the user
     to call each of them separately.
     """
@@ -470,7 +465,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
                 print("Checking {0}...".format(name))
             try:
                 pickle.dumps(ob)  # dump as a string
-            except:  # noqa: bare-except
+            except Exception:
                 print(
                     "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
                 )
@@ -497,9 +492,9 @@ def doTestPickleOnAllContents2(obj, ignore=None):
         if name not in ignore:
             try:
                 pickle.dumps(ob)  # dump as a string
-            except:  # noqa: bare-except
+            except Exception:
                 unpickleable.append(name)
-                print("Cant pickle {0}".format(name))
+                print("Can't pickle {0}".format(name))
                 # recursive call.
                 unpickleable.extend(
                     doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore)
@@ -509,7 +504,7 @@ def doTestPickleOnAllContents2(obj, ignore=None):
 
 
 class MyPickler(pickle.Pickler):
-    r"""
+    """
     This will find your pickle errors if all else fails.
 
     Use with tryPickleOnAllContents3.
@@ -542,7 +537,7 @@ def tryPickleOnAllContents3(obj):
 
 
 def classesInHierarchy(obj, classCounts, visited=None):
-    """Count the number of instances of each class contained in an objects heirarchy."""
+    """Count the number of instances of each class contained in an objects hierarchy."""
     if not isinstance(classCounts, collections.defaultdict):
         raise TypeError(
             "Need to pass in a default dict for classCounts (it's an out param)"
@@ -586,7 +581,7 @@ def slantSplit(val, ratio, nodes, order="low first"):
 
 def prependToList(originalList, listToPrepend):
     """
-    Add a new list to the beginnning of an original list.
+    Add a new list to the beginning of an original list.
 
     Parameters
     ----------
@@ -747,7 +742,7 @@ def plotMatrix(
     cmap.set_bad("w")
     try:
         matrix = matrix.todense()
-    except:  # noqa: bare-except
+    except Exception:
         pass
 
     if minV:
@@ -805,21 +800,85 @@ class MergeableDict(dict):
 
 
 def safeCopy(src: str, dst: str) -> None:
-    """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
-    waitTime = 0.01  # 10 ms
+    """Check that copy operation is truly completed before continuing."""
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
+
     srcSize = os.path.getsize(src)
-    shutil.copyfile(src, dst)
-    shutil.copymode(src, dst)
+    if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
+        shutil.copyfile(src, dst)
+        shutil.copymode(src, dst)
+    elif "linux" in sys.platform:
+        cmd = f'cp "{src}" "{dst}"'
+        os.system(cmd)
+    else:
+        raise OSError(
+            "Cannot perform ``safeCopy`` on files because ARMI only supports "
+            + "Linux, MacOs, and Windows."
+        )
+
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 300  # 5 min
+    totalWaitTime = 0
     while True:
         dstSize = os.path.getsize(dst)
         if srcSize == dstSize:
             break
         time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File copy from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
+            )
+            Return
+
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 
-# Allow us to check the copy operation is complete before continuing
-shutil_copy = shutil.copy
-shutil.copy = safeCopy
+def safeMove(src: str, dst: str) -> None:
+    """Check that a file has been successfully moved before continuing."""
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
+
+    srcSize = os.path.getsize(src)
+    if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
+        shutil.move(src, dst)
+    elif "linux" in sys.platform:
+        cmd = f'mv "{src}" "{dst}"'
+        os.system(cmd)
+    else:
+        raise OSError(
+            "Cannot perform ``safeMove`` on files because ARMI only supports "
+            + "Linux, MacOS, and Windows."
+        )
+
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 6000  # 1 min
+    totalWaitTime = 0
+    while True:
+        try:
+            dstSize = os.path.getsize(dst)
+            if srcSize == dstSize:
+                break
+        except FileNotFoundError:
+            pass
+        time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File move from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime/60} minutes."
+            )
+            return
+
+    runLog.extra("Moved {} -> {}".format(src, dst))
+    return dst

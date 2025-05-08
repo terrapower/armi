@@ -19,9 +19,8 @@ import random
 import shutil
 import string
 
-from armi import context
-from armi import runLog
-from armi.utils import pathTools
+from armi import context, runLog
+from armi.utils import pathTools, safeCopy, safeMove
 
 
 def _changeDirectory(destination):
@@ -53,11 +52,11 @@ class DirectoryChanger:
         Filenames to bring back from the destination to the cwd. Note that if any of these
         files do not exist then the file will be skipped and a warning will be provided.
     dumpOnException : bool, optional
-        Flag to tell system to retrieve the entire directory if an exception
-        is raised within a the context manager.
+        Flag to tell system to retrieve the entire directory if an exception is raised within a the
+        context manager.
     outputPath : str, optional
-        Output path for filesToRetrieve. If None, default is the initial working directory
-        from which the DirectoryChanger is called.
+        Output path for filesToRetrieve. If None, default is the initial working directory from
+        which the DirectoryChanger is called.
     """
 
     def __init__(
@@ -128,19 +127,27 @@ class DirectoryChanger:
         """Copy ``filesToMove`` into the destination directory on entry."""
         initialPath = self.initial
         destinationPath = self.destination
-        self._transferFiles(initialPath, destinationPath, self._filesToMove)
+        self._transferFiles(
+            initialPath, destinationPath, self._filesToMove, moveFiles=False
+        )
         if self.outputPath != self.initial:
             destinationPath = self.outputPath
-            self._transferFiles(initialPath, destinationPath, self._filesToMove)
+            self._transferFiles(
+                initialPath, destinationPath, self._filesToMove, moveFiles=False
+            )
 
     def retrieveFiles(self):
         """Copy ``filesToRetrieve`` back into the initial directory on exit."""
-        initialPath = self.destination
-        destinationPath = self.initial
-        self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
         if self.outputPath != self.initial:
-            destinationPath = self.outputPath
-            self._transferFiles(initialPath, destinationPath, self._filesToRetrieve)
+            self._transferFiles(
+                self.destination,
+                self.outputPath,
+                self._filesToRetrieve,
+                moveFiles=False,
+            )
+        self._transferFiles(
+            self.destination, self.initial, self._filesToRetrieve, moveFiles=True
+        )
 
     def _retrieveEntireFolder(self):
         """
@@ -173,14 +180,12 @@ class DirectoryChanger:
             runLog.extra(f"Output folder already exists: {self.outputPath}")
 
     @staticmethod
-    def _transferFiles(initialPath, destinationPath, fileList):
+    def _transferFiles(initialPath, destinationPath, fileList, moveFiles=False):
         """
         Transfer files into or out of the directory.
 
-        This is used in ``moveFiles`` and ``retrieveFiles`` to shuffle files about when
-        creating a target directory or when coming back, respectively. Beware that this
-        uses ``shutil.copy()`` under the hood, which doesn't play nicely with
-        directories. Future revisions should improve this.
+        This is used in ``moveFiles`` and ``retrieveFiles`` to shuffle files about when creating a
+        target directory or when coming back, respectively.
 
         Parameters
         ----------
@@ -189,20 +194,24 @@ class DirectoryChanger:
         destinationPath: str
             Path to the folder to move file to.
         fileList : list of str or list of tuple
-            File names to move from initial to destination. If this is a
-            simple list of strings, the files will be transferred. Alternatively
-            tuples of (initialName, finalName) are allowed if you want the file
-            renamed during transit. In the non-tuple option, globs/wildcards
+            File names to move from initial to destination. If this is a simple list of strings, the
+            files will be transferred. Alternatively tuples of (initialName, finalName) are allowed
+            if you want the file renamed during transit. In the non-tuple option, globs/wildcards
             are allowed.
+        moveFiles: bool, optional
+            Controls whether the files are "moved" (``mv``) or "copied" (``cp``)
 
-        .. warning:: On Windows the max number of characters in a path is 260.
-            If you exceed this you will see FileNotFound errors here.
-
+        Warning
+        -------
+        On Windows the max number of characters in a path is 260.
+        If you exceed this you will see FileNotFound errors here.
         """
         if not fileList:
             return
+
         if not os.path.exists(destinationPath):
             os.makedirs(destinationPath)
+
         for pattern in fileList:
             if isinstance(pattern, tuple):
                 # allow renames in transit
@@ -222,8 +231,12 @@ class DirectoryChanger:
                     continue
 
                 toPath = os.path.join(destinationPath, destName)
-                runLog.extra("Copying {} to {}".format(fromPath, toPath))
-                shutil.copy(fromPath, toPath)
+                if moveFiles:
+                    runLog.extra("Moving {} to {}".format(fromPath, toPath))
+                    safeMove(fromPath, toPath)
+                else:
+                    runLog.extra("Copying {} to {}".format(fromPath, toPath))
+                    safeCopy(fromPath, toPath)
 
 
 class TemporaryDirectoryChanger(DirectoryChanger):

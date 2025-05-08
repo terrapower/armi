@@ -20,8 +20,6 @@ See :doc:`/developer/entrypoints`.
 import argparse
 from typing import Optional, Union
 
-import six
-
 from armi import context, runLog, settings
 
 
@@ -34,7 +32,7 @@ class _EntryPointEnforcer(type):
     def __new__(mcs, name, bases, attrs):
         if "name" not in attrs:
             raise AttributeError(
-                "Subclasses of EntryPoint must define a `name` class attrubute."
+                "Subclasses of EntryPoint must define a `name` class attribute."
             )
 
         # basic input validation. Will throw a KeyError if argument is incorrect
@@ -46,13 +44,27 @@ class _EntryPointEnforcer(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-@six.add_metaclass(_EntryPointEnforcer)
-class EntryPoint:
+class EntryPoint(metaclass=_EntryPointEnforcer):
     """
     Generic command line entry point.
 
-    A valid subclass must provide at least a ``name`` class attribute, and may also
-    specify the other class attributes described below.
+    A valid subclass must provide at least a ``name`` class attribute, and may also specify the
+    other class attributes described below.
+
+    .. impl:: Generic CLI base class for developers to use.
+        :id: I_ARMI_CLI_GEN
+        :implements: R_ARMI_CLI_GEN
+
+        Provides a base class for plugin developers to use in creating application-specific CLIs.
+        Valid subclasses must at least provide a ``name`` class attribute.
+
+        Optional class attributes that a subclass may provide include ``description``, a string
+        describing the command's actions, ``splash``, a boolean specifying whether to display a
+        splash screen upon execution, and ``settingsArgument``. If ``settingsArgument`` is specified
+        as ``required``, then a settings files is a required positional argument. If
+        ``settingsArgument`` is set to ``optional``, then a settings file is an optional positional
+        argument. If None is specified for the ``settingsArgument``, then no settings file argument
+        is added.
     """
 
     #: The <command-name> that is used to call the command from the command line
@@ -231,7 +243,7 @@ class EntryPoint:
             if additionalAlias is not None:
                 aliases.append(additionalAlias)
 
-            isListType = settingsInstance.underlyingType == list
+            isListType = settingsInstance.underlyingType is list
 
             try:
                 self.parser.add_argument(

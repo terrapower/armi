@@ -14,7 +14,7 @@
 
 """Simple air material."""
 from armi.materials import material
-from armi.utils.units import getTk, G_PER_CM3_TO_KG_PER_M3
+from armi.utils.units import G_PER_CM3_TO_KG_PER_M3, getTk
 
 
 class Air(material.Fluid):

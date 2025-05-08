@@ -17,18 +17,16 @@
 Computing Component Volume Fractions on a Block with Automatic Thermal Expansion
 ================================================================================
 
-Given an :py:mod:`Block <armi.reactor.blocks.Block>`, compute
-the component volume fractions. Assess the change in volume
-of these components within the block as the temperatures of
-the fuel and structure components are uniformly increased.
+Given an :py:mod:`Block <armi.reactor.blocks.Block>`, compute the component volume fractions. Assess
+the change in volume of these components within the block as the temperatures of the fuel and
+structure components are uniformly increased.
 
-Note: Thermal expansion is automatically considered with
-material data defined within :py:mod:`materials <armi.materials>`.
+Note: Thermal expansion is automatically considered with material data defined within
+:py:mod:`materials <armi.materials>`.
 """
 # ruff: noqa: E402
 import collections
 
-import tabulate
 import matplotlib.pyplot as plt
 
 from armi import configure
@@ -37,13 +35,14 @@ configure(permissive=True)
 
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.utils import tabulate
 
 
 def writeInitialVolumeFractions(b):
     """Write out the initial temperatures and component volume fractions."""
     headers = ["Component", "Temperature, °C", "Volume Fraction"]
     data = [(c, c.temperatureInC, volFrac) for c, volFrac in b.getVolumeFractions()]
-    print(tabulate.tabulate(tabular_data=data, headers=headers) + "\n")
+    print(tabulate.tabulate(data=data, headers=headers) + "\n")
 
 
 def plotVolFracsWithComponentTemps(b, uniformTemps):

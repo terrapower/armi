@@ -1,11 +1,14 @@
 name: Linting
 
+permissions:
+  contents: read
+
 on: [push, pull_request]
 
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v2
@@ -15,8 +18,7 @@ jobs:
           python-version: '3.9'
       - name: Update package index
         run: sudo apt-get update
-      - name: Install Tox and any other packages
-        run: pip install tox
       - name: Run Linter
-        continue-on-error: true
-        run: tox -e lint
+        run:  |
+          pip install -e .[test]
+          ruff check .

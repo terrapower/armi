@@ -13,23 +13,21 @@
 # limitations under the License.
 
 """
-Module to read DLAYXS files, which contain delayed neutron precursor data, including decay constants and emission
-spectra.
+Module to read DLAYXS files, which contain delayed neutron precursor data, including decay constants
+and emission spectra.
 
-Similar to ISOTXS files, DLAYXS files are often created by a lattice physics code such as MC2 and used as input
-to a global flux solver such as DIF3D.
+Similar to ISOTXS files, DLAYXS files are often created by a lattice physics code such as MC2 and
+used as input to a global flux solver such as DIF3D.
 
 This module implements reading and writing of the DLAYXS, consistent with [CCCC-IV]_.
 """
 import collections
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.nucDirectory import nuclideBases
-from armi.nuclearDataIO import cccc
-from armi.nuclearDataIO import nuclearFileMetadata
-
+from armi.nuclearDataIO import cccc, nuclearFileMetadata
 
 ALLOWED_NUCLIDE_CONTRIBUTION_ERROR = 1e-5
 
@@ -38,18 +36,20 @@ class DelayedNeutronData:
     """
     Container of information about delayed neutron precursors.
 
-    This info should be enough to perform point kinetics problems and to compute the delayed neutron fraction.
+    This info should be enough to perform point kinetics problems and to compute the delayed neutron
+    fraction.
 
-    This object represents data related to either one nuclide (as read from a data library)
-    or an average over many nuclides (as computed after a delayed-neutron fraction calculation).
+    This object represents data related to either one nuclide (as read from a data library) or an
+    average over many nuclides (as computed after a delayed-neutron fraction calculation).
 
-    For a problem with P precursor groups and G energy groups, delayed neutron precursor information includes:
+    For a problem with P precursor groups and G energy groups, delayed neutron precursor information
+    includes the three attributes of this class listed below.
 
     Attributes
     ----------
     precursorDecayConstants : array
-        This is P-length list of decay constants in (1/s) that characterize the decay rates of the delayed
-        neutron precursors. When a precursor decays, it emits a delayed neutron.
+        This is P-length list of decay constants in (1/s) that characterize the decay rates of the
+        delayed neutron precursors. When a precursor decays, it emits a delayed neutron.
 
     delayEmissionSpectrum : array
         fraction of delayed neutrons emitted into each neutron energy group from each precursor family
@@ -58,18 +58,16 @@ class DelayedNeutronData:
         Aka delayed-chi
 
      delayNeutronsPerFission : array
-        the multigroup number of delayed neutrons released per decay for each precursor group
-        Note that this is equivalent to the number of delayed neutron precursors produced per fission in
-        each family and energy group.
-        Structure is identical to delayEmissionSpectrum. Aka delayed-nubar.
+        The multigroup number of delayed neutrons released per decay for each precursor group. Note
+        that this is equivalent to the number of delayed neutron precursors produced per fission in
+        each family and energy group. Structure is identical to delayEmissionSpectrum. Aka delayed-
+        nubar.
     """
 
     def __init__(self, numEnergyGroups, numPrecursorGroups):
-        self.precursorDecayConstants = numpy.zeros(numPrecursorGroups)
-        self.delayEmissionSpectrum = numpy.zeros((numPrecursorGroups, numEnergyGroups))
-        self.delayNeutronsPerFission = numpy.zeros(
-            (numPrecursorGroups, numEnergyGroups)
-        )
+        self.precursorDecayConstants = np.zeros(numPrecursorGroups)
+        self.delayEmissionSpectrum = np.zeros((numPrecursorGroups, numEnergyGroups))
+        self.delayNeutronsPerFission = np.zeros((numPrecursorGroups, numEnergyGroups))
 
 
 def compare(lib1, lib2):
@@ -108,7 +106,7 @@ def _write(delay, fileName, fileMode):
 
 
 def _readWrite(delay, fileName, fileMode):
-    with _DlayxsIO(fileName, fileMode, delay) as rw:
+    with DlayxsIO(fileName, fileMode, delay) as rw:
         rw.readWrite()
     return delay
 
@@ -125,7 +123,6 @@ class Dlayxs(collections.OrderedDict):
     Module that use delayed neutron data should expect a ``DelayedNeutronData`` object as input.
     If you want an average over all nuclides, then you need to produce it using the properly-computed
     average contributions of each nuclide.
-
 
     Attributes
     ----------
@@ -167,21 +164,11 @@ class Dlayxs(collections.OrderedDict):
 
     def generateAverageDelayedNeutronConstants(self):
         """
-        Use externally-computed ``nuclideContributionFractions`` to produce an average ``DelayedNeutronData`` obj.
+        Use externally-computed ``nuclideContributionFractions`` to produce an average
+        ``DelayedNeutronData`` object.
 
-        Solves typical averaging equation but weights already sum to 1.0 so we
-        can skip normalization at the end.
-
-        Notes
-        -----
-        Long ago, the DLAYXS file had the same constants for each nuclide (!?) and this method
-        simply took the first. Later, it was updated to take an importance- and abundance-weighted
-        average of the values on the DLAYXS library.
-
-        A paper by Tuttle (1974) discusses some averaging but they end up saying that kinetics problems
-        are mostly insensitive to the group constants ("errors of a few percent"). But in TWRs, we switch from U235 to Pu239
-        and the difference may be important. We can try weighting by nuclide effective
-        delayed neutron fractions beta_eff_nuclide/beta.
+        Solves typical averaging equation but weights already sum to 1.0 so we can skip
+        normalization at the end.
         """
         avg = DelayedNeutronData(self.G, self.numPrecursorGroups)
 
@@ -216,13 +203,53 @@ class Dlayxs(collections.OrderedDict):
             )
 
 
-class _DlayxsIO(cccc.Stream):
+class DlayxsIO(cccc.Stream):
+    """Contains DLAYXS read/writers."""
+
     def __init__(self, fileName, fileMode, dlayxs):
         cccc.Stream.__init__(self, fileName, fileMode)
         self.dlayxs = dlayxs
         self.metadata = dlayxs.metadata
 
     def readWrite(self):
+        r"""Read and write DLAYXS files.
+
+        .. impl:: Tool to read and write DLAYXS files.
+            :id: I_ARMI_NUCDATA_DLAYXS
+            :implements: R_ARMI_NUCDATA_DLAYXS
+
+            Reading and writing DLAYXS delayed neutron data files is performed
+            using the general nuclear data I/O functionalities described in
+            :need:`I_ARMI_NUCDATA`. Reading/writing a DLAYXS file is performed
+            through the following steps:
+
+            #. Read/write the data ``label`` for identification.
+
+                .. note::
+
+                    MC\ :sup:`2`-3  file does not use the expected number of
+                    characters for the ``label``, so its length needs to be
+                    stored in the :py:class:`~.cccc.IORecord`.
+
+            #. Read/write file control information, i.e. the 1D record, which includes:
+
+                * Number of energy groups
+                * Number of nuclides
+                * Number of precursor families
+
+            #. Read/write spectral data, including:
+
+                * Nuclide IDs
+                * Decay constants
+                * Emission spectra
+                * Energy group bounds
+                * Number of families to which fission in a given nuclide
+                  contributes delayed neutron precursors
+
+            #. Read/write 3D delayed neutron yield matrix on the 3D record,
+               indexed by nuclide, precursor family, and outgoing neutron energy
+               group.
+        """
         runLog.info(
             "{} DLAYXS library {}".format(
                 "Reading" if "r" in self._fileMode else "Writing", self
@@ -235,7 +262,7 @@ class _DlayxsIO(cccc.Stream):
 
         # if the data objects are empty, then we are reading, otherwise the data already exists...
         # If we are reading, then we have to map all the metadata into the DelayedNeutronData structures
-        if not numpy.any(list(self.dlayxs.values())[0].delayEmissionSpectrum):
+        if not np.any(list(self.dlayxs.values())[0].delayEmissionSpectrum):
             for nuc, dlayData in self.dlayxs.items():
                 for ii, family in enumerate(self.dlayxs.nuclideFamily[nuc]):
                     dlayData.precursorDecayConstants[ii] = self.metadata[

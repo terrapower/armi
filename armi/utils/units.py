@@ -16,7 +16,6 @@ import math
 
 import scipy.constants
 
-
 # Units (misc)
 DPA = "dpa"
 FIMA = "FIMA"
@@ -105,6 +104,7 @@ G_PER_CM3_TO_KG_PER_M3 = 1000.0
 ASCII_MIN_CHAR = 44  # First char allowed in various FORTRAN inputs
 ASCII_LETTER_A = 65
 ASCII_LETTER_Z = 90
+ASCII_LETTER_a = 97
 ASCII_ZERO = 48
 TRACE_NUMBER_DENSITY = 1e-50
 MIN_FUEL_HM_MOLES_PER_CC = 1e-10
@@ -316,7 +316,7 @@ def sanitizeAngle(theta):
 
 def getXYLineParameters(theta, x=0, y=0):
     """
-    returns parameters A B C D for a plane in the XY direction.
+    Returns parameters A B C D for a plane in the XY direction.
 
     Parameters
     ----------

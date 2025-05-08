@@ -19,17 +19,30 @@ Notes
 These algorithms are defined in assemblyRotationAlgorithms.py, but they are used in:
 ``FuelHandler.outage()``.
 
-.. warning:: Nothing should do in this file, but rotation algorithms.
+.. warning:: Nothing should go in this file, but rotation algorithms.
 """
+import math
+from collections import defaultdict
+
 from armi import runLog
 from armi.physics.fuelCycle.hexAssemblyFuelMgmtUtils import (
     getOptimalAssemblyOrientation,
 )
 from armi.physics.fuelCycle.settings import CONF_ASSEM_ROTATION_STATIONARY
+from armi.physics.fuelCycle.utils import (
+    assemblyHasFuelPinBurnup,
+    assemblyHasFuelPinPowers,
+)
+from armi.reactor.assemblies import Assembly
+
+
+def _rotationNumberToRadians(rot: int) -> float:
+    """Convert a rotation number to radians, assuming a HexAssembly."""
+    return rot * math.pi / 3
 
 
 def buReducingAssemblyRotation(fh):
-    r"""
+    """
     Rotates all detail assemblies to put the highest bu pin in the lowest power orientation.
 
     Parameters
@@ -42,35 +55,47 @@ def buReducingAssemblyRotation(fh):
     simpleAssemblyRotation : an alternative rotation algorithm
     """
     runLog.info("Algorithmically rotating assemblies to minimize burnup")
-    numRotated = 0
-    hist = fh.o.getInterface("history")
-    for aPrev in fh.moved:  # much more convenient to loop through aPrev first
+    # Store how we should rotate each assembly but don't perform the rotation just yet
+    # Consider assembly A is shuffled to a new location and rotated.
+    # Now, assembly B is shuffled to where assembly A used to be. We need to consider the
+    # power profile of A prior to it's rotation to understand the power profile B may see.
+    rotations: dict[int, list[Assembly]] = defaultdict(list)
+    for aPrev in fh.moved:
+        # If the assembly was out of the core, it will not have pin powers.
+        # No rotation information to be gained.
+        if aPrev.lastLocationLabel in Assembly.NOT_IN_CORE:
+            continue
         aNow = fh.r.core.getAssemblyWithStringLocation(aPrev.lastLocationLabel)
+        # An assembly in the SFP could have burnup but if it's coming from the load
+        # queue it's totally fresh. Skip a check over all pins in the model
+        if aNow.lastLocationLabel == Assembly.LOAD_QUEUE:
+            continue
         # no point in rotation if there's no pin detail
-        if aNow in hist.getDetailAssemblies():
+        if assemblyHasFuelPinPowers(aPrev) and assemblyHasFuelPinBurnup(aNow):
             rot = getOptimalAssemblyOrientation(aNow, aPrev)
-            aNow.rotatePins(rot)  # rot = integer between 0 and 5
-            numRotated += 1
-            # Print out rotation operation (mainly for testing)
-            # hex indices (i,j) = (ring,pos)
-            (i, j) = aNow.spatialLocator.getRingPos()
-            runLog.important(
-                "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, rot)
-            )
+            rotations[rot].append(aNow)
 
-    # rotate NON-MOVING assemblies (stationary)
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
-        for a in hist.getDetailAssemblies():
-            if a not in fh.moved:
-                rot = getOptimalAssemblyOrientation(a, a)
-                a.rotatePins(rot)  # rot = integer between 0 and 6
-                numRotated += 1
-                (i, j) = a.spatialLocator.getRingPos()
-                runLog.important(
-                    "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, rot)
-                )
+        for a in filter(
+            lambda asm: asm not in fh.moved
+            and assemblyHasFuelPinPowers(asm)
+            and assemblyHasFuelPinBurnup(asm),
+            fh.r.core,
+        ):
+            rot = getOptimalAssemblyOrientation(a, a)
+            rotations[rot].append(a)
 
-    runLog.info("Rotated {0} assemblies".format(numRotated))
+    nRotations = 0
+    for rot, assems in filter(lambda item: item[0], rotations.items()):
+        # Radians used for the actual rotation. But a neater degrees print out is nice for logs
+        radians = _rotationNumberToRadians(rot)
+        degrees = round(math.degrees(radians), 3)
+        for a in assems:
+            runLog.important(f"Rotating assembly {a} {degrees} CCW.")
+            a.rotate(radians)
+            nRotations += 1
+
+    runLog.info(f"Rotated {nRotations} assemblies.")
 
 
 def simpleAssemblyRotation(fh):
@@ -98,13 +123,14 @@ def simpleAssemblyRotation(fh):
     runLog.info("Rotating assemblies by 60 degrees")
     numRotated = 0
     hist = fh.o.getInterface("history")
+    rot = math.radians(60)
     for a in hist.getDetailAssemblies():
         if a in fh.moved or fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
-            a.rotatePins(1)
+            a.rotate(rot)
             numRotated += 1
-            i, j = a.spatialLocator.getRingPos()  # hex indices (i,j) = (ring,pos)
+            ring, pos = a.spatialLocator.getRingPos()
             runLog.extra(
-                "Rotating Assembly ({0},{1}) to Orientation {2}".format(i, j, 1)
+                "Rotating Assembly ({0},{1}) to Orientation {2}".format(ring, pos, 1)
             )
 
     runLog.extra("Rotated {0} assemblies".format(numRotated))

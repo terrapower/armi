@@ -14,10 +14,8 @@
 
 """Generic Fuel Performance Plugin."""
 
-from armi import plugins
-from armi import interfaces
+from armi import interfaces, plugins
 from armi.physics.fuelPerformance import settings
-
 
 ORDER = interfaces.STACK_ORDER.CROSS_SECTIONS
 
@@ -46,6 +44,7 @@ class FuelPerformancePlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineParameters():
+        """Define parameters for the plugin."""
         from armi.physics.fuelPerformance import parameters
 
         return parameters.getFuelPerformanceParameterDefinitions()

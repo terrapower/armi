@@ -16,8 +16,7 @@ import unittest
 
 from numpy.testing import assert_allclose
 
-from armi import materials
-from armi import settings
+from armi import materials, settings
 from armi.reactor import blueprints
 from armi.reactor.blueprints.blockBlueprint import BlockBlueprint
 
@@ -54,13 +53,41 @@ assemblies:
         xs types: [A]
 """
 
-    boronInput = uZrInput.replace("UZr", "B")
+    b4cInput = r"""
+nuclide flags:
+    B: {burn: false, xs: true}
+    C: {burn: false, xs: true}
+blocks:
+    poison: &block_poison
+        poison:
+            shape: Hexagon
+            material: B4C
+            Tinput: 600.0
+            Thot: 600.0
+            ip: 0.0
+            mult: 1
+            op: 10.0
+assemblies:
+    assem a: &assembly_a
+        specifier: IC
+        blocks: [*block_poison]
+        height: [1.0]
+        axial mesh points: [1]
+        xs types: [A]
+"""
 
     def loadUZrAssembly(self, materialModifications):
-        yamlString = self.uZrInput + "\n" + materialModifications
+        return self._loadAssembly(self.uZrInput, materialModifications, "fuel a")
+
+    @staticmethod
+    def _loadAssembly(bpBase: str, materialModifications: str, assem: str):
+        yamlString = bpBase + "\n" + materialModifications
         design = blueprints.Blueprints.load(yamlString)
         design._prepConstruction(settings.Settings())
-        return design.assemblies["fuel a"]
+        return design.assemblies[assem]
+
+    def loadB4CAssembly(self, materialModifications: str):
+        return self._loadAssembly(self.b4cInput, materialModifications, "assem a")
 
     def test_noMaterialModifications(self):
         a = self.loadUZrAssembly("")
@@ -73,6 +100,13 @@ assemblies:
             assert_allclose(uzr.massFrac[nucName], massFrac)
 
     def test_u235_wt_frac_modification(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide.
+
+        .. test:: A material modification can be applied to all the components in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT0
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -90,6 +124,13 @@ assemblies:
         assert_allclose(0.20, u235 / u)
 
     def test_u235_wt_frac_byComponent_modification1(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide, for just one component.
+
+        .. test:: A material modification can be applied to one component in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT1
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -110,6 +151,13 @@ assemblies:
         assert_allclose(0.30, u235 / u)
 
     def test_u235_wt_frac_byComponent_modification2(self):
+        """Test constructing a component where the blueprints specify a material
+        modification for one nuclide, for multiple components.
+
+        .. test:: A material modification can be applied to multiple components in an assembly.
+            :id: T_ARMI_MAT_USER_INPUT2
+            :tests: R_ARMI_MAT_USER_INPUT
+        """
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -131,7 +179,20 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.50, u235 / u)
 
-    def test_invalid_component_modification(self):
+    def test_materialModificationLength(self):
+        """If the wrong number of material modifications are defined, there is an error."""
+        with self.assertRaises(ValueError):
+            _a = self.loadUZrAssembly(
+                """
+        material modifications:
+            by component:
+                fuel1:
+                    U235_wt_frac: [0.2]
+            U235_wt_frac: [0.11, 0.22, 0.33, 0.44]
+            """
+            )
+
+    def test_invalidComponentModification(self):
         with self.assertRaises(ValueError):
             _a = self.loadUZrAssembly(
                 """
@@ -139,10 +200,10 @@ assemblies:
             by component:
                 invalid component:
                     U235_wt_frac: [0.2]
-        """
+            """
             )
 
-    def test_zr_wt_frac_modification(self):
+    def test_zrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -154,7 +215,7 @@ assemblies:
         zr = fuelComponent.getMass("ZR")
         assert_allclose(0.077, zr / totalMass)
 
-    def test_both_u235_zr_wt_frac_modification(self):
+    def test_bothU235ZrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -198,7 +259,7 @@ assemblies:
 
     def test_invalidMatModName(self):
         """
-        This test shows proves that we can detect invalid material modification
+        This test shows that we can detect invalid material modification
         names when they are specified on an assembly blueprint. We happen to know
         that ZR_wt_frac is a valid modification for the UZr material class, so we
         use that in the first call to prove that things initially work fine.
@@ -236,6 +297,35 @@ assemblies:
                 fuel2:
                     this_is_a_fake_name: [0]
         """
+            )
+
+    def test_invalidMatModType(self):
+        """
+        This test shows that we can detect material modifications that are invalid
+        because of their values, not just their names.
+        We happen to know that ZR_wt_frac is a valid modification for UZr, so we
+        use that in the first call to prove that things initially work fine.
+        """
+        a = self.loadUZrAssembly(
+            """
+        material modifications:
+            ZR_wt_frac: [1]
+        """
+        )
+        # just to prove that the above works fine before we modify it
+        self.assertAlmostEqual(a[0][0].getMassFrac("ZR"), 1)
+
+        with self.assertRaises(ValueError) as ee:
+            a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [this_is_a_value_of_incompatible_type]
+        """
+            )
+
+            self.assertIn(
+                "Something went wrong in applying the material modifications",
+                ee.args[0],
             )
 
     def test_matModsUpTheMRO(self):
@@ -285,3 +375,15 @@ custom isotopics:
         U: 1
 """
             )
+
+    def test_theoreticalDensity(self):
+        """Test the theoretical density can be loaded from material modifications."""
+        mods = """
+        material modifications:
+            TD_frac: [0.5]
+        """
+        a = self.loadB4CAssembly(mods)
+        comp = a[0][0]
+        mat = comp.material
+        self.assertEqual(mat.getTD(), 0.5)
+        self.assertEqual(comp.p.theoreticalDensityFrac, 0.5)

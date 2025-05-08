@@ -40,7 +40,6 @@ i, j
     but in other geometries (like hex), it is a totally different
     coordinate system.
 
-
 See Also
 --------
 armi.reactor.grids : More powerful, nestable lattices with specific dimensions
@@ -50,7 +49,6 @@ armi.reactor.geometry : a specific usage of lattices, for core maps
 
 """
 import re
-
 from typing import Union
 
 from armi import runLog
@@ -64,7 +62,7 @@ class AsciiMap:
     Base class for maps.
 
     These should be able to read and write ASCII maps loaded either from text
-    or programatically with i,j / specifiers.
+    or programmatically with i,j / specifiers.
     """
 
     def __init__(self):
@@ -97,8 +95,21 @@ class AsciiMap:
 
     def writeAscii(self, stream):
         """Write out the ascii representation."""
+        stream.write(self.__str__())
+
+    def __str__(self):
+        """Build the human-readable ASCII string representing the lattice map.
+
+        This method is useful for quickly printing out a lattice map.
+
+        Returns
+        -------
+        str : The custom ARMI ASCII-art-style string representing the map.
+        """
+        # Do some basic validation
         if not self.asciiLines:
-            raise ValueError("Cannot write ASCII map before ASCII lines are processed")
+            raise ValueError("Cannot write ASCII map before ASCII lines are processed.")
+
         if len(self.asciiOffsets) != len(self.asciiLines):
             runLog.error(f"AsciiLines: {self.asciiLines}")
             runLog.error(f"Offsets: {self.asciiOffsets}")
@@ -106,17 +117,27 @@ class AsciiMap:
                 f"Inconsistent lines ({len(self.asciiLines)}) "
                 f"and offsets ({len(self.asciiOffsets)})"
             )
+
+        # Finally, build the string representation.
+        txt = ""
         fmt = f"{{val:{len(self._placeholder)}s}}"
         for offset, line in zip(self.asciiOffsets, self.asciiLines):
             data = [fmt.format(val=v) for v in line]
             line = self._spacer * offset + self._spacer.join(data) + "\n"
-            stream.write(line)
+            txt += line
+
+        return txt
 
     def readAscii(self, text):
         """
         Read ascii representation from a stream.
 
         Update placeholder size according to largest thing read.
+
+        Parameters
+        ----------
+        text : str
+            Custom string that describes the ASCII map of the core.
         """
         text = text.strip().splitlines()
 
@@ -127,6 +148,7 @@ class AsciiMap:
             self.asciiLines.append(columns)
             if len(columns) > self._asciiMaxCol:
                 self._asciiMaxCol = len(columns)
+
         self._asciiMaxLine = li + 1
         self._updateDimensionsFromAsciiLines()
         self._asciiLinesToIndices()
@@ -212,10 +234,10 @@ class AsciiMap:
                 # if entire newline is wiped out, it's a full row of placeholders!
                 # but oops this actually still won't work. Needs more work when
                 # doing pure rows from data is made programmatically.
-                # newLines.append(line)
                 raise ValueError(
                     "Cannot write asciimaps with blank rows from pure data yet."
                 )
+
         if not newLines:
             raise ValueError("No data found")
         self.asciiLines = newLines
@@ -251,6 +273,7 @@ class AsciiMap:
 
     def _makeOffsets(self):
         """Build offsets."""
+        raise NotImplementedError
 
     def items(self):
         return self.asciiLabelByIndices.items()
@@ -296,7 +319,7 @@ class AsciiMapCartesian(AsciiMap):
 
     def _makeOffsets(self):
         """Cartesian grids have 0 offset on all lines."""
-        AsciiMap._makeOffsets(self)
+        self.asciiOffsets = []
         for _line in self.asciiLines:
             self.asciiOffsets.append(0)
 
@@ -308,9 +331,9 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
     """
     Hex ascii map for 1/3 core flats-up map.
 
-    Indices start with (0,0) in the bottom left (origin).
-    i increments on the 30-degree ray
-    j increments on the 90-degree ray
+    - Indices start with (0,0) in the bottom left (origin).
+    - i increments on the 30-degree ray
+    - j increments on the 90-degree ray
 
     In all flats-up hex maps, i increments by 2*col for each col
     and j decrements by col from the base.
@@ -319,7 +342,6 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
     there are 2 ascii lines for every j index (jaggedly).
 
     Lines are read from the bottom of the ascii map up in this case.
-
     """
 
     def _asciiLinesToIndices(self):
@@ -396,7 +418,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         # renomalize the offsets to start at 0
         minOffset = min(self.asciiOffsets)
-        for li, (_, offset) in enumerate(zip(self.asciiLines, self.asciiOffsets)):
+        for offset in self.asciiOffsets:
             newOffsets.append(offset - minOffset)
         self.asciiOffsets = newOffsets
 
@@ -416,9 +438,8 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         Used before writing the asciimap from data.
 
-        Add flat-hex specific corner truncation detection that allows
-        some positions to be empty near the corners of the full hex,
-        as is typical for hexagonal core maps.
+        Add flat-hex specific corner truncation detection that allows some positions to be empty
+        near the corners of the full hex, as is typical for hexagonal core maps.
 
         For 1/3 hex, _ijMax represents the outer outline
         """
@@ -431,8 +452,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         maxIWithData = max(iWithData) if iWithData else -1
         self._asciiLinesOffCorner = (self._ijMax - maxIWithData) * 2 - 1
 
-        # in jagged systems we have to also check the neighbor.
-        # TODO: maybe even more corner positions could be left out in very large maps.
+        # in jagged systems we have to also check the neighbor
         nextIWithData = [i for i, j in self.asciiLabelByIndices if j == 1]
         nextMaxIWithData = max(nextIWithData) if nextIWithData else -1
         if nextMaxIWithData == maxIWithData - 1:
@@ -456,8 +476,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
     number of placeholders on the left. This makes this one's
     base computation more complex.
 
-    We also allow all corners to be cut off on these, further
-    complicating things.
+    We also allow all corners to be cut off on these, further complicating things.
     """
 
     def _getIJBaseByAsciiLine(self, asciiLineNum):
@@ -527,20 +546,16 @@ class AsciiMapHexFullTipsUp(AsciiMap):
     """
     Full hex with tips up of the smaller cells.
 
-    I axis is pure horizontal here
-    J axis is 60 degrees up. (upper right corner)
-
-    (0,0) is in the center of the hexagon.
+    - I axis is pure horizontal here
+    - J axis is 60 degrees up. (upper right corner)
+    - (0,0) is in the center of the hexagon.
 
     Frequently used for pins inside hex assemblies.
 
-    This does not currently support omitted positions on
-    the hexagonal corners.
+    This does not currently support omitted positions on the hexagonal corners.
 
-    In this geometry, the outline-defining _ijMax is equal
-    to I at the far right of the hex. Thus, ijMax represents
-    the number of positions from the center to the outer edge
-    towards any of the 6 corners.
+    In this geometry, the outline-defining _ijMax is equal to I at the far right of the hex. Thus, ijMax represents the
+    number of positions from the center to the outer edge towards any of the 6 corners.
     """
 
     def _asciiLinesToIndices(self):
@@ -560,7 +575,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
         Indices simply increment from the base across the rows.
         """
-        return iBase + columnNum, jBase
+        return iBase + columnNum + jBase, -(iBase + columnNum)
 
     def _getIJFromColRow(self, columnNum, lineNum):
         """
@@ -568,8 +583,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
         Notes
         -----
-        Not used in reading from file b/c inefficient/repeated base calc
-        but required for writing from ij data
+        Not used in reading from file b/c inefficient/repeated base calc but required for writing from ij data.
         """
         iBase, jBase = self._getIJBaseByAsciiLine(lineNum)
         return self._getIJFromColAndBase(columnNum, iBase, jBase)
@@ -580,8 +594,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
         Upper left is shifted by (size-1)//2
 
-        for a 19-line grid, we have the top left as (-18,9)
-        and then: (-17, 8), (-16, 7), ...
+        for a 19-line grid, we have the top left as (-18,9) and then: (-17, 8), (-16, 7), ...
         """
         shift = self._ijMax
         iBase = -shift * 2 + asciiLineNum
@@ -590,8 +603,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
     def _updateDimensionsFromAsciiLines(self):
         """Update dimension metadata when reading ascii."""
-        # ijmax here can be inferred directly from the max number of columns
-        # in the asciimap text
+        # ijmax here can be inferred directly from the max number of columns in the asciimap text
         self._ijMax = (self._asciiMaxCol - 1) // 2
 
     def _updateDimensionsFromData(self):
@@ -610,7 +622,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 
     def _makeOffsets(self):
         """Full hex tips-up grids have linearly incrementing offset."""
-        AsciiMap._makeOffsets(self)
+        self.asciiOffsets = []
         for li, _line in enumerate(self.asciiLines):
             self.asciiOffsets.append(li)
 

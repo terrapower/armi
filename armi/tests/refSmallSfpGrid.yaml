@@ -1,11 +1,11 @@
 sfp:
-    symmetry: full
-    geom: cartesian
-    lattice pitch:
-        x: 50.0
-        y: 50.0
-    grid contents:
-        [0,0]: MC
-        [1,0]: MC
-        [0,1]: MC
-        [1,1]: MC
+  symmetry: full
+  geom: cartesian
+  lattice pitch:
+    x: 50.0
+    y: 50.0
+  grid contents:
+    [0, 0]: MC
+    [1, 0]: MC
+    [0, 1]: MC
+    [1, 1]: MC

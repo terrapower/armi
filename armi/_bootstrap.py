@@ -12,49 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Collection of code that needs to be executed before most ARMI components are safe to
-import.
-"""
-
-import sys
-import tabulate
-
-# This needs to happen pretty darn early, as one of it's purposes is to provide a better
-# python version warning than "invalid syntax". Maybe this is enough of a crutch that we
-# should get rid of it...
-if (
-    sys.version_info.major < 3
-    or sys.version_info.major == 3
-    and sys.version_info.minor < 6
-):
-    raise RuntimeError(
-        "ARMI highly recommends using Python 3.7. Are you sure you are using the correct "
-        "interpreter?\nUsing: {}".format(sys.executable)
-    )
-
-
-def _addCustomTabulateTables():
-    """Create a custom ARMI tables within tabulate."""
-    tabulate._table_formats["armi"] = tabulate.TableFormat(
-        lineabove=tabulate.Line("", "-", "  ", ""),
-        linebelowheader=tabulate.Line("", "-", "  ", ""),
-        linebetweenrows=None,
-        linebelow=tabulate.Line("", "-", "  ", ""),
-        headerrow=tabulate.DataRow("", "  ", ""),
-        datarow=tabulate.DataRow("", "  ", ""),
-        padding=0,
-        with_header_hide=None,
-    )
-    tabulate.tabulate_formats = list(sorted(tabulate._table_formats.keys()))
-    tabulate.multiline_formats["armi"] = "armi"
-
-
-# runLog makes tables, so make sure this is setup before we initialize the runLog
-_addCustomTabulateTables()
-
-
-from armi.nucDirectory import nuclideBases  # noqa: module-import-not-at-top-of-file
+"""Code that needs to be executed before most ARMI components are safe to import."""
+from armi.nucDirectory import nuclideBases  # noqa: E402
 
 # Nuclide bases get built explicitly here to have better determinism
 # about when they get instantiated. The burn chain is not applied

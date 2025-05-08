@@ -17,9 +17,8 @@ import os
 import unittest
 
 from armi import settings
+from armi.nuclearDataIO import isotxs, xsCollections
 from armi.reactor.blocks import HexBlock
-from armi.nuclearDataIO import isotxs
-from armi.nuclearDataIO import xsCollections
 from armi.tests import ISOAA_PATH
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.plotting import plotNucXs
@@ -78,6 +77,12 @@ class TestXsCollections(unittest.TestCase):
             self.assertTrue(os.path.exists(fName))
 
     def test_createMacrosFromMicros(self):
+        """Test calculating macroscopic cross sections from microscopic cross sections.
+
+        .. test:: Compute macroscopic cross sections from microscopic cross sections and number densities.
+            :id: T_ARMI_NUCDATA_MACRO
+            :tests: R_ARMI_NUCDATA_MACRO
+        """
         self.assertEqual(self.mc.minimumNuclideDensity, 1e-13)
         self.mc.createMacrosFromMicros(self.microLib, self.block)
         totalMacroFissionXs = 0.0
@@ -138,16 +143,20 @@ class MockBlock(HexBlock):
         self._r = r
 
     def getVolume(self, *args, **kwargs):
+        """Return the volume of a block."""
         return 1.0
 
     def getNuclideNumberDensities(self, nucNames):
+        """Return a list of number densities in atoms/barn-cm for the nuc names requested."""
         return [self.density.get(nucName, 0.0) for nucName in nucNames]
 
     def _getNdensHelper(self):
         return {nucName: density for nucName, density in self.density.items()}
 
     def setNumberDensity(self, key, val, *args, **kwargs):
+        """Set the number density of this nuclide to this value."""
         self.density[key] = val
 
     def getNuclides(self):
+        """Determine which nuclides are present in this armi block."""
         return self.density.keys()

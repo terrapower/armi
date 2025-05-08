@@ -15,43 +15,59 @@
 """
 Definitions of top-level reactor arrangements like the Core (default), SFP, etc.
 
-See documentation of blueprints in :doc:`/user/inputs/blueprints` for more context. See
-example in :py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
+See documentation of blueprints in :ref:`bp-input-file` for more context. See example in
+:py:mod:`armi.reactor.blueprints.tests.test_reactorBlueprints`.
 
-This was built to replace the old system that loaded the core geometry from the
-cs['geometry'] setting. Until the geom file-based input is completely removed, this
-system will attempt to migrate the core layout from geom files. When geom files are
-used, explicitly specifying a ``core`` system will result in an error.
+This was built to replace the old system that loaded the core geometry from the ``cs['geometry']``
+setting. Until the geom file-based input is completely removed, this system will attempt to migrate
+the core layout from geom files. When geom files are used, explicitly specifying a ``core`` system
+will result in an error.
 
-System Blueprints are a big step in the right direction to generalize user input, but
-was still mostly adapted from the old Core layout input. As such, they still only really
-support Core-like systems. Future work should generalize the concept of "system" to more
-varied scenarios.
+System Blueprints are a big step in the right direction to generalize user input, but was still
+mostly adapted from the old Core layout input. As such, they still only really support Core-like
+systems. Future work should generalize the concept of "system" to more varied scenarios.
 
 See Also
 --------
 armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layouts.
-armi.reactor.systemLayoutInput.SystemLayoutInput : Deprecated method for reading the individual
-face-map xml files.
 """
-import tabulate
 import yamlize
 
-from armi import context
-from armi import getPluginManagerOrFail
-from armi import runLog
-from armi.reactor import geometry
-from armi.reactor import grids
+from armi import context, getPluginManagerOrFail, runLog
+from armi.reactor import geometry, grids
 from armi.reactor.blueprints.gridBlueprint import Triplet
+from armi.utils import tabulate
 
 
 class SystemBlueprint(yamlize.Object):
     """
     The reactor-level structure input blueprint.
 
-    .. note:: We use string keys to link grids to objects that use them. This differs
-        from how blocks/assembies are specified, which use YAML anchors. YAML anchors
-        have proven to be problematic and difficult to work with
+    .. impl:: Build core and spent fuel pool from blueprints
+        :id: I_ARMI_BP_SYSTEMS
+        :implements: R_ARMI_BP_SYSTEMS, R_ARMI_BP_CORE
+
+        This class creates a yaml interface for the user to define systems with grids, such as cores
+        or spent fuel pools, each having their own name, type, grid, and position in space. It is
+        incorporated into the "systems" section of a blueprints file by being included as key-value
+        pairs within the :py:class:`~armi.reactor.blueprints.reactorBlueprint.Systems` class, which
+        is in turn included into the overall blueprints within
+        :py:class:`~armi.reactor.blueprints.Blueprints`.
+
+        This class includes a
+        :py:meth:`~armi.reactor.blueprints.reactorBlueprint.SystemBlueprint.construct` method, which
+        is typically called from within :py:func:`~armi.reactor.reactors.factory` during the
+        initialization of the reactor object to instantiate the core and/or spent fuel pool objects.
+        During that process, a spatial grid is constructed based on the grid blueprints specified in
+        the "grids" section of the blueprints (see :need:`I_ARMI_BP_GRID`) and the assemblies needed
+        to fill the lattice are built from blueprints using
+        :py:meth:`~armi.reactor.blueprints.Blueprints.constructAssem`.
+
+    Notes
+    -----
+    We use string keys to link grids to objects that use them. This differs from how blocks /
+    assembies are specified, which use YAML anchors. YAML anchors have proven to be problematic and
+    difficult to work with.
     """
 
     name = yamlize.Attribute(key="name", type=str)
@@ -61,12 +77,12 @@ class SystemBlueprint(yamlize.Object):
 
     def __init__(self, name=None, gridName=None, origin=None):
         """
-        A Reactor Level Structure like a core or SFP.
+        A Reactor-level structure like a core, or ex-core like SFP.
 
         Notes
         -----
-        yamlize does not call an __init__ method, instead it uses __new__ and setattr
-        this is only needed for when you want to make this object from a non-YAML source.
+        yamlize does not call an __init__ method, instead it uses __new__ and setattr this is only
+        needed for when you want to make this object from a non-YAML source.
         """
         self.name = name
         self.gridName = gridName
@@ -74,21 +90,17 @@ class SystemBlueprint(yamlize.Object):
 
     @staticmethod
     def _resolveSystemType(typ: str):
-        # Loop over all plugins that could be attached and determine if any
-        # tell us how to build a specific systems attribute. Sub-optimial
-        # as this check is called for each system (e.g., core, spent fuel pool).
-        # It is assumed that the number of systems is currently low enough to justify
-        # this structure.
-
+        """Loop over all plugins that could be attached and determine if any tell us how to build a
+        specific systems attribute.
+        """
         manager = getPluginManagerOrFail()
 
         # Only need this to handle the case we don't find the system we expect
         seen = set()
         for options in manager.hook.defineSystemBuilders():
             for key, builder in options.items():
-                # Take the first match we find. This would allow other plugins to
-                # define a new core builder before finding those defined by the
-                # ReactorPlugin
+                # Take the first match we find. This would allow other plugins to define a new core
+                # builder before finding those defined by the ReactorPlugin
                 if key == typ:
                     return builder
                 seen.add(key)
@@ -98,87 +110,98 @@ class SystemBlueprint(yamlize.Object):
             "system of type `{}`. Supported types are {}.".format(typ, sorted(seen))
         )
 
-    def construct(self, cs, bp, reactor, geom=None, loadAssems=True):
-        """Build a core/IVS/EVST/whatever and fill it with children.
+    def construct(self, cs, bp, reactor, loadComps=True):
+        """Build a core or ex-core grid and fill it with children.
 
         Parameters
         ----------
-        cs : :py:class:`Settings <armi.settings.Settings>` object.
+        cs : :py:class:`Settings <armi.settings.Settings>`
             armi settings to apply
-        bp : :py:class:`Reactor <armi.reactor.blueprints.Blueprints>` object.
+        bp : :py:class:`Reactor <armi.reactor.blueprints.Blueprints>`
             armi blueprints to apply
-        reactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
+        reactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>`
             reactor to fill
-        geom : optional
-        loadAssems : bool, optional
+        loadComps : bool, optional
             whether to fill reactor with assemblies, as defined in blueprints, or not. Is False in
             :py:class:`UniformMeshGeometryConverter <armi.reactor.converters.uniformMesh.UniformMeshGeometryConverter>`
-            within the initNewReactor() class method.
+            within the initNewReactor() method.
+
+        Returns
+        -------
+        Composite
+            A Composite object with a grid, like a Spent Fuel Pool or other ex-core structure.
 
         Raises
         ------
         ValueError
             input error, no grid design provided
         ValueError
-            for 1/3 core maps, assemblies are defined outside the expected 1/3 core region
+            objects were added to non-existent grid locations
         """
-        from armi.reactor import reactors  # avoid circular import
+        runLog.info(f"Constructing the `{self.name}`")
 
-        runLog.info("Constructing the `{}`".format(self.name))
+        if not bp.gridDesigns:
+            raise ValueError(
+                "The input must define grids to construct a reactor, but does not. Update input."
+            )
 
-        if geom is not None and self.name == "core":
-            gridDesign = geom.toGridBlueprints("core")[0]
-        else:
-            if not bp.gridDesigns:
-                raise ValueError(
-                    "The input must define grids to construct a reactor, but "
-                    "does not. Update input."
-                )
-            gridDesign = bp.gridDesigns.get(self.gridName, None)
-
+        gridDesign = bp.gridDesigns.get(self.gridName, None)
         system = self._resolveSystemType(self.typ)(self.name)
 
-        # Some systems may not require a prescribed grid design. Only try to use one if
-        # it was provided
+        # Some systems may not require a prescribed grid design. Only use one if provided
         if gridDesign is not None:
             spatialGrid = gridDesign.construct()
             system.spatialGrid = spatialGrid
             system.spatialGrid.armiObject = system
 
-        reactor.add(system)  # need parent before loading assemblies
+        reactor.add(system)  # ensure the reactor is the parent
         spatialLocator = grids.CoordinateLocation(
             self.origin.x, self.origin.y, self.origin.z, None
         )
         system.spatialLocator = spatialLocator
         if context.MPI_RANK != 0:
-            # on non-primary nodes we don't bother building up the assemblies
-            # because they will be populated with DistributeState.
+            # Non-primary nodes get the reactor via DistributeState.
             return None
 
-        # TODO: This is also pretty specific to Core-like things. We envision systems
-        # with non-Core-like structure. Again, probably only doable with subclassing of
-        # Blueprints
-        if loadAssems and gridDesign is not None:
-            self._loadAssemblies(cs, system, gridDesign.gridContents, bp)
+        system = self._constructComposites(cs, bp, loadComps, system, gridDesign)
 
-            # TODO: This post-construction work is specific to Cores for now. We need to
-            # generalize this. Things to consider:
-            # - Should the Core be able to do geom modifications itself, since it already
-            # has the grid constructed from the grid design?
-            # - Should the summary be so specifically Material data? Should this be done for
-            # non-Cores? Like geom modifications, could this just be done in processLoading?
-            # Should it be invoked higher up, by whatever code is requesting the Reactor be
-            # built from Blueprints?
-            if isinstance(system, reactors.Core):
+        return system
+
+    def _constructComposites(self, cs, bp, loadComps, system, gridDesign):
+        """Fill a grid with composities, if there are any to fill.
+
+        Parameters
+        ----------
+        cs : Settings object.
+            armi settings to apply
+        bp : Blueprints object.
+            armi blueprints to apply
+        loadComps : bool
+            whether to fill reactor with composities, as defined in blueprints, or not
+        system : Composite
+            The composite we are building.
+        gridDesign : GridBlueprint
+            The definition of the grid on the object.
+
+        Returns
+        -------
+        Composite
+            A Composite object with a grid, like a Spent Fuel Pool or other ex-core structure.
+        """
+        from armi.reactor.reactors import Core  # avoid circular import
+
+        if loadComps and gridDesign is not None:
+            self._loadComposites(cs, system, gridDesign.gridContents, bp)
+
+            if isinstance(system, Core):
                 summarizeMaterialData(system)
                 self._modifyGeometry(system, gridDesign)
                 system.processLoading(cs)
+
         return system
 
-    def _loadAssemblies(self, cs, container, gridContents, bp):
-        runLog.header(
-            "=========== Adding Assemblies to {} ===========".format(container)
-        )
+    def _loadComposites(self, cs, container, gridContents, bp):
+        runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
@@ -192,29 +215,26 @@ class SystemBlueprint(yamlize.Object):
 
         if badLocations:
             raise ValueError(
-                "Geometry core map xml had assemblies outside the "
-                "first third core, but had third core symmetry. \n"
-                "Please update symmetry to be `full core` or "
-                "remove assemblies outside the first third. \n"
-                "The locations outside the first third are {}".format(badLocations)
+                f"Attempted to add objects to non-existent locations on the grid: {badLocations}."
             )
 
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
         # all cases should have no edge assemblies. They are added ephemerally when needed
-        from armi.reactor.converters import geometryConverters  # circular imports
+        from armi.reactor.converters import (
+            geometryConverters,
+        )
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()
+        converter.scaleParamsRelatedToSymmetry(container)
         converter.removeEdgeAssemblies(container)
 
         # now update the spatial grid dimensions based on the populated children
         # (unless specified on input)
         if not gridDesign.latticeDimensions:
             runLog.info(
-                "Updating spatial grid pitch data for {} geometry".format(
-                    container.geomType
-                )
+                f"Updating spatial grid pitch data for {container.geomType} geometry"
             )
             if container.geomType == geometry.GeomType.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
@@ -238,27 +258,22 @@ def summarizeMaterialData(container):
         Any Core object with Blocks and Components defined.
     """
     runLog.header(
-        "=========== Summarizing Source of Material Data for {} ===========".format(
-            container
-        )
+        f"=========== Summarizing Source of Material Data for {container} ==========="
     )
     materialNames = set()
     materialData = []
     for c in container.iterComponents():
         if c.material.name in materialNames:
             continue
-        materialData.append((c.material.name, c.material.DATA_SOURCE, False))
+        materialData.append((c.material.name, c.material.DATA_SOURCE))
         materialNames.add(c.material.name)
+
     materialData = sorted(materialData)
     runLog.info(
         tabulate.tabulate(
-            tabular_data=materialData,
-            headers=[
-                "Material Name",
-                "Source Location",
-                "Property Data was Modified\nfrom the Source?",
-            ],
-            tablefmt="armi",
+            data=materialData,
+            headers=["Material Name", "Source Location"],
+            tableFmt="armi",
         )
     )
     return materialData

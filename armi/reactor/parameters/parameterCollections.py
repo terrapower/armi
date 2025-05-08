@@ -14,34 +14,32 @@
 
 import copy
 import pickle
-from typing import Any, Optional, List, Set
 import sys
+from typing import Any, Callable, Iterator, List, Optional, Set
 
-import numpy
-import six
+import numpy as np
 
 from armi import runLog
-from armi.reactor.parameters import parameterDefinitions, exceptions
+from armi.reactor.parameters import exceptions, parameterDefinitions
 from armi.reactor.parameters.parameterDefinitions import (
-    SINCE_LAST_DISTRIBUTE_STATE,
-    SINCE_BACKUP,
-    SINCE_ANYTHING,
     NEVER,
+    SINCE_ANYTHING,
+    SINCE_BACKUP,
+    SINCE_LAST_DISTRIBUTE_STATE,
 )
 from armi.utils import units
-
 
 GLOBAL_SERIAL_NUM = -1
 """
 The serial number for all ParameterCollections
 
-This is a counter of the number of instances of all types. They are useful for tracking
-items through the history of a database.
+This is a counter of the number of instances of all types. They are useful for tracking items
+through the history of a database.
 
-.. warning::
-
-        This is not MPI safe. We also have not done anything to make it thread safe,
-        except that the GIL exists.
+Warning
+-------
+This is not MPI safe. We also have not done anything to make it thread safe, except that the GIL
+exists.
 """
 
 
@@ -70,8 +68,8 @@ class _ParameterCollectionType(type):
     """
     Simple metaclass to make sure that expected class attributes are present.
 
-    These attributes shouldn't  be shared among different subclasses, so this
-    makes sure that each subclass gets its own.
+    These attributes shouldn't  be shared among different subclasses, so this makes sure that each
+    subclass gets its own.
     """
 
     def __new__(mcl, name, bases, attrs):
@@ -83,17 +81,15 @@ class _ParameterCollectionType(type):
 
 
 class ParameterCollection(metaclass=_ParameterCollectionType):
-    r"""An empty class for holding state information in the ARMI data structure.
+    """An empty class for holding state information in the ARMI data structure.
 
-    A parameter collection stores one or more formally-defined values ("parameters").
-    Until a given ParameterCollection subclass has been instantiated, new parameters may
-    be added to its parameter definitions (e.g., from plugins). Upon first
-    instantiation, ``applyParameters()`` will be called, binding the parameter
-    definitions to the Collection class as descriptors.
+    A parameter collection stores one or more formally-defined values ("parameters"). Until a given
+    ParameterCollection subclass has been instantiated, new parameters may be added to its parameter
+    definitions (e.g., from plugins). Upon first instantiation, ``applyParameters()`` will be
+    called, binding the parameter definitions to the Collection class as descriptors.
 
-    It is illegal to redefine a parameter with the same name in the same class, or its
-    subclasses, and attempting to do so should result in exceptions in
-    ``applyParameters()``.
+    It is illegal to redefine a parameter with the same name in the same class, or its subclasses,
+    and attempting to do so should result in exceptions in ``applyParameters()``.
 
     Attributes
     ----------
@@ -104,13 +100,12 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         Keys are ``(paramName, timeStep)``.
 
     assigned : int Flag
-        indicates the synchronization state of the parameter collection. This is used to
-        reduce the amount of information that is transmitted during database, and MPI
-        operations as well as determine the collection's state when exiting a
-        ``Composite.retainState``.
+        indicates the synchronization state of the parameter collection. This is used to reduce the
+        amount of information that is transmitted during database, and MPI operations as well as
+        determine the collection's state when exiting a ``Composite.retainState``.
 
-        This attribute when used with the ``Parameter.assigned`` attribute allows us to
-        efficiently perform many operations.
+        This attribute when used with the ``Parameter.assigned`` attribute allows us to efficiently
+        perform many operations.
 
     See Also
     --------
@@ -122,12 +117,20 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     )
     _allFields: List[str] = []
 
-    # The ArmiObject class that this ParameterCollection belongs to
     _ArmiObject = None
+    """The ArmiObject class that this ParameterCollection belongs to.
 
-    # A set of all instance attributes that are settable on an instance. This prevents
-    # inadvertent setting of values that aren't proper parameters. Named _slots, as
-    # it is used to emulate some of the behaviors of __slots__.
+    Crucially **not** the instance that owns this collection. For any
+    ``ArmiObject``, the following are true::
+
+        >>> self.p._ArmiObject is not self
+        >>> isinstance(self, self.p._ArmiObject)
+
+    """
+
+    # A set of all instance attributes that are settable on an instance. This prevents inadvertent
+    # setting of values that aren't proper parameters. Named _slots, as it is used to emulate some
+    # of the behaviors of __slots__.
     _slots: Set[str] = set()
 
     def __init__(self, _state: Optional[List[Any]] = None):
@@ -141,6 +144,10 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             should come from a call to __getstate__(). This should only be used
             internally to this model.
         """
+        # add a hook to make this readOnly
+        self._slots.add("readOnly")
+        self.readOnly = False
+
         if self.pDefs is None or not self.pDefs.locked:
             type(self).applyParameters()
 
@@ -271,6 +278,14 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             "a ParameterCollection!".format(key)
         )
 
+        if getattr(self, "readOnly", False):
+            if key == "readOnly":
+                raise RuntimeError(
+                    "A read-only Parameter Collection cannot be made writeable."
+                )
+            else:
+                raise RuntimeError(f"Cannot set a read-only parameter {key}.")
+
         object.__setattr__(self, key, value)
 
     def __deepcopy__(self, memo):
@@ -348,7 +363,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             )
 
     def __delitem__(self, name):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             pd = self.paramDefs[name]
             if hasattr(self, pd.fieldName):
                 pd.assigned = SINCE_ANYTHING
@@ -357,12 +372,12 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             del self._hist[name]
 
     def __contains__(self, name):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             return hasattr(self, "_p_" + name)
         else:
             return name in self._hist
 
-    def __eq__(self, other):
+    def __eq__(self, other: "ParameterCollection"):
         if not isinstance(other, self.__class__):
             return False
 
@@ -377,7 +392,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
 
         return True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
+        """Iterate over names of assigned parameters define on this collection."""
         return (
             pd.name
             for pd in self.paramDefs
@@ -425,7 +441,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         Get the :py:class:`ParameterDefinitionCollection` associated with this instance.
 
         This serves as both an alias for the pDefs class attribute, and as a read-only
-        accessor for them. Most non-paramter-system related interactions with an
+        accessor for them. Most non-parameter-system related interactions with an
         object's ``ParameterCollection`` should go through this. In the future, it
         probably makes sense to make the ``pDefs`` that the ``applyDefinitions`` and
         ``ResolveParametersMeta`` things are sensitive to more hidden from outside the
@@ -484,8 +500,8 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         for pd, currentValue in currentData.items():
             # correct for global paramDef.assigned assumption
             retainedValue = getattr(self, pd.fieldName)
-            if isinstance(retainedValue, numpy.ndarray) or isinstance(
-                currentValue, numpy.ndarray
+            if isinstance(retainedValue, np.ndarray) or isinstance(
+                currentValue, np.ndarray
             ):
                 if (retainedValue != currentValue).any():
                     setattr(self, pd.fieldName, currentValue)
@@ -495,6 +511,32 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
                 setattr(self, pd.fieldName, currentValue)
                 pd.assigned = SINCE_ANYTHING
                 self.assigned = SINCE_ANYTHING
+
+    def where(
+        self, f: Callable[[parameterDefinitions.Parameter], bool]
+    ) -> Iterator[parameterDefinitions.Parameter]:
+        """Produce an iterator over parameters that meet some criteria.
+
+        Parameters
+        ----------
+        f : callable function f(parameter) -> bool
+            Function to check if a parameter should be fetched during the iteration.
+
+        Returns
+        -------
+        iterator of :class:`armi.reactor.parameters.Parameter`
+            Iterator, **not** list or tuple, that produces each parameter that
+            meets ``f(parameter) == True``.
+
+        Examples
+        --------
+        >>> block = r.core[0][0]
+        >>> pdef = block.p.paramDefs
+        >>> for param in pdef.where(lambda pd: pd.atLocation(ParamLocation.EDGES)):
+        ...     print(param.name, block.p[param.name])
+
+        """
+        return filter(f, self.paramDefs)
 
 
 def collectPluginParameters(pm):

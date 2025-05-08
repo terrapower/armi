@@ -15,16 +15,15 @@
 import copy
 import filecmp
 import os
+import pickle
 import traceback
 import unittest
 
-from six.moves import cPickle
+import numpy as np
 
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import xsLibraries
-from armi.nuclearDataIO.cccc import gamiso
-from armi.nuclearDataIO.cccc import isotxs
-from armi.nuclearDataIO.cccc import pmatrx
+from armi.nuclearDataIO.cccc import gamiso, isotxs, pmatrx
 from armi.tests import mockRunLogs
 from armi.utils import properties
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -55,7 +54,7 @@ UFG_FLUX_EDIT = os.path.join(FIXTURE_DIR, "mc2v3-AA.flux_ufg")
 
 
 class TempFileMixin:
-    """really a test case."""
+    """Not a test; just helpful test tooling."""
 
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
@@ -67,12 +66,12 @@ class TempFileMixin:
     @property
     def testFileName(self):
         return os.path.join(
-            THIS_DIR,
+            self.td.destination,
             "{}-{}.nucdata".format(self.__class__.__name__, self._testMethodName),
         )
 
 
-class TestXSLibrary(unittest.TestCase, TempFileMixin):
+class TestXSLibrary(TempFileMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.isotxsAA = isotxs.readBinary(ISOTXS_AA)
@@ -84,19 +83,19 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
             cls.xsLib.merge(copy.deepcopy(cls.isotxsAA))
             cls.xsLib.merge(copy.deepcopy(cls.gamisoAA))
             cls.xsLib.merge(copy.deepcopy(cls.pmatrxAA))
-        except:  # noqa: bare-except
+        except Exception:
             cls.xsLibGenerationErrorStack = traceback.format_exc()
 
     def test_canPickleAndUnpickleISOTXS(self):
-        pikAA = cPickle.loads(cPickle.dumps(self.isotxsAA))
+        pikAA = pickle.loads(pickle.dumps(self.isotxsAA))
         self.assertTrue(xsLibraries.compare(pikAA, self.isotxsAA))
 
     def test_canPickleAndUnpickleGAMISO(self):
-        pikAA = cPickle.loads(cPickle.dumps(self.gamisoAA))
+        pikAA = pickle.loads(pickle.dumps(self.gamisoAA))
         self.assertTrue(xsLibraries.compare(pikAA, self.gamisoAA))
 
     def test_canPickleAndUnpicklePMATRX(self):
-        pikAA = cPickle.loads(cPickle.dumps(self.pmatrxAA))
+        pikAA = pickle.loads(pickle.dumps(self.pmatrxAA))
         self.assertTrue(xsLibraries.compare(pikAA, self.pmatrxAA))
 
     def test_compareWorks(self):
@@ -127,23 +126,24 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
         finally:
             os.remove(dummyFileName)
 
-        dummyFileName = "ISOtopics.txt"
-        with open(dummyFileName, "w") as file:
-            file.write(
-                "This is a file that starts with the letters 'ISO' but will"
-                " break the regular expression search."
-            )
-
-        try:
-            with mockRunLogs.BufferLog() as log:
-                lib = xsLibraries.IsotxsLibrary()
-                xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
-                self.assertIn(
-                    f"{dummyFileName} in the merging of ISOXX files",
-                    log.getStdout(),
+        with TemporaryDirectoryChanger():
+            dummyFileName = "ISO[]"
+            with open(dummyFileName, "w") as file:
+                file.write(
+                    "This is a file that starts with the letters 'ISO' but will"
+                    " break the regular expression search."
                 )
-        finally:
-            pass
+
+            try:
+                with mockRunLogs.BufferLog() as log:
+                    lib = xsLibraries.IsotxsLibrary()
+                    xsLibraries.mergeXSLibrariesInWorkingDirectory(lib)
+                    self.assertIn(
+                        f"{dummyFileName} in the merging of ISOXX files",
+                        log.getStdout(),
+                    )
+            finally:
+                pass
 
     def _xsLibraryAttributeHelper(
         self,
@@ -228,13 +228,13 @@ class TestXSLibrary(unittest.TestCase, TempFileMixin):
     def _canWritefromCombined(self, writer, refFile):
         if self.xsLibGenerationErrorStack is not None:
             print(self.xsLibGenerationErrorStack)
-            raise Exception("see stdout for stack trace")
+            raise Exception("See stdout for stack trace")
         # check to make sure they labels overlap... or are actually the same
         writer.writeBinary(self.xsLib, self.testFileName)
         self.assertTrue(filecmp.cmp(refFile, self.testFileName))
 
 
-class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
+class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
     def test_getISOTXSFilesWithoutLibrarySuffix(self):
         shouldBeThere = ["ISOAA", "ISOBA", os.path.join("file-path", "ISOCA")]
         shouldNotBeThere = [
@@ -279,47 +279,31 @@ class Test_GetISOTXSFilesInWorkingDirectory(unittest.TestCase):
         """
         Utility method for saying what things contain.
 
-        This could just check the contents and the length, but the error produced when you pass shouldNotBeThere
-        is much nicer.
+        This could just check the contents and the length, but the error produced when you pass
+        shouldNotBeThere is much nicer.
         """
         container = set(container)
         self.assertEqual(container, set(shouldBeThere))
         self.assertEqual(set(), container & set(shouldNotBeThere))
 
 
-# NOTE: This is just a base class, so it isn't run directly.
-class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
-    """A shared class that defines tests that should be true for all IsotxsLibrary merging."""
+class AbstractTestXSlibraryMerging(TempFileMixin):
+    """
+    A shared class that defines tests that should be true for all IsotxsLibrary merging.
 
-    @classmethod
-    def setUpClass(cls):
-        cls.libAA = None
-        cls.libAB = None
-        cls.libCombined = None
-        cls.libLumped = None
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.libAA = None
-        cls.libAB = None
-        cls.libCombined = None
-        cls.libLumped = None
-        del cls.libAA
-        del cls.libAB
-        del cls.libCombined
-        del cls.libLumped
+    Notes
+    -----
+    This is just a base class, it isn't run directly.
+    """
 
     def setUp(self):
-        # load a library that is in the ARMI tree. This should
-        # be a small library with LFPs, Actinides, structure, and coolant
-        for attrName, path in [
-            ("libAA", self.getLibAAPath),
-            ("libAB", self.getLibABPath),
-            ("libCombined", self.getLibAA_ABPath),
-            ("libLumped", self.getLibLumpedPath),
-        ]:
-            if getattr(self.__class__, attrName) is None:
-                setattr(self.__class__, attrName, self.getReadFunc()(path()))
+        TempFileMixin.setUp(self)
+        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
+        # Actinides, structure, and coolant
+        self.libAA = self.getReadFunc()(self.getLibAAPath())
+        self.libAB = self.getReadFunc()(self.getLibABPath())
+        self.libCombined = self.getReadFunc()(self.getLibAA_ABPath())
+        self.libLumped = self.getReadFunc()(self.getLibLumpedPath())
 
     def getErrorType(self):
         raise NotImplementedError()
@@ -352,26 +336,26 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         with self.assertRaises(AttributeError):
             self.libCombined.merge(self.libAA)
 
-    def test_cannotMergeXSLibxWithDifferentGroupStructure(self):
+    def test_cannotMergeXSLibxWithDiffGroupStructure(self):
         dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.neutronEnergyUpperBounds = [1, 2, 3]
-        dummyXsLib.gammaEnergyUpperBounds = [1, 2, 3]
+        dummyXsLib.neutronEnergyUpperBounds = np.array([1, 2, 3])
+        dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
         with self.assertRaises(properties.ImmutablePropertyError):
             dummyXsLib.merge(self.libCombined)
 
-    def test_mergeEmptyXSLibWithOtherEssentiallyClonesTheOther(self):
+    def test_mergeEmptyXSLibWithOtherClonesTheOther(self):
         emptyXSLib = xsLibraries.IsotxsLibrary()
         emptyXSLib.merge(self.libAA)
-        self.__class__.libAA = None
+        self.libAA = None
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibAAPath(), self.testFileName))
 
     def test_mergeTwoXSLibFiles(self):
         emptyXSLib = xsLibraries.IsotxsLibrary()
         emptyXSLib.merge(self.libAA)
-        self.__class__.libAA = None
+        self.libAA = None
         emptyXSLib.merge(self.libAB)
-        self.__class__.libAB = None
+        self.libAB = None
         self.assertEqual(
             set(self.libCombined.nuclideLabels), set(emptyXSLib.nuclideLabels)
         )
@@ -379,12 +363,65 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
 
+
+class Pmatrx_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+    def getErrorType(self):
+        return OSError
+
+    def getReadFunc(self):
+        return pmatrx.readBinary
+
+    def getWriteFunc(self):
+        return pmatrx.writeBinary
+
+    def getLibAAPath(self):
+        return PMATRX_AA
+
+    def getLibABPath(self):
+        return PMATRX_AB
+
+    def getLibAA_ABPath(self):
+        return PMATRX_AA_AB
+
+    def getLibLumpedPath(self):
+        return PMATRX_LUMPED
+
+    def test_cannotMergeXSLibsWithDiffGammaGroups(self):
+        """Test that we cannot merge XS Libs with different Gamma Group Structures."""
+        dummyXsLib = xsLibraries.IsotxsLibrary()
+        dummyXsLib.gammaEnergyUpperBounds = np.array([1, 2, 3])
+        with self.assertRaises(properties.ImmutablePropertyError):
+            dummyXsLib.merge(self.libCombined)
+
+
+class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
+    def getErrorType(self):
+        return OSError
+
+    def getReadFunc(self):
+        return isotxs.readBinary
+
+    def getWriteFunc(self):
+        return isotxs.writeBinary
+
+    def getLibAAPath(self):
+        return ISOTXS_AA
+
+    def getLibABPath(self):
+        return ISOTXS_AB
+
+    def getLibAA_ABPath(self):
+        return ISOTXS_AA_AB
+
+    def getLibLumpedPath(self):
+        return ISOTXS_LUMPED
+
     def test_canRemoveIsotopes(self):
         emptyXSLib = xsLibraries.IsotxsLibrary()
         emptyXSLib.merge(self.libAA)
-        self.__class__.libAA = None
+        self.libAA = None
         emptyXSLib.merge(self.libAB)
-        self.__class__.libAB = None
+        self.libAB = None
         for nucId in [
             "ZR93_7",
             "ZR95_7",
@@ -408,64 +445,7 @@ class TestXSlibraryMerging(unittest.TestCase, TempFileMixin):
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
 
-class Pmatrx_merge_Tests(TestXSlibraryMerging):
-    def getErrorType(self):
-        return OSError
-
-    def getReadFunc(self):
-        return pmatrx.readBinary
-
-    def getWriteFunc(self):
-        return pmatrx.writeBinary
-
-    def getLibAAPath(self):
-        return PMATRX_AA
-
-    def getLibABPath(self):
-        return PMATRX_AB
-
-    def getLibAA_ABPath(self):
-        return PMATRX_AA_AB
-
-    def getLibLumpedPath(self):
-        return PMATRX_LUMPED
-
-    @unittest.skip("Do not have data for comparing merged and purged PMATRX")
-    def test_canRemoveIsotopes(self):
-        # this test does not work for PMATRX, MC**2-v3 does not currently
-        pass
-
-    def test_cannotMergeXSLibsWithDifferentGammaGroupStructures(self):
-        dummyXsLib = xsLibraries.IsotxsLibrary()
-        dummyXsLib.gammaEnergyUpperBounds = [1, 2, 3]
-        with self.assertRaises(properties.ImmutablePropertyError):
-            dummyXsLib.merge(self.libCombined)
-
-
-class Isotxs_merge_Tests(TestXSlibraryMerging):
-    def getErrorType(self):
-        return OSError
-
-    def getReadFunc(self):
-        return isotxs.readBinary
-
-    def getWriteFunc(self):
-        return isotxs.writeBinary
-
-    def getLibAAPath(self):
-        return ISOTXS_AA
-
-    def getLibABPath(self):
-        return ISOTXS_AB
-
-    def getLibAA_ABPath(self):
-        return ISOTXS_AA_AB
-
-    def getLibLumpedPath(self):
-        return ISOTXS_LUMPED
-
-
-class Gamiso_merge_Tests(TestXSlibraryMerging):
+class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
     def getErrorType(self):
         return OSError
 
@@ -487,49 +467,46 @@ class Gamiso_merge_Tests(TestXSlibraryMerging):
     def getLibLumpedPath(self):
         return GAMISO_LUMPED
 
-
-class Combined_merge_Tests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.isotxsAA = None
-        cls.isotxsAB = None
-        cls.gamisoAA = None
-        cls.gamisoAB = None
-        cls.pmatrxAA = None
-        cls.pmatrxAB = None
-        cls.libCombined = None
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.isotxsAA = None
-        cls.isotxsAB = None
-        cls.gamisoAA = None
-        cls.gamisoAB = None
-        cls.pmatrxAA = None
-        cls.pmatrxAB = None
-        cls.libCombined = None
-        del cls.isotxsAA
-        del cls.isotxsAB
-        del cls.gamisoAA
-        del cls.gamisoAB
-        del cls.pmatrxAA
-        del cls.pmatrxAB
-        del cls.libCombined
-
-    def setUp(self):
-        # load a library that is in the ARMI tree. This should
-        # be a small library with LFPs, Actinides, structure, and coolant
-        for attrName, path, readFunc in [
-            ("isotxsAA", ISOTXS_AA, isotxs.readBinary),
-            ("gamisoAA", GAMISO_AA, gamiso.readBinary),
-            ("pmatrxAA", PMATRX_AA, pmatrx.readBinary),
-            ("isotxsAB", ISOTXS_AB, isotxs.readBinary),
-            ("gamisoAB", GAMISO_AB, gamiso.readBinary),
-            ("pmatrxAB", PMATRX_AB, pmatrx.readBinary),
-            ("libCombined", ISOTXS_AA_AB, isotxs.readBinary),
+    def test_canRemoveIsotopes(self):
+        emptyXSLib = xsLibraries.IsotxsLibrary()
+        emptyXSLib.merge(self.libAA)
+        self.libAA = None
+        emptyXSLib.merge(self.libAB)
+        self.libAB = None
+        for nucId in [
+            "ZR93_7",
+            "ZR95_7",
+            "XE1287",
+            "XE1297",
+            "XE1307",
+            "XE1317",
+            "XE1327",
+            "XE1337",
+            "XE1347",
+            "XE1357",
+            "XE1367",
         ]:
-            if getattr(self.__class__, attrName) is None:
-                setattr(self.__class__, attrName, readFunc(path))
+            nucLabel = nuclideBases.byMcc3Id[nucId].label
+            del emptyXSLib[nucLabel + "AA"]
+            del emptyXSLib[nucLabel + "AB"]
+        self.assertEqual(
+            set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels)
+        )
+        self.getWriteFunc()(emptyXSLib, self.testFileName)
+        self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
+
+
+class Combined_Merge_Tests(unittest.TestCase):
+    def setUp(self):
+        # Load a library that is in the ARMI tree. This should be a small library with LFPs,
+        # Actinides, structure, and coolant
+        self.isotxsAA = isotxs.readBinary(ISOTXS_AA)
+        self.gamisoAA = gamiso.readBinary(GAMISO_AA)
+        self.pmatrxAA = pmatrx.readBinary(PMATRX_AA)
+        self.isotxsAB = isotxs.readBinary(ISOTXS_AB)
+        self.gamisoAB = gamiso.readBinary(GAMISO_AB)
+        self.pmatrxAB = pmatrx.readBinary(PMATRX_AB)
+        self.libCombined = isotxs.readBinary(ISOTXS_AA_AB)
 
     def test_mergeAllXSLibFiles(self):
         lib = xsLibraries.IsotxsLibrary()
@@ -537,7 +514,3 @@ class Combined_merge_Tests(unittest.TestCase):
             lib, xsLibrarySuffix="", mergeGammaLibs=True, alternateDirectory=FIXTURE_DIR
         )
         self.assertEqual(set(lib.nuclideLabels), set(self.libCombined.nuclideLabels))
-
-
-# Remove the abstract class, so that it does not run (all tests would fail)
-del TestXSlibraryMerging

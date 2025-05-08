@@ -15,6 +15,7 @@
 """The Fission product model subpackage."""
 
 import os
+
 from armi.context import RES
 
 REFERENCE_LUMPED_FISSION_PRODUCT_FILE = os.path.join(

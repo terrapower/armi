@@ -16,31 +16,31 @@
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports.
 """
-from copy import copy
 import collections
 import os
 import pathlib
 import re
+import subprocess
 import sys
-import tabulate
 import textwrap
 import time
+from copy import copy
 
-import numpy
+import numpy as np
 
-from armi import context
-from armi import interfaces
-from armi import runLog
+from armi import context, interfaces, runLog
 from armi.bookkeeping import report
 from armi.operators import RunTypes
 from armi.reactor.components import ComponentType
 from armi.reactor.flags import Flags
-from armi.utils import getFileSHA1Hash
-from armi.utils import iterables
-from armi.utils import plotting
-from armi.utils import textProcessors
-from armi.utils import units
-
+from armi.utils import (
+    getFileSHA1Hash,
+    iterables,
+    plotting,
+    tabulate,
+    textProcessors,
+    units,
+)
 
 # Set to prevent the image and text from being too small to read.
 MAX_ASSEMS_PER_ASSEM_PLOT = 6
@@ -52,6 +52,7 @@ Operator_NumProcessors = "Number of Processors:"
 Operator_WorkingDirectory = "Working Directory:"
 Operator_CurrentUser = "Current User:"
 Operator_PythonInterperter = "Python Interpreter:"
+Operator_PythonExecutable = "Python Executable:"
 Operator_ArmiCodebase = "ARMI Location:"
 Operator_MasterMachine = "Master Machine:"
 Operator_Date = "Date and Time:"
@@ -77,13 +78,14 @@ def writeWelcomeHeaders(o, cs):
             (Operator_ArmiCodebase, context.ROOT),
             (Operator_WorkingDirectory, os.getcwd()),
             (Operator_PythonInterperter, sys.version),
-            (Operator_MasterMachine, os.environ.get("COMPUTERNAME", "?")),
+            (Operator_PythonExecutable, sys.executable),
+            (Operator_MasterMachine, getNodeName()),
             (Operator_NumProcessors, context.MPI_SIZE),
             (Operator_Date, context.START_TIME),
         ]
 
         runLog.header("=========== Case Information ===========")
-        runLog.info(tabulate.tabulate(caseInfo, tablefmt="armi"))
+        runLog.info(tabulate.tabulate(caseInfo, tableFmt="armi"))
 
     def _listInputFiles(cs):
         """
@@ -107,14 +109,10 @@ def writeWelcomeHeaders(o, cs):
             includedBlueprints = []
 
         inputInfo = []
-        inputFiles = (
-            [
-                ("Case Settings", cs.caseTitle + ".yaml"),
-                ("Blueprints", cs[CONF_LOADING_FILE]),
-            ]
-            + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
-            + [("Geometry", cs["geomFile"])]
-        )
+        inputFiles = [
+            ("Case Settings", cs.caseTitle + ".yaml"),
+            ("Blueprints", cs[CONF_LOADING_FILE]),
+        ] + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
 
         activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
         for klass, kwargs in activeInterfaces:
@@ -137,14 +135,23 @@ def writeWelcomeHeaders(o, cs):
             inputInfo.append((label, fName, shaHash))
 
         # bonus: grab the files stored in the crossSectionControl section
-        for fluxSection, fluxData in cs["crossSectionControl"].items():
-            if fluxData.xsFileLocation is not None:
-                label = f"crossSectionControl-{fluxSection}"
-                fName = fluxData.xsFileLocation
-                if isinstance(fName, list):
-                    fName = fName[0]
+        for xsID, xsSetting in cs["crossSectionControl"].items():
+            fNames = []
+            # Users shouldn't ever have both of these defined, but this is not the place
+            # for code to fail if they do. Allow for both to not be None.
+            if xsSetting.xsFileLocation is not None:
+                # possibly a list of files
+                if isinstance(xsSetting.xsFileLocation, list):
+                    fNames.extend(xsSetting.xsFileLocation)
+                else:
+                    fNames.append(xsSetting.xsFileLocation)
+            if xsSetting.fluxFileLocation is not None:
+                # single file
+                fNames.append(xsSetting.fluxFileLocation)
+            for fName in fNames:
+                label = f"crossSectionControl-{xsID}"
                 if fName and os.path.exists(fName):
-                    shaHash = getFileSHA1Hash(fName, digits=10)
+                    shaHash = getFileSHA1Hash(os.path.abspath(fName), digits=10)
                     inputInfo.append((label, fName, shaHash))
 
         return inputInfo
@@ -160,34 +167,41 @@ def writeWelcomeHeaders(o, cs):
             tabulate.tabulate(
                 inputFileData,
                 headers=["Input Type", "Path", "SHA-1 Hash"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
     def _writeMachineInformation():
         """Create a table that contains basic machine and rank information."""
-        if context.MPI_SIZE > 1:
-            processorNames = context.MPI_NODENAMES
-            uniqueNames = set(processorNames)
-            nodeMappingData = []
-            for uniqueName in uniqueNames:
-                matchingProcs = [
-                    str(rank)
-                    for rank, procName in enumerate(processorNames)
-                    if procName == uniqueName
-                ]
-                numProcessors = str(len(matchingProcs))
-                nodeMappingData.append(
-                    (uniqueName, numProcessors, ", ".join(matchingProcs))
-                )
-            runLog.header("=========== Machine Information ===========")
-            runLog.info(
-                tabulate.tabulate(
-                    nodeMappingData,
-                    headers=["Machine", "Number of Processors", "Ranks"],
-                    tablefmt="armi",
-                )
+        processorNames = context.MPI_NODENAMES
+        uniqueNames = set(processorNames)
+        nodeMappingData = []
+        sysInfo = ""
+        for uniqueName in uniqueNames:
+            matchingProcs = [
+                str(rank)
+                for rank, procName in enumerate(processorNames)
+                if procName == uniqueName
+            ]
+            numProcessors = str(len(matchingProcs))
+            nodeMappingData.append(
+                (uniqueName, numProcessors, ", ".join(matchingProcs))
             )
+
+            sysInfo += getSystemInfo()
+
+        runLog.header("=========== Machine Information ===========")
+        runLog.info(
+            tabulate.tabulate(
+                nodeMappingData,
+                headers=["Machine", "Number of Processors", "Ranks"],
+                tableFmt="armi",
+            )
+        )
+
+        if sysInfo:
+            runLog.header("=========== System Information ===========")
+            runLog.info(sysInfo)
 
     def _writeReactorCycleInformation(o, cs):
         """Verify that all the operating parameters are defined for the same number of cycles."""
@@ -206,7 +220,7 @@ def writeWelcomeHeaders(o, cs):
             paramStr = [str(p) for p in param]
             operatingData.append((name, textwrap.fill(", ".join(paramStr))))
         runLog.header("=========== Reactor Cycle Information ===========")
-        runLog.info(tabulate.tabulate(operatingData, tablefmt="armi"))
+        runLog.info(tabulate.tabulate(operatingData, tableFmt="armi"))
 
     if context.MPI_RANK > 0:
         return  # prevent the worker nodes from printing the same thing
@@ -215,6 +229,175 @@ def writeWelcomeHeaders(o, cs):
     _writeInputFileInformation(cs)
     _writeMachineInformation()
     _writeReactorCycleInformation(o, cs)
+
+
+def getNodeName():
+    """Get the name of this compute node.
+
+    First, look in context.py. Then try various Linux tools. Then try Windows commands.
+
+    Returns
+    -------
+    str
+        Compute node name.
+    """
+    hostNames = [
+        context.MPI_NODENAME,
+        context.MPI_NODENAMES[0],
+        subprocess.run("hostname", capture_output=True, text=True, shell=True).stdout,
+        subprocess.run("uname -n", capture_output=True, text=True, shell=True).stdout,
+        os.environ.get("COMPUTERNAME", context.LOCAL),
+    ]
+    for nodeName in hostNames:
+        if nodeName and nodeName != context.LOCAL:
+            return nodeName
+
+    return context.LOCAL
+
+
+def _getSystemInfoWindows():
+    """Get system information, assuming the system is Windows.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        OS Name:         Microsoft Windows 10 Enterprise
+        OS Version:      10.0.19041 N/A Build 19041
+        Processor(s):    1 Processor(s) Installed.
+                         [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
+    """
+    cmd = (
+        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
+        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+    )
+    return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
+
+
+def _getSystemInfoMac():
+    """Get system information, assuming the system is MacOS.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        System Software Overview:
+
+        System Version: macOS 12.1 (21C52)
+        Kernel Version: Darwin 21.2.0
+        ...
+        Hardware Overview:
+        Model Name: MacBook Pro
+        ...
+    """
+    cmd = "system_profiler SPSoftwareDataType SPHardwareDataType"
+    return subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+
+def _getSystemInfoLinux():
+    """Get system information, assuming the system is Linux.
+
+    This method uses multiple, redundant variations on common Linux command utilities to get the
+    information necessary. While it is not possible to guarantee what programs or files will be
+    available on "all Linux operating system", this collection of tools is widely supported and
+    should provide a reasonably broad-distribution coverage.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+
+    Examples
+    --------
+    Example results:
+
+        OS Info:  Ubuntu 22.04.3 LTS
+        Processor(s):
+            processor   : 0
+            vendor_id   : GenuineIntel
+            cpu family  : 6
+            model       : 126
+            model name  : Intel(R) Core(TM) i5-1035G1 CPU @ 1.00GHz
+            ...
+    """
+    # get OS name / version
+    linuxOsCommands = [
+        'cat /etc/os-release | grep "^PRETTY_NAME=" | cut -d = -f 2',
+        "uname -a",
+        "lsb_release -d | cut -d : -f 2",
+        'hostnamectl | grep "Operating System" | cut -d : -f 2',
+    ]
+    osInfo = ""
+    for cmd in linuxOsCommands:
+        osInfo = subprocess.run(
+            cmd, capture_output=True, text=True, shell=True
+        ).stdout.strip()
+        if osInfo:
+            break
+
+    if not osInfo:
+        runLog.warning("Linux OS information not found.")
+        return ""
+
+    # get processor information
+    linuxProcCommands = ["lscpu", "cat /proc/cpuinfo", "lshw -class CPU"]
+    procInfo = ""
+    for cmd in linuxProcCommands:
+        procInfo = subprocess.run(
+            cmd, capture_output=True, text=True, shell=True
+        ).stdout
+        if procInfo:
+            break
+
+    if not procInfo:
+        runLog.warning("Linux processor information not found.")
+        return ""
+
+    # build output string
+    out = "OS Info:  "
+    out += osInfo.strip()
+    out += "\nProcessor(s):\n    "
+    out += procInfo.strip().replace("\n", "\n    ")
+    out += "\n"
+
+    return out
+
+
+def getSystemInfo():
+    """Get system information, assuming the system is Linux, MacOS, and Windows.
+
+    Notes
+    -----
+    The format of the system information will be different on Linux, MacOS, and Windows.
+
+    Returns
+    -------
+    str
+        Basic system information: OS name, OS version, basic processor information
+    """
+    # Get basic system information (on Linux, MacOS, and Windows)
+    if "darwin" in sys.platform:
+        return _getSystemInfoMac()
+    elif "win" in sys.platform:
+        return _getSystemInfoWindows()
+    elif "linux" in sys.platform:
+        return _getSystemInfoLinux()
+    else:
+        runLog.warning(
+            f"Cannot get system information for {sys.platform} because ARMI only "
+            + "supports Linux, MacOS, and Windows."
+        )
+        return ""
 
 
 def getInterfaceStackSummary(o):
@@ -242,7 +425,7 @@ def getInterfaceStackSummary(o):
             "EOL order",
             "BOL forced",
         ),
-        tablefmt="armi",
+        tableFmt="armi",
     )
     text = text
     return text
@@ -252,7 +435,7 @@ def writeTightCouplingConvergenceSummary(convergenceSummary):
     runLog.info("Tight Coupling Convergence Summary")
     runLog.info(
         tabulate.tabulate(
-            convergenceSummary, headers="keys", showindex=True, tablefmt="armi"
+            convergenceSummary, headers="keys", showIndex=True, tableFmt="armi"
         )
     )
 
@@ -289,8 +472,8 @@ def writeAssemblyMassSummary(r):
             blockType = b.getType()
             if blockType not in types:
                 types.append(blockType)
-        # if the BOL fuel assem is in the center of the core, its area is 1/3 of the full area b/c it's a sliced assem.
-        # bug: mass came out way high for a case once. 265 MT vs. 92 MT hm.
+        # If the BOL fuel assem is in the center of the core, its area is 1/3 of the full area b/c
+        # its a sliced assem.
 
         # count assemblies
         core = r.core
@@ -366,8 +549,7 @@ def _makeBOLAssemblyMassSummary(massSum):
             line += "{0:<25.3f}".format(s[val])
         str_.append("{0:12s}{1}".format(val, line))
 
-    # print blocks in this assembly
-    # up to 10
+    # print blocks in this assembly up to 10
     for i in range(10):
         line = " " * 12
         for s in massSum:
@@ -377,6 +559,7 @@ def _makeBOLAssemblyMassSummary(massSum):
                 line += " " * 25
         if re.search(r"\S", line):  # \S matches any non-whitespace character.
             str_.append(line)
+
     return "\n".join(str_)
 
 
@@ -401,10 +584,10 @@ def writeCycleSummary(core):
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    # would io be worth considering for this?
+    # Would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
     runLog.important("Cycle {0} Summary:".format(cycle))
@@ -422,7 +605,6 @@ def setNeutronBalancesReport(core):
     Parameters
     ----------
     core  : armi.reactor.reactors.Core
-
     """
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
@@ -486,7 +668,7 @@ def summarizePinDesign(core):
     designInfo = collections.defaultdict(list)
 
     try:
-        for b in core.getBlocks(Flags.FUEL):
+        for b in core.iterBlocks(Flags.FUEL):
             fuel = b.getComponent(Flags.FUEL)
             duct = b.getComponent(Flags.DUCT)
             clad = b.getComponent(Flags.CLAD)
@@ -515,7 +697,7 @@ def summarizePinDesign(core):
             designInfo["zrFrac"].append(fuel.getMassFrac("ZR"))
 
         # assumption made that all lists contain only numerical data
-        designInfo = {key: numpy.average(data) for key, data in designInfo.items()}
+        designInfo = {key: np.average(data) for key, data in designInfo.items()}
 
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():
@@ -568,8 +750,7 @@ def summarizePowerPeaking(core):
     avgPDens = maxPowAssem.calcAvgParam("pdens")
     peakPDens = maxPowAssem.getMaxParam("pdens")
     if not avgPDens:
-        # protect against divide-by-zero. Peaking doesnt make sense if there is no
-        # power.
+        # protect against divide-by-zero. Peaking doesn't make sense if there is no power
         return
     axPeakF = peakPDens / avgPDens
 
@@ -618,7 +799,7 @@ def makeCoreDesignReport(core, cs):
 
     Parameters
     ----------
-    core:  armi.reactor.reactors.Core
+    core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
     coreDesignTable = report.data.Table(
@@ -644,9 +825,6 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     )
     report.setData(
         "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
     )
     report.setData(
         "Loading File",
@@ -785,8 +963,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
 
 
 def _setGeneralSimulationData(core, cs, coreDesignTable):
-    from armi.physics.neutronics.settings import CONF_GEN_XS
-    from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
+    from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
     report.setData(
@@ -877,10 +1054,22 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-    assemsInCore = list(r.blueprints.assemblies.values())
+    assems = []
+    blueprints = r.blueprints
+    for aKey in blueprints.assemDesigns.keys():
+        a = blueprints.constructAssem(cs, name=aKey)
+        # since we will be plotting cold input heights, we need to make sure that
+        # that these new assemblies have access to a blueprints somewhere up the
+        # composite chain. normally this would happen through an assembly's parent
+        # reactor, but because these newly created assemblies are in the load queue,
+        # they will not have a parent reactor. to get around this, we just attach
+        # the blueprints to the assembly directly.
+        a.blueprints = blueprints
+        assems.append(a)
+
     core = r.core
     for plotNum, assemBatch in enumerate(
-        iterables.chunk(assemsInCore, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
+        iterables.chunk(assems, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
         assemPlotImage = copy(report.ASSEM_TYPES)
         assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
@@ -888,11 +1077,11 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
         plotting.plotAssemblyTypes(
-            core.parent.blueprints,
-            assemPlotName,
             assemBatch,
+            assemPlotName,
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
+            hot=False,
         )
 
     # Create radial core map
@@ -933,7 +1122,6 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         titleSize=10,
         fontSize=8,
     )
-    plotting.close()
 
     report.setData(
         "Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN

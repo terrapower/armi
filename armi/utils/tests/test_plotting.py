@@ -16,7 +16,12 @@
 import os
 import unittest
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
+from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import ISOAA_PATH, TEST_ROOT
@@ -37,82 +42,163 @@ class TestPlotting(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = test_reactors.loadTestReactor()
+        cls.o, cls.r = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
 
     def test_plotDepthMap(self):  # indirectly tests plot face map
         with TemporaryDirectoryChanger():
             # set some params to visualize
-            for i, b in enumerate(self.o.r.core.getBlocks()):
+            for i, b in enumerate(self.o.r.core.iterBlocks()):
                 b.p.percentBu = i / 100
             fName = plotting.plotBlockDepthMap(
                 self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2
             )
-            self._checkExists(fName)
+            self._checkFileExists(fName)
 
     def test_plotAssemblyTypes(self):
         with TemporaryDirectoryChanger():
             plotPath = "coreAssemblyTypes1.png"
-            plotting.plotAssemblyTypes(self.r.core.parent.blueprints, plotPath)
-            self._checkExists(plotPath)
+            plotting.plotAssemblyTypes(
+                list(self.r.core.parent.blueprints.assemblies.values()), plotPath
+            )
+            self._checkFileExists(plotPath)
+
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
 
             plotPath = "coreAssemblyTypes2.png"
             plotting.plotAssemblyTypes(
-                self.r.core.parent.blueprints,
+                list(self.r.core.parent.blueprints.assemblies.values()),
                 plotPath,
                 yAxisLabel="y axis",
                 title="title",
             )
-            self._checkExists(plotPath)
+            self._checkFileExists(plotPath)
 
-            with self.assertRaises(ValueError):
-                plotting.plotAssemblyTypes(None, plotPath, None)
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
+            if os.path.exists(plotPath):
+                os.remove(plotPath)
+
+    def test_plotBlocksInAssembly(self):
+        _fig, ax = plt.subplots(figsize=(15, 15), dpi=300)
+        xBlockLoc, yBlockHeights, yBlockAxMesh = plotting._plotBlocksInAssembly(
+            ax,
+            self.r.core.getFirstAssembly(Flags.FUEL),
+            True,
+            [],
+            set(),
+            0.5,
+            5.6,
+            True,
+            hot=True,
+        )
+        self.assertEqual(xBlockLoc, 0.5)
+        self.assertEqual(yBlockHeights[0], 25.0)
+        yBlockAxMesh = list(yBlockAxMesh)[0]
+        self.assertIn(10.0, yBlockAxMesh)
+        self.assertIn(25.0, yBlockAxMesh)
+        self.assertIn(1, yBlockAxMesh)
 
     def test_plotBlockFlux(self):
         with TemporaryDirectoryChanger():
             xslib = isotxs.readBinary(ISOAA_PATH)
             self.r.core.lib = xslib
 
-            blockList = self.r.core.getBlocks()
-            for _, b in enumerate(blockList):
+            blocks = self.r.core.getBlocks()
+            for b in blocks:
                 b.p.mgFlux = range(33)
 
-            plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blockList)
+            plotting.plotBlockFlux(self.r.core, fName="flux.png", bList=blocks)
             self.assertTrue(os.path.exists("flux.png"))
             plotting.plotBlockFlux(
-                self.r.core, fName="peak.png", bList=blockList, peak=True
+                self.r.core, fName="peak.png", bList=blocks, peak=True
             )
-            self.assertTrue(os.path.exists("peak.png"))
+            self._checkFileExists("peak.png")
             plotting.plotBlockFlux(
                 self.r.core,
                 fName="bList2.png",
-                bList=blockList,
-                bList2=blockList,
+                bList=blocks,
+                bList2=blocks,
             )
-            self.assertTrue(os.path.exists("bList2.png"))
+            self._checkFileExists("bList2.png")
 
     def test_plotHexBlock(self):
         with TemporaryDirectoryChanger():
             first_fuel_block = self.r.core.getFirstBlock(Flags.FUEL)
-            first_fuel_block.autoCreateSpatialGrids()
+            first_fuel_block.autoCreateSpatialGrids(self.r.core.spatialGrid)
             plotting.plotBlockDiagram(first_fuel_block, "blockDiagram23.svg", True)
-            self.assertTrue(os.path.exists("blockDiagram23.svg"))
+            self._checkFileExists("blockDiagram23.svg")
 
     def test_plotCartesianBlock(self):
-        from armi import settings
-        from armi.reactor import blueprints, reactors
-
         with TemporaryDirectoryChanger():
             cs = settings.Settings(
-                os.path.join(TEST_ROOT, "tutorials", "c5g7-settings.yaml")
+                os.path.join(TEST_ROOT, "c5g7", "c5g7-settings.yaml")
             )
-
             blueprint = blueprints.loadFromCs(cs)
             _ = reactors.factory(cs, blueprint)
             for name, bDesign in blueprint.blockDesigns.items():
                 b = bDesign.construct(cs, blueprint, 0, 1, 1, "AA", {})
                 plotting.plotBlockDiagram(b, "{}.svg".format(name), True)
-            self.assertTrue(os.path.exists("uo2.svg"))
-            self.assertTrue(os.path.exists("mox.svg"))
 
-    def _checkExists(self, fName):
+            self._checkFileExists("uo2.svg")
+            self._checkFileExists("mox.svg")
+
+    def _checkFileExists(self, fName):
         self.assertTrue(os.path.exists(fName))
+
+
+class TestPatches(unittest.TestCase):
+    """Test the ability to correctly make patches."""
+
+    def test_makeAssemPatches(self):
+        # this one is flats-up with many assemblies in the core
+        _, rHexFlatsUp = test_reactors.loadTestReactor()
+
+        nAssems = len(rHexFlatsUp.core)
+        self.assertGreater(nAssems, 1)
+        patches = plotting._makeAssemPatches(rHexFlatsUp.core)
+        self.assertEqual(len(patches), nAssems)
+
+        # find the patch corresponding to the center assembly
+        for patch in patches:
+            if np.allclose(patch.xy, (0, 0)):
+                break
+
+        vertices = patch.get_verts()
+        # there should be 1 more than the number of points in the shape
+        self.assertEqual(len(vertices), 7)
+        # for flats-up, the first vertex should have a y position of ~zero
+        self.assertAlmostEqual(vertices[0][1], 0)
+
+        # this one is corners-up, with only a single assembly
+        _, rHexCornersUp = test_reactors.loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
+
+        nAssems = len(rHexCornersUp.core)
+        self.assertEqual(nAssems, 1)
+        patches = plotting._makeAssemPatches(rHexCornersUp.core)
+        self.assertEqual(len(patches), 1)
+
+        vertices = patches[0].get_verts()
+        self.assertEqual(len(vertices), 7)
+        # for corners-up, the first vertex should have an x position of ~zero
+        self.assertAlmostEqual(vertices[0][0], 0)
+
+        # this one is cartestian, with many assemblies in the core
+        _, rCartesian = test_reactors.loadTestReactor(
+            inputFileName="refTestCartesian.yaml"
+        )
+
+        nAssems = len(rCartesian.core)
+        self.assertGreater(nAssems, 1)
+        patches = plotting._makeAssemPatches(rCartesian.core)
+        self.assertEqual(nAssems, len(patches))
+
+        # just pick a given patch and ensure that it is square-like. orientation
+        # is not important here.
+        vertices = patches[0].get_verts()
+        self.assertEqual(len(vertices), 5)

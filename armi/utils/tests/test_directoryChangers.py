@@ -13,13 +13,12 @@
 # limitations under the License.
 
 """Module for testing directoryChangers."""
-from pathlib import Path
 import os
 import shutil
 import unittest
+from pathlib import Path
 
-from armi.utils import directoryChangers
-from armi.utils import directoryChangersMpi
+from armi.utils import directoryChangers, directoryChangersMpi
 
 
 class ExpectedException(Exception):
@@ -143,8 +142,7 @@ class TestDirectoryChangers(unittest.TestCase):
 
         self.assertTrue(os.path.exists(os.path.join("temp", f("file1.txt"))))
         self.assertTrue(os.path.exists(os.path.join("temp", f("file2.txt"))))
-        os.remove(os.path.join("temp", f("file1.txt")))
-        os.remove(os.path.join("temp", f("file2.txt")))
+        shutil.rmtree("temp")
 
     def test_file_retrieval_missing_file(self):
         """Tests that the directory changer still returns a subset of files even if all do not exist."""

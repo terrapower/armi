@@ -21,6 +21,8 @@ from armi.materials import material
 
 
 class Void(material.Fluid):
+    """A Void material is a bookkeeping material with zero density."""
+
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0
 

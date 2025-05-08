@@ -14,34 +14,41 @@
 """
 GUI elements for manipulating grid layout and contents.
 
-This provides a handful of classes which provide wxPython Controls for manipulating
-grids and grid Blueprints.
+This provides a handful of classes which provide wxPython Controls for manipulating grids and grid
+Blueprints.
 
 The grid editor may be invoked with the :py:mod:`armi.cli.gridGui` entry point::
 
     $ python -m armi grids
 
+If you have an existing set of input files, pass in the blueprints input file as the first argument
+and the system will load up the associated grid, e.g.::
+
+    $ python -m armi grids FFTF-blueprints.yaml
+
+
+.. figure:: /.static/gridEditor.png
+    :align: center
+
+    An example of the Grid Editor being used on a FFTF input file
 
 **Known Issues**
 
-* There is no action stack or undo functionality. Save frequently if you want to
-  recover previous states
+* There is no action stack or undo functionality. Save frequently if you want to recover previous
+  states
 
-* Cartesian grids are supported, but not rendered as nicely as their Hex counterparts.
-  The "through center assembly" case is not rendered properly with the half-assemblies
-  that lie along the edges.
+* Cartesian grids are supported, but not rendered as nicely as their Hex counterparts. The "through
+  center assembly" case is not rendered properly with the half-assemblies that lie along the edges.
 
-* The controls are optimized for manipulating a Core layout, displaying an "Assembly
-  palette" that contains the Assembly designs found in the top-level blueprints. A little
-  extra work and this could also be made to manipulate block grids or other things.
+* The controls are optimized for manipulating a Core layout, displaying an "Assembly palette" that
+  contains the Assembly designs found in the top-level blueprints. A little extra work and this
+  could also be made to manipulate block grids or other things.
 
-* Assembly colors are derived from the set of flags applied to them, but the mapping of
-  colors to flags is not particularly rich, and there isn't anything to disambiguate
-  between asemblies of different design, but the same flags.
+* Assembly colors are derived from the set of flags applied to them, but the mapping of colors to
+  flags is not particularly rich, and there isn't anything to disambiguate between assemblies of
+  different design, but the same flags.
 
-* No proper zoom support, and object sizes are fixed and don't accommodate long
-  specifiers. Adding zoom would make for a fun first task to a new developer interested
-  in computer graphics.
+* No proper zoom support, and object sizes are fixed and don't accommodate long specifiers.
 """
 import colorsys
 import enum
@@ -51,70 +58,67 @@ import pathlib
 import sys
 from typing import Dict, Optional, Sequence, Tuple, Union
 
+import numpy as np
+import numpy.linalg
 import wx
 import wx.adv
-import numpy
-import numpy.linalg
 
-from armi.utils import hexagon
-from armi.utils import textProcessors
-from armi.settings.caseSettings import Settings
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor.flags import Flags
+from armi.reactor import geometry, grids
 from armi.reactor.blueprints import Blueprints, gridBlueprint, migrate
-from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyBlueprint
-
+from armi.reactor.blueprints.gridBlueprint import GridBlueprint, saveToStream
+from armi.reactor.flags import Flags
+from armi.settings.caseSettings import Settings
+from armi.utils import hexagon, textProcessors
 
 UNIT_SIZE = 50  # pixels per assembly
 UNIT_MARGIN = 40  # offset applied to the draw area margins
 
-# The color to use for each object is based on the flags that that object has. All
-# applicable colors will be blended together to produce the final color for the object.
-# There are also plans to apply brush styles like cross-hatching or the like, which is
-# what the Nones are for below. Future work to employ these. Colors are RGB fractions.
+# The color to use for each object is based on the flags that that object has. All applicable colors
+# will be blended together to produce the final color for the object. There are also plans to apply
+# brush styles like cross-hatching or the like, which is what the Nones are for below. Future work
+# to employ these. Colors are RGB fractions.
 FLAG_STYLES = {
     # Red
-    Flags.FUEL: (numpy.array([1.0, 0.0, 0.0]), None),
+    Flags.FUEL: (np.array([1.0, 0.0, 0.0]), None),
     # Green
-    Flags.CONTROL: (numpy.array([0.0, 1.0, 0.0]), None),
+    Flags.CONTROL: (np.array([0.0, 1.0, 0.0]), None),
     # Gray
-    Flags.SHIELD: (numpy.array([0.4, 0.4, 0.4]), None),
+    Flags.SHIELD: (np.array([0.4, 0.4, 0.4]), None),
     # Yellow
-    Flags.REFLECTOR: (numpy.array([0.5, 0.5, 0.0]), None),
+    Flags.REFLECTOR: (np.array([0.5, 0.5, 0.0]), None),
     # Paisley?
-    Flags.INNER: (numpy.array([0.5, 0.5, 1.0]), None),
+    Flags.INNER: (np.array([0.5, 0.5, 1.0]), None),
     # We shouldn't see many SECONDARY, OUTER, MIDDLE, etc. on their own, so these
     # will just darken or brighten whatever color we would otherwise get)
-    Flags.SECONDARY: (numpy.array([0.0, 0.0, 0.0]), None),
-    Flags.OUTER: (numpy.array([0.0, 0.0, 0.0]), None),
+    Flags.SECONDARY: (np.array([0.0, 0.0, 0.0]), None),
+    Flags.OUTER: (np.array([0.0, 0.0, 0.0]), None),
     # WHITE (same as above, this will just lighten anything that it accompanies)
-    Flags.MIDDLE: (numpy.array([1.0, 1.0, 1.0]), None),
-    Flags.ANNULAR: (numpy.array([1.0, 1.0, 1.0]), None),
-    Flags.IGNITER: (numpy.array([0.2, 0.2, 0.2]), None),
-    Flags.STARTER: (numpy.array([0.4, 0.4, 0.4]), None),
-    Flags.FEED: (numpy.array([0.6, 0.6, 0.6]), None),
-    Flags.DRIVER: (numpy.array([0.8, 0.8, 0.8]), None),
+    Flags.MIDDLE: (np.array([1.0, 1.0, 1.0]), None),
+    Flags.ANNULAR: (np.array([1.0, 1.0, 1.0]), None),
+    Flags.IGNITER: (np.array([0.2, 0.2, 0.2]), None),
+    Flags.STARTER: (np.array([0.4, 0.4, 0.4]), None),
+    Flags.FEED: (np.array([0.6, 0.6, 0.6]), None),
+    Flags.DRIVER: (np.array([0.8, 0.8, 0.8]), None),
 }
 
-# RGB weights for calculating luminance. We use this to decide whether we should put
-# white or black text on top of the color. These come from CCIR 601
-LUMINANCE_WEIGHTS = numpy.array([0.3, 0.59, 0.11])
+# RGB weights for calculating luminance. We use this to decide whether we should put white or black
+# text on top of the color. These come from CCIR 601
+LUMINANCE_WEIGHTS = np.array([0.3, 0.59, 0.11])
 
 
 def _translationMatrix(x, y):
     """Return an affine transformation matrix representing an x- and y-translation."""
-    return numpy.array([[1.0, 0.0, x], [0.0, 1.0, y], [0.0, 0.0, 1.0]])
+    return np.array([[1.0, 0.0, x], [0.0, 1.0, y], [0.0, 0.0, 1.0]])
 
 
-def _boundingBox(points: Sequence[numpy.ndarray]) -> wx.Rect:
+def _boundingBox(points: Sequence[np.ndarray]) -> wx.Rect:
     """Return the smallest wx.Rect that contains all of the passed points."""
-    xmin = numpy.amin([p[0] for p in points])
-    xmax = numpy.amax([p[0] for p in points])
+    xmin = np.amin([p[0] for p in points])
+    xmax = np.amax([p[0] for p in points])
 
-    ymin = numpy.amin([p[1] for p in points])
-    ymax = numpy.amax([p[1] for p in points])
+    ymin = np.amin([p[1] for p in points])
+    ymax = np.amax([p[1] for p in points])
 
     return wx.Rect(wx.Point(int(xmin), int(ymin)), wx.Point(int(xmax), int(ymax)))
 
@@ -123,12 +127,12 @@ def _desaturate(c: Sequence[float]):
     r, g, b = tuple(c)
     hue, lig, sat = colorsys.rgb_to_hls(r, g, b)
     lig = lig + (1.0 - lig) * 0.5
-    return numpy.array(colorsys.hls_to_rgb(hue, lig, sat))
+    return np.array(colorsys.hls_to_rgb(hue, lig, sat))
 
 
 def _getColorAndBrushFromFlags(f, bold=True):
     """Given a set of Flags, return a wx.Pen and wx.Brush with which to draw a shape."""
-    c = numpy.array([0.0, 0.0, 0.0])
+    c = np.array([0.0, 0.0, 0.0])
     nColors = 0
 
     for styleFlag, style in FLAG_STYLES.items():
@@ -160,15 +164,15 @@ def _getColorAndBrushFromFlags(f, bold=True):
 def _drawShape(
     dc: wx.DC,
     geom: geometry.GeomType,
-    view: numpy.ndarray,
-    model: Optional[numpy.ndarray] = None,
+    view: np.ndarray,
+    model: Optional[np.ndarray] = None,
     label: str = "",
     description: Optional[str] = None,
     bold: bool = True,
 ):
     """
-    Draw a shape to the passed DC, given its GeomType and other relevant information.
-    Return the bounding box.
+    Draw a shape to the passed DC, given its GeomType and other relevant information. Return the
+    bounding box.
 
     Parameters
     ----------
@@ -176,9 +180,9 @@ def _drawShape(
         The device context to draw to
     geom: geometry.GeomType
         The geometry type, which defines the shape to be drawn
-    view: numpy.ndarray
+    view: np.ndarray
         A 3x3 matrix defining the world transform
-    model: numpy.ndarray, optional
+    model: np.ndarray, optional
         A 3x3 matrix defining the model transform. No transform is made to the "unit"
         shape if no model transform is provided.
     label: str, optional
@@ -204,8 +208,8 @@ def _drawShape(
         raise ValueError("Geom type `{}` unsupported".format(geom))
 
     # Appending 1 to each coordinate since the transformation matrix is 3x3
-    poly = numpy.array([numpy.append(vertex, 1) for vertex in primitive]).transpose()
-    model = model if model is not None else numpy.eye(3)
+    poly = np.array([np.append(vertex, 1) for vertex in primitive]).transpose()
+    model = model if model is not None else np.eye(3)
     poly = view.dot(model).dot(poly).transpose()
     poly = [wx.Point(int(vertex[0]), int(vertex[1])) for vertex in poly]
 
@@ -333,9 +337,8 @@ class _PathControl(wx.Panel):
     def __init__(self, parent, viewer=None):
         wx.Panel.__init__(self, parent, id=wx.ID_ANY)
 
-        # Direct link to the main viz control. This avoids having to reach up and back
-        # down for an instance, with all of the structural assumptions that that
-        # requires.
+        # Direct link to the main viz control. This avoids having to reach up and back down for an
+        # instance, with all of the structural assumptions that that requires.
         self._viewer = viewer
 
         self._needsIncrement = False
@@ -408,8 +411,8 @@ class _PathControl(wx.Panel):
 
 class _AssemblyPalette(wx.ScrolledWindow):
     """
-    Collection of toggle controls for each defined AssemblyBlueprint, as well as some
-    extra controls for configuring fuel shuffling paths.
+    Collection of toggle controls for each defined AssemblyBlueprint, as well as some extra controls
+    for configuring fuel shuffling paths.
     """
 
     def __init__(
@@ -445,22 +448,20 @@ class _AssemblyPalette(wx.ScrolledWindow):
 
         # keyed on ID
         self.assemButtons = dict()
-
         self.buttonIdBySpecifier = {None: None}
-
         self.activeAssemID: Optional[int] = None
 
         for key, design in self.assemDesigns.items():
             # flip y-coordinates, enlarge, offset
-            flip_y = numpy.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]])
-            scale = numpy.array(
+            flip_y = np.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]])
+            scale = np.array(
                 [
                     [UNIT_SIZE * 0.8, 0.0, 0.0],
                     [0.0, UNIT_SIZE * 0.8, 0.0],
                     [0.0, 0.0, 1.0],
                 ]
             )
-            translate = numpy.array(
+            translate = np.array(
                 [
                     [1.0, 0.0, UNIT_SIZE * 0.5],
                     [0.0, 1.0, UNIT_SIZE * 0.5],
@@ -515,7 +516,7 @@ class _AssemblyPalette(wx.ScrolledWindow):
     def _setActiveAssemID(self, id: Optional[int]):
         """Make sure the appropriate button is on, but none others."""
         if self.activeAssemID is not None and self.activeAssemID != id:
-            # there is currently an active assem, and it isnt the requested one. Turn
+            # there is currently an active assem, and it isn't the requested one. Turn
             # its button off.
             self.assemButtons[self.activeAssemID].SetValue(False)
 
@@ -532,17 +533,14 @@ class _AssemblyPalette(wx.ScrolledWindow):
         This makes sure that the right selector button is activated, and switches the
         GUI mode into the proper one based on whether an assembly design is selected, or
         the fuel path controls.
-
-        Notice that the
         """
         if self.assemButtons[event.GetId()].GetValue():
-            # the button that generated the event is "on" (the ToggleButton assumes its
-            # new value before the event is propagated). We need to select whichever
-            # button it was.
+            # The button that generated the event is "on" (the ToggleButton assumes its new value
+            # before the event is propagated). We need to select whichever button it was.
             setTo = event.GetId()
         else:
-            # the button that generated the event is off, implying that the user clicked
-            # on the previously-selected button. Clear the active selection
+            # The button that generated the event is off, implying that the user clicked on the
+            # previously-selected button. Clear the active selection
             setTo = None
 
         self._setActiveAssemID(setTo)
@@ -574,10 +572,10 @@ class _AssemblyPalette(wx.ScrolledWindow):
         """
         Return the assembly design of fuel path tuple that a client should set.
 
-        This differs from ``getSelectedAssem`` in that it can incorporate more logic to
-        enforce certain rules, such as performing increments, masking things off based
-        on other state etc., whereas ``getSelectedAssem`` should be more dumb and just
-        return the state of the controls themselves.
+        This differs from ``getSelectedAssem`` in that it can incorporate more logic to enforce
+        certain rules, such as performing increments, masking things off based on other state etc.,
+        whereas ``getSelectedAssem`` should be more dumb and just return the state of the controls
+        themselves.
         """
         if self.activeAssemID in self.assemDesignsById:
             # We have an assembly design activated. return it
@@ -604,30 +602,30 @@ class GridGui(wx.ScrolledWindow):
     """
     Visual editor for grid blueprints.
 
-    This is the actual viewer that displays the grid and grid blueprints contents, and
-    responds to mouse events. Under the hood, it uses a wx.PseudoDC to handle the
-    drawing, which provides the following benefits over a regular DC:
+    This is the actual viewer that displays the grid and grid blueprints contents, and responds to
+    mouse events. Under the hood, it uses a wx.PseudoDC to handle the drawing, which provides the
+    following benefits over a regular DC:
 
-     * Drawn objects can be associated with an ID, allowing parts of the drawing to be
-       modified or cleared without having to re-draw everything.
-     * The IDs associated with the objects can be used to distinguish what was clicked
-       on in a mouse event (though the support for this isn't super great, so we do have
-       to do some of our own object disambiguation).
+     * Drawn objects can be associated with an ID, allowing parts of the drawing to be modified or
+       cleared without having to re-draw everything.
+     * The IDs associated with the objects can be used to distinguish what was clicked on in a mouse
+       event (though the support for this isn't super great, so we do have to do some of our own
+       object disambiguation).
 
-    The ``drawGrid()`` method is used to re-draw the entire geometry, whereas the
-    ``applyAssem()`` method may be used to update a single assembly.
+    The ``drawGrid()`` method is used to re-draw the entire geometry, whereas the ``applyAssem()``
+    method may be used to update a single assembly.
     """
 
     class Mode(enum.IntEnum):
         """
         Enumeration for what type of objects are currently being manipulated.
 
-        This can either be SPECIFIER, for laying out the initial core layout, or PATH
-        for manipulating fuel shuffling paths.
+        This can either be SPECIFIER, for laying out the initial core layout, or PATH for
+        manipulating fuel shuffling paths.
         """
 
-        # We use these values to map between selections in GUI elements, so don't go
-        # changing them willy-nilly
+        # We use these values to map between selections in GUI elements, so do not go changing them
+        # willy-nilly.
         SPECIFIER = 0
         POSITION_IJ = 1
         POSITION_RINGPOS = 2
@@ -659,8 +657,7 @@ class GridGui(wx.ScrolledWindow):
 
         bp : set of grid blueprints, optional
             This should be the ``gridDesigns`` section of a root Blueprints object. If
-            not provided, a dictionary will be created with an empty "core" grid
-            blueprint.
+            not provided, a dictionary will be created with an empty "core" grid blueprint.
         """
         wx.ScrolledWindow.__init__(
             self, parent, wx.ID_ANY, (0, 0), size=(250, 150), style=wx.BORDER_DEFAULT
@@ -845,8 +842,8 @@ class GridGui(wx.ScrolledWindow):
         gridScale = self._gridScale(self.grid)
 
         # flip y-coordinates, enlarge
-        flip_y = numpy.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]])
-        scale = numpy.array(
+        flip_y = np.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]])
+        scale = np.array(
             [
                 [UNIT_SIZE / gridScale[0], 0.0, 0.0],
                 [0.0, UNIT_SIZE / gridScale[1], 0.0],
@@ -855,7 +852,7 @@ class GridGui(wx.ScrolledWindow):
         )
 
         # uniform grid, so all shapes have the same scale
-        model = numpy.array(
+        model = np.array(
             [[gridScale[0], 0.0, 0.0], [0.0, gridScale[1], 0.0], [0.0, 0.0, 1.0]]
         )
         self.transform = flip_y.dot(scale)
@@ -881,7 +878,7 @@ class GridGui(wx.ScrolledWindow):
 
             label, description, bold = self._getLabel(idx)
 
-            coords = numpy.array(self.grid.getCoordinates(idx))[:2]
+            coords = np.array(self.grid.getCoordinates(idx))[:2]
             offset = _translationMatrix(*coords)
 
             boundingBox = _drawShape(
@@ -1108,7 +1105,7 @@ class GridGui(wx.ScrolledWindow):
 
         # uniform grid, so all shapes have the same scale
         gridScale = self._gridScale(self.grid)
-        model = numpy.array(
+        model = np.array(
             [[gridScale[0], 0.0, 0.0], [0.0, gridScale[1], 0.0], [0.0, 0.0, 1.0]]
         )
 
@@ -1133,7 +1130,7 @@ class GridGui(wx.ScrolledWindow):
         self.pdc.ClearId(pdcId)
         self.pdc.SetId(pdcId)
 
-        coords = numpy.array(self.grid.getCoordinates(idx))
+        coords = np.array(self.grid.getCoordinates(idx))
         model = _translationMatrix(*coords[0:2]).dot(model)
 
         label, description, bold = self._getLabel(idx)
@@ -1157,11 +1154,11 @@ class GridGui(wx.ScrolledWindow):
         if isinstance(grid, grids.HexGrid):
             # Unit steps aren't aligned with the x,y coordinate system for Hex, so just
             # use the y dimension, assuming that's the proper flat-to-flat dimension
-            coordScale = numpy.array([grid._unitSteps[1][1]] * 2)
+            coordScale = np.array([grid._unitSteps[1][1]] * 2)
         elif isinstance(grid, grids.CartesianGrid):
             # Cartesian grids align with the GUI coordinates, so just use unit steps
             # directly
-            coordScale = numpy.array([grid._unitSteps[0][0], grid._unitSteps[1][1]])
+            coordScale = np.array([grid._unitSteps[0][0], grid._unitSteps[1][1]])
         return coordScale
 
     def _calcGridBounds(self) -> wx.Rect:
@@ -1180,15 +1177,13 @@ class GridGui(wx.ScrolledWindow):
 
         _ = self._gridScale(self.grid)
 
-        allCenters = numpy.array(
-            [self.grid.getCoordinates(idx)[:2] for idx in inDomain]
-        )
-        minXY = numpy.amin(allCenters, axis=0)
-        maxXY = numpy.amax(allCenters, axis=0)
+        allCenters = np.array([self.grid.getCoordinates(idx)[:2] for idx in inDomain])
+        minXY = np.amin(allCenters, axis=0)
+        maxXY = np.amax(allCenters, axis=0)
 
-        topRight = numpy.append([maxXY[1], maxXY[1]], 1.0)
-        bottomLeft = numpy.append([minXY[0], minXY[1]], 1.0)
-        nudge = numpy.array([UNIT_MARGIN, -UNIT_MARGIN, 0.0])
+        topRight = np.append([maxXY[1], maxXY[1]], 1.0)
+        bottomLeft = np.append([minXY[0], minXY[1]], 1.0)
+        nudge = np.array([UNIT_MARGIN, -UNIT_MARGIN, 0.0])
 
         bottomRight = (self.transform.dot(topRight) + nudge).tolist()
         topLeft = (self.transform.dot(bottomLeft) - nudge).tolist()
@@ -1577,19 +1572,9 @@ type, domain, and boundary conditions.
 
 
 class NewGridBlueprintDialog(wx.Dialog):
-    """
-    Dialog box for configuring a new grid blueprint.
+    """Dialog box for configuring a new grid blueprint."""
 
-    TODO
-    ----
-    This can be a closer match to the stuff in geometry.py once that is implemented with
-    enums instead of string constants. Right now, we are sort of shadowing the logic
-    behind ``geometry.VALID_SYMMETRY``, rather that whipping up the logic from
-    ``VALID_SYMMETRY``, which would be `slick`.
-    """
-
-    # these provide stable mappings from the wx.Choice control indices to the respective
-    # geom types
+    # these provide stable mappings from the wx.Choice control indices to the respective geom types
     _geomFromIdx = {
         i: geomType
         for i, geomType in enumerate(

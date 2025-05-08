@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module contains subclasses of the armi.runLog._RunLog class that can be used to determine whether or not
-one of the specific methods were called. These should only be used in testing.
+This module contains subclasses of the armi.runLog._RunLog class that can be used to determine
+whether or not one of the specific methods were called. These should only be used in testing.
 """
-import six
+import io
 import sys
 
 from armi import runLog
 
 
 class BufferLog(runLog._RunLog):
-    r"""Log which captures the output in attributes instead of emitting them.
+    """Log which captures the output in attributes instead of emitting them.
 
-    Used mostly in testing to ensure certain things get output, or to prevent any output
-    from showing.
+    Used mostly in testing to ensure certain things get output, or to prevent any output from
+    showing.
     """
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +34,7 @@ class BufferLog(runLog._RunLog):
         self._outputStream = ""
         self._singleMessageCounts = {}
         self._singleWarningMessageCounts = {}
-        self._errStream = six.StringIO()
+        self._errStream = io.StringIO()
         sys.stderr = self._errStream
         self.setVerbosity(0)
 

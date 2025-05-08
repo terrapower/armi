@@ -12,16 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for functions in textProcessors.py."""
-from io import StringIO
+import logging
 import os
 import pathlib
-import ruamel
 import unittest
+from io import StringIO
 
+import ruamel
+
+from armi import runLog
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import textProcessors
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 RES_DIR = os.path.join(THIS_DIR, "resources")
+
+
+class TestTextProcessor(unittest.TestCase):
+    """Test Text processor."""
+
+    def setUp(self):
+        godivaSettings = os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml")
+        self.tp = textProcessors.TextProcessor(godivaSettings)
+
+    def test_fsearch(self):
+        """Test fsearch in re mode."""
+        line = self.tp.fsearch("nTasks")
+        self.assertIn("36", line)
+        self.assertEqual(self.tp.fsearch("nTasks"), "")
+
+    def test_fsearchText(self):
+        """Test fsearch in text mode."""
+        line = self.tp.fsearch("nTasks", textFlag=True)
+        self.assertIn("36", line)
+        self.assertEqual(self.tp.fsearch("nTasks"), "")
 
 
 class YamlIncludeTest(unittest.TestCase):
@@ -38,8 +63,7 @@ class YamlIncludeTest(unittest.TestCase):
                 anyIncludes = True
         self.assertFalse(anyIncludes)
 
-        # Re-parse the resolved stream, make sure that we included the stuff that we
-        # want
+        # Re-parse the resolved stream, make sure that we included the stuff that we want
         resolved.seek(0)
         data = ruamel.yaml.YAML().load(resolved)
         self.assertEqual(data["billy"]["children"][1]["full_name"], "Jennifer Person")
@@ -99,15 +123,21 @@ X  Y  0.0"""
 
     _DUMMY_FILE_NAME = "DUMMY.txt"
 
-    @classmethod
-    def setUpClass(cls):
-        with open(cls._DUMMY_FILE_NAME, "w") as f:
-            f.write(cls.textStream)
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
 
-    @classmethod
-    def tearDownClass(cls):
-        if os.path.exists(cls._DUMMY_FILE_NAME):
-            os.remove(cls._DUMMY_FILE_NAME)
+        with open(self._DUMMY_FILE_NAME, "w") as f:
+            f.write(self.textStream)
+
+    def tearDown(self):
+        if os.path.exists(self._DUMMY_FILE_NAME):
+            try:
+                os.remove(self._DUMMY_FILE_NAME)
+            except OSError:
+                pass
+
+        self.td.__exit__(None, None, None)
 
     def test_readFile(self):
         with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
@@ -116,5 +146,34 @@ X  Y  0.0"""
 
     def test_readFileWithPattern(self):
         with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
-            self.assertTrue(sr.searchForPattern("(X\s+Y\s+\d+\.\d+)"))
+            self.assertTrue(sr.searchForPattern(r"(X\s+Y\s+\d+\.\d+)"))
             self.assertEqual(float(sr.line.split()[2]), 3.5)
+
+    def test_issueWarningOnFindingText(self):
+        with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
+            warningMsg = "Oh no"
+            sr.issueWarningOnFindingText("example test stream", warningMsg)
+
+            with mockRunLogs.BufferLog() as mock:
+                runLog.LOG.startLog("test_issueWarningOnFindingText")
+                runLog.LOG.setVerbosity(logging.WARNING)
+                self.assertEqual("", mock.getStdout())
+                self.assertTrue(sr.searchForPattern("example test stream"))
+                self.assertIn(warningMsg, mock.getStdout())
+
+                self.assertFalse(sr.searchForPattern("Killer Tomatoes"))
+
+    def test_raiseErrorOnFindingText(self):
+        with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
+            sr.raiseErrorOnFindingText("example test stream", IOError)
+
+            with self.assertRaises(IOError):
+                self.assertTrue(sr.searchForPattern("example test stream"))
+
+    def test_consumeLine(self):
+        with textProcessors.SequentialReader(self._DUMMY_FILE_NAME) as sr:
+            sr.line = "hi"
+            sr.match = 1
+            sr.consumeLine()
+            self.assertEqual(len(sr.line), 0)
+            self.assertIsNone(sr.match)

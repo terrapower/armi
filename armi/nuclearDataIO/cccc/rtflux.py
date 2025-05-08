@@ -34,7 +34,7 @@ NHFLUX
 RZFLUX
     Reads/writes total fluxes from zones
 """
-import numpy
+import numpy as np
 
 from armi.nuclearDataIO import cccc
 
@@ -67,7 +67,7 @@ class RtfluxData(cccc.DataContainer):
     def __init__(self):
         cccc.DataContainer.__init__(self)
 
-        self.groupFluxes: numpy.ndarray = numpy.array([])
+        self.groupFluxes: np.ndarray = np.array([])
         """Maps i,j,k,g indices to total real or adjoint flux in n/cm^2-s"""
 
 
@@ -138,7 +138,7 @@ class RtfluxStream(cccc.StreamWithDataContainer):
         nblck = self._metadata["NBLOK"]
 
         if self._data.groupFluxes.size == 0:
-            self._data.groupFluxes = numpy.zeros((imax, jmax, kmax, ng))
+            self._data.groupFluxes = np.zeros((imax, jmax, kmax, ng))
 
         for gi in range(ng):
             gEff = self.getEnergyGroupIndex(gi)

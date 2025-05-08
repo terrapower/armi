@@ -13,8 +13,9 @@
 # limitations under the License.
 
 """Unittests for iterables.py."""
-import time
 import unittest
+
+import numpy as np
 
 from armi.utils import iterables
 
@@ -67,20 +68,14 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(unchu, data)
 
     def test_packingAndUnpackingBinaryStrings(self):
-        start = time.perf_counter()
         packed = iterables.packBinaryStrings(_TEST_DATA)
         unpacked = iterables.unpackBinaryStrings(packed["turtle"][0])
-        timeDelta = time.perf_counter() - start
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
-        return timeDelta
 
     def test_packingAndUnpackingHexStrings(self):
-        start = time.perf_counter()
         packed = iterables.packHexStrings(_TEST_DATA)
         unpacked = iterables.unpackHexStrings(packed["turtle"][0])
-        timeDelta = time.perf_counter() - start
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
-        return timeDelta
 
     def test_sequenceInit(self):
         # init an empty sequence
@@ -174,3 +169,21 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(vals[0], 0)
         self.assertEqual(vals[-1], 5)
         self.assertEqual(len(vals), 6)
+
+    def test_listPivot(self):
+        data = list(range(10))
+        loc = 4
+        actual = iterables.pivot(data, loc)
+        self.assertEqual(actual, data[loc:] + data[:loc])
+
+    def test_arrayPivot(self):
+        data = np.arange(10)
+        loc = -7
+        actual = iterables.pivot(data, loc)
+        expected = np.array(iterables.pivot(data.tolist(), loc))
+        self.assertTrue((actual == expected).all(), msg=f"{actual=} != {expected=}")
+        # Catch a silent failure case where pivot doesn't change the iterable
+        self.assertTrue(
+            (actual != data).all(),
+            msg=f"Pre-pivot {data=} should not equal post-pivot {actual=}",
+        )

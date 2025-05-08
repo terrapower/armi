@@ -18,33 +18,28 @@ import logging
 import os
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
-from armi import configure
-from armi import getApp
-from armi import getPluginManagerOrFail
-from armi import plugins
-from armi import settings
-from armi.operators.settingsValidation import Inspector, validateVersion
+from armi import configure, getApp, getPluginManagerOrFail, plugins, settings
 from armi.physics.fuelCycle import FuelHandlerPlugin
-from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER, CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
-from armi.settings import caseSettings
-from armi.settings import setting
-from armi.tests import TEST_ROOT, ARMI_RUN_PATH
+from armi.settings import caseSettings, setting
+from armi.settings.settingsValidation import Inspector, validateVersion
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 
 THIS_DIR = os.path.dirname(__file__)
 
 
-class DummyPlugin1(plugins.ArmiPlugin):
+class DummySettingPlugin1(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Setting(
                 "extendableOption",
@@ -53,14 +48,21 @@ class DummyPlugin1(plugins.ArmiPlugin):
                 description="The neutronics / depletion solver for global flux solve.",
                 enforcedOptions=True,
                 options=["DEFAULT", "OTHER"],
-            )
+            ),
+            setting.Setting(
+                "avocado",
+                default=0,
+                label="Avocados",
+                description="Avocados are delicious.",
+            ),
         ]
 
 
-class DummyPlugin2(plugins.ArmiPlugin):
+class DummySettingPlugin2(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Option("PLUGIN", "extendableOption"),
             setting.Default("PLUGIN", "extendableOption"),
@@ -71,13 +73,14 @@ class PluginAddsOptions(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineSettings():
+        """Define settings for the plugin."""
         return [
             setting.Option("MCNP", CONF_NEUTRONICS_KERNEL),
             setting.Option("MCNP_Slab", CONF_NEUTRONICS_KERNEL),
         ]
 
 
-class TestCaseSettings(unittest.TestCase):
+class TestSettings(unittest.TestCase):
     def setUp(self):
         self.cs = caseSettings.Settings()
 
@@ -98,24 +101,51 @@ class TestCaseSettings(unittest.TestCase):
         self.cs.updateEnvironmentSettingsFrom(newEnv)
         self.assertEqual(self.cs["verbosity"], "9")
 
+    def test_metaData(self):
+        """Test we can get and set the important settings metadata.
+
+        .. test:: Test getting and setting import settings metadata.
+            :id: T_ARMI_SETTINGS_META
+            :tests: R_ARMI_SETTINGS_META
+        """
+        # test get/set on caseTitle
+        self.assertEqual(self.cs.caseTitle, "armi")
+        testTitle = "test_metaData"
+        self.cs.caseTitle = testTitle
+        self.assertEqual(self.cs.caseTitle, testTitle)
+
+        # test get/set on comment
+        self.assertEqual(self.cs["comment"], "")
+        testComment = "Comment: test_metaData"
+        self.cs = self.cs.modified(newSettings={"comment": testComment})
+        self.assertEqual(self.cs["comment"], testComment)
+
+        # test get/set on version
+        self.assertEqual(len(self.cs["versions"]), 0)
+        self.cs = self.cs.modified(newSettings={"versions": {"something": 1.234}})
+
+        d = self.cs["versions"]
+        self.assertEqual(len(d), 1)
+        self.assertEqual(d["something"], 1.234)
+
 
 class TestAddingOptions(unittest.TestCase):
     def setUp(self):
         self.dc = directoryChangers.TemporaryDirectoryChanger()
         self.dc.__enter__()
+        # load in the plugin with extra, added options
+        self.pm = getPluginManagerOrFail()
+        self.pm.register(PluginAddsOptions)
 
     def tearDown(self):
         self.dc.__exit__(None, None, None)
+        self.pm.unregister(PluginAddsOptions)
 
     def test_addingOptions(self):
-        # load in the plugin with extra, added options
-        pm = getPluginManagerOrFail()
-        pm.register(PluginAddsOptions)
-
         # modify the default/text settings YAML file to include neutronicsKernel
         fin = os.path.join(TEST_ROOT, "armiRun.yaml")
         txt = open(fin, "r").read()
-        txt = txt.replace("\n  nodeGroup:", "\n  neutronicsKernel: MCNP\n  nodeGroup:")
+        txt = txt.replace("\n  nCycles:", "\n  neutronicsKernel: MCNP\n  nCycles:")
         fout = "test_addingOptions.yaml"
         open(fout, "w").write(txt)
 
@@ -231,38 +261,52 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         )
 
     def test_pluginSettings(self):
+        """Test settings change depending on what plugins are registered.
+
+        .. test:: Registering a plugin can change what settings exist.
+            :id: T_ARMI_PLUGIN_SETTINGS
+            :tests: R_ARMI_PLUGIN_SETTINGS
+        """
         pm = getPluginManagerOrFail()
-        pm.register(DummyPlugin1)
+        pm.register(DummySettingPlugin1)
         # We have a setting; this should be fine
         cs = caseSettings.Settings()
 
         self.assertEqual(cs["extendableOption"], "DEFAULT")
+        self.assertEqual(cs["avocado"], 0)
         # We shouldn't have any settings from the other plugin, so this should be an
         # error.
         with self.assertRaises(vol.error.MultipleInvalid):
             newSettings = {"extendableOption": "PLUGIN"}
             cs = cs.modified(newSettings=newSettings)
 
-        pm.register(DummyPlugin2)
+        pm.register(DummySettingPlugin2)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
         # Now we should have the option from plugin 2; make sure that works
         cs = cs.modified(newSettings=newSettings)
         cs["extendableOption"] = "PLUGIN"
         self.assertIn("extendableOption", cs.keys())
-        pm.unregister(DummyPlugin2)
-        pm.unregister(DummyPlugin1)
+        pm.unregister(DummySettingPlugin2)
+        pm.unregister(DummySettingPlugin1)
 
         # Now try the same, but adding the plugins in a different order. This is to make
-        # sure that it doesnt matter if the Setting or its Options come first
-        pm.register(DummyPlugin2)
-        pm.register(DummyPlugin1)
+        # sure that it doesn't matter if the Setting or its Options come first
+        pm.register(DummySettingPlugin2)
+        pm.register(DummySettingPlugin1)
         cs = caseSettings.Settings()
         self.assertEqual(cs["extendableOption"], "PLUGIN")
+        self.assertEqual(cs["avocado"], 0)
 
     def test_default(self):
-        """Make sure default updating mechanism works."""
-        a = setting.Setting("testsetting", 0)
+        """
+        Make sure default updating mechanism works.
+
+        .. test:: The setting default is mandatory.
+            :id: T_ARMI_SETTINGS_DEFAULTS
+            :tests: R_ARMI_SETTINGS_DEFAULTS
+        """
+        a = setting.Setting("testsetting", 0, description="whatever")
         newDefault = setting.Default(5, "testsetting")
         a.changeDefault(newDefault)
         self.assertEqual(a.value, 5)
@@ -272,9 +316,9 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         settingsList = cs.getSettingsSetByUser(ARMI_RUN_PATH)
         # This test is dependent on the current setup of armiRun.yaml, which includes
         # some default settings values
-        for sett in ["availabilityFactor", "economics"]:
+        for sett in ["availabilityFactor", "db"]:
             self.assertIn(sett, settingsList)
-        self.assertNotIn("numProcessors", settingsList)
+        self.assertNotIn("nTasks", settingsList)
 
     def test_setModuleVerbosities(self):
         # init settings and use them to set module-level logging levels
@@ -345,11 +389,11 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         Notes
         -----
-        In particuar, self.schema and self._customSchema on a Setting object are
+        In particular, self.schema and self._customSchema on a Setting object are
         removed by Setting.__getstate__, and that has been a problem in the past.
         """
         # get a baseline: show how the Setting object looks to start
-        s1 = setting.Setting("testCopy", 765)
+        s1 = setting.Setting("testCopy", 765, description="whatever")
         self.assertEqual(s1.name, "testCopy")
         self.assertEqual(s1._value, 765)
         self.assertTrue(hasattr(s1, "schema"))
@@ -367,7 +411,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         when the Setting value is set to a non-default value.
         """
         # get a baseline: show how the Setting object looks to start
-        s1 = setting.Setting("testCopy", 765)
+        s1 = setting.Setting("testCopy", 765, description="whatever")
         s1.value = 999
         self.assertEqual(s1.name, "testCopy")
         self.assertEqual(s1._value, 999)
@@ -437,7 +481,9 @@ class TestFlagListSetting(unittest.TestCase):
         flagsAsStringList = ["DUCT", "FUEL", "CLAD"]
         flagsAsFlagList = [Flags.DUCT, Flags.FUEL, Flags.CLAD]
 
-        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        fs = setting.FlagListSetting(
+            name="testFlagSetting", default=[], description="whatever"
+        )
         # Set the value as a list of strings first
         fs.value = flagsAsStringList
         self.assertEqual(fs.value, flagsAsFlagList)
@@ -450,7 +496,9 @@ class TestFlagListSetting(unittest.TestCase):
 
     def test_invalidFlagListTypeError(self):
         """Test raising a TypeError when a list is not provided."""
-        fs = setting.FlagListSetting(name="testFlagSetting", default=[])
+        fs = setting.FlagListSetting(
+            name="testFlagSetting", default=[], description="whatever"
+        )
         with self.assertRaises(TypeError):
             fs.value = "DUCT"
 

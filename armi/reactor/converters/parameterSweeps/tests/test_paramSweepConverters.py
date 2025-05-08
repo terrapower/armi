@@ -16,23 +16,23 @@
 import os
 import unittest
 
-from armi.tests import TEST_ROOT
+from armi.physics.neutronics.settings import CONF_EPS_FSPOINT
 from armi.reactor.converters.parameterSweeps.generalParameterSweepConverters import (
-    CustomModifier,
     NeutronicConvergenceModifier,
     ParameterSweepConverter,
     SettingsModifier,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.physics.neutronics.settings import CONF_EPS_FSPOINT
-
+from armi.testing import loadTestReactor
+from armi.tests import TEST_ROOT
 
 THIS_DIR = os.path.dirname(__file__)
 
 
 class TestParamSweepConverters(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(TEST_ROOT)
+        self.o, self.r = loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.cs = self.o.cs
 
     def test_paramSweepConverter(self):
@@ -62,15 +62,3 @@ class TestParamSweepConverters(unittest.TestCase):
         # NOTE: Settings objects are not modified, but we point to new objects
         self.assertIn("Simple test input", self.cs["comment"])
         self.assertEqual(con._cs["comment"], "FakeParam")
-
-    def test_customModifier(self):
-        """Super basic test of the Custom Modifier."""
-        con = CustomModifier(self.cs, "FakeParam")
-        self.assertEqual(con._parameter, "FakeParam")
-
-        # For testing purposes, we need to add a dummy perturbation
-        fh = self.r.o.getInterface("fuelHandler")
-        fh.applyCustomPerturbation = lambda val: val
-
-        con.convert(self.r)
-        self.assertEqual(con._sourceReactor, self.r)

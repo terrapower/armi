@@ -29,21 +29,20 @@ def isDepletable(obj: composites.ArmiObject):
     """
     Return True if obj or any child is flagged as DEPLETABLE.
 
-    The DEPLETABLE flag is automatically set to true if any composition contains
-    nuclides that are in the active nuclides list, unless flags are specifically
-    set and DEPLETABLE is left out.
+    The DEPLETABLE flag is automatically set to True if any composition contains nuclides that are
+    in the active nuclides list, unless flags are specifically set and DEPLETABLE is left out.
 
-    This is often interpreted by depletion plugins as indicating which parts of the
-    problem to apply depletion to. Analysts may want to turn on and off depletion
-    in certain problems.
+    This is often interpreted by depletion plugins as indicating which parts of the problem to apply
+    depletion to. Analysts may want to turn on and off depletion in certain problems.
 
-    For example, sometimes they want the control rods to deplete
-    to figure out how often to replace them. But in conceptual design, they may want to just
-    leave them as they are as an approximation.
+    For example, sometimes they want the control rods to deplete to figure out how often to replace
+    them.
 
-    .. warning:: The ``DEPLETABLE`` flag is automatically added to compositions that have
-        active nuclides. If you explicitly define any flags at all, you must also
-        manually include ``DEPLETABLE`` or else the objects will silently not deplete.
+    Warning
+    -------
+    The ``DEPLETABLE`` flag is automatically added to compositions that have active nuclides. If you
+    explicitly define any flags at all, you must also manually include ``DEPLETABLE`` or else the
+    objects will silently not deplete.
 
     Notes
     -----
@@ -61,19 +60,28 @@ def isDepletable(obj: composites.ArmiObject):
 
 
 class AbstractIsotopicDepleter:
-    r"""
+    """
     Interact with a depletion code.
 
     This interface and subClasses deplete under a flux defined outside this
     interface
 
     The depletion in this analysis only depends on the flux, material vectors,
-    nuclear data and countinuous source and loss objects.
+    nuclear data and continuous source and loss objects.
 
     The depleters derived from this abstract class use all the fission products
     armi can handle -- i.e. do not form lumped fission products.
 
     _depleteByName contains a ARMI objects to deplete keyed by name.
+
+    .. impl:: ARMI provides a base class to deplete isotopes.
+        :id: I_ARMI_DEPL_ABC
+        :implements: R_ARMI_DEPL_ABC
+
+        This class provides some basic infrastructure typically needed in depletion
+        calculations within the ARMI framework. It stores a reactor, operator,
+        and case settings object, and also defines methods to store and retrieve
+        the objects which should be depleted based on their names.
     """
 
     name = None
@@ -86,14 +94,13 @@ class AbstractIsotopicDepleter:
 
         # ARMI objects to deplete keyed by name
         # order is important for consistency in iterating through objects
-        # cinder interface input format is very dependent on object order
         self._depleteByName = collections.OrderedDict()
 
         self.efpdToBurn = None
         self.allNuclidesInProblem = r.blueprints.allNuclidesInProblem if r else []
 
     def addToDeplete(self, armiObj):
-        """Add the oject to the group of objects to be depleted."""
+        """Add the object to the group of objects to be depleted."""
         self._depleteByName[armiObj.getName()] = armiObj
 
     def setToDeplete(self, armiObjects):
@@ -106,7 +113,7 @@ class AbstractIsotopicDepleter:
         return list(self._depleteByName.values())
 
     def run(self):
-        r"""
+        """
         Submit depletion case with external solver to the cluster.
 
         In addition to running the physics kernel, this method calls the waitForJob method
@@ -137,14 +144,12 @@ def makeXsecTable(
         a list of the nucNames of active isotopes
     isotxs: isotxs object
     headerFormat: string (optional)
-        this is the format in which the elements of the header with be returned
-        -- i.e. if you use a .format() call with  the case name you'll return a
-        formatted list of string elements
+        this is the format in which the elements of the header with be returned -- i.e. if you use a
+        .format() call with  the case name you'll return a formatted list of string elements
     tableFormat: string (optional)
-        this is the format in which the elements of the table with be returned
-        -- i.e. if you use a .format() call with mcnpId, nG, nF, n2n, n3n, nA,
-        and nP you'll get the format you want. If you use a .format() call with  the case name you'll return a
-        formatted list of string elements
+        This is the format in which the elements of the table with be returned -- i.e. if you use a
+        .format() call with mcnpId, nG, nF, n2n, n3n, nA, and nP you'll get the format you want. If
+        you use a .format() call with the case name you'll return a formatted list of strings.
 
     Results
     -------
@@ -179,10 +184,12 @@ def makeXsecTable(
 
 
 class AbstractIsotopicDepletionReader(interfaces.OutputReader):
-    r"""Read number density output produced by the isotopic depletion."""
+    """Read number density output produced by the isotopic depletion."""
 
     def read(self):
-        r"""Read a isotopic depletion Output File and applies results to armi objects in the ``ToDepletion`` attribute."""
+        """Read a isotopic depletion Output File and applies results to armi objects in the
+        ``ToDepletion`` attribute.
+        """
         raise NotImplementedError
 
 
@@ -192,8 +199,8 @@ class Csrc:
 
     Notes
     -----
-    The chemical vector is a dictionary of chemicals and their removal rate
-    constant -- this works like a decay constant.
+    The chemical vector is a dictionary of chemicals and their removal rate constant -- this works
+    like a decay constant.
 
     The isotopic vector is used to make a source material in continuous source definitions.
 

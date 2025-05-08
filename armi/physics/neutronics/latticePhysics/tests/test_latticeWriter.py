@@ -13,21 +13,24 @@
 # limitations under the License.
 
 """Test the Lattice Physics Writer."""
-from collections import defaultdict
 import unittest
+from collections import defaultdict
 
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
 )
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    setBlockNeutronVelocities,
+)
 from armi.physics.neutronics.latticePhysics.latticePhysicsWriter import (
     LatticePhysicsWriter,
 )
 from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
     CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+    CONF_XS_BLOCK_REPRESENTATION,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 
 
@@ -65,6 +68,13 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         )
         self.block = self.r.core.getFirstBlock()
         self.w = FakeLatticePhysicsWriter(self.block, self.r, self.o)
+
+    def test_setBlockNeutronVelocities(self):
+        d = defaultdict(float)
+        d["AA"] = 10.0
+        setBlockNeutronVelocities(self.r, d)
+        tot = sum([b.p.mgNeutronVelocity for b in self.r.core.iterBlocks()])
+        self.assertGreater(tot, 3000.0)
 
     def test_latticePhysicsWriter(self):
         """Super basic test of the LatticePhysicsWriter."""
@@ -121,7 +131,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         self.assertIn("AM241", names)
         self.assertIn("U238", names)
 
-    def test_getAllNuclidesByTemperatureInCExplicitFissionProducts(self):
+    def test_getAllNuclidesByTempInCExplicitFisProd(self):
         self.w.explicitFissionProducts = True
         c = self.r.core[0][0]
         nucsByTemp = self.w._getAllNuclidesByTemperatureInC(c)

@@ -13,24 +13,24 @@
 # limitations under the License.
 
 """Tests for lumpedFissionProduce module."""
-import unittest
 import io
 import math
 import os
+import unittest
 
-from armi.physics.neutronics.fissionProductModel import (
-    lumpedFissionProduct,
-    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
-)
 from armi.context import RES
-from armi.settings import Settings
-from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
-from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.fissionProductModel import (
+    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
+    lumpedFissionProduct,
+)
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_LFP_COMPOSITION_FILE_PATH,
 )
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
+from armi.settings import Settings
 
 LFP_TEXT = """LFP35 GE73   5.9000E-06
 LFP35 GE74    1.4000E-05
@@ -118,11 +118,6 @@ class TestLumpedFissionProduct(unittest.TestCase):
         # data for these tests.
         self.assertEqual(lfp.getGaseousYieldFraction(), 8.9000e-05)
 
-    def test_printDensities(self):
-        _ = nuclideBases.fromName("XE135")
-        lfp = self.fpd.createSingleLFPFromFile("LFP38")
-        lfp.printDensities(10.0)
-
     def test_isGas(self):
         """Tests that a nuclide is a gas or not at STP based on its chemical phase."""
         nb = nuclideBases.byName["H1"]
@@ -176,9 +171,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
 
     def test_getNumberDensities(self):
         o = buildOperatorOfEmptyHexBlocks()
-        assems = o.r.core.getAssemblies(Flags.FUEL)
-        blocks = assems[0].getBlocks(Flags.FUEL)
-        b = blocks[0]
+        b = next(o.r.core.iterBlocks(Flags.FUEL))
         fpDensities = self.lfps.getNumberDensities(objectWithParentDensities=b)
         for fp in ["GE73", "GE74", "GE76", "AS75", "KR85", "MO99", "SM150", "XE135"]:
             self.assertEqual(fpDensities[fp], 0.0)

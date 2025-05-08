@@ -16,7 +16,7 @@
 Custom materials are ones that you can specify all the number densities yourself.
 
 Useful for benchmarking when you have a particular specified material density.
-Use the isotopic input described in :doc:`/user/inputs/blueprints`.
+Use the isotopic input described in :ref:`bp-input-file`.
 
 The density function gets applied from custom isotopics by
 :py:meth:`armi.reactor.blueprints.isotopicOptions.CustomIsotopic.apply`.

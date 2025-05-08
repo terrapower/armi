@@ -15,8 +15,9 @@
 """
 Framework-wide settings definitions and constants.
 
-This should contain Settings definitions for general-purpose "framework" settings. These
-should only include settings that are not related to any particular physics or plugins.
+This should contain Settings definitions for general-purpose "framework"
+settings. These should only include settings that are not related to any
+particular physics or plugins.
 """
 import os
 from typing import List
@@ -25,9 +26,8 @@ import voluptuous as vol
 
 from armi import context
 from armi.settings import setting
-from armi.utils.mathematics import isMonotonic
 from armi.settings.fwSettings import tightCouplingSettings
-
+from armi.utils.mathematics import isMonotonic
 
 # Framework settings
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
@@ -37,9 +37,9 @@ CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_BETA = "beta"
-CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
+CONF_TEMP_GROUPS = "tempGroups"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_BURN_STEPS = "burnSteps"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -53,7 +53,6 @@ CONF_CYCLE_LENGTH = "cycleLength"
 CONF_CYCLE_LENGTHS = "cycleLengths"
 CONF_CYCLES = "cycles"
 CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION = "cyclesSkipTightCouplingInteraction"
-CONF_DEBUG = "debug"
 CONF_DEBUG_MEM = "debugMem"
 CONF_DEBUG_MEM_SIZE = "debugMemSize"
 CONF_DECAY_CONSTANTS = "decayConstants"
@@ -64,27 +63,23 @@ CONF_DETAIL_ALL_ASSEMS = "detailAllAssems"
 CONF_DETAIL_ASSEM_LOCATIONS_BOL = "detailAssemLocationsBOL"
 CONF_DETAIL_ASSEM_NUMS = "detailAssemNums"
 CONF_DETAILED_AXIAL_EXPANSION = "detailedAxialExpansion"
-CONF_DO_ORIFICED_TH = "doOrificedTH"  # zones
 CONF_DUMP_SNAPSHOT = "dumpSnapshot"
 CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_FRESH_FEED_TYPE = "freshFeedType"
-CONF_GEOM_FILE = "geomFile"
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_LOAD_STYLE = "loadStyle"
 CONF_LOADING_FILE = "loadingFile"
-CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
-CONF_MPI_TASKS_PER_NODE = "mpiTasksPerNode"
 CONF_N_CYCLES = "nCycles"
 CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
-CONF_NUM_PROCESSORS = "numProcessors"
+CONF_N_TASKS = "nTasks"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
@@ -119,14 +114,48 @@ CONF_ZONE_DEFINITIONS = "zoneDefinitions"
 
 
 def defineSettings() -> List[setting.Setting]:
-    """Return a list of global framework settings."""
+    """
+    Return a list of global framework settings.
+
+    .. impl:: There is a setting for total core power.
+        :id: I_ARMI_SETTINGS_POWER
+        :implements: R_ARMI_SETTINGS_POWER
+
+        ARMI defines a collection of settings by default to be associated
+        with all runs, and one such setting is ``power``. This is the
+        total thermal power of the reactor. This is designed to be the
+        standard power of the reactor core, to be easily set by the user.
+        There is frequently the need to adjust the power of the reactor
+        at different cycles. That is done by setting the ``powerFractions``
+        setting to a list of fractions of this power.
+
+    .. impl:: Define a comment and a versions list to go with the settings.
+        :id: I_ARMI_SETTINGS_META1
+        :implements: R_ARMI_SETTINGS_META
+
+        Because nuclear analysts have a lot to keep track of when doing
+        various simulations of a reactor, ARMI provides a ``comment``
+        setting that takes an arbitrary string and stores it. This string
+        will be preserved in the settings file and thus in the database,
+        and can provide helpful notes for analysts in the future.
+
+        Likewise, it is helpful to know what versions of software were
+        used in an ARMI application. There is a dictionary-like setting
+        called ``versions`` that allows users to track the versions of:
+        ARMI, their ARMI application, and the versions of all the plugins
+        in their simulation. While it is always helpful to know what
+        versions of software you run, it is particularly needed in nuclear
+        engineering where demands will be made to track the exact
+        versions of code used in simulations.
+    """
     settings = [
         setting.Setting(
-            CONF_NUM_PROCESSORS,
+            CONF_N_TASKS,
             default=1,
-            label="CPUs",
-            description="Number of CPUs to request on the cluster",
+            label="parallel tasks",
+            description="Number of parallel tasks to request on the cluster",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
+            oldNames=[("numProcessors", None)],
         ),
         setting.Setting(
             CONF_INITIALIZE_BURN_CHAIN,
@@ -188,8 +217,9 @@ def defineSettings() -> List[setting.Setting]:
             default=True,
             label="Input Height Considered Hot",
             description=(
-                "This is a flag to determine if block heights, as provided in blueprints, are at hot dimensions. "
-                "If false, block heights are at cold/as-built dimensions and will be thermally expanded as appropriate."
+                "This is a flag to determine if block heights, as provided in blueprints, are at "
+                "hot dimensions. If false, block heights are at cold/as-built dimensions and will "
+                "be thermally expanded as appropriate."
             ),
         ),
         setting.Setting(
@@ -203,8 +233,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_TRACE,
             default=False,
             label="Use the Python Tracer",
-            description="Activate Python trace module to print out each line as it's "
-            "executed",
+            description="Activate Python trace module to print out each line as it's executed",
             isEnvironment=True,
         ),
         setting.Setting(
@@ -272,8 +301,7 @@ def defineSettings() -> List[setting.Setting]:
             default=1.0,
             label="Plant Availability Factor",
             description="Availability factor of the plant. This is the fraction of the "
-            "time that the plant is operating. If variable, use `availabilityFactors` "
-            "setting.",
+            "time that the plant is operating. If variable, use `availabilityFactors` setting.",
             oldNames=[
                 ("capacityFactor", None),
             ],
@@ -375,23 +403,38 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_BU_GROUPS,
-            default=[10, 20, 30, 100],
-            label="Burnup Groups",
+            default=[10, 20, 30],
+            label="Burnup XS Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type (units of %FIMA)",
+            "for a given cross section type (units of %FIMA)",
             schema=vol.Schema(
                 [
                     vol.All(
-                        vol.Coerce(int), vol.Range(min=0, min_included=False, max=100)
+                        vol.Coerce(int),
+                        vol.Range(
+                            min=0,
+                            min_included=False,
+                        ),
                     )
                 ]
+            ),
+        ),
+        setting.Setting(
+            CONF_TEMP_GROUPS,
+            default=[],
+            label="Temperature XS Groups",
+            description="The range of fuel temperatures where cross-sections will be the same "
+            "for a given cross section type (units of degrees C)",
+            schema=vol.Schema(
+                [vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]
             ),
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,
             default=0.0,
             label="Burn-up Peaking Factor",
-            description="None",
+            description="The peak/avg factor for burnup and DPA. If it is not set the current flux "
+            "peaking is used (this is typically conservatively high).",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -408,20 +451,24 @@ def defineSettings() -> List[setting.Setting]:
             description="A comment describing this case",
         ),
         setting.Setting(
-            CONF_COPY_FILES_FROM, default=[], label="None", description="None"
+            CONF_COPY_FILES_FROM,
+            default=[],
+            label="Copy These Files",
+            description="A list of files that need to be copied at the start of a run.",
         ),
         setting.Setting(
-            CONF_COPY_FILES_TO, default=[], label="None", description="None"
-        ),
-        setting.Setting(
-            CONF_DEBUG, default=False, label="Python Debug Mode", description="None"
+            CONF_COPY_FILES_TO,
+            default=[],
+            label="Copy to These Directories",
+            description="A list of directories to copy provided files into at the start of a run."
+            "This list can be of length zero (copy to working dir), 1 (copy all files to the same "
+            f"place), or it must be the same length as {CONF_COPY_FILES_FROM}",
         ),
         setting.Setting(
             CONF_DEBUG_MEM,
             default=False,
             label="Debug Memory",
-            description="Turn on memory debugging options to help find problems with "
-            "the code",
+            description="Turn on memory debugging options to help find problems with the code",
         ),
         setting.Setting(
             CONF_DEBUG_MEM_SIZE,
@@ -456,8 +503,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Detailed Assems - ID",
             description="Assembly numbers(IDs) for assemblies that will have "
             "'detailed' treatment. This option will track assemblies that not in the "
-            "core at BOL. Note: This option is interpreted differently by different "
-            "modules.",
+            "core at BOL. Note: This option is interpreted differently by different modules.",
             schema=vol.Schema([int]),
         ),
         setting.Setting(
@@ -473,13 +519,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Dump Snapshot Files",
             description="List of snapshots to dump reactor physics kernel input and "
             "output files. Can be used to perform follow-on analysis.",
-        ),
-        setting.Setting(
-            CONF_DO_ORIFICED_TH,
-            default=False,
-            label="Perform Core Orificing",
-            description="Perform orificed thermal hydraulics (requires bounds file "
-            "from a previous case)",
         ),
         setting.Setting(
             CONF_EQ_DIRECT,
@@ -498,14 +537,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_FRESH_FEED_TYPE,
             default="feed fuel",
             label="Fresh Feed Type",
-            description="None",
+            description="The type of fresh fuel added to the core, used in certain pre-defined "
+            "fuel shuffling logic sequences.",
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
-        ),
-        setting.Setting(
-            CONF_GEOM_FILE,
-            default="",
-            label="Core Map Input File",
-            description="Input file containing BOL core map",
         ),
         setting.Setting(
             CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
@@ -537,7 +571,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_START_NODE,
             default=0,
             label="Start Node",
-            description="Timenode number (0 for BOC, etc.) to continue calulation from. "
+            description="Timenode number (0 for BOC, etc.) to continue calculation from. "
             "Database will load from the time step just before.",
             oldNames=[
                 ("loadNode", None),
@@ -550,21 +584,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Load Style",
             description="Description of how the ARMI case will be initialized",
             options=["fromInput", "fromDB"],
-        ),
-        setting.Setting(
-            CONF_LOW_POWER_REGION_FRACTION,
-            default=0.05,
-            label="Low-power Region Fraction",
-            description="Description needed",
-            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
-        ),
-        setting.Setting(
-            CONF_MPI_TASKS_PER_NODE,
-            default=0,
-            label="MPI Tasks per Node",
-            description="Number of independent processes that are allocated to each "
-            "cluster node. 0 means 1 process per CPU.",
-            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_N_CYCLES,
@@ -637,7 +656,10 @@ def defineSettings() -> List[setting.Setting]:
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
-            CONF_REMOVE_PER_CYCLE, default=3, label="Move per Cycle", description="None"
+            CONF_REMOVE_PER_CYCLE,
+            default=3,
+            label="Remove per Cycle",
+            description="The number of fuel assemblies removed per cycle at equilibrium.",
         ),
         setting.Setting(
             CONF_RUN_TYPE,
@@ -795,15 +817,6 @@ def defineSettings() -> List[setting.Setting]:
                 "This allows users to specify to get materials out of a plugin rather "
                 "than from the framework."
             ),
-        ),
-        # It may make sense to remove this setting when MILs become more stable.
-        setting.Setting(
-            CONF_BLOCK_AUTO_GRID,
-            default=True,
-            label="Auto-generate Block grids",
-            description="Should block blueprints attempt to auto-generate a spatial "
-            "grid upon construction? This feature makes heavy use of multi-index "
-            "locations, which are not yet universally supported.",
         ),
         setting.Setting(
             CONF_CYCLES,

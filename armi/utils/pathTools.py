@@ -16,59 +16,59 @@
 This module contains commonly used functions relating to directories, files and path
 manipulations.
 """
-from time import sleep
 import importlib
 import os
 import pathlib
 import shutil
+from time import sleep
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
+from armi.utils import safeCopy
+
+DO_NOT_CLEAN_PATHS = [
+    "armiruns",
+    "failedruns",
+    "mc2run",
+    "mongoose",
+    "shufflebranches",
+    "snapshot",
+    "tests",
+]
 
 
 def armiAbsPath(*pathParts):
-    """
-    Convert a list of path components to an absolute path, without drive letters if possible.
-
-    This is mostly useful on Windows systems, where drive letters are not well defined
-    across systems. In these cases, it is useful to try to convert to a UNC path if
-    possible.
-    """
-    # imported here to prevent cluster failures, unsure why this causes an error
-    result = os.path.abspath(os.path.join(*pathParts))
-    try:
-        from ccl import common_operations
-
-        return common_operations.convert_to_unc_path(result)
-    except:  # noqa: bare-except;reason=avoid pywin32 p.load parallel issues
-        return result
+    """Convert a list of path components to an absolute path, without drive letters if possible."""
+    return os.path.abspath(os.path.join(*pathParts))
 
 
-def copyOrWarn(fileDescription, sourcePath, destinationPath):
-    """Copy a file, or warn if the file doesn't exist.
+def copyOrWarn(filepathDescription, sourcePath, destinationPath):
+    """Copy a file or directory, or warn if the filepath doesn't exist.
 
     Parameters
     ----------
-    fileDescription : str
+    filepathDescription : str
         a description of the file and/or operation being performed.
-
     sourcePath : str
-        Path of the file to be copied.
-
+        Filepath to be copied.
     destinationPath : str
-        Path for the copied file.
+        Copied filepath.
     """
     try:
-        shutil.copy(sourcePath, destinationPath)
+        if os.path.isdir(sourcePath):
+            shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
+        else:
+            safeCopy(sourcePath, destinationPath)
         runLog.debug(
-            "Copied {}: {} -> {}".format(fileDescription, sourcePath, destinationPath)
+            "Copied {}: {} -> {}".format(
+                filepathDescription, sourcePath, destinationPath
+            )
         )
     except shutil.SameFileError:
         pass
     except Exception as e:
         runLog.warning(
             "Could not copy {} from {} to {}\nError was: {}".format(
-                fileDescription, sourcePath, destinationPath, e
+                filepathDescription, sourcePath, destinationPath, e
             )
         )
 
@@ -185,7 +185,7 @@ def moduleAndAttributeExist(pathAttr):
         userSpecifiedModule = importCustomPyModule(modulePath)
 
     # Blanket except is okay since we are checking to see if a custom import will work.
-    except:  # noqa: bare-except
+    except Exception:
         return False
 
     return moduleAttributeName in userSpecifiedModule.__dict__
@@ -194,12 +194,12 @@ def moduleAndAttributeExist(pathAttr):
 def cleanPath(path, mpiRank=0):
     """Recursively delete a path.
 
-    !!! careful with this !!! It can delete the entire cluster.
+    !!! Be careful with this !!! It can delete the entire cluster.
 
-    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything at the same time.
-    Always check filenames for some special flag when calling this, especially
-    with full permissions on the cluster. You could accidentally delete everyone's work
-    with one misplaced line! This doesn't ask questions.
+    We add copious os.path.exists checks in case an MPI set of things is trying to delete everything
+    at the same time. Always check filenames for some special flag when calling this, especially
+    with full permissions on the cluster. You could accidentally delete everyone's work with one
+    misplaced line! This doesn't ask questions.
 
     Safety nets include an allow-list of paths.
 
@@ -214,15 +214,7 @@ def cleanPath(path, mpiRank=0):
     if not os.path.exists(path):
         return True
 
-    for validPath in [
-        "armiruns",
-        "failedruns",
-        "mc2run",
-        "mongoose",
-        "shufflebranches",
-        "snapshot",
-        "tests",
-    ]:
+    for validPath in DO_NOT_CLEAN_PATHS:
         if validPath in path.lower():
             valid = True
 

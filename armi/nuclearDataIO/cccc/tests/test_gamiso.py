@@ -13,13 +13,14 @@
 # limitations under the License.
 
 """Test GAMISO reading and writing."""
-from copy import deepcopy
 import os
 import unittest
+from copy import deepcopy
 
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import gamiso
 from armi.nuclearDataIO.xsNuclides import XSNuclide
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 THIS_DIR = os.path.dirname(__file__)
 FIXTURE_DIR = os.path.join(THIS_DIR, "..", "..", "tests", "fixtures")
@@ -31,9 +32,27 @@ class TestGamiso(unittest.TestCase):
         self.xsLib = xsLibraries.IsotxsLibrary()
 
     def test_compare(self):
+        """Compare the input binary GAMISO file.
+
+        .. test:: Test reading GAMISO files.
+            :id: T_ARMI_NUCDATA_GAMISO0
+            :tests: R_ARMI_NUCDATA_GAMISO
+        """
         gamisoAA = gamiso.readBinary(GAMISO_AA)
         self.xsLib.merge(deepcopy(gamisoAA))
         self.assertTrue(gamiso.compare(self.xsLib, gamisoAA))
+
+    def test_writeBinary(self):
+        """Write a binary GAMISO file.
+
+        .. test:: Test writing GAMISO files.
+            :id: T_ARMI_NUCDATA_GAMISO1
+            :tests: R_ARMI_NUCDATA_GAMISO
+        """
+        with TemporaryDirectoryChanger():
+            data = gamiso.readBinary(GAMISO_AA)
+            binData = gamiso.writeBinary(data, "gamiso.out")
+            self.assertTrue(gamiso.compare(data, binData))
 
     def test_addDummyNuclidesToLibrary(self):
         dummyNuclides = [XSNuclide(None, "U238AA")]

@@ -17,18 +17,34 @@ Executors are useful for having a standard way to run physics calculations.
 They may involve external codes (with inputs/execution/output) or in-memory
 data pathways.
 """
-
-import os
 import hashlib
+import os
 
-from armi.utils import directoryChangers, pathTools
 from armi import runLog
-from armi.context import getFastPath, MPI_RANK
+from armi.context import MPI_RANK, getFastPath
+from armi.utils import directoryChangers, pathTools
 
 
 class ExecutionOptions:
     """
     A data structure representing all options needed for a physics kernel.
+
+    .. impl:: Options for executing external calculations.
+        :id: I_ARMI_EX0
+        :implements: R_ARMI_EX
+
+        Implements a basic container to hold and report options to be used in
+        the execution of an external code (see :need:`I_ARMI_EX1`).
+        Options are stored as instance attributes and can be dumped as a string
+        using :py:meth:`~armi.physics.executers.ExecutionOptions.describe`, which
+        will include the name and value of all public attributes of the instance.
+
+        Also facilitates the ability to execute parallel instances of a code by
+        providing the ability to resolve a ``runDir`` that is aware of the
+        executing MPI rank. This is done via :py:meth:`~armi.physics.executers.ExecutionOptions.setRunDirFromCaseTitle`,
+        where the user passes in a ``caseTitle`` string, which is hashed and combined
+        with the MPI rank to provide a unique directory name to be used by each parallel
+        instance.
 
     Attributes
     ----------
@@ -86,7 +102,7 @@ class ExecutionOptions:
         return f"<{self.__class__.__name__}: {self.label}>"
 
     def fromUserSettings(self, cs):
-        """Set options from a particular CaseSettings object."""
+        """Set options from a particular Settings object."""
         raise NotImplementedError()
 
     def fromReactor(self, reactor):
@@ -167,6 +183,26 @@ class DefaultExecuter(Executer):
     * Clean up run directory
     * Un-apply geometry transformations as needed
     * Update ARMI data model as desired
+
+    .. impl:: Default tool for executing external calculations.
+        :id: I_ARMI_EX1
+        :implements: R_ARMI_EX
+
+        Facilitates the execution of external calculations by accepting ``options`` (an
+        :py:class:`~armi.physics.executers.ExecutionOptions` object) and providing
+        methods that build run directories and execute a code based on the values in
+        ``options``.
+
+        The :py:meth:`~armi.physics.executers.DefaultExecuter.run` method will first
+        resolve any derived options in the ``options`` object and check if the specified
+        ``executablePath`` option is valid, raising an error if not. If it is,
+        preparation work for executing the code is performed, such as performing any geometry
+        transformations specified in subclasses or building the directories needed
+        to save input and output files. Once the temporary working directory is created,
+        the executer moves into it and runs the external code, applying any results
+        from the run as specified in subclasses.
+
+        Finally, any geometry perturbations that were performed are undone.
     """
 
     def run(self):

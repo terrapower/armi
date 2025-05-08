@@ -16,8 +16,7 @@ import os
 import unittest
 
 from armi import context
-from armi.bookkeeping.db import database3
-from armi.bookkeeping.db import layout
+from armi.bookkeeping.db import database, layout
 from armi.reactor import grids
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -100,7 +99,7 @@ class TestLocationPacking(unittest.TestCase):
     def test_close(self):
         intendedFileName = "xyz.h5"
 
-        db = database3.Database3(intendedFileName, "w")
+        db = database.Database(intendedFileName, "w")
         self.assertEqual(db._fileName, intendedFileName)
         self.assertIsNone(db._fullPath)  # this isn't set until the db is opened
 

@@ -13,26 +13,26 @@
 # limitations under the License.
 
 """Test the Lattice Interface."""
-from collections import OrderedDict
 import unittest
+from collections import OrderedDict
 
+from armi import settings
+from armi.nuclearDataIO.cccc import isotxs
+from armi.operators.operator import Operator
+from armi.physics.neutronics import LatticePhysicsFrequency
+from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
 )
-from armi import settings
-from armi.operators.operator import Operator
-from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
-from armi.physics.neutronics.settings import CONF_GEN_XS
-from armi.reactor.reactors import Reactor, Core
-from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-from armi.tests import mockRunLogs
+from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
-from armi.nuclearDataIO.cccc import isotxs
-from armi.physics.neutronics import LatticePhysicsFrequency
-from armi.tests import ISOAA_PATH
+from armi.reactor.reactors import Core, Reactor
+from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.tests import ISOAA_PATH, mockRunLogs
+
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
@@ -64,7 +64,7 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
         cls.o.r.core = Core("testCore")
         # add an assembly with a single block
         cls.assembly = HexAssembly("testAssembly")
-        cls.assembly.spatialGrid = grids.axialUnitGrid(1)
+        cls.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         cls.assembly.spatialGrid.armiObject = cls.assembly
         cls.assembly.add(buildSimpleFuelBlock())
         # cls.o.r.core.add(assembly)
@@ -86,7 +86,22 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.o.r.core.lib = "Nonsense"
         self.latticeInterface.testVerification = False
 
-    def test_LatticePhysicsInterface(self):
+    def test_includeGammaXS(self):
+        """Test that we can correctly flip the switch to calculate gamma XS."""
+        # The default operator here turns off Gamma XS generation
+        self.assertFalse(self.latticeInterface.includeGammaXS)
+        self.assertEqual(self.o.cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron")
+
+        # but we can create an operator that turns on Gamma XS generation
+        cs = settings.Settings().modified(
+            newSettings={CONF_GLOBAL_FLUX_ACTIVE: "Neutron and Gamma"}
+        )
+        newOperator = Operator(cs)
+        newLatticeInterface = LatticeInterfaceTesterLibFalse(newOperator.r, cs)
+        self.assertTrue(newLatticeInterface.includeGammaXS)
+        self.assertEqual(cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron and Gamma")
+
+    def test_latticePhysicsInterface(self):
         """Super basic test of the LatticePhysicsInterface."""
         self.assertEqual(self.latticeInterface._updateBlockNeutronVelocities, True)
         self.assertEqual(self.latticeInterface.executablePath, "/tmp/fake_path")
@@ -100,9 +115,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None by the BOC
-        interaction, so this test does not have a good means of verifying the
-        correct function, so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
+        self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
         self.latticeInterface.interactBOL()
@@ -122,10 +136,8 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to
-        None by the BOC interaction, so this test does not have a
-        good means of verifying the correct function,
-        so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
+        self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
         self.latticeInterface.interactBOC()
@@ -144,6 +156,40 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactEveryNode()
         self.assertEqual(self.o.r.core.lib, "Nonsense")
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.everyNode
+        )
+        self.latticeInterface.interactEveryNode()
+        self.assertIsNone(self.o.r.core.lib)
+
+    def test_interactEveryNodeWhenCoupled(self):
+        """
+        Test that the XS lib is not cleared when coupled iterations are turned on
+        and XS will be generated during the coupled iterations.
+        """
+        self.o.couplingIsActive = lambda: True
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.firstCoupledIteration
+        )
+        self.latticeInterface.interactEveryNode()
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+
+        self.o.couplingIsActive = lambda: False
+        self.latticeInterface.interactEveryNode()
+        self.assertIsNone(self.o.r.core.lib)
+
+    def test_interactEveryNodeWhenCoupledButNot(self):
+        """
+        Test that the XS lib is cleared when coupled iterations are turned on
+        but the lattice physics frequency is not high enough.
+        """
+        self.o.couplingIsActive = lambda: True
+        self.latticeInterface._latticePhysicsFrequency = (
+            LatticePhysicsFrequency.firstCoupledIteration
+        )
+        self.latticeInterface.interactEveryNode()
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+
         self.latticeInterface._latticePhysicsFrequency = (
             LatticePhysicsFrequency.everyNode
         )
@@ -187,6 +233,9 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertIsNone(self.o.r.core.lib)
+
+    def test_getSuffix(self):
+        self.assertEqual(self.latticeInterface._getSuffix(7), "")
 
 
 class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):

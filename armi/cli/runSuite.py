@@ -15,8 +15,8 @@
 """Run multiple ARMI cases one after the other on the local machine."""
 import os
 
-from armi.cli.run import RunEntryPoint
 from armi import cases
+from armi.cli.run import RunEntryPoint
 from armi.utils import directoryChangers
 
 

@@ -12,14 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Search through a directory tree and modify ARMI settings in existing input
 file(s). All valid settings may be used as keyword arguments.
 """
 
-from armi import operators
-from armi import runLog
-from armi import settings
+from armi import operators, runLog, settings
 from armi.cli.entryPoint import EntryPoint
 
 
@@ -30,7 +28,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
 
     Run the entry point like this::
 
-        $ python -m armi modify --numProcessors=3 *.yaml
+        $ python -m armi modify --nTasks=3 *.yaml
 
     """
 

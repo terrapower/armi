@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-r"""
+"""
 Interfaces are objects of code that interact with ARMI. They read information off the state,
 perform calculations (or run external codes), and then store the results back in the state.
 
@@ -21,43 +21,40 @@ Learn all about interfaces in :doc:`/developer/guide`
 See Also
 --------
 armi.operators : Schedule calls to various interfaces
-
 armi.plugins : Register various interfaces
-
 """
 import copy
-from typing import Union
-from typing import NamedTuple
-from typing import List
-from typing import Dict
+from typing import Dict, List, NamedTuple, Union
 
-import numpy
+import numpy as np
 from numpy.linalg import norm
 
-from armi import getPluginManagerOrFail, settings, utils
-from armi import runLog
+from armi import getPluginManagerOrFail, runLog, settings, utils
 from armi.reactor import parameters
 from armi.utils import textProcessors
 
 
-class STACK_ORDER:  # noqa: invalid-class-name
+class STACK_ORDER:  # noqa: N801
     """
     Constants that help determine the order of modules in the interface stack.
 
-    Each module specifies an ``ORDER`` constant that specifies where in this order it
-    should be placed in the Interface Stack.
+    Each module defines an ``ORDER`` constant that specifies where in this order it should be placed
+    in the Interface Stack.
 
-    Notes
-    -----
-    Originally, the ordering was accomplished with a very large if/else construct in ``createInterfaces``.
-    This made more modular by moving the add/activate logic into each module and replacing the if/else with
-    just a large hard-coded list of modules in order that could possibly be added. That hard-coded
-    list presented ``ImportError`` problems when building various subset distributions of ARMI so this ordering
-    mechanism was created to replace it, allowing the modules to define their required order internally.
+    .. impl:: Define an ordered list of interfaces.
+        :id: I_ARMI_OPERATOR_INTERFACES0
+        :implements: R_ARMI_OPERATOR_INTERFACES
 
-    Future improvements may include simply defining what information is required to perform a calculation
-    and figuring out the ordering from that. It's complex because in coupled simulations, everything
-    depends on everything.
+        At each time node during a simulation, an ordered collection of Interfaces are run (referred
+        to as the interface stack). But ARMI does not force the order upon the analyst. Instead,
+        each Interface registers where in that ordered list it belongs by giving itself an order
+        number (which can be an integer or a decimal). This class defines a set of constants which
+        can be imported and used by Interface developers to define that Interface's position in the
+        stack.
+
+        The constants defined are given names, based on common stack orderings in the ARMI
+        ecosystem. But in the end, these are just constant values, and the names they are given are
+        merely suggestions.
 
     See Also
     --------
@@ -84,7 +81,25 @@ class STACK_ORDER:  # noqa: invalid-class-name
 class TightCoupler:
     """
     Data structure that defines tight coupling attributes that are implemented
-    within an Interface and called upon when ``interactCoupled`` is called.
+    within an Interface and called upon when ``interactAllCoupled`` is called.
+
+    .. impl:: The TightCoupler defines the convergence criteria for physics coupling.
+        :id: I_ARMI_OPERATOR_PHYSICS0
+        :implements: R_ARMI_OPERATOR_PHYSICS
+
+        During a simulation, the developers of an ARMI application frequently want to
+        iterate on some physical calculation until that calculation has converged to
+        within some small tolerance. This is typically done to solve the nonlinear
+        dependence of different physical properties of the reactor, like fuel
+        performance. However, what parameter is being tightly coupled is configurable
+        by the developer.
+
+        This class provides a way to calculate if a single parameter has converged
+        based on some convergence tolerance. The user provides the parameter,
+        tolerance, and a maximum number of iterations to define a basic convergence
+        calculation. If in the ``isConverged`` method the parameter has not converged,
+        the number of iterations is incremented, and this class will wait, presuming
+        another iteration is forthcoming.
 
     Parameters
     ----------
@@ -92,15 +107,14 @@ class TightCoupler:
         The name of a parameter defined in the ARMI Reactor model.
 
     tolerance : float
-        Defines the allowable error, epsilon, between the current previous
-        parameter value(s) to determine if the selected coupling parameter has
-        been converged.
+        Defines the allowable error between the current and previous parameter values
+        to determine if the selected coupling parameter has converged.
 
     maxIters : int
         Maximum number of tight coupling iterations allowed
     """
 
-    _SUPPORTED_TYPES = [float, int, list, numpy.ndarray]
+    _SUPPORTED_TYPES = [float, int, list, np.ndarray]
 
     def __init__(self, param, tolerance, maxIters):
         self.parameter = param
@@ -108,10 +122,13 @@ class TightCoupler:
         self.maxIters = maxIters
         self._numIters = 0
         self._previousIterationValue = None
-        self.eps = numpy.inf
+        self.eps = np.inf
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: {self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        return (
+            f"<{self.__class__.__name__}, Parameter: {self.parameter}, Convergence Criteria: "
+            + f"{self.tolerance}, Maximum Coupled Iterations: {self.maxIters}>"
+        )
 
     def storePreviousIterationValue(self, val: _SUPPORTED_TYPES):
         """
@@ -137,12 +154,14 @@ class TightCoupler:
 
     def isConverged(self, val: _SUPPORTED_TYPES) -> bool:
         """
-        Return boolean indicating if the convergence criteria between the current and previous iteration values are met.
+        Return boolean indicating if the convergence criteria between the current and previous
+        iteration values are met.
 
         Parameters
         ----------
         val : _SUPPORTED_TYPES
-            the most recent value for computing convergence critera. Is commonly equal to interface.getTightCouplingValue()
+            The most recent value for computing convergence criteria. Is commonly equal to
+            interface.getTightCouplingValue()
 
         Returns
         -------
@@ -151,18 +170,19 @@ class TightCoupler:
 
         Notes
         -----
-        - On convergence, this class is automatically reset to its initial condition to avoid retaining
-          or holding a stale state. Calling this method will increment a counter that when exceeded will
-          clear the state. A warning will be reported if the state is cleared prior to the convergence
-          criteria being met.
-        - For computing convergence of arrays, only up to 2D is allowed. 3D arrays would arise from considering
-          component level parameters. However, converging on component level parameters is not supported at this time.
+        - On convergence, this class is automatically reset to its initial condition to avoid
+          retaining or holding a stale state. Calling this method will increment a counter that when
+          exceeded will clear the state. A warning will be reported if the state is cleared prior to
+          the convergence criteria being met.
+        - For computing convergence of arrays, only up to 2D is allowed. 3D arrays would arise from
+          considering component level parameters. However, converging on component level parameters
+          is not supported at this time.
 
         Raises
         ------
         ValueError
-            If the previous iteration value has not been assigned. The ``storePreviousIterationValue`` method
-            must be called first.
+            If the previous iteration value has not been assigned. The
+            ``storePreviousIterationValue`` method must be called first.
         RuntimeError
             Only support calculating norms for up to 2D arrays.
         """
@@ -180,19 +200,19 @@ class TightCoupler:
         else:
             dim = self.getListDimension(val)
             if dim == 1:  # 1D array
-                self.eps = norm(numpy.subtract(val, previous), ord=2)
+                self.eps = norm(np.subtract(val, previous), ord=2)
             elif dim == 2:  # 2D array
                 epsVec = []
                 for old, new in zip(previous, val):
-                    epsVec.append(norm(numpy.subtract(old, new), ord=2))
-                self.eps = norm(epsVec, ord=numpy.inf)
+                    epsVec.append(norm(np.subtract(old, new), ord=2))
+                self.eps = norm(epsVec, ord=np.inf)
             else:
                 raise RuntimeError(
                     "Currently only support up to 2D arrays for calculating convergence of arrays."
                 )
 
-        # Check if convergence is satisfied. If so, or if reached max number of iters, then
-        # reset the number of iterations
+        # Check if convergence is satisfied. If so, or if reached max number of iters, then reset
+        # the number of iterations
         converged = self.eps < self.tolerance
         if converged:
             self._numIters = 0
@@ -233,13 +253,23 @@ class TightCoupler:
 
 class Interface:
     """
-    The eponymous Interface between the ARMI Reactor model and modules that operate upon it.
+    The eponymous Interface between the ARMI reactor data model and the Plugins.
 
-    This defines the operator's contract for interacting with the ARMI reactor model.
-    It is expected that interact* methods are defined as appropriate for the physics modeling.
+    .. impl:: The interface shall allow code execution at important operational points in time.
+        :id: I_ARMI_INTERFACE
+        :implements: R_ARMI_INTERFACE
 
-    Interface instances are gathered into an interface stack in
-    :py:meth:`armi.operators.operator.Operator.createInterfaces`.
+        The Interface class defines a number methods with names like ``interact***``.
+        These methods are called in order at each time node. This allows for an
+        individual Plugin defining multiple interfaces to insert code at the start
+        or end of a particular time node or cycle during reactor simulation. In this
+        fashion, the Plugins and thus the Operator control when their code is run.
+
+        The end goal of all this work is to allow the Plugins to carefully tune
+        when and how they interact with the reactor data model.
+
+        Interface instances are gathered into an interface stack in
+        :py:meth:`armi.operators.operator.Operator.createInterfaces`.
     """
 
     # list containing interfaceClass
@@ -254,16 +284,14 @@ class Interface:
 
     name: Union[str, None] = None
     """
-    The name of the interface. This is undefined for the base class, and must be
-    overridden by any concrete class that extends this one.
+    The name of the interface. This is undefined for the base class, and must be overridden by any
+    concrete class that extends this one.
     """
 
-    # TODO: This is a terrible variable name.
     function = None
     """
-    The function performed by an Interface. This is not required be be defined
-    by implementations of Interface, but is used to form categories of
-    interfaces.
+    The function performed by an Interface. This is not required be be defined by implementations of
+    Interface, but is used to form categories of interfaces.
     """
 
     class Distribute:
@@ -277,8 +305,8 @@ class Interface:
         """
         Construct an interface.
 
-        The ``r`` and ``cs`` arguments are required, but may be ``None``, where
-        appropriate for the specific ``Interface`` implementation.
+        The ``r`` and ``cs`` arguments are required, but may be ``None``, where appropriate for the
+        specific ``Interface`` implementation.
 
         Parameters
         ----------
@@ -321,8 +349,8 @@ class Interface:
 
         Notes
         -----
-        Cases where this isn't possible include the database interface,
-        where the SQL driver cannot be distributed.
+        Cases where this isn't possible include the database interface, where the SQL driver cannot
+        be distributed.
         """
         return self.Distribute.DUPLICATE
 
@@ -332,7 +360,7 @@ class Interface:
 
         Examples
         --------
-        return {'neutronsPerFission',self.neutronsPerFission}
+        >>> return {'neutronsPerFission',self.neutronsPerFission}
         """
         return {}
 
@@ -360,17 +388,20 @@ class Interface:
         self.o = o
 
     def detachReactor(self):
-        """Delete the callbacks to reactor or operator. Useful when pickling, MPI sending, etc. to save memory."""
+        """Delete the callbacks to reactor or operator. Useful when pickling, MPI sending, etc. to
+        save memory.
+        """
         self.o = None
         self.r = None
         self.cs = None
 
     def duplicate(self):
         """
-        Duplicate this interface without duplicating some of the large attributes (like the entire reactor).
+        Duplicate this interface without duplicating some of the large attributes (like the entire
+        reactor).
 
-        Makes a copy of interface with detached reactor/operator/settings so that it can be attached to an operator
-        at a later point in time.
+        Makes a copy of interface with detached reactor/operator/settings so that it can be attached
+        to an operator at a later point in time.
 
         Returns
         -------
@@ -430,9 +461,9 @@ class Interface:
 
         Notes
         -----
-        Parameters with defaults are not written to the database until they have been assigned SINCE_ANYTHING.
-        This is done to reduce database size, so that we don't write parameters to the DB that are related to
-        interfaces that are not not active.
+        Parameters with defaults are not written to the database until they have been assigned
+        SINCE_ANYTHING. This is done to reduce database size, so that we don't write parameters to
+        the DB that are related to interfaces that are not not active.
         """
         for paramDef in parameters.ALL_DEFINITIONS.inCategory(self.name):
             if paramDef.default not in (None, parameters.NoDefault):
@@ -476,11 +507,11 @@ class Interface:
 
         Notes
         -----
-        By default, detail points are either during the requested snapshots,
-        if any exist, or all cycles and nodes if none exist.
+        By default, detail points are either during the requested snapshots, if any exist, or all
+        cycles and nodes if none exist.
 
-        This is useful for peripheral interfaces (CR Worth, perturbation theory, transients)
-        that may or may not be requested during a standard run.
+        This is useful for peripheral interfaces (CR Worth, perturbation theory, transients) that
+        may or may not be requested during a standard run.
 
         If both cycle and node are None, this returns True
 
@@ -526,12 +557,11 @@ class Interface:
         return False
 
     def enabled(self, flag=None):
-        r"""
+        """
         Mechanism to allow interfaces to be attached but not running at the interaction points.
 
-        Must be implemented on the individual interface level hooks.
-        If given no arguments, returns status of enabled
-        If arguments, sets enabled to that flag. (True or False)
+        Must be implemented on the individual interface level hooks. If given no arguments, returns
+        status of enabled. If arguments, sets enabled to that flag. (True or False)
 
         Notes
         -----
@@ -545,7 +575,7 @@ class Interface:
             raise ValueError("Non-bool passed to assign {}.enable().".format(self))
 
     def bolForce(self, flag=None):
-        r"""
+        """
         Run interactBOL even if this interface is disabled.
 
         Parameters
@@ -579,26 +609,24 @@ class Interface:
         """
         Return a collection of file names that are considered input files.
 
-        This is a static method (i.e. is not called on a particular instance of the
-        class), since it should not require an Interface to actually be constructed.
-        This would require constructing a reactor object, which is expensive.
+        This is a static method (i.e. is not called on a particular instance of the class), since it
+        should not require an Interface to actually be constructed. This would require constructing
+        a reactor object, which is expensive.
 
-        The files returned by an implementation should be those that one would want
-        copied to a target location when cloning a Case or CaseSuite. These can be
-        absolute paths, relative paths, or glob patterns that will be interpolated
-        relative to the input directory. Absolute paths will not be copied anywhere.
+        The files returned by an implementation should be those that one would want copied to a
+        target location when cloning a Case or CaseSuite. These can be absolute paths, relative
+        paths, or glob patterns that will be interpolated relative to the input directory. Absolute
+        paths will not be copied anywhere.
 
-
-        The returned dictionary will enable the source CaseSettings object to
-        be updated to the new file location. While the dictionary keys are
-        recommended to be Setting objects, the name of the setting as a string,
-        e.g., "shuffleLogic", is still interpreted. If the string name does not
+        The returned dictionary will enable the source Settings object to be updated to the new file
+        location. While the dictionary keys are recommended to be Setting objects, the name of the
+        setting as a string, e.g., "shuffleLogic", is still interpreted. If the string name does not
         point to a valid setting then this will lead to a failure.
 
         Note
         ----
-        This existed before the advent of ARMI plugins. Perhaps it can be better served
-        as a plugin hook. Potential future work.
+        This existed before the advent of ARMI plugins. Perhaps it can be better served as a plugin
+        hook. Potential future work.
 
         See Also
         --------
@@ -606,7 +634,7 @@ class Interface:
 
         Parameters
         ----------
-        cs : CaseSettings
+        cs : Settings
             The case settings for a particular Case
         """
         return {}
@@ -648,8 +676,8 @@ class OutputReader:
 
     Notes
     -----
-    Should ideally not require r, eci, and fname arguments
-    and would rather just have an apply(reactor) method.
+    Should ideally not require r, eci, and fname arguments and would rather just have an
+    apply(reactor) method.
     """
 
     def __init__(self, r=None, externalCodeInterface=None, fName=None, cs=None):
@@ -728,7 +756,7 @@ def getActiveInterfaceInfo(cs):
 
     Parameters
     ----------
-    cs : CaseSettings
+    cs : Settings
         The case settings that activate relevant Interfaces
     """
     interfaceInfo = []

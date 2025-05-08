@@ -13,8 +13,8 @@
 # limitations under the License.
 """Parameter definitions for thermal hydraulic plugins."""
 from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation
 from armi.reactor.blocks import Block
+from armi.reactor.parameters import ParamLocation
 from armi.utils import units
 
 
@@ -178,14 +178,16 @@ def _getBlockParams():
         pb.defParam(
             "THaverageCladTemp",
             units=units.DEGC,
-            description="The nominal average clad temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average clad temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
         )
 
         pb.defParam(
             "THaverageGapTemp",
             units=units.DEGC,
-            description="The nominal average gap temperature in the block, which should be used for neutronic and TH feedback.",
+            description="The nominal average gap temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
         )
@@ -193,14 +195,8 @@ def _getBlockParams():
         pb.defParam(
             "THaverageDuctTemp",
             units=units.DEGC,
-            description="The nominal average duct temperature in the block, which should be used for neutronic and TH feedback.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THcoolantAverageT",
-            units=units.DEGC,
-            description="Flow-based average of the inlet and outlet coolant temperatures.",
+            description="The nominal average duct temperature in the block, which should be used "
+            "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
         )
 

@@ -56,19 +56,13 @@ and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
 import collections
 import gc
 import math
+import pickle
 import timeit
 
-from six.moves import cPickle
-import tabulate
-
-from armi import context
-from armi import interfaces
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import context, interfaces, runLog, settings, utils
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
-from armi.utils import iterables
+from armi.utils import iterables, tabulate
 
 
 class MpiAction:
@@ -138,7 +132,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except (cPickle.PicklingError) as error:
+        except pickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise
@@ -429,7 +423,7 @@ class DistributionAction(MpiAction):
     it possible for sub-tasks to manage their own communicators and spawn their own work within some
     sub-communicator.
 
-    This performs an MPI Split operation and takes over the context.MPI_COMM and associated varaibles.
+    This performs an MPI Split operation and takes over the context.MPI_COMM and associated variables.
     For this reason, it is possible that when someone thinks they have distributed information to all
     nodes, it may only be a subset that was necessary to perform the number of actions needed by this
     DsitributionAction.
@@ -475,7 +469,7 @@ class DistributionAction(MpiAction):
         actionResult = None
         try:
             action = mpiComm.scatter(self._actions, root=0)
-            # create a new communicator that only has these specific dudes running
+            # create a new communicator that only has these specific processes running
             hasAction = action is not None
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()
@@ -505,7 +499,7 @@ class DistributeStateAction(MpiAction):
         self._skipInterfaces = skipInterfaces
 
     def invokeHook(self):
-        r"""Sync up all nodes with the reactor, the cs, and the interfaces.
+        """Sync up all nodes with the reactor, the cs, and the interfaces.
 
         Notes
         -----
@@ -527,19 +521,16 @@ class DistributeStateAction(MpiAction):
             DistributeStateAction._distributeParamAssignments()
 
             if self._skipInterfaces:
-                self.o.reattach(self.r, cs)  # may be redundant?
+                self.o.reattach(self.r, cs)
             else:
                 self._distributeInterfaces()
 
-            # lastly, make sure the reactor knows it is up to date
-            # the operator/interface attachment may invalidate some of the cache, but since
-            # all the underlying data is the same, ultimately all state should be (initially) the
-            # same.
-            # TODO: this is an indication we need to revamp either how the operator attachment works
-            # or how the interfaces are distributed.
+            # Lastly, make sure the reactor knows it is up to date. The operator/interface
+            # attachment may invalidate some of the cache, but since all the underlying data is the
+            # same, ultimately all state should be (initially) the same.
             self.r._markSynchronized()
 
-        except (cPickle.PicklingError, TypeError) as error:
+        except (pickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
             runLog.error(error)
             # workers are still waiting for a reactor object
@@ -553,8 +544,8 @@ class DistributeStateAction(MpiAction):
             self.r.core.regenAssemblyLists()
 
         # check to make sure that everything has been properly reattached
-        if self.r.core.getFirstBlock().r is not self.r:
-            raise RuntimeError("Block.r is not self.r. Reattach the blocks!")
+        if self.r.core.getFirstBlock().core.r is not self.r:
+            raise RuntimeError("Block.core.r is not self.r. Reattach the blocks!")
 
         beforeCollection = timeit.default_timer()
 
@@ -604,9 +595,7 @@ class DistributeStateAction(MpiAction):
 
         self.r.o = self.o
 
-        runLog.debug(
-            "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
-        )
+        runLog.debug(f"The reactor has {len(self.r.core.getAssemblies())} assemblies")
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
@@ -649,7 +638,7 @@ class DistributeStateAction(MpiAction):
         armi.interfaces.Interface.interactDistributeState : runs on workers after DS
         """
         if context.MPI_RANK == 0:
-            # These run on the primary node. (Worker nodes run sychronized code below)
+            # These run on the primary node. (Worker nodes run synchronized code below)
             toRestore = {}
             for i in self.o.getInterfaces():
                 if i.distributable() == interfaces.Interface.Distribute.DUPLICATE:

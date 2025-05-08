@@ -16,17 +16,15 @@
 import copy
 import math
 
-import numpy
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.patches import Wedge
+import numpy as np
 from matplotlib.collections import PatchCollection
+from matplotlib.patches import Wedge
 
-from armi.reactor import blocks
-from armi.reactor import grids
-from armi.reactor import components
-from armi.reactor.flags import Flags
 from armi import runLog
+from armi.reactor import blocks, components, grids
+from armi.reactor.flags import Flags
 
 SIN60 = math.sin(math.radians(60.0))
 
@@ -141,12 +139,15 @@ class BlockConverter:
                 "Components are not of compatible shape to be merged "
                 "solute: {}, solvent: {}".format(solute, solvent)
             )
-        if solute.getArea() <= 0 or solvent.getArea() <= 0:
+        if solute.getArea() < 0:
             raise ValueError(
-                "Cannot merge components if either have negative area. "
-                "{} area: {}, {} area : {}".format(
-                    solute, solvent, solute.getArea(), solvent.getArea()
-                )
+                "Cannot merge solute with negative area into a solvent. "
+                "{} area: {}".format(solute, solute.getArea())
+            )
+        if solvent.getArea() <= 0:
+            raise ValueError(
+                "Cannot merge into a solvent with negative or 0 area. "
+                "{} area: {}".format(solvent, solvent.getArea())
             )
 
     def restablishLinks(self, solute, solvent, soluteLinks):
@@ -211,7 +212,26 @@ class BlockConverter:
 
 
 class ComponentMerger(BlockConverter):
-    """For a provided block, merged the solute component into the solvent component."""
+    """For a provided block, merged the solute component into the solvent component.
+
+    .. impl:: Homogenize one component into another.
+        :id: I_ARMI_BLOCKCONV0
+        :implements: R_ARMI_BLOCKCONV
+
+        This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
+        a ``Block`` into one ``Component``. A ``Block`` is a ``Composite`` that may
+        probably has multiple ``Components`` somewhere in it. This means averaging the
+        material properties in the original ``Block``, and ensuring that the final
+        ``Component`` has the same shape and volume as the original ``Block``. This
+        subclass essentially just uses the base class method
+        ``dissolveComponentIntoComponent()`` given prescribed solute and solvent
+        materials, to define the merger.
+
+    Notes
+    -----
+    It is the job of the developer to determine if merging a Block into one Component
+    will yield valid or sane results.
+    """
 
     def __init__(self, sourceBlock, soluteName, solventName):
         """
@@ -245,13 +265,23 @@ class MultipleComponentMerger(BlockConverter):
     liner was dissolved first, this would normally cause a ValueError in _verifyExpansion since the
     clad would be completely expanded over a non void component.
 
-    This could be implemented on the regular ComponentMerger, as the Flags system has enough power
-    in the type specification arguments to things like ``getComponents()``, ``hasFlags()``, etc., to
-    do single and multiple components with the same code.
+    .. impl:: Homogenize multiple components into one.
+        :id: I_ARMI_BLOCKCONV1
+        :implements: R_ARMI_BLOCKCONV
+
+        This subclass of ``BlockConverter`` is meant as a one-time-use tool, to convert
+        a multiple ``Components`` into one. This means averaging the material
+        properties in the original ``Components``, and ensuring that the final
+        ``Component`` has the same shape and volume as all of the originals. This
+        subclass essentially just uses the base class method
+        ``dissolveComponentIntoComponent()`` given prescribed solute and solvent
+        materials, to define the merger. Though care is taken here to ensure the merger
+        isn't verified until it is completely finished.
     """
 
     def __init__(self, sourceBlock, soluteNames, solventName, specifiedMinID=0.0):
-        """
+        """Standard constructor method.
+
         Parameters
         ----------
         sourceBlock : :py:class:`armi.reactor.blocks.Block`
@@ -282,7 +312,8 @@ class MultipleComponentMerger(BlockConverter):
                 soluteName, self.solventName, minID=self.specifiedMinID
             )
         solvent = self._sourceBlock.getComponentByName(self.solventName)
-        BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
+        if solvent.__class__ is not components.DerivedShape:
+            BlockConverter._verifyExpansion(self, self.soluteNames, solvent)
         return self._sourceBlock
 
 
@@ -450,13 +481,14 @@ class BlockAvgToCylConverter(BlockConverter):
             colors.append(circleComp.density())
         colorMap = matplotlib.cm
         p = PatchCollection(patches, alpha=1.0, linewidths=0.1, cmap=colorMap.YlGn)
-        p.set_array(numpy.array(colors))
+        p.set_array(np.array(colors))
         ax.add_collection(p)
         ax.autoscale_view(True, True, True)
         ax.set_aspect("equal")
         fig.tight_layout()
         if fName:
             plt.savefig(fName)
+            plt.close()
         else:
             plt.show()
         return fName
@@ -476,6 +508,11 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     duct/intercoolant pinComponentsRing1 | coolant | pinComponentsRing2 | coolant | ... |
     nonpins ...
 
+    The ``ductHeterogeneous`` option allows the user to treat everything inside the duct
+    as a single homogenized composition. This could significantly reduce the memory and runtime
+    required for the lattice physics solver, and also provide an alternative approximation for
+    the spatial self-shielding effect on microscopic cross sections.
+
     This converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined and for
     the ``sourceBlock`` to have a spatial grid defined. Additionally, both the ``sourceBlock``
     and ``driverFuelBlock`` must be instances of HexBlocks.
@@ -487,6 +524,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         driverFuelBlock=None,
         numExternalRings=None,
         mergeIntoClad=None,
+        mergeIntoFuel=None,
+        ductHeterogeneous=False,
     ):
         BlockAvgToCylConverter.__init__(
             self,
@@ -516,6 +555,8 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 )
         self.pinPitch = sourceBlock.getPinPitch()
         self.mergeIntoClad = mergeIntoClad or []
+        self.mergeIntoFuel = mergeIntoFuel or []
+        self.ductHeterogeneous = ductHeterogeneous
         self.interRingComponent = sourceBlock.getComponent(Flags.COOLANT, exact=True)
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
         if not self.interRingComponent:
@@ -526,7 +567,21 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             )
 
     def convert(self):
-        """Perform the conversion."""
+        """Perform the conversion.
+
+        .. impl:: Convert hex blocks to cylindrical blocks.
+            :id:  I_ARMI_BLOCKCONV_HEX_TO_CYL
+            :implements: R_ARMI_BLOCKCONV_HEX_TO_CYL
+
+            This method converts a ``HexBlock`` to a cylindrical ``Block``. Obviously,
+            this is not a physically meaningful transition; it is a helpful
+            approximation tool for analysts. This is a subclass of
+            ``BlockAvgToCylConverter`` which is a subclass of ``BlockConverter``. This
+            converter expects the ``sourceBlock`` and ``driverFuelBlock`` to defined
+            and for the ``sourceBlock`` to have a spatial grid defined. Additionally,
+            both the ``sourceBlock`` and ``driverFuelBlock`` must be instances of
+            ``HexBlocks``.
+        """
         runLog.info(
             "Converting representative block {} to its equivalent cylindrical model".format(
                 self._sourceBlock
@@ -537,9 +592,12 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             self._sourceBlock.getNumPins()
         )
         pinComponents, nonPins = self._classifyComponents()
-        self._buildFirstRing(pinComponents)
-        for ring in range(2, numRings + 1):
-            self._buildNthRing(pinComponents, ring)
+        if self.ductHeterogeneous:
+            self._buildInsideDuct()
+        else:
+            self._buildFirstRing(pinComponents)
+            for ring in range(2, numRings + 1):
+                self._buildNthRing(pinComponents, ring)
         self._buildNonPinRings(nonPins)
         self._addDriverFuelRings()
 
@@ -560,9 +618,13 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         )
         self._remainingCoolantFillArea = self.interRingComponent.getArea()
 
-        # do user-input merges
+        # do user-input merges into cladding
         for componentName in self.mergeIntoClad:
             self.dissolveComponentIntoComponent(componentName, "clad")
+
+        # do user-input merges into fuel
+        for componentName in self.mergeIntoFuel:
+            self.dissolveComponentIntoComponent(componentName, "fuel")
 
     def _classifyComponents(self):
         """
@@ -598,6 +660,25 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
                 nonPins.append(c)
 
         return list(sorted(pinComponents)), nonPins
+
+    def _buildInsideDuct(self):
+        """Build a homogenized material of the components inside the duct."""
+        blockType = self._sourceBlock.getType()
+        blockName = f"Homogenized {blockType}"
+        newBlock, mixtureFlags = stripComponents(self._sourceBlock, Flags.DUCT)
+        outerDiam = getOuterDiamFromIDAndArea(0.0, newBlock.getArea())
+        circle = components.Circle(
+            blockName,
+            "_Mixture",
+            newBlock.getAverageTempInC(),
+            newBlock.getAverageTempInC(),
+            id=0.0,
+            od=outerDiam,
+            mult=1,
+        )
+        circle.setNumberDensities(newBlock.getNumberDensities())
+        circle.p.flags = mixtureFlags
+        self.convertedBlock.add(circle)
 
     def _buildFirstRing(self, pinComponents):
         """Add first ring of components to new block."""
@@ -647,14 +728,17 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         Also needs to add final coolant layer between the outer pins and the non-pins.
         Will crash if there are things that are not circles or hexes.
         """
-        # fill in the last ring of coolant using the rest
-        coolInnerDiam = self.convertedBlock[-1].getDimension("od")
-        coolantOD = getOuterDiamFromIDAndArea(
-            coolInnerDiam, self._remainingCoolantFillArea
-        )
-        self._addCoolantRing(coolantOD, " outer")
+        if not self.ductHeterogeneous:
+            # fill in the last ring of coolant using the rest
+            coolInnerDiam = self.convertedBlock[-1].getDimension("od")
+            coolantOD = getOuterDiamFromIDAndArea(
+                coolInnerDiam, self._remainingCoolantFillArea
+            )
+            self._addCoolantRing(coolantOD, " outer")
+            innerDiameter = coolantOD
+        else:
+            innerDiameter = self.convertedBlock[-1].getDimension("od")
 
-        innerDiameter = coolantOD
         for i, hexagon in enumerate(sorted(nonPins)):
             outerDiam = getOuterDiamFromIDAndArea(
                 innerDiameter, hexagon.getArea()
@@ -715,7 +799,7 @@ def radiiFromHexSides(sideLengths):
 
 
 def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
-    """
+    r"""
     Return list of radii from ring of rods.
 
     Parameters
@@ -735,17 +819,24 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
     Notes
     -----
     There are two assumptions when making circles:
-    1) the rings are concentric about the radToRodCenter;
-    2) the ring area of the fuel rods are distributed to the inside and outside rings with the same thickness.
-    thicknessOnEachSide (t) is calculated as follows:
-    r1 = inner rad that thickness is added to on inside
-    r2 = outer rad that thickness is added to on outside
-    radToRodCenter = (r1 + r2) / 2.0 due to being concentric;
-    Total Area = Area of annulus 1 + Area of annulus 2
-    Area of annulus 1 = pi * r1 ** 2       -  pi * (r1 - t) ** 2
-    Area of annulus 2 = pi * (r2 + t) ** 2 -  pi * r2 ** 2
-    Solving for thicknessOnEachSide(t):
-    t = Total Area  / (4 * pi * radToRodCenter)
+
+    #. The rings are concentric about the ``radToRodCenter``.
+    #. The ring area of the fuel rods are distributed to the inside and outside
+       rings with the same thickness. ``thicknessOnEachSide`` (:math:`t`) is calculated
+       as follows:
+
+        .. math::
+            :nowrap:
+
+            \begin{aligned}
+            r_1 &\equiv \text{inner rad that thickness is added to on inside} \\
+            r_2 &\equiv \text{outer rad that thickness is added to on outside} \\
+            \texttt{radToRodCenter} &= \frac{r_1 + r_2}{2} \text{(due to being concentric)} \\
+            \text{Total Area} &= \text{Area of annulus 1} + \text{Area of annulus 2} \\
+            \text{Area of annulus 1} &= \pi r_1^2 -  \pi (r_1 - t)^2 \\
+            \text{Area of annulus 2} &= \pi (r_2 + t)^2 -  \pi r_2^2 \\
+            t &= \frac{\text{Total Area}}{4\pi\times\texttt{radToRodCenter}}
+            \end{aligned}
     """
     if layout == "polygon":
         alpha = 2.0 * math.pi / float(numRods)
@@ -771,3 +862,63 @@ def radiiFromRingOfRods(distToRodCenter, numRods, rodRadii, layout="hexagon"):
         rLast, bigRLast = rodRadius, distFromCenterComp
 
     return sorted(radiiFromRodCenter)
+
+
+def stripComponents(block, compFlags):
+    """
+    Remove all components from a block outside of the first component that matches compFlags.
+
+    Parameters
+    ----------
+    block : armi.reactor.blocks.Block
+        Source block from which to produce a modified copy
+    compFlags : armi.reactor.flags.Flags
+        Component flags to indicate which components to strip from the
+        block. All components outside of the first one that matches
+        compFlags are stripped.
+
+    Returns
+    -------
+    newBlock : armi.reactor.blocks.Block
+        Copy of source block with specified components stripped off.
+    mixtureFlags : TypeSpec
+        Combination of all component flags within newBlock.
+
+    Notes
+    -----
+    This is often used for creating a partially heterogeneous representation
+    of a block. For example, one might want to treat everything inside of a
+    specific component (such as the duct) as homogenized, while keeping a
+    heterogeneous representation of the remaining components.
+    """
+    newBlock = copy.deepcopy(block)
+    avgBlockTemp = block.getAverageTempInC()
+    mixtureFlags = newBlock.getComponent(Flags.COOLANT).p.flags
+    innerMostComp = next(
+        i
+        for i, c in enumerate(sorted(newBlock.getComponents()))
+        if c.hasFlags(compFlags)
+    )
+    outsideComp = True
+    indexedComponents = [(i, c) for i, c in enumerate(sorted(newBlock.getComponents()))]
+    for i, c in sorted(indexedComponents, reverse=True):
+        if outsideComp:
+            if i == innerMostComp:
+                compIP = c.getDimension("ip")
+                outsideComp = False
+            newBlock.remove(c, recomputeAreaFractions=False)
+        else:
+            mixtureFlags = mixtureFlags | c.p.flags
+
+    # add pitch defining component with no area
+    newBlock.add(
+        components.Hexagon(
+            "pitchComponent",
+            "Void",
+            avgBlockTemp,
+            avgBlockTemp,
+            ip=compIP,
+            op=compIP,
+        )
+    )
+    return newBlock, mixtureFlags

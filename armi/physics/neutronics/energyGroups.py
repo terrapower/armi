@@ -17,20 +17,35 @@ import copy
 import itertools
 import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
-from armi.utils.mathematics import findNearestValue
 from armi.physics.neutronics.const import (
     FAST_FLUX_THRESHOLD_EV,
+    HIGH_ENERGY_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,
-    HIGH_ENERGY_EV,
 )
+from armi.utils.mathematics import findNearestValue
 
 
 def getFastFluxGroupCutoff(eGrpStruc):
-    """Given a constant "fast" energy threshold, return which ARMI energy group index contains this threshold."""
+    """
+    Given a constant "fast" energy threshold, return which ARMI energy group
+    index contains this threshold.
+
+    .. impl:: Return the energy group index which contains a given energy threshold.
+        :id: I_ARMI_EG_FE
+        :implements: R_ARMI_EG_FE
+
+        This function returns the energy group within a given group structure
+        that contains the fast flux threshold energy. The threshold energy is
+        imported from the :py:mod:`constants <armi.physics.neutronics.const>` in
+        the neutronics module, where it is defined as 100 keV. This is a
+        standard definition for fast flux. This function also calculates and
+        returns the fraction of the threshold energy group that is above the 100
+        keV threshold.
+    """
     gThres = -1
     for g, eV in enumerate(eGrpStruc):
         if eV < FAST_FLUX_THRESHOLD_EV:
@@ -65,12 +80,24 @@ def _create_anl_energies_with_group_lethargies(*group_lethargies):
 
 def getGroupStructure(name):
     """
-    Return descending neutron energy group upper bounds in eV for a given structure name.
+    Return descending neutron energy group upper bounds in eV for a given
+    structure name.
+
+    .. impl:: Provide the neutron energy group bounds for a given group structure.
+        :id: I_ARMI_EG_NE
+        :implements: R_ARMI_EG_NE
+
+        There are several built-in group structures that are defined in this
+        module, which are stored in a dictionary. This function takes a group
+        structure name as an input parameter, which it uses as a key for the
+        group structure dictionary. If the group structure name is valid, it
+        returns a copy of the energy group structure resulting from the
+        dictionary lookup. Otherwise, it throws an error.
 
     Notes
     -----
-    Copy of the group structure is return so that modifications of the energy bounds does
-    not propagate back to the `GROUP_STRUCTURE` dictionary.
+    Copy of the group structure is return so that modifications of the energy
+    bounds does not propagate back to the `GROUP_STRUCTURE` dictionary.
     """
     try:
         return copy.copy(GROUP_STRUCTURE[name])
@@ -84,12 +111,12 @@ def getGroupStructure(name):
 
 def getGroupStructureType(neutronEnergyBoundsInEv):
     """Return neutron energy group structure name for a given set of neutron energy group bounds in eV."""
-    neutronEnergyBoundsInEv = numpy.array(neutronEnergyBoundsInEv)
+    neutronEnergyBoundsInEv = np.array(neutronEnergyBoundsInEv)
     for groupStructureType in GROUP_STRUCTURE:
-        refNeutronEnergyBoundsInEv = numpy.array(getGroupStructure(groupStructureType))
+        refNeutronEnergyBoundsInEv = np.array(getGroupStructure(groupStructureType))
         if len(refNeutronEnergyBoundsInEv) != len(neutronEnergyBoundsInEv):
             continue
-        if numpy.allclose(refNeutronEnergyBoundsInEv, neutronEnergyBoundsInEv, 1e-5):
+        if np.allclose(refNeutronEnergyBoundsInEv, neutronEnergyBoundsInEv, 1e-5):
             return groupStructureType
     raise ValueError(
         "Neutron energy group structure type does not exist for the given neutron energy bounds: {}".format(
@@ -104,9 +131,14 @@ Energy groups for use in multigroup neutronics.
 
 Values are the upper bound of each energy in eV from highest energy to lowest
 (because neutrons typically downscatter...)
+
+:meta hide-value:
 """
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
+
+# for calculating fast flux
+GROUP_STRUCTURE["FastFlux"] = [HIGH_ENERGY_EV, FAST_FLUX_THRESHOLD_EV]
 
 # Nuclear Reactor Engineering: Reactor Systems Engineering, Vol. 1
 GROUP_STRUCTURE["4gGlasstoneSesonske"] = [HIGH_ENERGY_EV, 5.00e04, 5.00e02, 6.25e-01]
@@ -130,74 +162,6 @@ GROUP_STRUCTURE["CASMO12"] = [
     3.00e-02,
 ]
 
-
-# For typically for use with MCNP will need conversion to MeV,
-# and ordering from low to high.
-GROUP_STRUCTURE["CINDER63"] = [
-    2.5000e07,
-    2.0000e07,
-    1.6905e07,
-    1.4918e07,
-    1.0000e07,
-    6.0650e06,
-    4.9658e06,
-    3.6788e06,
-    2.8651e06,
-    2.2313e06,
-    1.7377e06,
-    1.3534e06,
-    1.1080e06,
-    8.2085e05,
-    6.3928e05,
-    4.9790e05,
-    3.8870e05,
-    3.0200e05,
-    1.8320e05,
-    1.1110e05,
-    6.7380e04,
-    4.0870e04,
-    2.5540e04,
-    1.9890e04,
-    1.5030e04,
-    9.1190e03,
-    5.5310e03,
-    3.3550e03,
-    2.8400e03,
-    2.4040e03,
-    2.0350e03,
-    1.2340e03,
-    7.4850e02,
-    4.5400e02,
-    2.7540e02,
-    1.6700e02,
-    1.0130e02,
-    6.1440e01,
-    3.7270e01,
-    2.2600e01,
-    1.3710e01,
-    8.3150e00,
-    5.0430e00,
-    3.0590e00,
-    1.8550e00,
-    1.1250e00,
-    6.8300e-01,
-    4.1400e-01,
-    2.5100e-01,
-    1.5200e-01,
-    1.0000e-01,
-    8.0000e-02,
-    6.7000e-02,
-    5.8000e-02,
-    5.0000e-02,
-    4.2000e-02,
-    3.5000e-02,
-    3.0000e-02,
-    2.5000e-02,
-    2.0000e-02,
-    1.5000e-02,
-    1.0000e-02,
-    5.0000e-03,
-]
 
 # fmt: off
 # Group structures below here are derived from Appendix E in
@@ -286,6 +250,7 @@ GROUP_STRUCTURE["ANL1041"] = _create_anl_energies_with_group_lethargies(
 GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
     itertools.repeat(1, 2082)
 )
+
 
 # fmt: on
 def _create_multigroup_structures_on_finegroup_energies(
@@ -772,7 +737,7 @@ GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
 )
 
 """
-Taken from Table 5.1 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.1 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL21G"] = [
@@ -800,7 +765,7 @@ GROUP_STRUCTURE["ANL21G"] = [
 ]
 
 """
-Taken from Table 5.2 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.2 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL94G"] = [

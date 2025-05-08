@@ -1,14 +1,27 @@
 name: Coverage
 
+permissions:
+  contents: read
+
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'doc/**'
   pull_request:
+    paths-ignore:
+      - 'doc/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    # Deploying coverage to coveralls.io should not happen on forks
+    if: github.repository == 'terrapower/armi'
+    runs-on: ubuntu-24.04
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -20,16 +33,20 @@ jobs:
           python-version: '3.11'
       - name: Update package index
         run: sudo apt-get update
-      - name: Install mpi libs
-        run: sudo apt-get -y install libopenmpi-dev
-      - name: Install Tox and any other packages
-        run: pip install tox
-      - name: Run Coverage Part 1
-        run: tox -e cov1 || true
-      - name: Run Coverage Part 2
-        run: tox -e cov2
+      - name: Install ARMI and MPI
+        run: |
+          sudo apt-get -y install libopenmpi-dev
+          pip install -e .[memprof,mpi,test]
+      - name: Run Coverage
+        run: |
+          coverage run --rcfile=pyproject.toml -m pytest -n 4 --cov=armi --cov-config=pyproject.toml --cov-report=lcov --ignore=venv armi
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
+          mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiDirectoryChangers.py || true
+          coverage combine --rcfile=pyproject.toml --keep -a
+          coverage report --rcfile=pyproject.toml -i --skip-empty --skip-covered --sort=cover --fail-under=90
       - name: Publish to coveralls.io
-        uses: coverallsapp/github-action@v1.1.2
+        uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path-to-lcov: coverage.lcov
+          file: coverage.lcov

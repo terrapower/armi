@@ -15,9 +15,8 @@
 """
 Concrete.
 
-Concrete is often used to provide structural support of nuclear equipment.
-
-It can also provide radiation shielding.
+Concrete is often used to provide structural support of nuclear equipment. It can also provide
+radiation shielding.
 """
 
 from armi.materials.material import Material
@@ -26,20 +25,20 @@ from armi.materials.material import Material
 class Concrete(Material):
     """Simple concreate material.
 
-    http://jolissrch-inter.tokai-sc.jaea.go.jp/pdfdata/JAERI-Data-Code-98-004.pdf
+    https://web.archive.org/web/20221103120449/https://physics.nist.gov/cgi-bin/Star/compos.pl?matno=144
     """
 
     def setDefaultMassFracs(self):
-        self.setMassFrac("H", 0.023 / 2.302)
-        self.setMassFrac("O16", 1.220 / 2.302)
-        self.setMassFrac("C", 0.0023 / 2.302)
-        self.setMassFrac("NA23", 0.0368 / 2.302)
-        self.setMassFrac("MG", 0.005 / 2.302)
-        self.setMassFrac("AL", 0.078 / 2.302)
-        self.setMassFrac("SI", 0.775 / 2.302)
-        self.setMassFrac("K", 0.0299 / 2.302)
-        self.setMassFrac("CA", 0.100 / 2.302)
-        self.setMassFrac("FE", 0.032 / 2.302)
+        self.setMassFrac("H", 0.010000)
+        self.setMassFrac("C", 0.001000)
+        self.setMassFrac("O16", 0.529107)
+        self.setMassFrac("NA23", 0.016000)
+        self.setMassFrac("MG", 0.002000)
+        self.setMassFrac("AL", 0.033872)
+        self.setMassFrac("SI", 0.337021)
+        self.setMassFrac("K", 0.013000)
+        self.setMassFrac("CA", 0.044000)
+        self.setMassFrac("FE", 0.014000)
 
     def density(self, Tk=None, Tc=None):
-        return 2.302  # g/cm3
+        return 2.3000  # g/cm3

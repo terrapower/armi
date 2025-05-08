@@ -15,20 +15,19 @@
 """This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
 import collections
 from inspect import signature
-from typing import Iterable, Set, Iterator
+from typing import Iterable, Iterator, Set
 
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
-from armi.reactor import blocks
-from armi.reactor.composites import Composite
-from armi.reactor import parameters
-from armi.reactor.flags import Flags
+from armi.reactor import blocks, parameters
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.components.component import Component
+from armi.reactor.composites import Composite
 from armi.reactor.converters import blockConverters
-from armi.settings.fwSettings import globalSettings
+from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 def _configureGeomOptions():
@@ -42,7 +41,31 @@ def _configureGeomOptions():
 
 
 class BlockBlueprint(yamlize.KeyedList):
-    """Input definition for Block."""
+    """Input definition for Block.
+
+    .. impl:: Create a Block from blueprint file.
+        :id: I_ARMI_BP_BLOCK
+        :implements: R_ARMI_BP_BLOCK
+
+        Defines a yaml construct that allows the user to specify attributes of a block from within
+        their blueprints file, including a name, flags, a radial grid to specify locations of pins,
+        and the name of a component which drives the axial expansion of the block (see
+        :py:mod:`~armi.reactor.converters.axialExpansionChanger`).
+
+        In addition, the user may specify key-value pairs to specify the components contained within
+        the block, where the keys are component names and the values are component blueprints (see
+        :py:class:`~armi.reactor.blueprints.ComponentBlueprint.ComponentBlueprint`).
+
+        Relies on the underlying infrastructure from the ``yamlize`` package for reading from text
+        files, serialization, and internal storage of the data.
+
+        Is implemented into a blueprints file by being imported and used as an attribute within the
+        larger :py:class:`~armi.reactor.blueprints.Blueprints` class.
+
+        Includes a ``construct`` method, which instantiates an instance of
+        :py:class:`~armi.reactor.blocks.Block` with the characteristics as specified in the
+        blueprints.
+    """
 
     item_type = componentBlueprint.ComponentBlueprint
     key_attr = componentBlueprint.ComponentBlueprint.name
@@ -81,8 +104,8 @@ class BlockBlueprint(yamlize.KeyedList):
 
         Parameters
         ----------
-        cs : CaseSettings
-            CaseSettings object for the appropriate simulation.
+        cs : Settings
+            Settings object for the appropriate simulation.
 
         blueprint : Blueprints
             Blueprints object containing various detailed information, such as nuclides to model
@@ -121,7 +144,11 @@ class BlockBlueprint(yamlize.KeyedList):
             filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
             )
-            c = componentDesign.construct(blueprint, filteredMaterialInput)
+            c = componentDesign.construct(
+                blueprint,
+                filteredMaterialInput,
+                cs[CONF_INPUT_HEIGHTS_HOT],
+            )
             components[c.name] = c
 
             # check that the mat mods for this component are valid options
@@ -216,11 +243,6 @@ class BlockBlueprint(yamlize.KeyedList):
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid
 
-        if b.spatialGrid is None and cs[globalSettings.CONF_BLOCK_AUTO_GRID]:
-            try:
-                b.autoCreateSpatialGrids()
-            except (ValueError, NotImplementedError) as e:
-                runLog.warning(str(e), single=True)
         return b
 
     def _getBlockwiseMaterialModifierOptions(
@@ -246,7 +268,7 @@ class BlockBlueprint(yamlize.KeyedList):
                             materialParentClass.applyInputParams
                         ).parameters.keys()
                     )
-        # self is a parameter to class methods, so it gets picked up here
+        # self is a parameter to methods, so it gets picked up here
         # but that's obviously not a real material modifier
         perChildModifiers.discard("self")
         return perChildModifiers

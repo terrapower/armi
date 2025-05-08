@@ -26,7 +26,7 @@ SCIPAT_SPECIAL = re.compile(r"([+-]?\d*\.\d+)[eEdD]?([+-]\d+)")
 
 def average1DWithinTolerance(vals, tolerance=0.2):
     """
-    Compute the average of a series of arrays with a tolerance.
+    Compute the average of a series of 1D arrays with a tolerance.
 
     Tuned for averaging assembly meshes or block heights.
 
@@ -34,6 +34,13 @@ def average1DWithinTolerance(vals, tolerance=0.2):
     ----------
     vals : 2D np.array
         could be assembly x axial mesh tops or heights
+    tolerance : float
+        The accuracy to which we need to know the average.
+
+    Returns
+    -------
+    1D np.array
+        The average of all the input 1D NumPy arrays.
     """
     vals = np.array(vals)
 
@@ -57,11 +64,10 @@ def average1DWithinTolerance(vals, tolerance=0.2):
     return avg
 
 
-def convertToSlice(x, increment=False):
+def convertToSlice(x, increment=0):
     """
-    Convert a int, float, list of ints or floats, None, or slice
-    to a slice. Also optionally increments that slice to make it easy to line
-    up lists that don't start with 0.
+    Convert a int, float, list of ints or floats, None, or slice to a slice. Also optionally
+    increments that slice to make it easy to line up lists that don't start with 0.
 
     Use this with np.array (np.ndarray) types to easily get selections of it's elements.
 
@@ -72,19 +78,21 @@ def convertToSlice(x, increment=False):
         list of int: select these index numbers.
         None: select all indices.
         slice: select this slice
+    increment : integer (or boolean), optional
+        Step size, when taking your slices. (`False` is zero.)
 
     Returns
     -------
     slice : slice
-        Returns a slice object that can be used in an array
-        like a[x] to select from its members.
-        Also, the slice has its index numbers decremented by 1.
-        It can also return a numpy array, which can be used
-        to slice other numpy arrays in the same way as a slice.
+        Returns a slice object that can be used in an array like a[x] to select from its members.
+        Also, the slice has its index numbers decremented by 1. It can also return a numpy array,
+        which can be used to slice other numpy arrays in the same way as a slice.
+    increment : int
+        Step size to take, if you want to take less then every datum in the collection.
 
     Examples
     --------
-    a = np.array([10, 11, 12, 13])
+    >>> a = np.array([10, 11, 12, 13])
 
     >>> convertToSlice(2)
     slice(2, 3, None)
@@ -102,19 +110,12 @@ def convertToSlice(x, increment=False):
     >>> a[utils.convertToSlice([1, 3])]
     array([11, 13])
 
-
     >>> a[utils.convertToSlice([1, 3], increment=-1)]
     array([10, 12])
 
     >>> a[utils.convertToSlice(slice(2, 3, None), increment=-1)]
     array([11])
     """
-    if increment is False:
-        increment = 0
-
-    if not isinstance(increment, int):
-        raise Exception("increment must be False or an integer in utils.convertToSlice")
-
     if x is None:
         x = np.s_[:]
 
@@ -143,15 +144,11 @@ def convertToSlice(x, increment=False):
         jstep = x.step
 
         return np.s_[jstart:jstop:jstep]
-
     elif isinstance(x, np.ndarray):
         return np.array([i + increment for i in x])
-
     else:
         raise Exception(
-            (
-                "It is not known how to handle x type: " "{0} in utils.convertToSlice"
-            ).format(type(x))
+            f"It is not known how to handle x type: {type(x)} in utils.convertToSlice"
         )
 
 
@@ -200,7 +197,7 @@ def expandRepeatedFloats(repeatedList):
 
 
 def findClosest(listToSearch, val, indx=False):
-    r"""
+    """
     Find closest item in a list.
 
     Parameters
@@ -277,7 +274,7 @@ def getFloat(val):
     try:
         newVal = float(val)
         return newVal
-    except:  # noqa: bare-except
+    except Exception:
         return None
 
 
@@ -325,7 +322,7 @@ def isMonotonic(inputIter, relation):
 
 
 def linearInterpolation(x0, y0, x1, y1, targetX=None, targetY=None):
-    r"""
+    """
     Does a linear interpolation (or extrapolation) for y=f(x).
 
     Parameters
@@ -373,8 +370,8 @@ def minimizeScalarFunc(
     method=None,
     tol=1.0e-3,
 ):
-    r"""
-    Use scipy minimize with the given function, goal value, and first guess.
+    """
+    Use SciPy minimize with the given function, goal value, and first guess.
 
     Parameters
     ----------
@@ -414,7 +411,9 @@ def minimizeScalarFunc(
         tol=tol,
         options={"maxiter": maxIterations},
     )
-    ans = float(X["x"])
+
+    # X returns `[num]` instead of `num`, so we have to grab the first/only element in that list
+    ans = float(X["x"][0])
     if positiveGuesses is True:
         ans = abs(ans)
 
@@ -496,11 +495,15 @@ def parabolaFromPoints(p1, p2, p3):
     ----------
     p1 : tuple
         first point (x,y) coordinates
-    p2,p3: tuple, second and third points.
+    p2 : tuple
+        second (x,y) points
+    p3 : tuple
+        third (x,y) points
 
     Returns
     -------
-    a,b,c coefficients of y=ax^2+bx+c
+    tuple
+        3 floats: a,b,c coefficients of y=ax^2+bx+c
     """
     A = np.array(
         [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
@@ -514,11 +517,12 @@ def parabolaFromPoints(p1, p2, p3):
         print("Error in parabola {} {}".format(A, b))
         raise
 
-    return float(x[0]), float(x[1]), float(x[2])
+    # x[#] returns `[num]` instead of `num`, so we have to grab the first/only element in that list
+    return float(x[0][0]), float(x[1][0]), float(x[2][0])
 
 
 def parabolicInterpolation(ap, bp, cp, targetY):
-    r"""
+    """
     Given parabola coefficients, this interpolates the time
     that would give k=targetK.
 
@@ -532,10 +536,13 @@ def parabolicInterpolation(ap, bp, cp, targetY):
 
     Parameters
     ----------
-    ap, bp,cp : floats
-        coefficients of a parabola y = ap*x^2 + bp*x + cp
-
-    targetK : float
+    ap : float
+        coefficients ap of a parabola y = ap*x^2 + bp*x + cp
+    bp : float
+        coefficients bp of a parabola y = ap*x^2 + bp*x + cp
+    cp : float
+        coefficients cp of a parabola y = ap*x^2 + bp*x + cp
+    targetY : float
         The keff to find the cycle length of
 
     Returns
@@ -587,13 +594,10 @@ def resampleStepwise(xin, yin, xout, avg=True):
     ----------
     xin : list
         interval points / mesh points
-
     yin : list
         interval values / inter-mesh values
-
     xout : list
         new interval points / new mesh points
-
     avg : bool
         By default, this is set to True, forcing the resampling to be done
         by averaging. But if this is False, the resmampling will be done by
@@ -659,19 +663,19 @@ def rotateXY(x, y, degreesCounterclockwise=None, radiansCounterclockwise=None):
 
     Parameters
     ----------
-    x, y : array_like
-        coordinates
-
+    x : float
+        X coordinates, array-like
+    y : float
+        Y coordinates, array-like
     degreesCounterclockwise : float
         Degrees to rotate in the CCW direction
-
     radiansCounterclockwise : float
         Radians to rotate in the CCW direction
 
     Returns
     -------
-    xr, yr : array_like
-        the rotated coordinates.
+    tuple
+        xr, yr: the rotated coordinates
     """
     if radiansCounterclockwise is None:
         radiansCounterclockwise = degreesCounterclockwise * math.pi / 180.0

@@ -15,49 +15,41 @@
 """
 Assemblies are collections of Blocks.
 
-Generally, blocks are stacked from bottom to top.
+Generally, Blocks are stacked from bottom to top.
 """
 import copy
 import math
 import pickle
+from collections.abc import Iterable
 from random import randint
+from typing import ClassVar, Optional, Type
 
-import numpy
+import numpy as np
 from scipy import interpolate
 
 from armi import runLog
-from armi.reactor import assemblyLists
-from armi.reactor import assemblyParameters
-from armi.reactor import blocks
-from armi.reactor import composites
-from armi.reactor import grids
+from armi.materials.material import Fluid
+from armi.reactor import assemblyParameters, blocks, composites, grids
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.spentFuelPool import SpentFuelPool
 
 
 class Assembly(composites.Composite):
     """
     A single assembly in a reactor made up of blocks built from the bottom up.
     Append blocks to add them up. Index blocks with 0 being the bottom.
-
-    Attributes
-    ----------
-    pinNum : int
-        The number of pins in this assembly.
-
-    pinPeakingFactors : list of floats
-        The assembly-averaged pin power peaking factors. This is the ratio of pin
-        power to AVERAGE pin power in an assembly.
     """
 
+    _BLOCK_TYPE: ClassVar[Optional[Type[blocks.Block]]] = None
     pDefs = assemblyParameters.getAssemblyParameterDefinitions()
 
-    LOAD_QUEUE = "LoadQueue"
-    SPENT_FUEL_POOL = "SFP"
     # For assemblies coming in from the database, waiting to be loaded to their old
     # position. This is a necessary distinction, since we need to make sure that a bunch
     # of fuel management stuff doesn't treat its re-placement into the core as a new move
     DATABASE = "database"
+    LOAD_QUEUE = "LoadQueue"
+    SPENT_FUEL_POOL = "SFP"
     NOT_IN_CORE = [LOAD_QUEUE, SPENT_FUEL_POOL]
 
     def __init__(self, typ, assemNum=None):
@@ -66,7 +58,6 @@ class Assembly(composites.Composite):
         ----------
         typ : str
             Name of assembly design (e.g. the name from the blueprints input file).
-
         assemNum : int, optional
             The unique ID number of this assembly. If None is provided, we generate a
             random int. This makes it clear that it is a placeholder. When an assembly with
@@ -74,14 +65,13 @@ class Assembly(composites.Composite):
         """
         # If no assembly number is provided, generate a random number as a placeholder.
         if assemNum is None:
-            assemNum = randint(-9e12, -1)
+            assemNum = randint(-9000000000000, -1)
         name = self.makeNameFromAssemNum(assemNum)
         composites.Composite.__init__(self, name)
         self.p.assemNum = assemNum
         self.setType(typ)
         self._current = 0  # for iterating
         self.p.buLimit = self.getMaxParam("buLimit")
-        self.pinPeakingFactors = []  # assembly-averaged pin power peaking factors
         self.lastLocationLabel = self.LOAD_QUEUE
 
     def __repr__(self):
@@ -96,14 +86,12 @@ class Assembly(composites.Composite):
 
         Notes
         -----
-        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies
-        are more permissive in the grid consistency checks to accomodate situations
-        where assemblies might be children of the same Core, but not in the same grid as
-        each other (as can be the case in the spent fuel pool). In these situations,
-        the operator returns ``False``.  This behavior may lead to some strange sorting
-        behavior when two or more Assemblies are being compared that do not live in the
-        same grid. It may be beneficial in the future to maintain the more strict behavior
-        of ArmiObject's ``__lt__`` implementation once the SFP situation is cleared up.
+        As with other ArmiObjects, Assemblies are sorted based on location. Assemblies are more
+        permissive in the grid consistency checks to accommodate situations where assemblies might be
+        children of the same Core, but not in the same grid as each other (like in the spent fuel
+        pool). In these situations, the operator returns ``False``.  This behavior may lead to some
+        strange sorting behavior when two or more Assemblies are being compared that do not live in
+        the same grid.
 
         See Also
         --------
@@ -126,8 +114,7 @@ class Assembly(composites.Composite):
 
         Notes
         -----
-        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling
-        this.
+        You must run armi.reactor.reactors.Reactor.regenAssemblyLists after calling this.
         """
         assemNum = self.getNum()
         for bi, b in enumerate(self):
@@ -167,30 +154,57 @@ class Assembly(composites.Composite):
         otherwise have been the same object.
         """
         # Default to a random negative assembly number (unique enough)
-        self.p.assemNum = randint(-9e12, -1)
+        self.p.assemNum = randint(-9000000000000, -1)
         self.renumber(self.p.assemNum)
 
-    def add(self, obj):
+    def _checkPotentialChild(self, obj: blocks.Block, action: str = "add"):
+        """An internal helper method to ensure the Block type is valid for this Assembly."""
+        if self._BLOCK_TYPE is None or isinstance(obj, self._BLOCK_TYPE):
+            # this is the right Block, pass on
+            return
+
+        # if we got here, this Block is not the right type for this Assembly
+        msg = f"Cannot {action} {obj} to this Assembly, it is not a {self._BLOCK_TYPE}."
+        runLog.error(msg)
+        raise TypeError(msg)
+
+    def add(self, obj: blocks.Block):
         """
         Add an object to this assembly.
 
         The simple act of adding a block to an assembly fully defines the location of
         the block in 3-D.
+
+        .. impl:: Assemblies are made up of type Block.
+            :id: I_ARMI_ASSEM_BLOCKS
+            :implements: R_ARMI_ASSEM_BLOCKS
+
+            Adds a unique Block to the top of the Assembly. If the Block already
+            exists in the Assembly, an error is raised in
+            :py:meth:`armi.reactor.composites.Composite.add`.
+            The spatialLocator of the Assembly is updated to account for
+            the new Block. In ``reestablishBlockOrder``, the Assembly spatialGrid
+            is reinitialized and Block-wise spatialLocator and name objects
+            are updated. The axial mesh and other Block geometry parameters are
+            updated in ``calculateZCoords``.
         """
+        self._checkPotentialChild(obj, "add")
         composites.Composite.add(self, obj)
         obj.spatialLocator = self.spatialGrid[0, 0, len(self) - 1]
-        # assemblies have bounds-based 1-D spatial grids. Adjust it to the right value.
-        if len(self.spatialGrid._bounds[2]) < len(self):
-            self.spatialGrid._bounds[2][len(self)] = (
-                self.spatialGrid._bounds[2][len(self) - 1] + obj.getHeight()
-            )
-        else:
-            # more work is needed, make a new mesh
-            self.reestablishBlockOrder()
-            self.calculateZCoords()
+
+        # more work is needed, make a new mesh
+        self.reestablishBlockOrder()
+        self.calculateZCoords()
+
+    def insert(self, index, obj):
+        """Insert an object at a given index position with the assembly."""
+        self._checkPotentialChild(obj, "insert")
+        composites.Composite.insert(self, index, obj)
+        obj.spatialLocator = self.spatialGrid[0, 0, index]
 
     def moveTo(self, locator):
         """Move an assembly somewhere else."""
+        oldSymmetryFactor = self.getSymmetryFactor()
         composites.Composite.moveTo(self, locator)
         if self.lastLocationLabel != self.DATABASE:
             self.p.numMoves += 1
@@ -198,11 +212,26 @@ class Assembly(composites.Composite):
         self.parent.childrenByLocator[locator] = self
         # symmetry may have changed (either moving on or off of symmetry line)
         self.clearCache()
+        self.scaleParamsToNewSymmetryFactor(oldSymmetryFactor)
 
-    def insert(self, index, obj):
-        """Insert an object at a given index position with the assembly."""
-        composites.Composite.insert(self, index, obj)
-        obj.spatialLocator = self.spatialGrid[0, 0, index]
+    def scaleParamsToNewSymmetryFactor(self, oldSymmetryFactor):
+        scalingFactor = oldSymmetryFactor / self.getSymmetryFactor()
+        if scalingFactor == 1:
+            return
+
+        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(
+            ParamLocation.VOLUME_INTEGRATED
+        )
+        for b in self:
+            for param in volIntegratedParamsToScale:
+                name = param.name
+                if b.p[name] is None or isinstance(b.p[name], str):
+                    continue
+                elif isinstance(b.p[name], Iterable):
+                    b.p[name] = [value * scalingFactor for value in b.p[name]]
+                else:
+                    # numpy array or other
+                    b.p[name] = b.p[name] * scalingFactor
 
     def getNum(self):
         """Return unique integer for this assembly."""
@@ -212,24 +241,37 @@ class Assembly(composites.Composite):
         """
         Get string label representing this object's location.
 
-        Notes
-        -----
-        This function (and its friends) were created before the advent of both the
-        grid/spatialLocator system and the ability to represent things like the SFP as
-        siblings of a Core. In future, this will likely be re-implemented in terms of
-        just spatialLocator objects.
+        .. impl:: Assembly location is retrievable.
+            :id: I_ARMI_ASSEM_POSI0
+            :implements: R_ARMI_ASSEM_POSI
+
+            This method returns a string label indicating the location
+            of an Assembly. There are three options: 1) the Assembly
+            is not within a Core object and is interpreted as in the
+            "load queue"; 2) the Assembly is within the spent fuel pool;
+            3) the Assembly is within a Core object, so it has a physical
+            location within the Core.
         """
         # just use ring and position, not axial (which is 0)
         if not self.parent:
             return self.LOAD_QUEUE
-        elif isinstance(self.parent, assemblyLists.SpentFuelPool):
+        elif isinstance(self.parent, SpentFuelPool):
             return self.SPENT_FUEL_POOL
         return self.parent.spatialGrid.getLabel(
             self.spatialLocator.getCompleteIndices()[:2]
         )
 
     def coords(self):
-        """Return the location of the assembly in the plane using cartesian global coordinates."""
+        """Return the location of the assembly in the plane using cartesian global
+        coordinates.
+
+        .. impl:: Assembly coordinates are retrievable.
+            :id: I_ARMI_ASSEM_POSI1
+            :implements: R_ARMI_ASSEM_POSI
+
+            In this method, the spatialLocator of an Assembly is leveraged to return
+            its physical (x,y) coordinates in cm.
+        """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
 
@@ -237,7 +279,8 @@ class Assembly(composites.Composite):
         """
         Return the area of the assembly by looking at its first block.
 
-        The assumption is that all blocks in an assembly have the same area.
+        The assumption is that all blocks in an assembly have the same area. Calculate the total
+        assembly volume in cm^3.
         """
         try:
             return self[0].getArea()
@@ -259,12 +302,12 @@ class Assembly(composites.Composite):
         -----
         If there is no plenum blocks in the assembly, a plenum volume of 0.0 is returned
 
-        .. warning:: This is a bit design-specific for pinned assemblies
+        Warning
+        -------
+        This is a bit design-specific for pinned assemblies
         """
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
-
         plenumVolume = 0.0
-        for b in plenumBlocks:
+        for b in self.iterChildrenWithFlags(Flags.PLENUM):
             cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
             plenumVolume += (
@@ -274,52 +317,15 @@ class Assembly(composites.Composite):
 
     def getAveragePlenumTemperature(self):
         """Return the average of the plenum block outlet temperatures."""
-        plenumBlocks = self.getBlocks(Flags.PLENUM)
+        plenumBlocks = self.iterChildrenWithFlags(Flags.PLENUM)
         plenumTemps = [b.p.THcoolantOutletT for b in plenumBlocks]
 
-        if (
-            not plenumTemps
-        ):  # no plenum blocks, use the top block of the assembly for plenum temperature
+        # no plenum blocks, use the top block of the assembly for plenum temperature
+        if not plenumTemps:
             runLog.warning("No plenum blocks exist. Using outlet coolant temperature.")
             plenumTemps = [self[-1].p.THcoolantOutletT]
 
         return sum(plenumTemps) / len(plenumTemps)
-
-    def rotatePins(self, *args, **kwargs):
-        """Rotate an assembly, which means rotating the indexing of pins."""
-        for b in self:
-            b.rotatePins(*args, **kwargs)
-
-    def doubleResolution(self):
-        """
-        Turns each block into two half-size blocks.
-
-        Notes
-        -----
-        Used for mesh sensitivity studies.
-
-        .. warning:: This is likely destined for a geometry converter rather than
-            this instance method.
-        """
-        newBlockStack = []
-        topIndex = -1
-        for b in self:
-            b0 = b
-            b1 = copy.deepcopy(b)
-            for bx in [b0, b1]:
-                newHeight = bx.getHeight() / 2.0
-                bx.p.height = newHeight
-                bx.p.heightBOL = newHeight
-                topIndex += 1
-                bx.p.topIndex = topIndex
-                newBlockStack.append(bx)
-                bx.clearCache()
-
-        self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
-        for b in newBlockStack:
-            self.add(b)
-        self.reestablishBlockOrder()
 
     def adjustResolution(self, refA):
         """Split the blocks in this assembly to have the same mesh structure as refA."""
@@ -368,8 +374,9 @@ class Assembly(composites.Composite):
                 newBlocks -= (
                     1  # subtract one because we eliminated the original b completely.
                 )
+
         self.removeAll()
-        self.spatialGrid = grids.axialUnitGrid(len(newBlockStack))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
         for b in newBlockStack:
             self.add(b)
         self.reestablishBlockOrder()
@@ -395,7 +402,6 @@ class Assembly(composites.Composite):
 
         armi.reactor.reactors.Reactor.findAllAxialMeshPoints : gets a global list of all
         of these, plus finer res.
-
         """
         bottom = 0.0
         meshVals = []
@@ -442,7 +448,7 @@ class Assembly(composites.Composite):
 
         # length of this is numBlocks + 1
         bounds = list(self.spatialGrid._bounds)
-        bounds[2] = numpy.array(mesh)
+        bounds[2] = np.array(mesh)
         self.spatialGrid._bounds = tuple(bounds)
 
     def getTotalHeight(self, typeSpec=None):
@@ -457,7 +463,6 @@ class Assembly(composites.Composite):
         -------
         height : float
             the height in cm
-
         """
         h = 0.0
         for b in self:
@@ -509,7 +514,6 @@ class Assembly(composites.Composite):
         elevation : list of floats
             Every float in the list is an elevation of a block boundary for the block
             type specified (has duplicates)
-
         """
         elevation, elevationsWithBlockBoundaries = 0.0, []
 
@@ -608,7 +612,7 @@ class Assembly(composites.Composite):
         for b in self:
             top = z + b.getHeight()
             try:
-                b.p.topIndex = numpy.where(numpy.isclose(refMesh, top))[0].tolist()[0]
+                b.p.topIndex = np.where(np.isclose(refMesh, top))[0].tolist()[0]
             except IndexError:
                 runLog.error(
                     "Height {0} in this assembly ({1} in {4}) is not in the reactor mesh "
@@ -621,7 +625,7 @@ class Assembly(composites.Composite):
 
     def _shouldMassBeConserved(self, belowFuelColumn, b):
         """
-        Determine from a rule set if the mass of a block should be conserved during axial expansion.
+        Determine from a rule set if the mass of a block component should be conserved during axial expansion.
 
         Parameters
         ----------
@@ -637,8 +641,8 @@ class Assembly(composites.Composite):
         conserveMass : boolean
             Should the mass be conserved in this block
 
-        adjustList : list of nuclides
-            What nuclides should have their mass conserved (if any)
+        conserveComponents : list of components
+            What components should have their mass conserved (if any)
 
         belowFuelColumn : boolean
             Update whether the block is above or below a fuel column
@@ -651,32 +655,31 @@ class Assembly(composites.Composite):
         if b.hasFlags(Flags.FUEL):
             # fuel block
             conserveMass = True
-            adjustList = b.getComponent(Flags.FUEL).getNuclides()
+            conserveComponents = b.getComponents(Flags.FUEL)
         elif self.hasFlags(Flags.FUEL):
             # non-fuel block of a fuel assembly.
             if belowFuelColumn:
                 # conserve mass of everything below the fuel so as to not invalidate
                 # grid-plate dose calcs.
                 conserveMass = True
-                adjustList = b.getNuclides()
-                # conserve mass of everything except coolant.
-                coolant = b.getComponent(Flags.COOLANT)
-                coolantList = coolant.getNuclides() if coolant else []
-                for nuc in coolantList:
-                    if nuc in adjustList:
-                        adjustList.remove(nuc)
+                # conserve mass of everything except fluids.
+                conserveComponents = [
+                    comp
+                    for comp in b.getComponents()
+                    if not isinstance(comp.material, Fluid)
+                ]
             else:
                 # plenum or above block in fuel assembly. don't conserve mass.
                 conserveMass = False
-                adjustList = None
+                conserveComponents = []
         else:
             # non fuel block in non-fuel assem. Don't conserve mass.
             conserveMass = False
-            adjustList = None
+            conserveComponents = []
 
-        return conserveMass, adjustList
+        return conserveMass, conserveComponents
 
-    def setBlockMesh(self, blockMesh, conserveMassFlag=False, adjustList=None):
+    def setBlockMesh(self, blockMesh, conserveMassFlag=False):
         """
         Snaps the axial mesh points of this assembly to correspond with the reference mesh.
 
@@ -704,7 +707,14 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         blockMesh : iterable
-            a list of floats describing the upper mesh points of each block in cm.
+            A list of floats describing the upper mesh points of each block in cm.
+
+        conserveMassFlag : bool or str
+            Option for how to treat mass conservation when the block mesh changes.
+            Conservation of mass for fuel components is enabled by
+            conserveMassFlag="auto". If not auto, a boolean value should be
+            passed. The default is False, which does not conserve any masses.
+            True conserves mass for all components.
 
         See Also
         --------
@@ -744,22 +754,26 @@ class Assembly(composites.Composite):
                 return
 
             if conserveMassFlag == "auto":
-                conserveMass, adjustList = self._shouldMassBeConserved(
+                conserveMass, conserveComponents = self._shouldMassBeConserved(
                     belowFuelColumn, b
                 )
             else:
                 conserveMass = conserveMassFlag
+                conserveComponents = b.getComponents()
 
-            b.setHeight(
-                newTop - zBottom, conserveMass=conserveMass, adjustList=adjustList
-            )
+            oldBlockHeight = b.getHeight()
+            b.setHeight(newTop - zBottom)
+            if conserveMass:
+                heightRatio = oldBlockHeight / b.getHeight()
+                for c in conserveComponents:
+                    c.changeNDensByFactor(heightRatio)
             zBottom = newTop
 
         self.calculateZCoords()
 
     def setBlockHeights(self, blockHeights):
         """Set the block heights of all blocks in the assembly."""
-        mesh = numpy.cumsum(blockHeights)
+        mesh = np.cumsum(blockHeights)
         self.setBlockMesh(mesh)
 
     def dump(self, fName=None):
@@ -769,6 +783,31 @@ class Assembly(composites.Composite):
 
         with open(fName, "w") as pkl:
             pickle.dump(self, pkl)
+
+    def iterBlocks(self, typeSpec=None, exact=False):
+        """Produce an iterator over all blocks in this assembly from bottom to top.
+
+        Parameters
+        ----------
+        typeSpec : Flags or list of Flags, optional
+            Restrict returned blocks to have these flags.
+        exact : bool, optional
+            If true, only produce blocks that have those exact flags.
+
+        Returns
+        -------
+        iterable of Block
+
+        See Also
+        --------
+        * :meth:`__iter__` - if no type spec provided, assemblies can be
+          naturally iterated upon.
+        * :meth:`iterChildrenWithFlags` - alternative if you know you have
+           a type spec that isn't ``None``.
+        """
+        if typeSpec is None:
+            return iter(self)
+        return self.iterChildrenWithFlags(typeSpec, exact)
 
     def getBlocks(self, typeSpec=None, exact=False):
         """
@@ -785,12 +824,8 @@ class Assembly(composites.Composite):
         -------
         blocks : list
             List of blocks.
-
         """
-        if typeSpec is None:
-            return self.getChildren()
-        else:
-            return self.getChildrenWithFlags(typeSpec, exactMatch=exact)
+        return list(self.iterBlocks(typeSpec, exact))
 
     def getBlocksAndZ(self, typeSpec=None, returnBottomZ=False, returnTopZ=False):
         """
@@ -813,8 +848,8 @@ class Assembly(composites.Composite):
 
         Examples
         --------
-        for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
-            print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
+            for block, bottomZ in a.getBlocksAndZ(returnBottomZ=True):
+                print({0}'s bottom mesh point is {1}'.format(block, bottomZ))
         """
         if returnBottomZ and returnTopZ:
             raise ValueError("Both returnTopZ and returnBottomZ are set to `True`")
@@ -838,37 +873,47 @@ class Assembly(composites.Composite):
         return zip(blocks, zCoords)
 
     def hasContinuousCoolantChannel(self):
-        for b in self.getBlocks():
-            if not b.containsAtLeastOneChildWithFlags(Flags.COOLANT):
-                return False
-        return True
+        return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
     def getFirstBlock(self, typeSpec=None, exact=False):
-        bs = self.getBlocks(typeSpec, exact=exact)
-        if bs:
-            return bs[0]
+        """Find the first block that matches the spec.
+
+        Parameters
+        ----------
+        typeSpec : flag or list of flags, optional
+            Specification to require on the returned block.
+        exact : bool, optional
+            Require block to exactly match ``typeSpec``
+
+        Returns
+        -------
+        Block or None
+            First block that matches if such a block could be found.
+        """
+        if typeSpec is None:
+            items = iter(self)
         else:
+            items = self.iterChildrenWithFlags(typeSpec, exact)
+        try:
+            # Create an iterator and attempt to advance it to the first value.
+            return next(items)
+        except StopIteration:
+            # No items found in the iteration -> no blocks match the request
             return None
 
     def getFirstBlockByType(self, typeName):
-        bs = [
-            b
-            for b in self.getChildren(deep=False)
-            if isinstance(b, blocks.Block) and b.getType() == typeName
-        ]
-        if bs:
-            return bs[0]
-        return None
+        blocks = filter(lambda b: b.getType() == typeName, self)
+        try:
+            return next(blocks)
+        except StopIteration:
+            return None
 
-    def getBlockAtElevation(self, elevation):
+    def getBlockAtElevation(self, elevation: float) -> Optional[blocks.Block]:
         """
         Returns the block at a specified axial dimension elevation (given in cm).
 
         If height matches the exact top of the block, the block is considered at that
         height.
-
-        Used as a way to determine what block the control rod will be modifying with a
-        mergeBlocks.
 
         Parameters
         ----------
@@ -877,8 +922,9 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        targetBlock : block
-            The block that exists at the specified height in the reactor
+        targetBlock : block or None
+            The block that exists at the specified height in the reactor. ``None``
+            if a block was not found.
         """
         bottomOfBlock = 0.0
         for b in self:
@@ -931,9 +977,9 @@ class Assembly(composites.Composite):
         Examples
         --------
         If the block structure looks like:
-         50.0 to 100.0 Block3
-         25.0 to 50.0  Block2
-         0.0 to 25.0   Block1
+        50.0 to 100.0 Block3
+        25.0 to 50.0  Block2
+        0.0 to 25.0   Block1
 
         Then,
 
@@ -982,7 +1028,7 @@ class Assembly(composites.Composite):
         return blocksHere
 
     def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=numpy.NaN
+        self, param, elevations, interpType="linear", fillValue=np.nan
     ):
         """
         Interpolates a param axially to find it at any value of elevation z.
@@ -998,28 +1044,24 @@ class Assembly(composites.Composite):
         This caches interpolators for each param and must be cleared if new params are
         set or new heights are set.
 
-        WARNING:
-        Fails when requested to extrapolate.With higher order splines it is possible
-        to interpolate non-physical values, for example a negative flux or dpa. Please
-        use caution when going off default in interpType and be certain that
-        interpolated values are physical.
+        Warning
+        -------
+        Fails when requested to extrapolate. With higher order splines it is possible to interpolate
+        non-physical values, for example, a negative flux or dpa. Please use caution when going off
+        default in interpType and be certain that interpolated values are physical.
 
         Parameters
         ----------
         param : str
             the parameter to interpolate
-
         elevations : array of float
-            the elevations from the bottom of the assembly in cm at which you want the
-            point.
-
+            the elevations from the bottom of the assembly in cm at which you want the point.
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            used in interp1d. interp1d documentation: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
             spline interpolator to use. Default is 'linear'.
-
         fillValue: str
             Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
             lower and upper bounds are used as the extended value. If 'extrapolate',
@@ -1027,7 +1069,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         interpolator = self.getParamOfZFunction(
@@ -1035,7 +1077,7 @@ class Assembly(composites.Composite):
         )
         return interpolator(elevations)
 
-    def getParamOfZFunction(self, param, interpType="linear", fillValue=numpy.NaN):
+    def getParamOfZFunction(self, param, interpType="linear", fillValue=np.nan):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
@@ -1050,23 +1092,22 @@ class Assembly(composites.Composite):
         This caches interpolators for each param and must be cleared if new params are
         set or new heights are set.
 
-        WARNING: Fails when requested to extrapololate. With higher order splines it is
-        possible to interpolate nonphysical values, for example a negative flux or dpa.
-        Please use caution when going off default in interpType and be certain that
-        interpolated values are physical.
+        Warning
+        -------
+        Fails when requested to extrapololate. With higher order splines it is possible to
+        interpolate nonphysical values, for example, a negative flux or dpa. Please use caution when
+        going off default in interpType and be certain that interpolated values are physical.
 
         Parameters
         ----------
         param : str
             the parameter to interpolate
-
         interpType: str or int
-            used in interp1d. interp1d documention: Specifies the kind of interpolation
+            used in interp1d. interp1d documentation: Specifies the kind of interpolation
             as a string ('linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic'
             where 'slinear', 'quadratic' and 'cubic' refer to a spline interpolation of
             first, second or third order) or as an integer specifying the order of the
             spline interpolator to use. Default is 'linear'.
-
         fillValue: float
             Rough pass through to scipy.interpolate.interp1d. If 'extend', then the
             lower and upper bounds are used as the extended value. If 'extrapolate',
@@ -1074,7 +1115,7 @@ class Assembly(composites.Composite):
 
         Returns
         -------
-        valAtZ : numpy.ndarray
+        valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
         paramDef = self[0].p.paramDefs[param]
@@ -1098,7 +1139,7 @@ class Assembly(composites.Composite):
             z.insert(0, 0.0)
             z.pop(-1)
 
-        z = numpy.asarray(z)
+        z = np.asarray(z)
 
         values = self.getChildParamValues(param).transpose()
 
@@ -1126,7 +1167,7 @@ class Assembly(composites.Composite):
 
     def reestablishBlockOrder(self):
         """
-        After children have been mixed up axially, this re-locates each block with the proper axial mesh.
+        The block ordering has changed, so the spatialGrid and Block-wise spatialLocator and name objects need updating.
 
         See Also
         --------
@@ -1134,7 +1175,7 @@ class Assembly(composites.Composite):
             reordering.
         """
         # replace grid with one that has the right number of locations
-        self.spatialGrid = grids.axialUnitGrid(len(self))
+        self.spatialGrid = grids.AxialGrid.fromNCells(len(self))
         self.spatialGrid.armiObject = self
         for zi, b in enumerate(self):
             b.spatialLocator = self.spatialGrid[0, 0, zi]
@@ -1154,12 +1195,12 @@ class Assembly(composites.Composite):
         blockCounter : int
             number of blocks of this type
         """
-        return len(self.getBlocks(blockTypeSpec))
+        return sum(1 for _ in self.iterBlocks(blockTypeSpec))
 
     def getDim(self, typeSpec, dimName):
         """
-        Search through blocks in this assembly and find the first component of compName.
-        Then, look on that component for dimName.
+        With a preference for fuel blocks, find the first component in the Assembly with
+        flags that match ``typeSpec`` and return dimension as specified by ``dimName``.
 
         Example: getDim(Flags.WIRE, 'od') will return a wire's OD in cm.
         """
@@ -1182,36 +1223,92 @@ class Assembly(composites.Composite):
         return self[0].getSymmetryFactor()
 
     def rotate(self, rad):
-        """Rotates the spatial variables on an assembly the specified angle.
+        """Rotates the spatial variables on an assembly by the specified angle.
 
-        Each block on the assembly is rotated in turn.
+        Each Block on the Assembly is rotated in turn.
 
         Parameters
         ----------
-        rad: float
+        rad : float
             number (in radians) specifying the angle of counter clockwise rotation
         """
-        for b in self.getBlocks():
+        for b in self:
             b.rotate(rad)
+
+    def isOnWhichSymmetryLine(self):
+        grid = self.parent.spatialGrid
+        return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
+
+    def orientBlocks(self, parentSpatialGrid):
+        """Add special grids to the blocks inside this Assembly, respecting their orientation.
+
+        Parameters
+        ----------
+        parentSpatialGrid : Grid
+            Spatial Grid of the parent of this Assembly (probably a system-level grid).
+        """
+        for b in self:
+            if b.spatialGrid is None:
+                try:
+                    b.autoCreateSpatialGrids(parentSpatialGrid)
+                except (ValueError, NotImplementedError) as e:
+                    runLog.extra(str(e), single=True)
 
 
 class HexAssembly(Assembly):
-    pass
+    """An assembly that is hexagonal in cross-section."""
+
+    _BLOCK_TYPE = blocks.HexBlock
+
+    def rotate(self, rad: float):
+        """Rotate an assembly and its children.
+
+        .. impl:: A hexagonal assembly shall support rotating around the z-axis in 60 degree increments.
+            :id: I_ARMI_ROTATE_HEX_ASSEM
+            :implements: R_ARMI_ROTATE_HEX
+
+            This method loops through every ``Block`` in this ``HexAssembly`` and rotates
+            it by a given angle (in radians). The rotation angle is positive in the
+            counter-clockwise direction. To perform the ``Block`` rotation, the
+            :meth:`armi.reactor.blocks.HexBlock.rotate` method is called.
+
+        Parameters
+        ----------
+        rad : float
+            Counter clockwise rotation in radians. **MUST** be in increments of 60 degrees (PI / 3)
+
+        Raises
+        ------
+        ValueError
+            If rotation is not divisible by pi / 3.
+        """
+        if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
+            return super().rotate(rad)
+
+        msg = (
+            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees "
+            f"({rad} radians)."
+        )
+        runLog.error(msg)
+        raise ValueError(msg)
 
 
 class CartesianAssembly(Assembly):
-    pass
+    """An assembly that is rectangular in cross-section."""
+
+    _BLOCK_TYPE = blocks.CartesianBlock
 
 
 class RZAssembly(Assembly):
     """
-    RZAssembly are assemblies in RZ geometry; they need to be different objects than
-    HexAssembly because they use different locations and need to have Radial Meshes in
-    their setting.
+    RZAssembly are assemblies in RZ geometry; they need to be different objects than HexAssembly
+    because they use different locations and need to have Radial Meshes in their setting.
 
-    note ThRZAssemblies should be a subclass of Assemblies (similar to Hex-Z) because
-    they should have a common place to put information about subdividing the global mesh
-    for transport - this is similar to how blocks have 'AxialMesh' in their blocks.
+    Notes
+    -----
+    ThRZAssemblies should be a subclass of Assemblies because they should have a common place to put
+    information about subdividing the global mesh for transport. This is similar to how blocks have
+    'AxialMesh' in their blocks.
     """
 
     def __init__(self, name, assemNum=None):
@@ -1219,43 +1316,19 @@ class RZAssembly(Assembly):
         self.p.RadMesh = 1
 
     def radialOuter(self):
-        """
-        returns the outer radial boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.radialOuter
-        """
+        """Returns the outer radial boundary of this assembly."""
         return self[0].radialOuter()
 
     def radialInner(self):
-        """
-        Returns the inner radial boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.radialInner
-        """
+        """Returns the inner radial boundary of this assembly."""
         return self[0].radialInner()
 
     def thetaOuter(self):
-        """
-        Returns the outer azimuthal boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.thetaOuter
-        """
+        """Returns the outer azimuthal boundary of this assembly."""
         return self[0].thetaOuter()
 
     def thetaInner(self):
-        """
-        Returns the outer azimuthal boundary of this assembly.
-
-        See Also
-        --------
-        armi.reactor.blocks.ThRZBlock.thetaInner
-        """
+        """Returns the outer azimuthal boundary of this assembly."""
         return self[0].thetaInner()
 
 
@@ -1264,11 +1337,6 @@ class ThRZAssembly(RZAssembly):
     ThRZAssembly are assemblies in ThetaRZ geometry, they need to be different objects
     than HexAssembly because they use different locations and need to have Radial Meshes
     in their setting.
-
-    Notes
-    -----
-    This is a subclass of RZAssemblies, which is its a subclass of the Generics Assembly
-    Object
     """
 
     def __init__(self, assemType, assemNum=None):

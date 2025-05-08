@@ -29,7 +29,7 @@ class TestFlag(unittest.TestCase):
     def test_auto(self):
         """
         Make sure that auto() works right, and that mixing it with explicit values
-        doesnt lead to collision.
+        doesn't lead to collision.
         """
 
         class F(Flag):
@@ -69,13 +69,43 @@ class TestFlag(unittest.TestCase):
         f2 = F.from_bytes(array)
         self.assertEqual(f, f2)
 
-    def test_collision(self):
-        """Make sure that we catch value collisions."""
+    def test_collision_extension(self):
+        """Ensure the set of flags cannot be programmatically extended if duplicate created.
+
+        .. test:: Set of flags are extensible without loss of uniqueness.
+            :id: T_ARMI_FLAG_EXTEND0
+            :tests: R_ARMI_FLAG_EXTEND
+        """
+
+        class F(Flag):
+            foo = auto()
+            bar = 1
+            baz = auto()
+
+        F.extend({"a": auto()})
+        F.extend({"b": 1})
+
+    def test_collision_creation(self):
+        """Make sure that we catch value collisions upon creation.
+
+        .. test:: No two flags have equivalence.
+            :id: T_ARMI_FLAG_DEFINE
+            :tests: R_ARMI_FLAG_DEFINE
+        """
         with self.assertRaises(AssertionError):
 
             class F(Flag):
                 foo = 1
                 bar = 1
+
+        class D(Flag):
+            foo = auto()
+            bar = auto()
+            baz = auto()
+
+        self.assertEqual(D.foo._value, 1)
+        self.assertEqual(D.bar._value, 2)
+        self.assertEqual(D.baz._value, 4)
 
     def test_bool(self):
         f = ExampleFlag()

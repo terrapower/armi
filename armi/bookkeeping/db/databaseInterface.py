@@ -21,25 +21,22 @@ import os
 import pathlib
 import time
 from typing import (
-    Optional,
-    Tuple,
-    Sequence,
     MutableSequence,
+    Optional,
+    Sequence,
+    Tuple,
 )
 
-from armi import context
-from armi import interfaces
-from armi import runLog
-from armi.bookkeeping.db.database3 import Database3, getH5GroupName
-from armi.reactor.parameters import parameterDefinitions
+from armi import context, interfaces, runLog
+from armi.bookkeeping.db.database import Database, getH5GroupName
+from armi.bookkeeping.db.typedefs import Histories, History
 from armi.reactor.composites import ArmiObject
-from armi.bookkeeping.db.typedefs import History, Histories
-from armi.utils import getPreviousTimeNode, getStepLengths
+from armi.reactor.parameters import parameterDefinitions
 from armi.settings.fwSettings.databaseSettings import (
-    CONF_SYNC_AFTER_WRITE,
     CONF_FORCE_DB_PARAMS,
+    CONF_SYNC_AFTER_WRITE,
 )
-
+from armi.utils import getPreviousTimeNode, getStepLengths
 
 ORDER = interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -96,7 +93,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available. (Begining of Life)."""
+        """Initialize the database if the main interface was not available. (Beginning of Life)."""
         if not self._db:
             self.initDB()
 
@@ -106,10 +103,9 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        Main Interface calls this so that the database is available as early as
-        possible in the run. The database interface interacts near the end of the
-        interface stack (so that all the parameters have been updated) while the Main
-        Interface interacts first.
+        Main Interface calls this so that the database is available as early as possible in the run.
+        The database interface interacts near the end of the interface stack (so that all the
+        parameters have been updated) while the Main Interface interacts first.
         """
         if fName is None:
             self._dbPath = pathlib.Path(self.cs.caseTitle + ".h5")
@@ -118,24 +114,12 @@ class DatabaseInterface(interfaces.Interface):
 
         if self.cs["reloadDBName"].lower() == str(self._dbPath).lower():
             raise ValueError(
-                "It appears that reloadDBName is the same as the case "
-                "title. This could lead to data loss! Rename the reload DB or the "
-                "case."
+                "It appears that reloadDBName is the same as the case title. "
+                "This could lead to data loss! Rename the reload DB or the case."
             )
-        self._db = Database3(self._dbPath, "w")
+        self._db = Database(self._dbPath, "w")
         self._db.open()
-
-        # Grab geomString here because the DB-level has no access to the reactor or
-        # blueprints or anything.
-        # There's not always a geomFile; we are moving towards the core grid definition
-        # living in the blueprints themselves. In this case, the db doesnt need to store
-        # a geomFile at all.
-        if self.cs["geomFile"]:
-            with open(os.path.join(self.cs.inputDirectory, self.cs["geomFile"])) as f:
-                geomString = f.read()
-        else:
-            geomString = ""
-        self._db.writeInputsToDB(self.cs, geomString=geomString)
+        self._db.writeInputsToDB(self.cs)
 
     def interactEveryNode(self, cycle, node):
         """
@@ -145,42 +129,41 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        - if tight coupling is enabled, the DB will be written in operator.py::Operator::_timeNodeLoop
-          via writeDBEveryNode
+        - If tight coupling is enabled, the DB will be written in ``Operator::_timeNodeLoop`` via
+          writeDBEveryNode.
         """
         if self.o.cs["tightCoupling"]:
-            # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
+            # h5 can't handle overwriting so we skip here and write once the tight coupling loop has completed
             return
-        self.writeDBEveryNode(cycle, node)
+        self.writeDBEveryNode()
 
-    def writeDBEveryNode(self, cycle, node):
+    def writeDBEveryNode(self):
         """Write the database at the end of the time node."""
-        # skip writing for last burn step since it will be written at interact EOC
-        if node < self.o.burnSteps[cycle]:
-            self.r.core.p.minutesSinceStart = (
-                time.time() - self.r.core.timeOfStart
-            ) / 60.0
-            self._db.writeToDB(self.r)
-            if self.cs[CONF_SYNC_AFTER_WRITE]:
-                self._db.syncToSharedFolder()
+        self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
+        self._db.writeToDB(self.r)
+        if self.cs[CONF_SYNC_AFTER_WRITE]:
+            self._db.syncToSharedFolder()
 
     def interactEOC(self, cycle=None):
-        """In case anything changed since last cycle (e.g. rxSwing), update DB. (End of Cycle)."""
-        # We cannot presume whether we are at EOL based on cycle and cs["nCycles"],
-        # since cs["nCycles"] is not a difinitive indicator of EOL; ultimately the
-        # Operator has the final say.
-        if not self.o.atEOL:
-            self.r.core.p.minutesSinceStart = (
-                time.time() - self.r.core.timeOfStart
-            ) / 60.0
-            self._db.writeToDB(self.r)
+        """
+        Dont write; this state doesn't tend to be important since its decay only step.
+
+        Notes
+        -----
+        The same time is available at start of next cycle.
+        """
+        return
 
     def interactEOL(self):
         """DB's should be closed at run's end. (End of Life)."""
         # minutesSinceStarts should include as much of the ARMI run as possible so EOL
         # is necessary, too.
         self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
-        self._db.writeToDB(self.r)
+        self._db.writeToDB(self.r, "EOL")
+        self.closeDB()
+
+    def closeDB(self):
+        """Close the DB, writing to file."""
         self._db.close(True)
 
     def interactError(self):
@@ -194,7 +177,7 @@ class DatabaseInterface(interfaces.Interface):
             # writing
             self._db.writeToDB(self.r, "error")
             self._db.close(False)
-        except:  # noqa: bare-except; we're already responding to an error
+        except Exception:  # we're already responding to an error
             pass
 
     def interactDistributeState(self) -> None:
@@ -207,7 +190,7 @@ class DatabaseInterface(interfaces.Interface):
         if context.MPI_RANK > 0:
             # DB may not exist if distribute state is called early.
             if self._dbPath is not None and os.path.exists(self._dbPath):
-                self._db = Database3(self._dbPath, "r")
+                self._db = Database(self._dbPath, "r")
                 self._db.open()
 
     def distributable(self):
@@ -222,10 +205,28 @@ class DatabaseInterface(interfaces.Interface):
         `startCycle` and `startNode`, having loaded the state from all cycles prior
         to that in the requested database.
 
+        .. impl:: Runs at a particular timenode can be re-instantiated for a snapshot.
+            :id: I_ARMI_SNAPSHOT_RESTART
+            :implements: R_ARMI_SNAPSHOT_RESTART
+
+            This method loads the state of a reactor from a particular point in time
+            from a standard ARMI
+            :py:class:`Database <armi.bookkeeping.db.database.Database>`. This is a
+            major use-case for having ARMI databases in the first case. And restarting
+            from such a database is easy, you just need to set a few settings::
+
+            * reloadDBName - Path to existing H5 file to reload from.
+            * startCycle - Operational cycle to restart from.
+            * startNode - Time node to start from.
+
         Notes
         -----
         Mixing the use of simple vs detailed cycles settings is allowed, provided
         that the cycle histories prior to `startCycle`/`startNode` are equivalent.
+
+        ARMI expects the reload DB to have been made in the same version of ARMI as you
+        are running. ARMI does not guarantee that a DB from a decade ago will be easily
+        used to restart a run.
         """
         reloadDBName = self.cs["reloadDBName"]
         runLog.info(
@@ -234,7 +235,7 @@ class DatabaseInterface(interfaces.Interface):
         startCycle = self.cs["startCycle"]
         startNode = self.cs["startNode"]
 
-        with Database3(reloadDBName, "r") as inputDB:
+        with Database(reloadDBName, "r") as inputDB:
             loadDbCs = inputDB.loadCS()
 
             # pull the history up to the cycle/node prior to `startCycle`/`startNode`
@@ -244,7 +245,6 @@ class DatabaseInterface(interfaces.Interface):
                 self.cs,
             )
 
-            # check that cycle histories are equivalent up to this point
             self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
                 loadDbCs, dbCycle, dbNode
             )
@@ -255,6 +255,7 @@ class DatabaseInterface(interfaces.Interface):
     def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
         self, loadDbCs, dbCycle, dbNode
     ):
+        """Check that cycle histories are equivalent up to this point."""
         dbStepLengths = getStepLengths(loadDbCs)
         currentCaseStepLengths = getStepLengths(self.cs)
         dbStepHistory = []
@@ -295,30 +296,28 @@ class DatabaseInterface(interfaces.Interface):
             if self._db is not None and fileName == self._db._fileName:
                 yield self._db
             elif os.path.exists(fileName):
-                yield Database3(fileName, "r")
+                yield Database(fileName, "r")
         else:
             if self._db is not None:
                 yield self._db
             if os.path.exists(self.cs["reloadDBName"]):
-                yield Database3(self.cs["reloadDBName"], "r")
+                yield Database(self.cs["reloadDBName"], "r")
 
-    def loadState(
-        self, cycle, timeNode, timeStepName="", fileName=None, updateGlobalAssemNum=True
-    ):
+    def loadState(self, cycle, timeNode, timeStepName="", fileName=None):
         """
         Loads a fresh reactor and applies it to the Operator.
 
         Notes
         -----
-        Will load preferentially from the `fileName` if passed. Otherwise will load from
-        existing database in memory or `cs["reloadDBName"]` in that order.
+        Will load preferentially from the ``fileName`` if passed. Otherwise will load from
+        existing database in memory or ``cs["reloadDBName"`]` in that order.
 
         Raises
         ------
         RuntimeError
             If fileName is specified and that  file does not have the time step.
             If fileName is not specified and neither the database in memory, nor the
-            `cs["reloadDBName"]` have the time step specified.
+            ``cs["reloadDBName"]`` have the time step specified.
         """
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
@@ -329,7 +328,6 @@ class DatabaseInterface(interfaces.Interface):
                         statePointName=timeStepName,
                         cs=self.cs,
                         allowMissing=True,
-                        updateGlobalAssemNum=updateGlobalAssemNum,
                     )
                     self.o.reattach(newR, self.cs)
                     break
@@ -357,15 +355,14 @@ class DatabaseInterface(interfaces.Interface):
         """
         Get historical parameter values for a single object.
 
-        This is mostly a wrapper around the same function on the ``Database3`` class,
+        This is mostly a wrapper around the same function on the ``Database`` class,
         but knows how to return the current value as well.
 
         See Also
         --------
-        Database3.getHistory
+        Database.getHistory
         """
-        # make a copy so that we can potentially remove timesteps without affecting the
-        # caller
+        # make a copy so that we can potentially remove timesteps without affecting the caller
         timeSteps = copy.copy(timeSteps)
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None
@@ -381,7 +378,10 @@ class DatabaseInterface(interfaces.Interface):
         if nowRequested:
             for param in params or history.keys():
                 if param == "location":
-                    history[param][now] = tuple(comp.spatialLocator.indices)
+                    # might save as int or np.int64, so forcing int keeps things predictable
+                    history[param][now] = tuple(
+                        int(i) for i in comp.spatialLocator.indices
+                    )
                 else:
                     history[param][now] = comp.p[param]
 
@@ -397,12 +397,12 @@ class DatabaseInterface(interfaces.Interface):
         """
         Get historical parameter values for one or more objects.
 
-        This is mostly a wrapper around the same function on the ``Database3`` class,
+        This is mostly a wrapper around the same function on the ``Database`` class,
         but knows how to return the current value as well.
 
         See Also
         --------
-        Database3.getHistories
+        Database.getHistories
         """
         now = (self.r.p.cycle, self.r.p.timeNode)
         nowRequested = timeSteps is None

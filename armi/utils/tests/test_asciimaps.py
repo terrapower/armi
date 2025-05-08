@@ -17,7 +17,6 @@ import unittest
 
 from armi.utils import asciimaps
 
-
 CARTESIAN_MAP = """2 2 2 2 2
 2 2 2 2 2
 2 1 1 1 2
@@ -108,6 +107,7 @@ HEX_THIRD_MAP_WITH_EMPTY_ROW = """-   -   SH  SH
           EX  IC  IC  PC  OC
 """
 
+# This is a "corners-up" hexagonal map.
 HEX_FULL_MAP = """- - - - - - - - - 1 1 1 1 1 1 1 1 1 4
  - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
   - - - - - - - 1 8 1 1 1 1 1 1 1 1 1 1
@@ -129,6 +129,7 @@ HEX_FULL_MAP = """- - - - - - - - - 1 1 1 1 1 1 1 1 1 4
                   1 1 1 1 1 1 1 1 1 1
 """
 
+# This is a "flats-up" hexagonal map.
 HEX_FULL_MAP_FLAT = """-       -       -       -       ORS     ORS     ORS 
     -       -       -       ORS     ORS     ORS     ORS 
 -       -       -       ORS     IRS     IRS     IRS     ORS 
@@ -289,15 +290,69 @@ class TestAsciiMaps(unittest.TestCase):
 
         self.assertEqual(asciimap[5, 0], "TG")
 
-    def test_hexFull(self):
-        """Test sample full hex map against known answers."""
-        # hex map is 19 rows tall, so it should go from -9 to 9
-        asciimap = asciimaps.AsciiMapHexFullTipsUp()
-        with io.StringIO() as stream:
-            stream.write(HEX_FULL_MAP)
-            stream.seek(0)
-            asciimap.readAscii(stream.read())
+    def test_hexFullCornersUpSpotCheck(self):
+        """Spot check some hex grid coordinates are what they should be."""
+        # The corners and a central line of non-zero values.
+        corners_map = """- - - - - - - - - 3 0 0 0 0 0 0 0 0 2
+         - - - - - - - - 0 0 0 0 0 0 0 0 0 0 0
+          - - - - - - - 0 0 0 0 0 0 0 0 0 0 0 0
+           - - - - - - 0 0 0 0 0 0 0 0 0 0 0 0 0
+            - - - - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+             - - - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+              - - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+               - - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                - 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                 4 0 0 0 0 0 0 0 0 0 1 2 3 4 5 6 7 0 1
+                  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                     0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                      0 0 0 0 0 0 0 0 0 0 0 0 0 0
+                       0 0 0 0 0 0 0 0 0 0 0 0 0
+                        0 0 0 0 0 0 0 0 0 0 0 0
+                         0 0 0 0 0 0 0 0 0 0 0
+                          5 0 0 0 0 0 0 0 0 6
+        """
 
+        # hex map is 19 rows tall: from -9 to 9
+        asciimap = asciimaps.AsciiMapHexFullTipsUp()
+        asciimap.readAscii(corners_map)
+
+        # verify the corners
+        self.assertEqual(asciimap[9, -9], "1")
+        self.assertEqual(asciimap[9, 0], "2")
+        self.assertEqual(asciimap[0, 9], "3")
+        self.assertEqual(asciimap[-9, 9], "4")
+        self.assertEqual(asciimap[-9, 0], "5")
+        self.assertEqual(asciimap[0, -9], "6")
+
+        # verify a line of coordinates
+        self.assertEqual(asciimap[0, 0], "0")
+        self.assertEqual(asciimap[1, -1], "1")
+        self.assertEqual(asciimap[2, -2], "2")
+        self.assertEqual(asciimap[3, -3], "3")
+        self.assertEqual(asciimap[4, -4], "4")
+        self.assertEqual(asciimap[5, -5], "5")
+        self.assertEqual(asciimap[6, -6], "6")
+        self.assertEqual(asciimap[7, -7], "7")
+
+    def test_hexFullCornersUp(self):
+        """Test sample full hex map (with hex corners up) against known answers."""
+        # hex map is 19 rows tall: from -9 to 9
+        asciimap = asciimaps.AsciiMapHexFullTipsUp()
+        asciimap.readAscii(HEX_FULL_MAP)
+
+        # spot check some values in the map
+        self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap))
+        self.assertEqual(asciimap[-9, 9], "7")
+        self.assertEqual(asciimap[-8, 0], "6")
+        self.assertEqual(asciimap[-1, 0], "2")
+        self.assertEqual(asciimap[-1, 8], "8")
+        self.assertEqual(asciimap[0, -6], "3")
+        self.assertEqual(asciimap[0, 0], "0")
+        self.assertEqual(asciimap[9, 0], "4")
+
+        # also test writing from pure data (vs. reading) gives the exact same map
         asciimap2 = asciimaps.AsciiMapHexFullTipsUp()
         for ij, spec in asciimap.items():
             asciimap2.asciiLabelByIndices[ij] = spec
@@ -308,13 +363,40 @@ class TestAsciiMaps(unittest.TestCase):
             stream.seek(0)
             output = stream.read()
             self.assertEqual(output, HEX_FULL_MAP)
-        self.assertEqual(asciimap[0, 0], "0")
-        self.assertEqual(asciimap[0, -1], "2")
-        self.assertEqual(asciimap[0, -8], "6")
-        self.assertEqual(asciimap[0, 9], "4")
-        self.assertEqual(asciimap[-9, 0], "7")
-        self.assertEqual(asciimap[-8, 7], "8")
-        self.assertEqual(asciimap[6, -6], "3")
+
+        self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap))
+        self.assertIn("7 1 1 1 1 1 1 1 1 0", str(asciimap2))
+
+    def test_hexFullFlatsUp(self):
+        """Test sample full hex map (with hex flats up) against known answers."""
+        # hex map is 21 rows tall: from -10 to 10
+        asciimap = asciimaps.AsciiMapHexFullFlatsUp()
+        asciimap.readAscii(HEX_FULL_MAP_FLAT)
+
+        # spot check some values in the map
+        self.assertIn("VOTA    ICS     IC      IRT     ICS     OC", str(asciimap))
+        self.assertEqual(asciimap[-3, 10], "ORS")
+        self.assertEqual(asciimap[0, -9], "ORS")
+        self.assertEqual(asciimap[0, 0], "IC")
+        self.assertEqual(asciimap[0, 9], "ORS")
+        self.assertEqual(asciimap[4, -6], "RR7")
+        self.assertEqual(asciimap[6, 0], "RR7")
+        self.assertEqual(asciimap[7, -1], "RR89")
+
+        # also test writing from pure data (vs. reading) gives the exact same map
+        asciimap2 = asciimaps.AsciiMapHexFullFlatsUp()
+        for ij, spec in asciimap.items():
+            asciimap2.asciiLabelByIndices[ij] = spec
+
+        with io.StringIO() as stream:
+            asciimap2.gridContentsToAscii()
+            asciimap2.writeAscii(stream)
+            stream.seek(0)
+            output = stream.read()
+            self.assertEqual(output, HEX_FULL_MAP_FLAT)
+
+        self.assertIn("VOTA    ICS     IC      IRT     ICS     OC", str(asciimap))
+        self.assertIn("VOTA    ICS     IC      IRT     ICS     OC", str(asciimap2))
 
     def test_hexFullFlat(self):
         """Test sample full hex map against known answers."""
@@ -335,7 +417,7 @@ class TestAsciiMaps(unittest.TestCase):
         self.assertEqual(asciimap[-5, 2], "VOTA")
         self.assertEqual(asciimap[2, 3], "FS")
 
-        # also test writing from pure data (vs. reading) gives the exact same map :o
+        # also test writing from pure data (vs. reading) gives the exact same map
         with io.StringIO() as stream:
             asciimap2 = asciimaps.AsciiMapHexFullFlatsUp()
             asciimap2.asciiLabelByIndices = asciimap.asciiLabelByIndices

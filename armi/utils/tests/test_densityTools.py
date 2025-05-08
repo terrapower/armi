@@ -14,13 +14,35 @@
 """Test densityTools."""
 import unittest
 
+from armi.materials.material import Material
 from armi.materials.uraniumOxide import UO2
 from armi.nucDirectory import elements, nuclideBases
 from armi.utils import densityTools
 
 
-class Test_densityTools(unittest.TestCase):
+class UraniumOxide(Material):
+    """A test material that needs to be stored in a different namespace.
+
+    This is a duplicate (by name only) of :py:class:`armi.materials.uraniumOxide.UraniumOxide`
+    and is used for testing in :py:meth:`armi.materials.tests.test_materials.MaterialFindingTests.test_namespacing`
+    """
+
+    def pseudoDensity(self, Tk=None, Tc=None):
+        return 0.0
+
+    def density(self, Tk=None, Tc=None):
+        return 0.0
+
+
+class TestDensityTools(unittest.TestCase):
     def test_expandElementalMassFracsToNuclides(self):
+        """
+        Expand mass fraction to nuclides.
+
+        .. test:: Expand mass fractions to nuclides.
+            :id: T_ARMI_UTIL_EXP_MASS_FRACS
+            :tests: R_ARMI_UTIL_EXP_MASS_FRACS
+        """
         element = elements.bySymbol["N"]
         mass = {"N": 1.0}
         densityTools.expandElementalMassFracsToNuclides(mass, [(element, None)])
@@ -43,7 +65,6 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(sum(mass.values()), 1.0)
 
     def test_getChemicals(self):
-
         u235 = nuclideBases.byName["U235"]
         u238 = nuclideBases.byName["U238"]
         o16 = nuclideBases.byName["O16"]
@@ -99,7 +120,21 @@ class Test_densityTools(unittest.TestCase):
         )  # HM blended
         self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
 
+    def test_getNDensFromMasses(self):
+        """
+        Number densities from masses.
+
+        .. test:: Number densities are retrievable from masses.
+            :id: T_ARMI_UTIL_MASS2N_DENS
+            :tests: R_ARMI_UTIL_MASS2N_DENS
+        """
+        nDens = densityTools.getNDensFromMasses(1, {"O": 1, "H": 2})
+
+        self.assertAlmostEqual(nDens["O"], 0.03764, 5)
+        self.assertAlmostEqual(nDens["H"], 1.19490, 5)
+
     def test_getMassFractions(self):
+        """Number densities to mass fraction."""
         numDens = {"O17": 0.1512, "PU239": 1.5223, "U234": 0.135}
         massFracs = densityTools.getMassFractions(numDens)
 
@@ -108,6 +143,7 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(massFracs["U234"], 0.07937081219437897)
 
     def test_calculateNumberDensity(self):
+        """Mass fraction to number density."""
         nDens = densityTools.calculateNumberDensity("U235", 1, 1)
         self.assertAlmostEqual(nDens, 0.0025621344549254283)
 
@@ -128,6 +164,7 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(m, 843.5790671316283)
 
     def test_normalizeNuclideList(self):
+        """Normalize a nuclide list."""
         nList = {"PU239": 23.2342, "U234": 0.001234, "U235": 34.152}
         norm = densityTools.normalizeNuclideList(nList)
 
@@ -136,6 +173,12 @@ class Test_densityTools(unittest.TestCase):
         self.assertAlmostEqual(norm["U235"], 0.5951128604216736)
 
     def test_formatMaterialCard(self):
+        """Formatting material information into an MCNP input card.
+
+        .. test:: Create MCNP material card
+            :id: T_ARMI_UTIL_MCNP_MAT_CARD
+            :tests: R_ARMI_UTIL_MCNP_MAT_CARD
+        """
         u235 = nuclideBases.byName["U235"]
         pu239 = nuclideBases.byName["PU239"]
         o16 = nuclideBases.byName["O16"]

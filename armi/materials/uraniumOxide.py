@@ -32,7 +32,6 @@ from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils.units import getTk
 
-
 HeatCapacityConstants = collections.namedtuple(
     "HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"]
 )
@@ -62,8 +61,10 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     }
 
     references = {
-        "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
-        "linear expansion": "Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
+        "thermal conductivity": "Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics "
+        + "simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999",
+        "linear expansion": "Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. "
+        + "S.G. Popov, et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351",
         "heat capacity": "ORNL/TM-2000/351",
     }
 
@@ -73,7 +74,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
     )
 
     # Thermal conductivity values taken from:
-    # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama. Physical Review B, Volume 60, Number 1, July 1999
+    # Thermal conductivity of uranium dioxide by nonequilibrium molecular dynamics simulation. S. Motoyama.
+    #    Physical Review B, Volume 60, Number 1, July 1999
     thermalConductivityTableK = [
         300,
         600,

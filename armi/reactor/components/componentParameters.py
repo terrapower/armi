@@ -15,6 +15,7 @@
 """Component parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
+from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyF32Array
 from armi.utils import units
 
 
@@ -35,7 +36,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "mult",
             units=units.UNITLESS,
-            description="The multiplicity of this component, i.e. how many of them there are. ",
+            description="The multiplicity of this component, i.e. how many of them there are.",
             default=1,
         )
 
@@ -64,10 +65,43 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
+            "detailedNDens",
+            setter=isNumpyArray("detailedNDens"),
+            units=f"atoms/(bn*{units.CM})",
+            description=(
+                "High-fidelity number density vector with up to thousands of nuclides. "
+                "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
+                "This param keeps the hi-fi and low-fi depletion values from interfering. "
+                "See core.p.detailedNucKeys for keys."
+            ),
+            saveToDB=True,
+            default=None,
+        )
+
+        pb.defParam(
+            "pinNDens",
+            setter=isNumpyF32Array("pinNDens"),
+            units=f"atoms/(bn*{units.CM})",
+            description="Pin-wise number densities of each nuclide.",
+            location=ParamLocation.AVERAGE,
+            saveToDB=True,
+            categories=["depletion", parameters.Category.pinQuantities],
+            default=None,
+        )
+
+        pb.defParam(
             "percentBu",
             units=f"{units.PERCENT_FIMA}",
             description="Burnup as a percentage of initial (heavy) metal atoms.",
             default=0.0,
+        )
+
+        pb.defParam(
+            "pinPercentBu",
+            setter=isNumpyArray("pinPercentBu"),
+            units=units.PERCENT_FIMA,
+            description="Pin-wise burnup as a percentage of initial (heavy) metal atoms.",
+            default=None,
         )
 
         pb.defParam(
@@ -98,7 +132,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "customIsotopicsName",
             units=units.UNITLESS,
-            description="Label of isotopics applied to this component. ",
+            description="Label of isotopics applied to this component.",
         )
 
         pb.defParam(
@@ -111,7 +145,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "zrFrac",
             units=units.UNITLESS,
-            description="Original Zr frac of this, used for material properties. ",
+            description="Original Zr frac of this, used for material properties.",
         )
 
         pb.defParam(
@@ -120,6 +154,39 @@ def getComponentParameterDefinitions():
             description="Pin number of this component in some mesh. Starts at 1.",
             default=None,
         )
+
+        def _assignTDFrac(self, val):
+            if val > 1 or val < 0:
+                raise ValueError(
+                    f"Theoretical density fraction must be in range [0,1], got {val}"
+                )
+            self._p_theoreticalDensityFrac = val
+
+        pb.defParam(
+            "theoreticalDensityFrac",
+            description=(
+                "Fractional value between zero and one, inclusive, for the theoretical density "
+                "of the material stored on this component."
+            ),
+            units=units.UNITLESS,
+            default=1,
+            setter=_assignTDFrac,
+        )
+
+        pb.defParam(
+            "molesHmBOL",
+            units=units.MOLES,
+            default=0.0,
+            description="Total number of moles of heavy metal at BOL.",
+        )
+
+        pb.defParam(
+            "puFrac",
+            default=0.0,
+            units=units.UNITLESS,
+            description="Current average Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
+        )
+
     return pDefs
 
 

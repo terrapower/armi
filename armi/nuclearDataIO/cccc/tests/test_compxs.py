@@ -16,7 +16,7 @@
 import os
 import unittest
 
-import numpy
+import numpy as np
 from scipy.sparse import csc_matrix
 
 from armi import nuclearDataIO
@@ -149,7 +149,7 @@ class TestCompxs(unittest.TestCase):
         }
         for xsName, expectedXS in expectedMacros.items():
             actualXS = self.fissileRegion.macros[xsName]
-            self.assertTrue(numpy.allclose(actualXS, expectedXS))
+            self.assertTrue(np.allclose(actualXS, expectedXS))
 
     def test_totalScatterMatrix(self):
         """
@@ -157,14 +157,14 @@ class TestCompxs(unittest.TestCase):
 
         Sparse matrices can be constructed from three vectors: data, indices, and indptr.
         For column matrix, the row indices for column ``j`` are stored in
-        ``indices[indptr[j]:indptr[j + 1]]`` and the corresponsing data is stored in
+        ``indices[indptr[j]:indptr[j + 1]]`` and the corresponding data is stored in
         ``data[indptr[j]:indptr[j + 1]]``.
 
         See Also
         --------
         scipy.sparse.csc_matrix
         """
-        expectedSparseData = numpy.array(
+        expectedSparseData = np.array(
             [
                 1.15905297e-01,
                 1.50461698e-01,
@@ -290,7 +290,7 @@ class TestCompxs(unittest.TestCase):
             actualTotalScatter.shape,
         ).toarray()
 
-        self.assertTrue(numpy.allclose(actualTotalScatter, expectedTotalScatter))
+        self.assertTrue(np.allclose(actualTotalScatter, expectedTotalScatter))
 
     def test_binaryRW(self):
         """Test to make sure the binary read/writer reads/writes the exact same library."""

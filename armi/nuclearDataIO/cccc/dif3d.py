@@ -20,7 +20,6 @@ binary inputs for the DIF3D code.
 from armi import runLog
 from armi.nuclearDataIO import cccc
 
-
 FILE_SPEC_2D_PARAMS = (
     [
         "IPROBT",
@@ -93,6 +92,8 @@ class Dif3dData(cccc.DataContainer):
 
 
 class Dif3dStream(cccc.StreamWithDataContainer):
+    """Tool to read and write DIF3D files."""
+
     @staticmethod
     def _getDataContainer() -> Dif3dData:
         return Dif3dData()
@@ -197,7 +198,45 @@ class Dif3dStream(cccc.StreamWithDataContainer):
                     )
 
     def readWrite(self):
-        """Reads or writes metadata and data from 5 records."""
+        """Reads or writes metadata and data from the five records of the DIF3D binary file.
+
+        .. impl:: Tool to read and write DIF3D files.
+            :id: I_ARMI_NUCDATA_DIF3D
+            :implements: R_ARMI_NUCDATA_DIF3D
+
+            The reading and writing of the DIF3D binary file is performed using
+            :py:class:`StreamWithDataContainer <.cccc.StreamWithDataContainer>`
+            from the :py:mod:`~armi.nuclearDataIO.cccc` package. This class
+            allows for the reading and writing of CCCC binary files, processing
+            one record at a time using subclasses of the :py:class:`IORecord
+            <.cccc.IORecord>`. Each record in a CCCC binary file consists of
+            words that represent integers (short or long), floating-point
+            numbers (single or double precision), or strings of data. One or
+            more of these words are parsed one at a time by the reader. Multiple
+            words processed together have meaning, such as such as groupwise
+            overrelaxation factors. While reading, the data is stored in a
+            Python dictionary as an attribute on the object, one for each
+            record. The keys in each dictionary represent the parsed grouping of
+            words in the records; for example, for the 4D record (stored as the
+            attribute ``fourD``), each groupwise overrelaxation factor is stored
+            as the key ``OMEGA{i}``, where ``i`` is the group number. See
+            :need:`I_ARMI_NUCDATA` for more details on the general
+            implementation.
+
+            Each record is also embedded with the record size at the beginning
+            and end of the record (always assumed to be present), which is used
+            for error checking at the end of processing each record.
+
+            The DIF3D reader processes the file identification record (stored as
+            the attribute ``_metadata``) and the five data records for the DIF3D
+            file, as defined in the specification for the file distributed with
+            the DIF3D software.
+
+            This class can also read and write an ASCII version of the DIF3D
+            file. While this format is not used by the DIF3D software, it can be
+            a useful representation for users to access the file in a
+            human-readable format.
+        """
         msg = f"{'Reading' if 'r' in self._fileMode else 'Writing'} DIF3D binary data {self}"
         runLog.info(msg)
 

@@ -50,10 +50,18 @@ configure(permissive=True)
 
 _o, r = test_reactors.loadTestReactor()
 
+# fully heterogeneous
 bFuel = r.core.getBlocks(Flags.FUEL)[0]
 bControl = r.core.getBlocks(Flags.CONTROL)[0]
 converter = blockConverters.HexComponentsToCylConverter(
     sourceBlock=bControl, driverFuelBlock=bFuel, numExternalRings=1
+)
+converter.convert()
+converter.plotConvertedBlock()
+
+# partially heterogeneous
+converter = blockConverters.HexComponentsToCylConverter(
+    sourceBlock=bFuel, ductHeterogeneous=True
 )
 converter.convert()
 converter.plotConvertedBlock()

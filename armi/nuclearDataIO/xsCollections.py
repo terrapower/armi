@@ -15,11 +15,12 @@
 """
 Cross section collections contain cross sections for a single nuclide or region.
 
-Specifically, they are used as attributes of :py:class:`~armi.nuclearDataIO.xsNuclides.XSNuclide`, which
-then are combined as a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
+Specifically, they are used as attributes of :py:class:`~armi.nuclearDataIO.xsNuclides.XSNuclide`,
+which then are combined as a :py:class:`~armi.nuclearDataIO.xsLibraries.XSLibrary`.
 
-These may represent microscopic or macroscopic neutron or photon cross sections. When they are macroscopic,
-they generally represent a whole region with many nuclides, though this is not required.
+These may represent microscopic or macroscopic neutron or photon cross sections. When they are
+macroscopic, they generally represent a whole region with many nuclides, though this is not
+required.
 
 See Also
 --------
@@ -27,38 +28,37 @@ armi.nuclearDataIO.xsCollection.XSCollection : object that gets created.
 
 Examples
 --------
-# creating a MicroscopicXSCollection by loading one from ISOTXS.
-microLib = armi.nuclearDataIO.ISOTXS('ISOTXS')
-micros = myLib.nuclides['U235AA'].micros
+    # creating a MicroscopicXSCollection by loading one from ISOTXS.
+    microLib = armi.nuclearDataIO.ISOTXS('ISOTXS')
+    micros = myLib.nuclides['U235AA'].micros
 
-# creating macroscopic XS:
-mc = MacroscopicCrossSectionCreator()
-macroCollection = mc.createMacrosFromMicros(microLib, block)
-blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
+    # creating macroscopic XS:
+    mc = MacroscopicCrossSectionCreator()
+    macroCollection = mc.createMacrosFromMicros(microLib, block)
+    blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
 
 """
-import numpy
+import numpy as np
 from scipy import sparse
 
 from armi import runLog
-from armi.utils import properties
-from armi.utils import units
+from armi.utils import properties, units
 
 # Basic cross-section types that are represented by a 1-D vector in the multigroup approximation
 # No one is particularly proud of these names...we can claim
 # they have some origin in the ISOTXS file format card 04 definition
 # fmt: off
 NGAMMA = "nGamma"      # radiative capture
-NAPLHA = "nalph"       # (n, alpha)
+NALPHA = "nalph"       # (n, alpha)
 NP = "np"              # (n, proton)
 ND = "nd"              # (n, deuteron)
 NT = "nt"              # (n, triton)
 FISSION_XS = "fission" # (n, fission)
 N2N_XS = "n2n"         # (n,2n)
-NUSIGF = "nuSigF"      
+NUSIGF = "nuSigF"
 NU = "neutronsPerFission"
 # fmt: on
-CAPTURE_XS = [NGAMMA, NAPLHA, NP, ND, NT]
+CAPTURE_XS = [NGAMMA, NALPHA, NP, ND, NT]
 
 # Cross section types that are represented by 2-D matrices in the multigroup approximation
 BASIC_SCAT_MATRIX = ["elasticScatter", "inelasticScatter", "n2nScatter"]
@@ -107,7 +107,7 @@ class XSCollection:
 
     Notes
     -----
-    This is a dict so that it can store multiple 0_g "matricies", i.e. vectors. Realistically,
+    This is a dict so that it can store multiple 0_g "matrices", i.e. vectors. Realistically,
     during any given run there will only be a set of groups, e.g. 33.
     """
 
@@ -115,7 +115,7 @@ class XSCollection:
     def getDefaultXs(cls, numGroups):
         default = cls._zeroes.get(numGroups, None)
         if default is None:
-            default = numpy.zeros(numGroups)
+            default = np.zeros(numGroups)
             cls._zeroes[numGroups] = default
         return default
 
@@ -232,8 +232,8 @@ class XSCollection:
             # it should either be a list, a numpy array, or a sparse matrix
             if isinstance(value, list):
                 value = [0.0] * len(value)
-            elif isinstance(value, numpy.ndarray):
-                value = numpy.zeros(value.shape)
+            elif isinstance(value, np.ndarray):
+                value = np.zeros(value.shape)
             elif value is None:  # assume it is scipy.sparse
                 pass
             elif value.nnz >= 0:
@@ -267,14 +267,14 @@ class XSCollection:
         oneGroupXS : float
             The one group cross section in the same units as the input cross section.
         """
-        mult = numpy.array(crossSection) * numpy.array(weights)
+        mult = np.array(crossSection) * np.array(weights)
         return sum(mult) / sum(weights)
 
-    def compare(self, other, flux, relativeTolerance=0, verbose=False):
+    def compare(self, other, flux, relativeTolerance=0, verbose=False, nucName=""):
         """Compare the cross sections between two XSCollections objects."""
+        nuclideIDMsg = f"Nuclide {nucName} " if nucName else ""
         equal = True
         for xsName in ALL_COLLECTION_DATA:
-
             myXsData = self.__dict__[xsName]
             theirXsData = other.__dict__[xsName]
 
@@ -283,13 +283,15 @@ class XSCollection:
                     if actualList != expectedList:
                         equal = False
                         runLog.important(
-                            "  {} {:<30} cross section is different.".format(
-                                self.source, xsName
+                            "  {}{} {:<30} cross section is different.".format(
+                                nuclideIDMsg,
+                                self.source,
+                                xsName,
                             )
                         )
 
             elif sparse.issparse(myXsData) and sparse.issparse(theirXsData):
-                if not numpy.allclose(
+                if not np.allclose(
                     myXsData.todense(),
                     theirXsData.todense(),
                     rtol=relativeTolerance,
@@ -301,8 +303,8 @@ class XSCollection:
                         else "\n{},\n\n{}".format(myXsData, theirXsData)
                     )
                     runLog.important(
-                        "  {} {:<30} cross section is different.{}".format(
-                            self.source, xsName, verboseData
+                        "  {}{} {:<30} cross section is different.{}".format(
+                            nuclideIDMsg, self.source, xsName, verboseData
                         )
                     )
                     equal = False
@@ -314,8 +316,8 @@ class XSCollection:
                     "" if not verbose else "\n{},\n\n{}".format(myXsData, theirXsData)
                 )
                 runLog.important(
-                    "  {} {:<30} cross section is different.{}".format(
-                        self.source, xsName, verboseData
+                    "  {}{} {:<30} cross section is different.{}".format(
+                        nuclideIDMsg, self.source, xsName, verboseData
                     )
                 )
                 equal = False
@@ -361,30 +363,27 @@ class MacroscopicCrossSectionCreator:
     """
     Create macroscopic cross sections from micros and number density.
 
-    Object encapsulating all high-level methods related to the creation of
-    macroscopic cross sections.
+    Object encapsulating all high-level methods related to the creation of macroscopic cross
+    sections.
     """
 
-    def __init__(
-        self, buildScatterMatrix=True, buildOnlyCoolant=False, minimumNuclideDensity=0.0
-    ):
+    def __init__(self, buildScatterMatrix=True, minimumNuclideDensity=0.0):
         self.densities = None
         self.macros = None
         self.micros = None
         self.minimumNuclideDensity = minimumNuclideDensity
         self.buildScatterMatrix = buildScatterMatrix
-        self.buildOnlyCoolant = (
-            buildOnlyCoolant  # TODO: this is not implemented yet. is it needed?
-        )
         self.block = None
 
     def createMacrosOnBlocklist(
         self, microLibrary, blockList, nucNames=None, libType="micros"
     ):
+        """Create macroscopic cross sections for a list of blocks."""
         for block in blockList:
             block.macros = self.createMacrosFromMicros(
                 microLibrary, block, nucNames, libType=libType
             )
+
         return blockList
 
     def createMacrosFromMicros(
@@ -401,7 +400,7 @@ class MacroscopicCrossSectionCreator:
             Input micros
 
         block : Block
-            Object whos number densities should be used to generate macros
+            Object whose number densities should be used to generate macros
 
         nucNames : list, optional
             List of nuclides to include in the macros. Defaults to all in block.
@@ -414,7 +413,6 @@ class MacroscopicCrossSectionCreator:
         -------
         macros : xsCollection.XSCollection
             A new XSCollection full of macroscopic cross sections
-
         """
         runLog.debug("Building macroscopic cross sections for {0}".format(block))
         if nucNames is None:
@@ -448,7 +446,7 @@ class MacroscopicCrossSectionCreator:
     def _initializeMacros(self):
         m = self.macros
         for xsName in BASIC_XS + DERIVED_XS:
-            setattr(m, xsName, numpy.zeros(self.ng))
+            setattr(m, xsName, np.zeros(self.ng))
 
         for matrixName in BASIC_SCAT_MATRIX:
             # lil_matrices are good for indexing but bad for certain math operations.
@@ -543,6 +541,7 @@ class MacroscopicCrossSectionCreator:
         self.macros.removal += columnSum - diags
 
 
+# ruff: noqa: E501
 def computeBlockAverageChi(b, isotxsLib):
     r"""
     Return the block average total chi vector based on isotope chi vectors.
@@ -573,7 +572,7 @@ def computeBlockAverageChi(b, isotxsLib):
     fission source weighting).
     """
     numGroups = isotxsLib.numGroups
-    numerator = numpy.zeros(numGroups)
+    numerator = np.zeros(numGroups)
     denominator = 0.0
     numberDensities = b.getNumberDensities()
     for nucObj in isotxsLib.getNuclides(b.getMicroSuffix()):
@@ -585,7 +584,7 @@ def computeBlockAverageChi(b, isotxsLib):
     if denominator != 0.0:
         return numerator / denominator
     else:
-        return numpy.zeros(numGroups)
+        return np.zeros(numGroups)
 
 
 def _getLibTypeSuffix(libType):
@@ -624,7 +623,7 @@ def computeNeutronEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : numpy array
+    energyDepositionConsts : np.ndarray
         Neutron energy deposition group constants. (J/cm)
 
     Notes
@@ -663,7 +662,7 @@ def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    energyDepositionConsts : numpy array
+    energyDepositionConsts : np.ndarray
         gamma energy deposition group constants. (J/cm)
 
     Notes
@@ -706,7 +705,7 @@ def computeFissionEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    fissionEnergyFactor: numpy.array
+    fissionEnergyFactor: np.ndarray
         Fission energy generation group constants (in Joules/cm)
     """
     fissionEnergyFactor = computeMacroscopicGroupConstants(
@@ -750,14 +749,14 @@ def computeCaptureEnergyGenerationConstants(numberDensities, lib, microSuffix):
 
     Returns
     -------
-    captureEnergyFactor: numpy.array
+    captureEnergyFactor: np.ndarray
         Capture energy generation group constants (in Joules/cm)
     """
     captureEnergyFactor = None
     for xs in CAPTURE_XS:
         if captureEnergyFactor is None:
-            captureEnergyFactor = numpy.zeros(
-                numpy.shape(
+            captureEnergyFactor = np.zeros(
+                np.shape(
                     computeMacroscopicGroupConstants(
                         xs, numberDensities, lib, microSuffix, libType="micros"
                     )
@@ -785,41 +784,70 @@ def computeMacroscopicGroupConstants(
     multConstant=None,
     multLib=None,
 ):
-    """
+    r"""
     Compute any macroscopic group constants given number densities and a microscopic library.
+
+    .. impl:: Compute macroscopic cross sections from microscopic cross sections and number densities.
+        :id: I_ARMI_NUCDATA_MACRO
+        :implements: R_ARMI_NUCDATA_MACRO
+
+        This function computes the macroscopic cross sections of a specified
+        reaction type from inputted microscopic cross sections and number
+        densities. The ``constantName`` parameter specifies what type of
+        reaction is requested. The ``numberDensities`` parameter is a dictionary
+        mapping the nuclide to its number density. The ``lib`` parameter is a library
+        object like :py:class:`~armi.nuclearDataIO.xsLibraries.IsotxsLibrary` or
+        :py:class:`~armi.nuclearDataIO.xsLibraries.CompxsLibrary` that holds the
+        microscopic cross-section data. The ``microSuffix`` parameter specifies
+        from which part of the library the microscopic cross sections are
+        gathered; this is typically gathered from a components
+        ``getMicroSuffix`` method like :py:meth:`Block.getMicroSuffix
+        <armi.reactor.blocks.Block.getMicroSuffix>`. ``libType`` is an optional
+        parameter specifying whether the reaction is for neutrons or gammas.
+        This function also has the optional parameters ``multConstant`` and
+        ``multLib``, which allows another constant from the library, such as
+        neutrons per fission (nu) or energy per fission (kappa), to be
+        multiplied to the primary one. The macroscopic cross sections are then
+        computed as:
+
+        .. math::
+
+            \Sigma_{g} = \sum_{n} N_n \sigma_{n,g}\nu_n \quad g=1,...,G
+
+        where :math:`n` is the isotope index, :math:`g` is the energy group
+        index, :math:`\sigma` is the microscopic cross section, and :math:`\nu`
+        is the scalar multiplier. If the library (``lib``) with suffix
+        ``microSuffix`` is missing a cross section for the ``constantName``
+        reaction for one or more of the nuclides in ``numberDensities`` an error
+        is raised; but if ``multConstant`` is missing that cross section, then
+        those nuclides are printed as a warning.
 
     Parameters
     ----------
     constantName : str
         Name of the reaction for which to obtain the group constants. This name should match a
         cross section name or an attribute in the collection.
-
     numberDensities : dict
         nucName keys, number density values (atoms/bn-cm) of all nuclides in the composite for which
         the macroscopic group constants are computed. See composite `getNuclideNumberDensities` method.
-
     lib : library object
         Microscopic cross section library.
-
     microSuffix : str
         Microscopic library suffix (e.g. 'AB') for this composite.
         See composite `getMicroSuffix` method.
-
     libType : str, optional
         The block attribute containing the desired microscopic XS for this block:
         either "micros" for neutron XS or "gammaXS" for gamma XS.
-
     multConstant : str, optional
         Name of constant by which the group constants will be multiplied. This name should match a
         cross section name or an attribute in the collection.
-
     multLib : library object, optional
         Microscopic cross section nuclide library to obtain the multiplier from.
         If None, same library as base cross section is used.
 
     Returns
     -------
-    macroGroupConstant : numpy array
+    macroGroupConstant : np.ndarray
         Macroscopic group constants for the requested reaction.
     """
     skippedNuclides = []
@@ -854,16 +882,16 @@ def computeMacroscopicGroupConstants(
         multiplierVal = _getXsMultiplier(multLibNuclide, multConstant, libType)
 
         if macroGroupConstants is None:
-            macroGroupConstants = numpy.zeros(microGroupConstants.shape)
+            macroGroupConstants = np.zeros(microGroupConstants.shape)
 
         if (
             microGroupConstants.shape != macroGroupConstants.shape
             and not microGroupConstants.any()
         ):
-            microGroupConstants = numpy.zeros(macroGroupConstants.shape)
+            microGroupConstants = np.zeros(macroGroupConstants.shape)
 
         macroGroupConstants += (
-            numpy.asarray(numberDensity) * microGroupConstants * multiplierVal
+            np.asarray(numberDensity) * microGroupConstants * multiplierVal
         )
 
     if skippedNuclides:
@@ -889,12 +917,12 @@ def _getXsMultiplier(libNuclide, multiplier, libType):
         try:
             microCollection = getattr(libNuclide, libType)
             multiplierVal = getattr(microCollection, multiplier)
-        except:  # noqa: bare-except
+        except Exception:
             multiplierVal = libNuclide.isotxsMetadata[multiplier]
     else:
         multiplierVal = 1.0
 
-    return numpy.asarray(multiplierVal)
+    return np.asarray(multiplierVal)
 
 
 def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
@@ -903,7 +931,7 @@ def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
     else:
         microCollection = libNuclide
 
-    microGroupConstants = numpy.asarray(getattr(microCollection, constantName))
+    microGroupConstants = np.asarray(getattr(microCollection, constantName))
 
     if not microGroupConstants.any():
         runLog.debug(

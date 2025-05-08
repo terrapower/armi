@@ -1,12 +1,29 @@
 settings:
-  axialExpansion: true
-  detailedAxialExpansion: true
+# global
   beta: 0.003454
   branchVerbosity: debug
   buGroups:
     - 100
   burnSteps: 2
   comment: Simple test input with detailed axial expansion.
+  cycleLength: 2000.0
+  detailAssemLocationsBOL:
+    - 002-001
+  detailedAxialExpansion: true
+  freshFeedType: igniter fuel
+  loadingFile: refSmallReactor.yaml
+  moduleVerbosity:
+    armi.reactor.reactors: info
+  nCycles: 6
+  outputFileExtension: png
+  power: 100000000.0
+  startNode: 1
+  targetK: 1.002
+  verbosity: extra
+  versions:
+    armi: uncontrolled
+
+# cross section
   crossSectionControl:
     DA:
       geometry: 0D
@@ -19,26 +36,22 @@ settings:
     XA:
       xsFileLocation:
         - ISOXA
-  cycleLength: 2000.0
+
+# database
   db: false
-  detailAssemLocationsBOL:
-    - 002-001
-  epsFSAvg: 1e-06
-  epsFSPoint: 1e-06
-  freshFeedType: igniter fuel
+
+# fuel cycle
   fuelHandlerName: EquilibriumShuffler
   jumpRingNum: 9
-  loadingFile: refSmallReactor.yaml
-  startNode: 1
+
+# fuel performance
+  axialExpansion: true
+
+# neutronics
+  epsFSAvg: 1e-06
+  epsFSPoint: 1e-06
   loadPadElevation: 162.5
+
+# report
   genReports: false
-  moduleVerbosity:
-    armi.reactor.reactors: info
-  nCycles: 6
-  outputFileExtension: png
-  power: 100000000.0
   summarizeAssemDesign: false
-  targetK: 1.002
-  verbosity: extra
-  versions:
-    armi: uncontrolled

@@ -13,9 +13,9 @@
 # limitations under the License.
 
 """Uranium Thorium Zirconium alloy metal."""
-from armi.utils.units import getTk
-from armi.materials.material import FuelMaterial
 from armi import runLog
+from armi.materials.material import FuelMaterial
+from armi.utils.units import getTk
 
 
 class UThZr(FuelMaterial):

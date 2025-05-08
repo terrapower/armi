@@ -36,17 +36,16 @@ Storing a file to the cache::
 
 Notes
 -----
-Could probably be, like, a decorate on subprocess but we call subprocess a bunch of
-different ways.
+Could probably be, like, a decorate on subprocess but we call subprocess a bunch of different ways.
 """
 
 import hashlib
 import json
 import os
-import shutil
 import subprocess
 
 from armi import runLog
+from armi.utils import safeCopy
 from armi.utils.pathTools import cleanPath
 
 MANIFEST_NAME = "CRC-manifest.json"
@@ -106,7 +105,7 @@ def _copyOutputs(cachedFolder, locToRetrieveTo):
 
     for copy in copies:
         storedOutputPath, copyPath = copy
-        shutil.copy(storedOutputPath, copyPath)
+        safeCopy(storedOutputPath, copyPath)
 
     return True
 
@@ -166,7 +165,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
     for outputFile in outputsThatExist:
         baseName = os.path.basename(outputFile)
         cachedLoc = os.path.join(folderLoc, baseName)
-        shutil.copy(outputFile, cachedLoc)
+        safeCopy(outputFile, cachedLoc)
 
     runLog.info("Added outputs for {} to the cache.".format(exePath))
 
@@ -175,10 +174,10 @@ def deleteCache(cachedFolder):
     """
     Remove this folder.
 
-    Requires safeword because this is potentially extremely destructive.
+    Requires keyword because this is potentially extremely destructive.
     """
-    if "Output_Cache" not in cachedFolder:
-        raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
+    if "cache" not in str(cachedFolder).lower():
+        raise RuntimeError("Cache location must contain keyword: `cache`.")
 
     cleanPath(cachedFolder)
 

@@ -22,12 +22,12 @@ Learn more about :py:mod:`grids <armi.reactor.grids>`.
 """
 import math
 
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 
-from armi.reactor import grids
 from armi import configure
+from armi.reactor import grids
 
 configure(permissive=True)
 

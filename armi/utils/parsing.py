@@ -16,6 +16,7 @@
 
 import ast
 import copy
+
 from dateutil import parser
 
 
@@ -61,7 +62,7 @@ def _numericSpecialBehavior(source, rt):
 def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
     """Tries parse a python value, expecting input to be the right type or a string."""
     # misuse prevention
-    if requestedType == str:
+    if requestedType is str:
         raise TypeError(
             "Unreliable and unnecessary to use parseValue for strs and unicodes. "
             "Given parameters are {}, {}, {}.".format(source, requestedType, allowNone)

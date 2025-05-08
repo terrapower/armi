@@ -13,14 +13,14 @@
 # limitations under the License.
 
 """This module contains methods for adding properties with custom behaviors to classes."""
-import numpy
+import numpy as np
 
 
 def areEqual(val1, val2, relativeTolerance=0.0):
     hackEqual = numpyHackForEqual(val1, val2)
     if hackEqual or not relativeTolerance:  # takes care of dictionaries and strings.
         return hackEqual
-    return numpy.allclose(
+    return np.allclose(
         val1, val2, rtol=relativeTolerance, atol=0.0
     )  # does not work for dictionaries or strings
 
@@ -28,10 +28,13 @@ def areEqual(val1, val2, relativeTolerance=0.0):
 def numpyHackForEqual(val1, val2):
     """Checks lots of types for equality like strings and dicts."""
     # when doing this with numpy arrays you get an array of booleans which causes the value error
-    notEqual = val1 != val2
+    if isinstance(val1, np.ndarray) and isinstance(val2, np.ndarray):
+        if val1.size != val2.size:
+            return False
 
+    notEqual = val1 != val2
     try:  # should work for everything but numpy arrays
-        if isinstance(notEqual, numpy.ndarray) and notEqual.size == 0:
+        if isinstance(notEqual, np.ndarray) and notEqual.size == 0:
             return True
         return not notEqual.__bool__()
     except (AttributeError, ValueError):  # from comparing 2 numpy arrays
@@ -60,7 +63,7 @@ def createImmutableProperty(name, dependencyAction, doc):
 
     Examples
     --------
-    The following example is esentially exactly how this should be used.
+    The following example is essentially exactly how this should be used.
 
     >>> class SomeClass:
     ...     myNum = createImmutableProperty('myNum', 'You must invoke the initialize() method', 'My random number')

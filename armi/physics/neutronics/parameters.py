@@ -15,8 +15,8 @@
 """
 Parameter definitions for the Neutronics Plugin.
 
-We hope neutronics plugins that compute flux will use ``mgFlux``, etc.,
-which will enable modular construction of apps.
+We hope neutronics plugins that compute flux will use ``mgFlux``, etc., which will enable modular
+construction of apps.
 """
 from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
 from armi.reactor import parameters
@@ -86,7 +86,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgFluxGamma",
-            units=f"{units.GRAMS}*{units.CM}/{units.SECONDS}",
+            units=f"#*{units.CM}/{units.SECONDS}",
             description="multigroup gamma flux",
             location=ParamLocation.VOLUME_INTEGRATED,
             saveToDB=True,
@@ -110,7 +110,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "extSrc",
-            units=f"{units.GRAMS}/{units.CM}^3/{units.SECONDS}",
+            units=f"#/{units.CM}^3/{units.SECONDS}",
             description="multigroup external source",
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -120,7 +120,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "mgGammaSrc",
-            units=f"{units.GRAMS}/{units.CM}^3/{units.SECONDS}",
+            units=f"#/{units.CM}^3/{units.SECONDS}",
             description="multigroup gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
@@ -133,25 +133,12 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "gammaSrc",
-            units=f"{units.GRAMS}/{units.CM}^3/{units.SECONDS}",
+            units=f"#/{units.CM}^3/{units.SECONDS}",
             description="gamma source",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             categories=[parameters.Category.gamma],
             default=0.0,
-        )
-
-        pb.defParam(
-            "mgFluxSK",
-            units=f"n*{units.CM}/{units.SECONDS}",
-            description="multigroup volume-integrated flux stored for multiple time steps in spatial kinetics (2-D array)",
-            location=ParamLocation.VOLUME_INTEGRATED,
-            saveToDB=False,
-            categories=[
-                parameters.Category.fluxQuantities,
-                parameters.Category.multiGroupQuantities,
-            ],
-            default=None,
         )
 
         # Not anointing the pin fluxes as a MG quantity, since it has an extra dimension, which
@@ -160,9 +147,9 @@ def _getNeutronicsBlockParams():
             "pinMgFluxes",
             units=f"n/{units.CM}^2/{units.SECONDS}",
             description="""
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g for pin i.  Flux
-            units are the standard n/cm^2/s.  The "ARMI pin ordering" is used, which is counter-clockwise from 3
-            o'clock.
+            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
+            for pin i. Flux units are the standard n/cm^2/s. The "ARMI pin ordering" is used, which
+            is counter-clockwise from 3 o'clock.
             """,
             categories=[parameters.Category.pinQuantities],
             saveToDB=True,
@@ -172,7 +159,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "pinMgFluxesAdj",
             units=units.UNITLESS,
-            description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
             categories=[parameters.Category.pinQuantities],
             saveToDB=False,
             default=None,
@@ -180,8 +167,8 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "pinMgFluxesGamma",
-            units=f"{units.GRAMS}/{units.CM}^2/{units.SECONDS}",
-            description="should be a blank 3-D array, but re-defined later (ng x nPins x nAxialSegments)",
+            units=f"#/{units.CM}^2/{units.SECONDS}",
+            description="should be a blank 3-D array, but re-defined later (nPins x ng x nAxialSegments)",
             categories=[parameters.Category.pinQuantities, parameters.Category.gamma],
             saveToDB=False,
             default=None,
@@ -218,15 +205,6 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "betad",
-            units=units.UNITLESS,
-            description="Delayed neutron beta",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "chi",
             units=units.UNITLESS,
             description="Energy distribution of fission neutrons",
@@ -236,24 +214,16 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "chid",
-            units=units.UNITLESS,
-            description="Energy distribution of delayed fission neutrons",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "linPow",
             units=f"{units.WATTS}/{units.METERS}",
             description=(
-                "Pin-averaged linear heat rate, which is calculated by evaluating the block power and dividing "
-                "by the number of pins. If gamma transport is enabled, then this represents the combined "
-                "neutron and gamma heating. If gamma transport is disabled then this represents the energy "
-                "generation in the pin, where gammas are assumed to deposit their energy locally. Note that this "
-                "value does not implicitly account for axial and radial peaking factors within the block. Use `linPowByPin` "
-                "for obtaining the pin linear heat rate with peaking factors included."
+                "Pin-averaged linear heat rate, which is calculated by evaluating the block power "
+                "and dividing by the number of pins. If gamma transport is enabled, then this "
+                "represents the combined neutron and gamma heating. If gamma transport is disabled "
+                "then this represents the energy generation in the pin, where gammas are assumed to "
+                "deposit their energy locally. Note that this value does not implicitly account "
+                "for axial and radial peaking factors within the block. Use `linPowByPin` for "
+                "obtaining the pin linear heat rate with peaking factors included."
             ),
             location=ParamLocation.AVERAGE,
             default=0.0,
@@ -270,9 +240,9 @@ def _getNeutronicsBlockParams():
             description=(
                 "Pin linear linear heat rate, which is calculated through flux reconstruction and "
                 "accounts for axial and radial peaking factors. This differs from the `linPow` "
-                "parameter, which assumes no axial and radial peaking in the block as this information "
-                "is unavailable without detailed flux reconstruction. The same application of neutron and gamma "
-                "heating results applies."
+                "parameter, which assumes no axial and radial peaking in the block as this "
+                "information is unavailable without detailed flux reconstruction. The same "
+                "application of neutron and gamma heating results applies."
             ),
             location=ParamLocation.CHILDREN,
             categories=[parameters.Category.pinQuantities],
@@ -524,7 +494,7 @@ def _getNeutronicsBlockParams():
 
         pb.defParam(
             "fluxGamma",
-            units=f"{units.GRAMS}/{units.CM}^2/{units.SECONDS}",
+            units=f"#/{units.CM}^2/{units.SECONDS}",
             description="Gamma scalar flux",
             categories=[
                 parameters.Category.retainOnReplacement,
@@ -542,7 +512,10 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "kInf",
             units=units.UNITLESS,
-            description="Neutron production rate in this block/neutron absorption rate in this block. Not truly kinf but a reasonable approximation of reactivity.",
+            description=(
+                "Neutron production rate in this block/neutron absorption rate in this "
+                "block. Not truly kinf but a reasonable approximation of reactivity."
+            ),
         )
 
         pb.defParam(
@@ -648,8 +621,6 @@ def _getNeutronicsBlockParams():
             categories=[parameters.Category.neutronics],
         )
 
-        pb.defParam("powerDecay", units=units.WATTS, description="Total decay power")
-
         pb.defParam(
             "powerGamma",
             units=units.WATTS,
@@ -670,7 +641,10 @@ def _getNeutronicsBlockParams():
             "detailedDpaThisCycle",
             units=units.DPA,
             location=ParamLocation.AVERAGE,
-            description="Displacement per atom accumulated during this cycle. This accumulates over a cycle and resets to zero at BOC.",
+            description=(
+                "Displacement per atom accumulated during this cycle. This accumulates "
+                "over a cycle and resets to zero at BOC."
+            ),
             categories=[
                 parameters.Category.cumulativeOverCycle,
                 parameters.Category.detailedAxialExpansion,
@@ -688,7 +662,10 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "dpaPeakFromFluence",
             units=units.DPA,
-            description=f"DPA approximation based on a fluence conversion factor set in the {CONF_DPA_PER_FLUENCE} setting",
+            description=(
+                "DPA approximation based on a fluence conversion factor set in the "
+                f"{CONF_DPA_PER_FLUENCE} setting"
+            ),
             location=ParamLocation.MAX,
             categories=[
                 parameters.Category.cumulative,
@@ -721,7 +698,10 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "pdensGenerated",
             units=f"{units.WATTS}/{units.CM}^3",
-            description="Volume-averaged generated power density. Different than b.p.pdens only when gamma transport is activated.",
+            description=(
+                "Volume-averaged generated power density. Different than b.p.pdens only "
+                "when gamma transport is activated."
+            ),
             location=ParamLocation.AVERAGE,
             categories=[parameters.Category.gamma],
         )
@@ -745,14 +725,6 @@ def _getNeutronicsCoreParams():
             "kInf",
             units=units.UNITLESS,
             description="k-infinity",
-            default=0.0,
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "refKeff",
-            units=units.UNITLESS,
-            description="Reference unperturbed keff",
             default=0.0,
             location=ParamLocation.AVERAGE,
         )

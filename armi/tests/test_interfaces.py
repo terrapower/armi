@@ -14,12 +14,8 @@
 
 """Tests the Interface."""
 import unittest
-import os
 
-from armi import interfaces
-from armi import settings
-from armi.tests import TEST_ROOT
-from armi.utils import textProcessors
+from armi import interfaces, settings
 
 
 class DummyInterface(interfaces.Interface):
@@ -75,25 +71,6 @@ class TestCodeInterface(unittest.TestCase):
         self.assertEqual(i.enabled(), iDup.enabled())
 
 
-class TestTextProcessor(unittest.TestCase):
-    """Test Text processor."""
-
-    def setUp(self):
-        self.tp = textProcessors.TextProcessor(os.path.join(TEST_ROOT, "geom.xml"))
-
-    def test_fsearch(self):
-        """Test fsearch in re mode."""
-        line = self.tp.fsearch("xml")
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
-
-    def test_fsearch_text(self):
-        """Test fsearch in text mode."""
-        line = self.tp.fsearch("xml", textFlag=True)
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
-
-
 class TestTightCoupler(unittest.TestCase):
     """Test the tight coupler class."""
 
@@ -127,12 +104,17 @@ class TestTightCoupler(unittest.TestCase):
     def test_isConverged(self):
         """Ensure TightCoupler.isConverged() works with float, 1D list, and ragged 2D list.
 
+        .. test:: The tight coupling logic is based around a convergence criteria.
+            :id: T_ARMI_OPERATOR_PHYSICS1
+            :tests: R_ARMI_OPERATOR_PHYSICS
+
         Notes
         -----
         2D lists can end up being ragged as assemblies can have different number of blocks.
         Ragged lists are easier to manage with lists as opposed to numpy.arrays,
         namely, their dimension is preserved.
         """
+        # show a situation where it doesn't converge
         previousValues = {
             "float": 1.0,
             "list1D": [1.0, 2.0],
@@ -146,6 +128,12 @@ class TestTightCoupler(unittest.TestCase):
         for previous, current in zip(previousValues.values(), updatedValues.values()):
             self.interface.coupler.storePreviousIterationValue(previous)
             self.assertFalse(self.interface.coupler.isConverged(current))
+
+        # show a situation where it DOES converge
+        previousValues = updatedValues
+        for previous, current in zip(previousValues.values(), updatedValues.values()):
+            self.interface.coupler.storePreviousIterationValue(previous)
+            self.assertTrue(self.interface.coupler.isConverged(current))
 
     def test_isConvergedRuntimeError(self):
         """Test to ensure 3D arrays do not work."""

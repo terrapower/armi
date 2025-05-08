@@ -14,8 +14,7 @@
 
 """factory for the FuelHandler."""
 from armi.physics.fuelCycle import fuelHandlers
-from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.settings import CONF_FUEL_HANDLER_NAME, CONF_SHUFFLE_LOGIC
 from armi.utils import directoryChangers, pathTools
 
 

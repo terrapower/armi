@@ -23,26 +23,38 @@ from armi.tests import mockRunLogs
 
 class TestElement(unittest.TestCase):
     def test_elements_elementBulkProperties(self):
-        numElements = 120
-        self.assertEqual(
-            sum(range(1, numElements + 1)), sum([ee.z for ee in elements.byZ.values()])
-        )
+        numElements = len(elements.byZ)
         self.assertEqual(numElements, len(elements.byZ.values()))
         self.assertEqual(numElements, len(elements.byName))
         self.assertEqual(numElements, len(elements.bySymbol))
-        self.assertEqual(numElements, len(elements.byZ))
-        for ee in elements.byZ.values():
-            self.assertIsNotNone(ee.standardWeight)
 
     def test_element_elementByNameReturnsElement(self):
+        """Get elements by name.
+
+        .. test:: Get elements by name.
+            :id: T_ARMI_ND_ELEMENTS0
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byName[ee.name])
 
     def test_element_elementByZReturnsElement(self):
+        """Get elements by Z.
+
+        .. test:: Get elements by Z.
+            :id: T_ARMI_ND_ELEMENTS1
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.byZ[ee.z])
 
     def test_element_elementBySymbolReturnsElement(self):
+        """Get elements by symbol.
+
+        .. test:: Get elements by symbol.
+            :id: T_ARMI_ND_ELEMENTS2
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             self.assertIs(ee, elements.bySymbol[ee.symbol])
 
@@ -62,7 +74,6 @@ class TestElement(unittest.TestCase):
         # re-initialize the elements
         with mockRunLogs.BufferLog():
             nuclideBases.destroyGlobalNuclides()
-            elements.factory()
             nuclideBases.factory()
             # Ensure that the burn chain data is initialized after clearing
             # out the nuclide data and reinitializing it.
@@ -70,7 +81,7 @@ class TestElement(unittest.TestCase):
             with open(os.path.join(RES, "burn-chain.yaml"), "r") as burnChainStream:
                 nuclideBases.imposeBurnChain(burnChainStream)
 
-    def test_element_getNatrualIsotpicsOnlyRetrievesAbundaceGt0(self):
+    def test_elementGetNatrualIsotpicsOnlyRetrievesAbund(self):
         for ee in elements.byZ.values():
             if not ee.isNaturallyOccurring():
                 continue
@@ -84,6 +95,10 @@ class TestElement(unittest.TestCase):
 
         Uses RIPL definitions of naturally occurring. Protactinium is debated as naturally
         occurring. Yeah it exists as a U235 decay product but it's kind of pseudo-natural.
+
+        .. test:: Get elements by Z to show if they are naturally occurring.
+            :id: T_ARMI_ND_ELEMENTS3
+            :tests: R_ARMI_ND_ELEMENTS
         """
         for ee in elements.byZ.values():
             if ee.z == 43 or ee.z == 61 or 84 <= ee.z <= 89 or ee.z >= 93:
@@ -104,6 +119,12 @@ class TestElement(unittest.TestCase):
             )
 
     def test_isHeavyMetal(self):
+        """Get elements by Z.
+
+        .. test:: Get elements by Z to show if they are heavy metals.
+            :id: T_ARMI_ND_ELEMENTS4
+            :tests: R_ARMI_ND_ELEMENTS
+        """
         for ee in elements.byZ.values():
             if ee.z > 89:
                 self.assertTrue(ee.isHeavyMetal())

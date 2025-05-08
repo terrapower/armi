@@ -13,23 +13,69 @@
 # limitations under the License.
 
 """Test block conversions."""
+import math
 import os
 import unittest
 
-import numpy
+import numpy as np
 
-from armi.reactor.converters import blockConverters
-from armi.reactor import blocks
-from armi.reactor import components
-from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor, TEST_ROOT
-from armi.utils import hexagon
-from armi.reactor import grids
-from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
 )
+from armi.reactor import blocks, components, grids
+from armi.reactor.converters import blockConverters
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.testing import TEST_ROOT, loadTestReactor
+from armi.utils import hexagon
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
+
+
+def buildSimpleFuelBlockNegativeArea():
+    """
+    Return a simple block containing fuel, clad, duct, and coolant.
+
+    The block has a negative-area gap between fuel and cladding for testing.
+    """
+    b = blocks.HexBlock("fuel", height=10.0)
+
+    fuelDims = {"Tinput": 25, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    cladDims = {"Tinput": 25, "Thot": 600, "od": 0.80, "id": 0.76, "mult": 127.0}
+    ductDims = {"Tinput": 25, "Thot": 600, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    gapDims = {
+        "Tinput": 25,
+        "Thot": 600,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
+    gapDims["components"] = {"fuel": fuel, "clad": clad}
+    gap = components.Circle("gap", "Void", **gapDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
+    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(fuel)
+    b.add(gap)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    b.getVolumeFractions()
+
+    return b
 
 
 class TestBlockConverter(unittest.TestCase):
@@ -41,6 +87,13 @@ class TestBlockConverter(unittest.TestCase):
         self.td.__exit__(None, None, None)
 
     def test_dissolveWireIntoCoolant(self):
+        """
+        Test dissolving wire into coolant.
+
+        .. test:: Homogenize one component into another.
+            :id: T_ARMI_BLOCKCONV0
+            :tests: R_ARMI_BLOCKCONV
+        """
         self._test_dissolve(loadTestBlock(), "wire", "coolant")
         hotBlock = loadTestBlock(cold=False)
         self._test_dissolve(hotBlock, "wire", "coolant")
@@ -48,6 +101,13 @@ class TestBlockConverter(unittest.TestCase):
         self._test_dissolve(hotBlock, "wire", "coolant")
 
     def test_dissolveLinerIntoClad(self):
+        """
+        Test dissolving liner into clad.
+
+        .. test:: Homogenize one component into another.
+            :id: T_ARMI_BLOCKCONV1
+            :tests: R_ARMI_BLOCKCONV
+        """
         self._test_dissolve(loadTestBlock(), "outer liner", "clad")
         hotBlock = loadTestBlock(cold=False)
         self._test_dissolve(hotBlock, "outer liner", "clad")
@@ -65,6 +125,41 @@ class TestBlockConverter(unittest.TestCase):
         converter = blockConverters.ComponentMerger(block, soluteName, solventName)
         convertedBlock = converter.convert()
         self.assertNotIn(soluteName, convertedBlock.getComponentNames())
+        self._checkAreaAndComposition(block, convertedBlock)
+
+    def test_dissolveMultiple(self):
+        """Test dissolving multiple components into another."""
+        self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
+        self._test_dissolve_multi(
+            loadTestBlock(), ["inner liner", "outer liner"], "clad"
+        )
+
+    def test_dissolveZeroArea(self):
+        """Test dissolving a zero-area component into another."""
+        self._test_dissolve(loadTestBlock(), "gap2", "outer liner")
+
+    def test_dissolveIntoZeroArea(self):
+        """Test dissolving a component into a zero-area solvent (raises ValueError)."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(loadTestBlock(), "outer liner", "gap2")
+
+    def test_dissolveNegativeArea(self):
+        """Test dissolving a zero-area component into another."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
+
+    def test_dissolveIntoNegativeArea(self):
+        """Test dissolving a zero-area component into another."""
+        with self.assertRaises(ValueError):
+            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "clad", "gap")
+
+    def _test_dissolve_multi(self, block, soluteNames, solventName):
+        converter = blockConverters.MultipleComponentMerger(
+            block, soluteNames, solventName
+        )
+        convertedBlock = converter.convert()
+        for soluteName in soluteNames:
+            self.assertNotIn(soluteName, convertedBlock.getComponentNames())
         self._checkAreaAndComposition(block, convertedBlock)
 
     def test_build_NthRing(self):
@@ -90,21 +185,36 @@ class TestBlockConverter(unittest.TestCase):
             clad.getArea() * numPinsInRing / clad.getDimension("mult"),
         )
 
+    def test_buildInsideDuct(self):
+        """Test building inside the duct."""
+        block = loadTestBlock(cold=False)
+        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
+        converter = blockConverters.HexComponentsToCylConverter(block)
+        converter._buildInsideDuct()
+        insideBlock = converter.convertedBlock
+        ductIP = block.getComponent(Flags.DUCT).getDimension("ip")
+        bondMass = block.getComponent(Flags.BOND).getMass("NA")
+        coolantMass = block.getComponent(Flags.COOLANT).getMass("NA")
+        self.assertAlmostEqual(insideBlock.getMass("U235"), block.getMass("U235"))
+        self.assertAlmostEqual(insideBlock.getMass("NA"), bondMass + coolantMass)
+        self.assertAlmostEqual(insideBlock.getArea(), ductIP**2 * math.sqrt(3) / 2)
+
     def test_convert(self):
-        """Test conversion with no fuel driver."""
+        """Test conversion with no fuel driver.
+
+        .. test:: Convert hex blocks to cylindrical blocks.
+            :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL1
+            :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         block = (
             loadTestReactor(TEST_ROOT)[1]
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
-
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        area = block.getArea()
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter.convert()
-        self.assertAlmostEqual(area, converter.convertedBlock.getArea())
-        self.assertAlmostEqual(area, block.getArea())
 
         for compType in [Flags.FUEL, Flags.CLAD, Flags.DUCT]:
             self.assertAlmostEqual(
@@ -117,12 +227,22 @@ class TestBlockConverter(unittest.TestCase):
                     ]
                 ),
             )
+            for c in converter.convertedBlock.getComponents(compType):
+                self.assertEqual(
+                    block.getComponent(compType).temperatureInC, c.temperatureInC
+                )
 
+        self.assertEqual(block.getHeight(), converter.convertedBlock.getHeight())
         self._checkAreaAndComposition(block, converter.convertedBlock)
         self._checkCiclesAreInContact(converter.convertedBlock)
 
     def test_convertHexWithFuelDriver(self):
-        """Test conversion with fuel driver."""
+        """Test conversion with fuel driver.
+
+        .. test:: Convert hex blocks to cylindrical blocks.
+            :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL0
+            :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
+        """
         driverBlock = (
             loadTestReactor(TEST_ROOT)[1]
             .core.getAssemblies(Flags.FUEL)[2]
@@ -180,10 +300,10 @@ class TestBlockConverter(unittest.TestCase):
         # block went to 1 component
         self.assertEqual(1, len([c for c in convertedWithoutDriver]))
 
-    def test_convertHexWithFuelDriverOnNegativeComponentAreaBlock(self):
+    def test_convertHexWithFuelDrOnNegCompAreaBlock(self):
         """
-        Tests the conversion of a control block with linked components, where
-        a component contains a negative area due to thermal expansion.
+        Tests the conversion of a control block with linked components, where a component contains a
+        negative area due to thermal expansion.
         """
         driverBlock = (
             loadTestReactor(TEST_ROOT)[1]
@@ -242,7 +362,7 @@ class TestBlockConverter(unittest.TestCase):
 
             for c in list(reversed(convertedBlock))[:externalRings]:
                 self.assertTrue(c.isFuel(), "c was {}".format(c.name))
-                # remove external driver rings in preperation to check composition
+                # remove external driver rings in preparation to check composition
                 convertedBlock.remove(c)
             convBlockWithoutDriver = convertedBlock
             self._checkAreaAndComposition(block, convBlockWithoutDriver)
@@ -301,7 +421,7 @@ class TestToCircles(unittest.TestCase):
     def test_fromHex(self):
         actualRadii = blockConverters.radiiFromHexPitches([7.47, 7.85, 8.15])
         expected = [3.92203, 4.12154, 4.27906]
-        self.assertTrue(numpy.allclose(expected, actualRadii, rtol=1e-5))
+        self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
     def test_fromRingOfRods(self):
         # JOYO-LMFR-RESR-001, rev 1, Table A.2, 5th layer (ring 6)
@@ -309,7 +429,7 @@ class TestToCircles(unittest.TestCase):
             0.76 * 5, 6 * 5, [0.28, 0.315]
         )
         expected = [3.24034, 3.28553, 3.62584, 3.67104]
-        self.assertTrue(numpy.allclose(expected, actualRadii, rtol=1e-5))
+        self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
 
 def _buildJoyoFuel():
@@ -337,8 +457,8 @@ def _buildJoyoFuel():
 
 def buildControlBlockWithLinkedNegativeAreaComponent():
     """
-    Return a block that contains a bond component that resolves to a negative area
-    once the fuel and clad thermal expansion have occurred.
+    Return a block that contains a bond component that resolves to a negative area once the fuel and
+    clad thermal expansion have occurred.
     """
     b = blocks.HexBlock("control", height=10.0)
 
@@ -388,7 +508,5 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     b.add(duct)
     b.add(coolant)
     b.add(intercoolant)
-
-    b.getVolumeFractions()  # TODO: remove, should be no-op when removed self.cached
 
     return b

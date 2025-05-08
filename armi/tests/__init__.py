@@ -17,19 +17,16 @@ General framework-wide testing functions and files.
 This package contains some input files that can be used across
 a wide variety of unit tests in other lower-level subpackages.
 """
-from typing import Optional
 import datetime
 import itertools
 import os
 import re
 import shutil
 import unittest
+from typing import Optional
 
-from armi import context
-from armi import runLog
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
+from armi import context, runLog
+from armi.reactor import geometry, grids, reactors
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
 ARMI_RUN_PATH = os.path.join(TEST_ROOT, "armiRun.yaml")
@@ -232,7 +229,7 @@ class ArmiTestHelper(unittest.TestCase):
         * The reference file compared against will be called either ``[name]-ref.[ext]`` or ``[name].expected``.
         * The file that the test creates will be called ``[name]-test.[ext]`` or ``[name]``.
 
-        Rebaselining the reference files upon large, expected, hand-verified changes is accomodated by
+        Rebaselining the reference files upon large, expected, hand-verified changes is accommodated by
         :py:meth:`rebaselineTextComparisons`.
 
         Parameters
@@ -309,7 +306,7 @@ class ArmiTestHelper(unittest.TestCase):
         expectedWords = expected.split()
 
         if len(actualWords) != len(expectedWords):
-            # different number of words cant possibly be the same enough
+            # different number of words can't possibly be the same enough
             return False
 
         for actualWord, expectedWord in zip(actualWords, expectedWords):

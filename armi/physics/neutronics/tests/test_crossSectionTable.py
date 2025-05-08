@@ -17,21 +17,28 @@ import unittest
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.isotopicDepletion import (
     crossSectionTable,
+)
+from armi.physics.neutronics.isotopicDepletion import (
     isotopicDepletionInterface as idi,
 )
 from armi.physics.neutronics.latticePhysics import ORDER
-from armi.reactor.flags import Flags
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
 class TestCrossSectionTable(unittest.TestCase):
     def test_makeTable(self):
+        """Test making a cross section table.
+
+        .. test:: Generate cross section table.
+            :id: T_ARMI_DEPL_TABLES
+            :tests: R_ARMI_DEPL_TABLES
+        """
         obj = loadTestBlock()
         obj.p.mgFlux = range(33)
-        core = obj.getAncestorWithFlags(Flags.CORE)
+        core = obj.parent.parent
         core.lib = isotxs.readBinary(ISOAA_PATH)
         table = crossSectionTable.makeReactionRateTable(obj)
 
@@ -47,7 +54,16 @@ class TestCrossSectionTable(unittest.TestCase):
         self.assertIn("mcnpId", xSecTable[-1])
 
     def test_isotopicDepletionInterface(self):
-        _o, r = loadTestReactor()
+        """
+        Test isotopic depletion interface.
+
+        .. test:: ARMI provides a base class to deplete isotopes.
+            :id: T_ARMI_DEPL_ABC
+            :tests: R_ARMI_DEPL_ABC
+        """
+        _o, r = loadTestReactor(
+            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)

@@ -31,46 +31,45 @@ Requirements
    well as the multigroup real and adjoint flux.
 
 
-.. warning: This procedure can cause numerical diffusion in some cases. For example, 
+.. warning::
+    This procedure can cause numerical diffusion in some cases. For example,
     if a control rod tip block has a large coolant block below it, things like peak
-    absorption rate can get lost into it. We recalculate some but not all 
+    absorption rate can get lost into it. We recalculate some but not all
     reaction rates in the re-mapping process based on a flux remapping. To avoid this,
     finer meshes will help. Always perform mesh sensitivity studies to ensure appropriate
     convergence for your needs.
 
 Examples
 --------
-converter = uniformMesh.NeutronicsUniformMeshConverter()
-converter.convert(reactor)
-uniformReactor = converter.convReactor
-# do calcs, then:
-converter.applyStateToOriginal()
+    converter = uniformMesh.NeutronicsUniformMeshConverter()
+    converter.convert(reactor)
+    uniformReactor = converter.convReactor
+    # do calcs, then:
+    converter.applyStateToOriginal()
 
 The mesh mapping happens as described in the figure:
 
 .. figure:: /.static/axial_homogenization.png
 
 """
-import re
-import glob
-import copy
 import collections
+import copy
+import glob
+import re
 from timeit import default_timer as timer
 
-import numpy
+import numpy as np
 
 import armi
 from armi import runLog
-from armi.utils.mathematics import average1DWithinTolerance
-from armi.utils import iterables
-from armi.utils import plotting
-from armi.reactor import grids
-from armi.reactor.reactors import Core
-from armi.reactor.flags import Flags
+from armi.physics.neutronics.globalFlux import RX_ABS_MICRO_LABELS, RX_PARAM_NAMES
+from armi.reactor import grids, parameters
 from armi.reactor.converters.geometryConverters import GeometryConverter
-from armi.reactor import parameters
-from armi.reactor.reactors import Reactor
+from armi.reactor.flags import Flags
+from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
+from armi.utils import iterables, plotting
+from armi.utils.mathematics import average1DWithinTolerance
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
@@ -108,7 +107,7 @@ class UniformMeshGenerator:
             Reactor for which a common mesh is generated
         minimumMeshSize : float, optional
             Minimum allowed separation between axial mesh points in cm
-            If no miminmum mesh size is provided, no "decusping" is performed
+            If no minimum mesh size is provided, no "decusping" is performed
         """
         self._sourceReactor = r
         self.minimumMeshSize = minimumMeshSize
@@ -118,11 +117,35 @@ class UniformMeshGenerator:
         """
         Generate a common axial mesh to use.
 
+        .. impl:: Try to preserve the boundaries of fuel and control material.
+            :id: I_ARMI_UMC_NON_UNIFORM
+            :implements: R_ARMI_UMC_NON_UNIFORM
+
+            A core-wide mesh is computed via ``_computeAverageAxialMesh`` which
+            operates by first collecting all the mesh points for every assembly
+            (``allMeshes``) and then averaging them together using
+            ``average1DWithinTolerance``. An attempt to preserve fuel and control
+            material boundaries is accomplished by moving fuel region boundaries
+            to accommodate control rod boundaries. Note this behavior only occurs
+            by calling ``_decuspAxialMesh`` which is dependent on ``minimumMeshSize``
+            being defined (this is controlled by the ``uniformMeshMinimumSize`` setting).
+
+        .. impl:: Produce a mesh with a size no smaller than a user-specified value.
+            :id: I_ARMI_UMC_MIN_MESH
+            :implements: R_ARMI_UMC_MIN_MESH
+
+            If a minimum mesh size ``minimumMeshSize`` is provided, calls
+            ``_decuspAxialMesh`` on the core-wide mesh to maintain that minimum size
+            while still attempting to honor fuel and control material boundaries. Relies
+            ultimately on ``_filterMesh`` to remove mesh points that violate the minimum
+            size. Note that ``_filterMesh`` will always respect the minimum mesh size,
+            even if this means losing a mesh point that represents a fuel or control
+            material boundary.
+
         Notes
         -----
         Attempts to reduce the effect of fuel and control rod absorber smearing
-        ("cusping" effect) by keeping important material boundaries in the
-        common mesh.
+        ("cusping" effect) by keeping important material boundaries in the common mesh.
         """
         self._computeAverageAxialMesh()
         if self.minimumMeshSize is not None:
@@ -161,8 +184,8 @@ class UniformMeshGenerator:
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
 
-        averageMesh = average1DWithinTolerance(numpy.array(allMeshes))
-        self._commonMesh = numpy.array(averageMesh)
+        averageMesh = average1DWithinTolerance(np.array(allMeshes))
+        self._commonMesh = np.array(averageMesh)
 
     def _decuspAxialMesh(self):
         """
@@ -182,7 +205,7 @@ class UniformMeshGenerator:
         to the specified "anchor" points in the mesh. The anchor points are built up progressively as the
         appropriate bottom and top boundaries of fuel and control assemblies are determined.
         """
-        # filter fuel material boundaries to mininum mesh size
+        # filter fuel material boundaries to minimum mesh size
         filteredBottomFuel, filteredTopFuel = self._getFilteredMeshTopAndBottom(
             Flags.FUEL
         )
@@ -229,7 +252,7 @@ class UniformMeshGenerator:
             preference="top",
         )
 
-        self._commonMesh = numpy.array(combinedMesh)
+        self._commonMesh = np.array(combinedMesh)
 
     def _filterMesh(
         self, meshList, minimumMeshSize, anchorPoints, preference="bottom", warn=False
@@ -338,26 +361,37 @@ class UniformMeshGenerator:
 
 class UniformMeshGeometryConverter(GeometryConverter):
     """
-    This geometry converter can be used to change the axial mesh structure of the reactor core.
+    This geometry converter can be used to change the axial mesh structure of the
+    reactor core.
 
     Notes
     -----
     There are several staticmethods available on this class that allow for:
-        - Creation of a new reactor without applying a new uniform axial mesh. See: `<UniformMeshGeometryConverter.initNewReactor>`
-        - Creation of a new assembly with a new axial mesh applied. See: `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
-        - Resetting the parameter state of an assembly back to the defaults for the provided block parameters. See: `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
-        - Mapping number densities and block parameters between one assembly to another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
 
-    This class is meant to be extended for specific physics calculations that require a uniform mesh.
-    The child types of this class should define custom `reactorParamsToMap` and `blockParamsToMap` attributes, and the `_setParamsToUpdate` method
-    to specify the precise parameters that need to be mapped in each direction between the non-uniform and uniform mesh assemblies. The definitions should avoid mapping
-    block parameters in both directions because the mapping process will cause numerical diffusion. The behavior of `setAssemblyStateFromOverlaps` is dependent on the
-    direction in which the mapping is being applied to prevent the numerical diffusion problem.
+        - Creation of a new reactor without applying a new uniform axial mesh. See:
+          `<UniformMeshGeometryConverter.initNewReactor>`
+        - Creation of a new assembly with a new axial mesh applied. See:
+          `<UniformMeshGeometryConverter.makeAssemWithUniformMesh>`
+        - Resetting the parameter state of an assembly back to the defaults for the
+          provided block parameters. See:
+          `<UniformMeshGeometryConverter.clearStateOnAssemblies>`
+        - Mapping number densities and block parameters between one assembly to
+          another. See: `<UniformMeshGeometryConverter.setAssemblyStateFromOverlaps>`
+
+    This class is meant to be extended for specific physics calculations that require a
+    uniform mesh. The child types of this class should define custom
+    `reactorParamsToMap` and `blockParamsToMap` attributes, and the
+    `_setParamsToUpdate` method to specify the precise parameters that need to be
+    mapped in each direction between the non-uniform and uniform mesh assemblies. The
+    definitions should avoid mapping block parameters in both directions because the
+    mapping process will cause numerical diffusion. The behavior of
+    `setAssemblyStateFromOverlaps` is dependent on the direction in which the mapping
+    is being applied to prevent the numerical diffusion problem.
 
     - "in" is used when mapping parameters into the uniform assembly
-    from the non-uniform assembly.
+      from the non-uniform assembly.
     - "out" is used when mapping parameters from the uniform assembly back
-    to the non-uniform assembly.
+      to the non-uniform assembly.
 
     .. warning::
         If a parameter is calculated by a physics solver while the reactor is in its
@@ -407,7 +441,32 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._minimumMeshSize = cs[CONF_UNIFORM_MESH_MINIMUM_SIZE]
 
     def convert(self, r=None):
-        """Create a new reactor core with a uniform mesh."""
+        """
+        Create a new reactor core with a uniform mesh.
+
+        .. impl:: Make a copy of the reactor where the new core has a uniform axial mesh.
+            :id: I_ARMI_UMC
+            :implements: R_ARMI_UMC
+
+            Given a source Reactor, ``r``, as input and when ``_hasNonUniformAssems`` is ``False``,
+            a new Reactor is created in ``initNewReactor``. This new Reactor contains copies of select
+            information from the input source Reactor (e.g., Operator, Blueprints, cycle, timeNode, etc).
+            The uniform mesh to be applied to the new Reactor is calculated in ``_generateUniformMesh``
+            (see :need:`I_ARMI_UMC_NON_UNIFORM` and :need:`I_ARMI_UMC_MIN_MESH`). New assemblies with this
+            uniform mesh are created in ``_buildAllUniformAssemblies`` and added to the new Reactor.
+            Core-level parameters are then mapped from the source Reactor to the new Reactor in
+            ``_mapStateFromReactorToOther``. Finally, the core-wide axial mesh is updated on the new Reactor
+            via ``updateAxialMesh``.
+
+
+        .. impl:: Map select parameters from composites on the original mesh to the new mesh.
+            :id: I_ARMI_UMC_PARAM_FORWARD
+            :implements: R_ARMI_UMC_PARAM_FORWARD
+
+            In ``_mapStateFromReactorToOther``, Core-level parameters are mapped from the source Reactor
+            to the new Reactor. If requested, block-level parameters can be mapped using an averaging
+            equation as described in ``setAssemblyStateFromOverlaps``.
+        """
         if r is None:
             raise ValueError(f"No reactor provided in {self}")
 
@@ -487,9 +546,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         Parameters
         ----------
-        sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>` object.
-            original reactor to be copied
-        cs: CaseSetting object
+        sourceReactor : :py:class:`Reactor <armi.reactor.reactors.Reactor>`
+            original reactor object to be copied
+        cs: Setting
             Complete settings object
         """
         # developer note: deepcopy on the blueprint object ensures that all relevant blueprints
@@ -501,7 +560,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
         newReactor = Reactor(sourceReactor.name, bp)
         coreDesign = bp.systemDesigns["core"]
 
-        coreDesign.construct(cs, bp, newReactor, loadAssems=False)
+        coreDesign.construct(cs, bp, newReactor, loadComps=False)
         newReactor.p.cycle = sourceReactor.p.cycle
         newReactor.p.timeNode = sourceReactor.p.timeNode
         newReactor.p.maxAssemNum = sourceReactor.p.maxAssemNum
@@ -519,7 +578,20 @@ class UniformMeshGeometryConverter(GeometryConverter):
         return newReactor
 
     def applyStateToOriginal(self):
-        """Apply the state of the converted reactor back to the original reactor, mapping number densities and block parameters."""
+        """
+        Apply the state of the converted reactor back to the original reactor,
+        mapping number densities and block parameters.
+
+        .. impl:: Map select parameters from composites on the new mesh to the original mesh.
+            :id: I_ARMI_UMC_PARAM_BACKWARD
+            :implements: R_ARMI_UMC_PARAM_BACKWARD
+
+            To ensure that the parameters on the original Reactor are from the converted Reactor,
+            the first step is to clear the Reactor-level parameters on the original Reactor
+            (see ``_clearStateOnReactor``). ``_mapStateFromReactorToOther`` is then called
+            to map Core-level parameters and, optionally, averaged Block-level parameters
+            (see :need:`I_ARMI_UMC_PARAM_FORWARD`).
+        """
         runLog.extra(
             f"Applying uniform neutronics results from {self.convReactor} to {self._sourceReactor}"
         )
@@ -694,7 +766,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
                         heightFrac = h / totalHeight
                         runLog.debug(f"XSType {xs}: {heightFrac:.4f}")
 
-            block = sourceBlock._createHomogenizedCopy(includePinCoordinates)
+            block = sourceBlock.createHomogenizedCopy(includePinCoordinates)
             block.p.xsType = xsType
             block.setHeight(topMeshPoint - bottom)
             block.p.axMesh = 1
@@ -868,7 +940,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
 
         blocks = []
         for a in assems:
-            blocks.extend(a.getBlocks())
+            blocks.extend(a)
         firstBlock = blocks[0]
         for paramName in blockParamNames:
             defaultValue = firstBlock.p.pDefs[paramName].default
@@ -908,9 +980,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
         ):
             assemPlotName = f"{self.convReactor.core.name}AssemblyTypes{plotNum}-rank{armi.MPI_RANK}.png"
             plotting.plotAssemblyTypes(
-                self.convReactor.blueprints,
-                assemPlotName,
                 assemBatch,
+                assemPlotName,
                 maxAssems=6,
                 showBlockAxMesh=True,
             )
@@ -954,7 +1025,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
     @staticmethod
     def _createNewAssembly(sourceAssembly):
         a = sourceAssembly.__class__(sourceAssembly.getType())
-        a.spatialGrid = grids.axialUnitGrid(len(sourceAssembly))
+        a.spatialGrid = grids.AxialGrid.fromNCells(len(sourceAssembly))
         a.setName(sourceAssembly.getName())
         return a
 
@@ -1026,12 +1097,41 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     aDest,
                     self.paramMapper,
                     mapNumberDensities,
-                    calcReactionRates=self.calcReactionRates,
+                    calcReactionRates=False,
+                )
+
+            # If requested, the reaction rates will be calculated based on the
+            # mapped neutron flux and the XS library.
+            if self.calcReactionRates:
+                self._calculateReactionRatesEfficient(
+                    destReactor.core, sourceReactor.core.p.keff
                 )
 
         # Clear the cached data after it has been mapped to prevent issues with
         # holding on to block data long-term.
         self._cachedReactorCoreParamData = {}
+
+    @staticmethod
+    def _calculateReactionRatesEfficient(core, keff):
+        """
+        First, sort blocks into groups by XS type. Then, we just need to grab micros for each XS type once.
+
+        Iterate over list of blocks with the given XS type; calculate reaction rates for these blocks
+        """
+        xsTypeGroups = collections.defaultdict(list)
+        for b in core.iterBlocks():
+            xsTypeGroups[b.getMicroSuffix()].append(b)
+
+        for xsID, blockList in xsTypeGroups.items():
+            nucSet = set()
+            for b in blockList:
+                nucSet.update(
+                    nuc for nuc, ndens in b.getNumberDensities().items() if ndens > 0.0
+                )
+            xsNucDict = {nuc: core.lib.getNuclide(nuc, xsID) for nuc in nucSet}
+            UniformMeshGeometryConverter._calcReactionRatesBlockList(
+                blockList, keff, xsNucDict
+            )
 
     @staticmethod
     def _calculateReactionRates(lib, keff, assem):
@@ -1056,6 +1156,89 @@ class UniformMeshGeometryConverter(GeometryConverter):
                 continue
             globalFluxInterface.calcReactionRates(b, keff, lib)
 
+    @staticmethod
+    def _calcReactionRatesBlockList(objList, keff, xsNucDict):
+        r"""
+        Compute 1-group reaction rates for the objects in objList (usually a block).
+
+        :meta public:
+
+        .. impl:: Return the reaction rates for a given ArmiObject
+            :id: I_ARMI_FLUX_RX_RATES_BY_XS_ID
+            :implements: R_ARMI_FLUX_RX_RATES
+
+            This is an alternative implementation of :need:`I_ARMI_FLUX_RX_RATES` that
+            is more efficient when computing reaction rates for a large set of blocks
+            that share a common set of microscopic cross sections.
+
+            For more detail on the reation rate calculations, see :need:`I_ARMI_FLUX_RX_RATES`.
+
+        Parameters
+        ----------
+        objList : List[Block]
+            The list of objects to compute reaction rates on. Notionally this could be upgraded to be
+            any kind of ArmiObject but with params defined as they are it currently is only
+            implemented for a block.
+
+        keff : float
+            The keff of the core. This is required to get the neutron production rate correct
+            via the neutron balance statement (since nuSigF has a 1/keff term).
+
+        xsNucDict: Dict[str, XSNuclide]
+            Microscopic cross sections to use in computing the reaction rates. Keys are
+            nuclide names (e.g., "U235") and values are the associated XSNuclide objects
+            from the cross section library, which contain the microscopic cross section
+            data for a given nuclide in the current cross section group.
+        """
+        for obj in objList:
+            rate = collections.defaultdict(float)
+
+            numberDensities = obj.getNumberDensities()
+            try:
+                mgFlux = np.array(obj.getMgFlux())
+            except TypeError:
+                continue
+
+            for nucName, numberDensity in numberDensities.items():
+                if numberDensity == 0.0:
+                    continue
+                nucRate = collections.defaultdict(float)
+
+                micros = xsNucDict[nucName].micros
+
+                # absorption is fission + capture (no n2n here)
+                for name in RX_ABS_MICRO_LABELS:
+                    volumetricRR = numberDensity * mgFlux.dot(micros[name])
+                    nucRate["rateAbs"] += volumetricRR
+                    if name != "fission":
+                        nucRate["rateCap"] += volumetricRR
+                    else:
+                        nucRate["rateFis"] += volumetricRR
+                        # scale nu by keff.
+                        nusigmaF = micros["fission"] * micros.neutronsPerFission
+                        nucRate["rateProdFis"] += (
+                            numberDensity * mgFlux.dot(nusigmaF) / keff
+                        )
+
+                nucRate["rateProdN2n"] += 2.0 * numberDensity * mgFlux.dot(micros.n2n)
+
+                for rx in RX_PARAM_NAMES:
+                    if nucRate[rx]:
+                        rate[rx] += nucRate[rx]
+
+            for paramName in RX_PARAM_NAMES:
+                obj.p[paramName] = rate[paramName]  # put in #/cm^3/s
+
+            if rate["rateFis"] > 0.0:
+                fuelVolFrac = obj.getComponentAreaFrac(Flags.FUEL)
+                obj.p.fisDens = (
+                    np.nan if fuelVolFrac == 0 else rate["rateFis"] / fuelVolFrac
+                )
+                obj.p.fisDensHom = rate["rateFis"]
+            else:
+                obj.p.fisDens = 0.0
+                obj.p.fisDensHom = 0.0
+
     def updateReactionRates(self):
         """
         Update reaction rates on converted assemblies.
@@ -1073,10 +1256,9 @@ class UniformMeshGeometryConverter(GeometryConverter):
                     self.convReactor.core.lib, self.convReactor.core.p.keff, assem
                 )
         else:
-            for assem in self.convReactor.core.getAssemblies():
-                self._calculateReactionRates(
-                    self.convReactor.core.lib, self.convReactor.core.p.keff, assem
-                )
+            self._calculateReactionRatesEfficient(
+                self.convReactor.core, self.convReactor.core.p.keff
+            )
 
 
 class NeutronicsUniformMeshConverter(UniformMeshGeometryConverter):
@@ -1318,7 +1500,7 @@ class ParamMapper:
             if val is None:
                 continue
 
-            if isinstance(val, (tuple, list, numpy.ndarray)):
+            if isinstance(val, (tuple, list, np.ndarray)):
                 ParamMapper._arrayParamSetter(block, [val], [paramName])
             else:
                 ParamMapper._scalarParamSetter(block, [val], [paramName])
@@ -1329,12 +1511,12 @@ class ParamMapper:
         for paramName in paramNames:
             val = block.p[paramName]
             # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, list, numpy.ndarray)):
-                paramVals.append(numpy.array(val) if len(val) > 0 else None)
+            if isinstance(val, (tuple, list, np.ndarray)):
+                paramVals.append(np.array(val) if len(val) > 0 else None)
             else:
                 paramVals.append(val)
 
-        return numpy.array(paramVals, dtype=object)
+        return np.array(paramVals, dtype=object)
 
     @staticmethod
     def _scalarParamSetter(block, vals, paramNames):
@@ -1348,7 +1530,7 @@ class ParamMapper:
         for paramName, vals in zip(paramNames, arrayVals):
             if vals is None:
                 continue
-            block.p[paramName] = numpy.array(vals)
+            block.p[paramName] = np.array(vals)
 
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):

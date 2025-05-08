@@ -18,11 +18,12 @@ import unittest
 
 import numpy as np
 
+from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.reportPlotting import (
-    buVsTime,
+    _getPhysicalVals,
     createPlotMetaData,
     keffVsTime,
     movesVsCycle,
@@ -35,7 +36,9 @@ from armi.utils.reportPlotting import (
 
 class TestRadar(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT)
+        self.o, self.r = test_reactors.loadTestReactor(
+            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
+        )
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
 
@@ -44,12 +47,39 @@ class TestRadar(unittest.TestCase):
 
     def test_radar(self):
         """Test execution of radar plot. Note this has no asserts and is therefore a smoke test."""
-        self.r.core.p.doppler = 0.5
-        self.r.core.p.voidWorth = 0.5
         r2 = copy.deepcopy(self.r)
-        r2.core.p.voidWorth = 1.0
-        r2.core.p.doppler = 1.0
         plotCoreOverviewRadar([self.r, r2], ["Label1", "Label2"])
+        self.assertTrue(os.path.exists("reactor_comparison.png"))
+
+    def test_getPhysicalVals(self):
+        dims, labels, vals = _getPhysicalVals(self.r)
+        self.assertEqual(dims, "Dimensions")
+
+        self.assertEqual(labels[0], "Cold fuel height")
+        self.assertEqual(labels[1], "Fuel assems")
+        self.assertEqual(labels[2], "Assem weight")
+        self.assertEqual(labels[3], "Core radius")
+        self.assertEqual(labels[4], "Core aspect ratio")
+        self.assertEqual(labels[5], "Fissile mass")
+        self.assertEqual(len(labels), 6)
+
+        self.assertEqual(vals[0], 25.0)
+        self.assertEqual(vals[1], 1)
+        self.assertAlmostEqual(vals[2], 52474.8927038, delta=1e-5)
+        self.assertEqual(vals[3], 16.8)
+        self.assertAlmostEqual(vals[5], 4290.60340961, delta=1e-5)
+        self.assertEqual(len(vals), 6)
+
+        # this test will use getInputHeight() instead of getHeight()
+        radius = self.r.core.getCoreRadius()
+        avgHeight = 0
+        fuelA = self.r.core.getAssemblies(Flags.FUEL)
+        for a in fuelA:
+            for b in a.getBlocks(Flags.FUEL):
+                avgHeight += b.getInputHeight()
+        avgHeight /= len(fuelA)
+        coreAspectRatio = (2 * radius) / avgHeight
+        self.assertEqual(vals[4], coreAspectRatio)
 
     def test_createPlotMetaData(self):
         title = "test_createPlotMetaData"
@@ -85,33 +115,20 @@ class TestRadar(unittest.TestCase):
 
         # plot with no keff function
         keffVsTime(self.r.name, t, t, keffUnc=[], extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.keff.png"), 0)
 
         # plot with a keff function
         keffVsTime(self.r.name, t, t, t, extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.keff.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.keff.png"), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.keff.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.keff.png"), 0)
 
     def test_valueVsTime(self):
         t = list(range(12))
         ext = "png"
         valueVsTime(self.r.name, t, t, "val", "yaxis", "title", extension=ext)
-        self.assertTrue(os.path.exists("R-armiRun.val.png"))
-        self.assertGreater(os.path.getsize("R-armiRun.val.png"), 0)
-
-    def test_buVsTime(self):
-        name = "buvstime"
-        scalars = {
-            "time": [1, 2, 3, 4],
-            "maxBuI": [6, 7, 8, 9],
-            "maxBuF": [6, 7, 8, 9],
-            "maxDPA": [6, 7, 8, 9],
-        }
-        figName = name + ".bu.png"
-        buVsTime(name, scalars, "png")
-        self.assertTrue(os.path.exists(figName))
-        self.assertGreater(os.path.getsize(figName), 0)
+        self.assertTrue(os.path.exists("R-armiRunSmallest.val.png"))
+        self.assertGreater(os.path.getsize("R-armiRunSmallest.val.png"), 0)
 
     def test_movesVsCycle(self):
         name = "movesVsCycle"
@@ -134,8 +151,8 @@ class TestRadar(unittest.TestCase):
         class HistTester:
             def __init__(self):
                 self.xsHistory = {
-                    1: [[0, 1], [0, 2], [0, 3]],
-                    2: [[0, 5], [0, 6], [0, 7]],
+                    65: [[0, 1], [0, 2], [0, 3]],
+                    66: [[0, 5], [0, 6], [0, 7]],
                 }
 
         history = HistTester()

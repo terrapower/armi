@@ -41,7 +41,7 @@ blocks:
             ip: grid.op
             mult: 1.0
             op: 16.75
-    
+
     duct: &block_duct
         coolant: *component_coolant
         duct: &component_duct
@@ -61,7 +61,7 @@ blocks:
             mult: 1.0
             op: 16.75
 
-    SodiumBlock : &block_dummy
+    SodiumBlock: &block_dummy
         flags: dummy
         coolant:
             shape: Hexagon
@@ -109,11 +109,11 @@ blocks:
             id: 0.0
             mult: shield.mult
             od: 0.10056
-        coolant: *component_coolant      
+        coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    fuel: &block_fuel    
+    fuel: &block_fuel
         fuel: &component_fuel_fuel
             shape: Circle
             material: UZr
@@ -151,7 +151,7 @@ blocks:
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+
     plenum: &block_plenum
         gap: &component_plenum_gap
             shape: Circle
@@ -182,8 +182,8 @@ blocks:
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
-    aclp plenum : &block_aclp
+
+    aclp plenum: &block_aclp
         gap: *component_plenum_gap
         clad: *component_plenum_clad
         wire: *component_plenum_wire
@@ -232,18 +232,18 @@ blocks:
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+
     lta fuel a: &block_lta1_fuel
         fuel: *component_fuel_fuel
         bond: *component_fuel_bond
         liner2: *component_fuel2_liner2
         liner1: *component_fuel2_liner1
-        clad: *component_fuel_clad        
+        clad: *component_fuel_clad
         wire: *component_fuel_wire
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+
     lta fuel b: &block_lta2_fuel
         fuel:
             shape: Circle
@@ -257,12 +257,12 @@ blocks:
         bond: *component_fuel_bond
         liner2: *component_fuel2_liner2
         liner1: *component_fuel2_liner1
-        clad: *component_fuel_clad        
+        clad: *component_fuel_clad
         wire: *component_fuel_wire
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+
     annular fuel gap: &block_fuel3
         gap1:
             shape: Circle
@@ -333,7 +333,7 @@ blocks:
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-    
+
     ## ------------------------------------------------------------------------------------
     ## control
     moveable duct: &block_ctrl_duct
@@ -389,7 +389,7 @@ blocks:
             helixDiameter: 1.771
             id: 0.0
             mult: clad.mult
-            od: 0.085 
+            od: 0.085
         innerDuct: &component_control_innerDuct
             shape: Hexagon
             material: HT9
@@ -401,7 +401,7 @@ blocks:
         duct: *component_control_duct
         coolant: *component_coolant
         intercoolant: *component_control_intercoolant
-    
+
     moveable plenum: &block_control_plenum
         gap: *component_control_gap
         clad: *component_control_clad
@@ -495,7 +495,7 @@ assemblies:
         xs types: *igniter_fuel_xs_types
     lead test fuel:
         specifier: LA
-        blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum,  *block_aclp, *block_plenum, *block_duct, *block_dummy]
+        blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_lta1_fuel, *block_lta1_fuel, *block_lta1_fuel, *block_plenum, *block_aclp, *block_plenum, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:

@@ -14,11 +14,11 @@
 
 """Mesh specifiers update the mesh structure of a reactor by increasing or decreasing the number of mesh coordinates."""
 
-import math
 import collections
 import itertools
+import math
 
-import numpy
+import numpy as np
 
 from armi import runLog
 from armi.reactor import grids
@@ -160,7 +160,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
     def _generateUniformThetaMesh(self):
         """Create a uniform theta mesh over 2*pi using the user specified number of theta bins."""
         self.thetaMesh = list(
-            numpy.linspace(0, 2 * math.pi, self._numThetaMeshBins + 1)[1:]
+            np.linspace(0, 2 * math.pi, self._numThetaMeshBins + 1)[1:]
         )
 
     def _generateNonUniformThetaMesh(self):
@@ -275,7 +275,7 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
             blockFlags = set([(b.p.flags, b.getMicroSuffix()) for b in a])
             for flags, xsID in blockFlags:
                 meshes = []
-                for b in a.getBlocks(flags):
+                for b in a.iterBlocks(flags):
                     # Skip this block if it has a different XS ID than the
                     # current target.
                     if b.getMicroSuffix() != xsID:
@@ -396,7 +396,7 @@ def checkLastValueInList(
     msg = "The last value in {} is {} and should be {}".format(
         listName, inputList[-1], expectedValue
     )
-    if not numpy.isclose(inputList[-1], expectedValue, eps):
+    if not np.isclose(inputList[-1], expectedValue, eps):
         if adjustLastValue:
             del inputList[-1]
             inputList.append(expectedValue)

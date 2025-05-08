@@ -18,13 +18,15 @@ import os
 import unittest
 
 from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor import zones
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    geometry,
+    grids,
+    reactors,
+    zones,
+)
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 
@@ -72,6 +74,13 @@ class TestZone(unittest.TestCase):
             self.bList.append(b)
 
     def test_addItem(self):
+        """
+        Test adding an item.
+
+        .. test:: Add item to a zone.
+            :id: T_ARMI_ZONE0
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addItem")
         zone.addItem(self.aList[0])
         self.assertIn(self.aList[0].getLocation(), zone)
@@ -86,6 +95,13 @@ class TestZone(unittest.TestCase):
         self.assertRaises(AssertionError, zone.removeItem, "also nope")
 
     def test_addItems(self):
+        """
+        Test adding items.
+
+        .. test:: Add multiple items to a zone.
+            :id: T_ARMI_ZONE1
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addItems")
         zone.addItems(self.aList)
         for a in self.aList:
@@ -98,6 +114,13 @@ class TestZone(unittest.TestCase):
             self.assertNotIn(a.getLocation(), zone)
 
     def test_addLoc(self):
+        """
+        Test adding a location.
+
+        .. test:: Add location to a zone.
+            :id: T_ARMI_ZONE2
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addLoc")
         zone.addLoc(self.aList[0].getLocation())
         self.assertIn(self.aList[0].getLocation(), zone)
@@ -112,6 +135,13 @@ class TestZone(unittest.TestCase):
         self.assertRaises(AssertionError, zone.removeLoc, 1234)
 
     def test_addLocs(self):
+        """
+        Test adding locations.
+
+        .. test:: Add multiple locations to a zone.
+            :id: T_ARMI_ZONE3
+            :tests: R_ARMI_ZONE
+        """
         zone = zones.Zone("test_addLocs")
         zone.addLocs([a.getLocation() for a in self.aList])
         for a in self.aList:
@@ -159,7 +189,7 @@ class TestZone(unittest.TestCase):
         # loop once to prove looping works
         for aLoc in zone:
             self.assertIn(aLoc, zone.locs)
-            self.assertTrue(aLoc in zone)  # Tests Zone.__contains__()
+            self.assertTrue(aLoc in zone)  # test Zone.__contains__()
 
 
 class TestZones(unittest.TestCase):
@@ -179,6 +209,13 @@ class TestZones(unittest.TestCase):
         self.zonez = self.r.core.zones
 
     def test_dictionaryInterface(self):
+        """
+        Test creating and interacting with the Zones object.
+
+        .. test:: Create collection of Zones.
+            :id: T_ARMI_ZONE4
+            :tests: R_ARMI_ZONE
+        """
         zs = zones.Zones()
 
         # validate the addZone() and __len__() work

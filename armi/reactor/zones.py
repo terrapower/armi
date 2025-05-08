@@ -28,6 +28,21 @@ class Zone:
     """
     A group of locations in the Core, used to divide it up for analysis.
     Each location represents an Assembly or a Block.
+
+    .. impl:: A user can define a collection of armi locations.
+        :id: I_ARMI_ZONE0
+        :implements: R_ARMI_ZONE
+
+        The Zone class facilitates the creation of a Zone object representing a collection of
+        locations in the Core. A Zone contains a group of locations in the Core, used to subdivide
+        it for analysis. Each location represents an Assembly or a Block, where a single Zone must
+        contain items of the same type (i.e., Assembly or Block). Methods are provided to add or
+        remove one or more locations to/from the Zone, and similarly, add or remove one or more
+        items with a Core location (i.e., Assemblies or Blocks) to/from the Zone. In addition,
+        several methods are provided to facilitate the retrieval of locations from a Zone by
+        performing functions to check if a location exists in the Zone, looping through the
+        locations in the Zone in alphabetical order, and returning the number of locations in the
+        Zone, etc.
     """
 
     VALID_TYPES = (Assembly, Block)
@@ -83,14 +98,10 @@ class Zone:
 
         Notes
         -----
-        This method does not validate that the location given is somehow "valid".
-        We are not doing any reverse lookups in the Reactor to prove that the type
-        or location is valid. Because this would require heavier computation, and
-        would add some chicken-and-the-egg problems into instantiating a new Reactor.
-
-        Returns
-        -------
-        None
+        This method does not validate that the location given is somehow "valid". We are not doing
+        any reverse lookups in the Reactor to prove that the type or location is valid. Because this
+        would require heavier computation, and would add some chicken-and-the-egg problems into
+        instantiating a new Reactor.
         """
         assert isinstance(loc, str), "The location must be a str: {0}".format(loc)
         self.locs.add(loc)
@@ -196,7 +207,20 @@ class Zone:
 
 
 class Zones:
-    """Collection of Zone objects."""
+    """Collection of Zone objects.
+
+    .. impl:: A user can define a collection of armi zones.
+        :id: I_ARMI_ZONE1
+        :implements: R_ARMI_ZONE
+
+        The Zones class facilitates the creation of a Zones object representing a collection of Zone
+        objects. Methods are provided to add or remove one or more Zone to/from the Zones object.
+        Likewise, methods are provided to validate that the zones are mutually exclusive, obtain the
+        location labels of zones, return the Zone object where a particular Assembly or Block
+        resides, sort the Zone objects alphabetically, and summarize the zone definitions. In
+        addition, methods are provided to facilitate the retrieval of Zone objects by name, loop
+        through the Zones in order, and return the number of Zone objects.
+    """
 
     def __init__(self):
         """Build a Zones object."""
@@ -239,10 +263,6 @@ class Zones:
         ----------
         zone: Zone
             A new Zone to add to this collection.
-
-        Returns
-        -------
-        None
         """
         if zone.name in self._zones:
             raise ValueError(
@@ -254,17 +274,12 @@ class Zones:
 
     def addZones(self, zones: List) -> None:
         """
-        Add multiple zones to the collection,
-        then validate that this Zones collection still make sense.
+        Add multiple zones to the collection, and validate the Zones collection still make sense.
 
         Parameters
         ----------
         zones: List (or Zones)
             A multiple new Zone objects to add to this collection.
-
-        Returns
-        -------
-        None
         """
         for zone in zones:
             self.addZone(zone)
@@ -278,10 +293,6 @@ class Zones:
         ----------
         name: str
             Name of zone to remove
-
-        Returns
-        -------
-        None
         """
         del self[name]
 
@@ -293,23 +304,15 @@ class Zones:
         ----------
         names: List (or names)
             Multiple Zone names to remove from this collection.
-
-        Returns
-        -------
-        None
         """
         for name in names:
             self.removeZone(name)
 
     def checkDuplicates(self) -> None:
         """
-        Validate that the the zones are mutually exclusive.
+        Validate that the zones are mutually exclusive.
 
         That is, make sure that no item appears in more than one Zone.
-
-        Returns
-        -------
-        None
         """
         allLocs = []
         for zone in self:
@@ -409,16 +412,16 @@ class Zones:
 
     def summary(self) -> None:
         """
-        Summarize the zone defintions clearly, and in a way that can be copy/pasted
+        Summarize the zone definitions clearly, and in a way that can be copy/pasted
         back into a settings file under "zoneDefinitions", if the user wants to
-        manually re-use these zones later.
+        manually reuse these zones later.
 
         Examples
         --------
-        zoneDefinitions:
-        - ring-1: 001-001
-        - ring-2: 002-001, 002-002
-        - ring-3: 003-001, 003-002, 003-003
+            zoneDefinitions:
+            - ring-1: 001-001
+            - ring-2: 002-001, 002-002
+            - ring-3: 003-001, 003-002, 003-003
         """
         # log a quick header
         runLog.info("zoneDefinitions:")

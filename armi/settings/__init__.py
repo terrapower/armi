@@ -20,20 +20,21 @@ modeling approximations to apply and how many cycles to run and at what power an
 availability fraction and things like that. The ARMI Framework itself has many settings
 of its own, and plugins typically register some of their own settings as well.
 """
-from typing import List
 import fnmatch
 import glob
 import os
+from typing import List
 
 from ruamel import yaml
 
 from armi import runLog
 from armi.settings.caseSettings import Settings
-from armi.settings.setting import Default  # noqa: unused-import
-from armi.settings.setting import Option  # noqa: unused-import
-from armi.settings.setting import Setting
+from armi.settings.setting import (
+    Default,  # noqa: F401
+    Option,  # noqa: F401
+    Setting,
+)
 from armi.utils.customExceptions import InvalidSettingsFileError
-
 
 NOT_ENABLED = ""  # An empty setting value implies that the feature
 
