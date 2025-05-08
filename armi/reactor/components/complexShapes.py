@@ -140,7 +140,7 @@ class HexHoledCircle(basicShapes.Circle):
 class FilletedHexagon(basicShapes.Hexagon):
     """
     A hexagon with a hexagonal hole cut out of the center of it, where the corners of both the
-    outer and inner hexagons are rounded.
+    outer and inner hexagons are rounded, with independent radii of curvature.
 
     By default, the inner hole has a diameter of zero, making this a solid object with no hole.
     """

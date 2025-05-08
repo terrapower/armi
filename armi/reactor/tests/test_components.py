@@ -1429,7 +1429,7 @@ class TestFilletedHexagon(TestShapedComponent):
         "ip": 5.0,
         "mult": 1,
         "oR": 0.2,
-        "iR": 0.2,
+        "iR": 0.1,
     }
 
     def test_getBoundingCircleOuterDiameter(self):
@@ -1446,10 +1446,11 @@ class TestFilletedHexagon(TestShapedComponent):
         cur = self.component.getComponentArea()
         op = self.component.getDimension("op")
         ip = self.component.getDimension("ip")
-        r = self.component.getDimension("oR")
+        oR = self.component.getDimension("oR")
+        iR = self.component.getDimension("iR")
         mult = self.component.getDimension("mult")
 
-        ref = mult * (FilletedHexagon._area(op, r) - FilletedHexagon._area(ip, r))
+        ref = mult * (FilletedHexagon._area(op, oR) - FilletedHexagon._area(ip, iR))
         self.assertAlmostEqual(cur, ref)
 
     def test_thermallyExpands(self):
