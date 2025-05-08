@@ -17,6 +17,7 @@ import copy
 import math
 import random
 import unittest
+from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose, assert_equal
@@ -136,8 +137,10 @@ class TestComponentFactory(unittest.TestCase):
         for i, (name, klass) in enumerate(ComponentType.TYPES.items()):
             # hack together a dictionary input
             thisAttrs = {k: 1.0 for k in set(klass.INIT_SIGNATURE).difference(attrs)}
-            if "cornerR" in thisAttrs:
-                thisAttrs["cornerR"] /= 20.0
+            if "oR" in thisAttrs:
+                thisAttrs["oR"] /= 20.0
+            if "iR" in thisAttrs:
+                thisAttrs["iR"] /= 20.0
             del thisAttrs["components"]
             thisAttrs.update(attrs)
             thisAttrs["name"] = f"banana{i}"
@@ -1425,7 +1428,8 @@ class TestFilletedHexagon(TestShapedComponent):
         "op": 10.0,
         "ip": 5.0,
         "mult": 1,
-        "cornerR": 0.2,
+        "oR": 0.2,
+        "iR": 0.2,
     }
 
     def test_getBoundingCircleOuterDiameter(self):
@@ -1442,7 +1446,7 @@ class TestFilletedHexagon(TestShapedComponent):
         cur = self.component.getComponentArea()
         op = self.component.getDimension("op")
         ip = self.component.getDimension("ip")
-        r = self.component.getDimension("cornerR")
+        r = self.component.getDimension("oR")
         mult = self.component.getDimension("mult")
 
         ref = mult * (FilletedHexagon._area(op, r) - FilletedHexagon._area(ip, r))
@@ -1453,8 +1457,8 @@ class TestFilletedHexagon(TestShapedComponent):
         self.assertTrue(self.component.THERMAL_EXPANSION_DIMS)
 
     def test_dimensionThermallyExpands(self):
-        expandedDims = ["op", "ip", "cornerR", "mult"]
-        ref = [True, True, True, False]
+        expandedDims = ["op", "ip", "iR", "oR", "mult"]
+        ref = [True, True, True, True, False]
         for i, d in enumerate(expandedDims):
             cur = d in self.component.THERMAL_EXPANSION_DIMS
             self.assertEqual(cur, ref[i])
@@ -1486,7 +1490,8 @@ class TestFilletedHexagon(TestShapedComponent):
                 "Thot": 425.0,
                 "op": op,
                 "ip": 0.0,
-                "cornerR": op / 2.0,
+                "oR": op / 2.0,
+                "iR": 0.0,
                 "mult": 1.0,
             }
             f = FilletedHexagon("circleHex", "HT9", **componentDims)
@@ -2078,7 +2083,7 @@ class TestPinQuantities(unittest.TestCase):
         assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
 
         # Mock the spatial locator of the component to raise error
-        with unittest.mock.patch.object(fuelComponent, "spatialLocator") as mockLocator:
+        with patch.object(fuelComponent, "spatialLocator") as mockLocator:
             mockLocator.i = 111
             mockLocator.j = 111
             with self.assertRaisesRegex(

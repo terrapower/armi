@@ -244,7 +244,10 @@ def getFilletedHexagonParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam(
-            "cornerR", units=units.CM, description="Radius of curvature of the corners"
+            "iR", units=units.CM, description="Radius of curvature of the inner corners"
+        )
+        pb.defParam(
+            "oR", units=units.CM, description="Radius of curvature of the outer corners"
         )
 
     return pDefs

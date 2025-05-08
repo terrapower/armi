@@ -145,7 +145,7 @@ class FilletedHexagon(basicShapes.Hexagon):
     By default, the inner hole has a diameter of zero, making this a solid object with no hole.
     """
 
-    THERMAL_EXPANSION_DIMS = {"cornerR", "ip", "op"}
+    THERMAL_EXPANSION_DIMS = {"iR", "oR", "ip", "op"}
 
     pDefs = componentParameters.getFilletedHexagonParameterDefinitions()
 
@@ -157,7 +157,8 @@ class FilletedHexagon(basicShapes.Hexagon):
         Thot,
         op,
         ip=0.0,
-        cornerR=0.0,
+        iR=0.0,
+        oR=0.0,
         mult=1.0,
         modArea=None,
         isotopics=None,
@@ -175,9 +176,14 @@ class FilletedHexagon(basicShapes.Hexagon):
             components=components,
         )
         self._linkAndStoreDimensions(
-            components, op=op, ip=ip, cornerR=cornerR, mult=mult, modArea=modArea
+            components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea
         )
-        assert cornerR <= op / 2, "The radius of curvature is too large."
+        assert (
+            oR <= op / 2
+        ), f"The outer radius of curvature is too large: {oR} > {op / 2}."
+        assert (
+            iR <= ip / 2
+        ), f"The inner radius of curvature is too large: {iR} > {ip / 2}."
 
     @staticmethod
     def _area(D, r):
@@ -193,10 +199,11 @@ class FilletedHexagon(basicShapes.Hexagon):
         """Computes the area for the rounded hexagon component in cm^2."""
         op = self.getDimension("op", cold=cold, Tc=Tc)
         ip = self.getDimension("ip", cold=cold, Tc=Tc)
-        r = self.getDimension("cornerR", cold=cold, Tc=Tc)
+        oR = self.getDimension("oR", cold=cold, Tc=Tc)
+        iR = self.getDimension("iR", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
 
-        area = self._area(op, r) - self._area(ip, r)
+        area = self._area(op, oR) - self._area(ip, iR)
         area *= mult
         return area
 
