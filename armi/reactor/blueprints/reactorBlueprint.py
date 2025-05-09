@@ -106,8 +106,8 @@ class SystemBlueprint(yamlize.Object):
                 seen.add(key)
 
         raise ValueError(
-            "Could not determine an appropriate class for handling a "
-            "system of type `{}`. Supported types are {}.".format(typ, sorted(seen))
+            f"Could not determine an appropriate class for handling a system of type `{typ}`. "
+            f"Supported types are {seen}."
         )
 
     def construct(self, cs, bp, reactor, loadComps=True):
@@ -221,9 +221,7 @@ class SystemBlueprint(yamlize.Object):
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
         # all cases should have no edge assemblies. They are added ephemerally when needed
-        from armi.reactor.converters import (
-            geometryConverters,
-        )
+        from armi.reactor.converters import geometryConverters
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()

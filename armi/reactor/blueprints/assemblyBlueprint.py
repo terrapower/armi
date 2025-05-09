@@ -327,9 +327,6 @@ class AssemblyKeyedList(yamlize.KeyedList):
     axialMeshPoints = yamlize.Attribute(
         key="axial mesh points", type=yamlize.IntList, default=None
     )
-    orientationBOL = yamlize.Attribute(
-        key="orientationBOL", type=yamlize.FloatList, default=0.0
-    )
 
     # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
 
