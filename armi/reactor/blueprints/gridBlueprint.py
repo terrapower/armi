@@ -289,7 +289,9 @@ class GridBlueprint(yamlize.Object):
         If you do not enter ``latticeDimensions``, a unit grid will be produced which must be
         adjusted to the proper dimensions (often by inspection of children) at a later time.
         """
-        symmetry = geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
+        symmetry = (
+            geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
+        )
         geom = self.geom
         maxIndex = self._getMaxIndex()
         runLog.extra("Creating the spatial grid")
