@@ -389,7 +389,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "rateProdNet",
             units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Net production rate of neutrons",
+            description="The total neutron production including (n,2n) source and fission source.",
         )
 
         pb.defParam(
