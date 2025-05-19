@@ -398,23 +398,14 @@ class Database:
         Notes
         -----
         There are no guarantees here. If the database was written from a different version of ARMI
-        than you are using, these results may not be usable. For instance, the database could have
-        been written from a vastly old or future version of ARMI from the code you are using.
+        than you are using, these results may not be usable. Or if the database was written using a
+        custom Application you do not have access to, the DB may not be usable.
         """
         cs = settings.Settings()
         cs.caseTitle = os.path.splitext(os.path.basename(self.fileName))[0]
-        try:
-            cs.loadFromString(
-                self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids
-            )
-        except KeyError:
-            # not all paths to writing a database require inputs to be written to the database.
-            # Technically, settings do affect some of the behavior of database reading, so not
-            # having the settings that made the reactor that went into the database is not ideal.
-            # However, this isn't the right place to crash into it. Ideally, there would be not way
-            # to not have the settings in the database (force writing in writeToDB), or to make
-            # reading invariant to settings.
-            pass
+        cs.loadFromString(
+            self.h5db["inputs/settings"].asstr()[()], handleInvalids=handleInvalids
+        )
 
         return cs
 
@@ -424,8 +415,8 @@ class Database:
         Notes
         -----
         There are no guarantees here. If the database was written from a different version of ARMI
-        than you are using, these results may not be usable. For instance, the database could have
-        been written from a vastly old or future version of ARMI from the code you are using.
+        than you are using, these results may not be usable. Or if the database was written using a
+        custom Application you do not have access to, the DB may not be usable.
         """
         # Blueprints use the yamlize package, which uses class attributes to define much of the
         # class's behavior through metaclassing. Therefore, we need to be able to import all plugins
