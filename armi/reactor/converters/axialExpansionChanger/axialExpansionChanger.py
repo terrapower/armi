@@ -17,6 +17,7 @@ import typing
 from numpy import array
 
 from armi import runLog
+from armi.materials.material import Fluid
 from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
@@ -263,7 +264,28 @@ class AxialExpansionChanger:
         self.expansionData = ExpansionData(
             a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot
         )
+        self._checkAssemblyConstructionIsValid()
+
+    def _checkAssemblyConstructionIsValid(self):
         self._isTopDummyBlockPresent()
+        self._checkForBlocksWithoutSolids()
+
+    def _checkForBlocksWithoutSolids(self):
+        """
+        Makes sure that there aren't any blocks (other than the top-most dummy block)
+        that are entirely fluid filled, unless all blocks in the assembly are only
+        fluids. The expansion changer doesn't know what to do with such mixed assemblies.
+        """
+        for b in self.linked.a[:-1]:
+            # the topmost block has already been confirmed as the dummy block
+            solidCompsInBlock = list(
+                filter(lambda c: not isinstance(c.material, Fluid)), b.iterComponents()
+            )
+            if len(solidCompsInBlock) == 0:
+                raise ImportError(
+                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer.\n"
+                    "Consider using the assemFlagsToSkipAxialExpansion case setting."
+                )
 
     def applyColdHeightMassIncrease(self):
         """

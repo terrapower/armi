@@ -23,6 +23,7 @@ from armi.reactor.components import Component, UnshapedComponent
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
+from armi.reactor.grids import MultiIndexLocation
 
 if typing.TYPE_CHECKING:
     from armi.reactor.assemblies import Assembly
@@ -30,14 +31,6 @@ if typing.TYPE_CHECKING:
 
 def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     """Determine axial component linkage for two components.
-
-    Components are considered linked if the following are found to be true:
-
-    1. Both contain solid materials.
-    2. They have identical types (e.g., ``Circle``).
-    3. Their multiplicities are the same.
-    4. The biggest inner bounding diameter of the two is less than the smallest outer
-       bounding diameter of the two.
 
     Parameters
     ----------
@@ -48,40 +41,87 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
 
     Notes
     -----
-    - Requires that shapes have the getCircleInnerDiameter and getBoundingCircleOuterDiameter
-      defined
-    - When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
-      at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
-      slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
+    If componentA and componentB are both solids and the same type, geometric overlap can be checked via
+    getCircleInnerDiameter and getBoundingCircleOuterDiameter. Five different cases are accounted for.
+    If they do not meet these initial criteria, linkage is assumed to be False.
+    Case #1: Unshaped Components. There is no way to determine overlap so they're assumed to be not linked.
+    Case #2: Blocks with specified grids. If componentA and componentB share common grid indices (cannot be a partial
+    case, ALL of the indices must be contained by one or the other), then overlap can be checked.
+    Case #3: If Component position is not specified via a grid, the multiplicity is checked. If consistent, they are
+    assumed to be in the same positions and their overlap is checked.
+    Case #4: Cases 1-3 are not True so we assume there is no linkage.
+    Case #5: Components are either not both solids or are not the same type. These cannot be linked.
 
     Returns
     -------
     linked : bool
         status is componentA and componentB are axially linked to one another
     """
-    if (
-        (componentA.containsSolidMaterial() and componentB.containsSolidMaterial())
-        and type(componentA) is type(componentB)
-        and (componentA.getDimension("mult") == componentB.getDimension("mult"))
+    if isinstance(componentA, type(componentB)) and (
+        componentA.containsSolidMaterial() and componentB.containsSolidMaterial()
     ):
         if isinstance(componentA, UnshapedComponent):
+            ## Case 1 -- see docstring
             runLog.warning(
                 f"Components {componentA} and {componentB} are UnshapedComponents "
-                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter "
-                "methods; nor is it physical to do so. Instead of crashing and raising an error, "
+                "and do not have 'getCircleInnerDiameter' or getBoundingCircleOuterDiameter methods; "
+                "nor is it physical to do so. Instead of crashing and raising an error, "
                 "they are going to be assumed to not be linked.",
                 single=True,
             )
-            return False
-        # Check if one component could fit within the other
-        idA = componentA.getCircleInnerDiameter(cold=True)
-        odA = componentA.getBoundingCircleOuterDiameter(cold=True)
-        idB = componentB.getCircleInnerDiameter(cold=True)
-        odB = componentB.getBoundingCircleOuterDiameter(cold=True)
-        biggerID = max(idA, idB)
-        smallerOD = min(odA, odB)
-        return biggerID < smallerOD
-    return False
+            linked = False
+        elif isinstance(componentA.spatialLocator, MultiIndexLocation) and isinstance(
+            componentB.spatialLocator, MultiIndexLocation
+        ):
+            ## Case 2 -- see docstring
+            componentAIndices = [
+                list(index) for index in componentA.spatialLocator.indices
+            ]
+            componentBIndices = [
+                list(index) for index in componentB.spatialLocator.indices
+            ]
+            # check for common indices between components. If either component has indices within its counterpart,
+            # then they are candidates to be linked and overlap should be checked.
+            if len(componentAIndices) < len(componentBIndices):
+                if all(index in componentBIndices for index in componentAIndices):
+                    linked = _checkOverlap(componentA, componentB)
+                else:
+                    linked = False
+            else:
+                if all(index in componentAIndices for index in componentBIndices):
+                    linked = _checkOverlap(componentA, componentB)
+                else:
+                    linked = False
+        elif componentA.getDimension("mult") == componentB.getDimension("mult"):
+            ## Case 3 -- see docstring
+            linked = _checkOverlap(componentA, componentB)
+        else:
+            ## Case 4 -- see docstring
+            linked = False
+    else:
+        ## Case 5 -- see docstring
+        linked = False
+
+    return linked
+
+
+def _checkOverlap(componentA: Component, componentB: Component) -> bool:
+    """Check two components for geometric overlap.
+
+    Notes
+    -----
+    When component dimensions are retrieved, cold=True to ensure that dimensions are evaluated
+    at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
+    slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
+    """
+    # Check if one component could fit within the other
+    idA = componentA.getCircleInnerDiameter(cold=True)
+    odA = componentA.getBoundingCircleOuterDiameter(cold=True)
+    idB = componentB.getCircleInnerDiameter(cold=True)
+    odB = componentB.getBoundingCircleOuterDiameter(cold=True)
+    biggerID = max(idA, idB)
+    smallerOD = min(odA, odB)
+    return biggerID < smallerOD
 
 
 # Make a generic type so we can "template" the axial link class based on what could be above/below a thing
