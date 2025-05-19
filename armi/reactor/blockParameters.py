@@ -363,7 +363,7 @@ def getBlockParameterDefinitions():
             "eqRegion",
             units=units.UNITLESS,
             description="Equilibrium shuffling region. Corresponds to how many full cycles fuel here has gone through.",
-            default=-1,
+            default=0.0,
         )
 
         pb.defParam(

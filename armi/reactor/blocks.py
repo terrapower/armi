@@ -105,22 +105,6 @@ class Block(composites.Composite):
         for problemParam in ["THcornTemp", "THedgeTemp"]:
             self.p[problemParam] = []
 
-        """
-        for problemParam in [
-            "residence",
-            "bondRemoved",
-            "fluence",
-            "fastFluence",
-            "fastFluencePeak",
-            "displacementX",
-            "displacementY",
-            "fluxAdj",
-            "buRate",
-            "eqRegion",
-        ]:
-            self.p[problemParam] = 0.0
-        """
-
     def __repr__(self):
         # be warned, changing this might break unit tests on input file generations
         return "<{type} {name} at {loc} XS: {xs} ENV GP: {env}>".format(
