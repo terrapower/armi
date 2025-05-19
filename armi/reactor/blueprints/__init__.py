@@ -192,8 +192,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     _resolveFunctions = []
 
     def __new__(cls):
-        # yamlizable does not call __init__, so attributes that are not defined above
-        # need to be initialized here
+        # yamlizable does not call __init__, so attributes that are not defined above need to be
+        # initialized here
         self = yamlize.Object.__new__(cls)
         self.assemblies = {}
         self._prepped = False
@@ -208,9 +208,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         return self
 
     def __init__(self):
-        # Yamlize does not call __init__, instead we use Blueprints.load which
-        # creates and instance of a Blueprints object and initializes it with values
-        # using setattr.
+        # Yamlize does not call __init__, instead we use Blueprints.load which creates and instance
+        # of a Blueprints object and initializes it with valuesconstructAssemusing setattr.
         self._assembliesBySpecifier = {}
         self._prepped = False
         self.systemDesigns = Systems()
@@ -221,9 +220,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         self.elementsToExpand = []
 
     def __repr__(self):
-        return "<{} Assemblies:{} Blocks:{}>".format(
-            self.__class__.__name__, len(self.assemDesigns), len(self.blockDesigns)
-        )
+        return f"<{self.__class__.__name__} Assemblies:{len(self.assemDesigns)} Blocks:{len(self.blockDesigns)}>"
 
     def constructAssem(self, cs, name=None, specifier=None):
         """
@@ -235,12 +232,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             Used to apply various modeling options when constructing an assembly.
 
         name : str (optional, and should be exclusive with specifier)
-            Name of the assembly to construct. This should match the key that was used
-            to define the assembly in the Blueprints YAML file.
+            Name of the assembly to construct. This should match the key that was used to define the
+            assembly in the Blueprints YAML file.
 
         specifier : str (optional, and should be exclusive with name)
-            Identifier of the assembly to construct. This should match the identifier
-            that was used to define the assembly in the Blueprints YAML file.
+            Identifier of the assembly to construct. This should match the identifier that was used
+            to define the assembly in the Blueprints YAML file.
 
         Raises
         ------
@@ -249,14 +246,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         Notes
         -----
-        There is some possibility for "compiling" the logic with closures to make
-        constructing an assembly / block / component faster. At this point is is pretty
-        much irrelevant because we are currently just deepcopying already constructed
-        assemblies.
+        There is some possibility for "compiling" the logic with closures to make constructing an
+        assembly / block / component faster. At this point is is pretty much irrelevant because we
+        are currently just deepcopying already constructed assemblies.
 
-        Currently, this method is backward compatible with other code in ARMI and
-        generates the `.assemblies` attribute (the BOL assemblies). Eventually, this
-        should be removed.
+        Currently, this method is backward compatible with other code in ARMI and generates the
+        `.assemblies` attribute (the BOL assemblies). Eventually, this should be removed.
         """
         self._prepConstruction(cs)
 
@@ -274,15 +269,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
     def _prepConstruction(self, cs):
         """
-        This method initializes a bunch of information within a Blueprints object such
-        as assigning assembly and block type numbers, resolving the nuclides in the
-        problem, and pre-populating assemblies.
+        This method initializes a bunch of information within a Blueprints object such as assigning
+        assembly and block type numbers, resolving the nuclides in the problem, and pre-populating
+        assemblies.
 
-        Ideally, it would not be necessary at all, but the ``cs`` currently contains a
-        bunch of information necessary to create the applicable model. If it were
-        possible, it would be terrific to override the Yamlizable.from_yaml method to
-        run this code after the instance has been created, but we need additional
-        information in order to build the assemblies that is not within the YAML file.
+        Ideally, it would not be necessary at all, but the ``cs`` currently contains a bunch of
+        information necessary to create the applicable model. If it were possible, it would be
+        terrific to override the Yamlizable.from_yaml method to run this code after the instance has
+        been created, but we need additional information in order to build the assemblies that is
+        not within the YAML file.
 
         This method should not be called directly, but it is used in testing.
         """
@@ -303,9 +298,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
             self._checkAssemblyAreaConsistency(cs)
 
             if not cs[CONF_DETAILED_AXIAL_EXPANSION]:
-                # this is required to set up assemblies so they know how to snap
-                # to the reference mesh. They won't know the mesh to conform to
-                # otherwise....
+                # this is required to set up assemblies so they know how to snap to the reference
+                # mesh. They won't know the mesh to conform to otherwise....
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
                 )
@@ -314,8 +308,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 runLog.header(
                     "=========== Axially expanding all assemblies from Tinput to Thot ==========="
                 )
-                # expand axial heights from cold to hot so dims and masses are consistent
-                # with specified component hot temperatures.
+                # expand axial heights from cold to hot so dims and masses are consistent with
+                # specified component hot temperatures.
                 assemsToSkip = [
                     Flags.fromStringIgnoreErrors(t)
                     for t in cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
@@ -353,9 +347,8 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         Also builds meta-data about which nuclides are in the problem.
 
-        This system works by building a dictionary in the
-        ``elementsToExpand`` attribute with ``Element`` keys
-        and list of ``NuclideBase`` values.
+        This system works by building a dictionary in the ``elementsToExpand`` attribute with
+        ``Element`` keys and list of ``NuclideBase`` values.
 
         The actual expansion of elementals to isotopics occurs during
         :py:meth:`Component construction <armi.reactor.blueprints.componentBlueprint.

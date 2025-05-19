@@ -369,6 +369,16 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
         )
         self.assertIsNotNone(r.excore.sfp.spatialGrid)
 
+    def test_orientationBOL(self):
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+
+        # Test the null-case; these should all be zero.
+        for a in r.core.iterChildren():
+            self.assertEqual(a.p.orientation, 0.0)
+
 
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
