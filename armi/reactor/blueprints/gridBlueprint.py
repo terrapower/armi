@@ -297,8 +297,8 @@ class GridBlueprint(yamlize.Object):
         runLog.extra("Creating the spatial grid")
         if geom in (geometry.RZT, geometry.RZ):
             if self.gridBounds is None:
-                # This check is regrettably late. It would be nice if we could validate
-                # that bounds are provided if R-Theta mesh is being used.
+                # This check is regrettably late. It would be nice if we could validate that bounds
+                # are provided if R-Theta mesh is being used.
                 raise InputError(
                     f"Grid bounds must be provided for `{self.name}` to specify a grid with "
                     "r-theta components."
@@ -370,7 +370,6 @@ class GridBlueprint(yamlize.Object):
         else:
             return 6
 
-    # TODO: JOHN: does this need to be tweaked?
     def expandToFull(self):
         """
         Unfold the blueprints to represent full symmetry.
@@ -382,13 +381,14 @@ class GridBlueprint(yamlize.Object):
         for some scenarios, such as when expanding fuel shuffling paths or the like. Future work may
         make this more sophisticated.
         """
+        # if we are already full core, don't throw an error, just return passively
         if (
             geometry.SymmetryType.fromAny(self.symmetry).domain
             == geometry.DomainType.FULL_CORE
         ):
-            # No need!
             return
 
+        # fill the new grid contents
         grid = self.construct()
 
         newContents = copy.copy(self.gridContents)
@@ -398,6 +398,8 @@ class GridBlueprint(yamlize.Object):
                 newContents[idx2] = contents
 
         self.gridContents = newContents
+
+        # set the grid symmetry
         split = geometry.THROUGH_CENTER_ASSEMBLY in self.symmetry
         self.symmetry = str(
             geometry.SymmetryType(
@@ -424,15 +426,15 @@ class GridBlueprint(yamlize.Object):
             self._readGridContentsLattice()
 
         if self.gridContents is None:
-            # Make sure we have at least something; clients shouldn't have to worry
-            # about whether gridContents exist at all.
+            # Make sure we have at least something; clients shouldn't have to worry about whether
+            # gridContents exist at all.
             self.gridContents = dict()
 
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.
 
         This update the gridContents attribute, which is a dict mapping grid i,j,k indices to
-        textual specifiers (e.g. ``IC``))
+        textual specifiers (e.g. ``IC``)).
         """
         self.readFromLatticeMap = True
         symmetry = geometry.SymmetryType.fromStr(self.symmetry)
@@ -448,12 +450,12 @@ class GridBlueprint(yamlize.Object):
             geom == geometry.GeomType.CARTESIAN
             and symmetry.domain == geometry.DomainType.FULL_CORE
         ):
-            # asciimaps is not smart about where the center should be, so we need to
-            # offset appropriately to get (0,0) in the middle
+            # asciimaps is not smart about where the center should be, so we need to offset
+            # appropriately to get (0,0) in the middle
             nx, ny = _getGridSize(asciimap.keys())
 
-            # turns out this works great for even and odd cases. love it when integer
-            # math works in your favor
+            # turns out this works great for even and odd cases. love it when integer math works in
+            # your favor
             iOffset = int(-nx / 2)
             jOffset = int(-ny / 2)
 
@@ -515,16 +517,15 @@ def _getGridSize(idx) -> Tuple[int, int]:
 def _filterOutsideDomain(gridBp):
     """Remove grid contents that lie outside the represented domain.
 
-    This removes extra objects; ARMI allows the user input specifiers in regions outside
-    of the represented domain, which is fine as long as the contained specifier is
-    consistent with the corresponding region in the represented domain given the
-    symmetry condition. For instance, if we have a 1/3-core hex model, it is typically
-    okay for an assembly to be specified outside of the first 1/3rd of the core, as long
-    as it is the same assembly as would be there when expanding the first 1/3rd into a
-    full-core model.
+    This removes extra objects; ARMI allows the user input specifiers in regions outside of the
+    represented domain, which is fine as long as the contained specifier is consistent with the
+    corresponding region in the represented domain given the symmetry condition. For instance, if we
+    have a 1/3-core hex model, it is typically okay for an assembly to be specified outside of the
+    first 1/3rd of the core, as long as it is the same assembly as would be there when expanding the
+    first 1/3rd into a full-core model.
 
-    However, we do not really want these hanging around, since editing the represented
-    1/Nth of the core will probably lead to consistency issues, so we remove them.
+    However, we do not really want these hanging around, since editing the represented 1/Nth of the
+    core will probably lead to consistency issues, so we remove them.
     """
     grid = gridBp.construct()
 
@@ -582,10 +583,10 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     tryMap : bool
         regardless of input form, attempt to output as a lattice map
     """
-    # To save, we want to try our best to output our grid blueprints in the lattice
-    # map style. However, we do not want to wreck the state that the current
-    # blueprints are in. So we make a copy and do some manipulations to try to
-    # canonicalize it and save that, leaving the original blueprints unmolested.
+    # To save, we want to try our best to output our grid blueprints in the lattice map style.
+    # However, we do not want to wreck the state that the current blueprints are in. So we make a
+    # copy and do some manipulations to try to canonicalize it and save that, leaving the original
+    # blueprints unmolested.
     bp = copy.deepcopy(bluep)
 
     if isinstance(bp, blueprints.Blueprints):
@@ -625,9 +626,9 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 aMap = None
 
             if aMap is not None:
-                # If there is an ascii map available then use it to fill out
-                # the contents of the lattice map section of the grid design.
-                # This also clears out the grid contents so there is not duplicate data.
+                # If there is an ascii map available then use it to fill out the contents of the
+                # lattice map section of the grid design. This also clears out the grid contents so
+                # there is not duplicate data.
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)

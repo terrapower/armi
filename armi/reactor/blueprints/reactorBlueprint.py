@@ -191,7 +191,9 @@ class SystemBlueprint(yamlize.Object):
         from armi.reactor.reactors import Core  # avoid circular import
 
         if loadComps and gridDesign is not None:
-            self._loadComposites(cs, system, gridDesign.gridContents, bp)
+            self._loadComposites(
+                cs, bp, system, gridDesign.gridContents, gridDesign.orientationBOL
+            )
 
             if isinstance(system, Core):
                 summarizeMaterialData(system)
@@ -200,12 +202,21 @@ class SystemBlueprint(yamlize.Object):
 
         return system
 
-    def _loadComposites(self, cs, container, gridContents, bp):
+    def _loadComposites(self, cs, bp, container, gridContents, orientationBOL):
         runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
+            # create a new Composite to add to the grid
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
 
+            # TODO: JOHN: Or this could be in `constructAssem`???
+            # correctly rotate the Composite
+            if orientationBOL is None or locationInfo not in orientationBOL:
+                newAssembly.p.orientation = 0.0
+            else:
+                newAssembly.p.orientation = orientationBOL[locationInfo]
+
+            # add the Composite to the grid
             i, j = locationInfo
             loc = container.spatialGrid[i, j, 0]
             try:
