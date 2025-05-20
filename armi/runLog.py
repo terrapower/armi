@@ -653,9 +653,7 @@ class RunLogger(logging.Logger):
         self.info("------------------------------------")
 
         # add a totals line
-        self.info(
-            "  {0:^10s}   {1:^25s}".format(str(total), str("Total Number of Warnings"))
-        )
+        self.info(f"  {str(total):^10s}   Total Number of Warnings")
         self.info("------------------------------------")
 
     def setVerbosity(self, intLevel):
