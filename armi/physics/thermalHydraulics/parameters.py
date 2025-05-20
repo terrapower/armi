@@ -27,31 +27,8 @@ def _getBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(
-        default=0.0,
-        location=ParamLocation.AVERAGE,
-        saveToDB=False,
-        categories=["thermal hydraulics"],
-    ) as pb:
-
-        pb.defParam(
-            "pressureLossCoeffs",
-            units=units.UNITLESS,
-            description="Pressure loss coefficients from form losses outside of bundle region of "
-            "assembly, e.g. losses through pin attachment hardware, expansion in inlet nozzle.",
-            default=None,
-            categories=[parameters.Category.assignInBlueprints],
-        )
-
-    with pDefs.createBuilder(
         default=0.0, location=ParamLocation.AVERAGE, categories=["thermal hydraulics"]
     ) as pb:
-
-        pb.defParam(
-            "THhotChannelCladMidwallT",
-            units=units.DEGC,
-            saveToDB=False,
-            description="Midwall (average) clad temperature for the hot channel or hot pin.",
-        )
 
         pb.defParam(
             "THhotChannelHeatTransferCoeff",
@@ -134,15 +111,6 @@ def _getBlockParams():
             categories=["thInterface"],
         )
 
-        pb.defParam(
-            "THdilationPressure",
-            units=units.PASCALS,
-            description="Dilation pressure",
-            categories=["thInterface"],
-            default=0.0,
-            location=ParamLocation.AVERAGE,
-        )
-
     with pDefs.createBuilder(
         default=0.0, categories=["thInterface"], saveToDB=True
     ) as pb:
@@ -169,27 +137,11 @@ def _getBlockParams():
         )
 
         pb.defParam(
-            "THaverageCladIDT",
-            units=units.DEGC,
-            description="Block average of the inner clad temperature",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "THaverageCladTemp",
             units=units.DEGC,
             description="The nominal average clad temperature in the block, which should be used "
             "for neutronic and TH feedback.",
             location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "THaverageGapTemp",
-            units=units.DEGC,
-            description="The nominal average gap temperature in the block, which should be used "
-            "for neutronic and TH feedback.",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
         )
 
         pb.defParam(

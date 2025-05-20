@@ -294,10 +294,9 @@ def applyDummyData(block):
         601494405.293505,
     ]
     xslib = isotxs.readBinary(ISOAA_PATH)
-    # slight hack here because the test block was created
-    # by hand rather than via blueprints and so elemental expansion
-    # of isotopics did not occur. But, the ISOTXS library being used
-    # did go through an isotopic expansion, so we map nuclides here.
+    # Slight hack here because the test block was created by hand rather than via blueprints and so
+    # elemental expansion of isotopics did not occur. But, the ISOTXS library being used did go
+    # through an isotopic expansion, so we map nuclides here.
     xslib._nuclides["NAAA"] = xslib._nuclides["NA23AA"]
     xslib._nuclides["WAA"] = xslib._nuclides["W184AA"]
     xslib._nuclides["MNAA"] = xslib._nuclides["MN55AA"]
@@ -2135,7 +2134,6 @@ class TestNegativeVolume(unittest.TestCase):
 
 class HexBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        _ = settings.Settings()
         self.hexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
@@ -2586,7 +2584,6 @@ class TestHexBlockOrientation(unittest.TestCase):
 
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        _ = settings.Settings()
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
         self.ThRZBlock.add(
             components.DifferentialRadialSegment(

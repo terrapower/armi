@@ -129,12 +129,40 @@ grids:
          - - -  1 1 1 1
            - - 1 1 2 1 1
             - 1 1 1 1 1 1
-             1 3 1 2 1 3 1
+             1 2 1 2 1 2 1
               1 1 1 1 1 1
                1 1 2 1 1
                 1 1 1 1
 
 """
+
+FULL_BP_ERRANT_ID = (
+    FULL_BP.split("lattice map:")[0]
+    + """lattice map: |
+         - - -  1 1 1 1
+           - - 1 1 1 1 1
+            - 1 1 1 1 1 1
+             1 1 1 1 1 1 1
+              1 1 1 1 1 1
+               1 1 1 1 1
+                1 1 1 1
+
+"""
+)
+
+FULL_BP_NO_COMP = (
+    FULL_BP.split("lattice map:")[0]
+    + """lattice map: |
+         - - -  1 1 1 1
+           - - 1 1 1 1 1
+            - 1 1 1 1 1 1
+             1 3 1 1 1 3 1
+              1 1 1 1 1 1
+               1 1 1 1 1
+                1 1 1 1
+
+"""
+)
 
 FULL_BP_GRID = (
     FULL_BP.split("lattice map:")[0]
@@ -276,7 +304,7 @@ class TestGriddedBlock(unittest.TestCase):
         gridDesign = bDesign._getGridDesign(self.blueprints)
         grid = gridDesign.construct()
         locators = gridDesign.getLocators(grid, ["2"])
-        self.assertEqual(len(locators), 3)
+        self.assertEqual(len(locators), 5)
         self.assertIs(grid[locators[0].getCompleteIndices()], locators[0])
 
     def test_blockLattice(self):
@@ -296,6 +324,37 @@ class TestGriddedBlock(unittest.TestCase):
             if locator == (1, 0, 0):
                 seen = True
         self.assertTrue(seen)
+
+    def test_componentsNotInLattice(self):
+        """
+        Ensure that we catch cases when a component is expected to be in the grid,
+        but is not. In this case, latticeID "2" is not in the lattice.
+        """
+        with self.assertRaises(ValueError) as ee:
+            with io.StringIO(FULL_BP_ERRANT_ID) as stream:
+                self.blueprints = blueprints.Blueprints.load(stream)
+                self.blueprints._prepConstruction(self.cs)
+
+            self.assertIn(
+                "Check that the component's latticeIDs align with the block's grid.",
+                ee.args[0],
+            )
+
+    def test_latticeNotInComponents(self):
+        """
+        Ensure that we catch cases when a latticeID listed in the grid is not present
+        in any of the components on the block. In this case, latticeID "2" is not
+        in the lattice.
+        """
+        with self.assertRaises(ValueError) as ee:
+            with io.StringIO(FULL_BP_NO_COMP) as stream:
+                self.blueprints = blueprints.Blueprints.load(stream)
+                self.blueprints._prepConstruction(self.cs)
+
+            self.assertIn(
+                "All IDs in the grid must appear in at least one component.",
+                ee.args[0],
+            )
 
     def test_nonLatticeComponentHasRightMult(self):
         """Make sure non-grid components in blocks with grids get the right multiplicity."""
