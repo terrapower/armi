@@ -349,10 +349,9 @@ def getBlockParameterDefinitions():
             "topIndex",
             units=units.UNITLESS,
             description=(
-                "the axial block index within its parent assembly (0 is bottom block). This index with"
-                "regard to the mesh of the reference assembly so it does not increase by 1 for each block."
-                "It is used to keep the mesh of the assemblies uniform with axial expansion."
-                "See setBlockMesh, makeAxialSnapList",
+                "the axial block index within its parent assembly (0 is bottom block). This index with regard to the "
+                "mesh of the reference assembly so it does not increase by 1 for each block. It is used to keep the "
+                "mesh of the assemblies uniform with axial expansion. See setBlockMesh, makeAxialSnapList",
             ),
             default=0,
             saveToDB=True,
