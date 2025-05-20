@@ -27,6 +27,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
+from armi.utils.customExceptions import InputError
 
 
 def getDefaultReferenceAssem(assems):
@@ -279,10 +280,10 @@ class AxialExpansionChanger:
         for b in self.linked.a[:-1]:
             # the topmost block has already been confirmed as the dummy block
             solidCompsInBlock = list(
-                filter(lambda c: not isinstance(c.material, Fluid)), b.iterComponents()
+                filter(lambda c: not isinstance(c.material, Fluid), b.iterComponents())
             )
             if len(solidCompsInBlock) == 0:
-                raise ImportError(
+                raise InputError(
                     f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer.\n"
                     "Consider using the assemFlagsToSkipAxialExpansion case setting."
                 )

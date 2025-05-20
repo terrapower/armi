@@ -22,7 +22,7 @@ from statistics import mean
 from numpy import array, linspace, zeros
 
 from armi import materials
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom, ht9
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component, DerivedShape, UnshapedComponent
@@ -43,6 +43,7 @@ from armi.reactor.flags import Flags
 from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 from armi.utils import units
+from armi.utils.customExceptions import InputError
 
 
 class AxialExpansionTestBase(unittest.TestCase):
@@ -936,12 +937,10 @@ class TestDetermineTargetComponent(AxialExpansionTestBase, unittest.TestCase):
 class TestGetSolidComponents(unittest.TestCase):
     """Verify that getSolidComponents returns just solid components."""
 
-    def setUp(self):
-        self.a = buildTestAssemblyWithFakeMaterial(name="HT9")
-
     def test_getSolidComponents(self):
         """Show that getSolidComponents produces a list of solids, and is consistent with iterSolidComponents."""
-        for b in self.a:
+        a = buildTestAssemblyWithFakeMaterial(name="HT9")
+        for b in a:
             solids = getSolidComponents(b)
             ids = set(map(id, solids))
             for c in iterSolidComponents(b):
@@ -952,6 +951,18 @@ class TestGetSolidComponents(unittest.TestCase):
                 ids,
                 msg="Inconsistency between getSolidComponents and iterSolidComponents",
             )
+
+    def test_checkForBlocksWithoutSolids(self):
+        a = buildTestAssemblyWithFakeMaterial(name="Sodium")
+        a[0][1].material = ht9.HT9()
+
+        changer = AxialExpansionChanger()
+        changer.linked = AssemblyAxialLinkage(a)
+        with self.assertRaisesRegex(
+            InputError,
+            expected_regex="is constructed improperly for use with the axial expansion changer",
+        ):
+            changer._checkForBlocksWithoutSolids()
 
 
 class TestInputHeightsConsideredHot(unittest.TestCase):
