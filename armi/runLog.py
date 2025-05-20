@@ -190,7 +190,7 @@ class _RunLog:
         return self.logger.getDuplicatesFilter()
 
     def clearSingleLogs(self):
-        """Reset the single warned list so we get messages again."""
+        """Reset the list of de-duplicated warnings, so users can see those warnings again."""
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter:
             dupsFilter.singleMessageCounts.clear()
