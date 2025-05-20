@@ -469,8 +469,6 @@ def _getTHVals(r):
     labels, vals = zip(
         *[
             ("Max PD", r.core.p.maxPD),
-            ("Outlet", r.core.p.THoutletTempIdeal),
-            ("Pump Pressure", r.core.p.THmaxDeltaPPump),
             ("Mass flow", r.core.getMaxParam("THmassFlowRate")),
             ("Th. striping", r.core.getMaxParam("THlocalDToutFuel")),
             ("Fuel temp", r.core.getMaxBlockParam("THhotChannelFuelCenterlineT")),
