@@ -105,18 +105,6 @@ class Block(composites.Composite):
         for problemParam in ["THcornTemp", "THedgeTemp"]:
             self.p[problemParam] = []
 
-        for problemParam in [
-            "residence",
-            "bondRemoved",
-            "fluence",
-            "displacementX",
-            "displacementY",
-            "fluxAdj",
-            "buRate",
-            "eqRegion",
-        ]:
-            self.p[problemParam] = 0.0
-
     def __repr__(self):
         # be warned, changing this might break unit tests on input file generations
         return "<{type} {name} at {loc} XS: {xs} ENV GP: {env}>".format(
@@ -233,16 +221,12 @@ class Block(composites.Composite):
         circles = self.getComponentsOfShape(components.Circle)
         if not circles:
             raise ValueError(
-                "Cannot get smear density of {}. There are no circular components.".format(
-                    self
-                )
+                f"Cannot get smear density of {self}. There are no circular components."
             )
         clads = set(self.getComponents(Flags.CLAD)).intersection(set(circles))
         if not clads:
             raise ValueError(
-                "Cannot get smear density of {}. There are no clad components.".format(
-                    self
-                )
+                f"Cannot get smear density of {self}. There are no clad components."
             )
 
         # Compute component areas
@@ -276,8 +260,8 @@ class Block(composites.Composite):
                     negativeArea += abs(componentArea)
         if cold and negativeArea:
             raise ValueError(
-                "Negative component areas exist on {}. Check that the cold dimensions are properly aligned "
-                "and no components overlap.".format(self)
+                f"Negative component areas exist on {self}. Check that the cold dimensions are "
+                "properly aligned and no components overlap."
             )
         innerCladdingArea += negativeArea  # See note 2
         totalMovableArea = innerCladdingArea - unmovableComponentArea
@@ -388,17 +372,16 @@ class Block(composites.Composite):
         """
         Returns the microscopic library suffix (e.g. 'AB') for this block.
 
-        DIF3D and MC2 are limited to 6 character nuclide labels. ARMI by convention uses
-        the first 4 for nuclide name (e.g. U235, PU39, etc.) and then uses the 5th
-        character for cross-section type and the 6th for burnup group. This allows a
-        variety of XS sets to be built modeling substantially different blocks.
+        DIF3D and MC2 are limited to 6 character nuclide labels. ARMI by convention uses the first 4
+        for nuclide name (e.g. U235, PU39, etc.) and then uses the 5th character for cross-section
+        type and the 6th for burnup group. This allows a variety of XS sets to be built modeling
+        substantially different blocks.
 
         Notes
         -----
-        The single-letter use for xsType and envGroup limit users to 52 groups of each.
-        ARMI will allow 2-letter xsType designations if and only if the `envGroup`
-        setting has length 1 (i.e. no burnup/temp groups are defined). This is useful for
-        high-fidelity XS modeling of V&V models such as the ZPPRs.
+        The single-letter use for xsType and envGroup limit users to 52 groups of each. ARMI will
+        allow 2-letter xsType designations if and only if the `envGroup` setting has length 1 (i.e.
+        no burnup/temp groups are defined). This is useful for high-fidelity XS modeling.
         """
         env = self.p.envGroup
         if not env:
@@ -436,21 +419,15 @@ class Block(composites.Composite):
             Conserve mass of nuclides in ``adjustList``.
 
         adjustList : list, optional
-            Nuclides that will be conserved in conserving mass in the block. It is recommended to pass a list of
-            all nuclides in the block.
+            Nuclides that will be conserved in conserving mass in the block. It is recommended to
+            pass a list of all nuclides in the block.
 
         Notes
         -----
-        There is a coupling between block heights, the parent assembly axial mesh,
-        and the ztop/zbottom/z params of the sibling blocks. When you set a height,
-        all those things are invalidated. Thus, this method has to go through and
-        update them via ``parent.calculateZCoords``. This could be inefficient
-        though it has not been identified as a bottleneck. Possible improvements
-        include deriving z/ztop/zbottom on the fly and invalidating the parent mesh
-        with some kind of flag, signaling it to recompute itself on demand.
-        Developers can get around some of the O(N^2) scaling of this by setting
-        ``p.height`` directly but they must know to update the dependent objects
-        after they do that. Use with care.
+        There is a coupling between block heights, the parent assembly axial mesh, and the
+        ztop/zbottom/z params of the sibling blocks. When you set a height, all those things are
+        invalidated. Thus, this method has to go through and update them via
+        ``parent.calculateZCoords``.
 
         See Also
         --------
@@ -462,9 +439,7 @@ class Block(composites.Composite):
         originalHeight = self.getHeight()  # get before modifying
         if modifiedHeight < 0.0:
             raise ValueError(
-                "Cannot set height of block {} to height of {} cm".format(
-                    self, modifiedHeight
-                )
+                f"Cannot set height of block {self} to height of {modifiedHeight} cm"
             )
         self.p.height = modifiedHeight
         self.clearCache()
@@ -497,8 +472,8 @@ class Block(composites.Composite):
             return self.getComponent(Flags.COOLANT, exact=True).getArea() / numPins
         except ZeroDivisionError:
             raise ZeroDivisionError(
-                "Block {} has 0 pins (fuel, clad, control, shield, etc.). Thus, its flow area "
-                "per pin is undefined.".format(self)
+                f"Block {self} has 0 pins (fuel, clad, control, shield, etc.). Thus, its flow area "
+                "per pin is undefined."
             )
 
     def getHydraulicDiameter(self):
@@ -515,8 +490,8 @@ class Block(composites.Composite):
 
         Notes
         -----
-        completeInitialLoading must be run because adjusting the enrichment actually
-        changes the mass slightly and you can get negative burnups, which you do not want.
+        completeInitialLoading must be run because adjusting the enrichment actually changes the
+        mass slightly and you can get negative burnups, which you do not want.
         """
         fuels = self.getChildrenWithFlags(Flags.FUEL)
 
@@ -539,16 +514,15 @@ class Block(composites.Composite):
             :id: I_ARMI_BLOCK_POSI0
             :implements: R_ARMI_BLOCK_POSI
 
-            If the block does not have its ``core`` attribute set, if the block's
-            parent does not have a ``spatialGrid`` attribute, or if the block
-            does not have its location defined by its ``spatialLocator`` attribute,
-            return a string indicating that it is outside of the core.
+            If the block does not have its ``core`` attribute set, if the block's parent does not
+            have a ``spatialGrid`` attribute, or if the block does not have its location defined by
+            its ``spatialLocator`` attribute, return a string indicating that it is outside of the
+            core.
 
-            Otherwise, use the :py:class:`~armi.reactor.grids.Grid.getLabel` static
-            method to convert the block's indices into a string like "XXX-YYY-ZZZ".
-            For hexagonal geometry, "XXX" is the zero-padded hexagonal core ring,
-            "YYY" is the zero-padded position in that ring, and "ZZZ" is the zero-padded
-            block axial index from the bottom of the core.
+            Otherwise, use the :py:class:`~armi.reactor.grids.Grid.getLabel` static method to
+            convert the block's indices into a string like "XXX-YYY-ZZZ". For hexagonal geometry,
+            "XXX" is the zero-padded hexagonal core ring, "YYY" is the zero-padded position in that
+            ring, and "ZZZ" is the zero-padded block axial index from the bottom of the core.
         """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
             return self.core.spatialGrid.getLabel(
@@ -566,9 +540,9 @@ class Block(composites.Composite):
             :implements: R_ARMI_BLOCK_POSI
 
             Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
-            method of the block's ``spatialLocator`` attribute, which recursively
-            calls itself on all parents of the block to get the coordinates of the
-            block's centroid in 3D cartesian space.
+            method of the block's ``spatialLocator`` attribute, which recursively calls itself on
+            all parents of the block to get the coordinates of the block's centroid in 3D cartesian
+            space.
         """
         return self.spatialLocator.getGlobalCoordinates()
 
@@ -590,11 +564,10 @@ class Block(composites.Composite):
         """
         Return the area of a block for a full core or a 1/3 core model.
 
-        Area is consistent with the area in the model, so if you have a central
-        assembly in a 1/3 symmetric model, this will return 1/3 of the total
-        area of the physical assembly. This way, if you take the sum
-        of the areas in the core (or count the atoms in the core, etc.),
-        you will have the proper number after multiplying by the model symmetry.
+        Area is consistent with the area in the model, so if you have a central assembly in a 1/3
+        symmetric model, this will return 1/3 of the total area of the physical assembly. This way,
+        if you take the sum of the areas in the core (or count the atoms in the core, etc.), you
+        will have the proper number after multiplying by the model symmetry.
 
         Parameters
         ----------
@@ -614,8 +587,8 @@ class Block(composites.Composite):
         armi.reactor.blocks.Block.getMaxArea
             return the full area of the physical assembly disregarding model symmetry
         """
-        # this caching requires that you clear the cache every time you adjust anything
-        # including temperature and dimensions.
+        # this caching requires that you clear the cache every time you adjust anything including
+        # temperature and dimensions.
         area = self._getCached("area")
         if area:
             return area
@@ -652,10 +625,9 @@ class Block(composites.Composite):
 
         Takes into account assemblies that are bisected or trisected by symmetry lines
 
-        In 1/3 symmetric cases, the central assembly is 1/3 a full area.
-        If edge assemblies are included in a model, the symmetry factor along
-        both edges for overhanging assemblies should be 2.0. However,
-        ARMI runs in most scenarios with those assemblies on the 120-edge removed,
+        In 1/3 symmetric cases, the central assembly is 1/3 a full area. If edge assemblies are
+        included in a model, the symmetry factor along both edges for overhanging assemblies should
+        be 2.0. However, ARMI runs in most scenarios with those assemblies on the 120-edge removed,
         so the symmetry factor should generally be just 1.0.
 
         See Also
@@ -716,29 +688,27 @@ class Block(composites.Composite):
         is perturbed, all of htem are perturbed.
         """
         if self.p.detailedNDens is None:
-            # BOL assems get expanded to a reference so the first check is needed so it
-            # won't call .blueprints on None since BOL assems don't have a core/r
+            # BOL assems get expanded to a reference so the first check is needed so it won't call
+            # .blueprints on None since BOL assems don't have a core/r
             return
         if any(nuc in self.core.r.blueprints.activeNuclides for nuc in adjustList):
             self.p.detailedNDens *= frac
-            # Other power densities do not need to be updated as they are calculated in
-            # the global flux interface, which occurs after axial expansion from crucible
-            # on the interface stack.
+            # Other power densities do not need to be updated as they are calculated in the global
+            # flux interface, which occurs after axial expansion on the interface stack.
             self.p.pdensDecay *= frac
 
     def completeInitialLoading(self, bolBlock=None):
         """
         Does some BOL bookkeeping to track things like BOL HM density for burnup tracking.
 
-        This should run after this block is loaded up at BOC (called from
-        Reactor.initialLoading).
+        This should run after this block is loaded up at BOC (called from Reactor.initialLoading).
 
-        The original purpose of this was to get the moles HM at BOC for the moles
-        Pu/moles HM at BOL calculation.
+        The original purpose of this was to get the moles HM at BOC for the moles Pu/moles HM at BOL
+        calculation.
 
-        This also must be called after modifying something like the smear density or zr
-        fraction in an optimization case. In ECPT cases, a BOL block must be passed or
-        else the burnup will try to get based on a pre-burned value.
+        This also must be called after modifying something like the smear density or zr fraction in
+        an optimization case. In ECPT cases, a BOL block must be passed or else the burnup will try
+        to get based on a pre-burned value.
 
         Parameters
         ----------
@@ -777,8 +747,8 @@ class Block(composites.Composite):
         for child in self:
             hmMass = child.getHMMass()
             massHmBOL += hmMass
-            # Components have the following parameters but not every composite will
-            # massHmBOL, molesHmBOL, puFrac
+            # Components have the following parameters but not every composite will massHmBOL,
+            # molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
@@ -807,23 +777,21 @@ class Block(composites.Composite):
         if not b10Comps:
             return
 
-        # get the highest density comp dont want to sum all because some
-        # comps might have very small impurities of boron and adding this
-        # volume won't be conservative for captures per cc.
+        # get the highest density comp dont want to sum all because some comps might have very small
+        # impurities of boron and adding this volume won't be conservative for captures per cc.
         b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
 
         if len(b10Comps) > 1:
             runLog.warning(
-                f"More than one boron10-containing component found  in {self.name}. "
-                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
-                "Since adding multiple volumes is not conservative for captures/cc."
-                f"All compos found {b10Comps}",
+                f"More than one boron10-containing component found in {self.name}. Only {b10Comp} "
+                f"will be considered for calculation of initialB10ComponentVol Since adding "
+                f"multiple volumes is not conservative for captures. All compos found {b10Comps}",
                 single=True,
             )
         if self.isFuel():
             runLog.warning(
-                f"{self.name} has both fuel and initial b10. "
-                "b10 volume may not be conserved with axial expansion.",
+                f"{self.name} has both fuel and initial b10. b10 volume may not be conserved with "
+                "axial expansion.",
                 single=True,
             )
 
@@ -861,12 +829,10 @@ class Block(composites.Composite):
 
     @staticmethod
     def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
-        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a
-        # better fit.
-        # We don't want to remove the plotFlux function in the Block namespace yet
-        # in case client code is depending on this function existing here. This is just
-        # a simple pass-through function that passes the arguments along to the actual
-        # implementation in its new location.
+        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a better fit.
+        # We don't want to remove the plotFlux function in the Block namespace yet in case client
+        # code is depending on this function existing here. This is just a simple pass-through
+        # function that passes the arguments along to the actual implementation in its new location.
         plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):
@@ -874,9 +840,8 @@ class Block(composites.Composite):
         Update the component that defines the pitch.
 
         Given a Component, compare it to the current component that defines the pitch of the Block.
-        If bigger, replace it.
-        We need different implementations of this to support different logic for determining the
-        form of pitch and the concept of "larger".
+        If bigger, replace it. We need different implementations of this to support different logic
+        for determining the form of pitch and the concept of "larger".
 
         See Also
         --------
@@ -934,10 +899,11 @@ class Block(composites.Composite):
 
     def getComponentsThatAreLinkedTo(self, comp, dim):
         """
-        Determine which dimensions of which components are linked to a specific dimension of a particular component.
+        Determine which dimensions of which components are linked to a specific dimension of a
+        particular component.
 
-        Useful for breaking fuel components up into individuals and making sure
-        anything that was linked to the fuel mult (like the cladding mult) stays correct.
+        Useful for breaking fuel components up into individuals and making sure anything that was
+        linked to the fuel mult (like the cladding mult) stays correct.
 
         Parameters
         ----------
@@ -1020,11 +986,10 @@ class Block(composites.Composite):
 
         Notes
         -----
-        If you just want sorted components in this block, use ``sorted(self)``.
-        This will never include any ``DerivedShape`` objects. Since they have a derived
-        area they don't have a well-defined dimension. For now we just ignore them.
-        If they are desired in the future some knowledge of their dimension will be
-        required while they are being derived.
+        If you just want sorted components in this block, use ``sorted(self)``. This will never
+        include any ``DerivedShape`` objects. Since they have a derived area they don't have a well-
+        defined dimension. For now we just ignore them. If they are desired in the future some
+        knowledge of their dimension will be required while they are being derived.
         """
         sortedComponents = sorted(self)
         componentIndex = sortedComponents.index(component)
@@ -1040,15 +1005,13 @@ class Block(composites.Composite):
 
             Uses some simple criteria to infer the number of pins in the block.
 
-            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`,
-            loop over all components of that type in the block. If the component
-            is an instance of :py:class:`~armi.reactor.components.basicShapes.Circle`,
-            add its multiplicity to a list, and sum that list over all components
-            with each given flag.
+            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`, loop
+            over all components of that type in the block. If the component is an instance of
+            :py:class:`~armi.reactor.components.basicShapes.Circle`, add its multiplicity to a list,
+            and sum that list over all components with each given flag.
 
-            After looping over all possibilities, return the maximum value returned
-            from the process above, or if no compatible components were found,
-            return zero.
+            After looping over all possibilities, return the maximum value returned from the process
+            above, or if no compatible components were found, return zero.
         """
         nPins = [
             sum(
@@ -1083,7 +1046,7 @@ class Block(composites.Composite):
         This merges on a high level (using number densities). Components will not be merged.
 
         This is used e.g. for inserting a control block partially to get a very tight criticality
-        control.  In this case, a control block would be merged with a duct block. It is also used
+        control. In this case, a control block would be merged with a duct block. It is also used
         when a control rod is specified as a certain length but that length does not fit exactly
         into a full block.
         """
@@ -1232,8 +1195,7 @@ class Block(composites.Composite):
         if c is None:
             raise ValueError("{} has no valid pitch defining component".format(self))
 
-        # ask component for dimensions, since they could have changed,
-        # due to temperature, for example.
+        # ask component for dimensions, since they could have changed due to temperature
         p = c.getPitchData()
         return (p, c) if returnComp else p
 
@@ -1293,16 +1255,15 @@ class Block(composites.Composite):
 
         This sets the settingPitch and actually sets the dimension of the outer hexagon.
 
-        During a load (importGeom), the setDimension doesn't usually do anything except
-        set the setting See Issue 034
+        During a load (importGeom), the setDimension doesn't usually do anything except set the
+        setting See Issue 034
 
-        But during a actual case modification (e.g. in an optimization sweep, then the dimension
-        has to be set as well.
+        But during a actual case modification (e.g. in an optimization sweep, then the dimension has
+        to be set as well.
 
         See Also
         --------
         getPitch : gets the pitch
-
         """
         c, _p = self._pitchDefiningComponent
         if c:
@@ -1375,10 +1336,9 @@ class Block(composites.Composite):
 
     def getBlocks(self):
         """
-        This method returns all the block(s) included in this block
-        its implemented so that methods could iterate over reactors, assemblies
-        or single blocks without checking to see what the type of the
-        reactor-family object is.
+        This method returns all the block(s) included in this block its implemented so that methods
+        could iterate over reactors, assemblies or single blocks without checking to see what the
+        type of the reactor-family object is.
         """
         return [self]
 
@@ -1388,10 +1348,9 @@ class Block(composites.Composite):
 
         Notes
         -----
-        This is VERY useful for defining a ThRZ core out of
-        differentialRadialSegements whose dimensions are connected together
-        some of these dimensions are derivative and can be updated by changing
-        dimensions in a Parameter Component or other linked components
+        This is VERY useful for defining a ThRZ core out of differentialRadialSegements whose
+        dimensions are connected together some of these dimensions are derivative and can be updated
+        by changing dimensions in a Parameter Component or other linked components
 
         See Also
         --------
@@ -1409,8 +1368,8 @@ class Block(composites.Composite):
         """
         Return the volume integrated multigroup neutron tracklength in [n-cm/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
 
         Parameters
         ----------
@@ -1548,8 +1507,7 @@ class Block(composites.Composite):
         """
         Get the fission energy generation group constants for a block.
 
-        Gives the fission energy generation rates when multiplied by the multigroup
-        flux.
+        Gives the fission energy generation rates when multiplied by the multigroup flux.
 
         Returns
         -------
@@ -1563,8 +1521,8 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
+                "Cannot compute energy generation group constants without a library. Please ensure "
+                "a library exists."
             )
 
         return xsCollections.computeFissionEnergyGenerationConstants(
@@ -1575,8 +1533,7 @@ class Block(composites.Composite):
         """
         Get the capture energy generation group constants for a block.
 
-        Gives the capture energy generation rates when multiplied by the multigroup
-        flux.
+        Gives the capture energy generation rates when multiplied by the multigroup flux.
 
         Returns
         -------
@@ -2034,8 +1991,8 @@ class HexBlock(Block):
         except ValueError:
             # there are probably more that one clad/wire, so we really dont know what this block looks like
             runLog.info(
-                "Block design {} is too complicated to verify dimensions. Make sure they "
-                "are correct!".format(self)
+                f"Block design {self} is too complicated to verify dimensions. Make sure they are "
+                "correct!"
             )
             return
 
@@ -2464,8 +2421,6 @@ class CartesianBlock(Block):
 
 
 class ThRZBlock(Block):
-    # be sure to fill ThRZ blocks with only 3D components - components with explicit getVolume methods
-
     def getMaxArea(self):
         """Return the area of the Theta-R-Z block if it was totally full."""
         raise NotImplementedError(
