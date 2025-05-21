@@ -1674,11 +1674,10 @@ class Block(composites.Composite):
         Raises
         ------
         AttributeError
-            If no ancestor of this block contains the input blueprints. Blueprints are
-            usually stored on the reactor object, which is typically an ancestor of
-            the block (block -> assembly -> core -> reactor). However, this may be the case
-            when creating blocks from scratch in testing where the entire composite
-            tree may not exist.
+            If no ancestor of this block contains the input blueprints. Blueprints are usually
+            stored on the reactor object, which is typically an ancestor of the block
+            (block -> assembly -> core -> reactor). However, this may be the case when creating
+            blocks from scratch in testing where the entire composite tree may not exist.
         """
         ancestorWithBp = self.getAncestor(
             lambda o: getattr(o, "blueprints", None) is not None
@@ -1689,12 +1688,13 @@ class Block(composites.Composite):
             heights = assemDesign.height
             myIndex = self.parent.index(self)
             return heights[myIndex]
+
         raise AttributeError(f"No ancestor of {self} has blueprints")
 
 
 class HexBlock(Block):
     """
-    Defines a HexBlock.
+    Defines a Block shaped like a hexagon.
 
     .. impl:: ARMI has the ability to create hex shaped blocks.
         :id: I_ARMI_BLOCK_HEX
@@ -1719,12 +1719,12 @@ class HexBlock(Block):
             :implements: R_ARMI_BLOCK_POSI
 
             Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
-            method of the block's ``spatialLocator`` attribute, which recursively
-            calls itself on all parents of the block to get the coordinates of the
-            block's centroid in 3D cartesian space.
+            method of the block's ``spatialLocator`` attribute, which recursively calls itself on
+            all parents of the block to get the coordinates of the block's centroid in 3D cartesian
+            space.
 
-            Will additionally adjust the x and y coordinates based on the block
-            parameters ``displacementX`` and ``displacementY``.
+            Will additionally adjust the x and y coordinates based on the block parameters
+            ``displacementX`` and ``displacementY``.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0
@@ -1742,44 +1742,42 @@ class HexBlock(Block):
             :id: I_ARMI_BLOCK_HOMOG
             :implements: R_ARMI_BLOCK_HOMOG
 
-            This method creates and returns a homogenized representation of itself in the form of a new Block.
-            The homogenization occurs in the following manner. A single Hexagon Component is created
-            and added to the new Block. This Hexagon Component is given the
+            This method creates and returns a homogenized representation of itself in the form of a
+            new Block. The homogenization occurs in the following manner. A single Hexagon Component
+            is created and added to the new Block. This Hexagon Component is given the
             :py:class:`armi.materials.mixture._Mixture` material and a volume averaged temperature
             (``getAverageTempInC``). The number densities of the original Block are also stored on
-            this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original block
-            are copied onto the homogenized block (e.g., macros, lumped fission products, burnup group,
-            number of pins, and spatial grid).
+            this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original
+            block are copied onto the homogenized block (e.g., macros, lumped fission products,
+            burnup group, number of pins, and spatial grid).
 
         Notes
         -----
-        This can be used to improve performance when a new copy of a reactor needs to be
-        built, but the full detail of the block (including component geometry, material,
-        number density, etc.) is not required for the targeted physics solver being applied
-        to the new reactor model.
+        This can be used to improve performance when a new copy of a reactor needs to be built, but
+        the full detail of the block (including component geometry, material, number density, etc.)
+        is not required for the targeted physics solver being applied to the new reactor model.
 
         The main use case is for the uniform mesh converter (UMC). Frequently, a deterministic
-        neutronics solver will require a uniform mesh reactor, which is produced by the UMC.
-        Many deterministic solvers for fast spectrum reactors will also treat the individual
-        blocks as homogenized mixtures. Since the neutronics solver does not need to know about
-        the geometric and material details of the individual child components within a block,
-        we can save significant effort while building the uniform mesh reactor with the UMC
-        by omitting this detailed data and only providing the necessary level of detail for
-        the uniform mesh reactor: number densities on each block.
+        neutronics solver will require a uniform mesh reactor, which is produced by the UMC. Many
+        deterministic solvers for fast spectrum reactors will also treat the individual blocks as
+        homogenized mixtures. Since the neutronics solver does not need to know about the geometric
+        and material details of the individual child components within a block, we can save
+        significant effort while building the uniform mesh reactor with the UMC by omitting this
+        detailed data and only providing the necessary level of detail for the uniform mesh reactor:
+        number densities on each block.
 
-        Individual components within a block can have different temperatures, and this
-        can affect cross sections. This temperature variation is captured by the lattice physics
-        module. As long as temperature distribution is correctly captured during cross section
-        generation, it doesn't need to be transferred to the neutronics solver directly through
-        this copy operation.
+        Individual components within a block can have different temperatures, and this can affect
+        cross sections. This temperature variation is captured by the lattice physics module. As
+        long as temperature distribution is correctly captured during cross section generation, it
+        does not need to be transferred to the neutronics solver directly through this copy
+        operation.
 
         If you make a new block, you must add it to an assembly and a reactor.
 
         Returns
         -------
-        b
-            A homogenized block containing a single Hexagon Component that contains an
-            average temperature and the number densities from the original block.
+        b : A homogenized block containing a single Hexagon Component that contains an average
+            temperature and the number densities from the original block.
 
         See Also
         --------
@@ -1861,26 +1859,24 @@ class HexBlock(Block):
         Updates the pin linear power densities of this block for the current rotation.
         The linear densities are represented by the *linPowByPin* parameter.
 
-        It is assumed that :py:meth:`.initializePinLocations` has already been executed
-        for fueled blocks in order to access the *pinLocation* parameter. The
-        *pinLocation* parameter is not accessed for non-fueled blocks.
+        It is assumed that :py:meth:`.initializePinLocations` has already been executed for fueled
+        blocks in order to access the *pinLocation* parameter. The *pinLocation* parameter is not
+        accessed for non-fueled blocks.
 
-        The *linPowByPin* parameter can be directly assigned to instead of using this
-        method if the multiplicity of the pins in the block is equal to the number of
-        pins in the block.
+        The *linPowByPin* parameter can be directly assigned to instead of using this method if the
+        multiplicity of the pins in the block is equal to the number of pins in the block.
 
         Parameters
         ----------
         powers : list of floats, required
-            The block-level pin linear power densities. powers[i] represents the average
-            linear power density of pin i. The units of linear power density is watts/cm
-            (i.e., watts produced per cm of pin length). The "ARMI pin ordering" must be
-            be used, which is counter-clockwise from 3 o'clock.
+            The block-level pin linear power densities. powers[i] represents the average linear
+            power density of pin i. The units of linear power density is watts/cm (i.e., watts
+            produced per cm of pin length). The "ARMI pin ordering" must be be used, which is
+            counter-clockwise from 3 o'clock.
 
         powerKeySuffix: str, optional
             Must be either an empty string, :py:const:`NEUTRON <armi.physics.neutronics.const.NEUTRON>`,
-            or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty
-            string.
+            or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty string.
 
         Notes
         -----
@@ -1896,8 +1892,8 @@ class HexBlock(Block):
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = np.zeros(numPins)
 
-        # Loop through rings. The *pinLocation* parameter is only accessed for fueled
-        # blocks; it is assumed that non-fueled blocks do not use a rotation map.
+        # Loop through rings. The *pinLocation* parameter is only accessed for fueled blocks; it is
+        # assumed that non-fueled blocks do not use a rotation map.
         for pinNum in range(numPins):
             if self.hasFlags(Flags.FUEL):
                 # -1 is needed in order to map from pinLocations to list index
@@ -1907,9 +1903,9 @@ class HexBlock(Block):
             pinLinPow = powers[pinLoc]
             self.p[powerKey][pinNum] = pinLinPow
 
-        # If using the *powerKeySuffix* parameter, we also need to set total power, which
-        # is sum of neutron and gamma powers. We assume that a solo gamma calculation
-        # to set total power does not make sense.
+        # If using the *powerKeySuffix* parameter, we also need to set total power, which is sum of
+        # neutron and gamma powers. We assume that a solo gamma calculation to set total power does
+        # not make sense.
         if powerKeySuffix:
             if powerKeySuffix == GAMMA:
                 if self.p[f"linPowByPin{NEUTRON}"] is None:
@@ -1987,9 +1983,8 @@ class HexBlock(Block):
         Parameters
         ----------
         rotNum : int
-            Rotation number between zero and five, inclusive, specifying how many
-            rotations have taken place.
-
+            Rotation number between zero and five, inclusive, specifying how many rotations have
+            taken place.
         """
         names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
         names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
@@ -2022,8 +2017,8 @@ class HexBlock(Block):
                 )
 
     def _rotateDisplacement(self, rad: float):
-        # This specifically uses the .get() functionality to avoid an error if this
-        # parameter does not exist.
+        # This specifically uses the .get() functionality to avoid an error if this parameter does
+        # not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
@@ -2043,6 +2038,7 @@ class HexBlock(Block):
                 "are correct!".format(self)
             )
             return
+
         # check wire wrap in contact with clad
         if (
             self.getComponent(Flags.CLAD) is not None
@@ -2055,10 +2051,10 @@ class HexBlock(Block):
                     "".format(self, wwCladGap),
                     single=True,
                 )
+
         # check clad duct overlap
         pinToDuctGap = self.getPinToDuctGap(cold=True)
-        # Allow for some tolerance; user input precision may lead to slight negative
-        # gaps
+        # Allow for some tolerance; user input precision may lead to slight negative gaps
         if pinToDuctGap is not None and pinToDuctGap < -0.005:
             raise ValueError(
                 "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(
@@ -2109,8 +2105,8 @@ class HexBlock(Block):
         if any(c is None for c in (duct, wire, clad)):
             return None
 
-        # note, if nRings was a None, this could be for a non-hex packed fuel assembly
-        # see thermal hydraulic design basis for description of equation
+        # NOTE: If nRings was a None, this could be for a non-hex packed fuel assembly see thermal
+        # hydraulic design basis for description of equation
         pinCenterFlatToFlat = self.getPinCenterFlatToFlat(cold=cold)
         pinOuterFlatToFlat = (
             pinCenterFlatToFlat
@@ -2124,9 +2120,8 @@ class HexBlock(Block):
 
     def getRotationNum(self) -> int:
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
-        return (
-            np.rint(self.p.orientation[2] / 360.0 * 6) % 6
-        )  # assume rotation only in Z
+        # assume rotation only in Z
+        return np.rint(self.p.orientation[2] / 360.0 * 6) % 6
 
     def setRotationNum(self, rotNum: int):
         """
@@ -2165,9 +2160,9 @@ class HexBlock(Block):
             else:
                 symmetryLine = self.core.spatialGrid.overlapsWhichSymmetryLine(indices)
                 # detect if upper edge assemblies are included. Doing this is the only way to know
-                # definitively whether or not the edge assemblies are half-assems or full.
-                # seeing the first one is the easiest way to detect them.
-                # Check it last in the and statement so we don't waste time doing it.
+                # definitively whether or not the edge assemblies are half-assems or full. Seeing
+                # the first one is the easiest way to detect them. Check it last in the and
+                # statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
                 if symmetryLine in [
                     grids.BOUNDARY_0_DEGREES,
@@ -2306,8 +2301,8 @@ class HexBlock(Block):
             wire = self.getComponent(Flags.WIRE)
         except ValueError:
             raise ValueError(
-                "Block {} has multiple clad and wire components,"
-                " so pin pitch is not well-defined.".format(self)
+                f"Block {self} has multiple clad and wire components, so pin pitch is not well-"
+                "defined."
             )
 
         if wire and clad:
@@ -2316,9 +2311,7 @@ class HexBlock(Block):
             )
         else:
             raise ValueError(
-                "Cannot get pin pitch in {} because it does not have a wire and a clad".format(
-                    self
-                )
+                f"Cannot get pin pitch in {self} because it does not have a wire and a clad"
             )
 
     def getWettedPerimeter(self):
@@ -2424,10 +2417,9 @@ class HexBlock(Block):
         r"""
         Return the hydraulic diameter in this block in cm.
 
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter. In a hex
+        assembly, the wetted perimeter includes the cladding, the wire wrap, and the inside of the
+        duct. The flow area is the inner area of the duct minus the area of the pins and the wire.
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
@@ -2460,6 +2452,7 @@ class CartesianBlock(Block):
                 elif indices[0] == 0 or indices[1] == 0:
                     # edge location
                     return 2.0
+
         return 1.0
 
     def getPinCenterFlatToFlat(self, cold=False):

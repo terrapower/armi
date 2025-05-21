@@ -172,10 +172,6 @@ blocks:
             widthInner: 21.42
             widthOuter: 21.42
             mult: 1.0
-            latticeIDs: [FC]
-            # latticeIDs is needed to ensure that the center of the bounding
-            # Component shares the same center/origin as the rest of the
-            # components in the block. See #332."
 # end-block-uo2
     mox: &block_mox
         grid name: MOX grid

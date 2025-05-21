@@ -354,7 +354,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
             before, after = outText.split("lattice map:")
             self.assertGreater(len(before), 100)
             self.assertGreater(len(after), 20)
-            self.assertIn("1 3 1 2 1 3 1", after, msg="lattice map not showing up")
+            self.assertIn("1 2 1 2 1 2 1", after, msg="lattice map not showing up")
             self.assertNotIn(
                 "- -3", after, msg="grid contents are showing up when they shouldn't"
             )

@@ -140,6 +140,7 @@ class BlockBlueprint(yamlize.KeyedList):
 
         self._checkByComponentMaterialInput(materialInput)
 
+        allLatticeIds = set()
         for componentDesign in self:
             filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
                 materialInput, componentDesign
@@ -183,6 +184,30 @@ class BlockBlueprint(yamlize.KeyedList):
                     elif not mult or mult == 1.0:
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
+
+                idsInGrid = list(gridDesign.gridContents.values())
+                if componentDesign.latticeIDs:
+                    for latticeID in componentDesign.latticeIDs:
+                        allLatticeIds.add(str(latticeID))
+                        # the user has given this component latticeIDs. check that
+                        # each of the ids appears in the grid, otherwise
+                        # their blueprints are probably wrong
+                        if len([i for i in idsInGrid if i == str(latticeID)]) == 0:
+                            raise ValueError(
+                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected "
+                                "to be present in the associated block grid. "
+                                "Check that the component's latticeIDs align with the block's grid."
+                            )
+
+        # for every id in grid, confirm that at least one component had it
+        if gridDesign:
+            idsInGrid = list(gridDesign.gridContents.values())
+            for idInGrid in idsInGrid:
+                if str(idInGrid) not in allLatticeIds:
+                    raise ValueError(
+                        f"ID {idInGrid} in grid {gridDesign.name} is not in any components of block {self.name}. "
+                        "All IDs in the grid must appear in at least one component."
+                    )
 
         # check that the block level mat mods use valid options in the same way
         # as we did for the by-component mods above

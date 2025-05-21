@@ -201,29 +201,6 @@ def defineCoreParameters():
         )
 
     with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
-    ) as pb:
-
-        pb.defParam(
-            "THmaxDeltaPPump",
-            units=units.PASCALS,
-            description="The maximum pumping pressure rise required to pump the given mass flow "
-            + "rate through the rod bundle",
-        )
-
-        pb.defParam(
-            "THmaxDilationPressure",
-            units=units.PASCALS,
-            description="THmaxDilationPressure",
-        )
-
-        pb.defParam(
-            "THoutletTempIdeal",
-            units=units.DEGC,
-            description="Average outlet temperature loop through all assemblies after doing TH",
-        )
-
-    with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["neutronics"]
     ) as pb:
 
