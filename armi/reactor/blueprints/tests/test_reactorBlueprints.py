@@ -55,6 +55,9 @@ core:
     grid contents:
       [0, 0]: IC
       [1, 1]: IC
+    orientationBOL:
+      [0, 0]: 56.7
+      [1, 1]: 123.4
 sfp:
     lattice pitch:
         x: 25.0
@@ -214,3 +217,11 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertEqual(len(sfp.getChildren()), 4)
         sfp.add(evst.getChildren()[0])
         self.assertEqual(len(sfp.getChildren()), 5)
+
+    def test_orientationBOL(self):
+        core, _sfp, _evst = self._setupReactor()
+
+        a0 = core.getAssembly(locationString="001-001")
+        self.assertEqual(a0.p.orientation, 56.7)
+        a1 = core.getAssembly(locationString="003-002")
+        self.assertEqual(a1.p.orientation, 123.4)
