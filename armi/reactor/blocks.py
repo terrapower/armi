@@ -2368,10 +2368,14 @@ class HexBlock(Block):
 
     def getFlowArea(self):
         """Return the total flowing coolant area of the block in cm^2."""
-        return self.getComponent(Flags.COOLANT, exact=True).getArea()
+        area = self.getComponent(Flags.COOLANT, exact=True).getArea()
+        for c in self.getComponents(Flags.INTERDUCTCOOLANT, exact=True):
+            area += c.getArea()
+
+        return area
 
     def getHydraulicDiameter(self):
-        r"""
+        """
         Return the hydraulic diameter in this block in cm.
 
         Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter. In a hex
