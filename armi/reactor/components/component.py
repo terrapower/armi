@@ -56,7 +56,7 @@ def componentTypeIsValid(component, name):
 
     Notes
     -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be specfied as a
+    - `Coolant` components are can no longer be defined as a general `Component` and should be specified as a
       `DerivedShape` if the coolant dimensions are not provided.
     """
     from armi.reactor.components import NullComponent
@@ -190,7 +190,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     Attributes
     ----------
     temperatureInC : float
-        Current temperature of component in celcius.
+        Current temperature of component in celsius.
     inputTemperatureInC : float
         Reference temperature in C at which dimension definitions were input
     temperatureInC : float
@@ -481,7 +481,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             # material, not a lumpedFissionProductCompatable material
             pass
 
-    def getArea(self, cold=False):
+    def getArea(self, cold=False, Tc=None):
         """
         Get the area of a Component in cm^2.
 
@@ -495,13 +495,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here
         """
-        area = self.getComponentArea(cold=cold)
+        area = self.getComponentArea(cold=cold, Tc=Tc)
         if self.p.get("modArea", None):
             comp, arg = self.p.modArea
             if arg == "sub":
-                area -= comp.getComponentArea(cold=cold)
+                area -= comp.getComponentArea(cold=cold, Tc=Tc)
             elif arg == "add":
-                area += comp.getComponentArea(cold=cold)
+                area += comp.getComponentArea(cold=cold, Tc=Tc)
             else:
                 raise ValueError("Option {} does not exist".format(arg))
 
@@ -617,7 +617,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Returns True if the component material is a solid."""
         return not isinstance(self.material, material.Fluid)
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """
         Get the area of this component in cm^2.
 
@@ -625,6 +625,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         ----------
         cold : bool, optional
             Compute the area with as-input dimensions instead of thermally-expanded
+        Tc : float, optional
+            Temperature to compute the area at
         """
         raise NotImplementedError
 
@@ -921,8 +923,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             Dimensions should be set considering the impact of thermal expansion. This
             method allows for a user or plugin to set a dimension and indicate if the
             dimension is for a cold configuration or not. If it is not for a cold
-            configuration, the thermal expansion factor is considered when setting the
-            dimension.
+            configuration, the thermal expansion factor is considered when setting the dimension.
 
             If the ``retainLink`` argument is ``True``, any Components linked to this
             one will also have its dimensions changed consistently. After a dimension
@@ -1035,7 +1036,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     def getLinkedComponents(self):
         """Find other components that are linked to this component."""
         dependents = []
-        for child in self.parent.getChildren():
+        for child in self.parent:
             for dimName in child.DIMENSION_NAMES:
                 isLinked = child.dimensionIsLinked(dimName)
                 if isLinked and child.p[dimName].getLinkedComponent() is self:
@@ -1210,7 +1211,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def restoreBackup(self, paramsToApply):
         """
-        Restore the parameters from perviously created backup.
+        Restore the parameters from previously created backup.
 
         This needed to be overridden due to linked components which actually have a parameter value
         of another ARMI component.

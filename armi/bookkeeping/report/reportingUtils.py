@@ -109,14 +109,10 @@ def writeWelcomeHeaders(o, cs):
             includedBlueprints = []
 
         inputInfo = []
-        inputFiles = (
-            [
-                ("Case Settings", cs.caseTitle + ".yaml"),
-                ("Blueprints", cs[CONF_LOADING_FILE]),
-            ]
-            + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
-            + [("Geometry", cs["geomFile"])]
-        )
+        inputFiles = [
+            ("Case Settings", cs.caseTitle + ".yaml"),
+            ("Blueprints", cs[CONF_LOADING_FILE]),
+        ] + [("Included blueprints", inclBp) for inclBp in includedBlueprints]
 
         activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
         for klass, kwargs in activeInterfaces:
@@ -597,7 +593,6 @@ def writeCycleSummary(core):
     runLog.important("Cycle {0} Summary:".format(cycle))
     avgBu = core.calcAvgParam("percentBu", typeSpec=Flags.FUEL, generationNum=2)
     str_.append("Core Average Burnup: {0}".format(avgBu))
-    str_.append("Idealized Outlet Temperature {}".format(core.p.THoutletTempIdeal))
     str_.append("End of Cycle {0:02d}. Timestamp: {1} ".format(cycle, time.ctime()))
 
     runLog.info("\n".join(str_))
@@ -608,7 +603,7 @@ def setNeutronBalancesReport(core):
 
     Parameters
     ----------
-    core  : armi.reactor.reactors.Core
+    core : armi.reactor.reactors.Core
     """
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
@@ -672,7 +667,7 @@ def summarizePinDesign(core):
     designInfo = collections.defaultdict(list)
 
     try:
-        for b in core.getBlocks(Flags.FUEL):
+        for b in core.iterBlocks(Flags.FUEL):
             fuel = b.getComponent(Flags.FUEL)
             duct = b.getComponent(Flags.DUCT)
             clad = b.getComponent(Flags.CLAD)
@@ -754,8 +749,7 @@ def summarizePowerPeaking(core):
     avgPDens = maxPowAssem.calcAvgParam("pdens")
     peakPDens = maxPowAssem.getMaxParam("pdens")
     if not avgPDens:
-        # protect against divide-by-zero. Peaking doesnt make sense if there is no
-        # power.
+        # protect against divide-by-zero. Peaking doesn't make sense if there is no power
         return
     axPeakF = peakPDens / avgPDens
 
@@ -830,9 +824,6 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     )
     report.setData(
         "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Geometry File", "{}".format(cs["geomFile"]), coreDesignTable, report.DESIGN
     )
     report.setData(
         "Loading File",
@@ -1062,10 +1053,22 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     generateFullCoreMap : bool, default False
     showBlockAxMesh : bool, default True
     """
-    assemsInCore = list(r.blueprints.assemblies.values())
+    assems = []
+    blueprints = r.blueprints
+    for aKey in blueprints.assemDesigns.keys():
+        a = blueprints.constructAssem(cs, name=aKey)
+        # since we will be plotting cold input heights, we need to make sure that
+        # that these new assemblies have access to a blueprints somewhere up the
+        # composite chain. normally this would happen through an assembly's parent
+        # reactor, but because these newly created assemblies are in the load queue,
+        # they will not have a parent reactor. to get around this, we just attach
+        # the blueprints to the assembly directly.
+        a.blueprints = blueprints
+        assems.append(a)
+
     core = r.core
     for plotNum, assemBatch in enumerate(
-        iterables.chunk(assemsInCore, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
+        iterables.chunk(assems, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
     ):
         assemPlotImage = copy(report.ASSEM_TYPES)
         assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
@@ -1073,11 +1076,11 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
         plotting.plotAssemblyTypes(
-            core.parent.blueprints,
-            assemPlotName,
             assemBatch,
+            assemPlotName,
             maxAssems=MAX_ASSEMS_PER_ASSEM_PLOT,
             showBlockAxMesh=showBlockAxMesh,
+            hot=False,
         )
 
     # Create radial core map

@@ -20,7 +20,7 @@ from armi import configure, isConfigured
 
 if not isConfigured():
     configure()
-from armi.reactor import systemLayoutInput
+
 from armi.reactor.blueprints import Blueprints
 from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -191,76 +191,6 @@ rzt_core:
         [8,6]: assembly9_7 fuel
 """
 
-# ruff: noqa: E501
-RTH_GEOM = """
-<reactor geom="ThetaRZ" symmetry="eighth core periodic">
-    <assembly azimuthalMesh="4" name="assembly1_1 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly1_2 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly1_3 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly1_4 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly1_5 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly1_6 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly1_7 fuel" rad1="0.0" rad2="14.2857142857" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly2_1 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly2_2 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly2_3 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly2_4 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly2_5 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly2_6 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly2_7 fuel" rad1="14.2857142857" rad2="28.5714285714" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly3_1 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly3_2 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly3_3 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly3_4 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly3_5 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly3_6 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly3_7 fuel" rad1="28.5714285714" rad2="42.8571428571" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly4_1 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly4_2 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly4_3 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly4_4 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly4_5 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly4_6 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly4_7 fuel" rad1="42.8571428571" rad2="57.1428571429" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly5_1 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly5_2 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly5_3 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly5_4 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly5_5 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly5_6 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly5_7 fuel" rad1="57.1428571429" rad2="71.4285714286" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly6_1 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly6_2 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly6_3 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly6_4 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly6_5 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly6_6 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly6_7 fuel" rad1="71.4285714286" rad2="85.7142857143" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly7_1 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly7_2 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly7_3 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly7_4 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly7_5 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly7_6 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly7_7 fuel" rad1="85.7142857143" rad2="100.001" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly8_1 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly8_2 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly8_3 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly8_4 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly8_5 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly8_6 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly8_7 fuel" rad1="100.001" rad2="115.001" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-    <assembly azimuthalMesh="4" name="assembly9_1 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.0" theta2="0.11556368446681414" />
-    <assembly azimuthalMesh="4" name="assembly9_2 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.11556368446681414" theta2="0.2311273689343264" />
-    <assembly azimuthalMesh="4" name="assembly9_3 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.2311273689343264" theta2="0.34669105340061696" />
-    <assembly azimuthalMesh="4" name="assembly9_4 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.34669105340061696" theta2="0.43870710999683127" />
-    <assembly azimuthalMesh="4" name="assembly9_5 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.43870710999683127" theta2="0.5542707944631219" />
-    <assembly azimuthalMesh="4" name="assembly9_6 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.5542707944631219" theta2="0.6698344789311578" />
-    <assembly azimuthalMesh="4" name="assembly9_7 fuel" rad1="115.001" rad2="130.001" radialMesh="4" theta1="0.6698344789311578" theta2="0.7853981633974483" />
-</reactor>
-"""
-
-
 SMALL_HEX = """core:
   geom: hex
   symmetry: third periodic
@@ -424,7 +354,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
             before, after = outText.split("lattice map:")
             self.assertGreater(len(before), 100)
             self.assertGreater(len(after), 20)
-            self.assertIn("1 3 1 2 1 3 1", after, msg="lattice map not showing up")
+            self.assertIn("1 2 1 2 1 2 1", after, msg="lattice map not showing up")
             self.assertNotIn(
                 "- -3", after, msg="grid contents are showing up when they shouldn't"
             )
@@ -482,12 +412,3 @@ class TestRZTGridBlueprint(unittest.TestCase):
             ),
             (5, 4, 0),
         )
-
-    def test_geomFile(self):
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(io.StringIO(RTH_GEOM))
-        gridDesign = geom.toGridBlueprints("test_grid")[0]
-        self.assertEqual(gridDesign.name, "test_grid")
-        self.assertEqual(gridDesign.geom, "thetarz")
-        self.assertEqual(gridDesign.symmetry, "eighth periodic")
-        self.assertEqual(gridDesign.geom, "thetarz")

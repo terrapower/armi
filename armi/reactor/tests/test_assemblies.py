@@ -353,7 +353,7 @@ class Assembly_TestCase(unittest.TestCase):
             "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
             "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
         }
-        for b in self.assembly.getBlocks(Flags.FUEL):
+        for b in self.assembly.iterBlocks(Flags.FUEL):
             b.p.update(blockParams)
 
         i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
@@ -361,7 +361,7 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(self.assembly.getSymmetryFactor(), 1)
         self.assembly.moveTo(locator)
         self.assertEqual(self.assembly.getSymmetryFactor(), 3)
-        for b in self.assembly.getBlocks(Flags.FUEL):
+        for b in self.assembly.iterBlocks(Flags.FUEL):
             # float
             assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
             # np.ndarray
@@ -496,7 +496,7 @@ class Assembly_TestCase(unittest.TestCase):
         mass1 = sum(bi.getMass("U235") for bi in self.assembly)
         self.assertAlmostEqual(mass0, mass1)
 
-        fuelBlock = self.assembly.getBlocks(Flags.FUEL)[0]
+        fuelBlock = next(self.assembly.iterBlocks(Flags.FUEL))
         blockU35Mass = fuelBlock.getMass("U235")
         fuelBlock.setMass("U235", 2 * blockU35Mass)
         self.assertAlmostEqual(fuelBlock.getMass("U235"), blockU35Mass * 2)
@@ -799,7 +799,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_reattach(self):
         # Remake original assembly
         self.assembly = makeTestAssembly(self.assemNum, self.assemNum)
-        self.assertEqual(0, len(self.assembly.getBlocks()))
+        self.assertEqual(0, len(self.assembly))
 
         # add some blocks with a component
         for i in range(self.assemNum):
@@ -827,8 +827,8 @@ class Assembly_TestCase(unittest.TestCase):
 
             self.assembly.add(b)
 
-        self.assertEqual(self.assemNum, len(self.assembly.getBlocks()))
-        for b in self.assembly.getBlocks():
+        self.assertEqual(self.assemNum, len(self.assembly))
+        for b in self.assembly:
             self.assertEqual("fuel", b.getType())
 
     def test_reestablishBlockOrder(self):
@@ -1035,24 +1035,25 @@ class Assembly_TestCase(unittest.TestCase):
         a.add(b)
         a.rotate(math.radians(120))
         # test list rotation
-        self.assertEqual(a.getBlocks()[0].p.THcornTemp, rotTemp)
-        self.assertAlmostEqual(a.getBlocks()[0].p.displacementX, rotX)
-        self.assertAlmostEqual(a.getBlocks()[0].p.displacementY, rotY)
+        b = a[0]
+        self.assertEqual(b.p.THcornTemp, rotTemp)
+        self.assertAlmostEqual(b.p.displacementX, rotX)
+        self.assertAlmostEqual(b.p.displacementY, rotY)
 
         b.p.THcornTemp = np.array([400, 450, 500, 550, 600, 650])
         rotTemp = np.array([600, 650, 400, 450, 500, 550])
         a.rotate(math.radians(120))
         # test np.ndarray rotation
         for i in range(len(b.p.THcornTemp)):
-            self.assertEqual(a.getBlocks()[0].p.THcornTemp[i], rotTemp[i])
+            self.assertEqual(b.p.THcornTemp[i], rotTemp[i])
 
         # test that floats and ints are left alone
         b.p.THcornTemp = 3
         a.rotate(math.radians(120))
-        self.assertEqual(a.getBlocks()[0].p.THcornTemp, 3)
+        self.assertEqual(b.p.THcornTemp, 3)
         b.p.THcornTemp = 4.0
         a.rotate(math.radians(120))
-        self.assertEqual(a.getBlocks()[0].p.THcornTemp, 4.0)
+        self.assertEqual(b.p.THcornTemp, 4.0)
 
         # check that TypeError is raised for unexpected data type
         b.p.THcornTemp = "bad data"
@@ -1096,7 +1097,7 @@ class Assembly_TestCase(unittest.TestCase):
             :tests: R_ARMI_ASSEM_BLOCKS
         """
         coords = []
-        for b in self.assembly.getBlocks():
+        for b in self.assembly.iterBlocks():
             # Confirm children are blocks
             self.assertIsInstance(b, blocks.Block)
 
@@ -1112,7 +1113,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_assem_hex_type(self):
         """Test that all children of a hex assembly are hexagons."""
-        for b in self.assembly.getBlocks():
+        for b in self.assembly:
 
             # For a hex assem, confirm they are of type "Hexagon"
             pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
@@ -1146,7 +1147,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
 
         igniterFuel = self.r.core.childrenByLocator[grid[0, 0, 0]]
         # gridplate, fuel, fuel, fuel, plenum
-        for b in igniterFuel.getBlocks(Flags.FUEL):
+        for b in igniterFuel.iterBlocks(Flags.FUEL):
             fuelComp = b.getComponent(Flags.FUEL)
             # add isotopes from clad and coolant to fuel component to test mass conservation
             # mass should only be conserved within fuel component, not over the whole block

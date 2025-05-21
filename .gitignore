@@ -73,16 +73,20 @@ tags
 temp-*
 venv*/
 
-# Ignore common data files
+# Ignore certain data files
 *.avi
 *.diff
+*.flux_bg
+*.flux_ufg
 *.h5
 *.html
 *.mp4
+*.nucdata
+*.out
 *.ppm
+*.sum
 *.txt
-
-# vis files
 *.vtd
 *.vtu
 *.xdmf
+*dlayxs*

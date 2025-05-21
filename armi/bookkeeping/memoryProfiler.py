@@ -47,7 +47,7 @@ from armi.utils import tabulate
 from armi.utils.customExceptions import NonexistentSetting
 
 try:
-    # psutil is an optional requirement, since it doesnt support MacOS very well
+    # psutil is an optional requirement, since it doesn't support MacOS very well
     import psutil
 
     _havePsutil = True
@@ -188,7 +188,7 @@ class MemoryProfiler(interfaces.Interface):
             )
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """Scans thorugh ARMI model for duplicate objects."""
+        """Scans through ARMI model for duplicate objects."""
         if self.r is None:
             return
         uniqueIds = set()
@@ -378,12 +378,10 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = context.MPI_NODENAME
-        # no psutil, no memory diagnostics.
-        # TODO: Ideally, we could cut MemoryProfiler entirely, but it is referred to
-        # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
         self.processVirtualMemoryInMB: Optional[float] = None
+        # no psutil, no memory diagnostics
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
             self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)

@@ -33,19 +33,20 @@ class TestTextProcessor(unittest.TestCase):
     """Test Text processor."""
 
     def setUp(self):
-        self.tp = textProcessors.TextProcessor(os.path.join(TEST_ROOT, "geom.xml"))
+        godivaSettings = os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml")
+        self.tp = textProcessors.TextProcessor(godivaSettings)
 
     def test_fsearch(self):
         """Test fsearch in re mode."""
-        line = self.tp.fsearch("xml")
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
+        line = self.tp.fsearch("nTasks")
+        self.assertIn("36", line)
+        self.assertEqual(self.tp.fsearch("nTasks"), "")
 
     def test_fsearchText(self):
         """Test fsearch in text mode."""
-        line = self.tp.fsearch("xml", textFlag=True)
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
+        line = self.tp.fsearch("nTasks", textFlag=True)
+        self.assertIn("36", line)
+        self.assertEqual(self.tp.fsearch("nTasks"), "")
 
 
 class YamlIncludeTest(unittest.TestCase):

@@ -36,7 +36,7 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Dict, List, Optional, Tuple, Type, Union
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
 
 import numpy as np
 
@@ -335,10 +335,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self.cached = {}
         self._backupCache = None
         self.p = self.paramCollectionType()
-        # TODO: These are not serialized to the database, and will therefore
-        # lead to surprising behavior when using databases. We need to devise a
-        # way to either represent them in parameters, or otherwise reliably
-        # recover them.
+        # NOTE: LFPs are not serialized to the database, which could matter when loading an old DB.
         self._lumpedFissionProducts = None
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
@@ -347,25 +344,22 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Implement the less-than operator.
 
-        Implementing this on the ArmiObject allows most objects, under most
-        circumstances to be sorted. This is useful from the context of the Database
-        classes, so that they can produce a stable layout of the serialized composite
-        structure.
+        Implementing this on the ArmiObject allows most objects, under most circumstances to be
+        sorted. This is useful from the context of the Database classes, so that they can produce a
+        stable layout of the serialized composite structure.
 
-        By default, this sorts using the spatial locator, in K, J, I order, which should
-        give a relatively intuitive order. For safety, it makes sure that the objects
-        being sorted live in the same grid, since it probably doesn't make
-        sense to sort things across containers or scopes. If this ends up being too
-        restrictive, it can probably be relaxed or overridden on specific classes.
+        By default, this sorts using the spatial locator in K, J, I order, which should give a
+        relatively intuitive order. It also makes sure that the objects being sorted live in the
+        same grid.
         """
         if self.spatialLocator is None or other.spatialLocator is None:
-            runLog.error("could not compare {} and {}".format(self, other))
+            runLog.error(f"could not compare {self} and {other}")
             raise ValueError(
                 "One or more of the compared objects have no spatialLocator"
             )
 
         if self.spatialLocator.grid is not other.spatialLocator.grid:
-            runLog.error("could not compare {} and {}".format(self, other))
+            runLog.error(f"could not compare {self} and {other}")
             raise ValueError(
                 "Composite grids must be the same to compare:\n"
                 "This grid: {}\n"
@@ -468,10 +462,10 @@ class ArmiObject(metaclass=CompositeModelType):
     def clearCache(self):
         """Clear the cache so all new values are recomputed."""
         self.cached = {}
-        for child in self.getChildren():
+        for child in self:
             child.clearCache()
 
-    def _getCached(self, name):  # TODO: stop the "returns None" nonsense?
+    def _getCached(self, name):
         """
         Obtain a value from the cache.
 
@@ -483,7 +477,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return self.cached.get(name, None)
 
-    def _setCache(self, name, val):  # TODO: remove me
+    def _setCache(self, name, val):
         """
         Set a value in the cache.
 
@@ -518,13 +512,40 @@ class ArmiObject(metaclass=CompositeModelType):
         for paramName, val in new.p.items():
             self.p[paramName] = val
 
-    def getChildren(self, deep=False, generationNum=1, includeMaterials=False):
-        """Return the children of this object."""
-        raise NotImplementedError
+    def iterChildren(
+        self,
+        deep=False,
+        generationNum=1,
+        predicate: Optional[Callable[["ArmiObject"], bool]] = None,
+    ) -> Iterator["ArmiObject"]:
+        """Iterate over children of this object."""
+        raise NotImplementedError()
 
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=True):
+    def getChildren(
+        self, deep=False, generationNum=1, includeMaterials=False
+    ) -> list["ArmiObject"]:
+        """Return the children of this object."""
+        raise NotImplementedError()
+
+    def iterChildrenWithFlags(
+        self, typeSpec: TypeSpec, exactMatch=False
+    ) -> Iterator["ArmiObject"]:
+        """Produce an iterator of children that have given flags."""
+        return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
+
+    def getChildrenWithFlags(
+        self, typeSpec: TypeSpec, exactMatch=False
+    ) -> list["ArmiObject"]:
         """Get all children that have given flags."""
-        raise NotImplementedError
+        return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
+
+    def iterChildrenOfType(self, typeName: str) -> Iterator["ArmiObject"]:
+        """Iterate over children that have a specific input type name."""
+        return self.iterChildren(predicate=lambda o: o.getType() == typeName)
+
+    def getChildrenOfType(self, typeName: str) -> list["ArmiObject"]:
+        """Produce a list of children that have a specific input type name."""
+        return list(self.iterChildrenOfType(typeName))
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         """
@@ -610,7 +631,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         for paramName in paramNames:
             myVal = self.p[paramName]
-            for c in self.getChildren():
+            for c in self:
                 c.p[paramName] = myVal
 
     @classmethod
@@ -883,7 +904,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMass(self, nuclideNames=None):
+    def getMass(self, nuclideNames=None) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -906,7 +927,7 @@ class ArmiObject(metaclass=CompositeModelType):
         mass : float
             The mass in grams.
         """
-        return sum([c.getMass(nuclideNames=nuclideNames) for c in self])
+        return sum(c.getMass(nuclideNames=nuclideNames) for c in self)
 
     def getMassFrac(self, nucName):
         """
@@ -1616,7 +1637,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self._lumpedFissionProducts = lfpCollection
 
     def setChildrenLumpedFissionProducts(self, lfpCollection):
-        for c in self.getChildren():
+        for c in self:
             c.setLumpedFissionProducts(lfpCollection)
 
     def getFissileMassEnrich(self):
@@ -1917,7 +1938,7 @@ class ArmiObject(metaclass=CompositeModelType):
             List of nuclide names that exist in this
         """
         nucs = set()
-        for child in self.getChildren():
+        for child in self:
             nucs.update(child.getNuclides())
         return nucs
 
@@ -2495,6 +2516,8 @@ class Composite(ArmiObject):
 
     """
 
+    _children: list["Composite"]
+
     def __init__(self, name):
         ArmiObject.__init__(self, name)
         self.childrenByLocator = {}
@@ -2592,9 +2615,106 @@ class Composite(ArmiObject):
         for c in items:
             self.add(c)
 
+    def iterChildren(
+        self,
+        deep=False,
+        generationNum=1,
+        predicate: Optional[Callable[["Composite"], bool]] = None,
+    ) -> Iterator["Composite"]:
+        """Iterate over children objects of this composite.
+
+        Parameters
+        ----------
+        deep : bool, optional
+            If true, traverse the entire composite tree. Otherwise, go as far as ``generationNum``.
+        generationNum: int, optional
+            Produce composites at this depth. A depth of ``1`` includes children of ``self``, ``2``
+            is children of children, and so on.
+        predicate: f(Composite) -> bool, optional
+            Function to check on a composite before producing it. All items in the iteration
+            will pass this check.
+
+        Returns
+        -------
+        iterator of Composite
+
+        See Also
+        --------
+        :meth:`getChildren` produces a list for situations where you need to perform
+        multiple iterations or do list operations (append, indexing, sorting, containment, etc.)
+
+        Composites are naturally iterable. The following are identical::
+
+            >>> for child in c.getChildren():
+            ...     pass
+            >>> for child in c.iterChildren():
+            ...     pass
+            >>> for child in c:
+            ...     pass
+
+        If you do not need any depth-traversal, natural iteration should be sufficient.
+
+        The :func:`filter` command may be sufficient if you do not wish to pass a predicate. The following
+        are identical::
+            >>> checker = lambda c: len(c.name) % 3
+            >>> for child in c.getChildren(predicate=checker):
+            ...     pass
+            >>> for child in c.iterChildren(predicate=checker):
+            ...     pass
+            >>> for child in filter(checker, c):
+            ...     pass
+
+        If you're going to be doing traversal beyond the first generation, this method will help you.
+
+        """
+        if deep and generationNum > 1:
+            raise RuntimeError(
+                "Cannot get children with a generation number set and the deep flag set"
+            )
+        if predicate is None:
+            checker = lambda _: True
+        else:
+            checker = predicate
+        yield from self._iterChildren(deep, generationNum, checker)
+
+    def _iterChildren(
+        self, deep: bool, generationNum: int, checker: Callable[["Composite"], bool]
+    ) -> Iterator["Composite"]:
+        if deep or generationNum == 1:
+            yield from filter(checker, self)
+        if deep or generationNum > 1:
+            for c in self:
+                yield from c._iterChildren(deep, generationNum - 1, checker)
+
+    def iterChildrenWithMaterials(self, *args, **kwargs) -> Iterator:
+        """Produce an iterator that also includes any materials found on descendants.
+
+        Arguments are forwarded to :meth:`iterChildren` and control the depth of traversal
+        and filtering of objects.
+
+        This is useful for sending state across MPI tasks where you need a more full
+        representation of the composite tree. Which includes the materials attached
+        to components.
+        """
+        children = self.iterChildren(*args, **kwargs)
+        # Each entry is either (c, ) or (c, c.material) if the child has a material attribute
+        stitched = map(
+            lambda c: (
+                (c,) if getattr(c, "material", None) is None else (c, c.material)
+            ),
+            children,
+        )
+        # Iterator that iterates over each "sub" iterator. If we have ((c0, ), (c1, m1)), this produces a single
+        # iterator of (c0, c1, m1)
+        return itertools.chain.from_iterable(stitched)
+
     def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
+        self,
+        deep=False,
+        generationNum=1,
+        includeMaterials=False,
+        predicate: Optional[Callable[["Composite"], bool]] = None,
+    ) -> list["Composite"]:
         """
         Return the children objects of this composite.
 
@@ -2636,6 +2756,11 @@ class Composite(ArmiObject):
             to meet the predicate only affects the object in question; children will
             still be considered.
 
+        See Also
+        --------
+        :meth:`iterChildren` if you do not need to produce a full list, e.g., just iterating
+        over objects.
+
         Examples
         --------
         >>> obj.getChildren()
@@ -2652,49 +2777,15 @@ class Composite(ArmiObject):
         [grandchild1, grandchild3]
 
         """
-        _pred = predicate or (lambda x: True)
-        if deep and generationNum > 1:
-            raise RuntimeError(
-                "Cannot get children with a generation number set and the deep flag set"
+        if not includeMaterials:
+            items = self.iterChildren(
+                deep=deep, generationNum=generationNum, predicate=predicate
             )
-
-        children = []
-        for child in self._children:
-            if generationNum == 1 or deep:
-                if _pred(child):
-                    children.append(child)
-
-            if generationNum > 1 or deep:
-                children.extend(
-                    child.getChildren(
-                        deep=deep,
-                        generationNum=generationNum - 1,
-                        includeMaterials=includeMaterials,
-                        predicate=predicate,
-                    )
-                )
-        if includeMaterials:
-            material = getattr(self, "material", None)
-            if material:
-                children.append(material)
-
-        return children
-
-    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False):
-        """Get all children of a specific type."""
-        children = []
-        for child in self:
-            if child.hasFlags(typeSpec, exact=exactMatch):
-                children.append(child)
-        return children
-
-    def getChildrenOfType(self, typeName):
-        """Get children that have a specific input type name."""
-        children = []
-        for child in self:
-            if child.getType() == typeName:
-                children.append(child)
-        return children
+        else:
+            items = self.iterChildrenWithMaterials(
+                deep=deep, generationNum=generationNum, predicate=predicate
+            )
+        return list(items)
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         return list(self.iterComponents(typeSpec, exact))
@@ -2748,8 +2839,11 @@ class Composite(ArmiObject):
 
         startTime = timeit.default_timer()
         # sync parameters...
-        allComps = [self] + self.getChildren(deep=True, includeMaterials=True)
-        allComps = [c for c in allComps if hasattr(c, "p")]
+        genItems = itertools.chain(
+            [self],
+            self.iterChildrenWithMaterials(deep=True),
+        )
+        allComps = [c for c in genItems if hasattr(c, "p")]
         sendBuf = [c.p.getSyncData() for c in allComps]
         runLog.debug("syncMpiState has {} comps".format(len(allComps)))
 
@@ -2818,30 +2912,27 @@ class Composite(ArmiObject):
         return syncCount
 
     def _syncParameters(self, allSyncData, errors):
-        # ensure no overlap with syncedKeys, use errors to report overlapping data
+        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
         syncedKeys = set()
         for nodeRank, nodeSyncData in enumerate(allSyncData):
             if nodeSyncData is None:
                 continue
-            # nodeSyncData is a list of tuples
+
             for key, val in nodeSyncData.items():
                 if key in syncedKeys:
-                    # TODO: this requires further investigation and should be avoidable.
-                    # this situation results when a composite object is flagged as being
-                    # out of sync, and this parameter was also globally modified and
-                    # readjusted to the original value.
+                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
+                    # was also globally modified and readjusted to the original value.
                     curVal = self.p[key]
                     if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
                             errors[self, key].append(nodeRank)
                     elif curVal != val:
                         errors[self, key].append(nodeRank)
-                        runLog.error(
-                            "in {}, {} differ ({} != {})".format(self, key, curVal, val)
-                        )
+                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
                     continue
                 syncedKeys.add(key)
                 self.p[key] = val
+
         self.clearCache()
         return len(syncedKeys)
 
@@ -2854,7 +2945,11 @@ class Composite(ArmiObject):
         SINCE_LAST_DISTRIBUTE_STATE.
         """
         paramDefs = set()
-        for child in [self] + self.getChildren(deep=True, includeMaterials=True):
+        items = itertools.chain(
+            [self],
+            self.iterChildrenWithMaterials(deep=True),
+        )
+        for child in items:
             # Materials don't have a "p" / Parameter attribute to sync
             if hasattr(child, "p"):
                 # below reads as: assigned & everything_but(SINCE_LAST_DISTRIBUTE_STATE)
@@ -2935,7 +3030,7 @@ class Composite(ArmiObject):
         """
         lfps = ArmiObject.getLumpedFissionProductCollection(self)
         if lfps is None:
-            for c in self.getChildren():
+            for c in self:
                 lfps = c.getLumpedFissionProductCollection()
                 if lfps is not None:
                     break
@@ -3073,7 +3168,7 @@ class Composite(ArmiObject):
     def printContents(self, includeNuclides=True):
         """Display information about all the comprising children in this object."""
         runLog.important(self)
-        for c in self.getChildren():
+        for c in self:
             c.printContents(includeNuclides=includeNuclides)
 
     def _genChildByLocationLookupTable(self):
@@ -3119,7 +3214,7 @@ class StateRetainer:
 
     """
 
-    def __init__(self, composite, paramsToApply=None):
+    def __init__(self, composite: Composite, paramsToApply=None):
         """
         Create an instance of a StateRetainer.
 
@@ -3147,9 +3242,11 @@ class StateRetainer:
         ``backUp()`` or ``restoreBackup()``.
         """
         paramDefs = set()
-        for child in [self.composite] + self.composite.getChildren(
-            deep=True, includeMaterials=True
-        ):
+        items = itertools.chain(
+            (self.composite,),
+            self.composite.iterChildrenWithMaterials(deep=True),
+        )
+        for child in items:
             if hasattr(child, "p"):
                 # materials don't have Parameters
                 paramDefs.update(child.p.paramDefs)

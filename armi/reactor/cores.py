@@ -23,14 +23,17 @@ import copy
 import itertools
 import os
 import time
-from typing import Optional
+from typing import Callable, Iterator, Optional
 
 import numpy as np
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
 from armi.reactor import (
+    assemblies,
+    blocks,
     composites,
+    flags,
     geometry,
     grids,
     parameters,
@@ -271,12 +274,13 @@ class Core(composites.Composite):
         fissileMass = 0.0
         heavyMetalMass = 0.0
         totalVolume = 0.0
-        numBlocks = len(self.getBlocks())
-        for block in self.getBlocks():
+        numBlocks = 0
+        for block in self.iterBlocks():
             totalMass += block.getMass()
             fissileMass += block.getFissileMass()
             heavyMetalMass += block.getHMMass()
             totalVolume += block.getVolume()
+            numBlocks += 1
         totalMass = totalMass * self.powerMultiplier / 1000.0
         fissileMass = fissileMass * self.powerMultiplier / 1000.0
         heavyMetalMass = heavyMetalMass * self.powerMultiplier / 1000.0
@@ -310,7 +314,7 @@ class Core(composites.Composite):
 
     def setBlockMassParams(self):
         """Set the parameters kgHM and kgFis for each block and calculate Pu fraction."""
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             b.p.kgHM = b.getHMMass() / units.G_PER_KG
             b.p.kgFis = b.getFissileMass() / units.G_PER_KG
             b.p.puFrac = (
@@ -705,7 +709,7 @@ class Core(composites.Composite):
         exactType=False,
         exclusions=None,
         overrideCircularRingMode=False,
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Returns the assemblies in a specified ring. Definitions of rings can change
         with problem parameters.
@@ -771,7 +775,7 @@ class Core(composites.Composite):
 
     def getAssembliesInSquareOrHexRing(
         self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Returns the assemblies in a specified ring. Definitions of rings can change with problem
         parameters.
@@ -819,7 +823,7 @@ class Core(composites.Composite):
 
     def getAssembliesInCircularRing(
         self, ring, typeSpec=None, exactType=False, exclusions=None
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Gets an assemblies within a circular range of the center of the core. This function allows
         for more circular styled assembly shuffling instead of the current hex approach.
@@ -850,7 +854,6 @@ class Core(composites.Composite):
             )
 
         # determine if the circularRingList has been generated
-        # TODO: make circularRingList a property that is generated on request
         if not self.circularRingList:
             self.circularRingList = self.buildCircularRingDictionary(
                 self._circularRingPitch
@@ -926,7 +929,7 @@ class Core(composites.Composite):
 
             assymap[aName] = assem
 
-    def getAssemblyByName(self, name):
+    def getAssemblyByName(self, name: str) -> assemblies.Assembly:
         """
         Find the assembly that has this name.
 
@@ -962,7 +965,7 @@ class Core(composites.Composite):
         includeAll=False,
         zones=None,
         exact=False,
-    ):
+    ) -> list[assemblies.Assembly]:
         """
         Return a list of all the assemblies in the reactor.
 
@@ -1044,7 +1047,7 @@ class Core(composites.Composite):
         )
         return {nozzleType: i for i, nozzleType in enumerate(sorted(nozzleList))}
 
-    def getBlockByName(self, name):
+    def getBlockByName(self, name: str) -> blocks.Block:
         """
         Finds a block based on its name.
 
@@ -1067,7 +1070,7 @@ class Core(composites.Composite):
             self._genBlocksByName()
             return self.blocksByName[name]
 
-    def getBlocksByIndices(self, indices):
+    def getBlocksByIndices(self, indices) -> list[blocks.Block]:
         """Get blocks in assemblies by block indices."""
         blocks = []
         for i, j, k in indices:
@@ -1081,16 +1084,15 @@ class Core(composites.Composite):
             block.getName(): block for block in self.getBlocks(includeAll=True)
         }
 
-    # TODO: (Idea) wrap this in an "if not self.blocksByLocName:"
-    # This will likely fail, but it will help diagnose why property approach
-    # wasn't working correctly
+    # This will likely fail, but it will help diagnose why property approach wasn't working
+    # correctly
     def genBlocksByLocName(self):
         """If self.blocksByLocName is deleted, then this will regenerate it or update it if things change."""
         self.blocksByLocName = {
             block.getLocation(): block for block in self.getBlocks(includeAll=True)
         }
 
-    def getBlocks(self, bType=None, **kwargs):
+    def getBlocks(self, bType=None, **kwargs) -> list[blocks.Block]:
         """
         Returns an iterator over all blocks in the reactor in order.
 
@@ -1105,7 +1107,7 @@ class Core(composites.Composite):
             assemblies will be returned as well as the ones in the reactor.
 
         kwargs : dict
-            Any keyword argument from R.getAssemblies()
+            Any keyword argument from :meth:`getAssemblies`
 
         Returns
         -------
@@ -1114,14 +1116,15 @@ class Core(composites.Composite):
 
         See Also
         --------
-        getAssemblies : locates the assemblies in the search
+        * :meth:`iterBlocks`: iterator over blocks with limited filtering.
+        * :meth:`getAssemblies` : locates the assemblies in the search
         """
         blocks = [b for a in self.getAssemblies(**kwargs) for b in a]
         if bType:
             blocks = [b for b in blocks if b.hasFlags(bType)]
         return blocks
 
-    def getFirstBlock(self, blockType=None, exact=False):
+    def getFirstBlock(self, blockType=None, exact=False) -> blocks.Block:
         """
         Return the first block of the requested type in the reactor, or return first block.
         exact=True will only match fuel, not testfuel, for example.
@@ -1145,7 +1148,7 @@ class Core(composites.Composite):
 
         return None
 
-    def getFirstAssembly(self, typeSpec=None, exact=False):
+    def getFirstAssembly(self, typeSpec=None, exact=False) -> assemblies.Assembly:
         """
         Gets the first assembly in the reactor.
 
@@ -1183,7 +1186,7 @@ class Core(composites.Composite):
 
     def getAllXsSuffixes(self):
         """Return all XS suffices (e.g. AA, AB, etc.) in the core."""
-        return sorted(set(b.getMicroSuffix() for b in self.getBlocks()))
+        return sorted(set(b.getMicroSuffix() for b in self.iterBlocks()))
 
     def getNuclideCategories(self):
         """
@@ -1332,7 +1335,6 @@ class Core(composites.Composite):
         else:
             return {b.getLocation(): b for a in self for b in a}
 
-    # TODO: Can be cleaned up, but need test case to guard agains breakage
     def getFluxVector(
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):
@@ -1344,12 +1346,11 @@ class Core(composites.Composite):
         Parameters
         ----------
         energyOrder : int, optional
-            A value of 0 implies that the flux will have all energy groups for
-            the first mesh point, and then all energy groups for the next mesh point, etc.
+            A value of 0 implies that the flux will have all energy groups for the first mesh point,
+            and then all energy groups for the next mesh point, etc.
 
-            A value of 1 implies that the flux will have values for all mesh points
-            of the first energy group first, followed by all mesh points for the second energy
-            group, etc.
+            A value of 1 implies that the flux will have values for all mesh points of the first
+            energy group first, followed by all mesh points for the second energy group, etc.
 
         adjoint : bool, optional
             If True, will return adjoint flux instead of real flux.
@@ -1366,11 +1367,10 @@ class Core(composites.Composite):
             The values you requested. length is NxG.
         """
         flux = []
-        blocks = list(self.getBlocks())
         groups = range(self.lib.numGroups)
 
         # build in order 0
-        for b in blocks:
+        for b in self.iterBlocks():
             if adjoint:
                 vals = b.p.adjMgFlux
             elif extSrc:
@@ -1385,7 +1385,7 @@ class Core(composites.Composite):
             flux.extend(vals)
 
         if energyOrder == 1:
-            # swap order.
+            # swap order
             newFlux = []
             for g in groups:
                 oneGroup = [flux[i] for i in range(g, len(flux), len(groups))]
@@ -1735,10 +1735,9 @@ class Core(composites.Composite):
 
     def saveAllFlux(self, fName="allFlux.txt"):
         """Dump all flux to file for debugging purposes."""
-        blocks = list(self.getBlocks())
         groups = range(self.lib.numGroups)
         with open(fName, "w") as f:
-            for block in blocks:
+            for block in self.iterBlocks():
                 for gi in groups:
                     f.write(
                         "{:10s} {:10d} {:12.5E} {:12.5E} {:12.5E}\n"
@@ -1999,7 +1998,7 @@ class Core(composites.Composite):
 
     def getMaxNumPins(self):
         """Find max number of pins of any block in the reactor."""
-        return max(b.getNumPins() for b in self.getBlocks())
+        return max(b.getNumPins() for b in self.iterBlocks())
 
     def getMinimumPercentFluxInFuel(self, target=0.005):
         """
@@ -2009,8 +2008,8 @@ class Core(composites.Composite):
         Parameters
         ----------
         target : float
-            This is the fraction of the total reactor fuel flux compared to the flux in a
-            specific assembly in a ring
+            This is the fraction of the total reactor fuel flux compared to the flux in a specific
+            assembly in a ring
 
         Returns
         -------
@@ -2024,21 +2023,19 @@ class Core(composites.Composite):
         fluxFraction = 0
         targetRing = numRings
 
-        allFuelBlocks = list(self.getBlocks(Flags.FUEL))
+        allFuelBlocks = self.getBlocks(Flags.FUEL)
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
-            # compare to outer most ring
-            # flatten list into one list of all blocks
+            # Compare to outer most ring. flatten list into one list of all blocks
             blocksInRing = list(
-                itertools.chain(
-                    *[
-                        a.getBlocks(Flags.FUEL)
+                itertools.chain.from_iterable(
+                    [
+                        a.iterBlocks(Flags.FUEL)
                         for a in self.getAssembliesInRing(ringNumber)
                     ]
                 )
             )
-            # TODO: itertools.chain.from_iterable(...)
 
             totalPower = self.getTotalBlockParam("flux", objs=allFuelBlocks)
             ringPower = self.getTotalBlockParam("flux", objs=blocksInRing)
@@ -2083,7 +2080,7 @@ class Core(composites.Composite):
         num = 0.0
         denom = 0.0
         if not blockList:
-            blockList = list(self.getBlocks())
+            blockList = self.getBlocks()
 
         for b in blockList:
             if flux2Weight:
@@ -2119,7 +2116,7 @@ class Core(composites.Composite):
 
     def setPitchUniform(self, pitchInCm):
         """Set the pitch in all blocks."""
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             b.setPitch(pitchInCm)
 
         # have to update the 2-D reactor mesh too.
@@ -2202,7 +2199,7 @@ class Core(composites.Composite):
          * It process boosters,
          * sets axial snap lists,
          * checks the geometry,
-         * sets up location tables ( tracks where the initial feeds were (for moderation or something)
+         * sets up location tables (tracks where the initial feeds were (for moderation or something)
 
         See Also
         --------
@@ -2213,7 +2210,7 @@ class Core(composites.Composite):
             "=========== Initializing Mesh, Assembly Zones, and Nuclide Categories =========== "
         )
 
-        for b in self.getBlocks():
+        for b in self.iterBlocks():
             if b.p.molesHmBOL > 0.0:
                 break
         else:
@@ -2225,9 +2222,8 @@ class Core(composites.Composite):
             )
 
         if dbLoad:
-            # reactor.blueprints.assemblies need to be populated
-            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
-            # but for DB load, this is not called so it must be here.
+            # reactor.blueprints.assemblies need to be populated this normally happens during
+            # blueprint constructAssem. But for DB load, this is not called so it must be here.
             self.parent.blueprints._prepConstruction(cs)
         else:
             # set reactor level meshing params
@@ -2235,8 +2231,8 @@ class Core(composites.Composite):
                 Flags.fromStringIgnoreErrors(t)
                 for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
             ]
-            # some assemblies, like control assemblies, have a non-conforming mesh
-            # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
+            # Some assemblies, like control assemblies, have a non-conforming mesh and should not be
+            # included in self.p.referenceBlockAxialMesh and self.p.axialMesh
             uniformAssems = [
                 a
                 for a in self.getAssemblies()
@@ -2251,8 +2247,6 @@ class Core(composites.Composite):
                 applySubMesh=True,
             )
 
-        self.numRings = self.getNumRings()  # TODO: why needed?
-
         self.getNuclideCategories()
 
         # Generate list of flags that are to be stationary during assembly shuffling
@@ -2262,9 +2256,7 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
-
         self.setBlockMassParams()
-
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -2273,8 +2265,8 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined manually in the given Settings file,
-        in the `zoneDefinitions` setting.
+        Build the Zones that are defined manually in the given Settings file, in the
+        `zoneDefinitions` setting.
 
         Parameters
         ----------
@@ -2292,9 +2284,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        This function will just define the Zones it sees in the settings, it does
-        not do any validation against a Core object to ensure those manual zones
-        make sense.
+        This function will just define the Zones it sees in the settings, it does not do any
+        validation against a Core object to ensure those manual zones make sense.
         """
         runLog.debug(
             "Building Zones by manual definitions in `zoneDefinitions` setting"
@@ -2312,3 +2303,59 @@ class Core(composites.Composite):
 
         if not len(self.zones):
             runLog.debug("No manual zones defined in `zoneDefinitions` setting")
+
+    def iterBlocks(
+        self,
+        typeSpec: Optional[flags.TypeSpec] = None,
+        exact=False,
+        predicate: Callable[[blocks.Block], bool] = None,
+    ) -> Iterator[blocks.Block]:
+        """Iterate over the blocks in the core.
+
+        Useful for operations that just want to find all the blocks in the core with light
+        filtering.
+
+        Parameters
+        ----------
+        typeSpec: armi.reactor.flags.TypeSpec, optional
+            Limit the traversal to blocks that have these flags.
+        exact: bool, optional
+            Strictness on the usage of ``typeSpec`` used in :meth:`armi.reactor.composites.hasFlags`
+        predicate: f(block) -> bool, optional
+            Limit the traversal to blocks that pass this predicate. Can be used in addition to
+            ``typeSpec`` to perform more advanced filtering.
+
+        Returns
+        -------
+        iterator[Block]
+            Iterator over blocks in the core that meet the conditions provided.
+
+        Examples
+        --------
+        Iterate over all fuel blocks::
+
+        >>> for b in r.core.iterBlocks(Flags.FUEL):
+        ...     pass
+
+        See Also
+        --------
+        :meth:`getBlocks` has more control over what is included in the returned list
+        including looking at the spent fuel pool and assemblies that may not exist now
+        but existed at BOL (via :meth:`getAssemblies`). But if you're just interested in
+        the blocks in the core now, maybe with a flag attached to that block, this is what
+        you should use.
+
+        Notes
+        -----
+        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If
+        this is not the case, consider using :meth:`iterChildren`.
+        """
+        if typeSpec is not None:
+            typeChecker = lambda b: b.hasFlags(typeSpec, exact=exact)
+        else:
+            typeChecker = lambda _: True
+        if predicate is not None:
+            blockChecker = lambda b: typeChecker(b) and predicate(b)
+        else:
+            blockChecker = typeChecker
+        return self.iterChildren(generationNum=2, predicate=blockChecker)

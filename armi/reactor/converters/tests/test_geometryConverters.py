@@ -213,7 +213,7 @@ class TestHexToRZConverter(unittest.TestCase):
         return expectedMassDict, expectedNuclideList
 
     def _checkBlockComponents(self, newR):
-        for b in newR.core.getBlocks():
+        for b in newR.core.iterBlocks():
             if len(b) != 1:
                 raise ValueError(
                     "Block {} has {} components and should only have 1".format(
@@ -315,7 +315,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
             self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core.getAssemblies()))
 
         # must be added after geom transform
-        for b in self.o.r.core.getBlocks():
+        for b in self.o.r.core.iterBlocks():
             b.p.power = 1.0
         converter.scaleParamsRelatedToSymmetry(self.r.core)
         a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]

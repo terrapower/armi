@@ -39,7 +39,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         )
 
         # Before: verify there are no macro XS on each block
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             self.assertIsNone(b.macros)
 
         # create the macro XS interface
@@ -59,6 +59,6 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         self.assertEqual(i.macrosLastBuiltAt, 0)
 
         # After: verify there are macro XS on each block
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             self.assertIsNotNone(b.macros)
             self.assertTrue(isinstance(b.macros, XSCollection))

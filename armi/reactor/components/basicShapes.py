@@ -76,11 +76,11 @@ class Circle(ShapedComponent):
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         return min(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the circle component in cm^2."""
-        idiam = self.getDimension("id", cold=cold)
-        od = self.getDimension("od", cold=cold)
-        mult = self.getDimension("mult", cold=cold)
+        idiam = self.getDimension("id", cold=cold, Tc=Tc)
+        od = self.getDimension("od", cold=cold, Tc=Tc)
+        mult = self.getDimension("mult", cold=cold, Tc=Tc)
         area = math.pi * (od**2 - idiam**2) / 4.0
         area *= mult
         return area
@@ -95,22 +95,24 @@ class Circle(ShapedComponent):
 class Hexagon(ShapedComponent):
     """A Hexagon.
 
+    This hexagonal shape has a hexagonal hole cut out of the center of it. By default, that inner
+    hole has a diameter of zero, making this a solid object with no hole.
+
     .. impl:: Hexagon shaped Component
         :id: I_ARMI_COMP_SHAPES1
         :implements: R_ARMI_COMP_SHAPES
 
-        This class provides the implementation of a hexagonal Component. This
-        includes setting key parameters such as its material, temperature, and
-        dimensions. It also includes methods for retrieving geometric
-        dimension information unique to hexagons such as the ``getPerimeter`` and
-        ``getPitchData`` methods.
+        This class provides the implementation of a hexagonal Component. This includes setting key
+        parameters such as its material, temperature, and dimensions. It also includes methods for
+        retrieving geometric dimension information unique to hexagons such as the ``getPitchData``
+        method.
     """
 
     is3D = False
 
-    THERMAL_EXPANSION_DIMS = {"ip", "op"}
-
     pDefs = componentParameters.getHexagonParameterDefinitions()
+
+    THERMAL_EXPANSION_DIMS = {"ip", "op"}
 
     def __init__(
         self,
@@ -148,27 +150,14 @@ class Hexagon(ShapedComponent):
         sideLength = self.getDimension("ip", Tc, cold) / math.sqrt(3)
         return 2.0 * sideLength
 
-    def getComponentArea(self, cold=False):
-        """
-        Computes the area for the hexagon component in cm^2.
-
-        Notes
-        -----
-        http://www3.wolframalpha.com/input/?i=hexagon
-        """
-        op = self.getDimension("op", cold=cold)
-        ip = self.getDimension("ip", cold=cold)
+    def getComponentArea(self, cold=False, Tc=None):
+        """Computes the area for the hexagon component in cm^2."""
+        op = self.getDimension("op", cold=cold, Tc=Tc)
+        ip = self.getDimension("ip", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = math.sqrt(3.0) / 2.0 * (op**2 - ip**2)
         area *= mult
         return area
-
-    def getPerimeter(self, Tc=None):
-        """Computes the perimeter of the hexagon component in cm."""
-        ip = self.getDimension("ip", Tc)
-        mult = self.getDimension("mult", Tc)
-        perimeter = 6 * (ip / math.sqrt(3)) * mult
-        return perimeter
 
     def getPitchData(self):
         """
@@ -249,12 +238,12 @@ class Rectangle(ShapedComponent):
         widthI = self.getDimension("widthInner", Tc, cold=cold)
         return math.sqrt(widthI**2 + lengthI**2)
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the rectangle in cm^2."""
-        lengthO = self.getDimension("lengthOuter", cold=cold)
-        widthO = self.getDimension("widthOuter", cold=cold)
-        lengthI = self.getDimension("lengthInner", cold=cold)
-        widthI = self.getDimension("widthInner", cold=cold)
+        lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
+        lengthI = self.getDimension("lengthInner", cold=cold, Tc=Tc)
+        widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * (lengthO * widthO - lengthI * widthI)
         return area
@@ -321,14 +310,14 @@ class SolidRectangle(Rectangle):
         # this (and probably be called a HollowRectangle or RectangularShell or
         # whatever), since a solid rectangle is more generic of the two. Then the
         # Parameter definitions for the hollow rectangle could inherit from the ones,
-        # adding the inner dimensions so that we wouln't need to do this here.
+        # adding the inner dimensions so that we wouldn't need to do this here.
         self.p.lengthInner = 0
         self.p.widthInner = 0
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the solid rectangle in cm^2."""
-        lengthO = self.getDimension("lengthOuter", cold=cold)
-        widthO = self.getDimension("widthOuter", cold=cold)
+        lengthO = self.getDimension("lengthOuter", cold=cold, Tc=Tc)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * (lengthO * widthO)
         return area
@@ -383,10 +372,10 @@ class Square(Rectangle):
             modArea=modArea,
         )
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the square in cm^2."""
-        widthO = self.getDimension("widthOuter", cold=cold)
-        widthI = self.getDimension("widthInner", cold=cold)
+        widthO = self.getDimension("widthOuter", cold=cold, Tc=Tc)
+        widthI = self.getDimension("widthInner", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * (widthO * widthO - widthI * widthI)
         return area
@@ -429,7 +418,7 @@ class Triangle(ShapedComponent):
 
     Notes
     -----
-    The exact angles of the triangle are undefined. The exact side lenths and angles
+    The exact angles of the triangle are undefined. The exact side lengths and angles
     are not critical to calculation of component area, so area can still be calculated.
     """
 
@@ -467,10 +456,10 @@ class Triangle(ShapedComponent):
             components, base=base, height=height, mult=mult, modArea=modArea
         )
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the triangle in cm^2."""
-        base = self.getDimension("base", cold=cold)
-        height = self.getDimension("height", cold=cold)
+        base = self.getDimension("base", cold=cold, Tc=Tc)
+        height = self.getDimension("height", cold=cold, Tc=Tc)
         mult = self.getDimension("mult")
         area = mult * base * height / 2.0
         return area

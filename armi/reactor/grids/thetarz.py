@@ -12,16 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import math
-from typing import TYPE_CHECKING, NoReturn, Optional
+from typing import NoReturn
 
 import numpy as np
 
 from armi.reactor.grids.locations import IJKType, IJType
 from armi.reactor.grids.structuredGrid import StructuredGrid
-
-if TYPE_CHECKING:
-    # Avoid circular imports
-    from armi.reactor.composites import ArmiObject
 
 TAU = math.tau
 
@@ -30,11 +26,7 @@ class ThetaRZGrid(StructuredGrid):
     """
     A grid characterized by azimuthal, radial, and zeta indices.
 
-    The angular meshes are limited to 0 to 2pi radians. R and Zeta are as in other
-    meshes.
-
-    It is recommended to call :meth:`fromGeom` to construct,
-    rather than directly constructing with ``__init__``
+    The angular meshes are limited to 0 to 2pi radians. R and Zeta are as in other meshes.
 
     See Figure 2.2 in Derstine 1984, ANL. [DIF3D]_.
     """
@@ -42,44 +34,6 @@ class ThetaRZGrid(StructuredGrid):
     def getSymmetricEquivalents(self, indices: IJType) -> NoReturn:
         raise NotImplementedError(
             f"{self.__class__.__name__} does not support symmetric equivalents"
-        )
-
-    @classmethod
-    def fromGeom(cls, geom, armiObject: Optional["ArmiObject"] = None) -> "ThetaRZGrid":
-        """
-        Build 2-D R-theta grid based on a Geometry object.
-
-        Parameters
-        ----------
-        geomInfo : list
-            list of ((indices), assemName) tuples for all positions in core with input
-            in radians
-
-        See Also
-        --------
-        armi.reactor.systemLayoutInput.SystemLayoutInput.readGeomXML : produces the geomInfo
-        structure
-
-        Examples
-        --------
-        >>> grid = grids.ThetaRZGrid.fromGeom(geomInfo)
-        """
-        allIndices = [
-            indices for indices, _assemName in geom.assemTypeByIndices.items()
-        ]
-
-        # create ordered lists of all unique theta and R points
-        thetas, radii = set(), set()
-        for rad1, rad2, theta1, theta2, _numAzi, _numRadial in allIndices:
-            radii.add(rad1)
-            radii.add(rad2)
-            thetas.add(theta1)
-            thetas.add(theta2)
-        radii = np.array(sorted(radii), dtype=np.float64)
-        thetaRadians = np.array(sorted(thetas), dtype=np.float64)
-
-        return ThetaRZGrid(
-            bounds=(thetaRadians, radii, (0.0, 0.0)), armiObject=armiObject
         )
 
     def getRingPos(self, indices):

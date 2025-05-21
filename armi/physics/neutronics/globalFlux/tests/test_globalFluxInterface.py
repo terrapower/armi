@@ -280,7 +280,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"
-        for a in self.r.core.getChildren():
+        for a in self.r.core:
             for b in a:
                 b.p.power = 10.0
         self.assertEqual(
@@ -449,6 +449,6 @@ class TestGlobalFluxUtils(unittest.TestCase):
 
 def applyDummyFlux(r, ng=33):
     """Set arbitrary flux distribution on a Reactor."""
-    for b in r.core.getBlocks():
+    for b in r.core.iterBlocks():
         b.p.power = 1.0
         b.p.mgFlux = np.arange(ng, dtype=np.float64)

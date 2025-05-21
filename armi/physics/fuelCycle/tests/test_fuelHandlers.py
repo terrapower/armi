@@ -71,11 +71,12 @@ class FuelHandlerTestHelper(ArmiTestHelper):
             customSettings={"nCycles": 3, "trackAssems": True},
         )
 
-        blockList = self.r.core.getBlocks()
-        for bi, b in enumerate(blockList):
+        allBlocks = self.r.core.getBlocks()
+        fakeBu = 30.0 / len(allBlocks)
+        for bi, b in enumerate(allBlocks):
             b.p.flux = 5e10
             if b.isFuel():
-                b.p.percentBu = 30.0 * bi / len(blockList)
+                b.p.percentBu = fakeBu * bi
         self.nfeed = len(self.r.core.getAssemblies(Flags.FEED))
         self.nigniter = len(self.r.core.getAssemblies(Flags.IGNITER))
         self.nSfp = len(self.r.excore["sfp"])
@@ -174,7 +175,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # symmetry factor == 3
         mockGetSymmetry.return_value = 3
         a.p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
-        a.getBlocks()[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
+        a[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
         res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
         self.assertAlmostEqual(res, expectedValue * 3)
 
@@ -437,9 +438,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # the burnup should be the maximum bu within
         # up to a burnup of 20%, which by the simple
         # dummy data layout should be the 2/3rd block in the blocklist
-        bs = self.r.core.getBlocks(Flags.FUEL)
         lastB = None
-        for b in bs:
+        for b in self.r.core.iterBlocks(Flags.FUEL):
             if b.p.percentBu > 20:
                 break
             lastB = b
@@ -468,9 +468,9 @@ class TestFuelHandler(FuelHandlerTestHelper):
             self.r.p.cycle = cycle
             fh.cycle = cycle
             fh.manageFuel(cycle)
-            for a in self.r.excore["sfp"].getChildren():
+            for a in self.r.excore["sfp"]:
                 self.assertEqual(a.getLocation(), "SFP")
-            for b in self.r.core.getBlocks(Flags.FUEL):
+            for b in self.r.core.iterBlocks(Flags.FUEL):
                 self.assertGreater(b.p.kgHM, 0.0, "b.p.kgHM not populated!")
                 self.assertGreater(b.p.kgFis, 0.0, "b.p.kgFis not populated!")
 
@@ -494,7 +494,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         ensure repeatability.
         """
         # check labels before shuffling:
-        for a in self.r.excore["sfp"].getChildren():
+        for a in self.r.excore["sfp"]:
             self.assertEqual(a.getLocation(), "SFP")
 
         # do some shuffles
@@ -528,7 +528,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # make sure the shuffle was repeated perfectly.
         for a in self.r.core.getAssemblies():
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
-        for a in self.r.excore["sfp"].getChildren():
+        for a in self.r.excore["sfp"]:
             self.assertEqual(a.getLocation(), "SFP")
 
         # Do some cleanup, since the fuelHandler Interface has code that gets
@@ -595,7 +595,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-        b = assem.getBlocks(Flags.FUEL)[0]
+        b = next(assem.iterBlocks(Flags.FUEL))
 
         b.p.linPowByPin = [1, 2, 3]
         self.assertEqual(type(b.p.linPowByPin), np.ndarray)
@@ -609,7 +609,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-        b = assem.getBlocks(Flags.FUEL)[0]
+        b = next(assem.iterBlocks(Flags.FUEL))
 
         b.p.linPowByPinNeutron = [1, 2, 3]
         self.assertEqual(type(b.p.linPowByPinNeutron), np.ndarray)
@@ -623,7 +623,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         newSettings = {CONF_ASSEM_ROTATION_STATIONARY: True}
         self.o.cs = self.o.cs.modified(newSettings=newSettings)
         assem = self.o.r.core.getFirstAssembly(Flags.FUEL)
-        b = assem.getBlocks(Flags.FUEL)[0]
+        b = next(assem.iterBlocks(Flags.FUEL))
 
         b.p.linPowByPinGamma = [1, 2, 3]
         self.assertEqual(type(b.p.linPowByPinGamma), np.ndarray)
@@ -803,7 +803,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab an arbitrary fuel assembly from the core and from the SFP
         a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
-        a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
+        a2 = self.r.excore["sfp"].getChildrenWithFlags(Flags.FUEL)[0]
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [

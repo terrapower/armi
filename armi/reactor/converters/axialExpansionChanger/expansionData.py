@@ -78,7 +78,7 @@ class ExpansionData:
         axial expansion target component during initialization.
         see self._isFuelLocked
     expandFromTinputToThot: bool
-        Determines if thermal expansion factors should be caculated from
+        Determines if thermal expansion factors should be calculated from
             - ``c.inputTemperatureInC`` to ``c.temperatureInC`` when ``True``, or
             - some other reference temperature and ``c.temperatureInC`` when ``False``
     """
@@ -224,7 +224,7 @@ class ExpansionData:
         Parameters
         ----------
         c : :py:class:`Component <armi.reactor.components.component.Component>`
-            Component to retrive expansion factor for
+            Component to retrieve expansion factor for
         """
         value = self._expansionFactors.get(c, 1.0)
         return value
@@ -288,19 +288,17 @@ class ExpansionData:
         if flagOfInterest is None:
             # Follow expansion of most neutronically important component, fuel then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
-                candidates = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
+                candidates = b.getChildrenWithFlags(targetFlag)
                 if candidates:
                     break
             # some blocks/components are not included in the above list but should still be found
             if not candidates:
                 candidates = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
-            candidates = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
+            candidates = b.getChildrenWithFlags(flagOfInterest)
         if len(candidates) == 0:
             # if only 1 solid, be smart enought to snag it
-            solidMaterials = list(
-                c for c in b if not isinstance(c.material, material.Fluid)
-            )
+            solidMaterials = getSolidComponents(b)
             if len(solidMaterials) == 1:
                 candidates = solidMaterials
         if len(candidates) == 0:

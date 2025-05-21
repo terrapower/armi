@@ -291,8 +291,8 @@ class AxialExpansionChanger:
         - If false, the top most block in the assembly is artificially chopped
           to preserve the assembly height. A runLog.Warning also issued.
         """
-        blkLst = self.linked.a.getBlocks()
-        if not blkLst[-1].hasFlags(Flags.DUMMY):
+        top = self.linked.a[-1]
+        if not top.hasFlags(Flags.DUMMY):
             runLog.warning(
                 f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
@@ -405,7 +405,7 @@ def _checkBlockHeight(b):
 
     Notes
     -----
-    3cm is a presumptive lower threshhold for DIF3D
+    3cm is a presumptive lower threshold for DIF3D
     """
     if b.getHeight() < 3.0:
         runLog.debug(

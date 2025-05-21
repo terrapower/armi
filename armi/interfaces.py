@@ -288,7 +288,6 @@ class Interface:
     concrete class that extends this one.
     """
 
-    # TODO: This is a terrible name.
     function = None
     """
     The function performed by an Interface. This is not required be be defined by implementations of
@@ -618,7 +617,6 @@ class Interface:
         target location when cloning a Case or CaseSuite. These can be absolute paths, relative
         paths, or glob patterns that will be interpolated relative to the input directory. Absolute
         paths will not be copied anywhere.
-
 
         The returned dictionary will enable the source Settings object to be updated to the new file
         location. While the dictionary keys are recommended to be Setting objects, the name of the

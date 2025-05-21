@@ -223,7 +223,7 @@ def makeReactionRateTable(obj, nuclides: List = None):
         for nucName in nuclides
     }
 
-    for armiObject in obj.getChildren():
+    for armiObject in obj:
         for nucName in nuclides:
             rxnRates = armiObject.getReactionRates(nucName, nDensity=1.0)
             for rxName, rxRate in rxnRates.items():

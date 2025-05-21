@@ -260,11 +260,11 @@ class HexReactorTests(ReactorTests):
         self.assertFalse(self.r.core.isFullCore)
         self.r.core.growToFullCore(self.o.cs)
         aNums = []
-        for a in self.r.core.getChildren():
+        for a in self.r.core:
             self.assertNotIn(a.getNum(), aNums)
             aNums.append(a.getNum())
 
-        bNames = [b.getName() for b in self.r.core.getBlocks()]
+        bNames = [b.getName() for b in self.r.core.iterBlocks()]
         for bName in bNames:
             self.assertEqual(bNames.count(bName), 1)
         self.assertEqual(self.r.core.powerMultiplier, 1.0)
@@ -291,7 +291,7 @@ class HexReactorTests(ReactorTests):
 
     def test_setPitchUniform(self):
         self.r.core.setPitchUniform(0.0)
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             self.assertEqual(b.getPitch(), 0.0)
 
     def test_countBlocksOfType(self):
@@ -328,7 +328,7 @@ class HexReactorTests(ReactorTests):
 
     def test_setB10VolOnCreation(self):
         """Test the setting of b.p.initialB10ComponentVol."""
-        for controlBlock in self.r.core.getBlocks(Flags.CONTROL):
+        for controlBlock in self.r.core.iterBlocks(Flags.CONTROL):
             controlComps = [c for c in controlBlock if c.getNumberDensity("B10") > 0]
             self.assertEqual(len(controlComps), 1)
             controlComp = controlComps[0]
@@ -714,7 +714,7 @@ class HexReactorTests(ReactorTests):
             set(self.r.blueprints.elementsToExpand), set(r2.blueprints.elementsToExpand)
         )
 
-        for b2, b3 in zip(r2.core.getBlocks(), self.r.core.getBlocks()):
+        for b2, b3 in zip(r2.core.iterBlocks(), self.r.core.iterBlocks()):
             for element in self.r.blueprints.elementsToExpand:
                 # nucspec allows elemental mass to be computed
                 mass2 = b2.getMass(element.symbol)
@@ -742,7 +742,7 @@ class HexReactorTests(ReactorTests):
             :id: T_ARMI_R_SYMM
             :tests: R_ARMI_R_SYMM
         """
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             sym = b.getSymmetryFactor()
             i, j, _ = b.spatialLocator.getCompleteIndices()
             if i == 0 and j == 0:
@@ -764,7 +764,7 @@ class HexReactorTests(ReactorTests):
             numGroups = 5
 
         self.r.core.lib = MockLib()
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = range(5)
             b.p.adjMgFlux = range(5)
 
@@ -776,7 +776,7 @@ class HexReactorTests(ReactorTests):
             numGroups = 5
 
         self.r.core.lib = MockLib()
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = range(5)
             b.p.adjMgFlux = [i + 0.1 for i in range(5)]
             b.p.extSrc = [i + 0.2 for i in range(5)]
@@ -784,10 +784,11 @@ class HexReactorTests(ReactorTests):
         adjFlux = self.r.core.getFluxVector(adjoint=True)
         srcVec = self.r.core.getFluxVector(extSrc=True)
         fluxVol = self.r.core.getFluxVector(volumeIntegrated=True)
-        expFlux = [i for i in range(5) for b in self.r.core.getBlocks()]
-        expAdjFlux = [i + 0.1 for b in self.r.core.getBlocks() for i in range(5)]
-        expSrcVec = [i + 0.2 for b in self.r.core.getBlocks() for i in range(5)]
-        expFluxVol = list(range(5)) * len(self.r.core.getBlocks())
+        blocks = self.r.core.getBlocks()
+        expFlux = [i for i in range(5) for _ in blocks]
+        expAdjFlux = [i + 0.1 for _ in blocks for i in range(5)]
+        expSrcVec = [i + 0.2 for _ in blocks for i in range(5)]
+        expFluxVol = list(range(5)) * len(blocks)
         assert_allclose(expFlux, mgFlux)
         assert_allclose(expAdjFlux, adjFlux)
         assert_allclose(expSrcVec, srcVec)
@@ -831,7 +832,7 @@ class HexReactorTests(ReactorTests):
     def test_getMass(self):
         # If these are not in agreement check on block symmetry factor being applied to volumes
         mass1 = self.r.core.getMass()
-        mass2 = sum([b.getMass() for b in self.r.core.getBlocks()])
+        mass2 = sum([b.getMass() for b in self.r.core.iterBlocks()])
         assert_allclose(mass1, mass2)
 
     def test_isPickleable(self):
@@ -1047,7 +1048,7 @@ class HexReactorTests(ReactorTests):
 
     def test_pinCoordsAllBlocks(self):
         """Make sure all blocks can get pin coords."""
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             coords = b.getPinCoordinates()
             self.assertGreater(len(coords), -1)
 
@@ -1061,7 +1062,7 @@ class HexReactorTests(ReactorTests):
         self.assertTrue(all(b.p.topIndex == 0 for b in a))
         originalHeights = [b.p.height for b in a]
         differntMesh = [val + 2 for val in r.core.p.referenceBlockAxialMesh]
-        # wont change because nonUnfiform assem doesn't conform to reference mesh
+        # won't change because nonUnfiform assem doesn't conform to reference mesh
         a.setBlockMesh(differntMesh)
         heights = [b.p.height for b in a]
         self.assertEqual(originalHeights, heights)

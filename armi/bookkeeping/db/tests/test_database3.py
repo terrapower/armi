@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import unittest
 from glob import glob
+from unittest.mock import Mock, patch
 
 import h5py
 import numpy as np
@@ -30,7 +31,10 @@ from armi.reactor import parameters
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
 from armi.reactor.reactors import Core, Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
-from armi.settings.fwSettings.globalSettings import CONF_SORT_REACTOR
+from armi.settings.fwSettings.globalSettings import (
+    CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
+    CONF_SORT_REACTOR,
+)
 from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import getPreviousTimeNode, safeCopy
@@ -99,7 +103,7 @@ class TestDatabase(unittest.TestCase):
 
                 self.db.writeToDB(self.r)
 
-        # add some more data that isnt written to the database to test the
+        # add some more data that isn't written to the database to test the
         # DatabaseInterface API
         self.r.p.cycle = 2
         self.r.p.timeNode = 0
@@ -177,16 +181,39 @@ class TestDatabase(unittest.TestCase):
         expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(2)}
         self.assertEqual(expectedSn, hists[testBlock]["serialNum"])
 
-        # cant mix blocks and assems, since they are different distance from core
+        # can't mix blocks and assems, since they are different distance from core
         with self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
 
-        # if requested time step isnt written, return no content
+        # if requested time step isn't written, return no content
         hist = self.dbi.getHistory(
             self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
         )
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
+
+    def test_fullCoreOnDbLoad(self):
+        """Test we can expand a reactor to full core when loading from DB via settings."""
+        self.assertFalse(self.r.core.isFullCore)
+        self.db.writeToDB(self.r)
+        cs = self.db.loadCS()
+        cs = cs.modified(newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True})
+        r: Reactor = self.db.load(0, 0, cs=cs)
+        self.assertTrue(r.core.isFullCore)
+
+    def test_dontExpandIfFullCoreInDB(self):
+        """Test that a full core reactor in the database is not expanded further."""
+        self.assertFalse(self.r.core.isFullCore)
+        self.db.writeToDB(self.r)
+        cs = self.db.loadCS()
+        cs = cs.modified(newSettings={CONF_GROW_TO_FULL_CORE_AFTER_LOAD: True})
+        mockGrow = Mock()
+        with (
+            patch("armi.reactor.cores.Core.isFullCore", Mock(return_value=True)),
+            patch("armi.reactor.cores.Core.growToFullCore", mockGrow),
+        ):
+            self.db.load(0, 0, cs=cs)
+        mockGrow.assert_not_called()
 
 
 class TestDatabaseSmaller(unittest.TestCase):
@@ -555,17 +582,15 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_DB_BP
         """
         inputs = self.db.readInputsFromDB()
-        self.assertEqual(len(inputs), 3)
+        self.assertEqual(len(inputs), 2)
 
         # settings
         self.assertGreater(len(inputs[0]), 100)
         self.assertIn("settings:", inputs[0])
 
-        self.assertEqual(len(inputs[1]), 0)
-
         # blueprints
-        self.assertGreater(len(inputs[2]), 100)
-        self.assertIn("blocks:", inputs[2])
+        self.assertGreater(len(inputs[1]), 2400)
+        self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
         self.assertTrue(isinstance(self.db, database.Database))

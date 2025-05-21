@@ -106,7 +106,7 @@ class ReportInterface(interfaces.Interface):
 
     def interactEOC(self, cycle=None):
         reportingUtils.writeCycleSummary(self.r.core)
-        runLog.info(self.o.timer.report(inclusion_cutoff=0.001))
+        runLog.info(self.o.timer.report(inclusionCutoff=0.001))
 
     def generateDesignReport(self, generateFullCoreMap, showBlockAxMesh):
         reportingUtils.makeCoreDesignReport(self.r.core, self.cs)
@@ -134,16 +134,14 @@ class ReportInterface(interfaces.Interface):
         reportingUtils.setNeutronBalancesReport(self.r.core)
         self.writeRunSummary()
         self.o.timer.stopAll()  # consider the run done
-        runLog.info(self.o.timer.report(inclusion_cutoff=0.001, total_time=True))
+        runLog.info(self.o.timer.report(inclusionCutoff=0.001, totalTime=True))
         _timelinePlot = self.o.timer.timeline(
-            self.cs.caseTitle, self.cs["timelineInclusionCutoff"], total_time=True
+            self.cs.caseTitle, self.cs["timelineInclusionCutoff"], totalTime=True
         )
         runLog.info(self.printReports())
 
-    # --------------------------------------------
-    #        Report Interface Specific
-    # --------------------------------------------
     def printReports(self):
+        """Report Interface Specific."""
         str_ = ""
         for report_ in self.reports:
             str_ += re.sub("\n", "\n\t", "{}".format(report_))
@@ -154,9 +152,6 @@ class ReportInterface(interfaces.Interface):
             + "\n----------- REPORTS END -----------"
         )
 
-    # --------------------------------------------
-    #        Ex-Core Summaries
-    # --------------------------------------------
     def writeRunSummary(self):
         """Make a summary of the run."""
         # spent fuel pool report
@@ -172,7 +167,7 @@ class ReportInterface(interfaces.Interface):
         runLog.important(title)
         runLog.important("-" * len(title))
         totFis = 0.0
-        for a in sfp.getChildren():
+        for a in sfp:
             runLog.important(
                 "{assembly:15s} discharged at t={dTime:10f} after {residence:10f} yrs. It entered at cycle: {cycle}. "
                 "It has {fiss:10f} kg (x {mult}) fissile and peak BU={bu:.2f} %.".format(
@@ -196,16 +191,16 @@ class ReportInterface(interfaces.Interface):
     @staticmethod
     def countAssembliesSFP(sfp):
         """Report on the count of assemblies in the SFP at each timestep."""
-        if not sfp.getChildren():
+        if not len(sfp):
             return
 
         runLog.important("Count:")
         totCount = 0
         thisTimeCount = 0
-        a = sfp.getChildren()[0]
+        a = sfp[0]
         lastTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
-        for a in sfp.getChildren():
+        for a in sfp:
             thisTime = a.getAge() / units.DAYS_PER_YEAR + a.p.chargeTime
 
             if thisTime != lastTime:

@@ -156,7 +156,7 @@ class Operator:
         self.r = None
         self.cs = cs
         runLog.LOG.startLog(self.cs.caseTitle)
-        self.timer = codeTiming.getMasterTimer()
+        self.timer = codeTiming.MasterTimer.getMasterTimer()
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
@@ -314,9 +314,8 @@ class Operator:
         """
         Return whether we are approaching EOL.
 
-        For the standard operator, this will return true when the current cycle
-        is the last cycle (cs["nCycles"] - 1). Other operators may need to
-        impose different logic.
+        For the standard operator, this will return true when the current cycle is the last cycle
+        (cs["nCycles"] - 1). Other operators may need to impose different logic.
         """
         return self.r.p.cycle == self.cs["nCycles"] - 1
 
@@ -333,7 +332,7 @@ class Operator:
             The Reactor object to attach to this Operator.
         """
         self.r = r
-        r.o = self  # TODO: this is only necessary for fuel-handler hacking
+        r.o = self
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
@@ -500,9 +499,7 @@ class Operator:
                 memBefore.broadcast()
                 memBefore.invoke(self, self.r, self.cs)
 
-            interactionMessage = " {} interacting with {} ".format(
-                interactionName, interface.name
-            )
+            interactionMessage = f"{interface.name}.{interactionName}"
             with self.timer.getTimer(interactionMessage):
                 interactMethod = getattr(interface, interactMethodName)
                 halt = halt or interactMethod(*args)
@@ -587,7 +584,8 @@ class Operator:
 
         Notes
         -----
-        Used within _interactAll to write details between each physics interaction when cs['debugDB'] is enabled.
+        Used within _interactAll to write details between each physics interaction when
+        cs['debugDB'] is enabled.
 
         Parameters
         ----------
@@ -596,8 +594,8 @@ class Operator:
         interfaceName : str
             name of the interface that is interacting (e.g. globalflux, lattice, th)
         statePointIndex : int (optional)
-            used as a counter to make labels that increment throughout an _interactAll call. The result should be fed
-            into the next call to ensure labels increment.
+            used as a counter to make labels that increment throughout an _interactAll call. The
+            result should be fed into the next call to ensure labels increment.
         """
         dbiForDetailedWrite = self.getInterface("database")
         db = dbiForDetailedWrite.database if dbiForDetailedWrite is not None else None
@@ -661,10 +659,9 @@ class Operator:
 
         Notes
         -----
-        If the interfaces are flagged to be reversed at EOL, they are
-        separated from the main stack and appended at the end in reverse
-        order. This allows, for example, an interface that must run
-        first to also run last.
+        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack
+        and appended at the end in reverse order. This allows, for example, an interface that must
+        run first to also run last.
         """
         activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
         self._interactAll("EOL", activeInterfaces)
@@ -716,7 +713,7 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accommodate testing
+        This is split off from self.interactAllCoupled to accommodate testing.
         """
         # Summarize the coupled results and the convergence status.
         converged = []
@@ -1175,14 +1172,13 @@ class Operator:
         """
         Process a snapshot request at this time.
 
-        This copies various physics input and output files to a special folder that
-        follow-on analysis be executed upon later.
+        This copies various physics input and output files to a special folder that follow-on
+        analysis be executed upon later.
 
         Notes
         -----
-        This was originally used to produce MC2/DIF3D inputs for external
-        parties (who didn't have ARMI) to review. Since then, the concept
-        of snapshots has evolved with respect to the
+        This was originally used to produce MC2/DIF3D inputs for external parties (who didn't have
+        ARMI) to review. Since then, the concept of snapshots has evolved with respect to the
         :py:class:`~armi.operators.snapshots.OperatorSnapshots`.
         """
         from armi.physics.neutronics.settings import CONF_LOADING_FILE
@@ -1204,9 +1200,9 @@ class Operator:
         else:
             os.mkdir(newFolder)
 
-        # Moving the cross section files is to a snapshot directory is a reasonable
-        # requirement, but these hard-coded names are not desirable. This is legacy
-        # and should be updated to be more robust for users.
+        # Moving the cross section files is to a snapshot directory is a reasonable requirement, but
+        # these hard-coded names are not desirable. This is legacy and should be updated to be more
+        # robust for users.
         for fileName in os.listdir("."):
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
@@ -1245,9 +1241,6 @@ class Operator:
         pathTools.copyOrWarn("DIF3D output for snapshot", globalFluxOutput, newFolder)
         pathTools.copyOrWarn(
             "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
-        )
-        pathTools.copyOrWarn(
-            "Geometry file for snapshot", self.cs["geomFile"], newFolder
         )
         pathTools.copyOrWarn(
             "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder

@@ -64,7 +64,7 @@ def plotReactorPerformance(reactor, dbi, buGroups, extension=None, history=None)
         The history tracker interface
     """
     try:
-        data = dbi.getHistory(reactor, params=["cycle", "time", "eFeedMT", "eSWU"])
+        data = dbi.getHistory(reactor, params=["cycle", "time"])
         data.update(
             dbi.getHistory(
                 reactor.core,
@@ -321,7 +321,6 @@ def plotCoreOverviewRadar(reactors, reactorNames=None):
         _getMechanicalVals,
         _getFuelVals,
         _getTHVals,
-        _getEconVals,
         _getPhysicalVals,
     ]
     firstReactorVals = {}  # for normalization
@@ -415,15 +414,22 @@ def _getMechanicalVals(r):
 def _getPhysicalVals(r):
     avgHeight = 0.0
     fuelA = r.core.getAssemblies(Flags.FUEL)
-    avgHeight = sum(
-        b.getHeight() for a in fuelA for b in a.getBlocks(Flags.FUEL)
-    ) / len(fuelA)
-    radius = r.core.getCoreRadius()
 
+    # get average height
+    avgHeight = 0
+    for a in fuelA:
+        for b in a.iterBlocks(Flags.FUEL):
+            try:
+                avgHeight += b.getInputHeight()
+            except AttributeError:
+                avgHeight += b.getHeight()
+    avgHeight /= len(fuelA)
+
+    radius = r.core.getCoreRadius()
     labels, vals = list(
         zip(
             *[
-                ("Fuel height", avgHeight),
+                ("Cold fuel height", avgHeight),
                 ("Fuel assems", len(fuelA)),
                 ("Assem weight", r.core.getFirstAssembly(Flags.FUEL).getMass()),
                 ("Core radius", radius),
@@ -439,7 +445,7 @@ def _getPhysicalVals(r):
 def _getFuelVals(r):
     tOverD = 0.0
     numClad = 0.0
-    for b in r.core.getBlocks(Flags.FUEL):
+    for b in r.core.iterBlocks(Flags.FUEL):
         clad = b.getComponent(Flags.CLAD)
         if clad:
             cladOD = clad.getDimension("od")
@@ -448,8 +454,6 @@ def _getFuelVals(r):
             numClad += 1
     tOverD /= numClad
     data = [
-        ("Max FCCI", r.core.p.maxcladFCCI),
-        ("Max BU", r.core.p.maxpercentBu),
         (
             "Smear dens.",
             r.core.calcAvgParam("smearDensity", generationNum=2, typeSpec=Flags.FUEL),
@@ -465,21 +469,12 @@ def _getTHVals(r):
     labels, vals = zip(
         *[
             ("Max PD", r.core.p.maxPD),
-            ("Outlet", r.core.p.THoutletTempIdeal),
-            ("Pump Pressure", r.core.p.THmaxDeltaPPump),
             ("Mass flow", r.core.getMaxParam("THmassFlowRate")),
             ("Th. striping", r.core.getMaxParam("THlocalDToutFuel")),
             ("Fuel temp", r.core.getMaxBlockParam("THhotChannelFuelCenterlineT")),
         ]
     )
     return "T/H", labels, vals
-
-
-def _getEconVals(r):
-    labels, vals = zip(
-        *[("Feed U", r.p.eFeedMT), ("SWU", r.p.eSWU), ("LCOE", r.p.lcoe)]
-    )
-    return "Economics", labels, vals
 
 
 def _radarFactory(numVars, frame="circle"):
@@ -530,7 +525,7 @@ def _radarFactory(numVars, frame="circle"):
         """
         Radar projection.
 
-        Note different PEP8 naming convension to comply with parent class
+        Note different PEP8 naming convention to comply with parent class.
         """
 
         name = "radar"

@@ -176,7 +176,6 @@ exclude = [
 # N801 - Class name should use CapWords convention
 # SIM - code simplification rules
 # TID - tidy imports
-# TODO: We want to support PLW0603 - don't use the global keyword
 select = ["D", "E", "F", "I", "N801", "SIM", "TID"]
 
 # Ruff rules we ignore (for now) because they are not 100% automatable
@@ -334,8 +333,6 @@ armi = [
     "tests/detailedAxialExpansion/refSmallCoreGrid.yaml",
     "tests/detailedAxialExpansion/refSmallReactor.yaml",
     "tests/detailedAxialExpansion/refSmallReactorBase.yaml",
-    "tests/geom.xml",
-    "tests/geom1Assem.xml",
     "tests/ISOAA",
     "tests/refSmallCartesian.yaml",
     "tests/refSmallCoreGrid.yaml",
@@ -346,12 +343,8 @@ armi = [
     "tests/smallestTestReactor/armiRunSmallest.yaml",
     "tests/smallestTestReactor/refOneBlockReactor.yaml",
     "tests/smallestTestReactor/refSmallestReactor.yaml",
-    "tests/ThRZGeom.xml",
-    "tests/ThRZloading.yaml",
-    "tests/ThRZSettings.yaml",
-    "tests/trz_geom.xml",
     "tests/tutorials",
     "tests/tutorials/data_model.ipynb",
     "tests/zpprTest.yaml",
-    "tests/zpprTestGeom.xml",
+    "tests/zpprTestGeom.yaml",
 ]

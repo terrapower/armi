@@ -94,14 +94,13 @@ class AbstractIsotopicDepleter:
 
         # ARMI objects to deplete keyed by name
         # order is important for consistency in iterating through objects
-        # cinder interface input format is very dependent on object order
         self._depleteByName = collections.OrderedDict()
 
         self.efpdToBurn = None
         self.allNuclidesInProblem = r.blueprints.allNuclidesInProblem if r else []
 
     def addToDeplete(self, armiObj):
-        """Add the oject to the group of objects to be depleted."""
+        """Add the object to the group of objects to be depleted."""
         self._depleteByName[armiObj.getName()] = armiObj
 
     def setToDeplete(self, armiObjects):

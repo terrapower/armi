@@ -217,7 +217,7 @@ class FuelHandler:
         if multiplier != 1:
             # handle special case: volume-integrated parameters where symmetry factor is not 1
             if blockLevelMax:
-                paramCollection = a.getBlocks()[0].p
+                paramCollection = a[0].p
             else:
                 paramCollection = a.p
             isVolumeIntegrated = (
@@ -625,7 +625,7 @@ class FuelHandler:
         Parameters
         ----------
         ringList : list
-            List of integer ring numbers to find assemblies in. Optionally, a string specifiying a
+            List of integer ring numbers to find assemblies in. Optionally, a string specifying a
             special location like the SFP (spent fuel pool)
 
         typeSpec : Flags or iterable of Flags, optional
@@ -653,7 +653,7 @@ class FuelHandler:
                 f"or otherwise instantiate a SpentFuelPool object as r.excore['sfp']"
             )
         else:
-            sfpAssems = self.r.excore["sfp"].getChildren()
+            sfpAssems = list(self.r.excore["sfp"])
 
         assemblyList = [[] for _i in range(len(ringList))]  # empty lists for each ring
         if exclusions is None:
@@ -863,7 +863,7 @@ class FuelHandler:
         # which, coincidentally is the same time we're at right now at BOC.
         self.r.core.removeAssembly(outgoing)
 
-        # adjust the assembly multiplicity so that it doesnt forget how many it really
+        # adjust the assembly multiplicity so that it does not forget how many it really
         # represents. This allows us to discharge an assembly from any location in
         # fractional-core models where the central location may only be one assembly,
         # whereas other locations are more, and keep proper track of things. In the

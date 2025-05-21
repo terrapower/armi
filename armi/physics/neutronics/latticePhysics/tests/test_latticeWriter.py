@@ -73,7 +73,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         d = defaultdict(float)
         d["AA"] = 10.0
         setBlockNeutronVelocities(self.r, d)
-        tot = sum([b.p.mgNeutronVelocity for b in self.r.core.getBlocks()])
+        tot = sum([b.p.mgNeutronVelocity for b in self.r.core.iterBlocks()])
         self.assertGreater(tot, 3000.0)
 
     def test_latticePhysicsWriter(self):

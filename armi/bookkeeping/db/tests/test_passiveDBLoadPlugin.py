@@ -36,6 +36,10 @@ class TestPassiveDBLoadPlugin(unittest.TestCase):
         """
         self.app = getApp()
         self._backupApp = deepcopy(self.app)
+        self._cacheBPSections = PassiveDBLoadPlugin.SKIP_BP_SECTIONS
+        self._cacheUnkownParams = PassiveDBLoadPlugin.UNKNOWN_PARAMS
+        PassiveDBLoadPlugin.SKIP_BP_SECTIONS = []
+        PassiveDBLoadPlugin.UNKNOWN_PARAMS = {}
 
     def tearDown(self):
         """Restore the App to its original state."""
@@ -43,6 +47,8 @@ class TestPassiveDBLoadPlugin(unittest.TestCase):
 
         armi._app = self._backupApp
         context.APP_NAME = "armi"
+        PassiveDBLoadPlugin.SKIP_BP_SECTIONS = self._cacheBPSections
+        PassiveDBLoadPlugin.UNKNOWN_PARAMS = self._cacheUnkownParams
 
     def test_passiveDBLoadPlugin(self):
         plug = PassiveDBLoadPlugin()

@@ -141,22 +141,6 @@ def _getNeutronicsBlockParams():
             default=0.0,
         )
 
-        pb.defParam(
-            "mgFluxSK",
-            units=f"n*{units.CM}/{units.SECONDS}",
-            description=(
-                "multigroup volume-integrated flux stored for multiple time steps in "
-                "spatial kinetics (2-D array)"
-            ),
-            location=ParamLocation.VOLUME_INTEGRATED,
-            saveToDB=False,
-            categories=[
-                parameters.Category.fluxQuantities,
-                parameters.Category.multiGroupQuantities,
-            ],
-            default=None,
-        )
-
         # Not anointing the pin fluxes as a MG quantity, since it has an extra dimension, which
         # could lead to issues, depending on how the multiGroupQuantities category gets used
         pb.defParam(
@@ -221,27 +205,9 @@ def _getNeutronicsBlockParams():
         )
 
         pb.defParam(
-            "betad",
-            units=units.UNITLESS,
-            description="Delayed neutron beta",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
             "chi",
             units=units.UNITLESS,
             description="Energy distribution of fission neutrons",
-            location=ParamLocation.AVERAGE,
-            saveToDB=True,
-            default=None,
-        )
-
-        pb.defParam(
-            "chid",
-            units=units.UNITLESS,
-            description="Energy distribution of delayed fission neutrons",
             location=ParamLocation.AVERAGE,
             saveToDB=True,
             default=None,
@@ -423,7 +389,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "rateProdNet",
             units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Net production rate of neutrons",
+            description="The total neutron production including (n,2n) source and fission source.",
         )
 
         pb.defParam(
@@ -759,14 +725,6 @@ def _getNeutronicsCoreParams():
             "kInf",
             units=units.UNITLESS,
             description="k-infinity",
-            default=0.0,
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "refKeff",
-            units=units.UNITLESS,
-            description="Reference unperturbed keff",
             default=0.0,
             location=ParamLocation.AVERAGE,
         )

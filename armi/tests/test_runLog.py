@@ -131,12 +131,13 @@ class TestRunLog(unittest.TestCase):
         log.log("warning", "test_warningReport", single=True, label=None)
         log.log("debug", "invisible due to log level", single=False, label=None)
         log.log("warning", "test_warningReport", single=True, label=None)
+        log.log("warning", "simple_warning", single=False, label=None)
         log.log("error", "high level something", single=False, label=None)
 
         # test that the logging found some duplicate outputs
         dupsFilter = log.getDuplicatesFilter()
         self.assertIsNotNone(dupsFilter)
-        warnings = dupsFilter.singleWarningMessageCounts
+        warnings = dupsFilter.warningCounts
         self.assertGreater(len(warnings), 0)
 
         # run the warning report
@@ -146,8 +147,10 @@ class TestRunLog(unittest.TestCase):
 
         # test what was logged
         streamVal = stream.getvalue()
-        self.assertIn("test_warningReport", streamVal, msg=streamVal)
         self.assertIn("Final Warning Count", streamVal, msg=streamVal)
+        self.assertIn("simple_warning", streamVal, msg=streamVal)
+        self.assertIn("test_warningReport", streamVal, msg=streamVal)
+        self.assertIn("Total Number of Warnings", streamVal, msg=streamVal)
         self.assertNotIn("invisible", streamVal, msg=streamVal)
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
 
@@ -299,7 +302,7 @@ class TestRunLog(unittest.TestCase):
             self.assertIn("hi", mock.getStdout())
             mock.emptyStdout()
 
-            # we should start with a clean slate, before info loggin
+            # we should start with a clean slate, before info logging
             self.assertEqual("", mock.getStdout())
             runLog.LOG.setVerbosity(logging.INFO)
             runLog.LOG.startLog("test_setVerbosityBeforeStartLog2")

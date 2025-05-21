@@ -151,7 +151,7 @@ class UnshapedComponent(Component):
         )
         self._linkAndStoreDimensions(components, modArea=modArea)
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """
         Get the area of this component in cm^2.
 
@@ -159,12 +159,20 @@ class UnshapedComponent(Component):
         ----------
         cold : bool, optional
             If True, compute the area with as-input dimensions, instead of thermally-expanded.
+        Tc : float, optional
+            Temperature in C to compute the area at
         """
+        if cold and Tc is not None:
+            raise ValueError(
+                f"Cannot compute component area at {Tc} and cold dimensions simultaneously."
+            )
         coldArea = self.p.area
         if cold:
             return coldArea
+        if Tc is None:
+            Tc = self.temperatureInC
 
-        return self.getThermalExpansionFactor(self.temperatureInC) ** 2 * coldArea
+        return self.getThermalExpansionFactor(Tc) ** 2 * coldArea
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """
@@ -257,7 +265,7 @@ class UnshapedVolumetricComponent(UnshapedComponent):
         )
         self._linkAndStoreDimensions(components, op=op, userDefinedVolume=volume)
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         return self.getVolume() / self.parent.getHeight()
 
     def getComponentVolume(self):
@@ -396,7 +404,7 @@ class DerivedShape(UnshapedComponent):
         # Determine the volume/areas of the non-derived shape components within the parent.
         siblingVolume = 0.0
         siblingArea = 0.0
-        for sibling in self.parent.getChildren():
+        for sibling in self.parent:
             if sibling is self:
                 continue
             elif not self and isinstance(sibling, DerivedShape):
@@ -464,7 +472,7 @@ class DerivedShape(UnshapedComponent):
         vol = UnshapedComponent.getVolume(self)
         return vol
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """
         Get the area of this component in cm^2.
 
@@ -472,13 +480,29 @@ class DerivedShape(UnshapedComponent):
         ----------
         cold : bool, optional
             If True, compute the area with as-input dimensions, instead of thermally-expanded.
+        Tc : float, optional
+            Temperature in C to compute the area at
         """
+        if cold and Tc is not None:
+            raise ValueError(
+                f"Cannot compute component area at {Tc} and cold dimensions simultaneously."
+            )
+
         if cold:
             # At cold temp, the DerivedShape has the area of the parent minus the other siblings
-            parentArea = self.parent.getArea()
-            # NOTE: the assumption is there is only one DerivedShape in each Component
+            parentArea = self.parent.getMaxArea()
+            # NOTE: Here we assume there is one-and-only-one DerivedShape in each Component
             siblings = sum(
                 [c.getArea(cold=True) for c in self.parent if type(c) != DerivedShape]
+            )
+            return parentArea - siblings
+
+        if Tc is not None:
+            # The DerivedShape has the area of the parent minus the other siblings
+            parentArea = self.parent.getMaxArea()
+            # NOTE: Here we assume there is one-and-only-one DerivedShape in each Component
+            siblings = sum(
+                [c.getArea(Tc=Tc) for c in self.parent if type(c) != DerivedShape]
             )
             return parentArea - siblings
 
