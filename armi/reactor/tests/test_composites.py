@@ -605,7 +605,8 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(self.refDict)
+        self.block.clearNumberDensities()
+        self.block.updateNumberDensities(self.refDict)
 
     def test_ordering(self):
         a = assemblies.Assembly("dummy")
@@ -681,7 +682,6 @@ class TestCompositeTree(unittest.TestCase):
         self.fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
         self.block.add(self.fuelComponent)
 
-        self.block.clearNumberDensities()
         self.refDict = {
             "U235": 0.00275173784234,
             "U238": 0.0217358415457,
@@ -693,7 +693,8 @@ class TestCompositeTree(unittest.TestCase):
             "NA23": 2e-2,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(self.refDict)
+        self.block.clearNumberDensities()
+        self.block.updateNumberDensities(self.refDict)
 
         cur = self.block.getHMMass()
 
