@@ -23,19 +23,6 @@ from armi.utils import units
 def getAssemblyParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
 
-    with pDefs.createBuilder() as pb:
-
-        pb.defParam(
-            "powerDecay",
-            setter=isNumpyArray("powerDecay"),
-            units=units.WATTS,
-            description="List of decay heats at each time step specified in "
-            "decayHeatCalcTimesInSeconds setting.",
-            saveToDB=True,
-            location=ParamLocation.AVERAGE,
-            default=None,
-        )
-
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
 
         pb.defParam(
@@ -138,9 +125,7 @@ def getAssemblyParameterDefinitions():
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "
                 "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
-                "This param keeps the hi-fi and low-fi depletion values from interfering. "
-                "See core.p.detailedNucKeys for keys. "
-                # Could be moved to external physics plugin
+                "This param keeps the hi-fi and low-fi depletion values from interfering."
             ),
             saveToDB=True,
             default=None,

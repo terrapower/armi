@@ -126,8 +126,7 @@ def defineSettings():
             CONF_DPA_PER_FLUENCE,
             default=4.01568627451e-22,
             label="DPA Per Fluence",
-            description="A quick and dirty conversion that is used to get "
-            "dpaPeak by multiplying the factor and fastFluencePeak",
+            description="A quick and dirty conversion that is used to get dpaPeak",
         ),
         setting.Setting(
             CONF_BC_COEFFICIENT,
