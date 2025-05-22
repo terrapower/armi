@@ -420,7 +420,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.parent = self
 
     def __repr__(self):
-        return "f<{self.__class__.__name__}: {self.name}>"
+        return f"<{self.__class__.__name__}: {self.name}>"
 
     def __format__(self, spec):
         return format(str(self), spec)
