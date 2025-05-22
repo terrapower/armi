@@ -431,15 +431,7 @@ def _checkBlockHeight(b):
     3cm is a presumptive lower threshold for DIF3D
     """
     if b.getHeight() < 3.0:
-        runLog.debug(
-            "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.getHeight()
-            )
-        )
+        runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
 
     if b.getHeight() < 0.0:
-        raise ArithmeticError(
-            "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(
-                b.name, str(b.p.flags), b.getHeight()
-            )
-        )
+        raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
