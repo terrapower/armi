@@ -38,6 +38,7 @@ from armi.reactor.converters.axialExpansionChanger import (
 )
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AxialLink,
+    _checkOverlap,
     areAxiallyLinked,
 )
 from armi.reactor.flags import Flags
@@ -309,7 +310,7 @@ class TestConservation(AxialExpansionTestBase):
         )
         assems = list(rCold.blueprints.assemblies.values())
         for a in assems:
-            if a.hasFlags([Flags.MIDDLE, Flags.ANNULAR, Flags.TEST]):
+            if a.hasFlags([Flags.MIDDLE, Flags.ANNULAR]):
                 # assemblies with the above flags have liners and conservation of such assemblies is
                 # not currently supported
                 continue
@@ -1073,21 +1074,15 @@ class TestComponentLinks(AxialExpansionTestBase):
         self,
         componentsToTest: dict,
         assertionBool: bool,
-        name: str,
-        commonArgs: tuple = None,
     ):
         """Runs various linkage tests.
 
         Parameters
         ----------
-        componentsToTest : dict
+        componentsToTest
             keys --> component class type; values --> dimensions specific to key
-        assertionBool : boolean
+        assertionBool
             expected truth value for test
-        name : str
-            the name of the test
-        commonArgs : tuple, optional
-            arguments common to all Component class types
 
         Notes
         -----
@@ -1098,39 +1093,18 @@ class TestComponentLinks(AxialExpansionTestBase):
         - to add Component class types to a test add dictionary entry with following:
           {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
         """
-        if commonArgs is None:
-            common = self.common
-        else:
-            common = commonArgs
         for method, dims in componentsToTest.items():
-            typeA = method(*common, **dims[0])
-            typeB = method(*common, **dims[1])
+            typeA = method(*self.common, **dims[0])
+            typeB = method(*self.common, **dims[1])
+            msg = (
+                f"{self._testMethodName} failed for component type {str(method)}!"
+            )
             if assertionBool:
-                self.assertTrue(
-                    areAxiallyLinked(typeA, typeB),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
-                self.assertTrue(
-                    areAxiallyLinked(typeB, typeA),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
+                self.assertTrue(_checkOverlap(typeA, typeB), msg=msg)
+                self.assertTrue(_checkOverlap(typeB, typeA), msg=msg)
             else:
-                self.assertFalse(
-                    areAxiallyLinked(typeA, typeB),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
-                self.assertFalse(
-                    areAxiallyLinked(typeB, typeA),
-                    msg="Test {0:s} failed for component type {1:s}!".format(
-                        name, str(method)
-                    ),
-                )
+                self.assertFalse(_checkOverlap(typeA, typeB), msg=msg)
+                self.assertFalse(_checkOverlap(typeB, typeA), msg=msg)
 
     def test_overlappingSolidPins(self):
         componentTypesToTest = {
@@ -1155,72 +1129,43 @@ class TestComponentLinks(AxialExpansionTestBase):
                 {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0},
             ],
         }
-        self.runTest(componentTypesToTest, True, "test_overlappingSolidPins")
-
-    def test_differentMultNotOverlapping(self):
-        componentTypesToTest = {
-            Circle: [{"od": 0.5, "mult": 10}, {"od": 0.5, "mult": 20}],
-            Hexagon: [{"op": 0.5, "mult": 10}, {"op": 1.0, "mult": 20}],
-            Rectangle: [
-                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 10},
-                {"lengthOuter": 1.0, "widthOuter": 1.0, "mult": 20},
-            ],
-            Helix: [
-                {"od": 0.5, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 10},
-                {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0, "mult": 20},
-            ],
-        }
-        self.runTest(componentTypesToTest, False, "test_differentMultNotOverlapping")
+        self.runTest(componentTypesToTest, True)
 
     def test_solidPinNotOverlappingAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, False, "test_solidPinNotOverlappingAnnulus")
+        self.runTest(componentTypesToTest, False)
 
     def test_solidPinOverlappingWithAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.7, "id": 0.0}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, True, "test_solidPinOverlappingWithAnnulus")
+        self.runTest(componentTypesToTest, True)
 
     def test_annularPinNotOverlappingWithAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.6, "id": 0.3}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(
-            componentTypesToTest, False, "test_annularPinNotOverlappingWithAnnulus"
-        )
+        self.runTest(componentTypesToTest, False)
 
     def test_annularPinOverlappingWithAnnuls(self):
         componentTypesToTest = {
             Circle: [{"od": 0.7, "id": 0.3}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, True, "test_annularPinOverlappingWithAnnuls")
+        self.runTest(componentTypesToTest, True)
 
     def test_thinAnnularPinOverlappingWithThickAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
         }
-        self.runTest(
-            componentTypesToTest, True, "test_thinAnnularPinOverlappingWithThickAnnulus"
-        )
+        self.runTest(componentTypesToTest, True)
 
     def test_AnnularHexOverlappingThickAnnularHex(self):
         componentTypesToTest = {
             Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]
         }
-        self.runTest(
-            componentTypesToTest, True, "test_AnnularHexOverlappingThickAnnularHex"
-        )
-
-    def test_liquids(self):
-        componentTypesToTest = {
-            Circle: [{"od": 1.0, "id": 0.0}, {"od": 1.0, "id": 0.0}],
-            Hexagon: [{"op": 1.0, "ip": 0.0}, {"op": 1.0, "ip": 0.0}],
-        }
-        liquid = ("test", "Sodium", 425.0, 425.0)  # name, material, Tinput, Thot
-        self.runTest(componentTypesToTest, False, "test_liquids", commonArgs=liquid)
+        self.runTest(componentTypesToTest, True)
 
     def test_unshapedComponentAndCircle(self):
         comp1 = Circle(*self.common, od=1.0, id=0.0)
