@@ -113,6 +113,46 @@ blocks:
         duct: *component_duct
         intercoolant: *component_intercoolant
 
+    axial shield multiPin: &block_fuel_multiPin_axial_shield
+        grid name: fourPin
+        shield:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.86602
+            latticeIDs: [1,2,3,4]
+        bond:
+            shape: Circle
+            material: Sodium
+            Tinput: 25.0
+            Thot: 470.0
+            id: shield.od
+            od: clad.id
+            latticeIDs: [1,2,3,4]
+        clad:
+            shape: Circle
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            id: 1.0
+            od: 1.09
+            latticeIDs: [1,2,3,4]
+        wire:
+            shape: Helix
+            material: HT9
+            Tinput: 25.0
+            Thot: 470.0
+            axialPitch: 30.15
+            helixDiameter: 1.19056
+            id: 0.0
+            od: 0.10056
+            latticeIDs: [1,2,3,4]
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+
     fuel: &block_fuelPin
         fuel: &component_fuel_fuel
             shape: Circle
@@ -161,7 +201,7 @@ blocks:
             shape: Circle
             material: Sodium
             Tinput: 25.0
-            Thot: 600.0
+            Thot: 470.0
             id: fuel.od
             mult: fuel.mult
             od: liner.id
@@ -169,7 +209,7 @@ blocks:
             shape: Circle
             material: HT9
             Tinput: 25.0
-            Thot: 600.0
+            Thot: 470.0
             id: 0.90
             mergeWith: clad
             mult: 169.0
@@ -185,7 +225,7 @@ blocks:
             shape: Circle
             material: Void
             Tinput: 25.0
-            Thot: 430.0
+            Thot: 600.0
             id: 0.0
             mult: fuel.mult
             od: fuel.id
@@ -202,7 +242,7 @@ blocks:
             shape: Circle
             material: Void
             Tinput: 25.0
-            Thot: 430.0
+            Thot: 600.0
             id: fuel.od
             mult: fuel.mult
             od: liner.id
@@ -507,7 +547,7 @@ assemblies:
         xs types: *igniter_fuel_xs_types
     multi pin fuel:
         specifier: LA
-        blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin, *block_plenum_multiPin, *block_aclp_multiPin, *block_plenum_multiPin, *block_duct, *block_dummy]
+        blocks: [*block_grid_plate, *block_fuel_multiPin_axial_shield, *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin, *block_plenum_multiPin, *block_aclp_multiPin, *block_plenum_multiPin, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:
