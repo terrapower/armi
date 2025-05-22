@@ -2030,9 +2030,13 @@ class HexBlock(Block):
     def verifyBlockDims(self):
         """Perform some checks on this type of block before it is assembled."""
         try:
-            wireComp = self.getComponent(Flags.WIRE)
+            wireComp = self.getComponent(
+                Flags.WIRE, quiet=True
+            )  # Quiet because None case is checked for below
             ductComps = self.getComponents(Flags.DUCT)
-            cladComp = self.getComponent(Flags.CLAD)
+            cladComp = self.getComponent(
+                Flags.CLAD, quiet=True
+            )  # Quiet because None case is checked for below
         except ValueError:
             # there are probably more that one clad/wire, so we really dont know what this block looks like
             runLog.info(
@@ -2042,10 +2046,7 @@ class HexBlock(Block):
             return
 
         # check wire wrap in contact with clad
-        if (
-            self.getComponent(Flags.CLAD) is not None
-            and self.getComponent(Flags.WIRE) is not None
-        ):
+        if cladComp is not None and wireComp is not None:
             wwCladGap = self.getWireWrapCladGap(cold=True)
             if round(wwCladGap, 6) != 0.0:
                 runLog.warning(
@@ -2090,7 +2091,9 @@ class HexBlock(Block):
             Returns the diameteral gap between the outer most pins in a hex pack to the duct inner
             face to face in cm.
         """
-        wire = self.getComponent(Flags.WIRE)
+        wire = self.getComponent(
+            Flags.WIRE, quiet=True
+        )  # Quiet because None case is checked for below
         ducts = sorted(self.getChildrenWithFlags(Flags.DUCT))
         duct = None
         if any(ducts):
@@ -2103,7 +2106,9 @@ class HexBlock(Block):
                 # has no ip and is circular on inside so following
                 # code will not work
                 duct = None
-        clad = self.getComponent(Flags.CLAD)
+        clad = self.getComponent(
+            Flags.CLAD, quiet=True
+        )  # Quiet because None case is checked for below
         if any(c is None for c in (duct, wire, clad)):
             return None
 
@@ -2277,8 +2282,8 @@ class HexBlock(Block):
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
-        return (self.getComponent(Flags.CLAD) is not None) and (
-            self.getComponent(Flags.WIRE) is not None
+        return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
+            self.getComponent(Flags.WIRE, quiet=True) is not None
         )
 
     def getPinPitch(self, cold=False):
@@ -2299,8 +2304,12 @@ class HexBlock(Block):
             pin pitch in cm
         """
         try:
-            clad = self.getComponent(Flags.CLAD)
-            wire = self.getComponent(Flags.WIRE)
+            clad = self.getComponent(
+                Flags.CLAD, quiet=True
+            )  # Quiet because None case is checked for below
+            wire = self.getComponent(
+                Flags.WIRE, quiet=True
+            )  # Quiet because None case is checked for below
         except ValueError:
             raise ValueError(
                 f"Block {self} has multiple clad and wire components, so pin pitch is not well-"
