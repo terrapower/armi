@@ -1300,23 +1300,18 @@ class TestAxialLinkHelper(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.LOWER_BLOCK = _buildDummySodium(20, 10)
-        cls.UPPER_BLOCK = _buildDummySodium(300, 50)
 
     def test_override(self):
         """Test the upper and lower attributes can be set after construction."""
         empty = AxialLink()
         self.assertIsNone(empty.lower)
-        self.assertIsNone(empty.upper)
         empty.lower = self.LOWER_BLOCK
-        empty.upper = self.UPPER_BLOCK
         self.assertIs(empty.lower, self.LOWER_BLOCK)
-        self.assertIs(empty.upper, self.UPPER_BLOCK)
 
     def test_construct(self):
         """Test the upper and lower attributes can be set at construction."""
-        link = AxialLink(self.LOWER_BLOCK, self.UPPER_BLOCK)
+        link = AxialLink(self.LOWER_BLOCK)
         self.assertIs(link.lower, self.LOWER_BLOCK)
-        self.assertIs(link.upper, self.UPPER_BLOCK)
 
 
 class TestBlockLink(unittest.TestCase):
@@ -1330,7 +1325,6 @@ class TestBlockLink(unittest.TestCase):
         self.assertIn(b, links)
         linked = links.pop(b)
         self.assertIsNone(linked.lower)
-        self.assertIsNone(linked.upper)
 
     def test_multiBlock(self):
         """Test links with multiple blocks."""
@@ -1340,17 +1334,14 @@ class TestBlockLink(unittest.TestCase):
         first = blocks[0]
         lowLink = links[first]
         self.assertIsNone(lowLink.lower)
-        self.assertIs(lowLink.upper, blocks[1])
         for ix in range(1, N_BLOCKS - 1):
             current = blocks[ix]
             below = blocks[ix - 1]
             above = blocks[ix + 1]
             link = links[current]
             self.assertIs(link.lower, below)
-            self.assertIs(link.upper, above)
         top = blocks[-1]
         lastLink = links[top]
-        self.assertIsNone(lastLink.upper)
         self.assertIs(lastLink.lower, blocks[-2])
 
     def test_emptyBlocks(self):
@@ -1381,4 +1372,3 @@ class TestBlockLink(unittest.TestCase):
         for b, bLink in fromBlocks.items():
             aLink = fromAssem[b]
             self.assertIs(aLink.lower, bLink.lower)
-            self.assertIs(aLink.upper, bLink.upper)
