@@ -875,7 +875,7 @@ class Assembly(composites.Composite):
     def hasContinuousCoolantChannel(self):
         return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
-    def getFirstBlock(self, typeSpec=None, exact=False):
+    def getFirstBlock(self, typeSpec=None, exact=False) -> Optional[blocks.Block]:
         """Find the first block that matches the spec.
 
         Parameters
@@ -901,7 +901,7 @@ class Assembly(composites.Composite):
             # No items found in the iteration -> no blocks match the request
             return None
 
-    def getFirstBlockByType(self, typeName):
+    def getFirstBlockByType(self, typeName: str) -> Optional[blocks.Block]:
         blocks = filter(lambda b: b.getType() == typeName, self)
         try:
             return next(blocks)

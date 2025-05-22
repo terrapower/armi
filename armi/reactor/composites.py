@@ -36,7 +36,7 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union, TYPE_CHECKING
 
 import numpy as np
 
@@ -49,6 +49,9 @@ from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools, tabulate, units
 from armi.utils.densityTools import calculateNumberDensity
 from armi.utils.flags import auto
+
+if TYPE_CHECKING:
+    from armi.reactor.components.component import Component
 
 
 class FlagSerializer(parameters.Serializer):
@@ -2317,7 +2320,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return components[0]
 
-    def getComponent(self, typeSpec: TypeSpec, exact=False, quiet=False):
+    def getComponent(self, typeSpec: TypeSpec, exact=False, quiet=False) -> Optional["Component"]:
         """
         Get a particular component from this object.
 
@@ -2337,6 +2340,10 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         Component : The component that matches the criteria or None
+
+        Raises
+        ------
+        ValueError: more than one Component matches the typeSpec
         """
         results = self.getComponents(typeSpec, exact=exact)
         if len(results) == 1:
@@ -2344,18 +2351,14 @@ class ArmiObject(metaclass=CompositeModelType):
         elif not results:
             if not quiet:
                 runLog.warning(
-                    "No component matched {0} in {1}. Returning None".format(
-                        typeSpec, self
-                    ),
+                    f"No component matched {typeSpec} in {self}. Returning None",
                     single=True,
-                    label="None component returned instead of {0}".format(typeSpec),
+                    label=f"None component returned instead of {typeSpec}",
                 )
             return None
         else:
             raise ValueError(
-                "Multiple components match in {} match typeSpec {}: {}".format(
-                    self, typeSpec, results
-                )
+                f"Multiple components match in {self} match typeSpec {typeSpec}: {results}"
             )
 
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
