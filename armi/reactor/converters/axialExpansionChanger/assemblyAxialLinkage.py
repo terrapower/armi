@@ -133,17 +133,15 @@ class AxialLink(typing.Generic[Comp]):
     """Small class for named references to objects above and below a specific object.
 
     Axial expansion in ARMI works by identifying what objects occupy the same axial space.
-    For components in blocks, identify which above and below axially align. This is used
+    For components in blocks, identify which below axially align. This is used
     to determine what, if any, mass needs to be re-assigned across blocks during expansion.
     For blocks, the linking determines what blocks need to move as a result of a specific block's
     axial expansion.
 
     Attributes
     ----------
-    lower : Composite or None
+    lower
         Object below, if any.
-    upper : Composite or None
-        Object above, if any.
 
     Notes
     -----
@@ -157,8 +155,7 @@ class AxialLink(typing.Generic[Comp]):
     * :attr:`AxialAssemblyLinkage.linkedComponents`
     """
 
-    lower: typing.Optional[Comp] = dataclasses.field(default=None)
-    upper: typing.Optional[Comp] = dataclasses.field(default=None)
+    lower: typing.Optional[list[Comp]] = dataclasses.field(default=None)
 
 
 class AssemblyAxialLinkage:
@@ -222,10 +219,9 @@ class AssemblyAxialLinkage:
     ) -> dict[Block, AxialLink[Block]]:
         # Use islice to avoid making intermediate lists of subsequences of blocks
         lower = itertools.chain((None,), itertools.islice(blocks, 0, nBlocks - 1))
-        upper = itertools.chain(itertools.islice(blocks, 1, None), (None,))
         links = {}
-        for low, mid, high in zip(lower, blocks, upper):
-            links[mid] = AxialLink(lower=low, upper=high)
+        for low, mid in zip(lower, blocks):
+            links[mid] = AxialLink(lower=low)
         return links
 
     def _determineAxialLinkage(self):
@@ -273,18 +269,12 @@ class AssemblyAxialLinkage:
         """
         linkedBlocks = self.linkedBlocks[b]
         lowerC = self._findComponentLinkedTo(c, linkedBlocks.lower)
-        upperC = self._findComponentLinkedTo(c, linkedBlocks.upper)
-        lstLinkedC = AxialLink(lowerC, upperC)
+        lstLinkedC = AxialLink(lowerC)
         self.linkedComponents[c] = lstLinkedC
 
         if self.linkedBlocks[b].lower is None and lstLinkedC.lower is None:
             runLog.debug(
                 f"Assembly {self.a}, Block {b}, Component {c} has nothing linked below it!",
-                single=True,
-            )
-        if self.linkedBlocks[b].upper is None and lstLinkedC.upper is None:
-            runLog.debug(
-                f"Assembly {self.a}, Block {b}, Component {c} has nothing linked above it!",
                 single=True,
             )
 
