@@ -49,15 +49,14 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     case, ALL of the indices must be contained by one or the other), then overlap can be checked.
     Case #3: If Component position is not specified via a grid, the multiplicity is checked. If consistent, they are
     assumed to be in the same positions and their overlap is checked.
-    Case #4: Cases 1-3 are not True so we assume there is no linkage.
-    Case #5: Components are either not both solids or are not the same type. These cannot be linked.
+    Case #4: Components are either not both solids, are not the same type, or Cases 1-3 are not True.
 
     Returns
     -------
     linked : bool
         status is componentA and componentB are axially linked to one another
     """
-    ## Cases 4 & 5
+    ## Cases 4
     linked = False
 
     if isinstance(componentA, type(componentB)) and (

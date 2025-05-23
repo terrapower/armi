@@ -1,6 +1,9 @@
-import unittest
+import io
+from unittest import TestCase
 
 from armi.reactor.assemblies import HexAssembly, grids
+from armi.reactor.blocks import HexBlock
+from armi.reactor.blueprints import Blueprints
 from armi.reactor.components import UnshapedComponent
 from armi.reactor.components.basicShapes import Circle, Hexagon, Rectangle
 from armi.reactor.components.complexShapes import Helix
@@ -8,7 +11,6 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
     AxialLink,
     _checkOverlap,
-    areAxiallyLinked,
 )
 from armi.reactor.converters.tests.test_axialExpansionChanger import (
     AxialExpansionTestBase,
@@ -16,9 +18,59 @@ from armi.reactor.converters.tests.test_axialExpansionChanger import (
     buildTestAssemblyWithFakeMaterial,
 )
 from armi.reactor.flags import Flags
+from armi.settings.caseSettings import Settings
+
+MULTIPIN_BP = """
+blocks:
+    fuel multiPin: &block_fuel_multiPin
+        grid name: twoPin
+        fuel 1: &component_fuelmultiPin
+            shape: Circle
+            material: UZr
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            od: 0.8
+            latticeIDs: [1]
+        fuel 2:
+            <<: *component_fuelmultiPin
+            latticeIDs: [2]
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 16.0
+            mult: 1.0
+            op: 16.6
+assemblies:
+    fuel:
+        specifier: LA
+        blocks: [*block_fuel_multiPin, *block_fuel_multiPin]
+        height: [25.0, 25.0]
+        axial mesh points: [1, 1]
+        xs types: [A, A]
+grids:
+    twoPin:
+       geom: hex_corners_up
+       symmetry: full
+       lattice map: |
+         - - -  1 1 1 1
+           - - 1 1 2 1 1
+            - 1 1 1 1 1 1
+             1 2 1 2 1 2 1
+              1 1 1 1 1 1
+               1 1 2 1 1
+                1 1 1 1
+"""
 
 
-class TestAxialLinkHelper(unittest.TestCase):
+class TestAxialLinkHelper(TestCase):
     """Tests for the AxialLink dataclass / namedtuple like class."""
 
     @classmethod
@@ -26,20 +78,68 @@ class TestAxialLinkHelper(unittest.TestCase):
         cls.LOWER_BLOCK = _buildDummySodium(20, 10)
 
     def test_override(self):
-        """Test the upper and lower attributes can be set after construction."""
+        """Test lower attribute can be set after construction."""
         empty = AxialLink()
         self.assertIsNone(empty.lower)
         empty.lower = self.LOWER_BLOCK
         self.assertIs(empty.lower, self.LOWER_BLOCK)
 
     def test_construct(self):
-        """Test the upper and lower attributes can be set at construction."""
+        """Test lower attributes can be set at construction."""
         link = AxialLink(self.LOWER_BLOCK)
         self.assertIs(link.lower, self.LOWER_BLOCK)
 
 
-class TestComponentLinks(AxialExpansionTestBase):
-    """Test axial linkage between components."""
+class TestAreAxiallyLinked(AxialExpansionTestBase):
+    """Provide test coverage for the different cases in assemblyAxialLinkage.areAxiallyLinked."""
+
+    def test_mismatchComponentType(self):
+        """Case 4; component type mismatch."""
+        compDims = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+        comp1 = Circle(*compDims, od=1.0, id=0.0)
+        comp2 = UnshapedComponent(*compDims, area=1.0)
+        self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(comp1, comp2))
+
+    def test_unshapedComponents(self):
+        """Case 1; unshaped components."""
+        compDims = {"Tinput": 25.0, "Thot": 25.0}
+        comp1 = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
+        comp2 = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
+        self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(comp1, comp2))
+
+    def test_componentMult(self):
+        """Case 3; multiplicity based linking."""
+        compDims = ("test", "FakeMat", 25.0, 25.0)
+        comp1 = Circle(*compDims, od=1.0, id=0.0)
+        comp2 = Circle(*compDims, od=1.0, id=0.0)
+        # mult are same, comp1 and comp2 are linked
+        self.assertTrue(AssemblyAxialLinkage.areAxiallyLinked(comp1, comp2))
+        # mult is different, now they are not linked
+        comp2.p.mult = 2
+        self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(comp1, comp2))
+
+    def test_multiIndexLocation(self):
+        """Case 2; block-grid based linking."""
+        cs = Settings()
+        with io.StringIO(MULTIPIN_BP) as stream:
+            bps = Blueprints.load(stream)
+            bps._prepConstruction(cs)
+            lowerB: HexBlock = bps.assemblies["fuel"][0]
+            upperB: HexBlock = bps.assemblies["fuel"][1]
+            lowerFuels = lowerB.getComponents(Flags.FUEL)
+            upperFuels = upperB.getComponents(Flags.FUEL)
+            # same grid locs, are linked
+            self.assertTrue(
+                AssemblyAxialLinkage.areAxiallyLinked(lowerFuels[0], upperFuels[0])
+            )
+            # different grid locs, are not linked
+            self.assertFalse(
+                AssemblyAxialLinkage.areAxiallyLinked(lowerFuels[1], upperFuels[0])
+            )
+
+
+class TestCheckOverlap(AxialExpansionTestBase):
+    """Test axial linkage between components via the AssemblyAxialLinkage._checkOverlap."""
 
     @classmethod
     def setUpClass(cls):
@@ -142,16 +242,9 @@ class TestComponentLinks(AxialExpansionTestBase):
         }
         self.runTest(componentTypesToTest, True)
 
-    def test_unshapedComponentAndCircle(self):
-        comp1 = Circle(*self.common, od=1.0, id=0.0)
-        comp2 = UnshapedComponent(*self.common, area=1.0)
-        self.assertFalse(areAxiallyLinked(comp1, comp2))
 
-    def test_unshapedComponents(self):
-        compDims = {"Tinput": 25.0, "Thot": 25.0}
-        compA = UnshapedComponent("unshaped_1", "FakeMat", **compDims)
-        compB = UnshapedComponent("unshaped_2", "FakeMat", **compDims)
-        self.assertFalse(areAxiallyLinked(compA, compB))
+class TestMultipleComponentLinkage(AxialExpansionTestBase):
+    """Ensure that multiple component axial linkage can be caught."""
 
     def test_getLinkedComponents(self):
         """Test for multiple component axial linkage."""
@@ -166,7 +259,7 @@ class TestComponentLinks(AxialExpansionTestBase):
             linked._getLinkedComponents(b, c)
 
 
-class TestBlockLink(unittest.TestCase):
+class TestBlockLink(TestCase):
     """Test the ability to link blocks in an assembly."""
 
     def test_singleBlock(self):
