@@ -16,7 +16,6 @@
 from statistics import mean
 from typing import TYPE_CHECKING, Iterable, Optional
 
-from armi import runLog
 from armi.materials import material
 from armi.reactor.flags import Flags
 
@@ -110,20 +109,17 @@ class ExpansionData:
             If components and expFrac are different lengths
         """
         if len(components) != len(expFrac):
-            runLog.error(
+            raise RuntimeError(
                 "Number of components and expansion fractions must be the same!\n"
                 f"     len(components) = {len(components)}\n"
                 f"        len(expFrac) = {len(expFrac)}"
             )
-            raise RuntimeError
         for exp in expFrac:
             if exp <= 0.0:
-                msg = (
+                raise RuntimeError(
                     f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions "
                     "should be greater than 0.0."
                 )
-                runLog.error(msg)
-                raise RuntimeError(msg)
         for c, p in zip(components, expFrac):
             self._expansionFactors[c] = p
 
@@ -151,8 +147,7 @@ class ExpansionData:
             if tempGrid and tempField are different lengths
         """
         if len(tempGrid) != len(tempField):
-            runLog.error("tempGrid and tempField must have the same length.")
-            raise RuntimeError
+            raise RuntimeError("tempGrid and tempField must have the same length.")
 
         self.componentReferenceTemperature = {}  # reset, just to be safe
         for b in self._a:
@@ -165,7 +160,7 @@ class ExpansionData:
 
             if len(tmpMapping) == 0:
                 raise ValueError(
-                    f"{b} has no temperature points within it!"
+                    f"{b} has no temperature points within it!\n"
                     "Likely need to increase the refinement of the temperature grid."
                 )
 
