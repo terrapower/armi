@@ -399,7 +399,7 @@ class Assembly_TestCase(unittest.TestCase):
         """Tests area calculation for hex assembly."""
         # Default case: for assemblies with no blocks
         a = HexAssembly("TestAssem", assemNum=10)
-        self.assertEqual(a.getArea(), 1)
+        self.assertIsNone(a.getArea())
 
         # more realistic case: a hex block/assembly
         cur = self.assembly.getArea()
