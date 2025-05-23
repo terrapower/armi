@@ -24,9 +24,6 @@ build with the most up-to-date code.
 
 Building the Documentation
 ==========================
-The ARMI documentation build is tested and supported in modern Ubuntu versions. As such, it should
-work in most modern Linux distributions.
-
 Before building documentation, ensure that you have installed the documentation requirements into
 your ARMI virtual environment with:
 
