@@ -16,7 +16,6 @@
 from statistics import mean
 from typing import TYPE_CHECKING, Iterable, Optional
 
-from armi import runLog
 from armi.materials import material
 from armi.reactor.flags import Flags
 

@@ -685,24 +685,36 @@ class TestExceptions(AxialExpansionTestBase):
         assembly.reestablishBlockOrder()
         # create instance of expansion changer
         obj = AxialExpansionChanger(detailedAxialExpansion=True)
-        with self.assertRaisesRegex(RuntimeError, "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "Cannot run detailedAxialExpansion without a dummy block at the top of the assembly!",
+        ):
             obj.setAssembly(assembly)
 
     def test_setExpansionFactors(self):
         cList = self.a.getFirstBlock().getChildren()
-        with self.assertRaisesRegex(RuntimeError, "Number of components and expansion fractions must be the same!") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "Number of components and expansion fractions must be the same!",
+        ):
             self.obj.expansionData.setExpansionFactors(cList, range(len(cList) + 1))
 
-        with self.assertRaisesRegex(RuntimeError, "L1/L0, is not physical. Expansion fractions should be greater than 0.0.") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "L1/L0, is not physical. Expansion fractions should be greater than 0.0.",
+        ):
             self.obj.expansionData.setExpansionFactors(cList, zeros(len(cList)))
 
-        with self.assertRaisesRegex(RuntimeError, "L1/L0, is not physical. Expansion fractions should be greater than 0.0.") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "L1/L0, is not physical. Expansion fractions should be greater than 0.0.",
+        ):
             self.obj.expansionData.setExpansionFactors(cList, zeros(len(cList)) - 10.0)
 
     def test_updateCompTempsBy1DTempFieldValError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)
-        with self.assertRaisesRegex(ValueError, "has no temperature points within it!") as cm:
+        with self.assertRaisesRegex(ValueError, "has no temperature points within it!"):
             self.obj.expansionData.updateComponentTempsBy1DTempField(
                 tempGrid, tempField
             )
@@ -710,7 +722,9 @@ class TestExceptions(AxialExpansionTestBase):
     def test_updateCompTempsBy1DTempFieldError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 10)
-        with self.assertRaisesRegex(RuntimeError, "tempGrid and tempField must have the same length.") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError, "tempGrid and tempField must have the same length."
+        ):
             self.obj.expansionData.updateComponentTempsBy1DTempField(
                 tempGrid, tempField
             )
@@ -720,7 +734,7 @@ class TestExceptions(AxialExpansionTestBase):
         # manually set axial exp target component for code coverage
         self.a[0].p.axialExpTargetComponent = self.a[0][0].name
         temp = Temperature(self.a.getTotalHeight(), numTempGridPts=11, tempSteps=10)
-        with self.assertRaisesRegex(ArithmeticError, "has a negative height!") as cm:
+        with self.assertRaisesRegex(ArithmeticError, "has a negative height!"):
             for idt in range(temp.tempSteps):
                 self.obj.expansionData.updateComponentTempsBy1DTempField(
                     temp.tempGrid, temp.tempField[idt, :]
@@ -750,7 +764,9 @@ class TestExceptions(AxialExpansionTestBase):
         }
         shield = Circle("shield", "FakeMat", **shieldDims)
         bNoFuel.add(shield)
-        with self.assertRaisesRegex(RuntimeError, f"No fuel component within {bNoFuel}!") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError, f"No fuel component within {bNoFuel}!"
+        ):
             expdata._isFuelLocked(bNoFuel)
 
     def test_getLinkedComponents(self):
@@ -758,7 +774,10 @@ class TestExceptions(AxialExpansionTestBase):
         b = self.obj.linked.a.getFirstBlockByType("fuel")
         c = b.getComponent(typeSpec=Flags.FUEL)
         c.setDimension("od", 0.785, cold=True)
-        with self.assertRaisesRegex(RuntimeError, expected_regex="Multiple component axial linkages have been found for ") as cm:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            expected_regex="Multiple component axial linkages have been found for ",
+        ):
             self.obj.linked._getLinkedComponents(b, c)
 
 
@@ -817,14 +836,10 @@ class TestDetermineTargetComponent(AxialExpansionTestBase):
         b = HexBlock("fuel", height=10.0)
         b.add(self.coolant)
         b.setType("fuel")
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaisesRegex(RuntimeError, "No target component found!"):
             self.expData.determineTargetComponent(b)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaisesRegex(RuntimeError, "No target component found!"):
             self.expData.determineTargetComponent(b, Flags.FUEL)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
 
     def test_specifyTargetComp_singleSolid(self):
         """Ensures that specifyTargetComponent is smart enough to set the only solid as the target component."""
@@ -860,10 +875,11 @@ class TestDetermineTargetComponent(AxialExpansionTestBase):
         b.add(fuelAnnular)
         b.add(self.coolant)
         b.setType("FuelBlock")
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaisesRegex(
+            RuntimeError,
+            "Cannot have more than one component within a block that has the target flag!",
+        ):
             self.expData.determineTargetComponent(b, flagOfInterest=Flags.FUEL)
-            the_exception = cm.exception
-            self.assertEqual(the_exception.error_code, 3)
 
     def test_manuallySetTargetComponent(self):
         """
@@ -1067,9 +1083,7 @@ class TestComponentLinks(AxialExpansionTestBase):
         for method, dims in componentsToTest.items():
             typeA = method(*self.common, **dims[0])
             typeB = method(*self.common, **dims[1])
-            msg = (
-                f"{self._testMethodName} failed for component type {str(method)}!"
-            )
+            msg = f"{self._testMethodName} failed for component type {str(method)}!"
             if assertionBool:
                 self.assertTrue(_checkOverlap(typeA, typeB), msg=msg)
                 self.assertTrue(_checkOverlap(typeB, typeA), msg=msg)
@@ -1314,7 +1328,6 @@ class TestBlockLink(unittest.TestCase):
         for ix in range(1, N_BLOCKS - 1):
             current = blocks[ix]
             below = blocks[ix - 1]
-            above = blocks[ix + 1]
             link = links[current]
             self.assertIs(link.lower, below)
         top = blocks[-1]
