@@ -280,15 +280,13 @@ class Assembly(composites.Composite):
         Return the area of the assembly by looking at its first block.
 
         The assumption is that all blocks in an assembly have the same area. Calculate the total
-        assembly volume in cm^3.
+        assembly volume in cm^3..
         """
         try:
             return self[0].getArea()
         except IndexError:
-            runLog.warning(
-                "{} has no blocks and therefore no area. Assuming 1.0".format(self)
-            )
-            return 1.0
+            runLog.warning(f"{self} has no blocks and therefore no area.")
+            return None
 
     def getVolume(self):
         """Calculate the total assembly volume in cm^3."""
