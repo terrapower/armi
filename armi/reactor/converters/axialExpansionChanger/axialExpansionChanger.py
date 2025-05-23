@@ -299,7 +299,7 @@ class AxialExpansionChanger:
         called when the setting `inputHeightsConsideredHot` is used. This adjusts
         the expansion factor applied during applyMaterialMassFracsToNumberDensities.
         """
-        for c in self.linked.a.getComponents():
+        for c in self.linked.a.iterComponents():
             axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(
                 c.temperatureInC, c.inputTemperatureInC
             )
@@ -431,7 +431,11 @@ def _checkBlockHeight(b):
     3cm is a presumptive lower threshold for DIF3D
     """
     if b.getHeight() < 3.0:
-        runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
+        runLog.debug(
+            f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})"
+        )
 
     if b.getHeight() < 0.0:
-        raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
+        raise ArithmeticError(
+            f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})"
+        )

@@ -36,7 +36,17 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union, TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import numpy as np
 
@@ -2320,7 +2330,9 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return components[0]
 
-    def getComponent(self, typeSpec: TypeSpec, exact=False, quiet=False) -> Optional["Component"]:
+    def getComponent(
+        self, typeSpec: TypeSpec, exact=False, quiet=False
+    ) -> Optional["Component"]:
         """
         Get a particular component from this object.
 
@@ -2793,7 +2805,9 @@ class Composite(ArmiObject):
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         return list(self.iterComponents(typeSpec, exact))
 
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
+    def iterComponents(
+        self, typeSpec: TypeSpec = None, exact=False
+    ) -> Iterator["Component"]:
         """
         Return an iterator of armi.reactor.component.Component objects within this Composite.
 
