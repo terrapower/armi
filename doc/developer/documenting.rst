@@ -5,25 +5,32 @@ Documenting ARMI
 ****************
 
 ARMI uses the `Sphinx <https://www.sphinx-doc.org/en/master/>`_ documentation system to compile the 
-web-based documentation from in-code docstrings and hand-created 
+ARMI documentation into HTML and PDF from in-code docstrings and hand-created
 `ReStructedText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_.
 This provides several benefits:
  
-* We can revise and track the documentation in lock-step with the code itself, in the same  source
+* We can revise and track the documentation in lock-step with the code itself, in the same source
   code repository
 * We can make use of hyperlinked cross-references that stay up to date as the code is expanded or
   refactored.
 * We can run specific code tests during documentation building to ensure the documentation examples
   remain valid
 * We can auto-generate class diagrams based on the latest status of the code
+* Every Pull Request (PR) generates HTML and PDF versions of the documentation for the PR Author and
+  Reviewer
 
 We use some special Sphinx plugins that run the tutorial jupyter notebooks during documentation
-build with the most up-to-date code. 
+build with the most up-to-date code.
 
-Building the documentation
+Building the Documentation
 ==========================
+The ARMI documentation build is tested and supported in modern Ubuntu versions. As such, it should
+work in most modern Linux distributions.
+
 Before building documentation, ensure that you have installed the documentation requirements into
-your ARMI virtual environment with::
+your ARMI virtual environment with:
+
+.. code-block:: bash
 
     pip install -e .[docs]
 
@@ -38,12 +45,16 @@ If you want to build the documentation into a PDF using the Sphinx LaTeX builder
 * `ImageMagick <https://imagemagick.org/>`_
 
 The documentation depends on at least one submodule as well, so you must be sure it is available in
-your source tree with::
+your source tree with:
+
+.. code-block:: bash
 
     git submodule update --init
 
 
-To build the ARMI documentation as html, go to the ``doc`` folder and run::
+To build the ARMI documentation as html, go to the ``doc`` folder and run:
+
+.. code-block:: bash
 
     make html
 
@@ -90,13 +101,15 @@ to quickly highlight neat features and uses of ARMI. To add a new item to the ga
 example code (including the required docstring) to the ``doc/gallery-src`` folder in the ARMI source
 tree. The example will be added to the gallery during the next documentation build.
 
-Using Jupyter notebooks
+Using Jupyter Notebooks
 =======================
 For interactive tutorials, it's convenient to build actual Jupyter notebooks and commit them to the
 documentation to be rendered by Sphinx using the nbsphinx plugin. When this is done, notebooks
 without any output should be committed to the repository so that Sphinx actually executes the
 notebooks with the up-to-date code when the  documentation is built. To do this, you can clean the
-output with::
+output with:
+
+.. code-block:: bash
 
     jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace mynotebook.ipynb
 
