@@ -41,7 +41,7 @@ def describeInterfaces(_cs):
 
 class MainInterface(interfaces.Interface):
     """
-    Do some basic manipulations, calls, Instantiates the databse.
+    Do some basic manipulations, calls, Instantiates the database.
 
     Notes
     -----
@@ -155,10 +155,10 @@ class MainInterface(interfaces.Interface):
 
     def interactBOC(self, cycle=None):
         """Typically the first interface to interact beginning of cycle."""
-        runLog.important("Beginning of Cycle {0}".format(cycle))
-        runLog.LOG.clearSingleWarnings()
+        runLog.important(f"Beginning of Cycle {cycle}")
+        runLog.LOG.clearSingleLogs()
 
-        if self.cs["reallySmallRun"]:
+        if self.cs["rmExternalFilesAtBOC"]:
             self.cleanLastCycleFiles()
 
     def interactEveryNode(self, cycle, node):
@@ -174,8 +174,8 @@ class MainInterface(interfaces.Interface):
                 self.o.reattach(r, self.cs)
 
     def interactEOL(self):
-        if self.cs["smallRun"]:
-            # successful run with smallRun activated. Clean things up.
+        if self.cs["rmExternalFilesAtEOL"]:
+            # successful run with rmExternalFilesAtEOL activated. Clean things up.
             self.cleanARMIFiles()
         runLog.warningReport()
 
@@ -188,7 +188,7 @@ class MainInterface(interfaces.Interface):
         if context.MPI_RANK != 0:
             # avoid inadvertently calling from worker nodes which could cause filesystem lockups.
             raise ValueError("Only the master node is allowed to clean files here.")
-        runLog.important("Cleaning ARMI files due to smallRun option")
+        runLog.important("Cleaning ARMI files due to rmExternalFilesAtEOL option")
         for fileName in os.listdir(os.getcwd()):
             # clean simulation inputs and outputs
             for candidate in [".BCD", ".inp", ".out", "ISOTXS-"]:
@@ -226,7 +226,7 @@ class MainInterface(interfaces.Interface):
         """Delete ARMI files from previous cycle that aren't necessary for the next cycle.
         Unless you're doing reloads, of course.
         """
-        runLog.important("Cleaning ARMI files due to reallySmallRun option")
+        runLog.important("Cleaning ARMI files due to rmExternalFilesAtBOC option")
         for fileName in os.listdir(os.getcwd()):
             # clean MC**2 and REBUS inputs and outputs
             for candidate in [".BCD", ".inp", ".out", "ISOTXS-"]:

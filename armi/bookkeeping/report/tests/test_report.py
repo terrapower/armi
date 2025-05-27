@@ -119,7 +119,7 @@ Processor(s):    1 Processor(s) Installed.
         to fail if the test is run on some other OS.
         """
         if "darwin" in sys.platform:
-            # too comlicated to test MacOS in this method
+            # too complicated to test MacOS in this method
             return
 
         out = getSystemInfo()
@@ -226,7 +226,6 @@ class TestReport(unittest.TestCase):
 
             writeCycleSummary(r.core)
             self.assertIn("Core Average", mock.getStdout())
-            self.assertIn("Outlet Temp", mock.getStdout())
             self.assertIn("End of Cycle", mock.getStdout())
             mock.emptyStdout()
 

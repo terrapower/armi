@@ -62,10 +62,14 @@ class Sphere(ShapedComponent):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
         return self.getDimension("od")
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Compute an average area over the height."""
         from armi.reactor.blocks import Block  # avoid circular import
 
+        if Tc is not None:
+            raise NotImplementedError(
+                f"Cannot calculate area at specified temperature: {Tc}"
+            )
         block = self.getAncestor(lambda c: isinstance(c, Block))
         return self.getComponentVolume(cold) / block.getHeight()
         # raise NotImplementedError("Cannot compute area of a sphere component.")
@@ -131,7 +135,7 @@ class Cube(ShapedComponent):
             modArea=modArea,
         )
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         raise NotImplementedError("Cannot compute area of a cube component.")
 
     def getComponentVolume(self):
@@ -211,7 +215,11 @@ class RadialSegment(ShapedComponent):
             outer_theta=outer_theta,
         )
 
-    def getComponentArea(self, refVolume=None, refHeight=None, cold=False):
+    def getComponentArea(self, refVolume=None, refHeight=None, cold=False, Tc=None):
+        if Tc is not None:
+            raise NotImplementedError(
+                f"Cannot calculate area at specified temperature: {Tc}"
+            )
         if refHeight:
             return (
                 (self.getDimension("height", cold=cold) / refHeight)
@@ -346,7 +354,11 @@ class DifferentialRadialSegment(RadialSegment):
             + self.getDimension("azimuthal_differential"),
         )
 
-    def getComponentArea(self, refVolume=None, refHeight=None, cold=False):
+    def getComponentArea(self, refVolume=None, refHeight=None, cold=False, Tc=None):
+        if Tc is not None:
+            raise NotImplementedError(
+                f"Cannot calculate area at specified temperature: {Tc}"
+            )
         self.updateDims()
         return RadialSegment.getComponentArea(
             self, refVolume=None, refHeight=None, cold=False

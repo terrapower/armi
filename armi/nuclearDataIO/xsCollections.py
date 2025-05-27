@@ -363,21 +363,16 @@ class MacroscopicCrossSectionCreator:
     """
     Create macroscopic cross sections from micros and number density.
 
-    Object encapsulating all high-level methods related to the creation of
-    macroscopic cross sections.
+    Object encapsulating all high-level methods related to the creation of macroscopic cross
+    sections.
     """
 
-    def __init__(
-        self, buildScatterMatrix=True, buildOnlyCoolant=False, minimumNuclideDensity=0.0
-    ):
+    def __init__(self, buildScatterMatrix=True, minimumNuclideDensity=0.0):
         self.densities = None
         self.macros = None
         self.micros = None
         self.minimumNuclideDensity = minimumNuclideDensity
         self.buildScatterMatrix = buildScatterMatrix
-        self.buildOnlyCoolant = (
-            buildOnlyCoolant  # TODO: this is not implemented yet. is it needed?
-        )
         self.block = None
 
     def createMacrosOnBlocklist(
@@ -388,6 +383,7 @@ class MacroscopicCrossSectionCreator:
             block.macros = self.createMacrosFromMicros(
                 microLibrary, block, nucNames, libType=libType
             )
+
         return blockList
 
     def createMacrosFromMicros(
@@ -404,7 +400,7 @@ class MacroscopicCrossSectionCreator:
             Input micros
 
         block : Block
-            Object whos number densities should be used to generate macros
+            Object whose number densities should be used to generate macros
 
         nucNames : list, optional
             List of nuclides to include in the macros. Defaults to all in block.

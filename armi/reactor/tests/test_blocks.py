@@ -294,10 +294,9 @@ def applyDummyData(block):
         601494405.293505,
     ]
     xslib = isotxs.readBinary(ISOAA_PATH)
-    # slight hack here because the test block was created
-    # by hand rather than via blueprints and so elemental expansion
-    # of isotopics did not occur. But, the ISOTXS library being used
-    # did go through an isotopic expansion, so we map nuclides here.
+    # Slight hack here because the test block was created by hand rather than via blueprints and so
+    # elemental expansion of isotopics did not occur. But, the ISOTXS library being used did go
+    # through an isotopic expansion, so we map nuclides here.
     xslib._nuclides["NAAA"] = xslib._nuclides["NA23AA"]
     xslib._nuclides["WAA"] = xslib._nuclides["W184AA"]
     xslib._nuclides["MNAA"] = xslib._nuclides["MN55AA"]
@@ -996,9 +995,33 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowArea(self):
-        area = self.block.getComponent(Flags.COOLANT).getArea()
+        """Test Block.getFlowArea() for a Block with just coolant."""
+        ref = self.block.getComponent(Flags.COOLANT).getArea()
         cur = self.block.getFlowArea()
-        ref = area
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getFlowAreaInterDuctCoolant(self):
+        """Test Block.getFlowArea() for a Block with coolant and interductcoolant."""
+        # build a test block with a Hex inter duct collant
+        fuelDims = {"Tinput": 400, "Thot": 400, "od": 0.76, "id": 0.00, "mult": 127.0}
+        ductDims = {"Tinput": 400, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+        coolDims = {"Tinput": 400, "Thot": 400}
+        iCoolantDims = {"Tinput": 400, "Thot": 400, "op": 17.0, "ip": 16, "mult": 1.0}
+
+        fuel = components.Circle("fuel", "UZr", **fuelDims)
+        duct = components.Hexagon("inner duct", "HT9", **ductDims)
+        coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+        iCoolant = components.Hexagon("interductcoolant", "Sodium", **iCoolantDims)
+
+        b = blocks.HexBlock("fuel", height=10.0)
+        b.add(fuel)
+        b.add(coolant)
+        b.add(duct)
+        b.add(iCoolant)
+
+        ref = b.getComponent(Flags.COOLANT).getArea()
+        ref += b.getComponent(Flags.INTERDUCTCOOLANT).getArea()
+        cur = b.getFlowArea()
         self.assertAlmostEqual(cur, ref)
 
     def test_getHydraulicDiameter(self):
@@ -1482,7 +1505,7 @@ class Block_TestCase(unittest.TestCase):
     def test_getComponentByName(self):
         """Test children by name."""
         self.assertIsNone(
-            self.block.getComponentByName("not the droid youre looking for")
+            self.block.getComponentByName("not the droid you are looking for")
         )
         self.assertIsNotNone(self.block.getComponentByName("annular void"))
 
@@ -2135,7 +2158,6 @@ class TestNegativeVolume(unittest.TestCase):
 
 class HexBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        _ = settings.Settings()
         self.hexBlock = blocks.HexBlock("TestHexBlock")
         hexDims = {"Tinput": 273.0, "Thot": 273.0, "op": 70.6, "ip": 70.0, "mult": 1.0}
         self.hexComponent = components.Hexagon("duct", "UZr", **hexDims)
@@ -2496,9 +2518,7 @@ class HexBlock_TestCase(unittest.TestCase):
         wire = components.Helix("wire", "HT9", **wireDims)
         self.hexBlock.add(wire)
         self.hexBlock.spatialGrid = None  # clear existing
-        with self.assertRaises(ValueError):
-            self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
-
+        self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
         self.assertIsNone(self.hexBlock.spatialGrid)
 
 
@@ -2588,7 +2608,6 @@ class TestHexBlockOrientation(unittest.TestCase):
 
 class ThRZBlock_TestCase(unittest.TestCase):
     def setUp(self):
-        _ = settings.Settings()
         self.ThRZBlock = blocks.ThRZBlock("TestThRZBlock")
         self.ThRZBlock.add(
             components.DifferentialRadialSegment(

@@ -243,7 +243,7 @@ def plotFaceMap(
         E.g. ``"{:.1e}"``
 
     legendMap : list, optional
-        A tuple list of (value, lable, decription), to define the data in the legend.
+        A tuple list of (value, label, description), to define the data in the legend.
 
     fontSize : int, optional
         Font size in points
@@ -705,27 +705,24 @@ class DepthSlider(Slider):
 
 
 def plotAssemblyTypes(
-    blueprints=None,
-    fileName=None,
     assems=None,
+    fileName=None,
     maxAssems=None,
     showBlockAxMesh=True,
     yAxisLabel=None,
     title=None,
+    hot=True,
 ) -> plt.Figure:
     """
     Generate a plot showing the axial block and enrichment distributions of each assembly type in the core.
 
     Parameters
     ----------
-    blueprints: Blueprints
-        The blueprints to plot assembly types of. (Either this or ``assems`` must be non-None.)
+    assems: list
+        list of assembly objects to be plotted.
 
     fileName : str or None
         Base for filename to write, or None for just returning the fig
-
-    assems: list
-        list of assembly objects to be plotted. (Either this or ``blueprints`` must be non-None.)
 
     maxAssems: integer
         maximum number of assemblies to plot in the assems list.
@@ -739,24 +736,14 @@ def plotAssemblyTypes(
     title: str
         Optionally, provide a title for the plot.
 
+    hot : bool, optional
+        If True, plot the hot block heights. If False, use cold heights from the inputs.
+
     Returns
     -------
     fig : plt.Figure
         The figure object created
     """
-    # input validation
-    if assems is None and blueprints is None:
-        raise ValueError(
-            "At least one of these inputs must be non-None: blueprints, assems"
-        )
-
-    # handle defaults
-    if assems is None:
-        assems = list(blueprints.assemblies.values())
-
-    if not isinstance(assems, (list, set, tuple)):
-        assems = [assems]
-
     if maxAssems is not None and not isinstance(maxAssems, int):
         raise TypeError("Maximum assemblies should be an integer")
 
@@ -765,7 +752,7 @@ def plotAssemblyTypes(
         maxAssems = numAssems
 
     if yAxisLabel is None:
-        yAxisLabel = "THERMALLY EXPANDED AXIAL HEIGHTS (CM)"
+        yAxisLabel = "Axial Heights (cm)"
 
     if title is None:
         title = "Assembly Designs"
@@ -791,6 +778,7 @@ def plotAssemblyTypes(
             xAssemLoc,
             xAssemEndLoc,
             showBlockAxMesh,
+            hot,
         )
         xAxisLabel = re.sub(" ", "\n", assem.getType().upper())
         ax.text(
@@ -839,6 +827,7 @@ def _plotBlocksInAssembly(
     xAssemLoc,
     xAssemEndLoc,
     showBlockAxMesh,
+    hot,
 ):
     # Set dictionary of pre-defined block types and colors for the plot
     lightsage = "xkcd:light sage"
@@ -863,9 +852,19 @@ def _plotBlocksInAssembly(
     xBlockLoc = xAssemLoc
     xTextLoc = xBlockLoc + blockWidth / 20.0
     for b in assem:
-        blockHeight = b.getHeight()
-        blockXsId = b.p.xsType
-        yBlockCenterLoc = yBlockLoc + blockHeight / 2.5
+        # get block height
+        if hot:
+            blockHeight = b.getHeight()
+        else:
+            try:
+                blockHeight = b.getInputHeight()
+            except AttributeError:
+                raise ValueError(
+                    f"Cannot plot cold height for block {b} in assembly {assem} "
+                    "because it does not have access to a blueprints through any "
+                    "of its parents. Either make sure that a blueprints is accessible "
+                    " or plot the hot heights instead."
+                )
 
         # Get the basic text label for the block
         try:
@@ -880,6 +879,7 @@ def _plotBlocksInAssembly(
             color = "grey"
 
         # Get the detailed text label for the block
+        blockXsId = b.p.xsType
         dLabel = ""
         if b.hasFlags(Flags.FUEL):
             dLabel = " {:0.2f}%".format(b.getFissileMassEnrich() * 100)
@@ -900,6 +900,7 @@ def _plotBlocksInAssembly(
             ls="solid",
         )
         axis.add_patch(blockPatch)
+        yBlockCenterLoc = yBlockLoc + blockHeight / 2.5
         axis.text(
             xTextLoc,
             yBlockCenterLoc,

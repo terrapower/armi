@@ -9,8 +9,7 @@ settings:
   burnSteps: 0
   comment: ZPPR test case
   cycleLength: 365.25
-  geomFile: zpprTestGeom.xml
-  loadingFile: 1DslabXSByCompTest.yaml
+  loadingFile: zpprTestGeom.yaml
   mpiTasksPerNode: 6
   nTasks: 12
   outputFileExtension: pdf

@@ -68,14 +68,12 @@ CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_FRESH_FEED_TYPE = "freshFeedType"
-CONF_GEOM_FILE = "geomFile"
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_LOAD_STYLE = "loadStyle"
 CONF_LOADING_FILE = "loadingFile"
-CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
@@ -91,11 +89,11 @@ CONF_POWER = "power"
 CONF_POWER_DENSITY = "powerDensity"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
-CONF_REALLY_SMALL_RUN = "reallySmallRun"
+CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_REMOVE_PER_CYCLE = "removePerCycle"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
-CONF_SMALL_RUN = "smallRun"
+CONF_SMALL_RUN = "rmExternalFilesAtEOL"
 CONF_SORT_REACTOR = "sortReactor"
 CONF_START_CYCLE = "startCycle"
 CONF_START_NODE = "startNode"
@@ -544,12 +542,6 @@ def defineSettings() -> List[setting.Setting]:
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
         ),
         setting.Setting(
-            CONF_GEOM_FILE,
-            default="",
-            label="Core Map Input File",
-            description="Input file containing BOL core map",
-        ),
-        setting.Setting(
             CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
             default=False,
             label="Expand to Full Core on Snapshot Load",
@@ -579,7 +571,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_START_NODE,
             default=0,
             label="Start Node",
-            description="Timenode number (0 for BOC, etc.) to continue calulation from. "
+            description="Timenode number (0 for BOC, etc.) to continue calculation from. "
             "Database will load from the time step just before.",
             oldNames=[
                 ("loadNode", None),
@@ -592,13 +584,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Load Style",
             description="Description of how the ARMI case will be initialized",
             options=["fromInput", "fromDB"],
-        ),
-        setting.Setting(
-            CONF_LOW_POWER_REGION_FRACTION,
-            default=0.05,
-            label="Low-power Region Fraction",
-            description="Description needed",
-            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
         ),
         setting.Setting(
             CONF_N_CYCLES,
@@ -714,7 +699,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Deprecation Warning! This setting will be remove by 2024.",
         ),
         setting.Setting(
-            CONF_REALLY_SMALL_RUN,
+            CONF_RM_EXT_FILES_AT_BOC,
             default=False,
             label="Clean Up Files at BOC",
             description="Clean up files at the beginning of each cycle (BOC)",

@@ -28,7 +28,7 @@ from armi.reactor.blocks import Block
 from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
-from armi.utils import codeTiming, getBurnSteps, getMaxBurnSteps, units
+from armi.utils import getBurnSteps, getMaxBurnSteps, units
 
 ORDER = interfaces.STACK_ORDER.FLUX
 
@@ -393,8 +393,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
     detailedAxialExpansion : bool
         Turn on detailed axial expansion? from settings
     dpaPerFluence : float
-        A quick and dirty conversion that is used to get dpaPeak by multiplying
-        the factor and fastFluencePeak
+        A quick and dirty conversion that is used to get dpaPeak
     energyDepoCalcMethodStep : str
         For gamma transport/normalization
     epsEigenvalue : float
@@ -558,7 +557,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
         self.options: GlobalFluxOptions
         self.geomConverters: Dict[str, geometryConverters.GeometryConverter] = {}
 
-    @codeTiming.timed
     def _performGeometryTransformations(self, makePlots=False):
         """
         Apply geometry conversions to make reactor work in neutronics.
@@ -606,7 +604,6 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
 
         self.r = neutronicsReactor
 
-    @codeTiming.timed
     def _undoGeometryTransformations(self):
         """
         Restore original data model state and/or apply results to it.
@@ -942,7 +939,7 @@ def computeDpaRate(mgFlux, dpaXs):
             single=True,
             label="negativeDpaPerSecond",
         )
-        # ensure physical meaning of dpaPerSecond, it is likely just slighly negative
+        # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
             raise RuntimeError(
                 "Calculated DPA rate is substantially negative at {}".format(

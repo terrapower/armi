@@ -205,15 +205,13 @@ class AssemblyBlueprint(yamlize.Object):
         a.spatialGrid = grids.AxialGrid.fromNCells(len(blocks))
         a.spatialGrid.armiObject = a
 
-        # TODO: Remove mesh points from blueprints entirely. Submeshing should be
-        # handled by specific physics interfaces
+        # init submeshes
         radMeshPoints = self.radialMeshPoints or 1
         a.p.RadMesh = radMeshPoints
         aziMeshPoints = self.azimuthalMeshPoints or 1
         a.p.AziMesh = aziMeshPoints
 
-        # loop a second time because we needed all the blocks before choosing the
-        # assembly class.
+        # Loop a second time because we needed all the blocks before choosing the assembly class.
         for axialIndex, b in enumerate(blocks):
             b.name = b.makeName(a.p.assemNum, axialIndex)
             a.add(b)

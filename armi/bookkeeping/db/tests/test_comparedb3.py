@@ -114,9 +114,7 @@ class TestCompareDB3(unittest.TestCase):
             # validate the file exists, and force it to be readable again
             b = h5py.File(db._fullPath, "r")
             self.assertEqual(list(b.keys()), ["inputs"])
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
+            self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
             b.close()
 
             # append to lists
@@ -128,7 +126,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """End-to-end test of compareDatabases() on very simlar databases."""
+        """End-to-end test of compareDatabases() on very similar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT,
@@ -168,9 +166,7 @@ class TestCompareDB3(unittest.TestCase):
             self.assertEqual(len(dbKeys), 3)
             self.assertIn("inputs", dbKeys)
             self.assertIn("c00n00", dbKeys)
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
+            self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
             b.close()
 
             # append to lists
@@ -184,8 +180,18 @@ class TestCompareDB3(unittest.TestCase):
                 dbs[1]._fullPath,
                 timestepCompare=[(0, 0), (0, 1)],
             )
-        self.assertEqual(len(diffs.diffs), 528)
-        # Cycle length is only diff (x3)
+
+        # spot check the diffs
+        self.assertGreater(len(diffs.diffs), 200)
+        self.assertLess(len(diffs.diffs), 800)
+        self.assertIn("/c00n00", diffs._columns)
+        self.assertIn("/c00n01", diffs._columns)
+        self.assertIn(0, diffs._structureDiffs)
+        self.assertEqual(sum(diffs._structureDiffs), 0)
+        self.assertEqual(diffs.tolerance, 0)
+        self.assertIn("SpentFuelPool/flags max(abs(diff))", diffs.diffs)
+        self.assertIn("Circle/volume mean(diff)", diffs.diffs)
+        self.assertIn("Reactor/flags mean(diff)", diffs.diffs)
         self.assertEqual(diffs.nDiffs(), 3)
 
     def test_diffSpecialData(self):

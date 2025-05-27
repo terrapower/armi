@@ -32,7 +32,7 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
         inputModifiers.InputModifier.__init__(self, {self.__class__.__name__: value})
         self.value = value
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         for bDesign in bp.blockDesigns:
             # bDesign construct requires lots of arguments, many of which have no impact.
             # The following can safely be defaulted to meaningless inputs:
@@ -76,7 +76,7 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
                     if inpDim != newDim:
                         setattr(cDesign, dimName, newDim)
 
-        return cs, bp, geom
+        return cs, bp
 
     def _getBlockTypesToModify(self):
         """Hook method to determine blocks that should be modified."""

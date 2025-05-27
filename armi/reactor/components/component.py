@@ -57,8 +57,8 @@ def componentTypeIsValid(component, name):
 
     Notes
     -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be
-      specified as a `DerivedShape` if the coolant dimensions are not provided.
+    - `Coolant` components are can no longer be defined as a general `Component` and should be specified as a
+      `DerivedShape` if the coolant dimensions are not provided.
     """
     from armi.reactor.components import NullComponent
 
@@ -478,7 +478,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             # material, not a lumpedFissionProductCompatable material
             pass
 
-    def getArea(self, cold=False):
+    def getArea(self, cold=False, Tc=None):
         """
         Get the area of a Component in cm^2.
 
@@ -492,13 +492,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         block.getVolumeFractions: component coolant is typically the "leftover" and is calculated and set here
         """
-        area = self.getComponentArea(cold=cold)
+        area = self.getComponentArea(cold=cold, Tc=Tc)
         if self.p.get("modArea", None):
             comp, arg = self.p.modArea
             if arg == "sub":
-                area -= comp.getComponentArea(cold=cold)
+                area -= comp.getComponentArea(cold=cold, Tc=Tc)
             elif arg == "add":
-                area += comp.getComponentArea(cold=cold)
+                area += comp.getComponentArea(cold=cold, Tc=Tc)
             else:
                 raise ValueError("Option {} does not exist".format(arg))
 
@@ -612,7 +612,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """Returns True if the component material is a solid."""
         return not isinstance(self.material, material.Fluid)
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """
         Get the area of this component in cm^2.
 
@@ -620,6 +620,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         ----------
         cold : bool, optional
             Compute the area with as-input dimensions instead of thermally-expanded
+        Tc : float, optional
+            Temperature to compute the area at
         """
         raise NotImplementedError
 
@@ -966,10 +968,10 @@ class Component(composites.Composite, metaclass=ComponentType):
             :id: I_ARMI_COMP_EXPANSION1
             :implements: R_ARMI_COMP_EXPANSION
 
-            Dimensions should be set considering the impact of thermal expansion. This method allows
-            for a user or plugin to set a dimension and indicate if the dimension is for a cold
-            configuration or not. If it is not for a cold configuration, the thermal expansion
-            factor is considered when setting the dimension.
+            Dimensions should be set considering the impact of thermal expansion. This
+            method allows for a user or plugin to set a dimension and indicate if the
+            dimension is for a cold configuration or not. If it is not for a cold
+            configuration, the thermal expansion factor is considered when setting the dimension.
 
             If the ``retainLink`` argument is ``True``, any Components linked to this one will also
             have its dimensions changed consistently. After a dimension is updated, the

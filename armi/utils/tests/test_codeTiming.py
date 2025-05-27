@@ -28,52 +28,102 @@ class CodeTimingTest(unittest.TestCase):
         codeTiming._Timer._frozen = False
         codeTiming.MasterTimer._instance = None
 
-    def test_method_definitions(self):
+    def test_methodDefinitions(self):
+        """Test that the timer decorators work and don't interupt the code."""
+
         @codeTiming.timed
-        def some_method(boop):
+        def someMethod(boop):
+            time.sleep(0.01)
             return boop
 
         @codeTiming.timed("I have this name")
-        def some_other_method(boop):
+        def someOtherMethod(boop):
+            time.sleep(0.01)
             return boop
 
-        x = some_method("dingdong")
-        y = some_other_method("bingbong")
+        # verify the decorator allows the code to run
+        x = someMethod("dingdong")
+        y = someOtherMethod("bingbong")
 
         self.assertEqual(x, "dingdong")
         self.assertEqual(y, "bingbong")
 
-    def test_alternate_usages(self):
-        master = codeTiming.getMasterTimer()
+        # verify the decorators work
+        table = codeTiming.MasterTimer.report(inclusionCutoff=0.01, totalTime=True)
+        self.assertIn("  AVERAGE ", table)
+        self.assertIn("  CUMULATIVE ", table)
+        self.assertIn("  NUM ITERS", table)
+        self.assertIn("TIMER REPORTS  ", table)
+        self.assertIn("TOTAL TIME ", table)
+        self.assertIn("someMethod", table)
+        self.assertIn("I have this name", table)
+
+    def test_countStartsStops(self):
+        """Test the start and stop counting logic."""
+        # test the start() and stop() methods, and their side effects
+        master = codeTiming.MasterTimer.getMasterTimer()
         timer = master.startTimer("bananananana")
-        timer.stop()
-        timer.start()
-        timer.start()
-        timer.stop()
-        timer.stop()
-        timer.stop()
-        timer.start()
+        t0 = timer.stop()
+        self.assertEqual(timer.overStart, 0)
 
+        # run start a few times in a row, to trip the overstart
+        for i in range(5):
+            time.sleep(0.01)
+            t1 = timer.start()
+            self.assertGreater(t1, t0)
+            t0 = t1
+            self.assertEqual(timer.overStart, i)
+
+        # run stop a few times in a row, which is allowed for race conditions
+        for i in range(5):
+            time.sleep(0.01)
+            t2 = timer.stop()
+            self.assertGreater(t2, t1)
+            t1 = t2
+            self.assertEqual(timer.overStart, 3 - i if 3 - i > 0 else 0)
+
+        # start will always work from a stopped state
+        time.sleep(0.01)
+        t6 = timer.start()
+        self.assertGreater(t6, t2)
+        self.assertEqual(timer.overStart, 0)
+
+        # start a second timer to show two can run at once
+        time.sleep(0.01)
         timer2 = master.endTimer("wazzlewazllewazzzle")
-        timer2.start()
-        timer2.start()
+        t7 = timer2.start()
+        self.assertGreater(t7, t6)
+        self.assertEqual(timer2.overStart, 0)
 
+        # use the timers as context managers
         with timer2:
             with timer:
                 pass
 
-    def test_property_access(self):
-        # test property access is okay
-        master = codeTiming.getMasterTimer()
+        # There should be one start/stop each, leaving the over start count the same
+        self.assertEqual(timer.overStart, 0)
+        self.assertEqual(timer2.overStart, 0)
+
+    def test_propertyAccess(self):
+        """Test property access is okay."""
+        master = codeTiming.MasterTimer.getMasterTimer()
         timer = master.startTimer("sometimer")
 
-        _ = timer.times
-        _ = timer.time
-        _ = timer.name
-        _ = timer.isActive
+        t0 = timer.time
+        time.sleep(0.01)
+        self.assertGreaterEqual(t0, 0)
+        ts = timer.times
+        self.assertEqual(len(ts), 1)
+        self.assertEqual(len(ts[0]), 2)
+        self.assertGreaterEqual(ts[0][0], 0)
+        self.assertGreaterEqual(ts[0][1], 0)
+        tName = timer.name
+        self.assertEqual(tName, "sometimer")
+        tActive = timer.isActive
+        self.assertTrue(tActive)
 
     def test_master(self):
-        master = codeTiming.getMasterTimer()
+        master = codeTiming.MasterTimer.getMasterTimer()
         _ = master.time
 
         master.startAll()
@@ -87,8 +137,8 @@ class CodeTimingTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             codeTiming.MasterTimer()
 
-    def test_messy_starts_and_stops(self):
-        master = codeTiming.getMasterTimer()
+    def test_messyStartsAndStops(self):
+        master = codeTiming.MasterTimer.getMasterTimer()
 
         name = "sometimerthatihaventmadeyet"
         larger_time_start = master.time()
@@ -124,11 +174,32 @@ class CodeTimingTest(unittest.TestCase):
         # even with all the starts and stops the total time needs to be between these two values.
         self.assertGreater(timer.time, lesser_time_end - lesser_time_start)
         self.assertLess(timer.time, larger_time_end - larger_time_start)
-        self.assertEqual(timer.pauses, 3)
+        self.assertEqual(timer.numIterations, 3)
 
-        # test report
-        table = codeTiming.MasterTimer.report(inclusion_cutoff=0.01, total_time=True)
-        self.assertIn("TIMER REPORTS", table)
-        self.assertIn(name, table)
-        self.assertIn("CUMULATIVE", table)
-        self.assertIn("ACTIVE", table)
+    def test_report(self):
+        master = codeTiming.MasterTimer.getMasterTimer()
+        name1 = "test_report1"
+        timer1 = master.getTimer(name1)
+        timer1.start()
+        time.sleep(0.01)
+        timer1.stop()
+
+        name2 = "test_report2"
+        timer2 = master.getTimer(name2)
+        timer2.start()
+        time.sleep(0.01)
+        timer2.stop()
+
+        # basic validation of the reports
+        table = codeTiming.MasterTimer.report(inclusionCutoff=0.01, totalTime=True)
+        self.assertIn("  AVERAGE ", table)
+        self.assertIn("  CUMULATIVE ", table)
+        self.assertIn("  NUM ITERS", table)
+        self.assertIn("TIMER REPORTS  ", table)
+        self.assertIn(name1, table)
+        self.assertIn(name2, table)
+
+        lines = table.strip().split("\n")
+        self.assertEqual(len(lines), 4)
+        self.assertEqual(len(lines[1].strip().split()), 4)
+        self.assertEqual(len(lines[2].strip().split()), 4)

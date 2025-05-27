@@ -30,7 +30,7 @@ from armi.physics.neutronics.settings import (
     CONF_TOLERATE_BURNUP_CHANGE,
     CONF_XS_KERNEL,
 )
-from armi.utils import codeTiming, safeCopy
+from armi.utils import safeCopy
 
 LATTICE_PHYSICS = "latticePhysics"
 
@@ -87,7 +87,6 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _getExecutablePath(self):
         raise NotImplementedError
 
-    @codeTiming.timed
     def interactBOL(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
@@ -98,7 +97,6 @@ class LatticePhysicsInterface(interfaces.Interface):
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOL:
             self.updateXSLibrary(cycle)
 
-    @codeTiming.timed
     def interactBOC(self, cycle=0):
         """
         Run the lattice physics code if ``genXS`` is set and update burnup groups.
@@ -418,7 +416,7 @@ class LatticePhysicsInterface(interfaces.Interface):
 
         if self.r.core._lib is not None:
             # justification=r.core.lib property can raise exception or load pre-generated
-            # ISOTXS, but the interface should have responsibilty of loading
+            # ISOTXS, but the interface should have responsibility of loading
             # XS's have already generated for this cycle (maybe during fuel management). Should we update due to
             # changes that occurred during fuel management?
             missing = set(xsIDs) - set(self.r.core.lib.xsIDs)

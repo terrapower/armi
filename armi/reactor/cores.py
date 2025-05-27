@@ -854,7 +854,6 @@ class Core(composites.Composite):
             )
 
         # determine if the circularRingList has been generated
-        # TODO: make circularRingList a property that is generated on request
         if not self.circularRingList:
             self.circularRingList = self.buildCircularRingDictionary(
                 self._circularRingPitch
@@ -1085,9 +1084,8 @@ class Core(composites.Composite):
             block.getName(): block for block in self.getBlocks(includeAll=True)
         }
 
-    # TODO: (Idea) wrap this in an "if not self.blocksByLocName:"
-    # This will likely fail, but it will help diagnose why property approach
-    # wasn't working correctly
+    # This will likely fail, but it will help diagnose why property approach wasn't working
+    # correctly
     def genBlocksByLocName(self):
         """If self.blocksByLocName is deleted, then this will regenerate it or update it if things change."""
         self.blocksByLocName = {
@@ -1340,7 +1338,6 @@ class Core(composites.Composite):
         else:
             return {b.getLocation(): b for a in self for b in a}
 
-    # TODO: Can be cleaned up, but need test case to guard agains breakage
     def getFluxVector(
         self, energyOrder=0, adjoint=False, extSrc=False, volumeIntegrated=True
     ):
@@ -1352,12 +1349,11 @@ class Core(composites.Composite):
         Parameters
         ----------
         energyOrder : int, optional
-            A value of 0 implies that the flux will have all energy groups for
-            the first mesh point, and then all energy groups for the next mesh point, etc.
+            A value of 0 implies that the flux will have all energy groups for the first mesh point,
+            and then all energy groups for the next mesh point, etc.
 
-            A value of 1 implies that the flux will have values for all mesh points
-            of the first energy group first, followed by all mesh points for the second energy
-            group, etc.
+            A value of 1 implies that the flux will have values for all mesh points of the first
+            energy group first, followed by all mesh points for the second energy group, etc.
 
         adjoint : bool, optional
             If True, will return adjoint flux instead of real flux.
@@ -1392,7 +1388,7 @@ class Core(composites.Composite):
             flux.extend(vals)
 
         if energyOrder == 1:
-            # swap order.
+            # swap order
             newFlux = []
             for g in groups:
                 oneGroup = [flux[i] for i in range(g, len(flux), len(groups))]
@@ -2015,8 +2011,8 @@ class Core(composites.Composite):
         Parameters
         ----------
         target : float
-            This is the fraction of the total reactor fuel flux compared to the flux in a
-            specific assembly in a ring
+            This is the fraction of the total reactor fuel flux compared to the flux in a specific
+            assembly in a ring
 
         Returns
         -------
@@ -2034,17 +2030,15 @@ class Core(composites.Composite):
 
         # loop there all of the rings
         for ringNumber in range(numRings, 0, -1):
-            # compare to outer most ring
-            # flatten list into one list of all blocks
+            # Compare to outer most ring. flatten list into one list of all blocks
             blocksInRing = list(
-                itertools.chain(
-                    *[
+                itertools.chain.from_iterable(
+                    [
                         a.iterBlocks(Flags.FUEL)
                         for a in self.getAssembliesInRing(ringNumber)
                     ]
                 )
             )
-            # TODO: itertools.chain.from_iterable(...)
 
             totalPower = self.getTotalBlockParam("flux", objs=allFuelBlocks)
             ringPower = self.getTotalBlockParam("flux", objs=blocksInRing)
@@ -2149,7 +2143,6 @@ class Core(composites.Composite):
                 continue
 
         # add maxes based on pin-level max if it exists, block level max otherwise.
-        # may want to use percentBuMax for pin-detailed cases.
         self.p.maxBuF = max(
             (
                 a.getMaxParam("percentBu")
@@ -2208,7 +2201,7 @@ class Core(composites.Composite):
          * It process boosters,
          * sets axial snap lists,
          * checks the geometry,
-         * sets up location tables ( tracks where the initial feeds were (for moderation or something)
+         * sets up location tables (tracks where the initial feeds were (for moderation or something)
 
         See Also
         --------
@@ -2231,9 +2224,8 @@ class Core(composites.Composite):
             )
 
         if dbLoad:
-            # reactor.blueprints.assemblies need to be populated
-            # this normally happens during armi/reactor/blueprints/__init__.py::constructAssem
-            # but for DB load, this is not called so it must be here.
+            # reactor.blueprints.assemblies need to be populated this normally happens during
+            # blueprint constructAssem. But for DB load, this is not called so it must be here.
             self.parent.blueprints._prepConstruction(cs)
         else:
             # set reactor level meshing params
@@ -2241,8 +2233,8 @@ class Core(composites.Composite):
                 Flags.fromStringIgnoreErrors(t)
                 for t in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
             ]
-            # some assemblies, like control assemblies, have a non-conforming mesh
-            # and should not be included in self.p.referenceBlockAxialMesh and self.p.axialMesh
+            # Some assemblies, like control assemblies, have a non-conforming mesh and should not be
+            # included in self.p.referenceBlockAxialMesh and self.p.axialMesh
             uniformAssems = [
                 a
                 for a in self.getAssemblies()
@@ -2257,8 +2249,6 @@ class Core(composites.Composite):
                 applySubMesh=True,
             )
 
-        self.numRings = self.getNumRings()  # TODO: why needed?
-
         self.getNuclideCategories()
 
         # Generate list of flags that are to be stationary during assembly shuffling
@@ -2268,9 +2258,7 @@ class Core(composites.Composite):
             stationaryBlockFlags.append(Flags.fromString(stationaryBlockFlagString))
 
         self.stationaryBlockFlagsList = stationaryBlockFlags
-
         self.setBlockMassParams()
-
         self.p.maxAssemNum = self.getMaxParam("assemNum")
 
         getPluginManagerOrFail().hook.onProcessCoreLoading(
@@ -2279,8 +2267,8 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined manually in the given Settings file,
-        in the `zoneDefinitions` setting.
+        Build the Zones that are defined manually in the given Settings file, in the
+        `zoneDefinitions` setting.
 
         Parameters
         ----------
@@ -2298,9 +2286,8 @@ class Core(composites.Composite):
 
         Notes
         -----
-        This function will just define the Zones it sees in the settings, it does
-        not do any validation against a Core object to ensure those manual zones
-        make sense.
+        This function will just define the Zones it sees in the settings, it does not do any
+        validation against a Core object to ensure those manual zones make sense.
         """
         runLog.debug(
             "Building Zones by manual definitions in `zoneDefinitions` setting"
@@ -2327,8 +2314,8 @@ class Core(composites.Composite):
     ) -> Iterator[blocks.Block]:
         """Iterate over the blocks in the core.
 
-        Useful for operations that just want to find all the blocks in the core
-        with light filtering.
+        Useful for operations that just want to find all the blocks in the core with light
+        filtering.
 
         Parameters
         ----------
@@ -2337,8 +2324,8 @@ class Core(composites.Composite):
         exact: bool, optional
             Strictness on the usage of ``typeSpec`` used in :meth:`armi.reactor.composites.hasFlags`
         predicate: f(block) -> bool, optional
-            Limit the traversal to blocks that pass this predicate. Can be used in addition to ``typeSpec``
-            to perform more advanced filtering.
+            Limit the traversal to blocks that pass this predicate. Can be used in addition to
+            ``typeSpec`` to perform more advanced filtering.
 
         Returns
         -------

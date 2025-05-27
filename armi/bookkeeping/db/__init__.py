@@ -84,6 +84,7 @@ def loadOperator(
     statePointName=None,
     allowMissing=False,
     handleInvalids=True,
+    callReactorConstructionHook=False,
 ):
     """
     Return an operator given the path to a database.
@@ -104,6 +105,8 @@ def loadOperator(
         with undefined parameters. Default False.
     handleInvalids : bool
         Whether to check for invalid settings. Default True.
+    callReactorConstructionHook : bool
+        Flag for whether the beforeReactorConstruction plugin hook should be executed. Default is False.
 
     See Also
     --------
@@ -147,13 +150,14 @@ def loadOperator(
         # so creating a reactor from the database should be included.
         cs = db.loadCS(handleInvalids=handleInvalids)
         thisCase = cases.Case(cs)
-
         r = db.load(
             loadCycle,
             loadNode,
+            cs=cs,
             statePointName=statePointName,
             allowMissing=allowMissing,
             handleInvalids=handleInvalids,
+            callReactorConstructionHook=callReactorConstructionHook,
         )
 
     o = thisCase.initializeOperator(r=r)

@@ -23,6 +23,7 @@ def getComponentParameterDefinitions():
     """Return the base Component parameters."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
+
         pb.defParam(
             "volume", units=f"{units.CM}^3", description="Volume of this object."
         )
@@ -79,8 +80,7 @@ def getComponentParameterDefinitions():
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "
                 "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
-                "This param keeps the hi-fi and low-fi depletion values from interfering. "
-                "See core.p.detailedNucKeys for keys."
+                "This param keeps the hi-fi and low-fi depletion values from interfering."
             ),
             saveToDB=True,
             default=None,
@@ -127,14 +127,6 @@ def getComponentParameterDefinitions():
             units=units.GRAMS,
             description="Mass of heavy metal at BOL",
             default=None,
-        )
-
-        pb.defParam(
-            "burnupMWdPerKg",
-            units=f"{units.MWD}/{units.KG}",
-            description="Burnup in MWd/Kg of heavy metal",
-            default=0.0,
-            categories=["cumulative"],
         )
 
         pb.defParam(
@@ -243,6 +235,20 @@ def getHexHoledCircleParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
         pb.defParam("holeOP", units=units.CM, description="Pitch of interior hole")
+
+    return pDefs
+
+
+def getFilletedHexagonParameterDefinitions():
+    """Return parameters for FilletedHexagon."""
+    pDefs = parameters.ParameterDefinitionCollection()
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
+        pb.defParam(
+            "iR", units=units.CM, description="Radius of curvature of the inner corners"
+        )
+        pb.defParam(
+            "oR", units=units.CM, description="Radius of curvature of the outer corners"
+        )
 
     return pDefs
 
