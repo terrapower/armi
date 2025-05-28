@@ -54,8 +54,7 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
     numberDensities = []
     rho = rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
     for nucName, massFrac in massFracs.items():
-        nuc = nuclideBases.byName[nucName]
-        atomicWeight = nuc.weight
+        atomicWeight = nuclideBases.byName[nucName].weight
         nuclides.append(nucName.encode())
         numberDensities.append(massFrac * rho / atomicWeight)
     return np.array(nuclides), np.array(numberDensities)
