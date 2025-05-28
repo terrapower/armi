@@ -702,7 +702,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        byteNucs = np.array([nucName.encode() for nucName in nucNames])
+        byteNucs = np.asanyarray(nucNames, dtype="S6")
         nDens = np.zeros(len(byteNucs), dtype=np.float64)
         if self.p.numberDensities is None:
             return nDens
@@ -832,9 +832,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if wipe:
             self.p.numberDensities = None  # clear things not passed
             self.p.nuclides = None  # clear things not passed
-            self.p.nuclides = np.array(
-                [nucName.encode() for nucName in numberDensities.keys()]
-            )
+            self.p.nuclides = np.asanyarray(numberDensities.keys(), dtype="S6")
             self.p.numberDensities = np.array(list(numberDensities.values()))
         else:
             newNucs = []
