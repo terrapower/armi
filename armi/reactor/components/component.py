@@ -714,7 +714,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if np.array_equal(byteNucs, nuclideCopy):
             return nDensCopy
 
-        if len(nDens) > len(nDensCopy) / 5:
+        if len(nDens) > len(nDensCopy) / 10:
             # if there are a lot of indices to get densities for, use reverseIndex lookup
             reverseIndex = {nuc: i for i, nuc in enumerate(self.p.nuclides)}
             for i, nuc in enumerate(byteNucs):
