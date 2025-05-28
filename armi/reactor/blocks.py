@@ -731,9 +731,7 @@ class Block(composites.Composite):
 
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
-        self.p.molesHmBOL = (
-            hmDens / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
-        )
+        self.p.molesHmBOL = self.getHMMoles()
         self.p.puFrac = (
             self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
         )
@@ -2200,16 +2198,15 @@ class HexBlock(Block):
             cornersUp=cornersUp,
         )
 
-        nPins = self.p.nPins or self.getNumPins()
-        ringNumber = hexagon.numRingsToHoldNumCells(nPins)
+        ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
 
-        if numLocations != nPins:
+        if numLocations != self.getNumPins():
             raise ValueError(
                 "Cannot create spatialGrid, number of locations in rings {} not equal to pin number {}".format(
-                    numLocations, nPins
+                    numLocations, self.getNumPins()
                 )
             )
 

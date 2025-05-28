@@ -572,10 +572,6 @@ class Assembly(composites.Composite):
             at += b.p.residence * b.getHeight()
         return at / self.getTotalHeight()
 
-    def getFissileMass(self):
-        """Returns total fissile mass in grams."""
-        return sum([b.p.massHmBOL * b.p.enrichmentBOL for b in self])
-
     def makeAxialSnapList(self, refAssem=None, refMesh=None, force=False):
         """
         Creates a list of block indices that should track axially with refAssem's.
