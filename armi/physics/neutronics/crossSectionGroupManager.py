@@ -504,10 +504,11 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
         ndens = []
         nucCopy = np.array(component.p.nuclides)
         nDensCopy = np.array(component.p.numberDensities)
+        reverseIndex = {nuc: i for i, nuc in enumerate(nucCopy)}
         for nuc in allByteNucs:
-            i = np.where(nucCopy == nuc)[0]
-            if i.size > 0:
-                ndens.append(max(nDensCopy[i[0]], TRACE_NUMBER_DENSITY))
+            i = reverseIndex.get(nuc, -1)
+            if i >= 0:
+                ndens.append(max(nDensCopy[i], TRACE_NUMBER_DENSITY))
             else:
                 ndens.append(0.0)
         return ndens
