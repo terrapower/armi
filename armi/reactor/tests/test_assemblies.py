@@ -399,7 +399,7 @@ class Assembly_TestCase(unittest.TestCase):
         """Tests area calculation for hex assembly."""
         # Default case: for assemblies with no blocks
         a = HexAssembly("TestAssem", assemNum=10)
-        self.assertEqual(a.getArea(), 1)
+        self.assertIsNone(a.getArea())
 
         # more realistic case: a hex block/assembly
         cur = self.assembly.getArea()
@@ -700,8 +700,6 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getBlockData(self):
         paramDict = {
             "timeToLimit": 40.0,
-            "fastFluence": 1.01,
-            "fastFluencePeak": 50.0,
             "power": 10000.0,
             "envGroup": 4,
             "residence": 3.145,

@@ -2140,7 +2140,6 @@ class Core(composites.Composite):
                 continue
 
         # add maxes based on pin-level max if it exists, block level max otherwise.
-        # may want to use percentBuMax for pin-detailed cases.
         self.p.maxBuF = max(
             (
                 a.getMaxParam("percentBu")

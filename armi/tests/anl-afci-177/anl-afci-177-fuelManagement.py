@@ -22,9 +22,8 @@ class SampleShuffler(FuelHandler):
             self.r.p.cycleLength * self.r.p.availabilityFactor * units.SECONDS_PER_DAY
         )
         for a in self.r.core:
-            peakFluence = a.getMaxParam("fastFluence")
             peakFlux = a.getMaxParam("fastFlux")
-            if peakFluence + peakFlux * cycleSeconds > 4.0e23:
+            if peakFlux * cycleSeconds > 4.0e23:
                 newAssem = self.r.core.createAssemblyOfType(a.getType())
                 self.dischargeSwap(newAssem, a)
 

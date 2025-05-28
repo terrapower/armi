@@ -393,8 +393,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
     detailedAxialExpansion : bool
         Turn on detailed axial expansion? from settings
     dpaPerFluence : float
-        A quick and dirty conversion that is used to get dpaPeak by multiplying
-        the factor and fastFluencePeak
+        A quick and dirty conversion that is used to get dpaPeak
     energyDepoCalcMethodStep : str
         For gamma transport/normalization
     epsEigenvalue : float

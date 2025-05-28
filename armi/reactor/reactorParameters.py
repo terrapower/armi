@@ -15,7 +15,6 @@
 """Reactor parameter definitions."""
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
-from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 
 
@@ -79,18 +78,6 @@ def defineReactorParameters():
 
 def defineCoreParameters():
     pDefs = parameters.ParameterDefinitionCollection()
-
-    with pDefs.createBuilder() as pb:
-        pb.defParam(
-            "detailedNucKeys",
-            setter=isNumpyArray("detailedNucKeys"),
-            units=units.UNITLESS,
-            description="""Nuclide vector keys, used to map densities in b.p.detailedNDens and 
-            a.p.detailedNDens.ZZZAAA (ZZZ atomic number, AAA mass number, + 100 * m for metastable
-            states.""",
-            saveToDB=True,
-            default=None,
-        )
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
         pb.defParam(
@@ -164,12 +151,6 @@ def defineCoreParameters():
         )
 
         pb.defParam(
-            "critSearchSlope",
-            units=f"1/{units.DAYS}",
-            description="Critical keff search slope",
-        )
-
-        pb.defParam(
             "fissileMass", units=units.GRAMS, description="Fissile mass of the reactor"
         )
 
@@ -185,24 +166,6 @@ def defineCoreParameters():
             saveToDB=True,
             default=0.0,
             description="Uncontrolled k-effective for the reactor core (with control rods fully removed).",
-        )
-
-        pb.defParam(
-            "lastKeff",
-            units=units.UNITLESS,
-            description="Previously calculated Keff for potential keff convergence",
-        )
-
-        pb.defParam(
-            "loadPadDpaAvg",
-            units=units.DPA,
-            description="The highest average dpa in any load pad",
-        )
-
-        pb.defParam(
-            "loadPadDpaPeak",
-            units=units.DPA,
-            description="The peak dpa in any load pad",
         )
 
         pb.defParam(
@@ -237,35 +200,6 @@ def defineCoreParameters():
             description="Grid plate peak dpa after 60 years irradiation",
         )
 
-        pb.defParam(
-            "totalIntrinsicSource",
-            units=f"n/{units.SECONDS}",
-            description="Full core intrinsic neutron source from spontaneous fissions before a decay period",
-        )
-
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
-    ) as pb:
-
-        pb.defParam(
-            "THmaxDeltaPPump",
-            units=units.PASCALS,
-            description="The maximum pumping pressure rise required to pump the given mass flow "
-            + "rate through the rod bundle",
-        )
-
-        pb.defParam(
-            "THmaxDilationPressure",
-            units=units.PASCALS,
-            description="THmaxDilationPressure",
-        )
-
-        pb.defParam(
-            "THoutletTempIdeal",
-            units=units.DEGC,
-            description="Average outlet temperature loop through all assemblies after doing TH",
-        )
-
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, default=0.0, categories=["neutronics"]
     ) as pb:
@@ -283,12 +217,6 @@ def defineCoreParameters():
             description="BOL Power density of the reactor core, in units of Watts per"
             "grams of Heavy Metal Mass. After the BOL, the power parameter will be set, "
             "and this will entirely overridden by that.",
-        )
-
-        pb.defParam(
-            "powerDecay",
-            units=units.WATTS,
-            description="Decay power from decaying radionuclides",
         )
 
         pb.defParam(
@@ -485,23 +413,9 @@ def defineCoreParameters():
             default=0,
         )
 
-        pb.defParam(
-            "maxCyclicNErr",
-            units=units.UNITLESS,
-            description="Maximum relative number density error",
-            default=0.0,
-        )
-
     with pDefs.createBuilder(
         location=ParamLocation.AVERAGE, categories=["equilibrium"]
     ) as pb:
-
-        pb.defParam(
-            "breedingRatio",
-            units=units.UNITLESS,
-            description="Breeding ratio of the reactor",
-            default=0.0,
-        )
 
         pb.defParam(
             "ConvRatioCore",
