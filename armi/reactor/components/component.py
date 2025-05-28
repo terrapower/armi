@@ -953,7 +953,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             # densities comes from self.p.numberDensities
             if len(nuclideNames) > 0:
                 densities = self.getNuclideNumberDensities(nuclideNames)
-                nDens = {nuc: dens for nuc, dens in zip(nuclideNames, densities)}
+                nDens = dict(zip(nuclideNames, densities))
             else:
                 nDens = {}
         return densityTools.calculateMassDensity(nDens) * volume
