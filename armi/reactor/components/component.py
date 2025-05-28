@@ -702,7 +702,12 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def getNuclideNumberDensities(self, nucNames):
         """Return a list of number densities for the nuc names requested."""
-        byteNucs = np.asanyarray(nucNames, dtype="S6")
+
+        if nucNames is None:
+            return np.zeros(0)
+        else:
+            byteNucs = np.asanyarray(nucNames, dtype="S6")
+
         nDens = np.zeros(len(byteNucs), dtype=np.float64)
         if self.p.numberDensities is None:
             return nDens
