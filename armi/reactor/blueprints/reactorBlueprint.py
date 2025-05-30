@@ -209,7 +209,6 @@ class SystemBlueprint(yamlize.Object):
             # create a new Composite to add to the grid
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
 
-            # TODO: JOHN: Or this could be in `constructAssem`???
             # correctly rotate the Composite
             if orientationBOL is None or locationInfo not in orientationBOL:
                 newAssembly.p.orientation = 0.0
