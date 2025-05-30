@@ -90,7 +90,7 @@ class ExpansionData:
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
-        self._setTargetComponents(setFuel)
+        self._setAllTargetComponents(setFuel)
         self.expandFromTinputToThot = expandFromTinputToThot
 
     def setExpansionFactors(self, components: list["Component"], expFrac: list[float]):
@@ -224,7 +224,7 @@ class ExpansionData:
         value = self._expansionFactors.get(c, 1.0)
         return value
 
-    def _setTargetComponents(self, setFuel: bool):
+    def _setAllTargetComponents(self, setFuel: bool):
         """Sets target component for each block.
 
         Parameters
@@ -234,18 +234,21 @@ class ExpansionData:
             target components should be determined on the fly.
         """
         for b in self._a:
-            if b.p.axialExpTargetComponent:
-                target = b.getComponentByName(b.p.axialExpTargetComponent)
-                self._setExpansionTarget(b, target)
-            elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
-                self.determineTargetComponent(b, Flags.CLAD)
-            elif b.hasFlags(Flags.DUMMY):
-                # Dummy blocks are intended to contain only fluid and do not need a target component
-                pass
-            elif setFuel and b.hasFlags(Flags.FUEL):
-                self._isFuelLocked(b)
-            else:
-                self.determineTargetComponent(b)
+            self.setTargetComponent(b, setFuel)
+
+    def setTargetComponent(self, b: "Block", setFuel: bool):
+        if b.p.axialExpTargetComponent:
+            target = b.getComponentByName(b.p.axialExpTargetComponent)
+            self._setExpansionTarget(b, target)
+        elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
+            self.determineTargetComponent(b, Flags.CLAD)
+        elif b.hasFlags(Flags.DUMMY):
+            # Dummy blocks are intended to contain only fluid and do not need a target component
+            pass
+        elif setFuel and b.hasFlags(Flags.FUEL):
+            self._isFuelLocked(b)
+        else:
+            self.determineTargetComponent(b)
 
     def determineTargetComponent(
         self, b: "Block", flagOfInterest: Optional[Flags] = None

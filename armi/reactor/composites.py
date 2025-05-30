@@ -2294,14 +2294,18 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return all(self.getComponents(t, exact) for t in typeSpec)
 
-    def getComponentByName(self, name):
+    def getComponentByName(self, name: str) -> "Component":
         """
         Gets a particular component from this object, based on its name.
 
         Parameters
         ----------
-        name : str
+        name
             The blueprint name of the component to return
+
+        Returns
+        -------
+        Component, c, whose c.name matches name.
         """
         components = [c for c in self.iterComponents() if c.name == name]
         nComp = len(components)
