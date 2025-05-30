@@ -291,9 +291,9 @@ class Assembly(composites.Composite):
         """Calculate the total assembly volume in cm^3."""
         return self.getArea() * self.getTotalHeight()
 
-    def getPinPlenumVolumeInCubicMeters(self):
+    def getPinPlenumVolumeInCubicMeters(self) -> float:
         """
-        Return the volume of the plenum for a pin in an assembly.
+        Return the total volume of the plenum for an assembly in m^3.
 
         Notes
         -----
@@ -302,14 +302,18 @@ class Assembly(composites.Composite):
         Warning
         -------
         This is a bit design-specific for pinned assemblies.
+
+        Returns
+        -------
+        float: Total plenum volume for an assembly.
         """
         plenumVolume = 0.0
         for b in self.iterChildrenWithFlags(Flags.PLENUM):
-            cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
-            plenumVolume += (
-                math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
-            )  # convert cm^3 to m^3
+            for c in b.getComponents(Flags.CLAD):
+                cladId = c.getDimension("id")
+                # convert vol from cm^3 to m^3
+                plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
         return plenumVolume
 
     def getAveragePlenumTemperature(self):
