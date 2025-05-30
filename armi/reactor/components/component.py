@@ -338,11 +338,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                 except Exception:
                     if value.count(".") > 1:
                         raise ValueError(
-                            f"Component names should not have periods in them: `{value}`"
+                            f"Name of {self} has a period in it. "
+                            f"Components cannot not have periods in their names: `{value}`"
                         )
                     else:
                         raise KeyError(
-                            f"Bad component link `{dimName}` defined as `{value}`"
+                            f"Bad component link `{dimName}` defined as `{value}` in {self}"
                         )
 
     def setLink(self, key, otherComp, otherCompKey):
