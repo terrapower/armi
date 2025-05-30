@@ -16,7 +16,6 @@
 from statistics import mean
 from typing import TYPE_CHECKING, Iterable, Optional
 
-from armi import runLog
 from armi.materials import material
 from armi.reactor.flags import Flags
 
@@ -91,7 +90,7 @@ class ExpansionData:
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
         self._componentDeterminesBlockHeight = {}
-        self._setTargetComponents(setFuel)
+        self._setAllTargetComponents(setFuel)
         self.expandFromTinputToThot = expandFromTinputToThot
 
     def setExpansionFactors(self, components: list["Component"], expFrac: list[float]):
@@ -110,20 +109,17 @@ class ExpansionData:
             If components and expFrac are different lengths
         """
         if len(components) != len(expFrac):
-            runLog.error(
+            raise RuntimeError(
                 "Number of components and expansion fractions must be the same!\n"
                 f"     len(components) = {len(components)}\n"
                 f"        len(expFrac) = {len(expFrac)}"
             )
-            raise RuntimeError
         for exp in expFrac:
             if exp <= 0.0:
-                msg = (
+                raise RuntimeError(
                     f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions "
                     "should be greater than 0.0."
                 )
-                runLog.error(msg)
-                raise RuntimeError(msg)
         for c, p in zip(components, expFrac):
             self._expansionFactors[c] = p
 
@@ -151,8 +147,7 @@ class ExpansionData:
             if tempGrid and tempField are different lengths
         """
         if len(tempGrid) != len(tempField):
-            runLog.error("tempGrid and tempField must have the same length.")
-            raise RuntimeError
+            raise RuntimeError("tempGrid and tempField must have the same length.")
 
         self.componentReferenceTemperature = {}  # reset, just to be safe
         for b in self._a:
@@ -165,7 +160,7 @@ class ExpansionData:
 
             if len(tmpMapping) == 0:
                 raise ValueError(
-                    f"{b} has no temperature points within it!"
+                    f"{b} has no temperature points within it!\n"
                     "Likely need to increase the refinement of the temperature grid."
                 )
 
@@ -229,7 +224,7 @@ class ExpansionData:
         value = self._expansionFactors.get(c, 1.0)
         return value
 
-    def _setTargetComponents(self, setFuel: bool):
+    def _setAllTargetComponents(self, setFuel: bool):
         """Sets target component for each block.
 
         Parameters
@@ -239,18 +234,21 @@ class ExpansionData:
             target components should be determined on the fly.
         """
         for b in self._a:
-            if b.p.axialExpTargetComponent:
-                target = b.getComponentByName(b.p.axialExpTargetComponent)
-                self._setExpansionTarget(b, target)
-            elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
-                self.determineTargetComponent(b, Flags.CLAD)
-            elif b.hasFlags(Flags.DUMMY):
-                # Dummy blocks are intended to contain only fluid and do not need a target component
-                pass
-            elif setFuel and b.hasFlags(Flags.FUEL):
-                self._isFuelLocked(b)
-            else:
-                self.determineTargetComponent(b)
+            self.setTargetComponent(b, setFuel)
+
+    def setTargetComponent(self, b: "Block", setFuel: bool):
+        if b.p.axialExpTargetComponent:
+            target = b.getComponentByName(b.p.axialExpTargetComponent)
+            self._setExpansionTarget(b, target)
+        elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
+            self.determineTargetComponent(b, Flags.CLAD)
+        elif b.hasFlags(Flags.DUMMY):
+            # Dummy blocks are intended to contain only fluid and do not need a target component
+            pass
+        elif setFuel and b.hasFlags(Flags.FUEL):
+            self._isFuelLocked(b)
+        else:
+            self.determineTargetComponent(b)
 
     def determineTargetComponent(
         self, b: "Block", flagOfInterest: Optional[Flags] = None

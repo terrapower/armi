@@ -262,15 +262,14 @@ class Assembly(composites.Composite):
         )
 
     def coords(self):
-        """Return the location of the assembly in the plane using cartesian global
-        coordinates.
+        """Return the location of the assembly in the plane using cartesian global coordinates.
 
         .. impl:: Assembly coordinates are retrievable.
             :id: I_ARMI_ASSEM_POSI1
             :implements: R_ARMI_ASSEM_POSI
 
-            In this method, the spatialLocator of an Assembly is leveraged to return
-            its physical (x,y) coordinates in cm.
+            In this method, the spatialLocator of an Assembly is leveraged to return its physical
+            (x,y) coordinates in cm.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         return (x, y)
@@ -285,34 +284,36 @@ class Assembly(composites.Composite):
         try:
             return self[0].getArea()
         except IndexError:
-            runLog.warning(
-                "{} has no blocks and therefore no area. Assuming 1.0".format(self)
-            )
-            return 1.0
+            runLog.warning(f"{self} has no blocks and therefore no area.")
+            return None
 
     def getVolume(self):
         """Calculate the total assembly volume in cm^3."""
         return self.getArea() * self.getTotalHeight()
 
-    def getPinPlenumVolumeInCubicMeters(self):
+    def getPinPlenumVolumeInCubicMeters(self) -> float:
         """
-        Return the volume of the plenum for a pin in an assembly.
+        Return the total volume of the plenum for an assembly in m^3.
 
         Notes
         -----
-        If there is no plenum blocks in the assembly, a plenum volume of 0.0 is returned
+        If there is no plenum blocks in the assembly, a plenum volume of 0.0 is returned.
 
         Warning
         -------
-        This is a bit design-specific for pinned assemblies
+        This is a bit design-specific for pinned assemblies.
+
+        Returns
+        -------
+        float: Total plenum volume for an assembly.
         """
         plenumVolume = 0.0
         for b in self.iterChildrenWithFlags(Flags.PLENUM):
-            cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
-            plenumVolume += (
-                math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
-            )  # convert cm^3 to m^3
+            for c in b.getComponents(Flags.CLAD):
+                cladId = c.getDimension("id")
+                # convert vol from cm^3 to m^3
+                plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
         return plenumVolume
 
     def getAveragePlenumTemperature(self):
@@ -349,8 +350,8 @@ class Assembly(composites.Composite):
                     "".format(b, b.getHeight(), refB, refB.getHeight())
                 )
             else:
-                # b is larger than refB. Split b up by splitting it into several smaller
-                # blocks of refBs
+                # b is larger than refB. Split b up by splitting it into several smaller blocks of
+                # refBs
                 heightToChop = b.getHeight()
                 heightChopped = 0.0
                 while (
@@ -364,16 +365,12 @@ class Assembly(composites.Composite):
                     heightChopped += refB.getHeight()
                     newBlocks += 1
                     runLog.important(
-                        "Added a new block {0} of height {1}".format(
-                            newB, newB.getHeight()
-                        )
+                        f"Added a new block {newB} of height {newB.getHeight()}"
                     )
-                    runLog.important(
-                        "Chopped {0} of {1}".format(heightChopped, heightToChop)
-                    )
-                newBlocks -= (
-                    1  # subtract one because we eliminated the original b completely.
-                )
+                    runLog.important(f"Chopped {heightChopped} of {heightToChop}")
+
+                # subtract one because we eliminated the original b completely.
+                newBlocks -= 1
 
         self.removeAll()
         self.spatialGrid = grids.AxialGrid.fromNCells(len(newBlockStack))
@@ -388,20 +385,19 @@ class Assembly(composites.Composite):
         Parameters
         ----------
         centers : bool, optional
-            Return centers instead of tops. If centers and zeroesAtFuel the zero point
-            will be center of first fuel.
+            Return centers instead of tops. If centers and zeroesAtFuel the zero point will be
+            center of first fuel.
 
         zeroAtFuel : bool, optional
-            If true will make the (bottom or center depending on centers) of the
-            first fuel block be the zero point instead of the bottom of the first block.
+            If true will make the (bottom or center depending on centers) of the first fuel block be
+            the zero point instead of the bottom of the first block.
 
         See Also
         --------
-        armi.reactor.assemblies.Assembly.makeAxialSnapList : makes index-based lookup of
-        axial mesh
+        armi.reactor.assemblies.Assembly.makeAxialSnapList : makes index-based lookup of axial mesh
 
-        armi.reactor.reactors.Reactor.findAllAxialMeshPoints : gets a global list of all
-        of these, plus finer res.
+        armi.reactor.reactors.Reactor.findAllAxialMeshPoints : gets a global list of all of these,
+        plus finer res.
         """
         bottom = 0.0
         meshVals = []
@@ -875,7 +871,7 @@ class Assembly(composites.Composite):
     def hasContinuousCoolantChannel(self):
         return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
-    def getFirstBlock(self, typeSpec=None, exact=False):
+    def getFirstBlock(self, typeSpec=None, exact=False) -> Optional[blocks.Block]:
         """Find the first block that matches the spec.
 
         Parameters
@@ -901,7 +897,7 @@ class Assembly(composites.Composite):
             # No items found in the iteration -> no blocks match the request
             return None
 
-    def getFirstBlockByType(self, typeName):
+    def getFirstBlockByType(self, typeName: str) -> Optional[blocks.Block]:
         blocks = filter(lambda b: b.getType() == typeName, self)
         try:
             return next(blocks)
