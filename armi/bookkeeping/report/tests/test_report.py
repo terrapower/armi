@@ -226,7 +226,6 @@ class TestReport(unittest.TestCase):
 
             writeCycleSummary(r.core)
             self.assertIn("Core Average", mock.getStdout())
-            self.assertIn("Outlet Temp", mock.getStdout())
             self.assertIn("End of Cycle", mock.getStdout())
             mock.emptyStdout()
 

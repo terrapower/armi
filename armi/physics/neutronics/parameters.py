@@ -18,7 +18,6 @@ Parameter definitions for the Neutronics Plugin.
 We hope neutronics plugins that compute flux will use ``mgFlux``, etc., which will enable modular
 construction of apps.
 """
-from armi.physics.neutronics.settings import CONF_DPA_PER_FLUENCE
 from armi.reactor import parameters
 from armi.reactor.blocks import Block
 from armi.reactor.parameters import ParamLocation
@@ -389,7 +388,7 @@ def _getNeutronicsBlockParams():
         pb.defParam(
             "rateProdNet",
             units=f"1/{units.CM}^3/{units.SECONDS}",
-            description="Net production rate of neutrons",
+            description="The total neutron production including (n,2n) source and fission source.",
         )
 
         pb.defParam(
@@ -409,27 +408,6 @@ def _getNeutronicsBlockParams():
             units=units.UNITLESS,
             description="Fraction of the power produced through capture in a block.",
             saveToDB="True",
-        )
-
-        pb.defParam(
-            "fastFluence",
-            units=f"#/{units.CM}^2",
-            description="Fast spectrum fluence",
-            categories=[
-                parameters.Category.cumulative,
-                parameters.Category.detailedAxialExpansion,
-            ],
-        )
-
-        pb.defParam(
-            "fastFluencePeak",
-            units=f"#/{units.CM}^2",
-            description="Fast spectrum fluence with a peaking factor",
-            location=ParamLocation.MAX,
-            categories=[
-                parameters.Category.cumulative,
-                parameters.Category.detailedAxialExpansion,
-            ],
         )
 
         pb.defParam(
@@ -657,20 +635,6 @@ def _getNeutronicsBlockParams():
             description="Peak DPA rate based on detailedDpaPeak",
             location=ParamLocation.MAX,
             categories=[parameters.Category.cumulative, parameters.Category.neutronics],
-        )
-
-        pb.defParam(
-            "dpaPeakFromFluence",
-            units=units.DPA,
-            description=(
-                "DPA approximation based on a fluence conversion factor set in the "
-                f"{CONF_DPA_PER_FLUENCE} setting"
-            ),
-            location=ParamLocation.MAX,
-            categories=[
-                parameters.Category.cumulative,
-                parameters.Category.detailedAxialExpansion,
-            ],
         )
 
         pb.defParam(

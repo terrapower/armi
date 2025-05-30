@@ -86,7 +86,7 @@ class BufferLog(runLog._RunLog):
                 return True
         return False
 
-    def clearSingleWarnings(self):
+    def clearSingleLogs(self):
         """Reset the single warned list so we get messages again."""
         self._singleMessageCounts.clear()
 

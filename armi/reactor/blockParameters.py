@@ -16,7 +16,7 @@
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
-from armi.reactor.parameters import NoDefault, Parameter, ParamLocation
+from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray
 from armi.utils import units
 from armi.utils.units import ASCII_LETTER_A, ASCII_LETTER_Z, ASCII_LETTER_a
@@ -53,9 +53,7 @@ def getBlockParameterDefinitions():
             description=(
                 "High-fidelity number density vector with up to thousands of nuclides. "
                 "Used in high-fi depletion runs where low-fi depletion may also be occurring. "
-                "This param keeps the hi-fi and low-fi depletion values from interfering. "
-                "See core.p.detailedNucKeys for keys. "
-                # could move to external physic plugin
+                "This param keeps the hi-fi and low-fi depletion values from interfering."
             ),
             location=ParamLocation.AVERAGE,
             saveToDB=False,
@@ -65,13 +63,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(
         default=0.0, location=ParamLocation.AVERAGE, categories=["depletion"]
     ) as pb:
-
-        pb.defParam(
-            "burnupMWdPerKg",
-            units=f"{units.MWD}/{units.KG}",
-            description="Burnup in MWd/kg of initial heavy metal",
-            categories=["cumulative"],
-        )
 
         pb.defParam(
             "newDPA",
@@ -93,14 +84,6 @@ def getBlockParameterDefinitions():
             default=None,
             saveToDB=False,
             location=ParamLocation.CHILDREN,
-        )
-
-        pb.defParam(
-            "percentBuMax",
-            units=units.PERCENT_FIMA,
-            description="Maximum percentage in a single pin of the initial heavy metal "
-            "atoms that have been fissioned",
-            location=ParamLocation.MAX,
         )
 
         pb.defParam(
@@ -143,32 +126,6 @@ def getBlockParameterDefinitions():
                 "(includes full volume of any components with B10)"
             ),
         )
-
-    pDefs.add(
-        Parameter(
-            name="depletionMatrix",
-            units=units.UNITLESS,
-            description="Full BurnMatrix objects containing transmutation and decay info about this block.",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-            setter=NoDefault,
-            categories=set(),
-        )
-    )
-
-    pDefs.add(
-        Parameter(
-            name="cycleAverageBurnMatrix",
-            units=units.UNITLESS,
-            description="Integrated burn matrix mapping this block from its BOC to EOC number densities.",
-            location=ParamLocation.AVERAGE,
-            saveToDB=False,
-            default=None,
-            setter=NoDefault,
-            categories=set(),
-        )
-    )
 
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
 
@@ -349,10 +306,9 @@ def getBlockParameterDefinitions():
             "topIndex",
             units=units.UNITLESS,
             description=(
-                "the axial block index within its parent assembly (0 is bottom block). This index with"
-                "regard to the mesh of the reference assembly so it does not increase by 1 for each block."
-                "It is used to keep the mesh of the assemblies uniform with axial expansion."
-                "See setBlockMesh, makeAxialSnapList",
+                "the axial block index within its parent assembly (0 is bottom block). This index with regard to the "
+                "mesh of the reference assembly so it does not increase by 1 for each block. It is used to keep the "
+                "mesh of the assemblies uniform with axial expansion. See setBlockMesh, makeAxialSnapList",
             ),
             default=0,
             saveToDB=True,
@@ -363,14 +319,7 @@ def getBlockParameterDefinitions():
             "eqRegion",
             units=units.UNITLESS,
             description="Equilibrium shuffling region. Corresponds to how many full cycles fuel here has gone through.",
-            default=-1,
-        )
-
-        pb.defParam(
-            "eqCascade",
-            units=units.UNITLESS,
-            description="Cascade number in repetitive equilibrium shuffling fuel management.",
-            default=-1,
+            default=0.0,
         )
 
         pb.defParam(
@@ -427,13 +376,6 @@ def getBlockParameterDefinitions():
     with pDefs.createBuilder(default=0.0) as pb:
 
         pb.defParam(
-            "avgFuelTemp",
-            units=units.DEGC,
-            description="Average fuel temperature.",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
             "assemNum",
             units=units.UNITLESS,
             description="Index that refers, nominally, to the assemNum parameter of the containing "
@@ -452,27 +394,6 @@ def getBlockParameterDefinitions():
             location=ParamLocation.AVERAGE,
         )
 
-        pb.defParam(
-            "fissileDestroyed",
-            units=f"atoms/(bn*{units.CM})",
-            description="Fissile atoms destroyed in last depletion step (not net!)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fissileBefore",
-            units=f"atoms/(bn*{units.CM})",
-            description="Fissile atoms at beginning of last depletion step (could be substep!)",
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "fissileAfter",
-            units=f"atoms/(bn*{units.CM})",
-            description="Fissile atoms at end of last depletion step (could be substep!)",
-            location=ParamLocation.AVERAGE,
-        )
-
         pb.defParam("buLimit", units=units.PERCENT_FIMA, description="Burnup limit")
 
         pb.defParam(
@@ -480,13 +401,6 @@ def getBlockParameterDefinitions():
             units=units.UNITLESS,
             description="Conversion ratio",
             categories=["detailedAxialExpansion"],
-            location=ParamLocation.AVERAGE,
-        )
-
-        pb.defParam(
-            "cyclicNErr",
-            units=units.UNITLESS,
-            description="Relative error of the block number density",
             location=ParamLocation.AVERAGE,
         )
 
@@ -520,13 +434,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam("nPins", units=units.UNITLESS, description="Number of pins")
-
-        pb.defParam(
-            "newDPAPeak",
-            units=units.DPA,
-            description="The peak DPA accumulated in the last burn step",
-            location=ParamLocation.MAX,
-        )
 
         pb.defParam(
             "percentBuPeak",
