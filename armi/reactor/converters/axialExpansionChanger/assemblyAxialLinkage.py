@@ -42,7 +42,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     Notes
     -----
     If componentA and componentB are both solids and the same type, geometric overlap can be checked via
-    getCircleInnerDiameter and getBoundingCircleOuterDiameter. Five different cases are accounted for.
+    getCircleInnerDiameter and getBoundingCircleOuterDiameter. Four different cases are accounted for.
     If they do not meet these initial criteria, linkage is assumed to be False.
     Case #1: Unshaped Components. There is no way to determine overlap so they're assumed to be not linked.
     Case #2: Blocks with specified grids. If componentA and componentB share common grid indices (cannot be a partial
