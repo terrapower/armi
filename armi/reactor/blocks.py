@@ -1897,7 +1897,9 @@ class HexBlock(Block):
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
-        self.p.orientation[2] += rotNum * 60
+        if self.p.orientation is None:
+            self.p.orientation = np.array([0.0, 0.0, 0.0])
+        self.p.orientation[2] += rotNum * 60.0
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
 
@@ -1956,9 +1958,8 @@ class HexBlock(Block):
                     pass
                 else:
                     msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {name}"
+                        "No rotation method defined for spatial parameters that aren't defined "
+                        f"once per hex edge/corner. No rotation performed on {name}"
                     )
                     runLog.warning(msg)
             elif isinstance(original, (int, float)):
