@@ -30,7 +30,7 @@ def getAssemblyParameterDefinitions():
             units=units.DEGREES,
             description=(
                 "Triple representing rotations counterclockwise around each spatial axis. "
-                "For example, a hex assembly rotated by 1/6th has orientation (0,0,60.0)"
+                "For example, a hex assembly rotated by 1/6th has orientation (0, 0, 60.0)"
             ),
             default=None,
         )
@@ -53,17 +53,17 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "chargeBu",
             units=units.PERCENT_FIMA,
-            description="Max block-average burnup in this assembly when it most recently"
-            " entered the core. If the assembly was discharged and then re-charged,"
-            " this value will only reflect the most recent charge.",
+            description="Max block-average burnup in this assembly when it most recently entered "
+            "the core. If the assembly was discharged and then re-charged, this value will only "
+            "reflect the most recent charge.",
         )
 
         pb.defParam(
             "chargeCycle",
             units=units.UNITLESS,
-            description="Cycle number that this assembly most recently entered the core."
-            " If the assembly was discharged and then re-charged, this value will only"
-            " reflect the most recent charge.",
+            description="Cycle number that this assembly most recently entered the core. If the "
+            "assembly was discharged and then re-charged, this value will only reflect the most "
+            "recent charge.",
         )
 
         pb.defParam(
@@ -135,15 +135,14 @@ def getAssemblyParameterDefinitions():
             """Enforces that notes can only be of type str with max length of 1000."""
             if type(value) is not str:
                 runLog.error(
-                    "Values stored in the `notes` parameter must be strings of less"
-                    " than 1000 characters!"
+                    "Values stored in the `notes` parameter must be strings of less than 1000"
+                    " characters!"
                 )
                 raise ValueError
             elif len(value) > 1000:
                 runLog.warning(
-                    "Strings stored in the `notes` parameter must be less than 1000"
-                    f" characters. Truncating the note starting with {value[0:15]}..."
-                    " at 1000 characters!"
+                    "Strings stored in the `notes` parameter must be less than 1000 characters. "
+                    f"Truncating the note starting with {value[0:15]}... at 1000 characters!"
                 )
                 self._p_notes = value[0:1000]
             else:

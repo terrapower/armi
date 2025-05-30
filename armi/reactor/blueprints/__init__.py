@@ -64,6 +64,7 @@ The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
 """
 import copy
+import math
 import pathlib
 import traceback
 import typing
@@ -222,7 +223,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     def __repr__(self):
         return f"<{self.__class__.__name__} Assemblies:{len(self.assemDesigns)} Blocks:{len(self.blockDesigns)}>"
 
-    def constructAssem(self, cs, name=None, specifier=None):
+    def constructAssem(self, cs, name=None, specifier=None, orientation=0.0):
         """
         Construct a new assembly instance from the assembly designs in this Blueprints object.
 
@@ -230,14 +231,14 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         ----------
         cs : Settings
             Used to apply various modeling options when constructing an assembly.
-
         name : str (optional, and should be exclusive with specifier)
             Name of the assembly to construct. This should match the key that was used to define the
             assembly in the Blueprints YAML file.
-
         specifier : str (optional, and should be exclusive with name)
             Identifier of the assembly to construct. This should match the identifier that was used
             to define the assembly in the Blueprints YAML file.
+        orientation : float (optional, is usually just zero)
+            Rotate the Assembly at creation.
 
         Raises
         ------
@@ -265,6 +266,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         a = copy.deepcopy(assem)
         # since a deepcopy has the same assembly numbers and block id's, we need to make it unique
         a.makeUnique()
+
+        if orientation:
+            a.rotate(math.radians(orientation))
         return a
 
     def _prepConstruction(self, cs):
@@ -399,10 +403,9 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 currentSet = inerts
             else:
                 # This was not specified in the nuclide flags at all as burn or xs.
-                # If a material with this in its composition is brought in
-                # it's nice from a user perspective to allow it.
-                # But current behavior is that all nuclides in problem
-                # must be declared up front.
+                # If a material with this in its composition is brought in it's nice from a user
+                # perspective to allow it.
+                # But current behavior is that all nuclides in problem must be declared up front.
                 continue
 
             self.elementsToExpand.append(elemental.element)

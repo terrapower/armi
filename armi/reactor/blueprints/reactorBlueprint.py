@@ -206,14 +206,16 @@ class SystemBlueprint(yamlize.Object):
         runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
-            # create a new Composite to add to the grid
-            newAssembly = bp.constructAssem(cs, specifier=aTypeID)
-
             # correctly rotate the Composite
             if orientationBOL is None or locationInfo not in orientationBOL:
-                newAssembly.p.orientation = 0.0
+                orientation = 0.0
             else:
-                newAssembly.p.orientation = orientationBOL[locationInfo]
+                orientation = orientationBOL[locationInfo]
+
+            # create a new Composite to add to the grid
+            newAssembly = bp.constructAssem(
+                cs, specifier=aTypeID, orientation=orientation
+            )
 
             # add the Composite to the grid
             i, j = locationInfo

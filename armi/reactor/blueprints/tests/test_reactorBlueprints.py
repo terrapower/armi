@@ -56,8 +56,8 @@ core:
       [0, 0]: IC
       [1, 1]: IC
     orientationBOL:
-      [0, 0]: 56.7
-      [1, 1]: 123.4
+      [0, 0]: 60.0
+      [1, 1]: 120.0
 sfp:
     lattice pitch:
         x: 25.0
@@ -222,6 +222,6 @@ class TestReactorBlueprints(unittest.TestCase):
         core, _sfp, _evst = self._setupReactor()
 
         a0 = core.getAssembly(locationString="001-001")
-        self.assertEqual(a0.p.orientation, 56.7)
+        self.assertAlmostEqual(a0.p.orientation[2], 60.0, delta=1e-9)
         a1 = core.getAssembly(locationString="003-002")
-        self.assertEqual(a1.p.orientation, 123.4)
+        self.assertAlmostEqual(a1.p.orientation[2], 120.0, delta=1e-9)

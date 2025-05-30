@@ -377,7 +377,7 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
         # Test the null-case; these should all be zero.
         for a in r.core.iterChildren():
-            self.assertEqual(a.p.orientation, 0.0)
+            self.assertIsNone(a.p.orientation)
 
 
 class Block_TestCase(unittest.TestCase):
