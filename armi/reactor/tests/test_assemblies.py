@@ -997,7 +997,7 @@ class Assembly_TestCase(unittest.TestCase):
         """Test the volume of a pin in the assembly's plenum."""
         pinPlenumVolume = 5.951978000285659e-05
 
-        self._setup_blueprints("refSmallReactorBase.yaml")
+        self._setup_blueprints("refSmallReactor.yaml")
         assembly = self.r.blueprints.assemblies.get("igniter fuel")
         self.assertEqual(pinPlenumVolume, assembly.getPinPlenumVolumeInCubicMeters())
 

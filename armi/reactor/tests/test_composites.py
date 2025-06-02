@@ -41,6 +41,9 @@ class MockBP:
     inactiveNuclides = set()
     elementsToExpand = set()
     customIsotopics = {}
+    gridDesigns = unittest.mock.MagicMock()
+
+    systemDesigns = unittest.mock.MagicMock()
 
 
 def getDummyParamDefs():
