@@ -269,13 +269,13 @@ class BlockBlueprint(yamlize.KeyedList):
         if spatialGrid:
             b.spatialGrid = spatialGrid
         else:
-            cornersUpCore = (
-                blueprint.gridDesigns[blueprint.systemDesigns["core"].gridName].geom
-                == geometry.HEX_CORNERS_UP
-            )
             try:
+                cornersUpCore = (
+                    blueprint.gridDesigns[blueprint.systemDesigns["core"].gridName].geom
+                    == geometry.HEX_CORNERS_UP
+                )
                 b.autoCreateSpatialGrids(cornersUp=not cornersUpCore)
-            except (ValueError, NotImplementedError) as e:
+            except (TypeError, ValueError, NotImplementedError) as e:
                 runLog.extra(str(e), single=True)
 
         b.verifyBlockDims()
