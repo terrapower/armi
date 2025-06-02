@@ -70,9 +70,6 @@ class SpentFuelPool(ExcoreStructure):
         else:
             loc = self._getNextLocation()
 
-        # orient the blocks to match this grid
-        assem.orientBlocks(parentSpatialGrid=self.spatialGrid)
-
         super().add(assem, loc)
 
     def getAssembly(self, name):

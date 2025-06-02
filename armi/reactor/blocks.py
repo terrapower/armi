@@ -269,7 +269,7 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
+    def autoCreateSpatialGrids(self, *args, **kwargs):
         """
         Creates a spatialGrid for a Block.
 
@@ -277,20 +277,8 @@ class Block(composites.Composite):
         spatialGrids inferred based on the multiplicity of their components. This would add the
         ability to create a spatialGrid for a Block and give its children the corresponding
         spatialLocators if certain conditions are met.
-
-        Parameters
-        ----------
-        systemSpatialGrid : Grid, optional
-            Spatial Grid of the system-level parent of this Assembly that contains this Block.
-
-        Raises
-        ------
-        ValueError
-            If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
-            to more positions than necessary.
         """
-        if self.spatialGrid is None:
-            self.spatialGrid = systemSpatialGrid
+        pass
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
@@ -2128,7 +2116,7 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
+    def autoCreateSpatialGrids(self, cornersUp=False, *args, **kwargs):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
@@ -2139,8 +2127,11 @@ class HexBlock(Block):
 
         Parameters
         ----------
-        systemSpatialGrid : Grid, optional
-            Spatial Grid of the system-level parent of this Assembly that contains this Block.
+        cornersUp : bool, optional
+            Whether the block's grid should be corners-up or not. This should be
+            the opposite of the core grid (i.e. if the core is flats-up, then the
+            grid for the pins within each assembly should be corners-up). If not
+            given, flats-up is assumed.
 
         Notes
         -----
@@ -2179,12 +2170,6 @@ class HexBlock(Block):
                 single=True,
             )
             return
-
-        # build the grid, from pitch and orientation
-        if isinstance(systemSpatialGrid, grids.HexGrid):
-            cornersUp = not systemSpatialGrid.cornersUp
-        else:
-            cornersUp = False
 
         grid = grids.HexGrid.fromPitch(
             self.inferPinPitch(cold=True),

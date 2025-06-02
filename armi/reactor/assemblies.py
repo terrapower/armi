@@ -1239,21 +1239,6 @@ class Assembly(composites.Composite):
         grid = self.parent.spatialGrid
         return grid.overlapsWhichSymmetryLine(self.spatialLocator.getCompleteIndices())
 
-    def orientBlocks(self, parentSpatialGrid):
-        """Add special grids to the blocks inside this Assembly, respecting their orientation.
-
-        Parameters
-        ----------
-        parentSpatialGrid : Grid
-            Spatial Grid of the parent of this Assembly (probably a system-level grid).
-        """
-        for b in self:
-            if b.spatialGrid is None:
-                try:
-                    b.autoCreateSpatialGrids(parentSpatialGrid)
-                except (ValueError, NotImplementedError) as e:
-                    runLog.extra(str(e), single=True)
-
 
 class HexAssembly(Assembly):
     """An assembly that is hexagonal in cross-section."""
