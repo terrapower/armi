@@ -36,32 +36,31 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          sudo apt-get install texlive-xetex
-          sudo apt-get install texlive-latex-base
-          sudo apt-get install texlive-fonts-recommended
-          sudo apt-get install texlive-latex-extra
-          sudo apt-get install texlive-full
+          set -x
+          echo "Run unit tests..."
           pip install -e .[memprof,mpi,test,docs]
-          python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
-          date > python_details.log
-          armi --version >> python_details.log
-          python --version >> python_details.log
-          pip freeze >> python_details.log
           pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
           python doc/.static/cleanup_test_results.py test_results.xml
+
+          echo "Build HTML docs..."
           cd doc
+          python preprocess_docs.py
           git submodule init
           git submodule update
           git fetch
-          echo "make html:"
           make html
-          echo "make latex:"
+
+          echo "Build PDF docs..."
+          sudo apt-get install texlive-xetex
+          sudo apt-get install texlive-latex-base
+          sudo apt-get install texlive-fonts-recommended
+          sudo apt-get install texlive-latex-extra
+          sudo apt-get install texlive-full
           make latex
           cd _build/latex/
-          echo "latexmk -pdf -f -interaction=nonstopmode ARMI.tex:"
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
       - name: Deploy
         if: github.ref == 'refs/heads/main'
