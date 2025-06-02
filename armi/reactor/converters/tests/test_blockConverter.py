@@ -211,7 +211,6 @@ class TestBlockConverter(unittest.TestCase):
             .core.getAssemblies(Flags.FUEL)[2]
             .getFirstBlock(Flags.FUEL)
         )
-        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
         converter = blockConverters.HexComponentsToCylConverter(block)
         converter.convert()
@@ -254,9 +253,6 @@ class TestBlockConverter(unittest.TestCase):
 
         # add depletable flag to see if it is carried
         control.p.flags |= Flags.DEPLETABLE
-
-        driverBlock.spatialGrid = None
-        block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
         convertedWithoutDriver = self._testConvertWithDriverRings(
             block,
