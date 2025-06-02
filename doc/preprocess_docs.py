@@ -71,13 +71,13 @@ def main():
     fileName = "python_details.log"
     writeDateFile(fileName)
 
-    cmd = "armi --version"
+    cmd = "python -m armi --version"
     pipeCmdToFile(cmd, fileName, True)
 
     cmd = "python --version"
     pipeCmdToFile(cmd, fileName, True)
 
-    cmd = "pip freeze"
+    cmd = "python -m pip freeze"
     pipeCmdToFile(cmd, fileName, True)
 
 
