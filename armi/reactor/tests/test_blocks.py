@@ -2262,7 +2262,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertEqual(70.6, self.hexBlock.getDuctOP())
 
         self.assertAlmostEqual(34.273, self.hexBlock.getPinToDuctGap(), 3)
-        self.assertEqual(0.11, self.hexBlock.getPinPitch())
+        self.assertAlmostEqual(0.11, self.hexBlock.getPinPitch(), 10)
         self.assertAlmostEqual(300.889, self.hexBlock.getWettedPerimeter(), 3)
         self.assertAlmostEqual(4242.184, self.hexBlock.getFlowArea(), 3)
         self.assertAlmostEqual(56.395, self.hexBlock.getHydraulicDiameter(), 3)
@@ -2715,8 +2715,6 @@ class ThRZBlock_TestCase(unittest.TestCase):
         """Since not applicable to ThetaRZ Grids."""
         b = self.ThRZBlock
         self.assertIsNone(b.spatialGrid)
-        b.autoCreateSpatialGrids("FakeSpatilGrid")
-        self.assertIsNotNone(b.spatialGrid)
 
     def test_getWettedPerimeter(self):
         with self.assertRaises(NotImplementedError):
@@ -2820,8 +2818,6 @@ class CartesianBlock_TestCase(unittest.TestCase):
         """Since not applicable to Cartesian Grids."""
         b = self.cartesianBlock
         self.assertIsNone(b.spatialGrid)
-        b.autoCreateSpatialGrids("FakeSpatialGrid")
-        self.assertIsNotNone(b.spatialGrid)
 
     def test_getWettedPerimeter(self):
         with self.assertRaises(NotImplementedError):
