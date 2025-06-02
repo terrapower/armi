@@ -31,6 +31,9 @@ import subprocess
 import sys
 from datetime import datetime
 
+from pip._internal.operations.freeze import freeze
+
+from armi import __version__ as armi_version
 from armi.bookkeeping.report.reportingUtils import getSystemInfo
 
 
@@ -69,21 +72,21 @@ def main():
 
     # Use command line to get Python venv information
     fileName = "python_details.log"
-    writeDateFile(fileName)
-
-    cmd = f"{sys.executable} -m pip freeze"
-    pipeCmdToFile(cmd, fileName, True)
-
-    cmd = f"{sys.executable} --version"
-    pipeCmdToFile(cmd, fileName, True)
-
-    cmd = f"{sys.executable} -m armi --version"
-    pipeCmdToFile(cmd, fileName, True)
-
-
-def writeDateFile(fileName):
-    """TODO."""
     txt = datetime.now().strftime("%Y-%m-%d")
+    writeDataToFile(fileName, txt)
+
+    txt = armi_version
+    writeDataToFile(fileName, txt)
+
+    txt = sys.version
+    writeDataToFile(fileName, txt)
+
+    txt = "\n".join(freeze())
+    writeDataToFile(fileName, txt)
+
+
+def writeDataToFile(fileName, txt):
+    """TODO."""
     with open(fileName, "w") as f:
         print(f"Writing {fileName}")
         f.write(txt)
