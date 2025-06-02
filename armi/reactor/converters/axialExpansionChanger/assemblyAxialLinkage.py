@@ -45,7 +45,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
     getCircleInnerDiameter and getBoundingCircleOuterDiameter. Four different cases are accounted for.
     If they do not meet these initial criteria, linkage is assumed to be False.
     Case #1: Unshaped Components. There is no way to determine overlap so they're assumed to be not linked.
-    Case #2: Blocks with specified grids. If componentA and componentB share common grid indices (cannot be a partial
+    Case #2: Blocks with specified grids. If componentA and componentB have identical grid indices (cannot be a partial
     case, ALL of the indices must be contained by one or the other), then overlap can be checked.
     Case #3: If Component position is not specified via a grid, the multiplicity is checked. If consistent, they are
     assumed to be in the same positions and their overlap is checked.
@@ -110,7 +110,6 @@ def _checkOverlap(componentA: Component, componentB: Component) -> bool:
     at cold/input temperatures. At temperature, solid-solid interfaces in ARMI may produce
     slight overlaps due to thermal expansion. Handling these potential overlaps are out of scope.
     """
-    # Check if one component could fit within the other
     idA = componentA.getCircleInnerDiameter(cold=True)
     odA = componentA.getBoundingCircleOuterDiameter(cold=True)
     idB = componentB.getCircleInnerDiameter(cold=True)

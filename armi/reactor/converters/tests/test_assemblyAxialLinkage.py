@@ -140,15 +140,15 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
             bps._prepConstruction(cs)
             lowerB: HexBlock = bps.assemblies["fuel"][0]
             upperB: HexBlock = bps.assemblies["fuel"][1]
-            lowerFuels = lowerB.getComponents(Flags.FUEL)
-            upperFuels = upperB.getComponents(Flags.FUEL)
+            lowerFuel1, lowerFuel2 = lowerB.getComponents(Flags.FUEL)
+            upperfuel1, upperFuel2 = upperB.getComponents(Flags.FUEL)
             # same grid locs, are linked
             self.assertTrue(
-                AssemblyAxialLinkage.areAxiallyLinked(lowerFuels[0], upperFuels[0])
+                AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel1)
             )
             # different grid locs, are not linked
             self.assertFalse(
-                AssemblyAxialLinkage.areAxiallyLinked(lowerFuels[1], upperFuels[0])
+                AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel2)
             )
 
 

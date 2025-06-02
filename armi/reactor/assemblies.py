@@ -310,7 +310,7 @@ class Assembly(composites.Composite):
         plenumVolume = 0.0
         for b in self.iterChildrenWithFlags(Flags.PLENUM):
             length = b.getHeight()
-            for c in b.getComponents(Flags.CLAD):
+            for c in b.iterChildrenWithFlags(Flags.CLAD):
                 cladId = c.getDimension("id")
                 # convert vol from cm^3 to m^3
                 plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
