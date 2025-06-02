@@ -102,7 +102,7 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
 
 
 def _checkOverlap(componentA: Component, componentB: Component) -> bool:
-    """Check two components for geometric overlap.
+    """Check two components for geometric overlap by seeing if one can fit within the other.
 
     Notes
     -----
