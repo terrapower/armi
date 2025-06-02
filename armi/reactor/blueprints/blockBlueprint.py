@@ -21,7 +21,7 @@ import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
-from armi.reactor import blocks, parameters, geometry
+from armi.reactor import blocks, geometry, parameters
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.components.component import Component
 from armi.reactor.composites import Composite
@@ -270,8 +270,8 @@ class BlockBlueprint(yamlize.KeyedList):
             b.spatialGrid = spatialGrid
         else:
             cornersUpCore = (
-                geometry.HEX_CORNERS_UP
-                == blueprint.gridDesigns[blueprint.systemDesigns["core"].gridName].geom
+                blueprint.gridDesigns[blueprint.systemDesigns["core"].gridName].geom
+                == geometry.HEX_CORNERS_UP
             )
             try:
                 b.autoCreateSpatialGrids(cornersUp=not cornersUpCore)
