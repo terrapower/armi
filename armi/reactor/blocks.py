@@ -2187,7 +2187,7 @@ class HexBlock(Block):
             cornersUp = False
 
         grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True),
+            self.inferPinPitch(cold=True),
             numRings=0,
             armiObject=self,
             cornersUp=cornersUp,
@@ -2230,18 +2230,19 @@ class HexBlock(Block):
         pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
         return pinCenterFlatToFlat
 
-    def hasPinPitch(self):
-        """Return True if the block has enough information to calculate pin pitch."""
-        return (self.getComponent(Flags.CLAD) is not None) and (
-            self.getComponent(Flags.WIRE) is not None
-        )
+    # def hasPinPitch(self):
+    #     """Return True if the block has enough information to calculate pin pitch."""
+    #     return (self.getComponent(Flags.CLAD) is not None) and (
+    #         self.getComponent(Flags.WIRE) is not None
+    #     )
 
-    def getPinPitch(self, cold=False):
+    def inferPinPitch(self, cold=False):
         """
-        Get the pin pitch in cm.
+        For a "simple" HexBlock, infer the pin pitch in cm.
 
         Assumes that the pin pitch is defined entirely by contacting cladding tubes and wire wraps.
-        Grid spacers not yet supported.
+        Grid spacers not yet supported. Will only work if the block has a single
+        clad and a single wire component.
 
         Parameters
         ----------

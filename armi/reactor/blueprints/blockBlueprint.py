@@ -265,8 +265,16 @@ class BlockBlueprint(yamlize.KeyedList):
         b.p.xsType = xsType
         b.setBuLimitInfo()
         b = self._mergeComponents(b)
+
+        if spatialGrid:
+            b.spatialGrid = spatialGrid
+        else:
+            try:
+                b.autoCreateSpatialGrids()
+            except (ValueError, NotImplementedError) as e:
+                runLog.extra(str(e), single=True)
+
         b.verifyBlockDims()
-        b.spatialGrid = spatialGrid
 
         return b
 
