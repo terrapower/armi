@@ -212,12 +212,20 @@ System Information
 The logged operating system and processor information proves what environment the software was
 tested on:
 
-.. literalinclude:: ../../system_info.log
+.. exec::
+   from armi.bookkeeping.report.reportingUtils import getSystemInfo
+
+   return getSystemInfo()
+
 
 Python Version and Packages
 +++++++++++++++++++++++++++
 
-.. literalinclude:: ../../python_details.log
+.. exec::
+    from pip._internal.operations.freeze import freeze
+
+    return "\n".join(freeze())
+
 
 .. _ref_armi_software_date:
 
@@ -226,8 +234,16 @@ Software Tested and Date
 
 The software tested and date of testing are below:
 
-.. literalinclude:: ../../python_details.log
-   :lines: 1-3
+.. exec::
+    import sys
+    from datetime import datetime
+    from armi import __version__ as armi_version
+
+    txt = [datetime.now().strftime("%Y-%m-%d")]
+    txt.append(armi_version)
+    txt.append(sys.version)
+    return "\n\n".join(txt)
+
 
 Record of Test Cases
 ^^^^^^^^^^^^^^^^^^^^

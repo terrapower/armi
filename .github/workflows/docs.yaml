@@ -48,7 +48,6 @@ jobs:
 
           echo "Build HTML docs..."
           cd doc
-          python preprocess_docs.py
           git submodule init
           git submodule update
           git fetch

@@ -29,23 +29,12 @@ python doc/.static/cleanup_test_results.py test_results.xml
 import os
 import subprocess
 import sys
-from datetime import datetime
-
-from pip._internal.operations.freeze import freeze
-
-from armi import __version__ as armi_version
-from armi.bookkeeping.report.reportingUtils import getSystemInfo
 
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1].lower() in ["--cleanup", "-c"]:
-        # TODO
-        for fileName in [
-            "python_details.log",
-            "pytest_verbose.log",
-            "system_info.log",
-            "test_results.xml",
-        ]:
+        # clean up previous data file, if they exist
+        for fileName in ["pytest_verbose.log", "test_results.xml"]:
             if os.path.exists(fileName):
                 print(f"Removing {fileName}")
                 os.remove(fileName)
@@ -53,48 +42,18 @@ def main():
         return
 
     if len(sys.argv) > 1 and sys.argv[1].lower() in ["--skip-str", "-s"]:
-        # TODO
+        # skip build the STR, if you are running locally
         cmd = 'echo "skipping STR"'
         fileName = "pytest_verbose.log"
-        pipeCmdToFile(cmd, fileName, True)
+        _pipeCmdToFile(cmd, fileName, True)
 
         cmd = 'echo "<metadata></metadata>"'
         fileName = "test_results.xml"
-        pipeCmdToFile(cmd, fileName, True)
-
-    # Use an ARMI tool to grab all system information
-    fileName = "system_info.log"
-
-    txt = getSystemInfo()
-    with open(fileName, "w") as f:
-        print(f"Writing {fileName}")
-        f.write(txt)
-
-    # Use command line to get Python venv information
-    fileName = "python_details.log"
-    txt = datetime.now().strftime("%Y-%m-%d")
-    writeDataToFile(fileName, txt)
-
-    txt = armi_version
-    writeDataToFile(fileName, txt)
-
-    txt = sys.version
-    writeDataToFile(fileName, txt)
-
-    txt = "\n".join(freeze())
-    writeDataToFile(fileName, txt)
+        _pipeCmdToFile(cmd, fileName, True)
 
 
-def writeDataToFile(fileName, txt):
-    """TODO."""
-    with open(fileName, "w") as f:
-        print(f"Writing {fileName}")
-        f.write(txt)
-        f.write("\n\n")
-
-
-def pipeCmdToFile(cmd, fileName, append=False):
-    """TODO."""
+def _pipeCmdToFile(cmd, fileName, append=False):
+    """Write the results of a command line to a simple log file."""
     if append:
         write = "a"
     else:
