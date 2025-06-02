@@ -312,8 +312,9 @@ class Assembly(composites.Composite):
             length = b.getHeight()
             for c in b.iterChildrenWithFlags(Flags.CLAD):
                 cladId = c.getDimension("id")
-                # convert vol from cm^3 to m^3
-                plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
+                plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length
+        # convert vol from cm^3 to m^3
+        plenumVolume *= 1e-6
         return plenumVolume
 
     def getAveragePlenumTemperature(self):
