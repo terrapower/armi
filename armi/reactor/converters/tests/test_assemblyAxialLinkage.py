@@ -111,7 +111,7 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
         """Case 4; component type mismatch."""
         compDims = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
         comp1 = Circle(*compDims, od=1.0, id=0.0)
-        comp2 = UnshapedComponent(*compDims, area=1.0)
+        comp2 = Hexagon(*compDims, op=1.0, ip=0.0)
         self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(comp1, comp2))
 
     def test_unshapedComponents(self):
