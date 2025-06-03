@@ -284,8 +284,10 @@ class AxialExpansionChanger:
             )
             if len(solidCompsInBlock) == 0:
                 raise InputError(
-                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer.\n"
-                    "Consider using the assemFlagsToSkipAxialExpansion case setting."
+                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer "
+                    f"as block, {b}, consists of exclusively fluid component(s) (excluding the top-most 'dummy' "
+                    "block). If this is not a mistake, consider using the 'assemFlagsToSkipAxialExpansion' case "
+                    "setting to bypass performing axial expansion on this assembly."
                 )
 
     def applyColdHeightMassIncrease(self):
