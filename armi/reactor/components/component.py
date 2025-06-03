@@ -237,7 +237,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     ):
         if components and name in components:
             raise ValueError(
-                "Non-unique component name {} repeated in same block.".format(name)
+                f"Non-unique component name {name} repeated in same block."
             )
 
         composites.Composite.__init__(self, str(name))
@@ -293,10 +293,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 )
             else:
                 raise ValueError(
-                    "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
-                    "bounding circle outer diameters are not comparable.".format(
-                        self, thisOD, other, thatOD
-                    )
+                    f"Components 1 ({self} with OD {thisOD}) and 2 ({other} and OD {thatOD}) cannot be ordered because "
+                    "their bounding circle outer diameters are not comparable."
                 )
 
     def __setstate__(self, state):
@@ -339,15 +337,11 @@ class Component(composites.Composite, metaclass=ComponentType):
                 except Exception:
                     if value.count(".") > 1:
                         raise ValueError(
-                            "Component names should not have periods in them: `{}`".format(
-                                value
-                            )
+                            f"Component names should not have periods in them: `{value}`"
                         )
                     else:
                         raise KeyError(
-                            "Bad component link `{}` defined as `{}`".format(
-                                dimName, value
-                            )
+                            f"Bad component link `{dimName}` defined as `{value}`"
                         )
 
     def setLink(self, key, otherComp, otherCompKey):
@@ -500,7 +494,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             elif arg == "add":
                 area += comp.getComponentArea(cold=cold, Tc=Tc)
             else:
-                raise ValueError("Option {} does not exist".format(arg))
+                raise ValueError(f"Option {arg} does not exist")
 
         self._checkNegativeArea(area, cold)
         return area
@@ -524,7 +518,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.p.volume is None:
             self._updateVolume()
             if self.p.volume is None:
-                raise ValueError("{} has undefined volume.".format(self))
+                raise ValueError(f"{self} has undefined volume.")
         return self.p.volume
 
     def clearCache(self):
@@ -576,11 +570,8 @@ class Component(composites.Composite, metaclass=ComponentType):
                 cold and not self.containsVoidMaterial()
             ) or self.containsSolidMaterial():
                 negAreaFailure = (
-                    "Component {} with {} has cold negative area of {} cm^2. "
-                    "This can be caused by component "
-                    "overlap with component dimension linking or by invalid inputs.".format(
-                        self, self.material, area
-                    )
+                    f"Component {self} with {self.material} has cold negative area of {area} cm^2. "
+                    "This can be caused by component overlap with component dimension linking or by invalid inputs."
                 )
                 raise ArithmeticError(negAreaFailure)
 
@@ -596,11 +587,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         if volume < 0.0 and self.containsSolidMaterial():
             negVolFailure = (
-                "Component {} with {} has cold negative volume of {} cm^3. "
-                "This can be caused by component "
-                "overlap with component dimension linking or by invalid inputs.".format(
-                    self, self.material, volume
-                )
+                f"Component {self} with {self.material} has cold negative volume of {volume} cm^3. "
+                "This can be caused by component overlap with component dimension linking or by invalid inputs."
             )
             raise ArithmeticError(negVolFailure)
 
@@ -900,8 +888,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         if self.material.enrichedNuclide is None:
             raise ValueError(
-                "Cannot get enrichment of {} because `enrichedNuclide` is not defined."
-                "".format(self.material)
+                f"Cannot get enrichment of {self.material} because `enrichedNuclide` is not defined."
             )
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
@@ -1126,17 +1113,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLL = self.material.linearExpansionFactor(Tc=Tc, T0=T0)
         if not dLL and abs(Tc - T0) > self._TOLERANCE:
             runLog.error(
-                "Linear expansion percent may not be implemented in the {} material class.\n"
+                f"Linear expansion percent may not be implemented in the {self.material} material class.\n"
                 "This method needs to be implemented on the material to allow thermal expansion."
-                ".\nReference temperature: {}, Adjusted temperature: {}, Temperature difference: {}, "
-                "Specified tolerance: {}".format(
-                    self.material, T0, Tc, (Tc - T0), self._TOLERANCE
-                ),
+                f".\nReference temperature: {T0}, Adjusted temperature: {Tc}, Temperature difference: {(Tc - T0)}, "
+                f"Specified tolerance: {self._TOLERANCE}",
                 single=True,
             )
             raise RuntimeError(
-                f"Linear expansion percent may not be implemented in the {self.material} material "
-                "class."
+                f"Linear expansion percent may not be implemented in the {self.material} material class."
             )
         return 1.0 + dLL
 
@@ -1146,9 +1130,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         runLog.important(self.setDimensionReport())
         if includeNuclides:
             for nuc in self.getNuclides():
-                runLog.important(
-                    "{0:10s} {1:.7e}".format(nuc, self.getNumberDensity(nuc))
-                )
+                runLog.important(f"{nuc:10s} {self.getNumberDensity(nuc):.7e}")
 
     def setDimensionReport(self):
         """Gives a report of the dimensions of this component."""
@@ -1159,11 +1141,10 @@ class Component(composites.Composite, metaclass=ComponentType):
                 break
         if not reportGroup:
             return f"No report group designated for {self.getName()} component."
-
         reportGroup.header = [
             "",
-            "Tcold ({0})".format(self.inputTemperatureInC),
-            "Thot ({0})".format(self.temperatureInC),
+            f"Tcold ({self.inputTemperatureInC})",
+            f"Thot ({self.temperatureInC})",
         ]
 
         dimensions = {
@@ -1183,9 +1164,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 report.setData(niceName, [refVal, hotVal], reportGroup)
             except ValueError:
                 runLog.warning(
-                    "{0} has an invalid dimension for {1}. refVal: {2} hotVal: {3}".format(
-                        self, dimName, refVal, hotVal
-                    )
+                    f"{self} has an invalid dimension for {dimName}. refVal: {refVal} hotVal: {hotVal}"
                 )
 
         # calculate thickness if applicable.
@@ -1196,18 +1175,18 @@ class Component(composites.Composite, metaclass=ComponentType):
             suffix = "p"
 
         if suffix:
-            coldIn = self.getDimension("i{0}".format(suffix), cold=True)
-            hotIn = self.getDimension("i{0}".format(suffix))
-            coldOut = self.getDimension("o{0}".format(suffix), cold=True)
-            hotOut = self.getDimension("o{0}".format(suffix))
+            coldIn = self.getDimension(f"i{suffix}", cold=True)
+            hotIn = self.getDimension(f"i{suffix}")
+            coldOut = self.getDimension(f"o{suffix}", cold=True)
+            hotOut = self.getDimension(f"o{suffix}")
 
         if suffix and coldIn > 0.0:
             hotThick = (hotOut - hotIn) / 2.0
             coldThick = (coldOut - coldIn) / 2.0
             vals = (
                 "Thickness (cm)",
-                "{0:.7f}".format(coldThick),
-                "{0:.7f}".format(hotThick),
+                f"{coldThick:.7f}",
+                f"{hotThick:.7f}",
             )
             report.setData(vals[0], [vals[1], vals[2]], reportGroup)
 
@@ -1277,8 +1256,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 val = self.p[dimName]
             except Exception:
                 raise RuntimeError(
-                    "Could not find parameter {} defined for {}. Is the desired "
-                    "Component class?".format(dimName, self)
+                    f"Could not find parameter {dimName} defined for {self}. Is the desired Component class?"
                 )
             if isinstance(val, _DimensionLink):
                 linkedDims.append((self.p.paramDefs[dimName].fieldName, val))
@@ -1312,8 +1290,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         if self.material.enrichedNuclide is None:
             raise ValueError(
-                "Cannot adjust enrichment of {} because `enrichedNuclide` is not defined."
-                "".format(self.material)
+                f"Cannot adjust enrichment of {self.material} because `enrichedNuclide` is not defined."
             )
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
