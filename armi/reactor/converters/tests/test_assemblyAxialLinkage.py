@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import io
+from typing import TYPE_CHECKING, Type
 from unittest import TestCase
 
 from armi.reactor.assemblies import HexAssembly, grids
@@ -33,6 +34,9 @@ from armi.reactor.converters.tests.test_axialExpansionChanger import (
 )
 from armi.reactor.flags import Flags
 from armi.settings.caseSettings import Settings
+
+if TYPE_CHECKING:
+    from armi.reactor.components import Component
 
 MULTIPIN_BP = """
 blocks:
@@ -163,7 +167,7 @@ class TestCheckOverlap(AxialExpansionTestBase):
 
     def runTest(
         self,
-        componentsToTest: dict,
+        componentsToTest: dict[Type["Component"], dict[str, float]],
         assertionBool: bool,
     ):
         """Runs various linkage tests.
@@ -171,18 +175,16 @@ class TestCheckOverlap(AxialExpansionTestBase):
         Parameters
         ----------
         componentsToTest
-            keys --> component class type; values --> dimensions specific to key
+            dictionary keys indicate the component type for ``typeA`` and ``typeB`` checks. the values indicate the
+            neccessary geometry specifications of the ``typeA`` and ``typeB`` components.
         assertionBool
             expected truth value for test
 
         Notes
         -----
-        - components "typeA" and "typeB" are assumed to be vertically stacked
-        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component
-          to "typeB"
+        - components "typeA" and "typeB" are assumed to be candidates for axial linking
+        - two assertions: 1) comparing "typeB" component to "typeA"; 2) comparing "typeA" component to "typeB"
         - the different assertions are particularly useful for comparing two annuli
-        - to add Component class types to a test add dictionary entry with following:
-          {Component Class Type: [{<settings for component 1>}, {<settings for component 2>}]
         """
         for method, dims in componentsToTest.items():
             typeA = method(*self.common, **dims[0])
