@@ -2177,7 +2177,7 @@ class HexBlock(Block):
             return
 
         grid = grids.HexGrid.fromPitch(
-            self.inferPinPitch(cold=True),
+            self.getPinPitch(cold=True),
             numRings=0,
             armiObject=self,
             cornersUp=cornersUp,
@@ -2220,7 +2220,13 @@ class HexBlock(Block):
         pinCenterFlatToFlat = math.sqrt(3.0) / 2.0 * pinCenterCornerToCorner
         return pinCenterFlatToFlat
 
-    def inferPinPitch(self, cold=False):
+    def hasPinPitch(self):
+        """Return True if the block has enough information to calculate pin pitch."""
+        return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
+            self.getComponent(Flags.WIRE, quiet=True) is not None
+        )
+
+    def getPinPitch(self, cold=False):
         """
         For a "simple" HexBlock, infer the pin pitch in cm.
 
