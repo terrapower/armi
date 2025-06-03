@@ -12,33 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""TODO."""
-import subprocess
+"""
+A simple helper script to create dummy data files for the STR.
+
+If the user wants to build the docs without going through the hassle of running the testing, they
+can run this simple script which will create some placeholder files for the STR:
+
+* pytest_verbose.log
+* test_results.xml
+
+"""
 
 
 def main():
     # skip build the STR, if you are running locally
-    cmd = 'echo "skipping STR"'
-    fileName = "pytest_verbose.log"
-    _pipeCmdToFile(cmd, fileName, True)
+    with open("pytest_verbose.log", "w") as f:
+        f.write("skipping STR")
 
-    cmd = 'echo "<metadata></metadata>"'
-    fileName = "test_results.xml"
-    _pipeCmdToFile(cmd, fileName, True)
-
-
-def _pipeCmdToFile(cmd, fileName, append=False):
-    """Write the results of a command line to a simple log file."""
-    if append:
-        write = "a"
-    else:
-        write = "w"
-
-    txt = subprocess.check_output(cmd).decode("utf-8").strip()
-    with open(fileName, write) as f:
-        print(f"Writing {fileName}")
-        f.write(txt)
-        f.write("\n\n")
+    with open("test_results.xml", "w") as f:
+        f.write("<metadata></metadata>")
 
 
 if __name__ == "__main__":
