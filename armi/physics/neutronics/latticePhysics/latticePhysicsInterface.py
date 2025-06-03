@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" "
+"""
 Lattice Physics Interface.
 
-Parent classes for codes responsible for generating broad-group cross sections
+Parent classes for codes responsible for generating broad-group cross sections.
 """
 
 import os

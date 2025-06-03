@@ -487,7 +487,7 @@ class TestShapedComponent(TestGeneralComponents):
         # no volume defined
         if isinstance(c, (DerivedShape, UnshapedVolumetricComponent)):
             return
-        elif type(c) == Component:
+        elif isinstance(c, Component):
             return
 
         # basic density sanity test
@@ -599,9 +599,9 @@ class TestDerivedShapeGetArea(unittest.TestCase):
         self.assertIn(Hexagon, shapes)
 
         blockArea = b.getMaxArea()
-        compArea = sum([c.getArea(Tc=300) for c in b if type(c) != DerivedShape])
+        compArea = sum([c.getArea(Tc=300) for c in b if not isinstance(c, DerivedShape)])
 
-        comp = [c for c in b if type(c) == DerivedShape][0]
+        comp = [c for c in b if isinstance(c, DerivedShape)][0]
 
         self.assertAlmostEqual(blockArea - compArea, comp.getComponentArea(Tc=300))
 
