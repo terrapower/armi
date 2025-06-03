@@ -225,11 +225,11 @@ class ExpansionData:
         return value
 
     def _setAllTargetComponents(self, setFuel: bool):
-        """Sets target component for each block.
+        """Sets axial expansion target component on each block in self._a.
 
         Parameters
         ----------
-        setFuel : bool
+        setFuel
             boolean to determine if fuel block should have its target component set. Useful for when
             target components should be determined on the fly.
         """
@@ -237,6 +237,16 @@ class ExpansionData:
             self.setTargetComponent(b, setFuel)
 
     def setTargetComponent(self, b: "Block", setFuel: bool):
+        """Set the axial expansion target component on a specific Block.
+
+        Parameters
+        ----------
+        b
+            ARMI Block which is to have its axial expansion target component set.
+        setFuel
+            boolean to determine if fuel block should have its target component set. Useful for when
+            target components should be determined on the fly.
+        """
         if b.p.axialExpTargetComponent:
             target = b.getComponentByName(b.p.axialExpTargetComponent)
             self._setExpansionTarget(b, target)
