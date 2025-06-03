@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Data formats for reports."""
+
 import collections
 import copy
 import re
@@ -35,27 +36,17 @@ class Report:
     @property
     def _groupRenderOrder(self):
         """Helper method to the rendering methods on this class for rendering order of contained info."""
-        presentGroupsOrderFirst = [
-            group for group in self.groupsOrderFirst if group in self.groups
-        ]
+        presentGroupsOrderFirst = [group for group in self.groupsOrderFirst if group in self.groups]
         completeGroupOrder = presentGroupsOrderFirst + [
-            group
-            for group in self.groups.keys()
-            if group not in presentGroupsOrderFirst
+            group for group in self.groups.keys() if group not in presentGroupsOrderFirst
         ]
-        specialsRemovedOrder = [
-            group
-            for group in completeGroupOrder
-            if group not in self.componentWellGroups
-        ]
+        specialsRemovedOrder = [group for group in completeGroupOrder if group not in self.componentWellGroups]
         return specialsRemovedOrder
 
     def __str__(self):
         str_ = "\n{} - (REPORT) {}\n".format(self.title, self.description)
         for global_group in self.groups.values():
-            str_ += re.sub(
-                "\n", "\n\t", "{}".format(Group.__str__(global_group))
-            )  # Don't use subclassed methods
+            str_ += re.sub("\n", "\n\t", "{}".format(Group.__str__(global_group)))  # Don't use subclassed methods
         return str_
 
     def addToReport(self, group, name, value):
@@ -68,9 +59,7 @@ class Report:
         try:
             return self.groups[group]
         except KeyError:
-            runLog.warning(
-                "Cannot locate group {} in report {}".format(group.title, self.title)
-            )
+            runLog.warning("Cannot locate group {} in report {}".format(group.title, self.title))
             return None
 
 
@@ -97,9 +86,7 @@ class Group:
         try:
             return self.data[name]
         except KeyError:
-            runLog.warning(
-                "Given name {} not present in report group {}".format(name, self.title)
-            )
+            runLog.warning("Given name {} not present in report group {}".format(name, self.title))
 
         return None
 

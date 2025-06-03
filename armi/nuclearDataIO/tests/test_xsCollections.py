@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module that tests methods within xsCollections."""
+
 import os
 import unittest
 
@@ -30,9 +31,7 @@ class TestXsCollections(unittest.TestCase):
         cls.microLib = isotxs.readBinary(ISOAA_PATH)
 
     def setUp(self):
-        self.mc = xsCollections.MacroscopicCrossSectionCreator(
-            minimumNuclideDensity=1e-13
-        )
+        self.mc = xsCollections.MacroscopicCrossSectionCreator(minimumNuclideDensity=1e-13)
         self.block = MockBlock()
         self.block.setNumberDensity("U235", 0.02)
         self.block.setNumberDensity("FE", 0.01)
@@ -43,11 +42,7 @@ class TestXsCollections(unittest.TestCase):
         totalScatter = nuc.micros.getTotalScatterMatrix()
         self.assertAlmostEqual(
             totalScatter[0, 0],
-            (
-                nuc.micros.elasticScatter[0, 0]
-                + nuc.micros.inelasticScatter[0, 0]
-                + 2.0 * nuc.micros.n2nScatter[0, 0]
-            ),
+            (nuc.micros.elasticScatter[0, 0] + nuc.micros.inelasticScatter[0, 0] + 2.0 * nuc.micros.n2nScatter[0, 0]),
         )
 
     def test_generateTotalScatteringMatrixWithMissingData(self):
@@ -111,9 +106,7 @@ class TestXsCollections(unittest.TestCase):
         expected1gXs = 2.35725262208
         micros = self.microLib["U235AA"].micros
         flux = list(reversed(range(33)))
-        self.assertAlmostEqual(
-            micros.collapseCrossSection(micros.nGamma, flux), expected1gXs
-        )
+        self.assertAlmostEqual(micros.collapseCrossSection(micros.nGamma, flux), expected1gXs)
 
 
 class MockReactor:

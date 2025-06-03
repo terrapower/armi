@@ -72,11 +72,7 @@ def getTestResult(app, need, needs):
         return "none"
 
     # Get all the tests that match the method signature
-    results = [
-        test_case["result"]
-        for test_case in TEST_RESULTS
-        if need["signature"] == test_case["method"]
-    ]
+    results = [test_case["result"] for test_case in TEST_RESULTS if need["signature"] == test_case["method"]]
     # Logic is as follows if there are multiple matches:
     #   - If one is a "failure", then return "failure"
     #   - If all are "skipped", then return "skipped"

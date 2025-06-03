@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for grid blueprints."""
+
 import io
 import os
 import unittest
@@ -355,9 +356,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertGreater(len(before), 100)
             self.assertGreater(len(after), 20)
             self.assertIn("1 2 1 2 1 2 1", after, msg="lattice map not showing up")
-            self.assertNotIn(
-                "- -3", after, msg="grid contents are showing up when they shouldn't"
-            )
+            self.assertNotIn("- -3", after, msg="grid contents are showing up when they shouldn't")
             self.assertNotIn("readFromLatticeMap", outText)
 
         self.assertTrue(os.path.exists(filePath))
@@ -388,9 +387,7 @@ class TestGridBlueprintsSection(unittest.TestCase):
             self.assertGreater(len(before), 100)
             self.assertGreater(len(after), 20)
             self.assertIn("- -3", after, msg="grid contents not showing up")
-            self.assertNotIn(
-                "1 3 1 2 1 3 1", after, msg="lattice map showing up when it shouldn't"
-            )
+            self.assertNotIn("1 3 1 2 1 3 1", after, msg="lattice map showing up when it shouldn't")
             self.assertNotIn("readFromLatticeMap", outText)
 
         self.assertTrue(os.path.exists(filePath))
@@ -407,8 +404,6 @@ class TestRZTGridBlueprint(unittest.TestCase):
         grid = gridDesign.construct()
         self.assertEqual(gridDesign.gridContents[2, 2], "assembly3_3 fuel")
         self.assertEqual(
-            grid.indicesOfBounds(
-                57.1428571429, 71.4285714286, 0.5542707944631219, 0.6698344789311578
-            ),
+            grid.indicesOfBounds(57.1428571429, 71.4285714286, 0.5542707944631219, 0.6698344789311578),
             (5, 4, 0),
         )

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for lumpedFissionProduce module."""
+
 import io
 import math
 import os
@@ -99,9 +100,7 @@ class TestLumpedFissionProduct(unittest.TestCase):
     """Test of the lumped fission product yields."""
 
     def setUp(self):
-        self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(
-            io.StringIO(LFP_TEXT)
-        )
+        self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
 
     def test_getYield(self):
         """Test of the yield of a fission product."""
@@ -207,9 +206,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
         """Test that the fission product yields for the lumped fission products sums to 2.0."""
         cs = Settings()
         cs[CONF_FP_MODEL] = "infinitelyDilute"
-        cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(
-            RES, "referenceFissionProducts.dat"
-        )
+        cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(RES, "referenceFissionProducts.dat")
         self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
         for lfp in self.lfps.values():
             self.assertAlmostEqual(lfp.getTotalYield(), 2.0, places=3)

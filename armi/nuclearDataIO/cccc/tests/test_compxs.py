@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test the COMPXS reader/writer with a simple problem."""
+
 import os
 import unittest
 
@@ -296,31 +297,23 @@ class TestCompxs(unittest.TestCase):
         """Test to make sure the binary read/writer reads/writes the exact same library."""
         with TemporaryDirectoryChanger():
             compxs.writeBinary(self.lib, self.binaryWritePath)
-            self.assertTrue(
-                compxs.compare(self.lib, compxs.readBinary(self.binaryWritePath))
-            )
+            self.assertTrue(compxs.compare(self.lib, compxs.readBinary(self.binaryWritePath)))
 
     def test_asciiRW(self):
         """Test to make sure the ascii reader/writer reads/writes the exact same library."""
         with TemporaryDirectoryChanger():
             compxs.writeAscii(self.lib, self.asciiWritePath)
-            self.assertTrue(
-                compxs.compare(self.lib, compxs.readAscii(self.asciiWritePath))
-            )
+            self.assertTrue(compxs.compare(self.lib, compxs.readAscii(self.asciiWritePath)))
 
     def test_mergeCompxsLibraries(self):
         """Test to verify the compxs merging returns a library with new regions."""
         someLib = CompxsLibrary()
         someLib.merge(self.lib)
         self.assertEqual(len(self.lib.regions), len(someLib.regions))
-        self.assertTrue(
-            self.lib.compxsMetadata.compare(someLib.compxsMetadata, self.lib, someLib)
-        )
+        self.assertTrue(self.lib.compxsMetadata.compare(someLib.compxsMetadata, self.lib, someLib))
 
     def test_getCOMPXSFileName(self):
         self.assertEqual(nuclearDataIO.getExpectedCOMPXSFileName(cycle=0), "COMPXS-c0")
         self.assertEqual(nuclearDataIO.getExpectedCOMPXSFileName(cycle=1), "COMPXS-c1")
-        self.assertEqual(
-            nuclearDataIO.getExpectedCOMPXSFileName(cycle=23), "COMPXS-c23"
-        )
+        self.assertEqual(nuclearDataIO.getExpectedCOMPXSFileName(cycle=23), "COMPXS-c23")
         self.assertEqual(nuclearDataIO.getExpectedCOMPXSFileName(), "COMPXS")

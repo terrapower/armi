@@ -18,6 +18,7 @@ This interface serves the reporting needs of ARMI.
 If there is any information that a user desires to show in PDF form to
 others this is the place to do it.
 """
+
 import re
 
 from armi import interfaces, runLog
@@ -73,8 +74,7 @@ class ReportInterface(interfaces.Interface):
 
         runLog.important("Cycle {}, node {} Summary: ".format(cycle, node))
         runLog.important(
-            "  time= {0:8.2f} years, keff= {1:.12f} maxPD= {2:-8.2f} MW/m^2, "
-            "maxBuI= {3:-8.4f} maxBuF= {4:8.4f}".format(
+            "  time= {0:8.2f} years, keff= {1:.12f} maxPD= {2:-8.2f} MW/m^2, maxBuI= {3:-8.4f} maxBuF= {4:8.4f}".format(
                 self.r.p.time,
                 self.r.core.p.keff,
                 self.r.core.p.maxPD,
@@ -85,19 +85,12 @@ class ReportInterface(interfaces.Interface):
 
         if self.cs["plots"]:
             adjoint = self.cs[CONF_NEUTRONICS_TYPE] == neutronics.ADJREAL_CALC
-            figName = (
-                self.cs.caseTitle
-                + "_{0}_{1}".format(cycle, node)
-                + ".mgFlux."
-                + self.cs["outputFileExtension"]
-            )
+            figName = self.cs.caseTitle + "_{0}_{1}".format(cycle, node) + ".mgFlux." + self.cs["outputFileExtension"]
 
             if self.r.core.getFirstBlock(Flags.FUEL).p.mgFlux is not None:
                 from armi.reactor import blocks
 
-                blocks.Block.plotFlux(
-                    self.r.core, fName=figName, peak=True, adjoint=adjoint
-                )
+                blocks.Block.plotFlux(self.r.core, fName=figName, peak=True, adjoint=adjoint)
             else:
                 runLog.warning("No mgFlux to plot in reports")
 
@@ -110,9 +103,7 @@ class ReportInterface(interfaces.Interface):
 
     def generateDesignReport(self, generateFullCoreMap, showBlockAxMesh):
         reportingUtils.makeCoreDesignReport(self.r.core, self.cs)
-        reportingUtils.makeCoreAndAssemblyMaps(
-            self.r, self.cs, generateFullCoreMap, showBlockAxMesh
-        )
+        reportingUtils.makeCoreAndAssemblyMaps(self.r, self.cs, generateFullCoreMap, showBlockAxMesh)
         reportingUtils.makeBlockDesignReport(self.r)
 
     def interactEOL(self):
@@ -135,9 +126,7 @@ class ReportInterface(interfaces.Interface):
         self.writeRunSummary()
         self.o.timer.stopAll()  # consider the run done
         runLog.info(self.o.timer.report(inclusionCutoff=0.001, totalTime=True))
-        _timelinePlot = self.o.timer.timeline(
-            self.cs.caseTitle, self.cs["timelineInclusionCutoff"], totalTime=True
-        )
+        _timelinePlot = self.o.timer.timeline(self.cs.caseTitle, self.cs["timelineInclusionCutoff"], totalTime=True)
         runLog.info(self.printReports())
 
     def printReports(self):
@@ -146,11 +135,7 @@ class ReportInterface(interfaces.Interface):
         for report_ in self.reports:
             str_ += re.sub("\n", "\n\t", "{}".format(report_))
 
-        return (
-            "---------- REPORTS BEGIN ----------\n"
-            + str_
-            + "\n----------- REPORTS END -----------"
-        )
+        return "---------- REPORTS BEGIN ----------\n" + str_ + "\n----------- REPORTS END -----------"
 
     def writeRunSummary(self):
         """Make a summary of the run."""
@@ -182,11 +167,7 @@ class ReportInterface(interfaces.Interface):
             )
             totFis += a.getFissileMass() * a.p.multiplicity / 1000  # convert to kg
 
-        runLog.important(
-            "Total SFP fissile inventory of {0} is {1:.4E} MT".format(
-                sfp, totFis / 1000.0
-            )
-        )
+        runLog.important("Total SFP fissile inventory of {0} is {1:.4E} MT".format(sfp, totFis / 1000.0))
 
     @staticmethod
     def countAssembliesSFP(sfp):

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test loading Theta-RZ reactor models."""
+
 import math
 import os
 import unittest
@@ -25,9 +26,7 @@ from armi.tests import TEST_ROOT
 class TestRZTReactorModern(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cs = settings.Settings(
-            fName=os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml")
-        )
+        cs = settings.Settings(fName=os.path.join(TEST_ROOT, "godiva", "godiva.armi.unittest.yaml"))
         cls.r = reactors.loadFromCs(cs)
 
     def test_loadRZT_reactor(self):

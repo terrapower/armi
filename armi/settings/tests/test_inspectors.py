@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for settings validation system."""
+
 import os
 import unittest
 
@@ -28,13 +29,9 @@ class TestInspector(unittest.TestCase):
         self.td.__enter__()
         self.init_mode = context.CURRENT_MODE
         self.cs = settings.Settings()
-        self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(
-            self.cs
-        )
+        self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(self.cs)
         self.inspector.queries = []  # clear out the auto-generated ones
-        self.filepathYaml = os.path.join(
-            os.getcwd(), self._testMethodName + "_test_setting_io.yaml"
-        )
+        self.filepathYaml = os.path.join(os.getcwd(), self._testMethodName + "_test_setting_io.yaml")
 
     def tearDown(self):
         context.Mode.setMode(self.init_mode)

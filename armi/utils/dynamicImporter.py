@@ -22,7 +22,5 @@ def getEntireFamilyTree(cls):
     are being found as expected.
     """
     return cls.__subclasses__() + [
-        grandchildren
-        for child in cls.__subclasses__()
-        for grandchildren in getEntireFamilyTree(child)
+        grandchildren for child in cls.__subclasses__() for grandchildren in getEntireFamilyTree(child)
     ]

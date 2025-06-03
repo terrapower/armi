@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for functions in textProcessors.py."""
+
 import logging
 import os
 import pathlib
@@ -52,9 +53,7 @@ class TestTextProcessor(unittest.TestCase):
 class YamlIncludeTest(unittest.TestCase):
     def test_resolveIncludes(self):
         with open(os.path.join(RES_DIR, "root.yaml")) as f:
-            resolved = textProcessors.resolveMarkupInclusions(
-                f, root=pathlib.Path(RES_DIR)
-            )
+            resolved = textProcessors.resolveMarkupInclusions(f, root=pathlib.Path(RES_DIR))
 
         # Make sure that there aren't any !include tags left in the converted stream
         anyIncludes = False
@@ -67,9 +66,7 @@ class YamlIncludeTest(unittest.TestCase):
         resolved.seek(0)
         data = ruamel.yaml.YAML().load(resolved)
         self.assertEqual(data["billy"]["children"][1]["full_name"], "Jennifer Person")
-        self.assertEqual(
-            data["billy"]["children"][1]["children"][0]["full_name"], "Elizabeth Person"
-        )
+        self.assertEqual(data["billy"]["children"][1]["children"][0]["full_name"], "Elizabeth Person")
 
         # Check that we preserved other round-trip data
         resolved.seek(0)
@@ -91,20 +88,14 @@ class YamlIncludeTest(unittest.TestCase):
             loadedYaml = yaml.load(f)
         stringIO = StringIO()
         yaml.dump(loadedYaml, stringIO)
-        resolved = textProcessors.resolveMarkupInclusions(
-            src=stringIO, root=pathlib.Path(RES_DIR)
-        )
+        resolved = textProcessors.resolveMarkupInclusions(src=stringIO, root=pathlib.Path(RES_DIR))
         with open(os.path.join(RES_DIR, "root.yaml")) as f:
-            expected = textProcessors.resolveMarkupInclusions(
-                f, root=pathlib.Path(RES_DIR)
-            )
+            expected = textProcessors.resolveMarkupInclusions(f, root=pathlib.Path(RES_DIR))
         # strip it because one method gives an extra newline we don't care about
         self.assertEqual(resolved.getvalue().strip(), expected.getvalue().strip())
 
     def test_findIncludes(self):
-        includes = textProcessors.findYamlInclusions(
-            pathlib.Path(RES_DIR) / "root.yaml"
-        )
+        includes = textProcessors.findYamlInclusions(pathlib.Path(RES_DIR) / "root.yaml")
         for i, _mark in includes:
             self.assertTrue((RES_DIR / i).exists())
 
@@ -112,7 +103,6 @@ class YamlIncludeTest(unittest.TestCase):
 
 
 class SequentialReaderTests(unittest.TestCase):
-
     textStream = """This is an example test stream.
 This has multiple lines in it and below it contains a set of data that
 can be found using a regular expression pattern.

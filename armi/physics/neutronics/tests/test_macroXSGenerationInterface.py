@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """MacroXSGenerationInterface tests."""
+
 import unittest
 from collections import defaultdict
 
@@ -34,9 +35,7 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
             :tests: R_ARMI_MACRO_XS
         """
         cs = Settings()
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         # Before: verify there are no macro XS on each block
         for b in r.core.iterBlocks():

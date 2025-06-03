@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the geometry (loading input) file."""
+
 import unittest
 
 from armi.reactor import geometry
@@ -22,9 +23,7 @@ class TestGeomType(unittest.TestCase):
     def test_fromStr(self):
         # note the bonkers case and extra whitespace to exercise the canonicalization
         self.assertEqual(geometry.GeomType.fromStr("HeX"), geometry.GeomType.HEX)
-        self.assertEqual(
-            geometry.GeomType.fromStr("cARTESIAN"), geometry.GeomType.CARTESIAN
-        )
+        self.assertEqual(geometry.GeomType.fromStr("cARTESIAN"), geometry.GeomType.CARTESIAN)
         self.assertEqual(geometry.GeomType.fromStr(" thetaRZ"), geometry.GeomType.RZT)
         self.assertEqual(geometry.GeomType.fromStr("rZ  "), geometry.GeomType.RZ)
 
@@ -66,9 +65,7 @@ class TestSymmetryType(unittest.TestCase):
         self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
 
-        st = geometry.SymmetryType(
-            geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE, True
-        )
+        st = geometry.SymmetryType(geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE, True)
         self.assertTrue(st.isThroughCenterAssembly)
         self.assertEqual(st.domain, geometry.DomainType.EIGHTH_CORE)
         self.assertEqual(st.boundary, geometry.BoundaryType.REFLECTIVE)
@@ -80,65 +77,39 @@ class TestSymmetryType(unittest.TestCase):
 
     def test_baseConstructor(self):
         self.assertEqual(
-            geometry.SymmetryType(
-                geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
-            ).domain,
+            geometry.SymmetryType(geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE).domain,
             geometry.DomainType.SIXTEENTH_CORE,
         )
         self.assertEqual(
-            str(
-                geometry.SymmetryType(
-                    geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-                ).boundary
-            ),
+            str(geometry.SymmetryType(geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY).boundary),
             "",
         )
 
     def test_label(self):
-        st = geometry.SymmetryType(
-            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-        )
+        st = geometry.SymmetryType(geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY)
         self.assertEqual(st.domain.label, "Full")
         self.assertEqual(st.boundary.label, "No Symmetry")
-        st = geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-        )
+        st = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
         self.assertEqual(st.domain.label, "Third")
         self.assertEqual(st.boundary.label, "Periodic")
-        st = geometry.SymmetryType(
-            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        st = geometry.SymmetryType(geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(st.domain.label, "Quarter")
         self.assertEqual(st.boundary.label, "Reflective")
-        st = geometry.SymmetryType(
-            geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        st = geometry.SymmetryType(geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(st.domain.label, "Eighth")
-        st = geometry.SymmetryType(
-            geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        st = geometry.SymmetryType(geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(st.domain.label, "Sixteenth")
 
     def test_SymmetryFactor(self):
-        st = geometry.SymmetryType(
-            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-        )
+        st = geometry.SymmetryType(geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY)
         self.assertEqual(st.symmetryFactor(), 1.0)
-        st = geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-        )
+        st = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
         self.assertEqual(st.symmetryFactor(), 3.0)
-        st = geometry.SymmetryType(
-            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        st = geometry.SymmetryType(geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(st.symmetryFactor(), 4.0)
-        st = geometry.SymmetryType(
-            geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        st = geometry.SymmetryType(geometry.DomainType.EIGHTH_CORE, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(st.symmetryFactor(), 8.0)
-        st = geometry.SymmetryType(
-            geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        st = geometry.SymmetryType(geometry.DomainType.SIXTEENTH_CORE, geometry.BoundaryType.REFLECTIVE)
         self.assertEqual(st.symmetryFactor(), 16.0)
 
     def test_domainTypeNulls(self):
@@ -152,21 +123,13 @@ class TestSymmetryType(unittest.TestCase):
         geomCart = geometry.GeomType.CARTESIAN
         geomRZT = geometry.GeomType.RZT
         geomRZ = geometry.GeomType.RZ
-        fullCore = geometry.SymmetryType(
-            geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
-        )
-        thirdPeriodic = geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-        )
-        quarterCartesian = geometry.SymmetryType(
-            geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
-        )
+        fullCore = geometry.SymmetryType(geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY)
+        thirdPeriodic = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
+        quarterCartesian = geometry.SymmetryType(geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE)
 
         self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomHex, thirdPeriodic))
         self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomHex, fullCore))
-        self.assertTrue(
-            geometry.checkValidGeomSymmetryCombo(geomCart, quarterCartesian)
-        )
+        self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomCart, quarterCartesian))
         self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomRZT, quarterCartesian))
         self.assertTrue(geometry.checkValidGeomSymmetryCombo(geomRZ, fullCore))
 

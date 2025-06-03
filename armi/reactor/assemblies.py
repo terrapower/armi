@@ -17,6 +17,7 @@ Assemblies are collections of Blocks.
 
 Generally, Blocks are stacked from bottom to top.
 """
+
 import copy
 import math
 import pickle
@@ -219,9 +220,7 @@ class Assembly(composites.Composite):
         if scalingFactor == 1:
             return
 
-        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(
-            ParamLocation.VOLUME_INTEGRATED
-        )
+        volIntegratedParamsToScale = self[0].p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
         for b in self:
             for param in volIntegratedParamsToScale:
                 name = param.name
@@ -257,9 +256,7 @@ class Assembly(composites.Composite):
             return self.LOAD_QUEUE
         elif isinstance(self.parent, SpentFuelPool):
             return self.SPENT_FUEL_POOL
-        return self.parent.spatialGrid.getLabel(
-            self.spatialLocator.getCompleteIndices()[:2]
-        )
+        return self.parent.spatialGrid.getLabel(self.spatialLocator.getCompleteIndices()[:2])
 
     def coords(self):
         """Return the location of the assembly in the plane using cartesian global coordinates.
@@ -307,9 +304,7 @@ class Assembly(composites.Composite):
         for b in self.iterChildrenWithFlags(Flags.PLENUM):
             cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
-            plenumVolume += (
-                math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6
-            )  # convert cm^3 to m^3
+            plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6  # convert cm^3 to m^3
         return plenumVolume
 
     def getAveragePlenumTemperature(self):
@@ -330,9 +325,7 @@ class Assembly(composites.Composite):
 
         newBlocks = 0  # number of new blocks we've added so far.
         for i, b in enumerate(self):
-            refB = refA[
-                i + newBlocks
-            ]  # pick the block that is "supposed to" line up with refB.
+            refB = refA[i + newBlocks]  # pick the block that is "supposed to" line up with refB.
 
             # runLog.important('Dealing with {0}, ref b {1}'.format(b,refB))
             if refB.getHeight() == b.getHeight():
@@ -342,17 +335,16 @@ class Assembly(composites.Composite):
                 continue
             elif refB.getHeight() > b.getHeight():
                 raise RuntimeError(
-                    "can't split {0} ({1}cm) into larger blocks to match ref block {2} ({3}cm)"
-                    "".format(b, b.getHeight(), refB, refB.getHeight())
+                    "can't split {0} ({1}cm) into larger blocks to match ref block {2} ({3}cm)".format(
+                        b, b.getHeight(), refB, refB.getHeight()
+                    )
                 )
             else:
                 # b is larger than refB. Split b up by splitting it into several smaller blocks of
                 # refBs
                 heightToChop = b.getHeight()
                 heightChopped = 0.0
-                while (
-                    abs(heightChopped - heightToChop) > 1e-5
-                ):  # stop when they are equal. floating point.
+                while abs(heightChopped - heightToChop) > 1e-5:  # stop when they are equal. floating point.
                     # update which ref block we're on (does nothing on the first pass)
                     refB = refA[i + newBlocks]
                     newB = copy.deepcopy(b)
@@ -360,9 +352,7 @@ class Assembly(composites.Composite):
                     newBlockStack.append(newB)
                     heightChopped += refB.getHeight()
                     newBlocks += 1
-                    runLog.important(
-                        f"Added a new block {newB} of height {newB.getHeight()}"
-                    )
+                    runLog.important(f"Added a new block {newB} of height {newB.getHeight()}")
                     runLog.important(f"Chopped {heightChopped} of {heightToChop}")
 
                 # subtract one because we eliminated the original b completely.
@@ -513,9 +503,7 @@ class Assembly(composites.Composite):
         for b in self:
             if b.hasFlags(blockType):
                 elevationsWithBlockBoundaries.append(elevation)  # bottom Boundary
-                elevationsWithBlockBoundaries.append(
-                    elevation + b.getHeight()
-                )  # top Boundary
+                elevationsWithBlockBoundaries.append(elevation + b.getHeight())  # top Boundary
             elevation += b.getHeight()
 
         return elevationsWithBlockBoundaries
@@ -655,11 +643,7 @@ class Assembly(composites.Composite):
                 # grid-plate dose calcs.
                 conserveMass = True
                 # conserve mass of everything except fluids.
-                conserveComponents = [
-                    comp
-                    for comp in b.getComponents()
-                    if not isinstance(comp.material, Fluid)
-                ]
+                conserveComponents = [comp for comp in b.getComponents() if not isinstance(comp.material, Fluid)]
             else:
                 # plenum or above block in fuel assembly. don't conserve mass.
                 conserveMass = False
@@ -720,9 +704,7 @@ class Assembly(composites.Composite):
         if self[-1].p.topIndex == 0:
             runLog.warning(
                 "Reference uniform mesh not being applied to {}. It was likely "
-                "excluded through the setting `nonUniformAssemFlags`.".format(
-                    self.p.type
-                )
+                "excluded through the setting `nonUniformAssemFlags`.".format(self.p.type)
             )
             return
 
@@ -734,8 +716,9 @@ class Assembly(composites.Composite):
 
             if not 0 <= topIndex < len(blockMesh):
                 runLog.warning(
-                    "index {0} does not exist in topvals (len:{1}). 0D case? Skipping snap"
-                    "".format(topIndex, len(blockMesh))
+                    "index {0} does not exist in topvals (len:{1}). 0D case? Skipping snap".format(
+                        topIndex, len(blockMesh)
+                    )
                 )
                 return
 
@@ -746,9 +729,7 @@ class Assembly(composites.Composite):
                 return
 
             if conserveMassFlag == "auto":
-                conserveMass, conserveComponents = self._shouldMassBeConserved(
-                    belowFuelColumn, b
-                )
+                conserveMass, conserveComponents = self._shouldMassBeConserved(belowFuelColumn, b)
             else:
                 conserveMass = conserveMassFlag
                 conserveComponents = b.getComponents()
@@ -922,8 +903,7 @@ class Assembly(composites.Composite):
         for b in self:
             topOfBlock = bottomOfBlock + b.getHeight()
             if (
-                topOfBlock > elevation
-                or abs(topOfBlock - elevation) / elevation < 1e-10
+                topOfBlock > elevation or abs(topOfBlock - elevation) / elevation < 1e-10
             ) and bottomOfBlock < elevation:
                 return b
             bottomOfBlock = topOfBlock
@@ -1019,9 +999,7 @@ class Assembly(composites.Composite):
 
         return blocksHere
 
-    def getParamValuesAtZ(
-        self, param, elevations, interpType="linear", fillValue=np.nan
-    ):
+    def getParamValuesAtZ(self, param, elevations, interpType="linear", fillValue=np.nan):
         """
         Interpolates a param axially to find it at any value of elevation z.
 
@@ -1064,9 +1042,7 @@ class Assembly(composites.Composite):
         valAtZ : np.ndarray
             This will be of the shape (z,data-shape)
         """
-        interpolator = self.getParamOfZFunction(
-            param, interpType=interpType, fillValue=fillValue
-        )
+        interpolator = self.getParamOfZFunction(param, interpType=interpType, fillValue=fillValue)
         return interpolator(elevations)
 
     def getParamOfZFunction(self, param, interpType="linear", fillValue=np.nan):
@@ -1121,10 +1097,7 @@ class Assembly(composites.Composite):
                     ", ".join([str(pl) for pl in ParamLocation]),
                 )
             )
-        atCenter = bool(
-            paramDef.location
-            & (ParamLocation.CENTROID | ParamLocation.VOLUME_INTEGRATED)
-        )
+        atCenter = bool(paramDef.location & (ParamLocation.CENTROID | ParamLocation.VOLUME_INTEGRATED))
         z = self.getAxialMesh(atCenter)
 
         if paramDef.location & ParamLocation.BOTTOM:
@@ -1277,10 +1250,7 @@ class HexAssembly(Assembly):
         if math.isclose(rad % (math.pi / 3), 0, abs_tol=1e-12):
             return super().rotate(rad)
 
-        msg = (
-            f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees "
-            f"({rad} radians)."
-        )
+        msg = f"Rotation must be in 60 degree increments, got {math.degrees(rad)} degrees ({rad} radians)."
         runLog.error(msg)
         raise ValueError(msg)
 

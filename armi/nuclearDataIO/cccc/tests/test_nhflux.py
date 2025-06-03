@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test reading/writing of NHFLUX dataset."""
+
 import os
 import unittest
 
@@ -25,9 +26,7 @@ THIS_DIR = os.path.dirname(__file__)
 
 SIMPLE_HEXZ_INP = os.path.join(THIS_DIR, "../../tests", "simple_hexz.inp")
 SIMPLE_HEXZ_NHFLUX = os.path.join(THIS_DIR, "fixtures", "simple_hexz.nhflux")
-SIMPLE_HEXZ_NHFLUX_VARIANT = os.path.join(
-    THIS_DIR, "fixtures", "simple_hexz.nhflux.variant"
-)
+SIMPLE_HEXZ_NHFLUX_VARIANT = os.path.join(THIS_DIR, "fixtures", "simple_hexz.nhflux.variant")
 
 
 class TestNhflux(unittest.TestCase):
@@ -75,9 +74,7 @@ class TestNhflux(unittest.TestCase):
 
         # node 8 (ring=3, position=2), axial=6, group=1
         i = 7  # ring=3, position=2
-        self.assertEqual(
-            self.nhf.geodstCoordMap[i], 20
-        )  # 20 = 3*5 + 4 + 1 => (i=4, j=3)
+        self.assertEqual(self.nhf.geodstCoordMap[i], 20)  # 20 = 3*5 + 4 + 1 => (i=4, j=3)
         iz, ig = 5, 0  # zero based
         self.assertTrue(
             np.allclose(
@@ -97,9 +94,7 @@ class TestNhflux(unittest.TestCase):
         # node 2 (ring=3, position=1), axial=4, group=2, surface=4, outgoing
         iNode, iSurf, iz, ig = 1, 3, 3, 1  # zero based
         self.assertEqual(self.nhf.geodstCoordMap[iNode], 15)
-        self.assertAlmostEqual(
-            self.nhf.partialCurrentsHex[iNode, iz, iSurf, ig] / 1.5570424e07, 1.0
-        )
+        self.assertAlmostEqual(self.nhf.partialCurrentsHex[iNode, iz, iSurf, ig] / 1.5570424e07, 1.0)
 
         # node 14 (ring=2, position=1), axial=4, group=2, surface=1, incoming
         iNode, iSurf = 13, 0
@@ -117,9 +112,7 @@ class TestNhflux(unittest.TestCase):
         """
         # node 15 (ring=2, position=3), axial=3, group=3, j=1 (z-plus)
         iNode, iz, ig, j = 14, 2, 2, 0
-        self.assertAlmostEqual(
-            self.nhf.partialCurrentsZ[iNode, iz, j, ig] / 1.6928521e06, 1.0
-        )
+        self.assertAlmostEqual(self.nhf.partialCurrentsZ[iNode, iz, j, ig] / 1.6928521e06, 1.0)
 
     def test_write(self):
         """Verify binary equivalence of written binary file."""
@@ -176,17 +169,13 @@ class TestNhfluxVariant(unittest.TestCase):
             9.01170812e03,
             1.05852790e04,
         ]
-        self.assertTrue(
-            np.allclose(actualNonzeroFluxMoments, expectedNonzeroFluxMoments)
-        )
+        self.assertTrue(np.allclose(actualNonzeroFluxMoments, expectedNonzeroFluxMoments))
 
     def test_write(self):
         """Verify binary equivalence of written binary file."""
         with TemporaryDirectoryChanger():
             nhflux.NhfluxStreamVariant.writeBinary(self.nhf, "NHFLUX2")
-            with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open(
-                "NHFLUX2", "rb"
-            ) as f2:
+            with open(SIMPLE_HEXZ_NHFLUX_VARIANT, "rb") as f1, open("NHFLUX2", "rb") as f2:
                 expectedData = f1.read()
                 actualData = f2.read()
             for expected, actual in zip(expectedData, actualData):

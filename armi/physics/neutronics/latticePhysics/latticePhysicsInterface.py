@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""""
+""" "
 Lattice Physics Interface.
 
 Parent classes for codes responsible for generating broad-group cross sections
 """
+
 import os
 
 from armi import interfaces, nuclearDataIO, runLog
@@ -77,12 +78,8 @@ class LatticePhysicsInterface(interfaces.Interface):
         self._oldXsIdsAndBurnup = {}
         self.executablePath = self._getExecutablePath()
         self.executableRoot = os.path.dirname(self.executablePath)
-        self.includeGammaXS = neutronics.gammaTransportIsRequested(
-            cs
-        ) or neutronics.gammaXsAreRequested(cs)
-        self._latticePhysicsFrequency = LatticePhysicsFrequency[
-            self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
-        ]
+        self.includeGammaXS = neutronics.gammaTransportIsRequested(cs) or neutronics.gammaXsAreRequested(cs)
+        self._latticePhysicsFrequency = LatticePhysicsFrequency[self.cs[CONF_LATTICE_PHYSICS_FREQUENCY]]
 
     def _getExecutablePath(self):
         raise NotImplementedError
@@ -133,9 +130,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         if self._newLibraryShouldBeCreated(cycle, representativeBlocks, xsIds):
             if self.cs[CONF_CLEAR_XS]:
                 self.clearXS()
-            self.computeCrossSections(
-                blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle)
-            )
+            self.computeCrossSections(blockList=representativeBlocks, xsLibrarySuffix=self._getSuffix(cycle))
             self._renameExistingLibrariesForStatepoint(cycle, node)
         else:
             self.readExistingXSLibraries(cycle, node)
@@ -144,21 +139,15 @@ class LatticePhysicsInterface(interfaces.Interface):
 
     def _renameExistingLibrariesForStatepoint(self, cycle, node):
         """Copy the existing neutron and/or gamma libraries into cycle-dependent files."""
-        safeCopy(
-            neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
-        )
+        safeCopy(neutronics.ISOTXS, nuclearDataIO.getExpectedISOTXSFileName(cycle, node))
         if self.includeGammaXS:
             safeCopy(
                 neutronics.GAMISO,
-                nuclearDataIO.getExpectedGAMISOFileName(
-                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
-                ),
+                nuclearDataIO.getExpectedGAMISOFileName(cycle=cycle, node=node, suffix=self._getSuffix(cycle)),
             )
             safeCopy(
                 neutronics.PMATRX,
-                nuclearDataIO.getExpectedPMATRXFileName(
-                    cycle=cycle, node=node, suffix=self._getSuffix(cycle)
-                ),
+                nuclearDataIO.getExpectedPMATRXFileName(cycle=cycle, node=node, suffix=self._getSuffix(cycle)),
             )
 
     def _checkInputs(self):
@@ -179,13 +168,12 @@ class LatticePhysicsInterface(interfaces.Interface):
                     raise ValueError(
                         "Neither {} nor {} libraries exist. Either the "
                         "current cycle library for cycle {} should exist "
-                        "or a base library is required to continue.".format(
-                            cycleName, baseName, cycle
-                        )
+                        "or a base library is required to continue.".format(cycleName, baseName, cycle)
                     )
                 runLog.info(
-                    "Existing library {} for cycle {} does not exist. "
-                    "The active library is {}".format(cycleName, cycle, baseName)
+                    "Existing library {} for cycle {} does not exist. The active library is {}".format(
+                        cycleName, cycle, baseName
+                    )
                 )
             else:
                 runLog.info("Using {} as an active library".format(baseName))
@@ -193,14 +181,10 @@ class LatticePhysicsInterface(interfaces.Interface):
                     safeCopy(cycleName, baseName)
 
     def _readGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
-        raise NotImplementedError(
-            "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
-        )
+        raise NotImplementedError("Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL]))
 
     def _writeGammaBinaries(self, lib, gamisoFileName, pmatrxFileName):
-        raise NotImplementedError(
-            "Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL])
-        )
+        raise NotImplementedError("Gamma cross sections not implemented in {}".format(self.cs[CONF_XS_KERNEL]))
 
     def _getSuffix(self, cycle):
         return ""
@@ -219,10 +203,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         any XS groups as necessary to ensure that all XS groups are covered.
         """
         if self._latticePhysicsFrequency >= LatticePhysicsFrequency.everyNode:
-            if (
-                not self.o.couplingIsActive()
-                or self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode
-            ):
+            if not self.o.couplingIsActive() or self._latticePhysicsFrequency == LatticePhysicsFrequency.everyNode:
                 self.r.core.lib = None
             self.updateXSLibrary(self.r.p.cycle, self.r.p.timeNode)
 
@@ -253,9 +234,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         # always run for snapshots to account for temp effect of different flow or power statepoint
         targetFrequency = (
-            LatticePhysicsFrequency.firstCoupledIteration
-            if iteration == 0
-            else LatticePhysicsFrequency.all
+            LatticePhysicsFrequency.firstCoupledIteration if iteration == 0 else LatticePhysicsFrequency.all
         )
         if self._latticePhysicsFrequency >= targetFrequency:
             self.r.core.lib = None
@@ -272,9 +251,7 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         self.r.core.lib = None
 
-    def computeCrossSections(
-        self, baseList=None, forceSerial=False, xsLibrarySuffix="", blockList=None
-    ):
+    def computeCrossSections(self, baseList=None, forceSerial=False, xsLibrarySuffix="", blockList=None):
         """
         Prepare a batch of inputs, execute them, and store results on reactor library.
 
@@ -291,9 +268,7 @@ class LatticePhysicsInterface(interfaces.Interface):
             List of blocks for which to generate cross sections.
             If None, representative blocks will be determined
         """
-        self.r.core.lib = self._generateXsLibrary(
-            baseList, forceSerial, xsLibrarySuffix, blockList
-        )
+        self.r.core.lib = self._generateXsLibrary(baseList, forceSerial, xsLibrarySuffix, blockList)
 
     def _generateXsLibrary(
         self,
@@ -309,9 +284,7 @@ class LatticePhysicsInterface(interfaces.Interface):
     def _executeLatticePhysicsCalculation(self, returnedFromWriters, forceSerial):
         raise NotImplementedError
 
-    def generateLatticePhysicsInputs(
-        self, baseList, xsLibrarySuffix, blockList, xsWriters=None
-    ):
+    def generateLatticePhysicsInputs(self, baseList, xsLibrarySuffix, blockList, xsWriters=None):
         """
         Write input files for the generation of cross section libraries.
 
@@ -384,14 +357,10 @@ class LatticePhysicsInterface(interfaces.Interface):
             ]
         else:
             geom = self.cs[CONF_CROSS_SECTION][xsID].geometry
-            writers = self._getGeomDependentWriters(
-                representativeBlock, xsID, geom, xsLibrarySuffix
-            )
+            writers = self._getGeomDependentWriters(representativeBlock, xsID, geom, xsLibrarySuffix)
         return writers
 
-    def _getGeomDependentWriters(
-        self, representativeBlock, xsID, geom, xsLibrarySuffix
-    ):
+    def _getGeomDependentWriters(self, representativeBlock, xsID, geom, xsLibrarySuffix):
         raise NotImplementedError
 
     def getReader(self):
@@ -443,10 +412,7 @@ class LatticePhysicsInterface(interfaces.Interface):
                 executeXSGen = False
 
         if executeXSGen:
-            runLog.info(
-                f"Cross sections will be generated on cycle {cycle} for the "
-                f"following XS IDs: {xsIDs}"
-            )
+            runLog.info(f"Cross sections will be generated on cycle {cycle} for the following XS IDs: {xsIDs}")
         else:
             runLog.info(
                 f"Cross sections will not be generated on cycle {cycle}. The "
@@ -499,8 +465,9 @@ class LatticePhysicsInterface(interfaces.Interface):
                         self._oldXsIdsAndBurnup[xsID] = buNow
 
                         runLog.important(
-                            "Burnup has changed in xsID {} from {} to {}. "
-                            "Recalculating Cross-sections".format(xsID, buOld, buNow)
+                            "Burnup has changed in xsID {} from {} to {}. Recalculating Cross-sections".format(
+                                xsID, buOld, buNow
+                            )
                         )
 
         return idsChangedBurnup
@@ -530,6 +497,4 @@ class LatticePhysicsInterface(interfaces.Interface):
         """
         if self.r.core.p.cyclics >= self.cs["numCyclicsBeforeStoppingXS"]:
             self.enabled(False)
-            runLog.important(
-                "Disabling {} because numCyclics={}".format(self, self.r.core.p.cyclics)
-            )
+            runLog.important("Disabling {} because numCyclics={}".format(self, self.r.core.p.cyclics))

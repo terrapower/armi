@@ -85,9 +85,4 @@ class Inconel800(Material):
         """
         Tc = getTc(Tc, Tk)
         self.checkPropertyTempRange("thermal expansion", Tc)
-        return (
-            2.52525e-14 * Tc**3
-            - 3.77814e-11 * Tc**2
-            + 2.06360e-08 * Tc
-            + 1.28071e-05
-        )
+        return 2.52525e-14 * Tc**3 - 3.77814e-11 * Tc**2 + 2.06360e-08 * Tc + 1.28071e-05

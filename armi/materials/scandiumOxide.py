@@ -19,7 +19,6 @@ from armi.utils.units import getTk
 
 
 class Sc2O3(Material):
-
     propertyValidTemperature = {"linear expansion percent": ((273.15, 1573.15), "K")}
 
     def __init__(self):

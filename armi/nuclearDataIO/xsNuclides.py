@@ -25,6 +25,7 @@ can be reconstructed.
     :py:class:`~armi.nuclearDataIO.xsLibrary.XSLibrary` objects, and then retrieving them through their label
     index (i.e. "PU39AA").
 """
+
 from armi.nucDirectory import nuclideBases
 from armi.nuclearDataIO import nuclearFileMetadata, xsCollections, xsLibraries
 from armi.utils.customExceptions import warn_when_root
@@ -32,9 +33,7 @@ from armi.utils.customExceptions import warn_when_root
 
 @warn_when_root
 def NuclideLabelDoesNotMatchNuclideLabel(nuclide, label, xsID):
-    return "The label {} (xsID:{}) for nuclide {}, does not match the nucDirectory label.".format(
-        label, xsID, nuclide
-    )
+    return "The label {} (xsID:{}) for nuclide {}, does not match the nucDirectory label.".format(label, xsID, nuclide)
 
 
 class XSNuclide(nuclideBases.NuclideWrapper):
@@ -78,15 +77,11 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         # most nuclides have the correct NuclideBase ID
         nuclideId = self.isotxsMetadata["nuclideId"]
         nuclideBase = nuclideBases.byName.get(nuclideId, None)
-        if nuclideBase is None or isinstance(
-            nuclideBase, nuclideBases.DummyNuclideBase
-        ):
+        if nuclideBase is None or isinstance(nuclideBase, nuclideBases.DummyNuclideBase):
             # FP, DUMMY, DUMP
             nuclideBase = nuclideBases.byLabel.get(self.nucLabel, None)
             if nuclideBase is None:
-                raise OSError(
-                    "Could not determine NuclideBase for label {}".format(self.nucLabel)
-                )
+                raise OSError("Could not determine NuclideBase for label {}".format(self.nucLabel))
         if self.nucLabel != nuclideBase.label:
             NuclideLabelDoesNotMatchNuclideLabel(nuclideBase, self.nucLabel, self.xsId)
             nuclideBases.changeLabel(nuclideBase, self.nucLabel)
@@ -99,9 +94,7 @@ class XSNuclide(nuclideBases.NuclideWrapper):
                 return self.micros[interaction][group]
             except IndexError:
                 raise IndexError(
-                    "Group {0} not found in interaction {1} of nuclide {2}".format(
-                        group, interaction, self.name
-                    )
+                    "Group {0} not found in interaction {1} of nuclide {2}".format(group, interaction, self.name)
                 )
         else:
             return 0
@@ -180,28 +173,18 @@ class XSNuclide(nuclideBases.NuclideWrapper):
         usage is only used during runtime, where the second XSNuclide, and it's container (e.g. ISTOXS, GAMISO, etc.)
         are discarded after the merge.
         """
-        self.isotxsMetadata = self.isotxsMetadata.merge(
-            other.isotxsMetadata, self, other, "ISOTXS", AttributeError
-        )
-        self.gamisoMetadata = self.gamisoMetadata.merge(
-            other.gamisoMetadata, self, other, "GAMISO", AttributeError
-        )
-        self.pmatrxMetadata = self.pmatrxMetadata.merge(
-            other.pmatrxMetadata, self, other, "PMATRX", AttributeError
-        )
+        self.isotxsMetadata = self.isotxsMetadata.merge(other.isotxsMetadata, self, other, "ISOTXS", AttributeError)
+        self.gamisoMetadata = self.gamisoMetadata.merge(other.gamisoMetadata, self, other, "GAMISO", AttributeError)
+        self.pmatrxMetadata = self.pmatrxMetadata.merge(other.pmatrxMetadata, self, other, "PMATRX", AttributeError)
         self.micros.merge(other.micros)
         self.gammaXS.merge(other.gammaXS)
         self.neutronHeating = _mergeAttributes(self, other, "neutronHeating")
         self.neutronDamage = _mergeAttributes(self, other, "neutronDamage")
         self.gammaHeating = _mergeAttributes(self, other, "gammaHeating")
         self.isotropicProduction = _mergeAttributes(self, other, "isotropicProduction")
-        self.linearAnisotropicProduction = _mergeAttributes(
-            self, other, "linearAnisotropicProduction"
-        )
+        self.linearAnisotropicProduction = _mergeAttributes(self, other, "linearAnisotropicProduction")
         # this is lazy, but should work, because the n-order wouldn't be set without the others being set first.
-        self.nOrderProductionMatrix = (
-            self.nOrderProductionMatrix or other.nOrderProductionMatrix
-        )
+        self.nOrderProductionMatrix = self.nOrderProductionMatrix or other.nOrderProductionMatrix
 
 
 def _mergeAttributes(this, other, attrName):
@@ -220,8 +203,9 @@ def _mergeAttributes(this, other, attrName):
     attr2 = getattr(other, attrName)
     if attr1 is not None and attr2 is not None:
         raise AttributeError(
-            "Cannot merge {} and {}, the attribute `{}` has been assigned on both"
-            "instances.".format(this, other, attrName)
+            "Cannot merge {} and {}, the attribute `{}` has been assigned on bothinstances.".format(
+                this, other, attrName
+            )
         )
     return attr1 if attr1 is not None else attr2
 

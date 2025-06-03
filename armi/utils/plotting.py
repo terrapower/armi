@@ -171,9 +171,7 @@ def plotBlockDepthMap(
             text.set_text(labelFmt.format(valToPrint))
 
     # Slider doesn't seem to work unless assigned to variable
-    _slider = DepthSlider(
-        ax_slider, "Depth(cm)", elevations, update, "green", valInit=depthIndex
-    )
+    _slider = DepthSlider(ax_slider, "Depth(cm)", elevations, update, "green", valInit=depthIndex)
 
     if fName:
         plt.savefig(fName, dpi=150)
@@ -315,16 +313,13 @@ def plotFaceMap(
                 data.append(a.calcTotalParam(param))
             else:
                 raise ValueError(
-                    "{0} is an invalid entry for `vals` in plotFaceMap. Use peak, average, or sum.".format(
-                        vals
-                    )
+                    "{0} is an invalid entry for `vals` in plotFaceMap. Use peak, average, or sum.".format(vals)
                 )
     if not labels:
         labels = [None] * len(data)
     if len(data) != len(labels):
         raise ValueError(
-            "Data had length {}, but labels had length {}. "
-            "They should be equal length.".format(len(data), len(labels))
+            "Data had length {}, but labels had length {}. They should be equal length.".format(len(data), len(labels))
         )
 
     collection.set_array(np.array(data))
@@ -347,9 +342,7 @@ def plotFaceMap(
             collection2.set_array(np.array(data))
 
         if "radial" in cBarLabel:
-            colbar = fig.colorbar(
-                collection2, ticks=[x + 1 for x in range(max(data))], shrink=0.43
-            )
+            colbar = fig.colorbar(collection2, ticks=[x + 1 for x in range(max(data))], shrink=0.43)
         else:
             colbar = fig.colorbar(collection2, ax=ax, shrink=0.43)
 
@@ -369,7 +362,7 @@ def plotFaceMap(
 
     # make it 2-D, for now...
     shuffleArrows = shuffleArrows or []
-    for (sourceCoords, destinationCoords) in shuffleArrows:
+    for sourceCoords, destinationCoords in shuffleArrows:
         ax.annotate(
             "",
             xy=destinationCoords[:2],
@@ -397,10 +390,7 @@ def plotFaceMap(
         try:
             plt.savefig(fName, dpi=150, **pltKwargs)
         except IOError:
-            runLog.warning(
-                "Cannot update facemap at {0}: IOError. Is the file open?"
-                "".format(fName)
-            )
+            runLog.warning("Cannot update facemap at {0}: IOError. Is the file open?".format(fName))
         plt.close(fig)
     elif referencesToKeep:
         # Don't show yet, since it will be updated.
@@ -433,9 +423,7 @@ def _makeAssemPatches(core):
     if isinstance(core.spatialGrid, grids.HexGrid):
         nSides = 6
     elif isinstance(core.spatialGrid, grids.ThetaRZGrid):
-        raise TypeError(
-            "This plot function is not currently supported for ThetaRZGrid grids."
-        )
+        raise TypeError("This plot function is not currently supported for ThetaRZGrid grids.")
     else:
         nSides = 4
 
@@ -452,9 +440,7 @@ def _makeAssemPatches(core):
             )
         elif nSides == 4:
             # for rectangle x, y is defined as sides instead of center
-            assemPatch = matplotlib.patches.Rectangle(
-                (x - pitch[0] / 2, y - pitch[1] / 2), *pitch
-            )
+            assemPatch = matplotlib.patches.Rectangle((x - pitch[0] / 2, y - pitch[1] / 2), *pitch)
         else:
             raise ValueError(f"Unexpected number of sides: {nSides}.")
         patches.append(assemPatch)
@@ -560,9 +546,7 @@ def _createLegend(legendMap, collection, size=9, shape=Hexagon):
             else:
                 color = "black"
             handlebox.add_artist(patch)
-            txt = mpl_text.Text(
-                x=x, y=y, text=letter, ha="center", va="center", size=7, color=color
-            )
+            txt = mpl_text.Text(x=x, y=y, text=letter, ha="center", va="center", size=7, color=color)
             handlebox.add_artist(txt)
             return (patch, txt)
 
@@ -641,7 +625,7 @@ class DepthSlider(Slider):
             )
 
         # Make forward and backward button
-        backwardArrow, forwardArrow = "$\u25C0$", "$\u25B6$"
+        backwardArrow, forwardArrow = "$\u25c0$", "$\u25b6$"
         divider = axes_grid1.make_axes_locatable(ax)
         buttonWidthPercent = "5%"
         backwardAxes = divider.append_axes("right", size=buttonWidthPercent, pad=0.03)
@@ -798,9 +782,7 @@ def plotAssemblyTypes(
     ax.yaxis.set_ticks_position("left")
     yBlockHeights.insert(0, 0.0)
     yBlockHeights.sort()
-    yBlockHeightDiffs = np.diff(
-        yBlockHeights
-    )  # Compute differential heights between each block
+    yBlockHeightDiffs = np.diff(yBlockHeights)  # Compute differential heights between each block
     ax.set_yticks([0.0] + list(set(np.cumsum(yBlockHeightDiffs))))
     ax.xaxis.set_visible(False)
 
@@ -868,11 +850,7 @@ def _plotBlocksInAssembly(
 
         # Get the basic text label for the block
         try:
-            blockType = [
-                bType
-                for bType in blockTypeColorMap.keys()
-                if b.hasFlags(Flags.fromString(bType))
-            ][0]
+            blockType = [bType for bType in blockTypeColorMap.keys() if b.hasFlags(Flags.fromString(bType))][0]
             color = blockTypeColorMap[blockType]
         except IndexError:
             blockType = b.getType()
@@ -952,9 +930,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
     """
 
     class BlockListFlux:
-        def __init__(
-            self, nGroup, blockList=[], adjoint=False, peak=False, primary=False
-        ):
+        def __init__(self, nGroup, blockList=[], adjoint=False, peak=False, primary=False):
             self.nGroup = nGroup
             self.blockList = blockList
             self.adjoint = adjoint
@@ -1044,18 +1020,12 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
         # write a little flux text file
         txtFileName = os.path.splitext(fName)[0] + ".txt"
         with open(txtFileName, "w") as f:
-            f.write(
-                "{0:16s} {1:16s} {2:16s}\n".format(
-                    "Energy_Group", "Average_Flux", "Peak_Flux"
-                )
-            )
+            f.write("{0:16s} {1:16s} {2:16s}\n".format("Energy_Group", "Average_Flux", "Peak_Flux"))
             for _, (eMax, avgFlux, peakFlux) in bf1.getTable():
                 f.write("{0:12E} {1:12E} {2:12E}\n".format(eMax, avgFlux, peakFlux))
 
     if max(bf1.avgFlux) <= 0.0:
-        runLog.warning(
-            "Cannot plot flux with maxval=={0} in {1}".format(bf1.avgFlux, bList[0])
-        )
+        runLog.warning("Cannot plot flux with maxval=={0} in {1}".format(bf1.avgFlux, bList[0]))
         return
 
     plt.figure()
@@ -1082,9 +1052,7 @@ def plotBlockFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList
             ax2.set_yscale("log")
         plt.plot(bf2.eHistogram, bf2.avgHistogram, bf2.lineAvg, label=bf2.labelAvg)
         if peak and not adjoint:
-            plt.plot(
-                bf2.eHistogram, bf2.peakHistogram, bf2.linePeak, label=bf2.labelPeak
-            )
+            plt.plot(bf2.eHistogram, bf2.peakHistogram, bf2.linePeak, label=bf2.labelPeak)
         plt.legend(loc="lower left")
     plt.title("Group flux")
 
@@ -1157,9 +1125,7 @@ def _makeBlockPinPatches(block, cold):
         largestPitch, comp = block.getPitch(returnComp=True)
         cornersUp = block.spatialGrid.cornersUp
     elif isinstance(block.spatialGrid, grids.ThetaRZGrid):
-        raise TypeError(
-            "This plot function is not currently supported for ThetaRZGrid grids."
-        )
+        raise TypeError("This plot function is not currently supported for ThetaRZGrid grids.")
     else:
         largestPitch, comp = block.getPitch(returnComp=True)
         if block.getPitch()[0] != block.getPitch()[1]:
@@ -1254,20 +1220,13 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
     if isinstance(component, Helix):
         blockPatch = matplotlib.patches.Wedge(
             (
-                x
-                + component.getDimension("helixDiameter", cold=cold)
-                / 2
-                * math.cos(math.pi / 6),
-                y
-                + component.getDimension("helixDiameter", cold=cold)
-                / 2
-                * math.sin(math.pi / 6),
+                x + component.getDimension("helixDiameter", cold=cold) / 2 * math.cos(math.pi / 6),
+                y + component.getDimension("helixDiameter", cold=cold) / 2 * math.sin(math.pi / 6),
             ),
             component.getDimension("od", cold=cold) / 2,
             0,
             360,
-            width=(component.getDimension("od", cold=cold) / 2)
-            - (component.getDimension("id", cold=cold) / 2),
+            width=(component.getDimension("od", cold=cold) / 2) - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Circle):
         blockPatch = matplotlib.patches.Wedge(
@@ -1275,21 +1234,16 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
             component.getDimension("od", cold=cold) / 2,
             0,
             360,
-            width=(component.getDimension("od", cold=cold) / 2)
-            - (component.getDimension("id", cold=cold) / 2),
+            width=(component.getDimension("od", cold=cold) / 2) - (component.getDimension("id", cold=cold) / 2),
         )
     elif isinstance(component, Hexagon):
         angle = 0 if cornersUp else 30
-        outerPoints = np.array(
-            hexagon.corners(angle) * component.getDimension("op", cold=cold)
-        )
+        outerPoints = np.array(hexagon.corners(angle) * component.getDimension("op", cold=cold))
         blockPatch = []
 
         if component.getDimension("ip", cold=cold) != 0:
             # a hexagonal ring
-            innerPoints = np.array(
-                hexagon.corners(angle) * component.getDimension("ip", cold=cold)
-            )
+            innerPoints = np.array(hexagon.corners(angle) * component.getDimension("ip", cold=cold))
             for n in range(6):
                 corners = [
                     innerPoints[n],
@@ -1378,9 +1332,7 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
     return [blockPatch]
 
 
-def plotBlockDiagram(
-    block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"
-):
+def plotBlockDiagram(block, fName, cold, cmapName="RdYlBu", materialList=None, fileFormat="svg"):
     """Given a Block with a spatial Grid, plot the diagram of it with all of its components (wire,
     duct, coolant, etc).
 
@@ -1428,10 +1380,7 @@ def plotBlockDiagram(
     collection.norm.autoscale(allColors)
 
     # set up plot axis, labels and legends
-    legendMap = [
-        (materialMap[materialName], "", "{}".format(materialName))
-        for materialName in np.unique(data)
-    ]
+    legendMap = [(materialMap[materialName], "", "{}".format(materialName)) for materialName in np.unique(data)]
     legend = _createLegend(legendMap, collection, size=50, shape=Rectangle)
     pltKwargs = {"bbox_extra_artists": (legend,), "bbox_inches": "tight"}
 
@@ -1448,9 +1397,7 @@ def plotBlockDiagram(
     return os.path.abspath(fName)
 
 
-def plotNucXs(
-    isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None
-):
+def plotNucXs(isotxs, nucNames, xsNames, fName=None, label=None, noShow=False, title=None):
     """
     Generates a XS plot for a nuclide on the ISOTXS library.
 

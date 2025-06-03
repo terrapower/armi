@@ -18,6 +18,7 @@ Unit testing for tight coupling settings.
   an ARMI yaml input file.
 - Note, for these to be recognized, they need to be prefixed with "tightCouplingSettings:".
 """
+
 import io
 import unittest
 
@@ -51,9 +52,7 @@ class TestTightCouplingSettings(unittest.TestCase):
         tc = tightCouplingSettingsValidator(tc)
         self.assertEqual(tc["globalFlux"]["parameter"], "keff")
         self.assertEqual(tc["globalFlux"]["convergence"], 1e-05)
-        self.assertEqual(
-            tc["thermalHydraulics"]["parameter"], "peakCladdingTemperature"
-        )
+        self.assertEqual(tc["thermalHydraulics"]["parameter"], "peakCladdingTemperature")
         self.assertEqual(tc["thermalHydraulics"]["convergence"], 1e-02)
 
     def test_incompleteAssignment(self):

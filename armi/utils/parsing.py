@@ -31,10 +31,7 @@ def tryLiteralEval(source):
 
 # the following dict helps avoid the need for an eval() statement
 # Is there no better way to go 'bool' -> bool !?
-_str_types = {
-    tp.__name__: tp
-    for tp in (type(None), bool, int, complex, float, str, bytes, list, tuple, dict)
-}
+_str_types = {tp.__name__: tp for tp in (type(None), bool, int, complex, float, str, bytes, list, tuple, dict)}
 _type_strs = {v: k for k, v in _str_types.items()}
 
 
@@ -71,9 +68,7 @@ def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
     # evaluation and special evaluation for numbers
     evaluated_source, skip_instance_check = tryLiteralEval(source), False
     if requestedType in [int, float, complex]:
-        evaluated_source, skip_instance_check = _numericSpecialBehavior(
-            evaluated_source, requestedType
-        )
+        evaluated_source, skip_instance_check = _numericSpecialBehavior(evaluated_source, requestedType)
 
     # none logic
     if allowNone and not evaluated_source:
