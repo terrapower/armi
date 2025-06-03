@@ -213,9 +213,9 @@ The logged operating system and processor information proves what environment th
 tested on:
 
 .. exec::
-   from armi.bookkeeping.report.reportingUtils import getSystemInfo
+    from armi.bookkeeping.report.reportingUtils import getSystemInfo
 
-   return getSystemInfo()
+    return getSystemInfo().replace("\n", "\n\n")
 
 
 Python Version and Packages
