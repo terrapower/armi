@@ -224,7 +224,7 @@ Python Version and Packages
 .. exec::
     from pip._internal.operations.freeze import freeze
 
-    return "\n".join(freeze())
+    return "\n\n".join(list(freeze()))
 
 
 .. _ref_armi_software_date:
