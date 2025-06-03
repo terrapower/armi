@@ -2243,6 +2243,11 @@ class HexBlock(Block):
         -------
         pinPitch : float
             pin pitch in cm
+
+        Notes
+        -----
+        This method assumes a close-packed bundle. If the blueprints specify a grid
+        for this block, the value returned will not necessarily align with that pitch.
         """
         try:
             clad = self.getComponent(
