@@ -799,7 +799,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         the pre-perturbed component's volume/dimensions.
 
         This has no effect if the material thermal expansion has no dependence on component
-        composition. If this is not desired, `self.p.numberDensities` can be set directly.
+        composition. If this is not desired, `self.p.numberDensities` and `self.p.nuclides` can be 
+        set directly.
         """
         # prepare to change the densities with knowledge that dims could change due to material
         # thermal expansion dependence on composition
