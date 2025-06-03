@@ -50,7 +50,7 @@ your source tree with:
 
 
 To build the ARMI documentation as HTML. The ARMI docs expect a bunch of custom unit test outputs to
-be present. You can either run those:
+be present. You can either run these test commands:
 
 .. code-block:: bash
 
