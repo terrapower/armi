@@ -133,13 +133,13 @@ find = {}
 #######################################################################
 [tool.ruff]
 # This is the exact version of Ruff we use.
-required-version = "0.5.1"
+required-version = "0.9.7"
 
 # Assume Python 3.13
 target-version = "py313"
 
 # Setting line-length to 120
-line-length = 120
+line-length = 100
 
 # Exclude a variety of commonly ignored directories.
 exclude = [
