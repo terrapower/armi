@@ -274,20 +274,17 @@ class AxialExpansionChanger:
     def _checkForBlocksWithoutSolids(self):
         """
         Makes sure that there aren't any blocks (other than the top-most dummy block)
-        that are entirely fluid filled, unless all blocks in the assembly are only
-        fluids. The expansion changer doesn't know what to do with such mixed assemblies.
+        that consist of entirely fluid components. The expansion changer doesn't know
+        what to do with such assemblies.
         """
+        # skip top most dummy block since that is, by design, all fluid
         for b in self.linked.a[:-1]:
-            # the topmost block has already been confirmed as the dummy block
-            solidCompsInBlock = list(
-                filter(lambda c: not isinstance(c.material, Fluid), b.iterComponents())
-            )
-            if len(solidCompsInBlock) == 0:
+            if all(isinstance(c.material, Fluid) for c in b.iterComponents()):
                 raise InputError(
                     f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer "
-                    f"as block, {b}, consists of exclusively fluid component(s) (excluding the top-most 'dummy' "
-                    "block). If this is not a mistake, consider using the 'assemFlagsToSkipAxialExpansion' case "
-                    "setting to bypass performing axial expansion on this assembly."
+                    f"as block, {b}, consists of exclusively fluid component(s). If this is not a mistake, consider "
+                    "using the 'assemFlagsToSkipAxialExpansion' case setting to bypass performing axial expansion "
+                    "on this assembly."
                 )
 
     def applyColdHeightMassIncrease(self):

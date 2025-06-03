@@ -23,7 +23,7 @@ from typing import Callable
 from numpy import array, linspace, zeros
 
 from armi import materials
-from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom, ht9
+from armi.materials import _MATERIAL_NAMESPACE_ORDER, custom
 from armi.reactor.assemblies import HexAssembly, grids
 from armi.reactor.blocks import HexBlock
 from armi.reactor.components import Component, DerivedShape
@@ -914,8 +914,6 @@ class TestGetSolidComponents(unittest.TestCase):
 
     def test_checkForBlocksWithoutSolids(self):
         a = buildTestAssemblyWithFakeMaterial(name="Sodium")
-        a[0][1].material = ht9.HT9()
-
         changer = AxialExpansionChanger()
         changer.linked = AssemblyAxialLinkage(a)
         with self.assertRaisesRegex(
