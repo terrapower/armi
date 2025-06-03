@@ -20,6 +20,9 @@ can run this simple script which will create some placeholder files for the STR:
 
 * pytest_verbose.log
 * test_results.xml
+* test_results_mpi1.xml
+* test_results_mpi2.xml
+* test_results_mpi3.xml
 
 """
 
@@ -29,8 +32,11 @@ def main():
     with open("pytest_verbose.log", "w") as f:
         f.write("skipping STR")
 
-    with open("test_results.xml", "w") as f:
-        f.write("<metadata></metadata>")
+    fileNames = [f"test_results_mpi{i}.xml" for i in range(1, 4)]
+    fileNames.append("test_results.xml")
+    for fileName in fileNames:
+        with open(fileName, "w") as f:
+            f.write("<metadata></metadata>")
 
 
 if __name__ == "__main__":
