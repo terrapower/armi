@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import io
-from typing import TYPE_CHECKING, Type
+from typing import TYPE_CHECKING, Callable, Type
 from unittest import TestCase
 
 from armi.reactor.assemblies import HexAssembly, grids
@@ -168,7 +168,7 @@ class TestCheckOverlap(AxialExpansionTestBase):
     def runTest(
         self,
         componentsToTest: dict[Type["Component"], dict[str, float]],
-        assertionBool: bool,
+        assertion: Callable,
     ):
         """Runs various linkage tests.
 
@@ -177,8 +177,8 @@ class TestCheckOverlap(AxialExpansionTestBase):
         componentsToTest
             dictionary keys indicate the component type for ``typeA`` and ``typeB`` checks. the values indicate the
             neccessary geometry specifications of the ``typeA`` and ``typeB`` components.
-        assertionBool
-            expected truth value for test
+        assertion
+            unittest.TestCase assertion
 
         Notes
         -----
@@ -190,12 +190,8 @@ class TestCheckOverlap(AxialExpansionTestBase):
             typeA = method(*self.common, **dims[0])
             typeB = method(*self.common, **dims[1])
             msg = f"{self._testMethodName} failed for component type {str(method)}!"
-            if assertionBool:
-                self.assertTrue(_checkOverlap(typeA, typeB), msg=msg)
-                self.assertTrue(_checkOverlap(typeB, typeA), msg=msg)
-            else:
-                self.assertFalse(_checkOverlap(typeA, typeB), msg=msg)
-                self.assertFalse(_checkOverlap(typeB, typeA), msg=msg)
+            assertion(_checkOverlap(typeA, typeB), msg=msg)
+            assertion(_checkOverlap(typeB, typeA), msg=msg)
 
     def test_overlappingSolidPins(self):
         componentTypesToTest = {
@@ -220,43 +216,43 @@ class TestCheckOverlap(AxialExpansionTestBase):
                 {"od": 1.0, "axialPitch": 1.0, "helixDiameter": 1.0},
             ],
         }
-        self.runTest(componentTypesToTest, True)
+        self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_solidPinNotOverlappingAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.5, "id": 0.0}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, False)
+        self.runTest(componentTypesToTest, self.assertFalse)
 
     def test_solidPinOverlappingWithAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.7, "id": 0.0}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, True)
+        self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_annularPinNotOverlappingWithAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.6, "id": 0.3}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, False)
+        self.runTest(componentTypesToTest, self.assertFalse)
 
     def test_annularPinOverlappingWithAnnuls(self):
         componentTypesToTest = {
             Circle: [{"od": 0.7, "id": 0.3}, {"od": 1.0, "id": 0.6}],
         }
-        self.runTest(componentTypesToTest, True)
+        self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_thinAnnularPinOverlappingWithThickAnnulus(self):
         componentTypesToTest = {
             Circle: [{"od": 0.7, "id": 0.3}, {"od": 0.6, "id": 0.5}],
         }
-        self.runTest(componentTypesToTest, True)
+        self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_AnnularHexOverlappingThickAnnularHex(self):
         componentTypesToTest = {
             Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]
         }
-        self.runTest(componentTypesToTest, True)
+        self.runTest(componentTypesToTest, self.assertTrue)
 
 
 class TestMultipleComponentLinkage(AxialExpansionTestBase):
