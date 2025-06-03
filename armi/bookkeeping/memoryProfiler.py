@@ -218,7 +218,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def _printFullMemoryBreakdown(self, reportSize=True, printReferrers=False):
         """
-        looks for any class from any module in the garbage collector and prints their count and size.
+        Looks for any class from any module in the garbage collector and prints their count and size.
 
         Parameters
         ----------

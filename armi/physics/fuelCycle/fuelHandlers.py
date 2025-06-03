@@ -589,7 +589,7 @@ class FuelHandler:
         circularRingFlag=False,
     ):
         """
-        find assemblies in particular rings.
+        Find assemblies in particular rings.
 
         Parameters
         ----------

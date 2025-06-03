@@ -35,7 +35,7 @@ from armi.reactor.flags import Flags
 
 def adjustSmearDensity(obj, value, bolBlock=None):
     r"""
-    modifies the *cold* smear density of a fuel pin by adding or removing fuel dimension.
+    Modifies the *cold* smear density of a fuel pin by adding or removing fuel dimension.
 
     Adjusts fuel dimension while keeping cladding ID constant
 

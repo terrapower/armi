@@ -1960,7 +1960,7 @@ class Core(composites.Composite):
 
     def getAvgTemp(self, typeSpec, blockList=None, flux2Weight=False):
         """
-        get the volume-average fuel, cladding, coolant temperature in core.
+        Get the volume-average fuel, cladding, coolant temperature in core.
 
         Parameters
         ----------

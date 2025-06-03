@@ -622,7 +622,7 @@ class Block(composites.Composite):
 
     def adjustDensity(self, frac, adjustList, returnMass=False):
         """
-        adjusts the total density of each nuclide in adjustList by frac.
+        Adjusts the total density of each nuclide in adjustList by frac.
 
         Parameters
         ----------

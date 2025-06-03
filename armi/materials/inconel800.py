@@ -50,7 +50,7 @@ class Inconel800(Material):
 
     def linearExpansionPercent(self, Tk=None, Tc=None):
         """
-        average thermal expansion dL/L. Used for computing hot dimensions.
+        Average thermal expansion dL/L. Used for computing hot dimensions.
 
         Parameters
         ----------

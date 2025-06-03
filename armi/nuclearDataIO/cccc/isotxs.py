@@ -57,7 +57,7 @@ N2N_SCATTER = 300  # 300 + NN, (N,2N) SCATTERING
 
 def compareSet(fileNames, tolerance=0.0, verbose=False):
     """
-    takes a list of strings and reads all binaries with that name comparing them in all combinations.
+    Takes a list of strings and reads all binaries with that name comparing them in all combinations.
 
     Notes
     -----
