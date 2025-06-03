@@ -40,6 +40,7 @@ jobs:
           echo "Run unit tests..."
           pip install -U pip
           pip install -e .[memprof,mpi,test,docs]
+          python doc/skip_str.py
           #pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
           #mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
           #mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
@@ -48,7 +49,6 @@ jobs:
 
           echo "Build HTML docs..."
           cd doc
-          python skip_str.py
           git submodule init
           git submodule update
           git fetch
