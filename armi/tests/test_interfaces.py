@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the Interface."""
+
 import unittest
 
 from armi import interfaces, settings
@@ -77,9 +78,7 @@ class TestTightCoupler(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         cs["tightCoupling"] = True
-        cs["tightCouplingSettings"] = {
-            "dummyAction": {"parameter": "nothing", "convergence": 1.0e-5}
-        }
+        cs["tightCouplingSettings"] = {"dummyAction": {"parameter": "nothing", "convergence": 1.0e-5}}
         self.interface = DummyInterface(None, cs)
 
     def test_couplerActive(self):

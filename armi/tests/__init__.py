@@ -17,6 +17,7 @@ General framework-wide testing functions and files.
 This package contains some input files that can be used across
 a wide variety of unit tests in other lower-level subpackages.
 """
+
 import datetime
 import itertools
 import os
@@ -103,14 +104,10 @@ class Fixture:
         if self._error is not None:
             raise self._error
         elif not self._success:
-            missingDependencies = [
-                d for d in self.dependencies if not os.path.exists(d)
-            ]
+            missingDependencies = [d for d in self.dependencies if not os.path.exists(d)]
             if any(missingDependencies):
                 self._error = EnvironmentError(
-                    "Missing dependencies:\n    {}".format(
-                        "\n    ".join(missingDependencies)
-                    )
+                    "Missing dependencies:\n    {}".format("\n    ".join(missingDependencies))
                 )
                 raise self._error
 
@@ -120,27 +117,17 @@ class Fixture:
             missingTargets = [t for t in self.targets if not os.path.exists(t)]
             needToUpdate = any(missingTargets)
             if any(missingTargets):
-                runLog.important(
-                    "Fixture is missing targets {}\n    {}".format(
-                        self, "\n    ".join(missingTargets)
-                    )
-                )
+                runLog.important("Fixture is missing targets {}\n    {}".format(self, "\n    ".join(missingTargets)))
             if not needToUpdate:
                 # this doesn't need to run if there are any missing targets.
                 oldestTarget = sorted((os.path.getmtime(t), t) for t in self.targets)[0]
-                newestDependency = sorted(
-                    (os.path.getmtime(d), d) for d in self.dependencies
-                )[-1]
+                newestDependency = sorted((os.path.getmtime(d), d) for d in self.dependencies)[-1]
                 needToUpdate = newestDependency[0] > oldestTarget[0]
                 if needToUpdate:
                     targetTime = datetime.datetime.fromtimestamp(oldestTarget[0])
-                    dependencyTime = datetime.datetime.fromtimestamp(
-                        newestDependency[0]
-                    )
+                    dependencyTime = datetime.datetime.fromtimestamp(newestDependency[0])
                     runLog.important(
-                        "Fixture is out of date {}\n"
-                        "oldest target:     {} {}\n"
-                        "newest dependency: {} {}".format(
+                        "Fixture is out of date {}\noldest target:     {} {}\nnewest dependency: {} {}".format(
                             self,
                             targetTime,
                             oldestTarget[1],
@@ -212,9 +199,7 @@ def requires_fixture(fixtureFunction):
 class ArmiTestHelper(unittest.TestCase):
     """Class containing common testing methods shared by many tests."""
 
-    def compareFilesLineByLine(
-        self, expectedFilePath, actualFilePath, falseNegList=None, eps=None
-    ):
+    def compareFilesLineByLine(self, expectedFilePath, actualFilePath, falseNegList=None, eps=None):
         """
         Compare the contents of two files line by line.
 
@@ -251,27 +236,15 @@ class ArmiTestHelper(unittest.TestCase):
         elif isinstance(falseNegList, str):
             falseNegList = [falseNegList]
 
-        with open(expectedFilePath, "r") as expected, open(
-            actualFilePath, "r"
-        ) as actual:
-            for lineIndex, (expectedLine, actualLine) in enumerate(
-                itertools.zip_longest(expected, actual)
-            ):
+        with open(expectedFilePath, "r") as expected, open(actualFilePath, "r") as actual:
+            for lineIndex, (expectedLine, actualLine) in enumerate(itertools.zip_longest(expected, actual)):
                 if expectedLine is None:
-                    raise AssertionError(
-                        "The test-generated file is longer than expected file"
-                    )
+                    raise AssertionError("The test-generated file is longer than expected file")
                 if actualLine is None:
-                    raise AssertionError(
-                        "The test-generated file is shorter than expected file"
-                    )
+                    raise AssertionError("The test-generated file is shorter than expected file")
 
                 if not self.compareLines(actualLine, expectedLine, eps):
-                    if any(
-                        falseNeg in line
-                        for falseNeg in falseNegList
-                        for line in (actualLine, expectedLine)
-                    ):
+                    if any(falseNeg in line for falseNeg in falseNegList for line in (actualLine, expectedLine)):
                         pass
                     else:
                         raise AssertionError(

@@ -18,6 +18,7 @@ Parameter definitions for the Neutronics Plugin.
 We hope neutronics plugins that compute flux will use ``mgFlux``, etc., which will enable modular
 construction of apps.
 """
+
 from armi.reactor import parameters
 from armi.reactor.blocks import Block
 from armi.reactor.parameters import ParamLocation
@@ -34,7 +35,6 @@ def getNeutronicsParameterDefinitions():
 def _getNeutronicsBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "axMesh",
             units=units.UNITLESS,
@@ -284,7 +284,6 @@ def _getNeutronicsBlockParams():
         location=ParamLocation.EDGES,
         categories=[parameters.Category.detailedAxialExpansion, "depletion"],
     ) as pb:
-
         pb.defParam(
             "pointsEdgeFastFluxFr",
             units=units.UNITLESS,
@@ -454,9 +453,7 @@ def _getNeutronicsBlockParams():
             description="Power divided by XY area",
         )
 
-        pb.defParam(
-            "fertileBonus", units=units.UNITLESS, description="The fertile bonus"
-        )
+        pb.defParam("fertileBonus", units=units.UNITLESS, description="The fertile bonus")
 
         pb.defParam(
             "fisDens",
@@ -496,9 +493,7 @@ def _getNeutronicsBlockParams():
             ),
         )
 
-        pb.defParam(
-            "medAbsE", units=units.EV, description="Median neutron absorption energy"
-        )
+        pb.defParam("medAbsE", units=units.EV, description="Median neutron absorption energy")
 
         pb.defParam(
             "medFisE",

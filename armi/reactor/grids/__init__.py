@@ -60,6 +60,7 @@ Throughout the module, the term **global** refers to the top-level coordinate sy
 while the word **local** refers to within the current coordinate system defined by the
 current grid.
 """
+
 # ruff: noqa: F401
 from typing import Optional, Tuple
 

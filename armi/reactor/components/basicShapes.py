@@ -18,6 +18,7 @@ Components represented by basic shapes.
 Many reactor components can be described in 2D by circles, hexagons, rectangles, etc. These
 are defined in this subpackage.
 """
+
 import math
 
 from armi.reactor.components import ShapedComponent, componentParameters
@@ -66,9 +67,7 @@ class Circle(ShapedComponent):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, od=od, id=id, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, od=od, id=id, mult=mult, modArea=modArea)
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         return max(self.getDimension("id", Tc, cold), self.getDimension("od", Tc, cold))
@@ -138,9 +137,7 @@ class Hexagon(ShapedComponent):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, op=op, ip=ip, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, op=op, ip=ip, mult=mult, modArea=modArea)
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         sideLength = self.getDimension("op", Tc, cold) / math.sqrt(3)
@@ -452,9 +449,7 @@ class Triangle(ShapedComponent):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, base=base, height=height, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, base=base, height=height, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area of the triangle in cm^2."""

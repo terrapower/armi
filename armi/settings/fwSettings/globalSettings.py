@@ -19,6 +19,7 @@ This should contain Settings definitions for general-purpose "framework"
 settings. These should only include settings that are not related to any
 particular physics or plugins.
 """
+
 import os
 from typing import List
 
@@ -226,8 +227,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_AUTOMATIC_VARIABLE_MESH,
             default=False,
             label="Automatic Neutronics Variable Mesh",
-            description="Flag to let ARMI add additional mesh points if the "
-            "neutronics mesh is too irregular",
+            description="Flag to let ARMI add additional mesh points if the neutronics mesh is too irregular",
         ),
         setting.Setting(
             CONF_TRACE,
@@ -425,9 +425,7 @@ def defineSettings() -> List[setting.Setting]:
             label="Temperature XS Groups",
             description="The range of fuel temperatures where cross-sections will be the same "
             "for a given cross section type (units of degrees C)",
-            schema=vol.Schema(
-                [vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]
-            ),
+            schema=vol.Schema([vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]),
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,
@@ -441,8 +439,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CIRCULAR_RING_PITCH,
             default=1.0,
             label="Circular Ring Relative Pitch",
-            description="The relative pitch to be used to define a single circular "
-            "ring in circular shuffling",
+            description="The relative pitch to be used to define a single circular ring in circular shuffling",
         ),
         setting.Setting(
             CONF_COMMENT,
@@ -564,8 +561,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_LOADING_FILE,
             default="",
             label="Blueprints File",
-            description="The blueprints/loading input file path containing "
-            "component dimensions, materials, etc.",
+            description="The blueprints/loading input file path containing component dimensions, materials, etc.",
         ),
         setting.Setting(
             CONF_START_NODE,
@@ -623,8 +619,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_OPERATOR_LOCATION,
             default="",
             label="Operator Location",
-            description="The path to the operator code to execute for this run (for "
-            "custom behavior)",
+            description="The path to the operator code to execute for this run (for custom behavior)",
         ),
         setting.Setting(
             CONF_OUTPUT_FILE_EXTENSION,
@@ -643,8 +638,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_POWER,
             default=0.0,
             label="Reactor Thermal Power (W)",
-            description="Nameplate thermal power of the reactor. Can be varied by "
-            "setting the powerFractions setting.",
+            description="Nameplate thermal power of the reactor. Can be varied by setting the powerFractions setting.",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -673,8 +667,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_EXPLICIT_REPEAT_SHUFFLES,
             default="",
             label="Explicit Shuffles File",
-            description="Path to file that contains a detailed shuffling history that "
-            "is to be repeated exactly.",
+            description="Path to file that contains a detailed shuffling history that is to be repeated exactly.",
             oldNames=[("movesFile", None), ("shuffleFileName", None)],
         ),
         setting.Setting(
@@ -708,15 +701,13 @@ def defineSettings() -> List[setting.Setting]:
             CONF_STATIONARY_BLOCK_FLAGS,
             default=["GRID_PLATE"],
             label="stationary Block Flags",
-            description="Blocks with these flags will not move in moves. "
-            "Used for fuel management.",
+            description="Blocks with these flags will not move in moves. Used for fuel management.",
         ),
         setting.Setting(
             CONF_TARGET_K,
             default=1.005,
             label="Criticality Search Target (k-effective)",
-            description="Target criticality (k-effective) for cycle length, branch, "
-            "and equilibrium search",
+            description="Target criticality (k-effective) for cycle length, branch, and equilibrium search",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -765,8 +756,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_INDEPENDENT_VARIABLES,
             default=[],
             label="Independent Variables",
-            description="List of (independentVarName, value) tuples to inform "
-            "optimization post-processing",
+            description="List of (independentVarName, value) tuples to inform optimization post-processing",
         ),
         setting.Setting(
             CONF_T_IN,
@@ -793,8 +783,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_DEFERRED_INTERFACE_NAMES,
             default=[],
             label="Deferred Interface Names",
-            description="Interfaces to delay the normal operations of for special "
-            "circumstance problem avoidance",
+            description="Interfaces to delay the normal operations of for special circumstance problem avoidance",
         ),
         setting.Setting(
             CONF_OUTPUT_CACHE_LOCATION,
@@ -833,17 +822,11 @@ def defineSettings() -> List[setting.Setting]:
                     vol.All(
                         {
                             "name": str,
-                            "cumulative days": vol.All(
-                                [vol.Any(float, int)], _isMonotonicIncreasing
-                            ),
+                            "cumulative days": vol.All([vol.Any(float, int)], _isMonotonicIncreasing),
                             "step days": [vol.Coerce(str)],
                             "power fractions": [vol.Coerce(str)],
-                            "availability factor": vol.All(
-                                vol.Coerce(float), vol.Range(min=0, max=1)
-                            ),
-                            "cycle length": vol.All(
-                                vol.Coerce(float), vol.Range(min=0)
-                            ),
+                            "availability factor": vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
+                            "cycle length": vol.All(vol.Coerce(float), vol.Range(min=0)),
                             "burn steps": vol.All(vol.Coerce(int), vol.Range(min=0)),
                         },
                         _mutuallyExclusiveCyclesInputs,
@@ -864,9 +847,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
             default=[],
             label="Assembly Flags to Skip Axial Expansion",
-            description=(
-                "Assemblies that match a flag on this list will not be axially expanded."
-            ),
+            description=("Assemblies that match a flag on this list will not be axially expanded."),
         ),
     ]
     return settings
@@ -897,8 +878,6 @@ def _mutuallyExclusiveCyclesInputs(cycle):
         )
 
         raise vol.Invalid(
-            (baseErrMsg + " Check cycle {}.".format(cycle["name"]))
-            if "name" in cycleKeys
-            else baseErrMsg
+            (baseErrMsg + " Check cycle {}.".format(cycle["name"])) if "name" in cycleKeys else baseErrMsg
         )
     return cycle

@@ -41,9 +41,7 @@ class EquilibriumShuffler(FuelHandler):
 
             incoming = self.r.excore["sfp"].getChildren().pop(0)
             if not incoming:
-                raise RuntimeError(
-                    f"No assembly in SFP {self.r.excore['sfp'].getChildren()}"
-                )
+                raise RuntimeError(f"No assembly in SFP {self.r.excore['sfp'].getChildren()}")
             outLoc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 2 + self.cycle)
             self.dischargeSwap(incoming, self.r.core.childrenByLocator[outLoc])
 

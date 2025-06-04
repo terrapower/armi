@@ -42,9 +42,7 @@ class HexCoreTests(unittest.TestCase):
         fill=None,
     ):
         """Assert that all items in two iterables are the same objects."""
-        for actual, expected in itertools.zip_longest(
-            actuals, expecteds, fillvalue=fill
-        ):
+        for actual, expected in itertools.zip_longest(actuals, expecteds, fillvalue=fill):
             self.assertIs(actual, expected)
 
     @classmethod
@@ -73,9 +71,7 @@ class HexCoreTests(unittest.TestCase):
         selection = random.choices(self.core.getAssemblies(), k=5)
         locations = [a.getLocation() for a in selection]
         fakeZones = ["hot", "cold"]
-        with mock.patch.object(
-            self.core.zones, "getZoneLocations", mock.Mock(return_value=locations)
-        ):
+        with mock.patch.object(self.core.zones, "getZoneLocations", mock.Mock(return_value=locations)):
             actuals = self.core.getAssemblies(zones=fakeZones)
         for a in actuals:
             self.assertIn(a.getLocation(), locations, msg=str(a))

@@ -88,9 +88,7 @@ class HexBlockRotateTests(unittest.TestCase):
             # Trim off any extra rotation if beyond 360 or negative
             # What is the effective counter clockwise rotation?
             expectedOrientation = rotationAmount % 360
-            self.assertEqual(
-                postRotationOrientation, expectedOrientation, msg=nRotations
-            )
+            self.assertEqual(postRotationOrientation, expectedOrientation, msg=nRotations)
 
     def test_rotateBoundaryParameters(self):
         """Test that boundary parameters are correctly rotated.
@@ -115,9 +113,7 @@ class HexBlockRotateTests(unittest.TestCase):
             msg = f"{name=} :: {degrees=} :: {data=}"
             np.testing.assert_array_equal(data, expected, err_msg=msg)
 
-    def assertIndexLocationEquivalent(
-        self, actual: IndexLocation, expected: IndexLocation
-    ):
+    def assertIndexLocationEquivalent(self, actual: IndexLocation, expected: IndexLocation):
         """More flexible equivalency check on index locations.
 
         Specifically focused on locations on hex grids because this file
@@ -199,18 +195,13 @@ class HexBlockRotateTests(unittest.TestCase):
             rads = math.radians(degrees)
             fresh.rotate(rads)
             for originalC, newC in zip(self.baseBlock, fresh):
-                self._compareComponentLocationsAfterRotation(
-                    originalC, newC, nRotations, rads
-                )
+                self._compareComponentLocationsAfterRotation(originalC, newC, nRotations, rads)
 
     def _compareComponentLocationsAfterRotation(
         self, original: Component, updated: Component, nRotations: int, radians: float
     ):
         if isinstance(original.spatialLocator, MultiIndexLocation):
-            for originalLoc, newLoc in zip(
-                original.spatialLocator, updated.spatialLocator
-            ):
-
+            for originalLoc, newLoc in zip(original.spatialLocator, updated.spatialLocator):
                 expected = originalLoc.grid.rotateIndex(originalLoc, nRotations)
                 self.assertIndexLocationEquivalent(newLoc, expected)
         elif isinstance(original.spatialLocator, CoordinateLocation):
@@ -224,9 +215,7 @@ class HexBlockRotateTests(unittest.TestCase):
                 ]
             )
             expectedX, expectedY = rotationMatrix.dot((ox, oy))
-            np.testing.assert_allclose(
-                (nx, ny), (expectedX, expectedY), err_msg=f"{original=} :: {radians=}"
-            )
+            np.testing.assert_allclose((nx, ny), (expectedX, expectedY), err_msg=f"{original=} :: {radians=}")
 
     def test_pinParametersUnmodified(self):
         """Test that pin data are not modified through rotation.

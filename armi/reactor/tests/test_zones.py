@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test for Zones."""
+
 import logging
 import os
 import unittest
@@ -269,9 +270,7 @@ class TestZones(unittest.TestCase):
             self.assertEqual(aZone, zone)
 
         # get assem from first zone
-        a = self.r.core.getAssemblyWithStringLocation(
-            sorted(daZones[daZones.names[0]].locs)[0]
-        )
+        a = self.r.core.getAssemblyWithStringLocation(sorted(daZones[daZones.names[0]].locs)[0])
         # remove the zone
         daZones.removeZone(daZones.names[0])
 
@@ -289,9 +288,7 @@ class TestZones(unittest.TestCase):
         self.r.core.buildManualZones(cs)
 
         # test the retrieval of zone locations
-        self.assertEqual(
-            set(["002-001", "002-002"]), self.r.core.zones.getZoneLocations("ring-2")
-        )
+        self.assertEqual(set(["002-001", "002-002"]), self.r.core.zones.getZoneLocations("ring-2"))
 
     def test_getAllLocations(self):
         # customize settings for this test
@@ -304,9 +301,7 @@ class TestZones(unittest.TestCase):
         self.r.core.buildManualZones(cs)
 
         # test the retrieval of zone locations
-        self.assertEqual(
-            set(["001-001", "002-001", "002-002"]), self.r.core.zones.getAllLocations()
-        )
+        self.assertEqual(set(["001-001", "002-001", "002-002"]), self.r.core.zones.getAllLocations())
 
     def test_summary(self):
         # make sure we have a couple of zones to test on

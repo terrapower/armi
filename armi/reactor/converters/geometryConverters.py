@@ -25,6 +25,7 @@ Warning
 -------
 These are mostly designed for hex geometry.
 """
+
 import collections
 import copy
 import math
@@ -56,9 +57,7 @@ from armi.reactor.parameters import (
 )
 from armi.utils import hexagon, plotting, units
 
-BLOCK_AXIAL_MESH_SPACING = (
-    20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
-)
+BLOCK_AXIAL_MESH_SPACING = 20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
 STR_SPACE = " "
 
 
@@ -94,9 +93,7 @@ class GeometryChanger:
         -----
         This should be implemented on each of the geometry converters.
         """
-        runLog.info(
-            f"Resetting the state of the converted reactor core model in {self}"
-        )
+        runLog.info(f"Resetting the state of the converted reactor core model in {self}")
         self._newAssembliesAdded = []
 
 
@@ -154,26 +151,15 @@ class FuelAssemNumModifier(GeometryChanger):
         """
         self._sourceReactor = r
 
-        if (
-            self._sourceReactor.core.powerMultiplier != 1
-            and self._sourceReactor.core.powerMultiplier != 3
-        ):
+        if self._sourceReactor.core.powerMultiplier != 1 and self._sourceReactor.core.powerMultiplier != 3:
             raise ValueError(
                 "Invalid reactor geometry {} in {}. Reactor must be full or third core to modify the "
                 "number of assemblies.".format(r.core.powerMultiplier, self)
             )
 
         # Set the number of fueled and non-fueled positions within the core (Full core or third-core)
-        coreGeom = (
-            "full-core"
-            if self._sourceReactor.core.powerMultiplier == 1
-            else "third-core"
-        )
-        runLog.info(
-            "Modifying {} geometry to have {} fuel assemblies.".format(
-                coreGeom, self.numFuelAssems
-            )
-        )
+        coreGeom = "full-core" if self._sourceReactor.core.powerMultiplier == 1 else "third-core"
+        runLog.info("Modifying {} geometry to have {} fuel assemblies.".format(coreGeom, self.numFuelAssems))
         nonFuelAssems = (
             sum(not assem.hasFlags(Flags.FUEL) for assem in self._sourceReactor.core)
             * self._sourceReactor.core.powerMultiplier
@@ -184,18 +170,13 @@ class FuelAssemNumModifier(GeometryChanger):
         # Adjust the total power of the reactor by keeping power per assembly constant
         if self.modifyReactorPower:
             self._sourceReactor.core.p.power *= float(self.numFuelAssems) / (
-                len(self._sourceReactor.core.getAssemblies(Flags.FUEL))
-                * self._sourceReactor.core.powerMultiplier
+                len(self._sourceReactor.core.getAssemblies(Flags.FUEL)) * self._sourceReactor.core.powerMultiplier
             )
 
         # Get the sorted assembly locations in the core (Full core or third core)
-        assemOrderList = r.core.spatialGrid.generateSortedHexLocationList(
-            totalCoreAssems
-        )
+        assemOrderList = r.core.spatialGrid.generateSortedHexLocationList(totalCoreAssems)
         if self._sourceReactor.core.powerMultiplier == 3:
-            assemOrderList = [
-                loc for loc in assemOrderList if r.core.spatialGrid.isInFirstThird(loc)
-            ]
+            assemOrderList = [loc for loc in assemOrderList if r.core.spatialGrid.isInFirstThird(loc)]
 
         # Add fuel assemblies to the core
         addingFuelIsComplete = False
@@ -207,9 +188,7 @@ class FuelAssemNumModifier(GeometryChanger):
                     raise KeyError("Cannot find expected fuel assem in {}".format(loc))
                 # Add new fuel assembly to the core
                 if assem.hasFlags(self.overwriteList):
-                    fuelAssem = self._sourceReactor.core.createAssemblyOfType(
-                        assemType=self.fuelType, cs=self._cs
-                    )
+                    fuelAssem = self._sourceReactor.core.createAssemblyOfType(assemType=self.fuelType, cs=self._cs)
                     # Remove existing assembly in the core location before adding new assembly
                     if assem.hasFlags(self.overwriteList):
                         self._sourceReactor.core.removeAssembly(assem, discharge=False)
@@ -232,12 +211,8 @@ class FuelAssemNumModifier(GeometryChanger):
 
         # Remove all other assemblies from the core
         for assem in self._sourceReactor.core.getAssemblies():
-            if (
-                assem.spatialLocator not in assemOrderList
-            ):  # check if assembly is on the list
-                r.core.removeAssembly(
-                    assem, discharge=False
-                )  # get rid of the old assembly
+            if assem.spatialLocator not in assemOrderList:  # check if assembly is on the list
+                r.core.removeAssembly(assem, discharge=False)  # get rid of the old assembly
 
         # Add the remaining rings of assemblies to the core
         for assemType in self.ringsToAdd:
@@ -247,9 +222,7 @@ class FuelAssemNumModifier(GeometryChanger):
         self._sourceReactor.core.processLoading(self._cs)
         self._sourceReactor.core.numRings = self._sourceReactor.core.getNumRings()
         self._sourceReactor.core.regenAssemblyLists()
-        self._sourceReactor.core.circularRingList = (
-            None  # need to reset this (possibly other stuff too)
-        )
+        self._sourceReactor.core.circularRingList = None  # need to reset this (possibly other stuff too)
 
     def addRing(self, assemType="big shield"):
         """
@@ -267,47 +240,31 @@ class FuelAssemNumModifier(GeometryChanger):
         # first look through the core and finds the one farthest from the center
         maxDist = 0.0
         for assem in r.core.getAssemblies():
-            dist = np.linalg.norm(
-                assem.spatialLocator.getGlobalCoordinates()
-            )  # get distance from origin
-            dist = round(
-                dist, 6
-            )  # round dist to 6 places to avoid differences due to floating point math
+            dist = np.linalg.norm(assem.spatialLocator.getGlobalCoordinates())  # get distance from origin
+            dist = round(dist, 6)  # round dist to 6 places to avoid differences due to floating point math
             maxDist = max(maxDist, dist)
 
         # add one hex pitch to the maximum distance to get the bounding distance for the new ring
         hexPitch = r.core.spatialGrid.pitch
         newRingDist = maxDist + hexPitch
 
-        maxArea = (
-            math.pi * (newRingDist + hexPitch) ** 2.0
-        )  # area that is guaranteed to bound the new core
-        maxAssemsFull = maxArea / hexagon.area(
-            hexPitch
-        )  # divide by hex area to get number of hexes in a full core
+        maxArea = math.pi * (newRingDist + hexPitch) ** 2.0  # area that is guaranteed to bound the new core
+        maxAssemsFull = maxArea / hexagon.area(hexPitch)  # divide by hex area to get number of hexes in a full core
 
         # generate ordered list of assembly locations
         assemOrderList = r.core.spatialGrid.generateSortedHexLocationList(maxAssemsFull)
         if r.core.powerMultiplier == 3:
-            assemOrderList = [
-                loc
-                for loc in assemOrderList
-                if self._sourceReactor.core.spatialGrid.isInFirstThird(loc)
-            ]
+            assemOrderList = [loc for loc in assemOrderList if self._sourceReactor.core.spatialGrid.isInFirstThird(loc)]
         elif r.core.powerMultiplier != 1:
             raise RuntimeError("{} only works on full or 1/3 symmetry.".format(self))
         # add new assemblies to core within one ring
         for locator in assemOrderList:
-            assem = r.core.childrenByLocator.get(
-                locator
-            )  # check on assemblies, moving radially outward
+            assem = r.core.childrenByLocator.get(locator)  # check on assemblies, moving radially outward
             dist = np.linalg.norm(locator.getGlobalCoordinates())
             dist = round(dist, 6)
             if dist <= newRingDist:  # check distance
                 if assem is None:  # no assembly in that position, add assembly
-                    newAssem = r.core.createAssemblyOfType(
-                        assemType=assemType, cs=self._cs
-                    )
+                    newAssem = r.core.createAssemblyOfType(assemType=assemType, cs=self._cs)
                     r.core.add(newAssem, locator)  # put new assembly in reactor!
                 else:  # all other types of assemblies (fuel, control, etc) leave as is
                     pass
@@ -381,9 +338,7 @@ class HexToRZThetaConverter(GeometryConverter):
     _MESH_BY_AXIAL_COORDS = "Axial Coordinates"
     _MESH_BY_AXIAL_BINS = "Axial Bins"
 
-    def __init__(
-        self, cs, converterSettings, expandReactor=False, strictHomogenization=False
-    ):
+    def __init__(self, cs, converterSettings, expandReactor=False, strictHomogenization=False):
         GeometryConverter.__init__(self, cs)
         self.converterSettings = converterSettings
         self.meshConverter = None
@@ -404,9 +359,7 @@ class HexToRZThetaConverter(GeometryConverter):
         runLog.info("Generating mesh coordinates for the reactor conversion")
         self._radialMeshConversionType = self.converterSettings["radialConversionType"]
         self._axialMeshConversionType = self.converterSettings["axialConversionType"]
-        self._homogenizeAxiallyByFlags = self.converterSettings.get(
-            "homogenizeAxiallyByFlags", False
-        )
+        self._homogenizeAxiallyByFlags = self.converterSettings.get("homogenizeAxiallyByFlags", False)
         converter = None
         if self._radialMeshConversionType == self._MESH_BY_RING_COMP:
             if self._homogenizeAxiallyByFlags:
@@ -418,15 +371,11 @@ class HexToRZThetaConverter(GeometryConverter):
                     self.converterSettings
                 )
             elif self._axialMeshConversionType == self._MESH_BY_AXIAL_BINS:
-                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-                    self.converterSettings
-                )
+                converter = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(self.converterSettings)
         if converter is None:
             raise ValueError(
                 "No mesh converter exists for `radialConversionType` and `axialConversionType` settings "
-                "of {} and {}".format(
-                    self._radialMeshConversionType, self._axialMeshConversionType
-                )
+                "of {} and {}".format(self._radialMeshConversionType, self._axialMeshConversionType)
             )
         self.meshConverter = converter
         return self.meshConverter.generateMesh(self._sourceReactor)
@@ -477,11 +426,7 @@ class HexToRZThetaConverter(GeometryConverter):
         runLog.info(f"Converting {r.core} using {self}")
 
         if r.core.geomType != geometry.GeomType.HEX:
-            raise ValueError(
-                "Cannot use {} to convert {} reactor".format(
-                    self, str(r.core.geomType).upper()
-                )
-            )
+            raise ValueError("Cannot use {} to convert {} reactor".format(self, str(r.core.geomType).upper()))
 
         self._sourceReactor = r
         self._setupSourceReactorForConversion()
@@ -496,18 +441,14 @@ class HexToRZThetaConverter(GeometryConverter):
         for radialIndex, upperRing in enumerate(self.meshConverter.radialMesh):
             lowerTheta = 0.0
             # see notes
-            self._previousRadialZoneAssemTypes = (
-                self._previousRadialZoneAssemTypes if lowerRing == upperRing else []
-            )
+            self._previousRadialZoneAssemTypes = self._previousRadialZoneAssemTypes if lowerRing == upperRing else []
             if lowerRing == upperRing:
                 lowerRing = upperRing - 1
 
             self._setNextAssemblyTypeInRadialZone(lowerRing, upperRing)
             self._setAssemsInRadialZone(radialIndex, lowerRing, upperRing)
             for thetaIndex, upperTheta in enumerate(self.meshConverter.thetaMesh):
-                zoneAssems = self._getAssemsInRadialThetaZone(
-                    lowerRing, upperRing, lowerTheta, upperTheta
-                )
+                zoneAssems = self._getAssemsInRadialThetaZone(lowerRing, upperRing, lowerTheta, upperTheta)
                 self._writeRadialThetaZoneHeader(
                     radialIndex,
                     lowerRing,
@@ -550,9 +491,7 @@ class HexToRZThetaConverter(GeometryConverter):
         If this is called with the same (lowerRing, upperRing) twice, the next assembly type
         will be applied. This is useful, for instance, in putting control zones amidst fuel.
         """
-        sortedAssemTypes = self._getSortedAssemblyTypesInRadialZone(
-            lowerRing, upperRing
-        )
+        sortedAssemTypes = self._getSortedAssemblyTypesInRadialZone(lowerRing, upperRing)
         for aType in sortedAssemTypes:
             if aType not in self._previousRadialZoneAssemTypes:
                 self._previousRadialZoneAssemTypes.append(aType)
@@ -576,17 +515,13 @@ class HexToRZThetaConverter(GeometryConverter):
             aCountByTypes[a.getType().lower()] += 1
 
         # sort on tuple (int, str) to force consistent ordering of result when counts are tied
-        sortedAssemTypes = sorted(
-            aCountByTypes, key=lambda aType: (aCountByTypes[aType], aType), reverse=True
-        )
+        sortedAssemTypes = sorted(aCountByTypes, key=lambda aType: (aCountByTypes[aType], aType), reverse=True)
         return sortedAssemTypes
 
     def _getAssembliesInCurrentRadialZone(self, lowerRing, upperRing):
         ringAssems = []
         for ring in range(lowerRing, upperRing):
-            ringAssems.extend(
-                self._sourceReactor.core.getAssembliesInSquareOrHexRing(ring)
-            )
+            ringAssems.extend(self._sourceReactor.core.getAssembliesInSquareOrHexRing(ring))
         return ringAssems
 
     def _setupSourceReactorForConversion(self):
@@ -595,9 +530,7 @@ class HexToRZThetaConverter(GeometryConverter):
             self._expandSourceReactorGeometry()
 
     def _setupConvertedReactor(self, grid):
-        self.convReactor = reactors.Reactor(
-            "ConvertedReactor", self._sourceReactor.blueprints
-        )
+        self.convReactor = reactors.Reactor("ConvertedReactor", self._sourceReactor.blueprints)
         core = reactors.Core("Core")
         if self._cs is not None:
             core.setOptionsFromCs(self._cs)
@@ -621,9 +554,7 @@ class HexToRZThetaConverter(GeometryConverter):
         """
         lowerTheta = 0.0
         for _thetaIndex, upperTheta in enumerate(self.meshConverter.thetaMesh):
-            assemsInRadialThetaZone = self._getAssemsInRadialThetaZone(
-                lowerRing, upperRing, lowerTheta, upperTheta
-            )
+            assemsInRadialThetaZone = self._getAssemsInRadialThetaZone(lowerRing, upperRing, lowerTheta, upperTheta)
             newAssemsInRadialZone = set(assemsInRadialThetaZone)
             oldAssemsInRadialZone = set(self._assemsInRadialZone[radialIndex])
             self._assemsInRadialZone[radialIndex].extend(
@@ -666,20 +597,12 @@ class HexToRZThetaConverter(GeometryConverter):
             theta = math.degrees(theta)
 
             phi = theta
-            if (
-                theta1 <= phi <= theta2
-                or abs(theta1 - phi) < 0.001
-                or abs(theta2 - phi) < 0.001
-            ):
+            if theta1 <= phi <= theta2 or abs(theta1 - phi) < 0.001 or abs(theta2 - phi) < 0.001:
                 aList.append(a)
         converter.removeEdgeAssemblies(core.r.core)
 
         if not aList:
-            raise ValueError(
-                "There are no assemblies in {} between angles of {} and {}".format(
-                    core, theta1, theta2
-                )
-            )
+            raise ValueError("There are no assemblies in {} between angles of {} and {}".format(core, theta1, theta2))
 
         return aList
 
@@ -700,8 +623,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
         if not assemsInRadialThetaZone:
             raise ValueError(
-                "No assemblies in radial-theta zone between rings {} and {} "
-                "and theta bounds of {} and {}".format(
+                "No assemblies in radial-theta zone between rings {} and {} and theta bounds of {} and {}".format(
                     lowerRing, upperRing, lowerTheta, upperTheta
                 )
             )
@@ -723,9 +645,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
         return selectedAssems
 
-    def _createRadialThetaZone(
-        self, innerDiameter, thetaIndex, radialIndex, lowerTheta, upperTheta, zoneAssems
-    ):
+    def _createRadialThetaZone(self, innerDiameter, thetaIndex, radialIndex, lowerTheta, upperTheta, zoneAssems):
         """
         Add a new stack of circles to the TRZ reactor by homogenizing assems.
 
@@ -752,22 +672,16 @@ class HexToRZThetaConverter(GeometryConverter):
             The outer diameter (in cm) of the radial zone just added
         """
         newAssembly = assemblies.ThRZAssembly("mixtureAssem")
-        newAssembly.spatialLocator = self.convReactor.core.spatialGrid[
-            thetaIndex, radialIndex, 0
-        ]
+        newAssembly.spatialLocator = self.convReactor.core.spatialGrid[thetaIndex, radialIndex, 0]
         newAssembly.p.AziMesh = 2
-        newAssembly.spatialGrid = grids.AxialGrid.fromNCells(
-            len(self.meshConverter.axialMesh), armiObject=newAssembly
-        )
+        newAssembly.spatialGrid = grids.AxialGrid.fromNCells(len(self.meshConverter.axialMesh), armiObject=newAssembly)
 
         lfp = lumpedFissionProduct.lumpedFissionProductFactory(self._cs)
 
         lowerAxialZ = 0.0
         for axialIndex, upperAxialZ in enumerate(self.meshConverter.axialMesh):
             # Setup the new block data
-            newBlockName = "B{:04d}{}".format(
-                int(newAssembly.getNum()), chr(axialIndex + 65)
-            )
+            newBlockName = "B{:04d}{}".format(int(newAssembly.getNum()), chr(axialIndex + 65))
             newBlock = blocks.ThRZBlock(newBlockName)
 
             # Compute the homogenized block data
@@ -776,22 +690,12 @@ class HexToRZThetaConverter(GeometryConverter):
                 newBlockType,
                 newBlockTemp,
                 newBlockVol,
-            ) = self.createHomogenizedRZTBlock(
-                newBlock, lowerAxialZ, upperAxialZ, zoneAssems
-            )
+            ) = self.createHomogenizedRZTBlock(newBlock, lowerAxialZ, upperAxialZ, zoneAssems)
             # Compute radial zone outer diameter
             axialSegmentHeight = upperAxialZ - lowerAxialZ
-            radialZoneVolume = self._calcRadialRingVolume(
-                lowerAxialZ, upperAxialZ, radialIndex
-            )
-            radialRingArea = (
-                radialZoneVolume
-                / axialSegmentHeight
-                * self._sourceReactor.core.powerMultiplier
-            )
-            outerDiameter = blockConverters.getOuterDiamFromIDAndArea(
-                innerDiameter, radialRingArea
-            )
+            radialZoneVolume = self._calcRadialRingVolume(lowerAxialZ, upperAxialZ, radialIndex)
+            radialRingArea = radialZoneVolume / axialSegmentHeight * self._sourceReactor.core.powerMultiplier
+            outerDiameter = blockConverters.getOuterDiamFromIDAndArea(innerDiameter, radialRingArea)
 
             # Set new homogenized block parameters
             material = materials.material.Material()
@@ -811,9 +715,7 @@ class HexToRZThetaConverter(GeometryConverter):
             for nuc in self._sourceReactor.blueprints.allNuclidesInProblem:
                 material.setMassFrac(nuc, 0.0)
 
-            newComponent = components.DifferentialRadialSegment(
-                "mixture", material, **dims
-            )
+            newComponent = components.DifferentialRadialSegment("mixture", material, **dims)
             newBlock.p.axMesh = int(axialSegmentHeight / BLOCK_AXIAL_MESH_SPACING) + 1
             newBlock.p.zbottom = lowerAxialZ
             newBlock.p.ztop = upperAxialZ
@@ -866,14 +768,10 @@ class HexToRZThetaConverter(GeometryConverter):
         if abs(newBlockVolumeFraction - 1.0) > 0.00001:
             raise ValueError(
                 "The volume fraction of block {} is {} and not 1.0. An error occurred when "
-                "converting the reactor geometry.".format(
-                    newBlock, newBlockVolumeFraction
-                )
+                "converting the reactor geometry.".format(newBlock, newBlockVolumeFraction)
             )
 
-    def createHomogenizedRZTBlock(
-        self, homBlock, lowerAxialZ, upperAxialZ, radialThetaZoneAssems
-    ):
+    def createHomogenizedRZTBlock(self, homBlock, lowerAxialZ, upperAxialZ, radialThetaZoneAssems):
         """
         Create the homogenized RZT block by computing the average atoms in the zone.
 
@@ -893,9 +791,7 @@ class HexToRZThetaConverter(GeometryConverter):
                 numHexBlockByType[b.getType().lower()] += 1
                 blockVolumeHere = b.getVolume() * heightHere / b.getHeight()
                 if blockVolumeHere == 0.0:
-                    raise ValueError(
-                        "Geometry conversion failed. Block {} has zero volume".format(b)
-                    )
+                    raise ValueError("Geometry conversion failed. Block {} has zero volume".format(b))
                 homBlockVolume += blockVolumeHere
                 homBlockTemperature += b.getAverageTempInC() * blockVolumeHere
 
@@ -917,18 +813,14 @@ class HexToRZThetaConverter(GeometryConverter):
                 )
             )
             if self._strictHomogenization:
-                raise ValueError(
-                    msg + "Modify mesh converter settings before proceeding."
-                )
+                raise ValueError(msg + "Modify mesh converter settings before proceeding.")
             else:
                 runLog.extra(msg)
 
         homBlockType = self._getHomogenizedBlockType(numHexBlockByType)
         homBlockTemperature = homBlockTemperature / homBlockVolume
         for b in self.blockMap[homBlock]:
-            self.blockVolFracs[homBlock][b] = (
-                self.blockVolFracs[homBlock][b] / homBlockVolume
-            )
+            self.blockVolFracs[homBlock][b] = self.blockVolFracs[homBlock][b] / homBlockVolume
 
         return homBlockAtoms, homBlockType, homBlockTemperature, homBlockVolume
 
@@ -953,12 +845,7 @@ class HexToRZThetaConverter(GeometryConverter):
 
         # Find the most common block type out of the types in the block mixture type exclusions list
         excludedBlockTypesInBlock = set(
-            [
-                x
-                for x in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS
-                for y in numHexBlockByType
-                if x in y
-            ]
+            [x for x in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS for y in numHexBlockByType if x in y]
         )
         if excludedBlockTypesInBlock:
             for blockType in self._BLOCK_MIXTURE_TYPE_EXCLUSIONS:
@@ -967,9 +854,7 @@ class HexToRZThetaConverter(GeometryConverter):
                     return assignedMixtureBlockType
 
         # Assign block type by most common hex block type
-        mostCommonHexBlockType = sorted(numHexBlockByType.most_common(1))[0][
-            0
-        ]  # sort needed for tie break
+        mostCommonHexBlockType = sorted(numHexBlockByType.most_common(1))[0][0]  # sort needed for tie break
 
         for mixtureType in sorted(self._BLOCK_MIXTURE_TYPE_MAP):
             validBlockTypesInMixture = self._BLOCK_MIXTURE_TYPE_MAP[mixtureType]
@@ -996,19 +881,9 @@ class HexToRZThetaConverter(GeometryConverter):
 
         return xsType, envGroup
 
-    def _writeRadialThetaZoneHeader(
-        self, radIdx, lowerRing, upperRing, thIdx, lowerTheta, upperTheta
-    ):
-        radialAssemType = (
-            "({})".format(self._currentRadialZoneType)
-            if self._currentRadialZoneType is not None
-            else ""
-        )
-        runLog.info(
-            "Creating: Radial Zone {}, Theta Zone {} {}".format(
-                radIdx + 1, thIdx + 1, radialAssemType
-            )
-        )
+    def _writeRadialThetaZoneHeader(self, radIdx, lowerRing, upperRing, thIdx, lowerTheta, upperTheta):
+        radialAssemType = "({})".format(self._currentRadialZoneType) if self._currentRadialZoneType is not None else ""
+        runLog.info("Creating: Radial Zone {}, Theta Zone {} {}".format(radIdx + 1, thIdx + 1, radialAssemType))
         runLog.extra(
             "{} Hex Rings: [{}, {}), Theta Revolutions: [{:.2f}, {:.2f})".format(
                 9 * STR_SPACE,
@@ -1074,9 +949,7 @@ class HexToRZThetaConverter(GeometryConverter):
         This makes plots of each individual theta mesh
         """
         runLog.info(
-            "Generating plot(s) of the converted {} reactor".format(
-                str(self.convReactor.core.geomType).upper()
-            )
+            "Generating plot(s) of the converted {} reactor".format(str(self.convReactor.core.geomType).upper())
         )
         figs = []
         colConv = matplotlib.colors.ColorConverter()
@@ -1099,9 +972,7 @@ class HexToRZThetaConverter(GeometryConverter):
                         outerAxial,
                     )
                     blockType = b.getType()
-                    blockColor = self._getBlockColor(
-                        colConv, colGen, blockColors, blockType
-                    )
+                    blockColor = self._getBlockColor(colConv, colGen, blockColors, blockType)
                     if blockColor is not None:
                         blockColors[blockType] = blockColor
                     blockPatch = matplotlib.patches.Rectangle(
@@ -1133,9 +1004,7 @@ class HexToRZThetaConverter(GeometryConverter):
             handles = []
             labels = []
             for blockType, blockColor in blockColors.items():
-                line = matplotlib.lines.Line2D(
-                    [], [], color=blockColor, markersize=15, label=blockType
-                )
+                line = matplotlib.lines.Line2D([], [], color=blockColor, markersize=15, label=blockType)
                 handles.append(line)
                 labels.append(line.get_label())
             ax.set_xlabel("Radial Mesh (cm)".upper(), labelpad=20)
@@ -1152,28 +1021,21 @@ class HexToRZThetaConverter(GeometryConverter):
         return figs
 
     def _getReactorMeshCoordinates(self):
-        thetaMesh, radialMesh, axialMesh = self.convReactor.core.findAllMeshPoints(
-            applySubMesh=False
-        )
+        thetaMesh, radialMesh, axialMesh = self.convReactor.core.findAllMeshPoints(applySubMesh=False)
         thetaMesh.remove(0.0)
         radialMesh.remove(0.0)
         axialMesh.remove(0.0)
         return thetaMesh, radialMesh, axialMesh
 
-    def _getBlockAtMeshPoint(
-        self, innerTheta, outerTheta, innerRadius, outerRadius, innerAxial, outerAxial
-    ):
+    def _getBlockAtMeshPoint(self, innerTheta, outerTheta, innerRadius, outerRadius, innerAxial, outerAxial):
         for b in self.convReactor.core.iterBlocks():
-            blockMidTh, blockMidR, blockMidZ = b.spatialLocator.getGlobalCoordinates(
-                nativeCoords=True
-            )
+            blockMidTh, blockMidR, blockMidZ = b.spatialLocator.getGlobalCoordinates(nativeCoords=True)
             if (blockMidTh >= innerTheta) and (blockMidTh <= outerTheta):
                 if (blockMidR >= innerRadius) and (blockMidR <= outerRadius):
                     if (blockMidZ >= innerAxial) and (blockMidZ <= outerAxial):
                         return b
         raise ValueError(
-            "No block found between ({}, {}), ({}, {}), ({}, {})\n"
-            "Last block had TRZ= {} {} {}".format(
+            "No block found between ({}, {}), ({}, {}), ({}, {})\nLast block had TRZ= {} {} {}".format(
                 innerTheta,
                 outerTheta,
                 innerRadius,
@@ -1246,9 +1108,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
     >>> converter.convert(myReactor)
     """
 
-    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(
-        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-    )
+    EXPECTED_INPUT_SYMMETRY = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
 
     def __init__(self, cs=None):
         GeometryChanger.__init__(self, cs)
@@ -1296,9 +1156,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
         if self._sourceReactor.core.isFullCore:
             # already full core from geometry file. No need to copy symmetry over.
-            runLog.important(
-                "Detected that full core reactor already exists. Cannot expand."
-            )
+            runLog.important("Detected that full core reactor already exists. Cannot expand.")
             return self._sourceReactor
         elif not (
             self._sourceReactor.core.symmetry == self.EXPECTED_INPUT_SYMMETRY
@@ -1331,9 +1189,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # make extras and add them too. since the input is assumed to be 1/3 core.
             otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
             thisZone = (
-                self._sourceReactor.core.zones.findZoneItIsIn(a)
-                if len(self._sourceReactor.core.zones) > 0
-                else None
+                self._sourceReactor.core.zones.findZoneItIsIn(a) if len(self._sourceReactor.core.zones) > 0 else None
             )
             angle = 2 * math.pi / (len(otherLocs) + 1)
             count = 1
@@ -1342,26 +1198,20 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                 newAssem.makeUnique()
                 newAssem.rotate(count * angle)
                 count += 1
-                self._sourceReactor.core.add(
-                    newAssem, self._sourceReactor.core.spatialGrid[i, j, 0]
-                )
+                self._sourceReactor.core.add(newAssem, self._sourceReactor.core.spatialGrid[i, j, 0])
                 if thisZone:
                     thisZone.addLoc(newAssem.getLocation())
                 self._newAssembliesAdded.append(newAssem)
 
             if a.getLocation() == "001-001":
-                runLog.extra(
-                    f"Modifying parameters in central assembly {a} to convert from 1/3 to full core"
-                )
+                runLog.extra(f"Modifying parameters in central assembly {a} to convert from 1/3 to full core")
 
                 if not self.listOfVolIntegratedParamsToScale:
                     # populate the list with all parameters that are VOLUME_INTEGRATED
                     (
                         self.listOfVolIntegratedParamsToScale,
                         _,
-                    ) = _generateListOfParamsToScale(
-                        self._sourceReactor.core, paramsToScaleSubset=[]
-                    )
+                    ) = _generateListOfParamsToScale(self._sourceReactor.core, paramsToScaleSubset=[])
 
                 for b in a:
                     self._scaleBlockVolIntegratedParams(b, "up")
@@ -1391,15 +1241,11 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             for a in self._newAssembliesAdded:
                 r.core.removeAssembly(a, discharge=False)
 
-            r.core.symmetry = geometry.SymmetryType.fromAny(
-                self.EXPECTED_INPUT_SYMMETRY
-            )
+            r.core.symmetry = geometry.SymmetryType.fromAny(self.EXPECTED_INPUT_SYMMETRY)
 
             # change the central assembly params back to 1/3
             a = r.core.getAssemblyWithStringLocation("001-001")
-            runLog.extra(
-                f"Modifying parameters in central assembly {a} to revert from full to 1/3 core"
-            )
+            runLog.extra(f"Modifying parameters in central assembly {a} to revert from full to 1/3 core")
             for b in a:
                 self._scaleBlockVolIntegratedParams(b, "down")
         self.reset()
@@ -1443,14 +1289,10 @@ class EdgeAssemblyChanger(GeometryChanger):
             return
 
         if self._newAssembliesAdded:
-            runLog.important(
-                "Skipping addition of edge assemblies because they are already there"
-            )
+            runLog.important("Skipping addition of edge assemblies because they are already there")
             return
 
-        assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
-            grids.BOUNDARY_0_DEGREES
-        )
+        assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)
         assembliesOnUpperBoundary = []
         for a in assembliesOnLowerBoundary:
             a.clearCache()  # symmetry factors of these assemblies will change since they are now half assems.
@@ -1470,24 +1312,14 @@ class EdgeAssemblyChanger(GeometryChanger):
                 i, j = locs[0]
                 spatialLocator = core.spatialGrid[i, j, 0]
                 if core.childrenByLocator.get(spatialLocator):
-                    runLog.warning(
-                        "Edge assembly already exists in {0}. Not adding.".format(
-                            locs[0]
-                        )
-                    )
+                    runLog.warning("Edge assembly already exists in {0}. Not adding.".format(locs[0]))
                     continue
                 # add the copied assembly to the reactor list
-                runLog.debug(
-                    "Adding edge assembly {0} to {1} to the reactor".format(
-                        a, spatialLocator
-                    )
-                )
+                runLog.debug("Adding edge assembly {0} to {1} to the reactor".format(a, spatialLocator))
                 core.add(a, spatialLocator)
                 self._newAssembliesAdded.append(a)
 
-        parameters.ALL_DEFINITIONS.resetAssignmentFlag(
-            SINCE_LAST_GEOMETRY_TRANSFORMATION
-        )
+        parameters.ALL_DEFINITIONS.resetAssignmentFlag(SINCE_LAST_GEOMETRY_TRANSFORMATION)
 
     def removeEdgeAssemblies(self, core):
         """
@@ -1510,9 +1342,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         if core.isFullCore:
             return
 
-        assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(
-            grids.BOUNDARY_0_DEGREES
-        )
+        assembliesOnLowerBoundary = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)
         # Don't use newAssembliesAdded b/c this may be BOL cleaning of a fresh case that has edge
         # assems.
         edgeAssemblies = core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES)
@@ -1552,12 +1382,8 @@ class EdgeAssemblyChanger(GeometryChanger):
         armi.reactor.converters.geometryConverter.EdgeAssemblyChanger.removeEdgeAssemblies
         armi.reactor.blocks.HexBlock.getSymmetryFactor
         """
-        runLog.extra(
-            "Scaling edge-assembly parameters to account for full hexes instead of two halves"
-        )
-        completeListOfParamsToScale = _generateListOfParamsToScale(
-            core, paramsToScaleSubset
-        )
+        runLog.extra("Scaling edge-assembly parameters to account for full hexes instead of two halves")
+        completeListOfParamsToScale = _generateListOfParamsToScale(core, paramsToScaleSubset)
         symmetricAssems = (
             core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
             core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
@@ -1585,9 +1411,7 @@ def _generateListOfParamsToScale(core, paramsToScaleSubset):
     listOfVolumeIntegratedParamsToScale = listOfVolumeIntegratedParamsToScale.names
     if paramsToScaleSubset:
         listOfVolumeIntegratedParamsToScale = [
-            pn
-            for pn in paramsToScaleSubset
-            if pn in listOfVolumeIntegratedParamsToScale
+            pn for pn in paramsToScaleSubset if pn in listOfVolumeIntegratedParamsToScale
         ]
     return (listOfVolumeIntegratedParamsToScale, fluxParamsToScale)
 
@@ -1595,9 +1419,7 @@ def _generateListOfParamsToScale(core, paramsToScaleSubset):
 def _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale):
     """Scale volume-integrated params to include their identical symmetric assemblies."""
     listOfVolumeIntegratedParamsToScale, fluxParamsToScale = completeListOfParamsToScale
-    for paramName in [
-        pn for pn in listOfVolumeIntegratedParamsToScale if np.any(b.p[pn])
-    ]:
+    for paramName in [pn for pn in listOfVolumeIntegratedParamsToScale if np.any(b.p[pn])]:
         runLog.debug(
             "Scaling {} in symmetric identical assemblies".format(paramName),
             single=True,
@@ -1611,9 +1433,7 @@ def _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale):
 def _scaleFluxValues(b, bSymmetric, paramName):
     totalVol = b.getVolume() + bSymmetric.getVolume()
 
-    b.p[paramName] = [
-        f + fSymmetric for f, fSymmetric in zip(b.p[paramName], bSymmetric.p[paramName])
-    ]
+    b.p[paramName] = [f + fSymmetric for f, fSymmetric in zip(b.p[paramName], bSymmetric.p[paramName])]
 
     newTotalFlux = sum(b.p[paramName]) / totalVol
 

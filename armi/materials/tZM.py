@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """TZM."""
+
 from numpy import interp
 
 from armi.materials.material import Material

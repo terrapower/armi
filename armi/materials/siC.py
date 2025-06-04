@@ -30,18 +30,12 @@ class SiC(Material):
         tsl.byNbAndCompound[nb.byName["SI"], tsl.SIC],
     )
     references = {
-        "heat capacity": [
-            "Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"
-        ],
+        "heat capacity": ["Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"],
         "cumulative linear expansion": [
             "Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"
         ],
-        "density": [
-            "Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"
-        ],
-        "thermal conductivity": [
-            "Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"
-        ],
+        "density": ["Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"],
+        "thermal conductivity": ["Munro, Material Properties of a-SiC, J. Phys. Chem. Ref. Data, Vol. 26, No. 5, 1997"],
     }
 
     propertyEquation = {

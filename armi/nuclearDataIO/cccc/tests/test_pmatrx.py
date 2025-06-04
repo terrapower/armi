@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests the workings of the library wrappers."""
+
 import filecmp
 import unittest
 
@@ -53,18 +54,10 @@ class TestPmatrxNuclides(unittest.TestCase):
         self.assertFalse((aa.isotropicProduction == ab.isotropicProduction).all())
 
     def test_getPMATRXFileName(self):
-        self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=0), "cycle0.pmatrx"
-        )
-        self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=1), "cycle1.pmatrx"
-        )
-        self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(cycle=23), "cycle23.pmatrx"
-        )
-        self.assertEqual(
-            nuclearDataIO.getExpectedPMATRXFileName(xsID="AA"), "AA.pmatrx"
-        )
+        self.assertEqual(nuclearDataIO.getExpectedPMATRXFileName(cycle=0), "cycle0.pmatrx")
+        self.assertEqual(nuclearDataIO.getExpectedPMATRXFileName(cycle=1), "cycle1.pmatrx")
+        self.assertEqual(nuclearDataIO.getExpectedPMATRXFileName(cycle=23), "cycle23.pmatrx")
+        self.assertEqual(nuclearDataIO.getExpectedPMATRXFileName(xsID="AA"), "AA.pmatrx")
         self.assertEqual(
             nuclearDataIO.getExpectedPMATRXFileName(xsID="AA", suffix="test"),
             "AA-test.pmatrx",

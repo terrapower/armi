@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module tests the __init__.py file since it has rather unique behavior."""
+
 import unittest
 
 from armi import materials
@@ -27,11 +28,7 @@ def betterSubClassCheck(item, superClass):
 
 class Materials__init__Tests(unittest.TestCase):
     def test_canAccessClassesFromPackage(self):
-        klasses = [
-            kk
-            for _, kk in vars(materials).items()
-            if betterSubClassCheck(kk, materials.material.Material)
-        ]
+        klasses = [kk for _, kk in vars(materials).items() if betterSubClassCheck(kk, materials.material.Material)]
         self.assertGreater(len(klasses), 10)
 
     def test_packageClassesEqualModuleClasses(self):

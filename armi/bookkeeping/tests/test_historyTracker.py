@@ -19,6 +19,7 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
+
 import os
 import pathlib
 import shutil
@@ -63,9 +64,7 @@ class TestHistoryTracker(ArmiTestHelper):
 
         for filePath in TUTORIAL_FILES:
             dirName = CASE_TITLE if CASE_TITLE in filePath else "tutorials"
-            outFile = os.path.join(
-                cls.dirChanger.destination, dirName, os.path.basename(filePath)
-            )
+            outFile = os.path.join(cls.dirChanger.destination, dirName, os.path.basename(filePath))
             shutil.copyfile(filePath, outFile)
 
         os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
@@ -120,19 +119,14 @@ class TestHistoryTracker(ArmiTestHelper):
             :tests: R_ARMI_HIST_TRACK
         """
         o = self.o
-        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
-            Flags.FUEL
-        )
+        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(Flags.FUEL)
         bVolume = b.getVolume()
         bName = b.name
 
         # duration is None in this DB
         hti = o.getInterface("history")
         timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
-        timeStepsToRead = [
-            utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
-            for i in range(len(timesInYears))
-        ]
+        timeStepsToRead = [utils.getCycleNodeFromCumulativeNode(i, self.o.cs) for i in range(len(timesInYears))]
         hti.preloadBlockHistoryVals([bName], ["mgFlux"], timeStepsToRead)
 
         mgFluence = None
@@ -161,19 +155,14 @@ class TestHistoryTracker(ArmiTestHelper):
             :tests: R_ARMI_HIST_TRACK
         """
         o = self.o
-        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
-            Flags.FUEL
-        )
+        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(Flags.FUEL)
         b.getVolume()
         bName = b.name
 
         # duration is None in this DB
         hti = o.getInterface("history")
         timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
-        timeStepsToRead = [
-            utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
-            for i in range(len(timesInYears))
-        ]
+        timeStepsToRead = [utils.getCycleNodeFromCumulativeNode(i, self.o.cs) for i in range(len(timesInYears))]
         hti.preloadBlockHistoryVals([bName], ["power"], timeStepsToRead)
 
         # read some parameters
@@ -182,9 +171,7 @@ class TestHistoryTracker(ArmiTestHelper):
             params[param] = []
             for ts, years in enumerate(timesInYears):
                 cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-                params[param].append(
-                    hti.getBlockHistoryVal(bName, param, (cycle, node))
-                )
+                params[param].append(hti.getBlockHistoryVal(bName, param, (cycle, node)))
 
         # verify the height parameter doesn't change over time
         self.assertGreater(params["height"][0], 0)
@@ -251,9 +238,7 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.history = historyTracker.HistoryTrackerInterface(None, cs=cs)
-        self._origCaseTitle = (
-            self.history.cs.caseTitle
-        )  # to avoid parallel test interference.
+        self._origCaseTitle = self.history.cs.caseTitle  # to avoid parallel test interference.
         self.history.cs.caseTitle = self._testMethodName + self._origCaseTitle
 
     def tearDown(self):

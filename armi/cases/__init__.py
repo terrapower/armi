@@ -19,8 +19,8 @@ A ``Case`` is a collection of inputs that represents one particular run.
 Cases have special knowledge about dependencies and can perform useful
 operations like compare, clone, and run.
 
-A ``CaseSuite`` is a set of (often related) Cases. These are fundamental to 
-parameter sweeps and test suites. 
+A ``CaseSuite`` is a set of (often related) Cases. These are fundamental to
+parameter sweeps and test suites.
 
 See Also
 --------
@@ -45,7 +45,7 @@ Create a case suite from existing files, and run the suite::
     suite = CaseSuite(settings.Settings()) # default settings
     suite.discover('my-cases*.yaml', recursive=True)
     suite.run()
-    
+
 .. warning:: Suite running may not work yet if the cases have interdependencies.
 
 Create a ``burnStep`` sensitivity study from some base CS::
@@ -60,8 +60,9 @@ Create a ``burnStep`` sensitivity study from some base CS::
             suite.add(case)
 
     suite.writeInputs()
-    
+
 Then submit the inputs to your HPC cluster.
 """
+
 from armi.cases.case import Case  # noqa: F401
 from armi.cases.suite import CaseSuite  # noqa: F401

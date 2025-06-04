@@ -21,6 +21,7 @@ run, the run type, the environment setup, and hundreds of other things.
 A Settings object can be saved as or loaded from an YAML file. The ARMI GUI is designed to
 create this settings file, which is then loaded by an ARMI process on the cluster.
 """
+
 import io
 import logging
 import os
@@ -139,11 +140,7 @@ class Settings:
     @property
     def environmentSettings(self):
         """Getter for environment settings."""
-        return [
-            setting.name
-            for setting in self.__settings.values()
-            if setting.isEnvironment
-        ]
+        return [setting.name for setting in self.__settings.values() if setting.isEnvironment]
 
     def __contains__(self, key):
         return key in self.__settings
@@ -153,9 +150,7 @@ class Settings:
         isAltered = lambda s: 1 if s.value != s.default else 0
         altered = sum([isAltered(setting) for setting in self.__settings.values()])
 
-        return "<{} name:{} total:{} altered:{}>".format(
-            self.__class__.__name__, self.caseTitle, total, altered
-        )
+        return "<{} name:{} total:{} altered:{}>".format(self.__class__.__name__, self.caseTitle, total, altered)
 
     def _directAccessOfSettingAllowed(self, key):
         """
@@ -372,9 +367,7 @@ class Settings:
         """
         self.path = pathTools.armiAbsPath(fName)
         if style == "medium":
-            getSettingsPath = (
-                self.path if fromFile is None else pathTools.armiAbsPath(fromFile)
-            )
+            getSettingsPath = self.path if fromFile is None else pathTools.armiAbsPath(fromFile)
             settingsSetByUser = self.getSettingsSetByUser(getSettingsPath)
         else:
             settingsSetByUser = []
@@ -426,9 +419,7 @@ class Settings:
         -------
         writer : SettingsWriter
         """
-        writer = settingsIO.SettingsWriter(
-            self, style=style, settingsSetByUser=settingsSetByUser
-        )
+        writer = settingsIO.SettingsWriter(self, style=style, settingsSetByUser=settingsSetByUser)
         writer.writeYaml(stream)
         return writer
 
@@ -460,9 +451,7 @@ class Settings:
                 elif key in settings.__settings:
                     settings.__settings[key].setValue(val)
                 else:
-                    settings.__settings[key] = Setting(
-                        key, val, description="Description from cs.modified()"
-                    )
+                    settings.__settings[key] = Setting(key, val, description="Description from cs.modified()")
 
         return settings
 

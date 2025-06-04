@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Reactor parameter definitions."""
+
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.utils import units
@@ -35,9 +36,7 @@ def defineReactorParameters():
             description="Length of the cycle, including outage time described by availabilityFactor",
         )
 
-        pb.defParam(
-            "stepLength", units=units.DAYS, description="Length of current step"
-        )
+        pb.defParam("stepLength", units=units.DAYS, description="Length of current step")
 
         pb.defParam(
             "availabilityFactor",
@@ -62,9 +61,7 @@ def defineReactorParameters():
             categories=["depletion"],
         )
 
-        pb.defParam(
-            "timeNode", units=units.UNITLESS, description="Integer timeNode", default=0
-        )
+        pb.defParam("timeNode", units=units.UNITLESS, description="Integer timeNode", default=0)
 
         pb.defParam(
             "maxAssemNum",
@@ -106,18 +103,14 @@ def defineCoreParameters():
             default="",
             units=units.UNITLESS,
             saveToDB=True,
-            description=(
-                "Core assembly location for the most valuable primary control rod."
-            ),
+            description=("Core assembly location for the most valuable primary control rod."),
         )
         pb.defParam(
             "crMostValuableSecondaryRodLocation",
             default="",
             units=units.UNITLESS,
             saveToDB=True,
-            description=(
-                "Core assembly location for the most valuable secondary control rod."
-            ),
+            description=("Core assembly location for the most valuable secondary control rod."),
         )
         pb.defParam(
             "crTransientOverpowerWorth",
@@ -143,16 +136,11 @@ def defineCoreParameters():
         pb.defParam(
             "referenceBlockAxialMesh",
             units=units.CM,
-            description=(
-                "The axial block boundaries that assemblies should conform to in a "
-                "uniform mesh case."
-            ),
+            description=("The axial block boundaries that assemblies should conform to in a uniform mesh case."),
             default=None,
         )
 
-        pb.defParam(
-            "fissileMass", units=units.GRAMS, description="Fissile mass of the reactor"
-        )
+        pb.defParam("fissileMass", units=units.GRAMS, description="Fissile mass of the reactor")
 
         pb.defParam(
             "heavyMetalMass",
@@ -200,15 +188,11 @@ def defineCoreParameters():
             description="Grid plate peak dpa after 60 years irradiation",
         )
 
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["neutronics"]
-    ) as pb:
-
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0, categories=["neutronics"]) as pb:
         pb.defParam(
             "power",
             units=units.WATTS,
-            description="Thermal power of the reactor core. Corresponds to the "
-            "nuclear power generated in the core.",
+            description="Thermal power of the reactor core. Corresponds to the nuclear power generated in the core.",
         )
 
         pb.defParam(
@@ -299,9 +283,7 @@ def defineCoreParameters():
             description="Maximum burnup seen in any igniter assemblies",
         )
 
-        pb.defParam(
-            "keff", units=units.UNITLESS, description="Global multiplication factor"
-        )
+        pb.defParam("keff", units=units.UNITLESS, description="Global multiplication factor")
 
         pb.defParam(
             "peakKeff",
@@ -359,7 +341,6 @@ def defineCoreParameters():
         location=ParamLocation.AVERAGE,
         categories=["reactivity coefficients", "kinetics"],
     ) as pb:
-
         pb.defParam(
             "beta",
             units=units.UNITLESS,
@@ -399,24 +380,15 @@ def defineCoreParameters():
             description="Grid Plate Radial Expansion Coefficient",
         )
 
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, categories=["equilibrium"]
-    ) as pb:
-
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, categories=["equilibrium"]) as pb:
         pb.defParam(
             "cyclics",
             units=units.UNITLESS,
-            description=(
-                "The integer number of cyclic mode equilibrium-cycle "
-                "iterations that have occurred so far"
-            ),
+            description=("The integer number of cyclic mode equilibrium-cycle iterations that have occurred so far"),
             default=0,
         )
 
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, categories=["equilibrium"]
-    ) as pb:
-
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, categories=["equilibrium"]) as pb:
         pb.defParam(
             "ConvRatioCore",
             units=units.UNITLESS,

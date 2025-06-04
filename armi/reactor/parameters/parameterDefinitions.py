@@ -25,6 +25,7 @@ See Also
 --------
 armi.reactor.parameters
 """
+
 import enum
 import functools
 import re
@@ -45,12 +46,7 @@ SINCE_INITIALIZATION = 1
 SINCE_LAST_DISTRIBUTE_STATE = 4
 SINCE_LAST_GEOMETRY_TRANSFORMATION = 8
 SINCE_BACKUP = 16
-SINCE_ANYTHING = (
-    SINCE_LAST_DISTRIBUTE_STATE
-    | SINCE_INITIALIZATION
-    | SINCE_LAST_GEOMETRY_TRANSFORMATION
-    | SINCE_BACKUP
-)
+SINCE_ANYTHING = SINCE_LAST_DISTRIBUTE_STATE | SINCE_INITIALIZATION | SINCE_LAST_GEOMETRY_TRANSFORMATION | SINCE_BACKUP
 NEVER = 32
 
 
@@ -194,9 +190,7 @@ class Serializer:
         raise NotImplementedError()
 
     @classmethod
-    def unpack(
-        cls, data: np.ndarray, version: Any, attrs: Dict[str, any]
-    ) -> Sequence[any]:
+    def unpack(cls, data: np.ndarray, version: Any, attrs: Dict[str, any]) -> Sequence[any]:
         """Given packed data and attributes, return the unpacked data."""
         raise NotImplementedError()
 
@@ -320,9 +314,7 @@ class Parameter:
                 if value is NoDefault:
                     raise ParameterError(
                         "Cannot get value for parameter `{}` in `{}` as no default has been "
-                        "defined, and no value has been assigned.".format(
-                            self.name, type(p_self)
-                        )
+                        "defined, and no value has been assigned.".format(self.name, type(p_self))
                     )
                 return value
 
@@ -421,9 +413,7 @@ class Parameter:
 
         else:
             raise ParameterDefinitionError(
-                "The setter for parameter `{}` must be callable. Setter attribute: {}".format(
-                    self.name, setter
-                )
+                "The setter for parameter `{}` must be callable. Setter attribute: {}".format(self.name, setter)
             )
 
         self._setter = paramSetter
@@ -520,16 +510,13 @@ class ParameterDefinitionCollection:
 
     def extend(self, other):
         """Grow a parameter definition collection by another parameter definition collection."""
-        assert (
-            not self._locked
-        ), "This ParameterDefinitionCollection ({}) has been locked.".format(
+        assert not self._locked, "This ParameterDefinitionCollection ({}) has been locked.".format(
             self._representedTypes
         )
         assert self is not other
         if other is None:
             raise ValueError(
-                f"Cannot extend {self} with `None`. Ensure return value of parameter definitions "
-                "returns something."
+                f"Cannot extend {self} with `None`. Ensure return value of parameter definitions returns something."
             )
         for pd in other:
             self.add(pd)
@@ -570,9 +557,7 @@ class ParameterDefinitionCollection:
         Create a :py:class:`ParameterDefinitionCollection` that contains definitions for a
         specific composite type.
         """
-        return self._filter(
-            lambda pd: issubclass(compositeType.paramCollectionType, pd.collectionType)
-        )
+        return self._filter(lambda pd: issubclass(compositeType.paramCollectionType, pd.collectionType))
 
     def resetAssignmentFlag(self, mask):
         """
@@ -683,9 +668,7 @@ class ParameterBuilder:
 
     @staticmethod
     def _assertDefaultIsProperType(default):
-        if default in (NoDefault, None) or isinstance(
-            default, (int, str, float, bool, Flags)
-        ):
+        if default in (NoDefault, None) or isinstance(default, (int, str, float, bool, Flags)):
             return
         raise AssertionError(
             "Cannot specify a default mutable type ({}) value to a parameter; all instances would "
@@ -765,8 +748,7 @@ class ParameterBuilder:
         self._assertDefaultIsProperType(default)
         if location is None and self._defaultLocation is None:
             raise ParameterDefinitionError(
-                "The default location is not specified for {}; "
-                "a parameter-specific location is required.".format(self)
+                "The default location is not specified for {}; a parameter-specific location is required.".format(self)
             )
 
         paramDef = Parameter(
