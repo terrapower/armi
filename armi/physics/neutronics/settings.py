@@ -307,10 +307,10 @@ def defineSettings():
         setting.Setting(
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
             default=False,
-            label="Include All Block Types in XS Generation",
-            description="Use all blocks in a cross section group when generating a "
-            "representative block. When this is disabled only `fuel` blocks will be "
-            "considered",
+            label="Which Block types to merge together in XS Generation",
+            description="Control which blocks get merged together by the XSGM. If set to ``None`` or ``True`` then all "
+            "block types in the XS ID will be considered. If set to ``False`` then a default of ['fuel'] will be used. "
+            "Can also be set to an exact list of strings for types to consider.",
         ),
         setting.Setting(
             CONF_XS_KERNEL,
