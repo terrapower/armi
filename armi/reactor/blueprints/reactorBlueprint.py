@@ -203,14 +203,26 @@ class SystemBlueprint(yamlize.Object):
         return system
 
     def _loadComposites(self, cs, bp, container, gridContents, orientationBOL):
+        from armi.reactor.cores import Core
+
         runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
+            # handle the hex-grid special case, where the user enters (ring, pos)
+            i, j = locationInfo
+            if (
+                isinstance(container, Core)
+                and container.geomType == geometry.GeomType.HEX
+            ):
+                loc = container.spatialGrid.indicesToRingPos(i, j)
+            else:
+                loc = locationInfo
+
             # correctly rotate the Composite
-            if orientationBOL is None or locationInfo not in orientationBOL:
+            if orientationBOL is None or loc not in orientationBOL:
                 orientation = 0.0
             else:
-                orientation = orientationBOL[locationInfo]
+                orientation = orientationBOL[loc]
 
             # create a new Composite to add to the grid
             newAssembly = bp.constructAssem(
@@ -218,12 +230,11 @@ class SystemBlueprint(yamlize.Object):
             )
 
             # add the Composite to the grid
-            i, j = locationInfo
-            loc = container.spatialGrid[i, j, 0]
+            posi = container.spatialGrid[i, j, 0]
             try:
-                container.add(newAssembly, loc)
+                container.add(newAssembly, posi)
             except LookupError:
-                badLocations.add(loc)
+                badLocations.add(posi)
 
         if badLocations:
             raise ValueError(
