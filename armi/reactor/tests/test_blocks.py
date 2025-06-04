@@ -387,7 +387,9 @@ class Block_TestCase(unittest.TestCase):
             Flags.LINER, "id"
         ) ** 2
         cur = self.block.getSmearDensity()
-        self.assertAlmostEqual(cur, ref, places=10, msg=f"Incorrect getSmearDensity with liner. Got {cur}. Should be {ref}")
+        self.assertAlmostEqual(
+            cur, ref, places=10, msg=f"Incorrect getSmearDensity with liner. Got {cur}. Should be {ref}"
+        )
 
         # test with annular fuel
         fuelDims = {
@@ -404,10 +406,7 @@ class Block_TestCase(unittest.TestCase):
         ) ** 2
         cur = self.block.getSmearDensity()
         self.assertAlmostEqual(
-            cur,
-            ref,
-            places=10,
-            msg=f"Incorrect getSmearDensity with annular fuel. Got {cur}. Should be {ref}"
+            cur, ref, places=10, msg=f"Incorrect getSmearDensity with annular fuel. Got {cur}. Should be {ref}"
         )
 
     def test_getSmearDensityMultipleLiner(self):

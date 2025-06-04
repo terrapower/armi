@@ -341,13 +341,7 @@ class AverageBlockCollection(BlockCollection):
                 c.temperatureInC = self._getAverageComponentTemperature(compIndex)
         else:
             numberDensities = self._getAverageNumberDensities()
-            numberDensities.update(
-                {
-                    nuc: 0.0
-                    for nuc in newBlock.getNuclides()
-                    if nuc not in numberDensities
-                }
-            )
+            numberDensities.update({nuc: 0.0 for nuc in newBlock.getNuclides() if nuc not in numberDensities})
             newBlock.updateNumberDensities(numberDensities)
 
         newBlock.p.percentBu = self._calcWeightedBurnup()

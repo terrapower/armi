@@ -1489,9 +1489,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Set to almost zero, so components remember which nuclides are where.
         """
-        numberDensities = {
-            nuc: units.TRACE_NUMBER_DENSITY for nuc in self.getNuclides()
-        }
+        numberDensities = {nuc: units.TRACE_NUMBER_DENSITY for nuc in self.getNuclides()}
         self.updateNumberDensities(numberDensities)
 
     def density(self):
@@ -1977,7 +1975,9 @@ class ArmiObject(metaclass=CompositeModelType):
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
-            raise NotImplementedError(f"{self.__class__} class has no method for producing average MG flux -- tryusing blocks")
+            raise NotImplementedError(
+                f"{self.__class__} class has no method for producing average MG flux -- tryusing blocks"
+            )
 
         volume = volume or self.getVolume()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume

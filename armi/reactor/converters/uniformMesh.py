@@ -1466,9 +1466,7 @@ def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
         for nucName, numberDensity in overlappingBlock.getNumberDensities().items():
             totalDensities[nucName] += numberDensity * heightScaling
 
-    totalDensities.update(
-        {nuc: 0.0 for nuc in block.getNuclides() if nuc not in totalDensities}
-    )
+    totalDensities.update({nuc: 0.0 for nuc in block.getNuclides() if nuc not in totalDensities})
     block.updateNumberDensities(totalDensities)
 
     # Set the volume of each component in the block to `None` so that the volume of each component
