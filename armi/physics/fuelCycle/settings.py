@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Settings for generic fuel cycle code."""
+
 from armi.settings import setting, settingsValidation
 
 CONF_ASSEM_ROTATION_STATIONARY = "assemblyRotationStationary"
@@ -42,8 +43,7 @@ def getFuelCycleSettings():
             default=False,
             label="Rotate stationary assems",
             description=(
-                "Whether or not to rotate assemblies that are not shuffled."
-                "This can only be True if 'rotation' is true."
+                "Whether or not to rotate assemblies that are not shuffled.This can only be True if 'rotation' is true."
             ),
         ),
         setting.Setting(
@@ -113,8 +113,7 @@ def getFuelCycleSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            lambda: bool(inspector.cs[CONF_SHUFFLE_LOGIC])
-            ^ bool(inspector.cs[CONF_FUEL_HANDLER_NAME]),
+            lambda: bool(inspector.cs[CONF_SHUFFLE_LOGIC]) ^ bool(inspector.cs[CONF_FUEL_HANDLER_NAME]),
             "A value was provided for `fuelHandlerName` or `shuffleLogic`, but not "
             "the other. Either both `fuelHandlerName` and `shuffleLogic` should be "
             "defined, or neither of them.",
@@ -141,8 +140,9 @@ def getFuelCycleSettingValidators(inspector):
         settingsValidation.Query(
             lambda: inspector.cs[CONF_SHUFFLE_LOGIC]
             and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_LOGIC]),
-            "The specified shuffle logic file '{0}' cannot be found. "
-            "Shuffling will not occur.".format(inspector.cs[CONF_SHUFFLE_LOGIC]),
+            "The specified shuffle logic file '{0}' cannot be found. Shuffling will not occur.".format(
+                inspector.cs[CONF_SHUFFLE_LOGIC]
+            ),
             "Clear specified file value?",
             _clearShufflingInput,
         )

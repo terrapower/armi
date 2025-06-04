@@ -84,27 +84,15 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         xsLibrarySuffix="",
         generateExclusiveGammaXS=False,
     ):
-        interfaces.InputWriter.__init__(
-            self, r=r, externalCodeInterface=externalCodeInterface
-        )
+        interfaces.InputWriter.__init__(self, r=r, externalCodeInterface=externalCodeInterface)
         self.cs = self.eci.cs
         self.block = representativeBlock
         if not isinstance(xsLibrarySuffix, str):
-            raise TypeError(
-                "xsLibrarySuffix should be a string; got {}".format(
-                    type(xsLibrarySuffix)
-                )
-            )
+            raise TypeError("xsLibrarySuffix should be a string; got {}".format(type(xsLibrarySuffix)))
         self.xsLibrarySuffix = xsLibrarySuffix
         self.generateExclusiveGammaXS = generateExclusiveGammaXS
-        if self.generateExclusiveGammaXS and not neutronics.gammaXsAreRequested(
-            self.cs
-        ):
-            raise ValueError(
-                "Invalid `{}` setting to generate gamma XS for {}.".format(
-                    CONF_GEN_XS, self.block
-                )
-            )
+        if self.generateExclusiveGammaXS and not neutronics.gammaXsAreRequested(self.cs):
+            raise ValueError("Invalid `{}` setting to generate gamma XS for {}.".format(CONF_GEN_XS, self.block))
         self.xsId = representativeBlock.getMicroSuffix()
         self.xsSettings = self.cs[CONF_CROSS_SECTION][self.xsId]
         self.mergeIntoClad = self.xsSettings.mergeIntoClad
@@ -118,55 +106,35 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         self.executeExclusive = self.xsSettings.xsExecuteExclusive
         self.priority = self.xsSettings.xsPriority
         self.maxAtomNumberToModelInfDilute = (
-            self.xsSettings.xsMaxAtomNumber
-            if self.xsSettings.xsMaxAtomNumber is not None
-            else 999
+            self.xsSettings.xsMaxAtomNumber if self.xsSettings.xsMaxAtomNumber is not None else 999
         )
         # would prefer this in 1D but its used in 0D in _writeSourceComposition
         self.minDriverDensity = self.xsSettings.minDriverDensity
 
-        blockNeedsFPs = (
-            representativeBlock.getLumpedFissionProductCollection() is not None
-        )
+        blockNeedsFPs = representativeBlock.getLumpedFissionProductCollection() is not None
 
-        self.modelFissionProducts = (
-            blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
-        )
-        self.explicitFissionProducts = (
-            self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
-        )
-        self.diluteFissionProducts = (
-            blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
-        )
+        self.modelFissionProducts = blockNeedsFPs and self.cs[CONF_FP_MODEL] != "noFissionProducts"
+        self.explicitFissionProducts = self.cs[CONF_FP_MODEL] == "explicitFissionProducts"
+        self.diluteFissionProducts = blockNeedsFPs and self.cs[CONF_FP_MODEL] == "infinitelyDilute"
         self.minimumNuclideDensity = self.cs[CONF_MINIMUM_NUCLIDE_DENSITY]
         self.infinitelyDiluteDensity = self.minimumNuclideDensity
         self._unusedNuclides = set()
         self._allNuclideObjects = None
 
     def __repr__(self):
-        suffix = (
-            " with Suffix:`{}`".format(self.xsLibrarySuffix)
-            if self.xsLibrarySuffix
-            else ""
-        )
+        suffix = " with Suffix:`{}`".format(self.xsLibrarySuffix) if self.xsLibrarySuffix else ""
         if self.generateExclusiveGammaXS:
             xsFlag = neutronics.GAMMA
-        elif (
-            neutronics.gammaXsAreRequested(self.cs) and self._isGammaXSGenerationEnabled
-        ):
+        elif neutronics.gammaXsAreRequested(self.cs) and self._isGammaXSGenerationEnabled:
             xsFlag = neutronics.NEUTRONGAMMA
         else:
             xsFlag = neutronics.NEUTRON
-        return "<{} - XS ID {} ({} XS){}>".format(
-            self.__class__.__name__, self.xsId, xsFlag, suffix
-        )
+        return "<{} - XS ID {} ({} XS){}>".format(self.__class__.__name__, self.xsId, xsFlag, suffix)
 
     def _writeTitle(self, fileObj):
         self._writeComment(
             fileObj,
-            "ARMI generated case for caseTitle {}, block {}\n".format(
-                self.cs.caseTitle, self.block
-            ),
+            "ARMI generated case for caseTitle {}, block {}\n".format(self.cs.caseTitle, self.block),
         )
 
     def write(self):
@@ -237,9 +205,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         ) = self.r.core.getNuclideCategories()
         nucDensities = {}
         subjectObject = component or self.block
-        depletableNuclides = nuclideBases.getDepletableNuclides(
-            self.r.blueprints.activeNuclides, self.block
-        )
+        depletableNuclides = nuclideBases.getDepletableNuclides(self.r.blueprints.activeNuclides, self.block)
         objNuclides = subjectObject.getNuclides()
 
         # If the explicit fission product model is enabled then the number densities
@@ -329,12 +295,8 @@ class LatticePhysicsWriter(interfaces.InputWriter):
 
         # the sortFunc makes orders the nucideDensities and fissionProductDensities by name.
         sortFunc = lambda nb_data_tuple: nb_data_tuple[0].name
-        nucDensities = collections.OrderedDict(
-            sorted(nucDensities.items(), key=sortFunc)
-        )
-        fissionProductDensities = collections.OrderedDict(
-            sorted(fissionProductDensities.items(), key=sortFunc)
-        )
+        nucDensities = collections.OrderedDict(sorted(nucDensities.items(), key=sortFunc))
+        fissionProductDensities = collections.OrderedDict(sorted(fissionProductDensities.items(), key=sortFunc))
         return nucDensities, fissionProductDensities
 
     def _getAvgNuclideTemperatureInC(self, nucName):
@@ -344,9 +306,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         nucTemperatureInC = xsgm.getNucTemperature(self.xsId, nucName)
         if not nucTemperatureInC or math.isnan(nucTemperatureInC):
             # Assign the fuel temperature to the nuclide if it is None or NaN.
-            nucTemperatureInC = (
-                self._getFuelTemperature()
-            )  # NBD b/c the nuclide is not in problem.
+            nucTemperatureInC = self._getFuelTemperature()  # NBD b/c the nuclide is not in problem.
             self._unusedNuclides.add(nucName)
 
         return nucTemperatureInC
@@ -359,9 +319,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
             fuelTemperatureInC = np.mean([fc.temperatureInC for fc in fuelComponents])
         if not fuelTemperatureInC or math.isnan(fuelTemperatureInC):
             raise ValueError(
-                "The fuel temperature of block {0} is {1} and is not valid".format(
-                    self.block, fuelTemperatureInC
-                )
+                "The fuel temperature of block {0} is {1} and is not valid".format(self.block, fuelTemperatureInC)
             )
         return fuelTemperatureInC
 
@@ -401,9 +359,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
         lfpCollection = self.block.getLumpedFissionProductCollection()
         if self.diluteFissionProducts:
             if lfpCollection is None:
-                raise ValueError(
-                    "Lumped fission products are not initialized. Did interactAll BOL run?"
-                )
+                raise ValueError("Lumped fission products are not initialized. Did interactAll BOL run?")
             dfps = lfpCollection.getAllFissionProductNuclideBases()
             for individualFpBase in dfps:
                 dfpDensities[individualFpBase] = self.minimumNuclideDensity
@@ -417,9 +373,7 @@ class LatticePhysicsWriter(interfaces.InputWriter):
                 dfpDensities[fp] = max(fpDens, self.minimumNuclideDensity)
         return dfpDensities
 
-    def _writeNuclide(
-        self, fileObj, nuclide, density, nucTemperatureInC, category, xsIdSpecified=None
-    ):
+    def _writeNuclide(self, fileObj, nuclide, density, nucTemperatureInC, category, xsIdSpecified=None):
         raise NotImplementedError
 
     @property
@@ -493,9 +447,7 @@ def _groupNuclidesByTemperature(nuclides):
     """
     tempDict = {}
     for nuclide, values in nuclides.items():
-        temperature = round(
-            values[_NUCLIDE_VALUES_TEMPERATURE_INDEX], _NUM_DIGITS_ROUND_TEMPERATURE
-        )
+        temperature = round(values[_NUCLIDE_VALUES_TEMPERATURE_INDEX], _NUM_DIGITS_ROUND_TEMPERATURE)
         if temperature not in tempDict:
             tempDict[temperature] = {nuclide: values}
         else:

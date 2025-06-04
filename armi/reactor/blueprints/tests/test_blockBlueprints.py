@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for block blueprints."""
+
 import io
 import unittest
 
@@ -372,29 +373,21 @@ class TestGriddedBlock(unittest.TestCase):
             :id: T_ARMI_BP_NUC_FLAGS0
             :tests: R_ARMI_BP_NUC_FLAGS
         """
-        a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
-            self.cs, self.blueprints
-        )
+        a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(self.cs, self.blueprints)
         b1 = a1[0]
         b2 = a1[1]
 
-        a2 = self.blueprints.assemDesigns.bySpecifier["ID"].construct(
-            self.cs, self.blueprints
-        )
+        a2 = self.blueprints.assemDesigns.bySpecifier["ID"].construct(self.cs, self.blueprints)
 
         self.assertTrue(b1.hasFlags(Flags.FUEL, exact=True))
-        self.assertTrue(
-            b2.hasFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True)
-        )
+        self.assertTrue(b2.hasFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True))
 
         self.assertEqual(a1.p.flags, Flags.FUEL)
         self.assertTrue(a1.hasFlags(Flags.FUEL, exact=True))
         self.assertTrue(a2.hasFlags(Flags.FUEL | Flags.TEST, exact=True))
 
     def test_densityConsistentWithComponentConstructor(self):
-        a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(
-            self.cs, self.blueprints
-        )
+        a1 = self.blueprints.assemDesigns.bySpecifier["IC"].construct(self.cs, self.blueprints)
         fuelBlock = a1[0]
         clad = fuelBlock.getComponent(Flags.CLAD)
 

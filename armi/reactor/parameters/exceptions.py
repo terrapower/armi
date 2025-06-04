@@ -27,8 +27,7 @@ class ParameterDefinitionError(Exception):
     def __init__(self, message):
         Exception.__init__(
             self,
-            "This is a programming error, and needs to be addressed by the developer "
-            "encountering it:\n" + message,
+            "This is a programming error, and needs to be addressed by the developer encountering it:\n" + message,
         )
 
 

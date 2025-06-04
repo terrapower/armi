@@ -17,6 +17,7 @@ Base Material classes.
 
 Most temperatures may be specified in either K or C and the functions will convert for you.
 """
+
 import functools
 import traceback
 import warnings
@@ -168,9 +169,7 @@ class Material:
         """Duplicate of name property, kept for backwards compatibility."""
         return self._name
 
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
+    def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
         """Return empty list, representing that materials have no children."""
         return []
 
@@ -229,9 +228,7 @@ class Material:
         --------
         linearExpansionPercent : average linear thermal expansion to affect dimensions and density
         """
-        raise NotImplementedError(
-            f"{self} does not have a linear expansion property defined"
-        )
+        raise NotImplementedError(f"{self} does not have a linear expansion property defined")
 
     def linearExpansionPercent(self, Tk: float = None, Tc: float = None) -> float:
         """
@@ -286,9 +283,7 @@ class Material:
 
         return (dLLhot - dLLcold) / (100.0 + dLLcold)
 
-    def getThermalExpansionDensityReduction(
-        self, prevTempInC: float, newTempInC: float
-    ) -> float:
+    def getThermalExpansionDensityReduction(self, prevTempInC: float, newTempInC: float) -> float:
         """Return the factor required to update thermal expansion going from temperatureInC to temperatureInCNew."""
         dLL = self.linearExpansionFactor(Tc=newTempInC, T0=prevTempInC)
         return 1.0 / (1 + dLL) ** 2
@@ -316,9 +311,7 @@ class Material:
             )
 
         if massFrac < 0.0 or massFrac > 1.0:
-            raise ValueError(
-                f"Mass fraction of {massFrac} for {nucName} is not between 0 and 1."
-            )
+            raise ValueError(f"Mass fraction of {massFrac} for {nucName} is not between 0 and 1.")
 
         self.massFrac[nucName] = massFrac
 
@@ -357,27 +350,19 @@ class Material:
             New mass fraction to achieve.
         """
         if massFraction > 1.0 or massFraction < 0.0:
-            raise ValueError(
-                "Cannot enrich to massFraction of {}, must be between 0 and 1".format(
-                    massFraction
-                )
-            )
+            raise ValueError("Cannot enrich to massFraction of {}, must be between 0 and 1".format(massFraction))
 
         nucsNames = list(self.massFrac)
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
         massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density
-        atomicMasses = np.array(
-            [nuclideBases.byName[nuc].weight for nuc in nucsNames]
-        )  # in AMU
+        atomicMasses = np.array([nuclideBases.byName[nuc].weight for nuc in nucsNames])  # in AMU
         molesPerCC = massDensities / atomicMasses  # item-wise division
 
         enrichedIndex = nucsNames.index(nuclideName)
         isoAndEles = nuclideBases.byName[nuclideName].element.nuclides
-        allIndicesUpdated = [
-            nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac
-        ]
+        allIndicesUpdated = [nucsNames.index(nuc.name) for nuc in isoAndEles if nuc.name in self.massFrac]
 
         if len(allIndicesUpdated) == 1:
             if isinstance(
@@ -399,37 +384,25 @@ class Material:
             massDensities[allIndicesUpdated] = 0.0
             massDensities[enrichedIndex] = 1.0
         else:
-            balanceWeight = (
-                massDensities[allIndicesUpdated].sum() - massDensities[enrichedIndex]
-            )
+            balanceWeight = massDensities[allIndicesUpdated].sum() - massDensities[enrichedIndex]
             if balanceWeight == 0.0:
                 onlyOneOtherFracToDetermine = len(allIndicesUpdated) == 2
                 if not onlyOneOtherFracToDetermine:
                     raise ValueError(
                         "Material {} has too many masses set to zero. cannot enrich {} to {}. "
-                        "Current mass fractions: {}".format(
-                            self, nuclideName, massFraction, self.massFrac
-                        )
+                        "Current mass fractions: {}".format(self, nuclideName, massFraction, self.massFrac)
                     )
                 # massDensities get normalized later when conserving atoms; these are just ratios
-                massDensities[allIndicesUpdated] = (
-                    1 - massFraction
-                )  # there is only one other.
+                massDensities[allIndicesUpdated] = 1 - massFraction  # there is only one other.
                 massDensities[enrichedIndex] = massFraction
             else:
                 # derived from solving the following equation for enrchedWeight:
                 # massFraction = enrichedWeight / (enrichedWeight + balanceWeight)
-                massDensities[enrichedIndex] = (
-                    massFraction * balanceWeight / (1 - massFraction)
-                )
+                massDensities[enrichedIndex] = massFraction * balanceWeight / (1 - massFraction)
         # ratio is set by here but atoms not conserved yet
 
-        updatedNucsMolesPerCC = (
-            massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
-        )
-        updatedNucsMolesPerCC *= (
-            molesPerCC[allIndicesUpdated].sum() / updatedNucsMolesPerCC.sum()
-        )  # conserve atoms
+        updatedNucsMolesPerCC = massDensities[allIndicesUpdated] / atomicMasses[allIndicesUpdated]
+        updatedNucsMolesPerCC *= molesPerCC[allIndicesUpdated].sum() / updatedNucsMolesPerCC.sum()  # conserve atoms
         molesPerCC[allIndicesUpdated] = updatedNucsMolesPerCC
 
         updatedMassDensities = molesPerCC * atomicMasses
@@ -437,9 +410,7 @@ class Material:
         massFracs = updatedMassDensities / updatedDensity
 
         if not np.isclose(sum(massFracs), 1.0, atol=1e-10):
-            raise RuntimeError(
-                f"The mass fractions {massFracs} in {self} do not sum to 1.0."
-            )
+            raise RuntimeError(f"The mass fractions {massFracs} in {self} do not sum to 1.0.")
 
         self.massFrac = {nuc: weight for nuc, weight in zip(nucsNames, massFracs)}
         if self.refDens != 0.0:  # don't update density if not assigned
@@ -448,9 +419,7 @@ class Material:
     def volumetricExpansion(self, Tk=None, Tc=None):
         pass
 
-    def getTemperatureAtDensity(
-        self, targetDensity: float, tempGuessInC: float
-    ) -> float:
+    def getTemperatureAtDensity(self, targetDensity: float, tempGuessInC: float) -> float:
         """Get the temperature at which the perturbed density occurs (in Celsius)."""
         # 0 at tempertature of targetDensity
         densFunc = lambda temp: self.density(Tc=temp) - targetDensity
@@ -558,9 +527,7 @@ class Material:
         """Thermal conductivity for given T (in units of W/m/K)."""
         pass
 
-    def getProperty(
-        self, propName: str, Tk: float = None, Tc: float = None, **kwargs
-    ) -> float:
+    def getProperty(self, propName: str, Tk: float = None, Tc: float = None, **kwargs) -> float:
         """Gets properties in a way that caches them."""
         Tk = getTk(Tc, Tk)
 
@@ -660,9 +627,7 @@ class Material:
             The name of the function or property that is being checked.
         """
         if not minT <= val <= maxT:
-            msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(
-                val, minT, maxT, self.name, label
-            )
+            msg = "Temperature {0} out of range ({1} to {2}) for {3} {4}".format(val, minT, maxT, self.name, label)
             if FAIL_ON_RANGE or np.isnan(val):
                 runLog.error(msg)
                 raise ValueError
@@ -711,9 +676,7 @@ class Material:
         warnings.warn("Material.getNuclides is being deprecated.", DeprecationWarning)
         return self.parent.getNuclides()
 
-    def getTempChangeForDensityChange(
-        self, Tc: float, densityFrac: float, quiet: bool = True
-    ) -> float:
+    def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
         """Return a temperature difference for a given density perturbation."""
         linearExpansion = self.linearExpansion(Tc=Tc)
         linearChange = densityFrac ** (-1.0 / 3.0) - 1.0
@@ -729,9 +692,7 @@ class Material:
 
     def heatCapacity(self, Tk=None, Tc=None):
         """Returns heat capacity in units of J/kg/C."""
-        raise NotImplementedError(
-            f"Material {type(self).__name__} does not implement heatCapacity"
-        )
+        raise NotImplementedError(f"Material {type(self).__name__} does not implement heatCapacity")
 
     def getTD(self):
         """Get the fraction of theoretical density for this material."""
@@ -777,9 +738,7 @@ class Fluid(Material):
         """
         return 0.0
 
-    def getTempChangeForDensityChange(
-        self, Tc: float, densityFrac: float, quiet: bool = True
-    ) -> float:
+    def getTempChangeForDensityChange(self, Tc: float, densityFrac: float, quiet: bool = True) -> float:
         """Return a temperature difference for a given density perturbation."""
         currentDensity = self.pseudoDensity(Tc=Tc)
         perturbedDensity = currentDensity * densityFrac
@@ -900,20 +859,15 @@ class FuelMaterial(Material):
         if class1_wt_frac:
             if not 0 <= class1_wt_frac <= 1:
                 raise ValueError(
-                    "class1_wt_frac must be between 0 and 1 (inclusive)."
-                    f" Right now it is {class1_wt_frac}."
+                    f"class1_wt_frac must be between 0 and 1 (inclusive). Right now it is {class1_wt_frac}."
                 )
 
             validIsotopics = customIsotopics.keys()
             errMsg = "{} '{}' not found in the defined custom isotopics."
             if class1_custom_isotopics not in validIsotopics:
-                raise KeyError(
-                    errMsg.format("class1_custom_isotopics", class1_custom_isotopics)
-                )
+                raise KeyError(errMsg.format("class1_custom_isotopics", class1_custom_isotopics))
             if class2_custom_isotopics not in validIsotopics:
-                raise KeyError(
-                    errMsg.format("class2_custom_isotopics", class2_custom_isotopics)
-                )
+                raise KeyError(errMsg.format("class2_custom_isotopics", class2_custom_isotopics))
             if class1_custom_isotopics == class2_custom_isotopics:
                 runLog.warning(
                     "The custom isotopics specified for the class1/class2 materials are both "

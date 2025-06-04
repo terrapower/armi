@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for run cli entry point."""
+
 import logging
 import os
 import sys
@@ -269,9 +270,7 @@ class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
         with TemporaryDirectoryChanger() as newDir:
             # build test DB
-            o, r = loadTestReactor(
-                inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-            )
+            o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
             dbi = DatabaseInterface(r, o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
             dbi.initDB(fName=dbPath)
@@ -349,9 +348,7 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
     def test_modifyCaseSettingsCommandBasics(self):
         mcs = ModifyCaseSettingsCommand()
         mcs.addOptions()
-        mcs.parse_args(
-            ["--rootDir", "/path/to/", "--settingsWriteStyle", "medium", "fake.yaml"]
-        )
+        mcs.parse_args(["--rootDir", "/path/to/", "--settingsWriteStyle", "medium", "fake.yaml"])
 
         self.assertEqual(mcs.name, "modify")
         self.assertEqual(mcs.args.rootDir, "/path/to/")
@@ -396,9 +393,7 @@ class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
     def test_compareIsotxsLibsBasics(self):
         com = CompareIsotxsLibraries()
         com.addOptions()
-        com.parse_args(
-            ["--fluxFile", "/path/to/fluxfile.txt", "reference", "comparisonFiles"]
-        )
+        com.parse_args(["--fluxFile", "/path/to/fluxfile.txt", "reference", "comparisonFiles"])
 
         self.assertEqual(com.name, "diff-isotxs")
         self.assertIsNone(com.settingsArgument)

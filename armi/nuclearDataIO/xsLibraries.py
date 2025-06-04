@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Cross section library objects. 
+Cross section library objects.
 
 Cross section libraries, currently, contain neutron and/or gamma
 cross sections, but are not necessarily intended to be only neutron and gamma data.
 """
+
 import glob
 import os
 import re
@@ -47,9 +48,7 @@ def compare(lib1, lib2):
 def _checkLabels(llib1, llib2):
     mismatch = set(llib1.nuclideLabels) - set(llib2.nuclideLabels)
     if any(mismatch):
-        runLog.important(
-            "{} has nuclides that are not in {}: {}".format(llib1, llib2, mismatch)
-        )
+        runLog.important("{} has nuclides that are not in {}: {}".format(llib1, llib2, mismatch))
         return False
     return True
 
@@ -60,9 +59,7 @@ def compareXSLibraryAttribute(lib1, lib2, attributeName, tolerance=0.0):
     val2 = getattr(lib2, "_" + attributeName, None)
     if not properties.areEqual(val1, val2, tolerance):
         runLog.important(
-            "{} and {} have different `{}` attributes:\n{}\n{}".format(
-                lib1, lib2, attributeName, val1, val2
-            )
+            "{} and {} have different `{}` attributes:\n{}\n{}".format(lib1, lib2, attributeName, val1, val2)
         )
         return False
     return True
@@ -71,9 +68,7 @@ def compareXSLibraryAttribute(lib1, lib2, attributeName, tolerance=0.0):
 def compareLibraryNeutronEnergies(lib1, lib2, tolerance=0.0):
     """Compare the neutron velocities and energy upper bounds for two libraries."""
     equals = True
-    equals &= compareXSLibraryAttribute(
-        lib1, lib2, "neutronEnergyUpperBounds", tolerance
-    )
+    equals &= compareXSLibraryAttribute(lib1, lib2, "neutronEnergyUpperBounds", tolerance)
     equals &= compareXSLibraryAttribute(lib1, lib2, "neutronVelocities", tolerance)
     return equals
 
@@ -122,18 +117,12 @@ def getISOTXSLibrariesToMerge(xsLibrarySuffix, xsLibFileNames):
         and "BCD" not in iso
     ]  # Skip BCD/ascii files
     if xsLibrarySuffix != "":
-        isosWithSuffix = [
-            iso
-            for iso in isosToMerge
-            if re.match(f".*ISO[A-Za-z]{{2}}F?{xsLibrarySuffix}$", iso)
-        ]
+        isosWithSuffix = [iso for iso in isosToMerge if re.match(f".*ISO[A-Za-z]{{2}}F?{xsLibrarySuffix}$", iso)]
         isosToMerge = [
             iso
             for iso in isosToMerge
             if "-" not in os.path.basename(iso)
-            and not any(
-                iso == os.path.basename(iws).split("-")[0] for iws in isosWithSuffix
-            )
+            and not any(iso == os.path.basename(iws).split("-")[0] for iws in isosWithSuffix)
         ]
         isosToMerge += isosWithSuffix
     else:
@@ -180,9 +169,7 @@ def mergeXSLibrariesInWorkingDirectory(
 
     baseDir = alternateDirectory or os.getcwd()
     globPath = os.path.join(baseDir, _ISOTXS_EXT + "*")
-    xsLibFiles = getISOTXSLibrariesToMerge(
-        xsLibrarySuffix, [iso for iso in glob.glob(globPath)]
-    )
+    xsLibFiles = getISOTXSLibrariesToMerge(xsLibrarySuffix, [iso for iso in glob.glob(globPath)])
     librariesToMerge = []
     neutronVelocities = {}  # Dictionary of neutron velocities from each ISOTXS file
     referenceDummyNuclides = None
@@ -197,26 +184,16 @@ def mergeXSLibrariesInWorkingDirectory(
             continue
 
         xsFileTypes = "ISOTXS" if not mergeGammaLibs else "ISOTXS, GAMISO, and PMATRX"
-        runLog.info(
-            "Retrieving {} data for XS ID {}{}".format(
-                xsFileTypes, xsID, xsLibrarySuffix
-            )
-        )
+        runLog.info("Retrieving {} data for XS ID {}{}".format(xsFileTypes, xsID, xsLibrarySuffix))
         if xsLibFilePath in lib.isotxsMetadata.fileNames:
-            runLog.extra(
-                "Skipping merge of {} because data already exists in the library".format(
-                    xsLibFilePath
-                )
-            )
+            runLog.extra("Skipping merge of {} because data already exists in the library".format(xsLibFilePath))
             continue
 
         neutronLibrary = isotxs.readBinary(xsLibFilePath)
         neutronVelocities[xsID] = neutronLibrary.neutronVelocity
 
         dummyNuclidesInNeutron = [
-            nuc
-            for nuc in neutronLibrary.nuclides
-            if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
+            nuc for nuc in neutronLibrary.nuclides if isinstance(nuc._base, nuclideBases.DummyNuclideBase)
         ]
         if not dummyNuclidesInNeutron:
             runLog.info(f"Adding dummy nuclides to library {xsID}")
@@ -225,9 +202,7 @@ def mergeXSLibrariesInWorkingDirectory(
             )  # Add DUMMY nuclide data not produced by MC2-3
             isotxsLibraryPath = os.path.join(
                 baseDir,
-                nuclearDataIO.getExpectedISOTXSFileName(
-                    suffix=xsLibrarySuffix, xsID=xsID
-                ),
+                nuclearDataIO.getExpectedISOTXSFileName(suffix=xsLibrarySuffix, xsID=xsID),
             )
             isotxsDummyPath = isotxsLibraryPath
             isotxs.writeBinary(neutronLibrary, isotxsDummyPath)
@@ -242,35 +217,25 @@ def mergeXSLibrariesInWorkingDirectory(
         if mergeGammaLibs:
             gamisoLibraryPath = os.path.join(
                 baseDir,
-                nuclearDataIO.getExpectedGAMISOFileName(
-                    suffix=xsLibrarySuffix, xsID=xsID
-                ),
+                nuclearDataIO.getExpectedGAMISOFileName(suffix=xsLibrarySuffix, xsID=xsID),
             )
             pmatrxLibraryPath = os.path.join(
                 baseDir,
-                nuclearDataIO.getExpectedPMATRXFileName(
-                    suffix=xsLibrarySuffix, xsID=xsID
-                ),
+                nuclearDataIO.getExpectedPMATRXFileName(suffix=xsLibrarySuffix, xsID=xsID),
             )
 
             # Check if the gamiso and pmatrx data paths exist with the xs library suffix so that
             # these are merged in. If they don't both exist then that is OK and we can just
             # revert back to expecting the files just based on the XS ID.
-            if not (
-                os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)
-            ):
+            if not (os.path.exists(gamisoLibraryPath) and os.path.exists(pmatrxLibraryPath)):
                 runLog.warning(
                     "One of GAMISO or PMATRX data exist for "
                     f"XS ID {xsID} with suffix {xsLibrarySuffix}. "
                     "Attempting to find GAMISO/PMATRX data with "
                     f"only XS ID {xsID} instead."
                 )
-                gamisoLibraryPath = os.path.join(
-                    baseDir, nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID)
-                )
-                pmatrxLibraryPath = os.path.join(
-                    baseDir, nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID)
-                )
+                gamisoLibraryPath = os.path.join(baseDir, nuclearDataIO.getExpectedGAMISOFileName(xsID=xsID))
+                pmatrxLibraryPath = os.path.join(baseDir, nuclearDataIO.getExpectedPMATRXFileName(xsID=xsID))
 
             # GAMISO data
             gammaLibrary = gamiso.readBinary(gamisoLibraryPath)
@@ -549,15 +514,9 @@ class IsotxsLibrary(_XSLibrary):
             properties.lockImmutableProperties(other)
 
     def _mergeMetadata(self, other):
-        isotxsMeta = self.isotxsMetadata.merge(
-            other.isotxsMetadata, self, other, "ISOTXS", OSError
-        )
-        pmatrxMeta = self.pmatrxMetadata.merge(
-            other.pmatrxMetadata, self, other, "PMATRX", OSError
-        )
-        gamisoMeta = self.gamisoMetadata.merge(
-            other.gamisoMetadata, self, other, "GAMISO", OSError
-        )
+        isotxsMeta = self.isotxsMetadata.merge(other.isotxsMetadata, self, other, "ISOTXS", OSError)
+        pmatrxMeta = self.pmatrxMetadata.merge(other.pmatrxMetadata, self, other, "PMATRX", OSError)
+        gamisoMeta = self.gamisoMetadata.merge(other.gamisoMetadata, self, other, "GAMISO", OSError)
         return isotxsMeta, pmatrxMeta, gamisoMeta
 
     def _mergeNuclides(self, other):
@@ -582,9 +541,7 @@ class IsotxsLibrary(_XSLibrary):
         _buildScatterWeights
         """
         if not self._scatterWeights.get(scatterMatrixKey):
-            self._scatterWeights[scatterMatrixKey] = self._buildScatterWeights(
-                scatterMatrixKey
-            )
+            self._scatterWeights[scatterMatrixKey] = self._buildScatterWeights(scatterMatrixKey)
 
         return self._scatterWeights[scatterMatrixKey]
 
@@ -604,9 +561,7 @@ class IsotxsLibrary(_XSLibrary):
         scatterWeights : dict
             (xsID, fromGroup) : weight column (sparse Gx1)
         """
-        runLog.info(
-            "Building {0} weights on cross section library".format(scatterMatrixKey)
-        )
+        runLog.info("Building {0} weights on cross section library".format(scatterMatrixKey))
         scatterWeights = {}
         for nucName, nuc in self.items():
             nucScatterWeights = nuc.buildNormalizedScatterColumns(scatterMatrixKey)
@@ -676,9 +631,7 @@ class CompxsLibrary(_XSLibrary):
     def merge(self, other):
         """Merge two ``COMPXS`` libraries."""
         self._mergeProperties(other)
-        self.compxsMetadata = self.compxsMetadata.merge(
-            other.compxsMetadata, self, other, "COMPXS", OSError
-        )
+        self.compxsMetadata = self.compxsMetadata.merge(other.compxsMetadata, self, other, "COMPXS", OSError)
         self._appendRegions(other)
 
     def _mergeProperties(self, other):

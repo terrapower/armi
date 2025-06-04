@@ -103,8 +103,9 @@ def getGroupStructure(name):
         return copy.copy(GROUP_STRUCTURE[name])
     except KeyError as ke:
         runLog.error(
-            'Could not find groupStructure with the name "{}".\n'
-            "Choose one of: {}".format(name, ", ".join(GROUP_STRUCTURE.keys()))
+            'Could not find groupStructure with the name "{}".\nChoose one of: {}'.format(
+                name, ", ".join(GROUP_STRUCTURE.keys())
+            )
         )
         raise ke
 
@@ -253,9 +254,7 @@ GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
 
 
 # fmt: on
-def _create_multigroup_structures_on_finegroup_energies(
-    multigroup_energy_bounds, finegroup_energy_bounds
-):
+def _create_multigroup_structures_on_finegroup_energies(multigroup_energy_bounds, finegroup_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     modifiedEnergyBounds = set()
     modifiedEnergyBounds.add(max(finegroup_energy_bounds))
@@ -268,9 +267,7 @@ def _create_multigroup_structures_on_finegroup_energies(
 def _create_anl_energies_with_group_energies(group_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     ufgEnergies = _create_anl_energies_with_group_lethargies(itertools.repeat(1, 2082))
-    return _create_multigroup_structures_on_finegroup_energies(
-        group_energy_bounds, ufgEnergies
-    )
+    return _create_multigroup_structures_on_finegroup_energies(group_energy_bounds, ufgEnergies)
 
 
 """

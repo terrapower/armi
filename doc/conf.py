@@ -63,18 +63,14 @@ disableFutureConfigures()
 APIDOC_REL = ".apidocs"
 SOURCE_DIR = os.path.join("..", "armi")
 STATIC_DIR = ".static"
-_TUTORIAL_FILES = [
-    fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName
-]
+_TUTORIAL_FILES = [fName for fName in bookkeepingTests.TUTORIAL_FILES if "ipynb" not in fName]
 
 
 class PatchedPythonDomain(PythonDomain):
     def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
         if "refspecific" in node:
             del node["refspecific"]
-        return super(PatchedPythonDomain, self).resolve_xref(
-            env, fromdocname, builder, typ, target, node, contnode
-        )
+        return super(PatchedPythonDomain, self).resolve_xref(env, fromdocname, builder, typ, target, node, contnode)
 
 
 class ExecDirective(Directive):
@@ -118,9 +114,7 @@ class ExecDirective(Directive):
             return [para]
         except Exception as e:
             docname = self.state.document.settings.env.docname
-            raise self.error(
-                f"Unable to execute embedded doc code at {docname}:{self.lineno}\n{str(e)}"
-            )
+            raise self.error(f"Unable to execute embedded doc code at {docname}:{self.lineno}\n{str(e)}")
 
 
 class PyReverse(Directive):
@@ -486,8 +480,7 @@ suppress_warnings = ["autoapi.python_import_resolution"]
 warnings.filterwarnings(
     "ignore",
     category=UserWarning,
-    message="Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the "
-    "figure.",
+    message="Matplotlib is currently using agg, which is a non-GUI backend, so cannot show the figure.",
 )
 
 intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}

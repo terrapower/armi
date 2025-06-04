@@ -135,8 +135,7 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
     elif isinstance(beta, list) and isinstance(decayConstants, list):
         if len(beta) != len(decayConstants):
             raise ValueError(
-                f"The values for `beta` ({beta}) and `decayConstants` "
-                f"({decayConstants}) are not consistent lengths."
+                f"The values for `beta` ({beta}) and `decayConstants` ({decayConstants}) are not consistent lengths."
             )
 
         core.p.beta = sum(beta)
@@ -145,19 +144,14 @@ def applyEffectiveDelayedNeutronFractionToCore(core, cs):
 
         reportTableData.append(("Total Delayed Neutron Fraction", core.p.beta))
         for i, betaComponent in enumerate(core.p.betaComponents):
-            reportTableData.append(
-                (f"Group {i} Delayed Neutron Fractions", betaComponent)
-            )
+            reportTableData.append((f"Group {i} Delayed Neutron Fractions", betaComponent))
         for i, decayConstant in enumerate(core.p.betaDecayConstants):
-            reportTableData.append(
-                ("Group {i} Precursor Decay Constants", decayConstant)
-            )
+            reportTableData.append(("Group {i} Precursor Decay Constants", decayConstant))
 
     # Report to the user the values were not applied.
     if not reportTableData and (beta is not None or decayConstants is not None):
         runLog.warning(
-            f"Delayed neutron fraction(s) - {beta} and decay constants"
-            f" - {decayConstants} have not been applied."
+            f"Delayed neutron fraction(s) - {beta} and decay constants - {decayConstants} have not been applied."
         )
     else:
         runLog.extra(

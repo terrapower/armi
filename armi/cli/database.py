@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Entry point into ARMI for manipulating output databases."""
+
 import os
 import pathlib
 
@@ -38,8 +39,7 @@ class ExtractInputs(EntryPoint):
         self.parser.add_argument(
             "--output-base",
             "-o",
-            help="Base name for extracted inputs. If not provided, base name is implied from the "
-            "database name.",
+            help="Base name for extracted inputs. If not provided, base name is implied from the database name.",
             type=str,
             default=None,
         )
@@ -94,20 +94,14 @@ class InjectInputs(EntryPoint):
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to affected database", type=str)
-        self.parser.add_argument(
-            "--blueprints", help="Path to blueprints file", type=str, default=None
-        )
-        self.parser.add_argument(
-            "--settings", help="Path to settings file", type=str, default=None
-        )
+        self.parser.add_argument("--blueprints", help="Path to blueprints file", type=str, default=None)
+        self.parser.add_argument("--settings", help="Path to settings file", type=str, default=None)
 
     def invoke(self):
         from armi.bookkeeping.db.database import Database
 
         if all(li is None for li in [self.args.blueprints, self.args.settings]):
-            runLog.error(
-                "No settings, blueprints, or geometry files specified; nothing to do."
-            )
+            runLog.error("No settings, blueprints, or geometry files specified; nothing to do.")
             return
 
         bp = None

@@ -69,9 +69,7 @@ class SamplingInputModifier(InputModifier):
     have the bounds specified.
     """
 
-    def __init__(
-        self, name: str, paramType: str, bounds: list, independentVariable=None
-    ):
+    def __init__(self, name: str, paramType: str, bounds: list, independentVariable=None):
         """Constructor for the Sampling input modifier.
 
         Parameters

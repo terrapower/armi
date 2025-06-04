@@ -129,10 +129,6 @@ class Zr(Material):
 
         # NOTE: checkPropertyTempRange takes care of lower/upper limits
         if Tk < 1137:
-            return (
-                -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk**2) - (1.768e-10 * Tk**3)
-            )
+            return -0.111 + (2.325e-4 * Tk) + (5.595e-7 * Tk**2) - (1.768e-10 * Tk**3)
         else:
-            return (
-                -0.759 + (1.474e-3 * Tk) - (5.140e-7 * Tk**2) + (1.559e-10 * Tk**3)
-            )
+            return -0.759 + (1.474e-3 * Tk) - (5.140e-7 * Tk**2) + (1.559e-10 * Tk**3)

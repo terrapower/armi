@@ -43,6 +43,7 @@ Or change the log level the same way:
 
     runLog.setVerbosity('debug')
 """
+
 import collections
 import logging
 import operator
@@ -262,9 +263,7 @@ class _RunLog:
     def startLog(self, name):
         """Initialize the streams when parallel processing."""
         # open the main logger
-        self.logger = logging.getLogger(
-            STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank)
-        )
+        self.logger = logging.getLogger(STDOUT_LOGGER_NAME + SEP + name + SEP + str(self._mpiRank))
 
         # if there was a pre-existing _verbosity, use it now
         if self._verbosity != logging.INFO:
@@ -272,9 +271,7 @@ class _RunLog:
 
         if self._mpiRank != 0:
             # init stderr intercepting logging
-            filePath = os.path.join(
-                LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank)
-            )
+            filePath = os.path.join(LOG_DIR, _RunLog.STDERR_NAME.format(name, self._mpiRank))
             self.stderrLogger = logging.getLogger(STDERR_LOGGER_NAME)
             h = logging.FileHandler(filePath, delay=True)
             fmt = "%(message)s"
@@ -351,9 +348,7 @@ def concatenateLogs(logDir=None):
 
     combinedLogName = os.path.join(logDir, f"{caseTitle}-mpi.log")
     with open(combinedLogName, "w") as workerLog:
-        workerLog.write(
-            "\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10)
-        )
+        workerLog.write("\n{0} CONCATENATED WORKER LOG FILES {1}\n".format("-" * 10, "-" * 10))
 
         for stdoutName in stdoutFiles:
             # NOTE: If the log file name format changes, this will need to change.
@@ -362,9 +357,7 @@ def concatenateLogs(logDir=None):
                 data = logFile.read()
                 # only write if there's something to write
                 if data:
-                    rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format(
-                        "-" * 10, rank, "-" * 60
-                    )
+                    rankId = "\n{0} RANK {1:03d} STDOUT {2}\n".format("-" * 10, rank, "-" * 60)
                     if rank == 0:
                         print(rankId, file=sys.stdout)
                         print(data, file=sys.stdout)
@@ -383,9 +376,7 @@ def concatenateLogs(logDir=None):
                     data = logFile.read()
                     if data:
                         # only write if there's something to write.
-                        rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format(
-                            "-" * 10, rank, "-" * 60
-                        )
+                        rankId = "\n{0} RANK {1:03d} STDERR {2}\n".format("-" * 10, rank, "-" * 60)
                         print(rankId, file=sys.stderr)
                         print(data, file=sys.stderr)
                 try:
@@ -549,9 +540,7 @@ class RunLogger(logging.Logger):
             handler.setLevel(logging.INFO)
             self.setLevel(logging.INFO)
         else:
-            filePath = os.path.join(
-                LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank)
-            )
+            filePath = os.path.join(LOG_DIR, _RunLog.STDOUT_NAME.format(args[0], mpiRank))
             handler = logging.FileHandler(filePath, delay=True)
             handler.setLevel(logging.WARNING)
             self.setLevel(logging.WARNING)
@@ -572,9 +561,7 @@ class RunLogger(logging.Logger):
         msgLevel = msgType if isinstance(msgType, int) else LOG.logLevels[msgType][0]
 
         # Do the actual logging
-        logging.Logger.log(
-            self, msgLevel, str(msg), extra={"single": single, "label": label}
-        )
+        logging.Logger.log(self, msgLevel, str(msg), extra={"single": single, "label": label})
 
     def _log(self, *args, **kwargs):
         """
@@ -645,9 +632,7 @@ class RunLogger(logging.Logger):
 
         # sort by labcollections.defaultdict(lambda: 1)
         total = 0
-        for label, count in sorted(
-            dupsFilter.warningCounts.items(), key=operator.itemgetter(1), reverse=True
-        ):
+        for label, count in sorted(dupsFilter.warningCounts.items(), key=operator.itemgetter(1), reverse=True):
             self.info(f"  {str(count):^10s}   {str(label):^25s}")
             total += count
         self.info("------------------------------------")

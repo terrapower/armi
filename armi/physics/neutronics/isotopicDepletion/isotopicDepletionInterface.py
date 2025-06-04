@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """An abstract class for interfaces between ARMI and programs that simulate transmutation and decay."""
+
 import collections
 
 from armi import interfaces
@@ -54,9 +55,7 @@ def isDepletable(obj: composites.ArmiObject):
     --------
     armi.reactor.blueprints.componentBlueprint.insertDepletableNuclideKeys
     """
-    return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(
-        Flags.DEPLETABLE
-    )
+    return obj.hasFlags(Flags.DEPLETABLE) or obj.containsAtLeastOneChildWithFlags(Flags.DEPLETABLE)
 
 
 class AbstractIsotopicDepleter:
@@ -173,9 +172,7 @@ def makeXsecTable(
             continue
         nucName = nuc.name
         nb = nuclideBases.byName[nucName]
-        if isinstance(
-            nb, (nuclideBases.LumpNuclideBase, nuclideBases.DummyNuclideBase)
-        ):
+        if isinstance(nb, (nuclideBases.LumpNuclideBase, nuclideBases.DummyNuclideBase)):
             continue
         microMultiGroupXS = isotxs[nucLabel].micros
         if not isinstance(nb, nuclideBases.NaturalNuclideBase):

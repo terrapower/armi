@@ -21,6 +21,7 @@ These algorithms are defined in assemblyRotationAlgorithms.py, but they are used
 
 .. warning:: Nothing should go in this file, but rotation algorithms.
 """
+
 import math
 from collections import defaultdict
 
@@ -77,9 +78,7 @@ def buReducingAssemblyRotation(fh):
 
     if fh.cs[CONF_ASSEM_ROTATION_STATIONARY]:
         for a in filter(
-            lambda asm: asm not in fh.moved
-            and assemblyHasFuelPinPowers(asm)
-            and assemblyHasFuelPinBurnup(asm),
+            lambda asm: asm not in fh.moved and assemblyHasFuelPinPowers(asm) and assemblyHasFuelPinBurnup(asm),
             fh.r.core,
         ):
             rot = getOptimalAssemblyOrientation(a, a)
@@ -129,8 +128,6 @@ def simpleAssemblyRotation(fh):
             a.rotate(rot)
             numRotated += 1
             ring, pos = a.spatialLocator.getRingPos()
-            runLog.extra(
-                "Rotating Assembly ({0},{1}) to Orientation {2}".format(ring, pos, 1)
-            )
+            runLog.extra("Rotating Assembly ({0},{1}) to Orientation {2}".format(ring, pos, 1))
 
     runLog.extra("Rotated {0} assemblies".format(numRotated))

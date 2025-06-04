@@ -32,9 +32,7 @@ class ThetaRZGrid(StructuredGrid):
     """
 
     def getSymmetricEquivalents(self, indices: IJType) -> NoReturn:
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not support symmetric equivalents"
-        )
+        raise NotImplementedError(f"{self.__class__.__name__} does not support symmetric equivalents")
 
     def getRingPos(self, indices):
         return (indices[1] + 1, indices[0] + 1)
@@ -44,9 +42,7 @@ class ThetaRZGrid(StructuredGrid):
         return (pos - 1, ring - 1)
 
     def getCoordinates(self, indices, nativeCoords=False) -> np.ndarray:
-        meshCoords = theta, r, z = super().getCoordinates(
-            indices, nativeCoords=nativeCoords
-        )
+        meshCoords = theta, r, z = super().getCoordinates(indices, nativeCoords=nativeCoords)
         if not 0 <= theta <= TAU:
             raise ValueError("Invalid theta value: {}. Check mesh.".format(theta))
         if nativeCoords:

@@ -38,8 +38,7 @@ class Lithium(material.Fluid):
             )
             if LI6_wt_frac is not None:
                 runLog.warning(
-                    "Both 'LI_wt_frac' and 'LI6_wt_frac' are specified "
-                    f"for {self}. 'LI6_wt_frac' will be used.",
+                    f"Both 'LI_wt_frac' and 'LI6_wt_frac' are specified for {self}. 'LI6_wt_frac' will be used.",
                     single=True,
                     label="Lithium applyInputParams 2",
                 )
