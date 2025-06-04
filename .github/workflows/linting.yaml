@@ -21,4 +21,5 @@ jobs:
       - name: Run Linter
         run:  |
           pip install -e .[test]
+          ruff format --check .
           ruff check .
