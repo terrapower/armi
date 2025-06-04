@@ -107,8 +107,8 @@ class SystemBlueprint(yamlize.Object):
                 seen.add(key)
 
         raise ValueError(
-            "Could not determine an appropriate class for handling a "
-            "system of type `{}`. Supported types are {}.".format(typ, sorted(seen))
+            f"Could not determine an appropriate class for handling a system of type `{typ}`. "
+            f"Supported types are {seen}."
         )
 
     def construct(self, cs, bp, reactor, loadComps=True):
@@ -188,7 +188,7 @@ class SystemBlueprint(yamlize.Object):
         from armi.reactor.reactors import Core  # avoid circular import
 
         if loadComps and gridDesign is not None:
-            self._loadComposites(cs, system, gridDesign.gridContents, bp)
+            self._loadComposites(cs, bp, system, gridDesign.gridContents, gridDesign.orientationBOL)
 
             if isinstance(system, Core):
                 summarizeMaterialData(system)
@@ -197,18 +197,34 @@ class SystemBlueprint(yamlize.Object):
 
         return system
 
-    def _loadComposites(self, cs, container, gridContents, bp):
+    def _loadComposites(self, cs, bp, container, gridContents, orientationBOL):
+        from armi.reactor.cores import Core
+
         runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
-            newAssembly = bp.constructAssem(cs, specifier=aTypeID)
-
+            # handle the hex-grid special case, where the user enters (ring, pos)
             i, j = locationInfo
-            loc = container.spatialGrid[i, j, 0]
+            if isinstance(container, Core) and container.geomType == geometry.GeomType.HEX:
+                loc = container.spatialGrid.indicesToRingPos(i, j)
+            else:
+                loc = locationInfo
+
+            # correctly rotate the Composite
+            if orientationBOL is None or loc not in orientationBOL:
+                orientation = 0.0
+            else:
+                orientation = orientationBOL[loc]
+
+            # create a new Composite to add to the grid
+            newAssembly = bp.constructAssem(cs, specifier=aTypeID, orientation=orientation)
+
+            # add the Composite to the grid
+            posi = container.spatialGrid[i, j, 0]
             try:
-                container.add(newAssembly, loc)
+                container.add(newAssembly, posi)
             except LookupError:
-                badLocations.add(loc)
+                badLocations.add(posi)
 
         if badLocations:
             raise ValueError(f"Attempted to add objects to non-existent locations on the grid: {badLocations}.")
@@ -216,9 +232,7 @@ class SystemBlueprint(yamlize.Object):
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
         # all cases should have no edge assemblies. They are added ephemerally when needed
-        from armi.reactor.converters import (
-            geometryConverters,
-        )
+        from armi.reactor.converters import geometryConverters
 
         runLog.header("=========== Applying Geometry Modifications ===========")
         converter = geometryConverters.EdgeAssemblyChanger()
