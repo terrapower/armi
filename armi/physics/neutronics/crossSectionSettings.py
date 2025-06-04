@@ -280,22 +280,18 @@ class XSSettings(dict):
         """
         Set defaults for current and future xsIDs based user settings.
 
-        This must be delayed past read-time since the settings that effect this
-        may not be loaded yet and could still be at their own defaults when
-        this input is being processed. Thus, defaults are set at a later time.
+        This must be delayed after read-time since the settings affecting this may not be loaded yet and could still be
+        at their own defaults when this input is being processed. Thus, defaults are set at a later time.
 
         Parameters
         ----------
         blockRepresentation : str
             Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
-
         validBlockTypes : list of str or bool
-           This configures which blocks (by their type) that the cross section
-           group manager will merge together to create a representative block. If
-           set to ``None`` or ``True`` then all block types in the XS ID will be
-           considered. If this is set to ``False`` then a default of ["fuel"] will
-           be used. If this is set to a list of strings then the specific list will
-           be used. A typical input may be ["fuel"] to just consider the fuel blocks.
+           This configures which blocks (by their type) the cross section group manager will merge together to create a
+           representative block. If set to ``None`` or ``True`` then all block types in the XS ID will be considered. If
+           set to ``False`` then a default of ["fuel"] will be used. If set to a list of strings then the specific list
+           will be used. A typical input may be ["fuel"] to just consider the fuel blocks.
 
         See Also
         --------
@@ -304,10 +300,7 @@ class XSSettings(dict):
         self._blockRepresentation = blockRepresentation
         self._validBlockTypes = validBlockTypes
         for _xsId, xsOpt in self.items():
-            xsOpt.setDefaults(
-                blockRepresentation,
-                validBlockTypes,
-            )
+            xsOpt.setDefaults(blockRepresentation, validBlockTypes)
             xsOpt.validate()
 
     def _getDefault(self, xsID):
@@ -638,18 +631,16 @@ class XSModelingOptions:
         blockRepresentation : str
             Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
         validBlockTypes : list of str or bool
-           This configures which blocks (by their type) that the cross section
-           group manager will merge together to create a representative block. If
-           set to ``None`` or ``True`` then all block types in the XS ID will be
-           considered. If this is set to ``False`` then a default of ["fuel"] will
-           be used. If this is set to a list of strings then the specific list will
-           be used. A typical input may be ["fuel"] to just consider the fuel blocks.
+           This configures which blocks (by their type) the cross section group manager will merge together to create a
+           representative block. If set to ``None`` or ``True`` then all block types in the XS ID will be considered. If
+           set to ``False`` then a default of ["fuel"] will be used. If set to a list of strings then the specific list
+           will be used. A typical input may be ["fuel"] to just consider the fuel blocks.
 
         Notes
         -----
-        These defaults are application-specific and design specific. They are included to provide an
-        example and are tuned to fit the internal needs of TerraPower. Consider a separate
-        implementation/subclass if you would like different behavior.
+        These defaults are application-specific and design specific. They are included to provide an example and are
+        tuned to fit the internal needs of TerraPower. Consider a separate implementation/subclass if you would like
+        different behavior.
         """
         if type(validBlockTypes) is bool:
             validBlockTypes = None if validBlockTypes else ["fuel"]
