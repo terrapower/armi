@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for operator snapshots."""
+
 import unittest
 from pathlib import Path
 from unittest.mock import Mock
@@ -61,9 +62,7 @@ class TestOperatorSnapshots(unittest.TestCase):
     def test_mainOperate(self):
         # Mock some tooling that we aren't testing
         self.o.interactBOL = lambda: None
-        self.o.getInterface = lambda s: (
-            self.dbi if s == "database" else super().getInterface(s)
-        )
+        self.o.getInterface = lambda s: (self.dbi if s == "database" else super().getInterface(s))
 
         self.assertEqual(self.r.core.p.power, 0.0)
         self.o._mainOperate()
@@ -115,9 +114,7 @@ class TestOperatorSnapshotFullCoreExpansion(unittest.TestCase):
     def setUpClass(cls):
         o, cls.symmetricReactor = loadTestReactor(TEST_ROOT)
         reduceTestReactorRings(cls.symmetricReactor, o.cs, maxNumRings=2)
-        dbi: DatabaseInterface = next(
-            filter(lambda i: isinstance(i, DatabaseInterface), o.interfaces)
-        )
+        dbi: DatabaseInterface = next(filter(lambda i: isinstance(i, DatabaseInterface), o.interfaces))
         dbi.initDB(cls.DB_PATH)
         dbi.writeDBEveryNode()
         dbi.closeDB()

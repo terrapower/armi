@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This module provides tests for the generic Executers."""
+
 import os
 import subprocess
 import unittest
@@ -73,28 +74,20 @@ class TestExecuters(unittest.TestCase):
         self.executer.options.outputFile = "test.out"
         self.executer.options.copyOutput = False
         inputs, outputs = self.executer._collectInputsAndOutputs()
-        self.assertEqual(
-            "test.inp", inputs[0], "Input file was not successfully identified."
-        )
+        self.assertEqual("test.inp", inputs[0], "Input file was not successfully identified.")
         self.assertTrue(outputs == [], "Outputs were returned erroneously!")
 
         self.executer.options.copyOutput = True
         inputs, outputs = self.executer._collectInputsAndOutputs()
-        self.assertEqual(
-            "test.inp", inputs[0], "Input file was not successfully identified."
-        )
-        self.assertEqual(
-            "test.out", outputs[0], "Output file was not successfully identified."
-        )
+        self.assertEqual("test.inp", inputs[0], "Input file was not successfully identified.")
+        self.assertEqual("test.out", outputs[0], "Output file was not successfully identified.")
 
     def test_updateRunDir(self):
         """
         Verify that runDir is updated when TemporaryDirectoryChanger is used and
         not updated when ForcedCreationDirectoryChanger is used.
         """
-        self.assertEqual(
-            self.executer.dcType, directoryChangers.TemporaryDirectoryChanger
-        )
+        self.assertEqual(self.executer.dcType, directoryChangers.TemporaryDirectoryChanger)
         self.executer._updateRunDir("updatedRunDir")
         self.assertEqual(self.executer.options.runDir, "updatedRunDir")
 

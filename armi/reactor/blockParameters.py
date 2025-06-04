@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Parameter definitions for Blocks."""
+
 from armi import runLog
 from armi.physics.neutronics import crossSectionGroupManager
 from armi.reactor import parameters
@@ -26,7 +27,6 @@ def getBlockParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units=units.DEGREES,
@@ -60,10 +60,7 @@ def getBlockParameterDefinitions():
             default=None,
         )
 
-    with pDefs.createBuilder(
-        default=0.0, location=ParamLocation.AVERAGE, categories=["depletion"]
-    ) as pb:
-
+    with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE, categories=["depletion"]) as pb:
         pb.defParam(
             "newDPA",
             units=units.DPA,
@@ -96,10 +93,7 @@ def getBlockParameterDefinitions():
             categories=["cumulative"],
         )
 
-    with pDefs.createBuilder(
-        default=0.0, location=ParamLocation.VOLUME_INTEGRATED, categories=["depletion"]
-    ) as pb:
-
+    with pDefs.createBuilder(default=0.0, location=ParamLocation.VOLUME_INTEGRATED, categories=["depletion"]) as pb:
         pb.defParam(
             "molesHmNow",
             units=f"{units.MOLES}",
@@ -122,8 +116,7 @@ def getBlockParameterDefinitions():
             "initialB10ComponentVol",
             units=f"{units.CM}^3",
             description=(
-                "cc's of un-irradiated, cold B10 containing component "
-                "(includes full volume of any components with B10)"
+                "cc's of un-irradiated, cold B10 containing component (includes full volume of any components with B10)"
             ),
         )
 
@@ -141,9 +134,7 @@ def getBlockParameterDefinitions():
                 self.envGroupNum = intValue
                 return
             elif not isinstance(envGroupChar, str):
-                raise Exception(
-                    f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}"
-                )
+                raise Exception(f"Wrong type for envGroupChar {envGroupChar}: {type(envGroupChar)}")
 
             if envGroupChar.islower():
                 # if lower case find the distance from lowercase a and add the span of A to Z
@@ -167,11 +158,7 @@ def getBlockParameterDefinitions():
         def envGroupNum(self, envGroupNum):
             # support capital and lowercase alpha chars (52= 26*2)
             if envGroupNum > 52:
-                raise RuntimeError(
-                    "Invalid env group number ({}): too many groups. 52 is the max.".format(
-                        envGroupNum
-                    )
-                )
+                raise RuntimeError("Invalid env group number ({}): too many groups. 52 is the max.".format(envGroupNum))
             self._p_envGroupNum = envGroupNum
             lowerCaseOffset = ASCII_LETTER_Z - ASCII_LETTER_A
             if envGroupNum > lowerCaseOffset:
@@ -196,8 +183,7 @@ def getBlockParameterDefinitions():
             units=f"{units.PERCENT_FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
             description=(
-                "Current rate of burnup accumulation. Useful for estimating times when "
-                "burnup limits may be exceeded."
+                "Current rate of burnup accumulation. Useful for estimating times when burnup limits may be exceeded."
             ),
         )
 
@@ -295,8 +281,7 @@ def getBlockParameterDefinitions():
             "axialExpTargetComponent",
             units=units.UNITLESS,
             description=(
-                "The name of the target component used for axial expansion and "
-                "contraction of solid components."
+                "The name of the target component used for axial expansion and contraction of solid components."
             ),
             default="",
             saveToDB=True,
@@ -374,7 +359,6 @@ def getBlockParameterDefinitions():
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
-
         pb.defParam(
             "assemNum",
             units=units.UNITLESS,

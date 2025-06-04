@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the compareDB3 module."""
+
 import unittest
 import warnings
 
@@ -141,9 +142,7 @@ class TestCompareDB3(unittest.TestCase):
             days = 100
             cs = o.cs.modified(
                 newSettings={
-                    "cycles": [
-                        {"step days": [days, days], "power fractions": [1, 0.5]}
-                    ],
+                    "cycles": [{"step days": [days, days], "power fractions": [1, 0.5]}],
                     "reloadDBName": "something_fake.h5",
                 }
             )

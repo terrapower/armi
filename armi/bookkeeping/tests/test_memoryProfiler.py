@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for memoryProfiler."""
+
 import logging
 import unittest
 from unittest.mock import MagicMock, patch
@@ -34,9 +35,7 @@ class TestMemoryProfiler(unittest.TestCase):
             {"debugMem": True},
             inputFileName="smallestTestReactor/armiRunSmallest.yaml",
         )
-        self.memPro: memoryProfiler.MemoryProfiler = self.o.getInterface(
-            "memoryProfiler"
-        )
+        self.memPro: memoryProfiler.MemoryProfiler = self.o.getInterface("memoryProfiler")
 
     def tearDown(self):
         self.o.removeInterface(self.memPro)
@@ -117,9 +116,7 @@ class TestMemoryProfiler(unittest.TestCase):
                 self.memPro.checkForDuplicateObjectsOnArmiModel("cs", self.r.core)
 
             # validate the outputs are as we expect
-            self.assertIn(
-                "There are 2 unique objects stored as `.cs`", mock.getStdout()
-            )
+            self.assertIn("There are 2 unique objects stored as `.cs`", mock.getStdout())
             self.assertIn("Expected id", mock.getStdout())
             self.assertIn("Expected object", mock.getStdout())
             self.assertIn("These types of objects", mock.getStdout())
@@ -154,9 +151,7 @@ class TestMemoryProfiler(unittest.TestCase):
 
     @patch("armi.bookkeeping.memoryProfiler.PrintSystemMemoryUsageAction")
     @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
-    def test_getCurrentMemoryUsage(
-        self, mockSysAndProcMemUse, mockPrintSysMemUseAction
-    ):
+    def test_getCurrentMemoryUsage(self, mockSysAndProcMemUse, mockPrintSysMemUseAction):
         """Mock the memory usage across 3 different processes and that the total usage is as expected (6 MB)."""
         self._setMemUseMock(mockPrintSysMemUseAction)
         self.assertAlmostEqual(getCurrentMemoryUsage(), 6 * 1024)
@@ -165,9 +160,7 @@ class TestMemoryProfiler(unittest.TestCase):
     @patch("armi.bookkeeping.memoryProfiler.SystemAndProcessMemoryUsage")
     @patch("psutil.virtual_memory")
     @patch("armi.bookkeeping.memoryProfiler.cpu_count")
-    def test_printCurrentMemoryState(
-        self, mockCpuCount, mockVMem, mock1, mockPrintSysMemUseAction
-    ):
+    def test_printCurrentMemoryState(self, mockCpuCount, mockVMem, mock1, mockPrintSysMemUseAction):
         """Use an example node with 50 GB of total physical memory and 10 CPUs while using 6 GB."""
         mockCpuCount.return_value = 10
         vMem = MagicMock()

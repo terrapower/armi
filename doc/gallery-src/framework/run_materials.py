@@ -22,6 +22,7 @@ your own proprietary material properties via a plugin.
 
 More info about the materials here: :py:mod:`armi.materials`.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 

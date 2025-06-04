@@ -100,6 +100,7 @@ Examples
                          IC   IC   MC   PC   RR   SH
 
 """
+
 import copy
 import itertools
 from io import StringIO
@@ -187,18 +188,12 @@ class GridBlueprint(yamlize.Object):
     name = yamlize.Attribute(key="name", type=str)
     geom = yamlize.Attribute(key="geom", type=str, default=geometry.HEX)
     latticeMap = yamlize.Attribute(key="lattice map", type=str, default=None)
-    latticeDimensions = yamlize.Attribute(
-        key="lattice pitch", type=Triplet, default=None
-    )
+    latticeDimensions = yamlize.Attribute(key="lattice pitch", type=Triplet, default=None)
     gridBounds = yamlize.Attribute(key="grid bounds", type=dict, default=None)
     symmetry = yamlize.Attribute(
         key="symmetry",
         type=str,
-        default=str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        ),
+        default=str(geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)),
     )
     # gridContents is the final form of grid contents information; it is set regardless of how the
     # input is read. When writing, we attempt to preserve the input mode and write ascii map if that
@@ -212,9 +207,7 @@ class GridBlueprint(yamlize.Object):
         if value is None:
             return True
         if not all(isinstance(key, tuple) for key in value.keys()):
-            raise InputError(
-                "Grid contents Keys need to be like [i, j]. Check the blueprints."
-            )
+            raise InputError("Grid contents Keys need to be like [i, j]. Check the blueprints.")
 
         return True
 
@@ -223,9 +216,7 @@ class GridBlueprint(yamlize.Object):
         if value is None:
             return True
         if not all(isinstance(key, tuple) for key in value.keys()):
-            raise InputError(
-                "Orientation BOL Keys need to be like [i, j]. Check the blueprints."
-            )
+            raise InputError("Orientation BOL Keys need to be like [i, j]. Check the blueprints.")
 
         return True
 
@@ -234,11 +225,7 @@ class GridBlueprint(yamlize.Object):
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        symmetry=str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        ),
+        symmetry=str(geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)),
         gridContents=None,
         orientationBOL=None,
         gridBounds=None,
@@ -289,9 +276,7 @@ class GridBlueprint(yamlize.Object):
         If you do not enter ``latticeDimensions``, a unit grid will be produced which must be
         adjusted to the proper dimensions (often by inspection of children) at a later time.
         """
-        symmetry = (
-            geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
-        )
+        symmetry = geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
         geom = self.geom
         maxIndex = self._getMaxIndex()
         runLog.extra("Creating the spatial grid")
@@ -300,14 +285,11 @@ class GridBlueprint(yamlize.Object):
                 # This check is regrettably late. It would be nice if we could validate that bounds
                 # are provided if R-Theta mesh is being used.
                 raise InputError(
-                    f"Grid bounds must be provided for `{self.name}` to specify a grid with "
-                    "r-theta components."
+                    f"Grid bounds must be provided for `{self.name}` to specify a grid with r-theta components."
                 )
             for key in ("theta", "r"):
                 if key not in self.gridBounds:
-                    raise InputError(
-                        f"{key} grid bounds were not provided for `{self.name}`."
-                    )
+                    raise InputError(f"{key} grid bounds were not provided for `{self.name}`.")
 
             # convert to list, otherwise it is a CommentedSeq
             theta = np.array(self.gridBounds["theta"])
@@ -315,8 +297,7 @@ class GridBlueprint(yamlize.Object):
             for lst, name in ((theta, "theta"), (radii, "radii")):
                 if not isMonotonic(lst, "<"):
                     raise InputError(
-                        f"Grid bounds for {self.name}:{name} is not sorted or contains duplicates. "
-                        "Check blueprints."
+                        f"Grid bounds for {self.name}:{name} is not sorted or contains duplicates. Check blueprints."
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
@@ -330,11 +311,7 @@ class GridBlueprint(yamlize.Object):
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of the mesh into
             # the positive values.
-            xw, yw = (
-                (self.latticeDimensions.x, self.latticeDimensions.y)
-                if self.latticeDimensions
-                else (1.0, 1.0)
-            )
+            xw, yw = (self.latticeDimensions.x, self.latticeDimensions.y) if self.latticeDimensions else (1.0, 1.0)
 
             # Specifically in the case of grid blueprints, where we have grid contents available, we
             # can also infer "through center" based on the contents. Note that the "through center"
@@ -346,12 +323,9 @@ class GridBlueprint(yamlize.Object):
                     symmetry.isThroughCenterAssembly = True
 
             isOffset = symmetry is not None and not symmetry.isThroughCenterAssembly
+            spatialGrid = grids.CartesianGrid.fromRectangle(xw, yw, numRings=maxIndex + 1, isOffset=isOffset)
 
-            spatialGrid = grids.CartesianGrid.fromRectangle(
-                xw, yw, numRings=maxIndex + 1, isOffset=isOffset
-            )
-
-        runLog.debug(f"Built grid: {spatialGrid}")
+        runLog.debug("Built grid: {}".format(spatialGrid))
         # set geometric metadata on spatialGrid. This information is needed in various parts of the
         # code and is best encapsulated on the grid itself rather than on the container state.
         spatialGrid._geomType: str = str(self.geom)
@@ -381,11 +355,7 @@ class GridBlueprint(yamlize.Object):
         for some scenarios, such as when expanding fuel shuffling paths or the like. Future work may
         make this more sophisticated.
         """
-        # if we are already full core, don't throw an error, just return passively
-        if (
-            geometry.SymmetryType.fromAny(self.symmetry).domain
-            == geometry.DomainType.FULL_CORE
-        ):
+        if geometry.SymmetryType.fromAny(self.symmetry).domain == geometry.DomainType.FULL_CORE:
             return
 
         # fill the new grid contents
@@ -446,12 +416,9 @@ class GridBlueprint(yamlize.Object):
 
         iOffset = 0
         jOffset = 0
-        if (
-            geom == geometry.GeomType.CARTESIAN
-            and symmetry.domain == geometry.DomainType.FULL_CORE
-        ):
+        if geom == geometry.GeomType.CARTESIAN and symmetry.domain == geometry.DomainType.FULL_CORE:
             # asciimaps is not smart about where the center should be, so we need to offset
-            # appropriately to get (0,0) in the middle
+            # ppropriately to get (0,0) in the middle
             nx, ny = _getGridSize(asciimap.keys())
 
             # turns out this works great for even and odd cases. love it when integer math works in
@@ -610,12 +577,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
         if gridDesign.readFromLatticeMap or tryMap:
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
-            aMap = asciimaps.asciiMapFromGeomAndDomain(
-                gridDesign.geom, symmetry.domain
-            )()
-            aMap.asciiLabelByIndices = {
-                (key[0], key[1]): val for key, val in gridDesign.gridContents.items()
-            }
+            aMap = asciimaps.asciiMapFromGeomAndDomain(gridDesign.geom, symmetry.domain)()
+            aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
             try:
                 aMap.gridContentsToAscii()
             except Exception as e:
@@ -632,9 +595,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)
-                gridDesign.latticeMap = scalarstring.LiteralScalarString(
-                    mapString.getvalue()
-                )
+                gridDesign.latticeMap = scalarstring.LiteralScalarString(mapString.getvalue())
             else:
                 gridDesign.latticeMap = None
 

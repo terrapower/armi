@@ -16,6 +16,7 @@
 A collection of miscellaneous functions used by ReportInterface to generate
 various reports.
 """
+
 import collections
 import os
 import pathlib
@@ -101,10 +102,7 @@ def writeWelcomeHeaders(o, cs):
         pathToLoading = pathlib.Path(cs.inputDirectory) / cs[CONF_LOADING_FILE]
 
         if pathToLoading.is_file():
-            includedBlueprints = [
-                inclusion[0]
-                for inclusion in textProcessors.findYamlInclusions(pathToLoading)
-            ]
+            includedBlueprints = [inclusion[0] for inclusion in textProcessors.findYamlInclusions(pathToLoading)]
         else:
             includedBlueprints = []
 
@@ -127,11 +125,7 @@ def writeWelcomeHeaders(o, cs):
         if cs["reloadDBName"] and cs["runType"] == RunTypes.SNAPSHOTS:
             inputFiles.append(("Database", cs["reloadDBName"]))
         for label, fName in inputFiles:
-            shaHash = (
-                "MISSING"
-                if (not fName or not os.path.exists(fName))
-                else getFileSHA1Hash(fName, digits=10)
-            )
+            shaHash = "MISSING" if (not fName or not os.path.exists(fName)) else getFileSHA1Hash(fName, digits=10)
             inputInfo.append((label, fName, shaHash))
 
         # bonus: grab the files stored in the crossSectionControl section
@@ -159,7 +153,7 @@ def writeWelcomeHeaders(o, cs):
     def _writeInputFileInformation(cs):
         """Create a table that contains basic input file information."""
         inputFileData = []
-        for (label, fileName, shaHash) in _listInputFiles(cs):
+        for label, fileName, shaHash in _listInputFiles(cs):
             inputFileData.append((label, fileName, shaHash))
 
         runLog.header("=========== Input File Information ===========")
@@ -178,15 +172,9 @@ def writeWelcomeHeaders(o, cs):
         nodeMappingData = []
         sysInfo = ""
         for uniqueName in uniqueNames:
-            matchingProcs = [
-                str(rank)
-                for rank, procName in enumerate(processorNames)
-                if procName == uniqueName
-            ]
+            matchingProcs = [str(rank) for rank, procName in enumerate(processorNames) if procName == uniqueName]
             numProcessors = str(len(matchingProcs))
-            nodeMappingData.append(
-                (uniqueName, numProcessors, ", ".join(matchingProcs))
-            )
+            nodeMappingData.append((uniqueName, numProcessors, ", ".join(matchingProcs)))
 
             sysInfo += getSystemInfo()
 
@@ -273,8 +261,7 @@ def _getSystemInfoWindows():
                          [01]: Intel64 Family 6 Model 142 Stepping 12 GenuineIntel ~801 Mhz
     """
     cmd = (
-        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B '
-        '/C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
+        'systeminfo | findstr /B /C:"OS Name" /B /C:"OS Version" /B /C:"Processor" && systeminfo | findstr /E /C:"Mhz"'
     )
     return subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
 
@@ -339,9 +326,7 @@ def _getSystemInfoLinux():
     ]
     osInfo = ""
     for cmd in linuxOsCommands:
-        osInfo = subprocess.run(
-            cmd, capture_output=True, text=True, shell=True
-        ).stdout.strip()
+        osInfo = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout.strip()
         if osInfo:
             break
 
@@ -353,9 +338,7 @@ def _getSystemInfoLinux():
     linuxProcCommands = ["lscpu", "cat /proc/cpuinfo", "lshw -class CPU"]
     procInfo = ""
     for cmd in linuxProcCommands:
-        procInfo = subprocess.run(
-            cmd, capture_output=True, text=True, shell=True
-        ).stdout
+        procInfo = subprocess.run(cmd, capture_output=True, text=True, shell=True).stdout
         if procInfo:
             break
 
@@ -433,11 +416,7 @@ def getInterfaceStackSummary(o):
 
 def writeTightCouplingConvergenceSummary(convergenceSummary):
     runLog.info("Tight Coupling Convergence Summary")
-    runLog.info(
-        tabulate.tabulate(
-            convergenceSummary, headers="keys", showIndex=True, tableFmt="armi"
-        )
-    )
+    runLog.info(tabulate.tabulate(convergenceSummary, headers="keys", showIndex=True, tableFmt="armi"))
 
 
 def writeAssemblyMassSummary(r):
@@ -464,9 +443,7 @@ def writeAssemblyMassSummary(r):
             mass += b.getMass() / 1000.0
             hmMass += b.getHMMass() / 1000.0
             fissileMass += b.getFissileMass() / 1000.0
-            coolants = b.getComponents(Flags.COOLANT, exact=True) + b.getComponents(
-                Flags.INTERCOOLANT, exact=True
-            )
+            coolants = b.getComponents(Flags.COOLANT, exact=True) + b.getComponents(Flags.INTERCOOLANT, exact=True)
             coolantMass += sum(coolant.getMass() for coolant in coolants) / 1000.0
 
             blockType = b.getType()
@@ -607,8 +584,7 @@ def setNeutronBalancesReport(core):
     """
     if not core.getFirstBlock().p.rateCap:
         runLog.warning(
-            "No rate information (rateCap, rateAbs, etc.) available "
-            "on the blocks. Skipping balance summary."
+            "No rate information (rateCap, rateAbs, etc.) available on the blocks. Skipping balance summary."
         )
         return
 
@@ -677,9 +653,7 @@ def summarizePinDesign(core):
             designInfo["ductThick"].append(
                 (duct.getDimension("op") - duct.getDimension("ip")) * 5.0
             )  # convert to mm and divide by 2
-            designInfo["cladThick"].append(
-                (clad.getDimension("od") - clad.getDimension("id")) * 5.0
-            )
+            designInfo["cladThick"].append((clad.getDimension("od") - clad.getDimension("id")) * 5.0)
             pinOD = clad.getDimension("od") * 10.0
             wireOD = wire.getDimension("od") * 10.0
             pitch = pinOD + wireOD  # pitch has half a wire on each side.
@@ -720,11 +694,7 @@ def summarizePinDesign(core):
         runLog.info(report.ALL[report.PIN_ASSEM_DESIGN])
 
         first_fuel_block = core.getFirstBlock(Flags.FUEL)
-        runLog.info(
-            "Design & component information for first fuel block {}".format(
-                first_fuel_block
-            )
-        )
+        runLog.info("Design & component information for first fuel block {}".format(first_fuel_block))
 
         runLog.info(first_fuel_block.setAreaFractionsReport())
 
@@ -762,9 +732,7 @@ def summarizePowerPeaking(core):
     radPeakF = maxPowAssem.calcTotalParam("power", typeSpec=Flags.FUEL) / avgPow
 
     runLog.important(
-        "Power Peaking: Fz= {0:.3f} Fxy= {1:.3f} Fq= {2:.3f}".format(
-            axPeakF, radPeakF, axPeakF * radPeakF
-        )
+        "Power Peaking: Fz= {0:.3f} Fxy= {1:.3f} Fq= {2:.3f}".format(axPeakF, radPeakF, axPeakF * radPeakF)
     )
 
 
@@ -786,11 +754,7 @@ def summarizePower(core):
 
     runLog.important("Power summary")
     for atype, val in sums.items():
-        runLog.important(
-            " Power in {0:35s}: {1:0.3E} Watts, {2:0.5f}%".format(
-                atype, val, val / tot * 100
-            )
-        )
+        runLog.important(" Power in {0:35s}: {1:0.3E} Watts, {2:0.5f}%".format(atype, val, val / tot * 100))
 
 
 def makeCoreDesignReport(core, cs):
@@ -801,9 +765,7 @@ def makeCoreDesignReport(core, cs):
     core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    coreDesignTable = report.data.Table(
-        "SUMMARY OF CORE: {}".format(cs.caseTitle.upper())
-    )
+    coreDesignTable = report.data.Table("SUMMARY OF CORE: {}".format(cs.caseTitle.upper()))
     coreDesignTable.header = ["", "Input Parameter"]
 
     # Change the ordering of the core design table in the report relative to the other data
@@ -819,12 +781,8 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
     from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
-    report.setData(
-        "Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN
-    )
-    report.setData(
-        "Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN
-    )
+    report.setData("Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN)
+    report.setData("Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN)
     report.setData(
         "Loading File",
         "{}".format(cs[CONF_LOADING_FILE]),
@@ -889,9 +847,7 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
         coreDesignTable,
         report.DESIGN,
     )  # note this doesn't consider cycleLengths
-    report.setData(
-        "Burnup Cycles", "{}".format(cs["nCycles"]), coreDesignTable, report.DESIGN
-    )
+    report.setData("Burnup Cycles", "{}".format(cs["nCycles"]), coreDesignTable, report.DESIGN)
     report.setData(
         "Burnup Steps per Cycle",
         "{}".format(cs["burnSteps"]),
@@ -965,9 +921,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
-    report.setData(
-        "Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN
-    )
+    report.setData("Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN)
     report.setData(
         "Tight Physics Coupling Enabled",
         "{}".format(bool(cs["tightCoupling"])),
@@ -996,17 +950,13 @@ def makeBlockDesignReport(r):
     r : armi.reactor.reactors.Reactor
     """
     for bDesign in r.blueprints.blockDesigns:
-        loadingFileTable = report.data.Table(
-            "SUMMARY OF BLOCK: {}".format(bDesign.name)
-        )
+        loadingFileTable = report.data.Table("SUMMARY OF BLOCK: {}".format(bDesign.name))
         loadingFileTable.header = ["", "Input Parameter"]
 
         # Change the ordering of the loading file table in the report relative to the other data
         report.data.Report.groupsOrderFirst.append(loadingFileTable)
         report.data.Report.componentWellGroups.append(loadingFileTable)
-        report.setData(
-            "Number of Components", [len(bDesign)], loadingFileTable, report.DESIGN
-        )
+        report.setData("Number of Components", [len(bDesign)], loadingFileTable, report.DESIGN)
         for i, cDesign in enumerate(bDesign):
             cType = cDesign.name
             componentSplitter = (i + 1) * " " + "\n"
@@ -1067,9 +1017,7 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         assems.append(a)
 
     core = r.core
-    for plotNum, assemBatch in enumerate(
-        iterables.chunk(assems, MAX_ASSEMS_PER_ASSEM_PLOT), start=1
-    ):
+    for plotNum, assemBatch in enumerate(iterables.chunk(assems, MAX_ASSEMS_PER_ASSEM_PLOT), start=1):
         assemPlotImage = copy(report.ASSEM_TYPES)
         assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
         report.data.Report.groupsOrderFirst.insert(-1, assemPlotImage)
@@ -1088,13 +1036,10 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         core.growToFullCore(cs)
 
     counts = {
-        assemDesign.name: len(core.getChildrenOfType(assemDesign.name))
-        for assemDesign in r.blueprints.assemDesigns
+        assemDesign.name: len(core.getChildrenOfType(assemDesign.name)) for assemDesign in r.blueprints.assemDesigns
     }
     # assemDesigns.keys is ordered based on input, assemOrder only contains types that are in the core
-    assemOrder = [
-        aType for aType in r.blueprints.assemDesigns.keys() if counts[aType] > 0
-    ]
+    assemOrder = [aType for aType in r.blueprints.assemDesigns.keys() if counts[aType] > 0]
     data = [assemOrder.index(a.p.type) for a in core]
     labels = [r.blueprints.assemDesigns[a.p.type].specifier for a in core]
     legendMap = [
@@ -1122,9 +1067,7 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         fontSize=8,
     )
 
-    report.setData(
-        "Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN
-    )
+    report.setData("Radial Core Map", os.path.abspath(fName), report.FACE_MAP, report.DESIGN)
 
 
 COMPONENT_INFO = "Component Information"

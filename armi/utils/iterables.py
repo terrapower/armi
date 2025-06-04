@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module of utilities to help dealing with iterable objects in Python."""
+
 import struct
 from itertools import chain, filterfalse, tee
 
@@ -81,18 +82,14 @@ def split(a, n, padWith=()):
     assert n > 0, "Cannot chunk into less than 1 chunks. You requested {0}".format(n)
 
     k, m = divmod(N, n)
-    chunked = [
-        a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] or padWith for i in range(n)
-    ]
+    chunked = [a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] or padWith for i in range(n)]
     return chunked
 
 
 def unpackBinaryStrings(binaryRow):
     """Unpacks a row of binary strings to a list of floats."""
     if len(binaryRow) % 8:
-        raise ValueError(
-            "Cannot unpack binary strings from misformatted row. Expected chunks of size 8."
-        )
+        raise ValueError("Cannot unpack binary strings from misformatted row. Expected chunks of size 8.")
     return [(struct.unpack("<d", barray)[0]) for barray in chunk(binaryRow, 8)]
 
 

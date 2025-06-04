@@ -31,6 +31,7 @@ See Also
 --------
 armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layouts.
 """
+
 import yamlize
 
 from armi import context, getPluginManagerOrFail, runLog
@@ -141,9 +142,7 @@ class SystemBlueprint(yamlize.Object):
         runLog.info(f"Constructing the `{self.name}`")
 
         if not bp.gridDesigns:
-            raise ValueError(
-                "The input must define grids to construct a reactor, but does not. Update input."
-            )
+            raise ValueError("The input must define grids to construct a reactor, but does not. Update input.")
 
         gridDesign = bp.gridDesigns.get(self.gridName, None)
         system = self._resolveSystemType(self.typ)(self.name)
@@ -155,9 +154,7 @@ class SystemBlueprint(yamlize.Object):
             system.spatialGrid.armiObject = system
 
         reactor.add(system)  # ensure the reactor is the parent
-        spatialLocator = grids.CoordinateLocation(
-            self.origin.x, self.origin.y, self.origin.z, None
-        )
+        spatialLocator = grids.CoordinateLocation(self.origin.x, self.origin.y, self.origin.z, None)
         system.spatialLocator = spatialLocator
         if context.MPI_RANK != 0:
             # Non-primary nodes get the reactor via DistributeState.
@@ -237,9 +234,7 @@ class SystemBlueprint(yamlize.Object):
                 badLocations.add(posi)
 
         if badLocations:
-            raise ValueError(
-                f"Attempted to add objects to non-existent locations on the grid: {badLocations}."
-            )
+            raise ValueError(f"Attempted to add objects to non-existent locations on the grid: {badLocations}.")
 
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
@@ -254,9 +249,7 @@ class SystemBlueprint(yamlize.Object):
         # now update the spatial grid dimensions based on the populated children
         # (unless specified on input)
         if not gridDesign.latticeDimensions:
-            runLog.info(
-                f"Updating spatial grid pitch data for {container.geomType} geometry"
-            )
+            runLog.info(f"Updating spatial grid pitch data for {container.geomType} geometry")
             if container.geomType == geometry.GeomType.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
             elif container.geomType == geometry.GeomType.CARTESIAN:
@@ -278,9 +271,7 @@ def summarizeMaterialData(container):
     container : Core object
         Any Core object with Blocks and Components defined.
     """
-    runLog.header(
-        f"=========== Summarizing Source of Material Data for {container} ==========="
-    )
+    runLog.header(f"=========== Summarizing Source of Material Data for {container} ===========")
     materialNames = set()
     materialData = []
     for c in container.iterComponents():

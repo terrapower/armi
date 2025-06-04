@@ -21,6 +21,7 @@ Examples
 >>> NhfluxStream.writeAscii(nhfluxData, "nhflux.ascii")
 
 """
+
 import numpy as np
 
 from armi.nuclearDataIO import cccc
@@ -262,24 +263,19 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
         # Number of XY partial currents on the boundary. Note that for the same model, this
         # number is not the same between Nodal and VARIANT; VARIANT has more.
-        numPartialCurrentsHex_ext = (
-            self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
-        )
+        numPartialCurrentsHex_ext = self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
 
         # Typically, flux and current data has units of n/cm^2/s. However, when reading
         # an NHFLUX file produced by VARPOW (where 'iwnhfl'=1), the flux-only data has units
         # of W/cc (there is no current data written to the file).
         if self._data.fluxMomentsAll.size == 0:
-
             # Initialize using metadata info for reading
             totalMoments = (
                 self._metadata["nMom"]
                 if not self._metadata["variantFlag"]
                 else (self._metadata["nMom"] + self._metadata["nMoms"])
             )
-            self._data.fluxMomentsAll = np.zeros(
-                (self._metadata["nintxy"], nz, totalMoments, ng)
-            )
+            self._data.fluxMomentsAll = np.zeros((self._metadata["nintxy"], nz, totalMoments, ng))
 
             if self._metadata["iwnhfl"] != 1:
                 self._data.partialCurrentsHexAll = np.zeros(
@@ -312,7 +308,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
                 # Loop through axial nodes
                 for z in range(nz):
-
                     # Process flux moments
                     self._data.fluxMomentsAll[:, z, :, gEff] = self._rwFluxMoments3D(
                         self._data.fluxMomentsAll[:, z, :, gEff]
@@ -332,9 +327,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
 
                     # Loop through axial surfaces (NOT axial nodes, because there is a "+1")
                     for z in range(nz + 1):
-                        self._data.partialCurrentsZAll[
-                            :, z, :, gEff, :
-                        ] = self._rwZPartialCurrents5D(
+                        self._data.partialCurrentsZAll[:, z, :, gEff, :] = self._rwZPartialCurrents5D(
                             self._data.partialCurrentsZAll[:, z, :, gEff, :]
                         )
 
@@ -353,10 +346,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # must be calculated differently. Performing the same calculation below in VARIANT,
             # which is possible to do, can return a different number, so that is why
             # we cannot use the same calculation for both codes.
-            numOuterSurfacesHex = (
-                self._metadata["npcxy"]
-                - self._metadata["nintxy"] * self._metadata["nSurf"]
-            )
+            numOuterSurfacesHex = self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
 
         return numOuterSurfacesHex
 
@@ -377,15 +367,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         # Dummy values are stored because sometimes they get assigned
         # unexpected values anyway, and so we still want to preserve those values anyway
         if self._metadata["variantFlag"]:
-            keys = (
-                FILE_SPEC_1D_KEYS
-                + FILE_SPEC_1D_KEYS_VARIANT11
-                + tuple(f"IDUM{e:>02}" for e in range(1, 7))
-            )
+            keys = FILE_SPEC_1D_KEYS + FILE_SPEC_1D_KEYS_VARIANT11 + tuple(f"IDUM{e:>02}" for e in range(1, 7))
         else:
-            keys = FILE_SPEC_1D_KEYS + tuple(
-                tuple(f"IDUM{e:>02}" for e in range(1, 12))
-            )
+            keys = FILE_SPEC_1D_KEYS + tuple(tuple(f"IDUM{e:>02}" for e in range(1, 12)))
 
         with self.createRecord() as record:
             self._metadata.update(record.rwImplicitlyTypedMap(keys, self._metadata))
@@ -437,13 +421,9 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # Initialize data size when reading
             if self._data.incomingPointersToAllAssemblies.size == 0:
                 # Index pointers to INCOMING partial currents on assemblies
-                self._data.incomingPointersToAllAssemblies = np.zeros(
-                    (nSurf, nAssem), dtype=int
-                )
+                self._data.incomingPointersToAllAssemblies = np.zeros((nSurf, nAssem), dtype=int)
                 # Index pointers to OUTGOING partial currents on core outer boundary
-                self._data.externalCurrentPointers = np.zeros(
-                    (numExternalSurfaces), dtype=int
-                )
+                self._data.externalCurrentPointers = np.zeros((numExternalSurfaces), dtype=int)
                 # Index pointers to DIF3D GEODST ordering of each assembly
                 self._data.geodstCoordMap = np.zeros(nAssem, dtype=int)
 
@@ -455,9 +435,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                 self._data.externalCurrentPointers, "int", numExternalSurfaces
             )
 
-            self._data.geodstCoordMap = record.rwList(
-                self._data.geodstCoordMap, "int", nAssem
-            )
+            self._data.geodstCoordMap = record.rwList(self._data.geodstCoordMap, "int", nAssem)
 
             # There is additional data to process for VARIANT
             if self._metadata["variantFlag"]:
@@ -468,12 +446,8 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                     self._data.outgoingPCSymSecPointers = np.zeros(npcsto, dtype=int)
                     self._data.ingoingPCSymSecPointers = np.zeros(npcsto, dtype=int)
 
-                self._data.outgoingPCSymSecPointers = record.rwList(
-                    self._data.outgoingPCSymSecPointers, "int", npcsto
-                )
-                self._data.ingoingPCSymSecPointers = record.rwList(
-                    self._data.ingoingPCSymSecPointers, "int", npcsto
-                )
+                self._data.outgoingPCSymSecPointers = record.rwList(self._data.outgoingPCSymSecPointers, "int", npcsto)
+                self._data.ingoingPCSymSecPointers = record.rwList(self._data.ingoingPCSymSecPointers, "int", npcsto)
 
     def _rwFluxMoments3D(self, contents):
         r"""
@@ -537,7 +511,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         discarded the unwanted data at another level if that is much faster.
         """
         with self.createRecord() as record:
-
             nAssem = self._metadata["nintxy"]
             nSurf = self._metadata["nSurf"]
 
@@ -545,10 +518,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
             # VARIANT.
             nscoef = self._metadata["nscoef"]
 
-            numPartialCurrentsHex_ext = (
-                self._metadata["npcxy"]
-                - self._metadata["nintxy"] * self._metadata["nSurf"]
-            )
+            numPartialCurrentsHex_ext = self._metadata["npcxy"] - self._metadata["nintxy"] * self._metadata["nSurf"]
 
             # Loop through all lateral surfaces of all assemblies
             for i in range(nAssem):
@@ -566,9 +536,7 @@ class NhfluxStream(cccc.StreamWithDataContainer):
                     # other NSCOEF options (i.e., half-angle integrated flux when
                     # reading DIF3D-Nodal data, and higher current moments when reading
                     # DIF3D-VARIANT data) are processed.
-                    externalSurfCurrents[j, m] = record.rwDouble(
-                        externalSurfCurrents[j, m]
-                    )
+                    externalSurfCurrents[j, m] = record.rwDouble(externalSurfCurrents[j, m])
 
             return surfCurrents, externalSurfCurrents
 
@@ -597,7 +565,6 @@ class NhfluxStream(cccc.StreamWithDataContainer):
         nuclearDataIO.NHFLUX._rwGeodstCoordMap2D
         """
         with self.createRecord() as record:
-
             nAssem = self._metadata["nintxy"]
             nSurf = 2
             nscoef = self._metadata["nscoef"]

@@ -14,7 +14,6 @@
 
 """Settings related to the ARMI database."""
 
-
 from armi.settings import setting
 
 CONF_DB = "db"
@@ -58,8 +57,7 @@ def defineSettings():
             default=True,
             label="Sync Database After Write",
             description=(
-                "Copy the output database from the fast scratch space to the shared "
-                "network drive after each write."
+                "Copy the output database from the fast scratch space to the shared network drive after each write."
             ),
         ),
         setting.Setting(

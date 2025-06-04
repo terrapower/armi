@@ -74,6 +74,7 @@ fission. This is used for intrinsic source term calculations.
 [2] Moler, Cleve, and Charles Van Loan. "Nineteen dubious ways to compute the exponential of a matrix."
     SIAM review 20.4 (1978): 801-836.
 """
+
 import math
 
 from armi import runLog
@@ -134,15 +135,11 @@ class Transmutable:
         self.parent = parent
         self.type = dataDict["type"]
         self.productNuclides = tuple(dataDict["products"])
-        self.productParticle = dataDict.get(
-            "productParticle", PRODUCT_PARTICLES.get(self.type)
-        )
+        self.productParticle = dataDict.get("productParticle", PRODUCT_PARTICLES.get(self.type))
         self.branch = dataDict.get("branch", None)
         if self.branch is None:
             self.branch = 1.0
-            runLog.info(
-                f"The branching ratio for {self} was not defined and is assumed to be 1.0."
-            )
+            runLog.info(f"The branching ratio for {self} was not defined and is assumed to be 1.0.")
 
     def getPreferredProduct(self, libraryNucNames):
         """
@@ -157,14 +154,9 @@ class Transmutable:
         for product in self.productNuclides:
             if product in libraryNucNames:
                 return product
-        groupedNames = iterables.split(
-            libraryNucNames, max(1, int(len(libraryNucNames) / 10))
-        )
-        msg = (
-            "Could not find suitable product/daughter for {}.\n"
-            "The available options were:\n  {}".format(
-                self, ",\n  ".join(", ".join(chunk) for chunk in groupedNames)
-            )
+        groupedNames = iterables.split(libraryNucNames, max(1, int(len(libraryNucNames) / 10)))
+        msg = "Could not find suitable product/daughter for {}.\nThe available options were:\n  {}".format(
+            self, ",\n  ".join(", ".join(chunk) for chunk in groupedNames)
         )
         raise KeyError(msg)
 
@@ -233,19 +225,15 @@ class DecayMode(Transmutable):
                 )
 
                 self.halfLifeInSeconds = userHalfLife
-        self.decay = (
-            LN2 / self.halfLifeInSeconds * self.branch
-        )  # decay constant, reduced by branch to make it accurate
+        self.decay = LN2 / self.halfLifeInSeconds * self.branch  # decay constant, reduced by branch to make it accurate
 
         if self.type not in DECAY_MODES:
             raise KeyError("{} is not in {}".format(self.type, DECAY_MODES))
 
     def __repr__(self):
-        return (
-            "<DecayMode by {} from {:7s} to {} with a half-life of {:12.5E} s>".format(
-                self.type,
-                self.parent.name,
-                self.productNuclides,
-                self.halfLifeInSeconds,
-            )
+        return "<DecayMode by {} from {:7s} to {} with a half-life of {:12.5E} s>".format(
+            self.type,
+            self.parent.name,
+            self.productNuclides,
+            self.halfLifeInSeconds,
         )

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the fission product module to ensure all FP are available."""
+
 import unittest
 
 from armi import nuclideBases

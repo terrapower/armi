@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic global flux interface."""
+
 import unittest
 from unittest.mock import patch
 
@@ -72,9 +73,7 @@ class MockGlobalFluxInterface(globalFluxInterface.GlobalFluxInterface):
         self.r.core.p.keff = 1.01
 
 
-class MockGlobalFluxWithExecuters(
-    globalFluxInterface.GlobalFluxInterfaceUsingExecuters
-):
+class MockGlobalFluxWithExecuters(globalFluxInterface.GlobalFluxInterfaceUsingExecuters):
     def getExecuterCls(self):
         return MockGlobalFluxExecuter
 
@@ -82,9 +81,7 @@ class MockGlobalFluxWithExecuters(
 class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
     def getExecuterOptions(self, label=None):
         """Return modified executerOptions."""
-        opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
-            self, label=label
-        )
+        opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(self, label=label)
         opts.hasNonUniformAssems = True  # to increase test coverage
         return opts
 
@@ -168,9 +165,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         """
         cs = settings.Settings()
         cs["burnSteps"] = 2
-        _o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         gfi = MockGlobalFluxInterface(r, cs)
         bocKeff = 1.1
         r.core.p.keffUnc = 1.1
@@ -212,9 +207,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
             :tests: R_ARMI_FLUX_CHECK_POWER
         """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         gfi = MockGlobalFluxInterface(r, cs)
         self.assertEqual(gfi.checkEnergyBalance(), None)
 
@@ -230,20 +223,14 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cs = settings.Settings()
-        cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )[1]
+        cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")[1]
 
     def setUp(self):
         self.r.core.p.keff = 1.0
         self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
 
-    @patch(
-        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._execute"
-    )
-    @patch(
-        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._performGeometryTransformations"
-    )
+    @patch("armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._execute")
+    @patch("armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._performGeometryTransformations")
     def test_executerInteraction(self, mockGeometryTransform, mockExecute):
         """Run the global flux interface and executer though one time now.
 
@@ -252,9 +239,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
         """
         call_order = []
-        mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(
-            mockGeometryTransform
-        )
+        mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(mockGeometryTransform)
         mockExecute.side_effect = lambda *a, **kw: call_order.append(mockExecute)
         gfi = self.gfi
         gfi.interactBOC()
@@ -312,9 +297,7 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 

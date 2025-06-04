@@ -63,6 +63,7 @@ Notes
 The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
 """
+
 import copy
 import math
 import pathlib
@@ -156,8 +157,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
-                            "There is already a section called '{}' in the reactor "
-                            "blueprints".format(attrName)
+                            "There is already a section called '{}' in the reactor blueprints".format(attrName)
                         )
                     attrs[attrName] = section
                     attrs["_resolveFunctions"].append(resolver)
@@ -170,24 +170,14 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     """Base Blueprintsobject representing all the subsections in the input file."""
 
-    nuclideFlags = yamlize.Attribute(
-        key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
-    )
-    customIsotopics = yamlize.Attribute(
-        key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None
-    )
+    nuclideFlags = yamlize.Attribute(key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None)
+    customIsotopics = yamlize.Attribute(key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None)
     blockDesigns = yamlize.Attribute(key="blocks", type=BlockKeyedList, default=None)
-    assemDesigns = yamlize.Attribute(
-        key="assemblies", type=AssemblyKeyedList, default=None
-    )
+    assemDesigns = yamlize.Attribute(key="assemblies", type=AssemblyKeyedList, default=None)
     systemDesigns = yamlize.Attribute(key="systems", type=Systems, default=None)
     gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
-    componentDesigns = yamlize.Attribute(
-        key="components", type=ComponentKeyedList, default=None
-    )
-    componentGroups = yamlize.Attribute(
-        key="component groups", type=ComponentGroups, default=None
-    )
+    componentDesigns = yamlize.Attribute(key="components", type=ComponentKeyedList, default=None)
+    componentGroups = yamlize.Attribute(key="component groups", type=ComponentGroups, default=None)
 
     # These are used to set up new attributes that come from plugins.
     _resolveFunctions = []
@@ -309,19 +299,12 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 )
 
             if not cs[CONF_INPUT_HEIGHTS_HOT]:
-                runLog.header(
-                    "=========== Axially expanding all assemblies from Tinput to Thot ==========="
-                )
+                runLog.header("=========== Axially expanding all assemblies from Tinput to Thot ===========")
                 # expand axial heights from cold to hot so dims and masses are consistent with
                 # specified component hot temperatures.
-                assemsToSkip = [
-                    Flags.fromStringIgnoreErrors(t)
-                    for t in cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
-                ]
+                assemsToSkip = [Flags.fromStringIgnoreErrors(t) for t in cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]]
                 assemsToExpand = list(
-                    a
-                    for a in list(self.assemblies.values())
-                    if not any(a.hasFlags(f) for f in assemsToSkip)
+                    a for a in list(self.assemblies.values()) if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
                 axialExpander = getPluginManagerOrFail().hook.getAxialExpansionChanger()
                 if axialExpander is not None:
@@ -330,9 +313,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                         cs[CONF_DETAILED_AXIAL_EXPANSION],
                     )
 
-            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
-                assemblies=self.assemblies.values(), cs=cs
-            )
+            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(assemblies=self.assemblies.values(), cs=cs)
 
         self._prepped = True
 
@@ -410,23 +391,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             self.elementsToExpand.append(elemental.element)
 
-            if (
-                elemental.name in nuclideFlags
-                and nuclideFlags[elemental.element.symbol].expandTo
-            ):
+            if elemental.name in nuclideFlags and nuclideFlags[elemental.element.symbol].expandTo:
                 # user-input expandTo has precedence
-                newNuclides = [
-                    nuclideBases.byName[nn]
-                    for nn in nuclideFlags[elemental.element.symbol].expandTo
-                ]
+                newNuclides = [nuclideBases.byName[nn] for nn in nuclideFlags[elemental.element.symbol].expandTo]
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
                 # code-specific expansion required based on code and ENDF
                 newNuclides = eleExpand[elemental]
                 # Overlay code details onto nuclideFlags for other parts of the code that use them.
                 # Also, if this element is not in nuclideFlags at all, we just don't add it.
-                nuclideFlags[elemental.element.symbol].expandTo = [
-                    nb.name for nb in newNuclides
-                ]
+                nuclideFlags[elemental.element.symbol].expandTo = [nb.name for nb in newNuclides]
             else:
                 # expand to all possible natural isotopics
                 newNuclides = elemental.element.getNaturalIsotopics()
@@ -452,9 +425,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         self.activeNuclides = ordered_set.OrderedSet(sorted(actives))
         self.inertNuclides = ordered_set.OrderedSet(sorted(inerts))
-        self.allNuclidesInProblem = ordered_set.OrderedSet(
-            sorted(actives.union(inerts))
-        )
+        self.allNuclidesInProblem = ordered_set.OrderedSet(sorted(actives.union(inerts)))
         self.nucsToForceInXsGen = ordered_set.OrderedSet(sorted(nucsToForceInXsGen))
 
         # Inform user which nuclides are truncating the burn chain.
@@ -464,9 +435,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     [
                         [
                             "Nuclides truncating the burn-chain:",
-                            utils.createFormattedStrWithDelimiter(
-                                list(undefBurnChainActiveNuclides)
-                            ),
+                            utils.createFormattedStrWithDelimiter(list(undefBurnChainActiveNuclides)),
                         ]
                     ],
                     tableFmt="plain",
@@ -498,10 +467,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             blockArea = a[0].getArea()
             for b in a[1:]:
-                if (
-                    abs(b.getArea() - blockArea) / blockArea
-                    > cs[CONF_ACCEPTABLE_BLOCK_AREA_ERROR]
-                ):
+                if abs(b.getArea() - blockArea) / blockArea > cs[CONF_ACCEPTABLE_BLOCK_AREA_ERROR]:
                     runLog.error("REFERENCE COMPARISON BLOCK:")
                     a[0].printContents(includeNuclides=False)
                     runLog.error("CURRENT COMPARISON BLOCK:")
@@ -509,8 +475,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
                     for c in b:
                         runLog.error(
-                            "{0} area {1} effective area {2}"
-                            "".format(c, c.getArea(), c.getVolume() / b.getHeight())
+                            "{0} area {1} effective area {2}".format(c, c.getArea(), c.getVolume() / b.getHeight())
                         )
 
                     raise InputError(
@@ -553,9 +518,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 sfp.typ = "sfp"
                 self.systemDesigns["Spent Fuel Pool"] = sfp
         else:
-            runLog.warning(
-                f"Can't add default SFP to {self}, there are no systemDesigns!"
-            )
+            runLog.warning(f"Can't add default SFP to {self}, there are no systemDesigns!")
 
 
 def migrate(bp: Blueprints, cs):

@@ -16,6 +16,7 @@
 Globally accessible exception definitions for better granularity on exception behavior and
 exception handling behavior.
 """
+
 from inspect import getframeinfo, stack
 
 from armi import runLog
@@ -81,15 +82,11 @@ class InputError(Exception):
     def __str__(self):
         # Check if the call site is sensible enough to warrant printing.
         # In the past, we assumed cython would wrap the fake stack filename in <>
-        callSiteIsFake = self.caller.filename.startswith(
-            "<"
-        ) and self.caller.filename.endswith(">")
+        callSiteIsFake = self.caller.filename.startswith("<") and self.caller.filename.endswith(">")
         if callSiteIsFake:
             return self.msg
         else:
-            return (
-                self.caller.filename + ":" + str(self.caller.lineno) + " - " + self.msg
-            )
+            return self.caller.filename + ":" + str(self.caller.lineno) + " - " + self.msg
 
 
 # ---------------------------------------------------
@@ -117,12 +114,8 @@ class InvalidSettingsStopProcess(SettingException):
                 "of ARMI.".format(reader.inputVersion, reader.liveVersion)
             )
         if reader.invalidSettings:
-            msg += (
-                "\n\tcontains the following {} invalid settings:\n\t\t"
-                "{}"
-                "".format(
-                    len(reader.invalidSettings), "\n\t\t".join(reader.invalidSettings)
-                )
+            msg += "\n\tcontains the following {} invalid settings:\n\t\t{}".format(
+                len(reader.invalidSettings), "\n\t\t".join(reader.invalidSettings)
             )
         SettingException.__init__(self, msg)
 
@@ -131,9 +124,7 @@ class NonexistentSetting(SettingException):
     """Exception raised when a non existent setting is asked for."""
 
     def __init__(self, setting):
-        SettingException.__init__(
-            self, "Attempted to locate non-existent setting {}.".format(setting)
-        )
+        SettingException.__init__(self, "Attempted to locate non-existent setting {}.".format(setting))
 
 
 class InvalidSettingsFileError(SettingException):
@@ -150,6 +141,4 @@ class NonexistentSettingsFileError(SettingException):
     """Settings file does not exist."""
 
     def __init__(self, path):
-        SettingException.__init__(
-            self, "Attempted to load settings file, cannot locate file: {}".format(path)
-        )
+        SettingException.__init__(self, "Attempted to load settings file, cannot locate file: {}".format(path))

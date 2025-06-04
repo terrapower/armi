@@ -19,6 +19,7 @@ This module defines the :py:class:`App` class, which is used to configure the AR
 Framework for a specific application. An ``App`` implements a simple interface for
 customizing much of the Framework's behavior.
 """
+
 # ruff: noqa: E402
 import collections
 import importlib
@@ -117,9 +118,7 @@ class App:
     def getSettings(self) -> Dict[str, Setting]:
         """Return a dictionary containing all Settings defined by the framework and all plugins."""
         # Start with framework settings
-        settingDefs = {
-            setting.name: setting for setting in fwSettings.getFrameworkSettings()
-        }
+        settingDefs = {setting.name: setting for setting in fwSettings.getFrameworkSettings()}
 
         # The optionsCache stores options that may have come from a plugin before the setting to
         # which they apply. Whenever a new setting is added, we check to see if there are any
@@ -134,10 +133,7 @@ class App:
                 if isinstance(pluginSetting, settings.Setting):
                     name = pluginSetting.name
                     if name in settingDefs:
-                        raise ValueError(
-                            f"The setting {pluginSetting.name} "
-                            "already exists and cannot be redefined."
-                        )
+                        raise ValueError(f"The setting {pluginSetting.name} already exists and cannot be redefined.")
                     settingDefs[name] = pluginSetting
                     # handle when new setting has modifier in the cache (modifier loaded first)
                     if name in optionsCache:
@@ -154,17 +150,13 @@ class App:
                 elif isinstance(pluginSetting, settings.Default):
                     if pluginSetting.settingName in settingDefs:
                         # modifier loaded after setting, so just apply it (no cache needed)
-                        settingDefs[pluginSetting.settingName].changeDefault(
-                            pluginSetting
-                        )
+                        settingDefs[pluginSetting.settingName].changeDefault(pluginSetting)
                     else:
                         # no setting yet, cache it and apply when it arrives
                         defaultsCache[pluginSetting.settingName] = pluginSetting
                 else:
                     raise TypeError(
-                        "Invalid setting definition found: {} ({})".format(
-                            pluginSetting, type(pluginSetting)
-                        )
+                        "Invalid setting definition found: {} ({})".format(pluginSetting, type(pluginSetting))
                     )
 
         if optionsCache:
@@ -214,8 +206,9 @@ class App:
                 pluginCollisions = renames.keys() & pluginRenames.keys()
                 if pluginCollisions:
                     raise plugins.PluginError(
-                        "The following parameter renames are already defined by another "
-                        "plugin:\n{}".format(pluginCollisions)
+                        "The following parameter renames are already defined by another plugin:\n{}".format(
+                            pluginCollisions
+                        )
                     )
                 renames.update(pluginRenames)
             self._paramRenames = renames, self._pm.counter
@@ -230,9 +223,7 @@ class App:
         armi.plugins.ArmiPlugin.defineFlags
         """
         if self._pluginFlagsRegistered:
-            raise RuntimeError(
-                "Plugin flags have already been registered. Cannot do it twice!"
-            )
+            raise RuntimeError("Plugin flags have already been registered. Cannot do it twice!")
 
         for pluginFlags in self._pm.hook.defineFlags():
             Flags.extend(pluginFlags)
@@ -370,9 +361,7 @@ class App:
 |        Advanced  Reactor  Modeling Interface      |
 |                                                   |
 |                    version {0:10s}             |
-|                                                   |""".format(
-            meta.__version__
-        )
+|                                                   |""".format(meta.__version__)
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
@@ -380,9 +369,7 @@ class App:
 
             splash += r"""
 |---------------------------------------------------|
-|   {0:>17s} app version {1:10s}        |""".format(
-                context.APP_NAME, getApp().version
-            )
+|   {0:>17s} app version {1:10s}        |""".format(context.APP_NAME, getApp().version)
 
         # bottom border of the splash
         splash += r"""

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Magnesium Oxide."""
+
 from armi.materials.material import Material
 from armi.utils.units import getTc, getTk
 

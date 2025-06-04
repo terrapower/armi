@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test the Lattice Physics Writer."""
+
 import unittest
 from collections import defaultdict
 
@@ -44,9 +45,7 @@ class FakeLatticePhysicsWriter(LatticePhysicsWriter):
     def write(self):
         pass
 
-    def _writeNuclide(
-        self, fileObj, nuclide, density, nucTemperatureInC, category, xsIdSpecified=None
-    ):
+    def _writeNuclide(self, fileObj, nuclide, density, nucTemperatureInC, category, xsIdSpecified=None):
         pass
 
     def _writeComment(self, fileObj, msg):
@@ -84,9 +83,7 @@ class TestLatticePhysicsWriter(unittest.TestCase):
         self.assertAlmostEqual(self.w.minimumNuclideDensity, 1e-15, delta=1e-16)
 
         self.assertEqual(self.w.testOut, "")
-        self.assertEqual(
-            str(self.w), "<FakeLatticePhysicsWriter - XS ID AA (Neutron XS)>"
-        )
+        self.assertEqual(str(self.w), "<FakeLatticePhysicsWriter - XS ID AA (Neutron XS)>")
 
         self.w._writeTitle(None)
         self.assertIn("ARMI generated case for caseTitle armiRun", self.w.testOut)

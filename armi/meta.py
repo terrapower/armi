@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Metadata describing an ARMI distribution."""
+
 try:
     # Python 3.x < 3.8
     from importlib import metadata

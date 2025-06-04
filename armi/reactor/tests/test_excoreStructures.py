@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Direct tests of the Excore Structures and Spent Fuel Pools."""
+
 from unittest import TestCase
 
 from armi.reactor import grids

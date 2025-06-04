@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the framework settings."""
+
 import unittest
 
 import voluptuous as vol

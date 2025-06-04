@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests of RZ Mesh Converter."""
+
 import math
 import unittest
 
@@ -39,11 +40,7 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         expectedThetaMesh = [2 * math.pi]
 
-        meshConvert = (
-            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-                self._converterSettings
-            )
-        )
+        meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(self._converterSettings)
         meshConvert.generateMesh(self.r)
 
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
@@ -55,10 +52,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedAxialMesh = [25.0, 50.0, 175.0]
         expectedThetaMesh = [2 * math.pi]
 
-        meshConvert = (
-            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
-                self._converterSettings
-            )
+        meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
+            self._converterSettings
         )
         meshConvert.generateMesh(self.r)
 
@@ -71,11 +66,7 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedAxialMesh = [25.0, 50.0, 75.0, 100.0, 175.0]
         expectedThetaMesh = [2 * math.pi]
 
-        meshConvert = (
-            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
-                self._converterSettings
-            )
-        )
+        meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(self._converterSettings)
         meshConvert.generateMesh(self.r)
 
         self.assertListEqual(meshConvert.radialMesh, expectedRadialMesh)
@@ -101,10 +92,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedAxialMesh = [50.0, 100.0, 175.0]
         expectedThetaMesh = [2 * math.pi]
 
-        meshConvert = (
-            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
-                self._converterSettingsLargerCore
-            )
+        meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialBins(
+            self._converterSettingsLargerCore
         )
         meshConvert.generateMesh(self.r)
 
@@ -118,10 +107,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedAxialMesh = [25.0, 30.0, 60.0, 90.0, 105.2151, 152.0, 175.0]
         expectedThetaMesh = [2 * math.pi]
 
-        meshConvert = (
-            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
-                self._converterSettingsLargerCore
-            )
+        meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialCoordinates(
+            self._converterSettingsLargerCore
         )
         meshConvert.generateMesh(self.r)
 
@@ -135,10 +122,8 @@ class TestRZReactorMeshConverter(unittest.TestCase):
         expectedAxialMesh = [25.0, 100.0, 175.0]
         expectedThetaMesh = [2 * math.pi]
 
-        meshConvert = (
-            meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
-                self._converterSettingsLargerCore
-            )
+        meshConvert = meshConverters.RZThetaReactorMeshConverterByRingCompositionAxialFlags(
+            self._converterSettingsLargerCore
         )
         meshConvert.generateMesh(self.r)
 

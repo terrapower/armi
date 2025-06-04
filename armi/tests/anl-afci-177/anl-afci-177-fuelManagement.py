@@ -18,9 +18,7 @@ from armi.utils import units
 
 class SampleShuffler(FuelHandler):
     def chooseSwaps(self, shuffleParameters):
-        cycleSeconds = (
-            self.r.p.cycleLength * self.r.p.availabilityFactor * units.SECONDS_PER_DAY
-        )
+        cycleSeconds = self.r.p.cycleLength * self.r.p.availabilityFactor * units.SECONDS_PER_DAY
         for a in self.r.core:
             peakFlux = a.getMaxParam("fastFlux")
             if peakFlux * cycleSeconds > 4.0e23:

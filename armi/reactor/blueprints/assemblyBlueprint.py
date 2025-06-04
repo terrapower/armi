@@ -20,6 +20,7 @@ constructing ``Assembly`` objects. An attempt has been made to decouple ``Assemb
 from the rest of ARMI as much as possible. For example, an assembly does not require a reactor to be
 constructed, or a geometry file (but uses contained Block geometry type as a surrogate).
 """
+
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
@@ -135,12 +136,8 @@ class AssemblyBlueprint(yamlize.Object):
     blocks = yamlize.Attribute(type=blockBlueprint.BlockList)
     height = yamlize.Attribute(type=yamlize.FloatList)
     axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList)
-    radialMeshPoints = yamlize.Attribute(
-        key="radial mesh points", type=int, default=None
-    )
-    azimuthalMeshPoints = yamlize.Attribute(
-        key="azimuthal mesh points", type=int, default=None
-    )
+    radialMeshPoints = yamlize.Attribute(key="radial mesh points", type=int, default=None)
+    azimuthalMeshPoints = yamlize.Attribute(key="azimuthal mesh points", type=int, default=None)
     materialModifications = yamlize.Attribute(
         key="material modifications",
         type=MaterialModifications,
@@ -165,9 +162,7 @@ class AssemblyBlueprint(yamlize.Object):
         for bType, aType in cls._assemTypes.items():
             if bType in blockClasses:
                 return aType
-        raise ValueError(
-            'Unsupported block geometries in {}: "{}"'.format(cls.name, blocks)
-        )
+        raise ValueError('Unsupported block geometries in {}: "{}"'.format(cls.name, blocks))
 
     def construct(self, cs, blueprint):
         """
@@ -216,9 +211,7 @@ class AssemblyBlueprint(yamlize.Object):
             a.add(b)
 
         # Assign values for the parameters if they are defined on the blueprints
-        for paramDef in a.p.paramDefs.inCategory(
-            parameters.Category.assignInBlueprints
-        ):
+        for paramDef in a.p.paramDefs.inCategory(parameters.Category.assignInBlueprints):
             val = getattr(self, paramDef.name)
             if val is not None:
                 a.p[paramDef.name] = val
@@ -263,9 +256,7 @@ class AssemblyBlueprint(yamlize.Object):
                 if self._shouldMaterialModiferBeApplied(modList[axialIndex])
             }
 
-        b = bDesign.construct(
-            cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
-        )
+        b = bDesign.construct(cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput)
 
         b.completeInitialLoading()
 
@@ -304,9 +295,7 @@ class AssemblyBlueprint(yamlize.Object):
                 raise ValueError(msg)
 
 
-for paramDef in parameters.forType(assemblies.Assembly).inCategory(
-    parameters.Category.assignInBlueprints
-):
+for paramDef in parameters.forType(assemblies.Assembly).inCategory(parameters.Category.assignInBlueprints):
     setattr(
         AssemblyBlueprint,
         paramDef.name,
@@ -324,9 +313,7 @@ class AssemblyKeyedList(yamlize.KeyedList):
     item_type = AssemblyBlueprint
     key_attr = AssemblyBlueprint.name
     heights = yamlize.Attribute(type=yamlize.FloatList, default=None)
-    axialMeshPoints = yamlize.Attribute(
-        key="axial mesh points", type=yamlize.IntList, default=None
-    )
+    axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList, default=None)
 
     # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
 

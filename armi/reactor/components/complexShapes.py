@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Components represented by complex shapes, and typically less widely used."""
+
 import math
 
 from armi.reactor.components import ShapedComponent, basicShapes, componentParameters
@@ -60,9 +61,7 @@ class HoledHexagon(basicShapes.Hexagon):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the hexagon with n number of circular holes in cm^2."""
@@ -118,9 +117,7 @@ class HexHoledCircle(basicShapes.Circle):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, od=od, holeOP=holeOP, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, od=od, holeOP=holeOP, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False, Tc=None):
         r"""Computes the area for the circle with one hexagonal hole."""
@@ -175,15 +172,9 @@ class FilletedHexagon(basicShapes.Hexagon):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea
-        )
-        assert (
-            oR <= op / 2
-        ), f"The outer radius of curvature is too large: {oR} > {op / 2}."
-        assert (
-            iR <= ip / 2
-        ), f"The inner radius of curvature is too large: {iR} > {ip / 2}."
+        self._linkAndStoreDimensions(components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea)
+        assert oR <= op / 2, f"The outer radius of curvature is too large: {oR} > {op / 2}."
+        assert iR <= ip / 2, f"The inner radius of curvature is too large: {iR} > {ip / 2}."
 
     @staticmethod
     def _area(D, r):
@@ -306,9 +297,7 @@ class HoledSquare(basicShapes.Square):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, widthOuter=widthOuter, holeOD=holeOD, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, widthOuter=widthOuter, holeOD=holeOD, mult=mult, modArea=modArea)
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area (in cm^2) for the the square with one hole in it."""
@@ -396,18 +385,14 @@ class Helix(ShapedComponent):
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the exterior of the wire-wrap."""
-        return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension(
-            "od", Tc, cold
-        )
+        return self.getDimension("helixDiameter", Tc, cold=cold) + self.getDimension("od", Tc, cold)
 
     def getCircleInnerDiameter(self, Tc=None, cold=False):
         """The diameter of a circle which is encompassed by the interior of the wire-wrap.
 
         This should be equal to the outer diameter of the pin in which the wire is wrapped around.
         """
-        return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension(
-            "od", Tc, cold
-        )
+        return self.getDimension("helixDiameter", Tc, cold=cold) - self.getDimension("od", Tc, cold)
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the helix in cm^2."""

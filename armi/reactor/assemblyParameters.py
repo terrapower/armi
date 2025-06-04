@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Assembly Parameter Definitions."""
+
 from armi import runLog
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
@@ -24,7 +25,6 @@ def getAssemblyParameterDefinitions():
     pDefs = parameters.ParameterDefinitionCollection()
 
     with pDefs.createBuilder(location=ParamLocation.CENTROID) as pb:
-
         pb.defParam(
             "orientation",
             units=units.DEGREES,
@@ -36,7 +36,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0) as pb:
-
         pb.defParam(
             "arealPd",
             units=f"{units.MW}/{units.METERS}^2",
@@ -100,9 +99,7 @@ def getAssemblyParameterDefinitions():
             default=1,
         )
 
-        pb.defParam(
-            "daysSinceLastMove", units=units.UNITLESS, description="daysSinceLastMove"
-        )
+        pb.defParam("daysSinceLastMove", units=units.UNITLESS, description="daysSinceLastMove")
 
         pb.defParam("kInf", units=units.UNITLESS, description="kInf")
 
@@ -112,12 +109,9 @@ def getAssemblyParameterDefinitions():
 
         pb.defParam("numMoves", units=units.UNITLESS, description="numMoves")
 
-        pb.defParam(
-            "timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6
-        )
+        pb.defParam("timeToLimit", units=units.DAYS, description="timeToLimit", default=1e6)
 
     with pDefs.createBuilder(location=ParamLocation.AVERAGE) as pb:
-
         pb.defParam(
             "detailedNDens",
             setter=isNumpyArray("detailedNDens"),
@@ -134,10 +128,7 @@ def getAssemblyParameterDefinitions():
         def _enforceNotesRestrictions(self, value):
             """Enforces that notes can only be of type str with max length of 1000."""
             if type(value) is not str:
-                runLog.error(
-                    "Values stored in the `notes` parameter must be strings of less than 1000"
-                    " characters!"
-                )
+                runLog.error("Values stored in the `notes` parameter must be strings of less than 1000 characters!")
                 raise ValueError
             elif len(value) > 1000:
                 runLog.warning(
@@ -159,10 +150,7 @@ def getAssemblyParameterDefinitions():
             setter=_enforceNotesRestrictions,
         )
 
-    with pDefs.createBuilder(
-        location="N/A", default=0.0, categories=["control rods"]
-    ) as pb:
-
+    with pDefs.createBuilder(location="N/A", default=0.0, categories=["control rods"]) as pb:
         pb.defParam(
             "crCriticalFraction",
             units=units.UNITLESS,
@@ -214,10 +202,7 @@ def getAssemblyParameterDefinitions():
             saveToDB=True,
         )
 
-    with pDefs.createBuilder(
-        location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]
-    ) as pb:
-
+    with pDefs.createBuilder(location=ParamLocation.AVERAGE, default=0.0, categories=["thermal hydraulics"]) as pb:
         pb.defParam(
             "THdeltaPNoGrav",
             units=units.PASCALS,
@@ -274,7 +259,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder() as pb:
-
         pb.defParam(
             "type",
             units=units.UNITLESS,
@@ -293,7 +277,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(default=0.0) as pb:
-
         pb.defParam(
             "THcoolantInletT",
             units=units.DEGC,
@@ -318,7 +301,6 @@ def getAssemblyParameterDefinitions():
         )
 
     with pDefs.createBuilder(categories=["radialGeometry"]) as pb:
-
         pb.defParam(
             "AziMesh",
             units=units.UNITLESS,

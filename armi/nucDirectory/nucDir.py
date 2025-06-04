@@ -21,6 +21,7 @@ This may be deprecated. Consider using the appropriate instance methods availabl
 :py:class:`armi.nucDirectory.nuclideBases.INuclide` objects and/or the
 :py:mod:`armi.nucDirectory.nuclideBases` module.
 """
+
 import re
 
 from armi.nucDirectory import elements, nuclideBases
@@ -324,18 +325,14 @@ def isHeavyMetal(name):
     try:
         return getNuclide(name).isHeavyMetal()
     except AttributeError:
-        raise AttributeError(
-            "The nuclide {0} is not found in the nuclide directory".format(name)
-        )
+        raise AttributeError("The nuclide {0} is not found in the nuclide directory".format(name))
 
 
 def isFissile(name):
     try:
         return getNuclide(name).isFissile()
     except AttributeError:
-        raise AttributeError(
-            "The nuclide {0} is not found in the nuclide directory".format(name)
-        )
+        raise AttributeError("The nuclide {0} is not found in the nuclide directory".format(name))
 
 
 def getThresholdDisplacementEnergy(nuc):
@@ -362,8 +359,9 @@ def getThresholdDisplacementEnergy(nuc):
         ed = eDisplacement[el.symbol]
     except KeyError:
         print(
-            "The element {0} of nuclide {1} does not have a displacement energy in the library. Please add one."
-            "".format(el, nuc)
+            "The element {0} of nuclide {1} does not have a displacement energy in the library. Please add one.".format(
+                el, nuc
+            )
         )
         raise
 
