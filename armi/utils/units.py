@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """The units module contains unit conversion functions and constants."""
+
 import math
 
 import scipy.constants
@@ -89,9 +90,7 @@ LITERS_PER_CUBIC_METER = 1000
 CC_PER_LITER = CM3_PER_M3 / LITERS_PER_CUBIC_METER
 DEG_TO_RAD = 1.0 / 180.0 * math.pi  # Degrees to Radians
 RAD_TO_REV = 1.0 / (2 * math.pi)  # Radians to Revolutions
-ATOMIC_MASS_CONSTANT_MEV = scipy.constants.physical_constants[
-    "atomic mass constant energy equivalent in MeV"
-][0]
+ATOMIC_MASS_CONSTANT_MEV = scipy.constants.physical_constants["atomic mass constant energy equivalent in MeV"][0]
 ABS_REACTIVITY_TO_PCM = 1.0e5
 PA_PER_ATM = scipy.constants.atm
 PA_PER_MMHG = 133.322368421053
@@ -153,10 +152,7 @@ def getTk(Tc=None, Tk=None):
         The temperature was not provided as an int or float.
     """
     if not ((Tc is not None) ^ (Tk is not None)):
-        raise ValueError(
-            f"Cannot produce T in K from Tc={Tc} and Tk={Tk}. "
-            "Please supply a single temperature."
-        )
+        raise ValueError(f"Cannot produce T in K from Tc={Tc} and Tk={Tk}. Please supply a single temperature.")
     return float(Tk) if Tk is not None else Tc + C_TO_K
 
 
@@ -175,10 +171,7 @@ def getTc(Tc=None, Tk=None):
         The temperature was not provided as an int or float.
     """
     if not ((Tc is not None) ^ (Tk is not None)):
-        raise ValueError(
-            f"Cannot produce T in C from Tc={Tc} and Tk={Tk}. "
-            "Please supply a single temperature."
-        )
+        raise ValueError(f"Cannot produce T in C from Tc={Tc} and Tk={Tk}. Please supply a single temperature.")
     return float(Tc) if Tc is not None else Tk - C_TO_K
 
 
@@ -349,18 +342,11 @@ def getXYLineParameters(theta, x=0, y=0):
     """
     theta = sanitizeAngle(theta)
 
-    if (
-        math.fabs(theta) < 1e-10
-        or math.fabs(theta - math.pi) < 1e-10
-        or math.fabs(theta - 2.0 * math.pi) < 1e-10
-    ):
+    if math.fabs(theta) < 1e-10 or math.fabs(theta - math.pi) < 1e-10 or math.fabs(theta - 2.0 * math.pi) < 1e-10:
         # this is a py plane so y is always y
         return 0.0, 1.0, 0.0, y
 
-    if (
-        math.fabs(theta - math.pi / 2.0) > 1e-10
-        or math.fabs(theta - 3 * math.pi / 2.0) > 1e-10
-    ):
+    if math.fabs(theta - math.pi / 2.0) > 1e-10 or math.fabs(theta - 3 * math.pi / 2.0) > 1e-10:
         # this is a px plane so x is always x
         return 1.0, 0.0, 0.0, x
 

@@ -28,8 +28,7 @@ def defineSettings():
             default=False,
             label="Run Thermal Hydraulics",
             description=(
-                "Activate thermal hydraulics calculations using the physics module defined in "
-                f"`{CONF_TH_KERNEL}`"
+                f"Activate thermal hydraulics calculations using the physics module defined in `{CONF_TH_KERNEL}`"
             ),
         ),
         setting.Setting(

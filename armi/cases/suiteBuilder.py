@@ -25,6 +25,7 @@ This module contains a variety of ``InputModifier`` objects as well, which are e
 of how you can modify inputs for parameter sweeping. Power-users will generally make
 their own ``Modifier``\ s that are design-specific.
 """
+
 import copy
 import os
 import random
@@ -37,9 +38,7 @@ from armi.cases import suite
 
 
 def getInputModifiers(cls):
-    return cls.__subclasses__() + [
-        g for s in cls.__subclasses__() for g in getInputModifiers(s)
-    ]
+    return cls.__subclasses__() + [g for s in cls.__subclasses__() for g in getInputModifiers(s)]
 
 
 class SuiteBuilder:
@@ -82,9 +81,7 @@ class SuiteBuilder:
 
         # use an instance variable instead of global lookup. this could allow someone to add their own
         # modifiers, and also prevents it memory usage / discovery from simply loading the module.
-        self._modifierLookup = {
-            k.__name__: k for k in getInputModifiers(inputModifiers.InputModifier)
-        }
+        self._modifierLookup = {k.__name__: k for k in getInputModifiers(inputModifiers.InputModifier)}
 
     def __len__(self):
         return len(self.modifierSets)
@@ -167,17 +164,11 @@ class SuiteBuilder:
                 # it may seem late to figure this out, but since we are doing it now, someone could
                 # filter these conditions out before the buildSuite. optionally, we could have a
                 # flag for "skipInvalidModficationCombos=False"
-                shouldHaveBeenBefore = [
-                    fail
-                    for fail in getattr(mod, "FAIL_IF_AFTER", ())
-                    if fail in previousMods
-                ]
+                shouldHaveBeenBefore = [fail for fail in getattr(mod, "FAIL_IF_AFTER", ()) if fail in previousMods]
 
                 if any(shouldHaveBeenBefore):
                     raise RuntimeError(
-                        "{} must occur before {}".format(
-                            mod, ",".join(repr(m) for m in shouldHaveBeenBefore)
-                        )
+                        "{} must occur before {}".format(mod, ",".join(repr(m) for m in shouldHaveBeenBefore))
                     )
 
                 previousMods.append(type(mod))
@@ -244,9 +235,7 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
         """
         # Cartesian product. Append a new modifier to the end of a chain of previously defined.
         new = [
-            existingModSet + (newModifier,)
-            for newModifier in inputModifiers
-            for existingModSet in self.modifierSets
+            existingModSet + (newModifier,) for newModifier in inputModifiers for existingModSet in self.modifierSets
         ]
         del self.modifierSets[:]
         self.modifierSets.extend(new)
@@ -447,9 +436,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             for j, mod in enumerate(original_modifiers):
                 new_mod = copy.deepcopy(mod)
                 if mod.paramType == "continuous":
-                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][
-                        j
-                    ] + mod.bounds[0]
+                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][j] + mod.bounds[0]
                     new_mod.value = value
                 elif mod.paramType == "discrete":
                     index = round(samples[i][j] * (len(mod.bounds) - 1))

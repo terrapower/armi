@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the runLog tooling."""
+
 import logging
 import os
 import unittest
@@ -56,14 +57,10 @@ class TestRunLog(unittest.TestCase):
     def test_verbosityOutOfRange(self):
         """Test that the log verbosity setting resets to a canonical value when it is out of range."""
         runLog.setVerbosity(-50)
-        self.assertEqual(
-            runLog.LOG.logger.level, min([v[0] for v in runLog.LOG.logLevels.values()])
-        )
+        self.assertEqual(runLog.LOG.logger.level, min([v[0] for v in runLog.LOG.logLevels.values()]))
 
         runLog.setVerbosity(5000)
-        self.assertEqual(
-            runLog.LOG.logger.level, max([v[0] for v in runLog.LOG.logLevels.values()])
-        )
+        self.assertEqual(runLog.LOG.logger.level, max([v[0] for v in runLog.LOG.logLevels.values()]))
 
     def test_invalidSetVerbosityByString(self):
         """Test that the log verbosity setting fails if the integer is invalid."""
@@ -131,12 +128,13 @@ class TestRunLog(unittest.TestCase):
         log.log("warning", "test_warningReport", single=True, label=None)
         log.log("debug", "invisible due to log level", single=False, label=None)
         log.log("warning", "test_warningReport", single=True, label=None)
+        log.log("warning", "simple_warning", single=False, label=None)
         log.log("error", "high level something", single=False, label=None)
 
         # test that the logging found some duplicate outputs
         dupsFilter = log.getDuplicatesFilter()
         self.assertIsNotNone(dupsFilter)
-        warnings = dupsFilter.singleWarningMessageCounts
+        warnings = dupsFilter.warningCounts
         self.assertGreater(len(warnings), 0)
 
         # run the warning report
@@ -146,8 +144,10 @@ class TestRunLog(unittest.TestCase):
 
         # test what was logged
         streamVal = stream.getvalue()
-        self.assertIn("test_warningReport", streamVal, msg=streamVal)
         self.assertIn("Final Warning Count", streamVal, msg=streamVal)
+        self.assertIn("simple_warning", streamVal, msg=streamVal)
+        self.assertIn("test_warningReport", streamVal, msg=streamVal)
+        self.assertIn("Total Number of Warnings", streamVal, msg=streamVal)
         self.assertNotIn("invisible", streamVal, msg=streamVal)
         self.assertEqual(streamVal.count("test_warningReport"), 2, msg=streamVal)
 
@@ -376,22 +376,16 @@ class TestRunLog(unittest.TestCase):
             runLog.createLogDir(logDir)
 
             # create as stdout file
-            stdoutFile1 = os.path.join(
-                logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
-            )
+            stdoutFile1 = os.path.join(logDir, "{}.runLogTest.0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
             with open(stdoutFile1, "w") as f:
                 f.write("hello world\n")
 
-            stdoutFile2 = os.path.join(
-                logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME)
-            )
+            stdoutFile2 = os.path.join(logDir, "{}.runLogTest.0001.stdout".format(runLog.STDOUT_LOGGER_NAME))
             with open(stdoutFile2, "w") as f:
                 f.write("hello other world\n")
 
             # verify behavior for a corner case
-            stdoutFile3 = os.path.join(
-                logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
-            )
+            stdoutFile3 = os.path.join(logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
             with open(stdoutFile3, "w") as f:
                 f.write("hello world again\n")
 
@@ -400,9 +394,7 @@ class TestRunLog(unittest.TestCase):
             self.assertTrue(os.path.exists(stdoutFile3))
 
             # create a stderr file
-            stderrFile = os.path.join(
-                logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME)
-            )
+            stderrFile = os.path.join(logDir, "{}.runLogTest.0000.stderr".format(runLog.STDOUT_LOGGER_NAME))
             with open(stderrFile, "w") as f:
                 f.write("goodbye cruel world\n")
 
@@ -420,9 +412,7 @@ class TestRunLog(unittest.TestCase):
             self.assertFalse(os.path.exists(stderrFile))
 
             # verify behavior for a corner case
-            stdoutFile3 = os.path.join(
-                logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME)
-            )
+            stdoutFile3 = os.path.join(logDir, "{}..0000.stdout".format(runLog.STDOUT_LOGGER_NAME))
             with open(stdoutFile3, "w") as f:
                 f.write("hello world again\n")
             # concat logs

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Package for generating reports as printable groups and HTML in ARMI."""
+
 from armi.bookkeeping.report import data
 
 
@@ -73,9 +74,7 @@ NEUT_LOSS = data.Table("Neutron Loss")
 NEUT_PROD = data.Table("Full Core Neutron Production", header=["", "n/s"])
 PIN_ASSEM_DESIGN = data.Table("Pin/Assembly Design Summary (averages)")
 RUN_META = data.Table("Run Meta")
-UNGROUPED = data.Table(
-    "Ungrouped", "No grouping specified for the following information."
-)
+UNGROUPED = data.Table("Ungrouped", "No grouping specified for the following information.")
 WIRE_DIMS = data.Table("Wire Dimensions", " Of First Fuel Block")
 
 # -----------------------------------------
@@ -103,9 +102,7 @@ ALL = data.Report(
     "Comprehensive Core Report",
     "Every piece of reported information about the ARMI run.",
 )
-DESIGN = data.Report(
-    "Core Design Report", "Information related to the core design parameters"
-)
+DESIGN = data.Report("Core Design Report", "Information related to the core design parameters")
 
 
 # --------------------------------------------

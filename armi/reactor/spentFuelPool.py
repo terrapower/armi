@@ -17,6 +17,7 @@ This file implements a simple/default representation of such as an ARMI "system"
 the core are grids filled with ArmiObjects. This module also includes some helper tools to aid
 transferring spent fuel assemblies from the core to the SFP.
 """
+
 import itertools
 
 from armi.reactor.excoreStructure import ExcoreStructure
@@ -48,9 +49,7 @@ class SpentFuelPool(ExcoreStructure):
             If the Assembly's loc belongs to ``self.spatialGrid``, it will not be used.
         """
         if loc is not None and loc.grid is not self.spatialGrid:
-            raise ValueError(
-                f"An assembly cannot be added to {self} using a spatial locator from another grid."
-            )
+            raise ValueError(f"An assembly cannot be added to {self} using a spatial locator from another grid.")
 
         if self.numColumns is None:
             self._updateNumberOfColumns()
@@ -62,8 +61,7 @@ class SpentFuelPool(ExcoreStructure):
 
         # Make sure the location of the new assembly is valid
         locProvided = loc is not None or (
-            assem.spatialLocator is not None
-            and assem.spatialLocator.grid is self.spatialGrid
+            assem.spatialLocator is not None and assem.spatialLocator.grid is self.spatialGrid
         )
         if locProvided:
             loc = loc or assem.spatialLocator

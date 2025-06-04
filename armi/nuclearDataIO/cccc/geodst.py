@@ -214,77 +214,43 @@ class GeodstStream(cccc.StreamWithDataContainer):
     def _rw2DRecord(self):
         """Read/write 1-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-            self._data.xmesh = record.rwList(
-                self._data.xmesh, "double", self._metadata["NCINTI"] + 1
-            )
-            self._data.iintervals = record.rwList(
-                self._data.iintervals, "int", self._metadata["NCINTI"]
-            )
+            self._data.xmesh = record.rwList(self._data.xmesh, "double", self._metadata["NCINTI"] + 1)
+            self._data.iintervals = record.rwList(self._data.iintervals, "int", self._metadata["NCINTI"])
 
     def _rw3DRecord(self):
         """Read/write 2-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-            self._data.xmesh = record.rwList(
-                self._data.xmesh, "double", self._metadata["NCINTI"] + 1
-            )
-            self._data.ymesh = record.rwList(
-                self._data.ymesh, "double", self._metadata["NCINTJ"] + 1
-            )
-            self._data.iintervals = record.rwList(
-                self._data.iintervals, "int", self._metadata["NCINTI"]
-            )
-            self._data.jintervals = record.rwList(
-                self._data.jintervals, "int", self._metadata["NCINTJ"]
-            )
+            self._data.xmesh = record.rwList(self._data.xmesh, "double", self._metadata["NCINTI"] + 1)
+            self._data.ymesh = record.rwList(self._data.ymesh, "double", self._metadata["NCINTJ"] + 1)
+            self._data.iintervals = record.rwList(self._data.iintervals, "int", self._metadata["NCINTI"])
+            self._data.jintervals = record.rwList(self._data.jintervals, "int", self._metadata["NCINTJ"])
 
     def _rw4DRecord(self):
         """Read/write 3-D coarse mesh boundaries and fine mesh intervals."""
         with self.createRecord() as record:
-            self._data.xmesh = record.rwList(
-                self._data.xmesh, "double", self._metadata["NCINTI"] + 1
-            )
-            self._data.ymesh = record.rwList(
-                self._data.ymesh, "double", self._metadata["NCINTJ"] + 1
-            )
-            self._data.zmesh = record.rwList(
-                self._data.zmesh, "double", self._metadata["NCINTK"] + 1
-            )
-            self._data.iintervals = record.rwList(
-                self._data.iintervals, "int", self._metadata["NCINTI"]
-            )
-            self._data.jintervals = record.rwList(
-                self._data.jintervals, "int", self._metadata["NCINTJ"]
-            )
-            self._data.kintervals = record.rwList(
-                self._data.kintervals, "int", self._metadata["NCINTK"]
-            )
+            self._data.xmesh = record.rwList(self._data.xmesh, "double", self._metadata["NCINTI"] + 1)
+            self._data.ymesh = record.rwList(self._data.ymesh, "double", self._metadata["NCINTJ"] + 1)
+            self._data.zmesh = record.rwList(self._data.zmesh, "double", self._metadata["NCINTK"] + 1)
+            self._data.iintervals = record.rwList(self._data.iintervals, "int", self._metadata["NCINTI"])
+            self._data.jintervals = record.rwList(self._data.jintervals, "int", self._metadata["NCINTJ"])
+            self._data.kintervals = record.rwList(self._data.kintervals, "int", self._metadata["NCINTK"])
 
     def _rw5DRecord(self):
         """Read/write Geometry data from 5D record."""
         with self.createRecord() as record:
-            self._data.regionVolumes = record.rwList(
-                self._data.regionVolumes, "float", self._metadata["NREG"]
-            )
-            self._data.bucklings = record.rwList(
-                self._data.bucklings, "float", self._metadata["NBS"]
-            )
-            self._data.boundaryConstants = record.rwList(
-                self._data.boundaryConstants, "float", self._metadata["NBCS"]
-            )
+            self._data.regionVolumes = record.rwList(self._data.regionVolumes, "float", self._metadata["NREG"])
+            self._data.bucklings = record.rwList(self._data.bucklings, "float", self._metadata["NBS"])
+            self._data.boundaryConstants = record.rwList(self._data.boundaryConstants, "float", self._metadata["NBCS"])
             self._data.internalBlackBoundaryConstants = record.rwList(
                 self._data.internalBlackBoundaryConstants,
                 "float",
                 self._metadata["NIBCS"],
             )
-            self._data.zonesWithBlackAbs = record.rwList(
-                self._data.zonesWithBlackAbs, "int", self._metadata["NZWBB"]
-            )
+            self._data.zonesWithBlackAbs = record.rwList(self._data.zonesWithBlackAbs, "int", self._metadata["NZWBB"])
             self._data.zoneClassifications = record.rwList(
                 self._data.zoneClassifications, "int", self._metadata["NZONE"]
             )
-            self._data.regionZoneNumber = record.rwList(
-                self._data.regionZoneNumber, "int", self._metadata["NREG"]
-            )
+            self._data.regionZoneNumber = record.rwList(self._data.regionZoneNumber, "int", self._metadata["NREG"])
 
     def _rw6DRecord(self):
         """Read/write region assignments to coarse mesh interval."""

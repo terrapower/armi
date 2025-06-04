@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test block conversions."""
+
 import math
 import os
 import unittest
@@ -130,9 +131,7 @@ class TestBlockConverter(unittest.TestCase):
     def test_dissolveMultiple(self):
         """Test dissolving multiple components into another."""
         self._test_dissolve_multi(loadTestBlock(), ["wire", "clad"], "coolant")
-        self._test_dissolve_multi(
-            loadTestBlock(), ["inner liner", "outer liner"], "clad"
-        )
+        self._test_dissolve_multi(loadTestBlock(), ["inner liner", "outer liner"], "clad")
 
     def test_dissolveZeroArea(self):
         """Test dissolving a zero-area component into another."""
@@ -154,9 +153,7 @@ class TestBlockConverter(unittest.TestCase):
             self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "clad", "gap")
 
     def _test_dissolve_multi(self, block, soluteNames, solventName):
-        converter = blockConverters.MultipleComponentMerger(
-            block, soluteNames, solventName
-        )
+        converter = blockConverters.MultipleComponentMerger(block, soluteNames, solventName)
         convertedBlock = converter.convert()
         for soluteName in soluteNames:
             self.assertNotIn(soluteName, convertedBlock.getComponentNames())
@@ -177,9 +174,7 @@ class TestBlockConverter(unittest.TestCase):
         converter._buildNthRing(pinComponents, RING)
         components = converter.convertedBlock
         self.assertEqual(components[3].name.split()[0], components[-1].name.split()[0])
-        self.assertAlmostEqual(
-            clad.getNumberDensity("FE56"), components[1].getNumberDensity("FE56")
-        )
+        self.assertAlmostEqual(clad.getNumberDensity("FE56"), components[1].getNumberDensity("FE56"))
         self.assertAlmostEqual(
             components[3].getArea() + components[-1].getArea(),
             clad.getArea() * numPinsInRing / clad.getDimension("mult"),
@@ -206,11 +201,7 @@ class TestBlockConverter(unittest.TestCase):
             :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL1
             :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
         """
-        block = (
-            loadTestReactor(TEST_ROOT)[1]
-            .core.getAssemblies(Flags.FUEL)[2]
-            .getFirstBlock(Flags.FUEL)
-        )
+        block = loadTestReactor(TEST_ROOT)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
         converter = blockConverters.HexComponentsToCylConverter(block)
@@ -219,18 +210,10 @@ class TestBlockConverter(unittest.TestCase):
         for compType in [Flags.FUEL, Flags.CLAD, Flags.DUCT]:
             self.assertAlmostEqual(
                 block.getComponent(compType).getArea(),
-                sum(
-                    [
-                        component.getArea()
-                        for component in converter.convertedBlock
-                        if component.hasFlags(compType)
-                    ]
-                ),
+                sum([component.getArea() for component in converter.convertedBlock if component.hasFlags(compType)]),
             )
             for c in converter.convertedBlock.getComponents(compType):
-                self.assertEqual(
-                    block.getComponent(compType).temperatureInC, c.temperatureInC
-                )
+                self.assertEqual(block.getComponent(compType).temperatureInC, c.temperatureInC)
 
         self.assertEqual(block.getHeight(), converter.convertedBlock.getHeight())
         self._checkAreaAndComposition(block, converter.convertedBlock)
@@ -243,11 +226,7 @@ class TestBlockConverter(unittest.TestCase):
             :id:  T_ARMI_BLOCKCONV_HEX_TO_CYL0
             :tests: R_ARMI_BLOCKCONV_HEX_TO_CYL
         """
-        driverBlock = (
-            loadTestReactor(TEST_ROOT)[1]
-            .core.getAssemblies(Flags.FUEL)[2]
-            .getFirstBlock(Flags.FUEL)
-        )
+        driverBlock = loadTestReactor(TEST_ROOT)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
 
         block = loadTestReactor(TEST_ROOT)[1].core.getFirstBlock(Flags.CONTROL)
         control = block.getComponent(Flags.CONTROL)
@@ -266,12 +245,8 @@ class TestBlockConverter(unittest.TestCase):
         )
 
         self.assertEqual(5, len([c for c in convertedWithoutDriver if isDepletable(c)]))
-        self.assertEqual(
-            5, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CONTROL)])
-        )
-        self.assertEqual(
-            9, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CLAD)])
-        )
+        self.assertEqual(5, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CONTROL)]))
+        self.assertEqual(9, len([c for c in convertedWithoutDriver if c.hasFlags(Flags.CLAD)]))
 
         # This should fail because a spatial grid is required
         # on the block.
@@ -305,11 +280,7 @@ class TestBlockConverter(unittest.TestCase):
         Tests the conversion of a control block with linked components, where a component contains a
         negative area due to thermal expansion.
         """
-        driverBlock = (
-            loadTestReactor(TEST_ROOT)[1]
-            .core.getAssemblies(Flags.FUEL)[2]
-            .getFirstBlock(Flags.FUEL)
-        )
+        driverBlock = loadTestReactor(TEST_ROOT)[1].core.getAssemblies(Flags.FUEL)[2].getFirstBlock(Flags.FUEL)
 
         block = buildControlBlockWithLinkedNegativeAreaComponent()
         areas = [c.getArea() for c in block]
@@ -320,9 +291,7 @@ class TestBlockConverter(unittest.TestCase):
         driverBlock.spatialGrid = None
         block.spatialGrid = grids.HexGrid.fromPitch(1.0)
 
-        converter = blockConverters.HexComponentsToCylConverter(
-            block, driverFuelBlock=driverBlock, numExternalRings=2
-        )
+        converter = blockConverters.HexComponentsToCylConverter(block, driverFuelBlock=driverBlock, numExternalRings=2)
         convertedBlock = converter.convert()
         # The area is increased because the negative area components are
         # removed.
@@ -338,21 +307,15 @@ class TestBlockConverter(unittest.TestCase):
         block.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
 
         converter = blockConverters.BlockAvgToCylConverter
-        self._testConvertWithDriverRings(
-            block, driverBlock, converter, lambda n: (n - 1) * 8
-        )
+        self._testConvertWithDriverRings(block, driverBlock, converter, lambda n: (n - 1) * 8)
 
-    def _testConvertWithDriverRings(
-        self, block, driverBlock, converterToTest, getNumInRing
-    ):
+    def _testConvertWithDriverRings(self, block, driverBlock, converterToTest, getNumInRing):
         area = block.getArea()
         numExternalFuelRings = [1, 2, 3, 4]
         numBlocks = 1
         for externalRings in numExternalFuelRings:
             numBlocks += getNumInRing(externalRings + 1)
-            converter = converterToTest(
-                block, driverFuelBlock=driverBlock, numExternalRings=externalRings
-            )
+            converter = converterToTest(block, driverFuelBlock=driverBlock, numExternalRings=externalRings)
             convertedBlock = converter.convert()
             self.assertAlmostEqual(area * numBlocks, convertedBlock.getArea())
             self._checkCiclesAreInContact(convertedBlock)
@@ -380,9 +343,7 @@ class TestBlockConverter(unittest.TestCase):
             try:
                 self.assertAlmostEqual(n1, n2)
             except AssertionError:
-                errorMessage += "\nnuc {} not equal. unmerged: {} merged: {}".format(
-                    nucName, n1, n2
-                )
+                errorMessage += "\nnuc {} not equal. unmerged: {} merged: {}".format(nucName, n1, n2)
         self.assertTrue(not errorMessage, errorMessage)
         bMass = block.getMass()
         self.assertAlmostEqual(bMass, convertedBlock.getMass())
@@ -391,9 +352,7 @@ class TestBlockConverter(unittest.TestCase):
     def _checkCiclesAreInContact(self, convertedCircleBlock):
         numComponents = len(convertedCircleBlock)
         self.assertGreater(numComponents, 1)
-        self.assertTrue(
-            all(isinstance(c, components.Circle) for c in convertedCircleBlock)
-        )
+        self.assertTrue(all(isinstance(c, components.Circle) for c in convertedCircleBlock))
 
         lastCompOD = None
         lastComp = None
@@ -409,9 +368,7 @@ class TestBlockConverter(unittest.TestCase):
                 self.assertTrue(
                     thisID == lastCompOD,
                     "The component {} with id {} was not in contact with the "
-                    "previous component ({}) that had od {}".format(
-                        c, thisID, lastComp, lastCompOD
-                    ),
+                    "previous component ({}) that had od {}".format(c, thisID, lastComp, lastCompOD),
                 )
             lastCompOD = thisOD
             lastComp = c
@@ -425,9 +382,7 @@ class TestToCircles(unittest.TestCase):
 
     def test_fromRingOfRods(self):
         # JOYO-LMFR-RESR-001, rev 1, Table A.2, 5th layer (ring 6)
-        actualRadii = blockConverters.radiiFromRingOfRods(
-            0.76 * 5, 6 * 5, [0.28, 0.315]
-        )
+        actualRadii = blockConverters.radiiFromRingOfRods(0.76 * 5, 6 * 5, [0.28, 0.315])
         expected = [3.24034, 3.28553, 3.62584, 3.67104]
         self.assertTrue(np.allclose(expected, actualRadii, rtol=1e-5))
 
@@ -493,9 +448,7 @@ def buildControlBlockWithLinkedNegativeAreaComponent():
     control = components.Circle("control", "UZr", **controlDims)
     clad = components.Circle("clad", "HT9", **cladDims)
     # This sets up the linking of the bond to the fuel and the clad components.
-    bond = components.Circle(
-        "bond", "Sodium", components={"control": control, "clad": clad}, **bondDims
-    )
+    bond = components.Circle("bond", "Sodium", components={"control": control, "clad": clad}, **bondDims)
     wire = components.Helix("wire", "HT9", **wireDims)
     duct = components.Hexagon("duct", "HT9", **ductDims)
     coolant = components.DerivedShape("coolant", "Sodium", **coolDims)

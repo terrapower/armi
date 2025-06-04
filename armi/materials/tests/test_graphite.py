@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for graphite material."""
+
 import math
 import unittest
 
@@ -56,7 +57,6 @@ class Graphite_TestCase(unittest.TestCase):
             (401.0, 1.8888),
             (800.9, 1.8748),
         ]:
-
             test_rho = self.mat.density(Tc=Tc)
             error = math.fabs((ref_rho - test_rho) / ref_rho)
 

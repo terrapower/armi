@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Generic ARMI utilities."""
+
 # ruff: noqa: F405
 import collections
 import getpass
@@ -89,9 +90,7 @@ def getPowerFractions(cs):
     if cs["cycles"] != []:
         return [
             expandRepeatedFloats(
-                (cycle["power fractions"])
-                if "power fractions" in cycle.keys()
-                else [1] * getBurnSteps(cs)[cycleIdx]
+                (cycle["power fractions"]) if "power fractions" in cycle.keys() else [1] * getBurnSteps(cs)[cycleIdx]
             )
             for (cycleIdx, cycle) in enumerate(cs["cycles"])
         ]
@@ -102,10 +101,7 @@ def getPowerFractions(cs):
             else [1.0] * cs["nCycles"]
         )
 
-        return [
-            [value] * (cs["burnSteps"] if cs["burnSteps"] is not None else 0)
-            for value in valuePerCycle
-        ]
+        return [[value] * (cs["burnSteps"] if cs["burnSteps"] is not None else 0) for value in valuePerCycle]
 
 
 def getCycleNames(cs):
@@ -128,10 +124,7 @@ def getCycleNames(cs):
     of restart runs).
     """
     if cs["cycles"] != []:
-        return [
-            (cycle["name"] if "name" in cycle.keys() else None)
-            for cycle in cs["cycles"]
-        ]
+        return [(cycle["name"] if "name" in cycle.keys() else None) for cycle in cs["cycles"]]
     else:
         return [None] * cs["nCycles"]
 
@@ -167,11 +160,7 @@ def getAvailabilityFactors(cs):
         return (
             expandRepeatedFloats(cs["availabilityFactors"])
             if cs["availabilityFactors"] not in [None, []]
-            else (
-                [cs["availabilityFactor"]] * cs["nCycles"]
-                if cs["availabilityFactor"] is not None
-                else [1]
-            )
+            else ([cs["availabilityFactor"]] * cs["nCycles"] if cs["availabilityFactor"] is not None else [1])
         )
 
 
@@ -198,43 +187,25 @@ def _getStepAndCycleLengths(cs):
                 stepLengths.append(getStepsFromValues(cumulativeDays))
             elif "burn steps" in cycleKeys and "cycle length" in cycleKeys:
                 stepLengths.append(
-                    [
-                        cycle["cycle length"]
-                        * availabilityFactors[cycleIdx]
-                        / cycle["burn steps"]
-                    ]
-                    * cycle["burn steps"]
+                    [cycle["cycle length"] * availabilityFactors[cycleIdx] / cycle["burn steps"]] * cycle["burn steps"]
                 )
             else:
-                raise ValueError(
-                    f"No cycle time history is given in the detailed cycles history for cycle {cycleIdx}"
-                )
+                raise ValueError(f"No cycle time history is given in the detailed cycles history for cycle {cycleIdx}")
 
         cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
-        cycleLengths = [
-            cycleLength / aFactor
-            for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)
-        ]
+        cycleLengths = [cycleLength / aFactor for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)]
 
     else:
         cycleLengths = (
             expandRepeatedFloats(cs["cycleLengths"])
             if cs["cycleLengths"] not in [None, []]
-            else (
-                [cs["cycleLength"]] * cs["nCycles"]
-                if cs["cycleLength"] is not None
-                else [0]
-            )
+            else ([cs["cycleLength"]] * cs["nCycles"] if cs["cycleLength"] is not None else [0])
         )
         cycleLengthsModifiedByAvailability = [
-            length * availability
-            for (length, availability) in zip(cycleLengths, availabilityFactors)
+            length * availability for (length, availability) in zip(cycleLengths, availabilityFactors)
         ]
         stepLengths = (
-            [
-                [length / cs["burnSteps"]] * cs["burnSteps"]
-                for length in cycleLengthsModifiedByAvailability
-            ]
+            [[length / cs["burnSteps"]] * cs["burnSteps"] for length in cycleLengthsModifiedByAvailability]
             if cs["burnSteps"] not in [0, None]
             else [[]]
         )
@@ -466,9 +437,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
             try:
                 pickle.dumps(ob)  # dump as a string
             except Exception:
-                print(
-                    "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
-                )
+                print("{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob))
 
 
 def doTestPickleOnAllContents2(obj, ignore=None):
@@ -496,9 +465,7 @@ def doTestPickleOnAllContents2(obj, ignore=None):
                 unpickleable.append(name)
                 print("Can't pickle {0}".format(name))
                 # recursive call.
-                unpickleable.extend(
-                    doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore)
-                )
+                unpickleable.extend(doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore))
 
     return unpickleable
 
@@ -539,9 +506,7 @@ def tryPickleOnAllContents3(obj):
 def classesInHierarchy(obj, classCounts, visited=None):
     """Count the number of instances of each class contained in an objects hierarchy."""
     if not isinstance(classCounts, collections.defaultdict):
-        raise TypeError(
-            "Need to pass in a default dict for classCounts (it's an out param)"
-        )
+        raise TypeError("Need to pass in a default dict for classCounts (it's an out param)")
 
     if visited is None:
         classCounts[type(obj)] += 1
@@ -665,9 +630,7 @@ def list2str(strings, width=None, preStrings=None, fmt=None):
     return "".join(preStrings)
 
 
-def createFormattedStrWithDelimiter(
-    dataList, maxNumberOfValuesBeforeDelimiter=9, delimiter="\n"
-):
+def createFormattedStrWithDelimiter(dataList, maxNumberOfValuesBeforeDelimiter=9, delimiter="\n"):
     r"""
     Return a formatted string with delimiters from a list of data.
 
@@ -695,14 +658,7 @@ def createFormattedStrWithDelimiter(
     if not maxNumberOfValuesBeforeDelimiter:
         numRows = 1
     else:
-        numRows = (
-            int(
-                math.ceil(
-                    float(len(dataList)) / float(maxNumberOfValuesBeforeDelimiter)
-                )
-            )
-            or 1
-        )
+        numRows = int(math.ceil(float(len(dataList)) / float(maxNumberOfValuesBeforeDelimiter))) or 1
 
     # Create a list of string delimiters to use when joining the strings
     commaList = ["," for d in dataList]
@@ -816,10 +772,7 @@ def safeCopy(src: str, dst: str) -> None:
         cmd = f'cp "{src}" "{dst}"'
         os.system(cmd)
     else:
-        raise OSError(
-            "Cannot perform ``safeCopy`` on files because ARMI only supports "
-            + "Linux, MacOs, and Windows."
-        )
+        raise OSError("Cannot perform ``safeCopy`` on files because ARMI only supports " + "Linux, MacOs, and Windows.")
 
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
@@ -833,7 +786,7 @@ def safeCopy(src: str, dst: str) -> None:
         if totalWaitTime > maxWaitTime:
             runLog.warning(
                 f"File copy from {dst} to {src} has failed due to exceeding "
-                + f"a maximum wait time of {maxWaitTime/60} minutes."
+                + f"a maximum wait time of {maxWaitTime / 60} minutes."
             )
             Return
 
@@ -856,10 +809,7 @@ def safeMove(src: str, dst: str) -> None:
         cmd = f'mv "{src}" "{dst}"'
         os.system(cmd)
     else:
-        raise OSError(
-            "Cannot perform ``safeMove`` on files because ARMI only supports "
-            + "Linux, MacOS, and Windows."
-        )
+        raise OSError("Cannot perform ``safeMove`` on files because ARMI only supports " + "Linux, MacOS, and Windows.")
 
     waitTime = 0.01  # 10 ms
     maxWaitTime = 6000  # 1 min
@@ -876,7 +826,7 @@ def safeMove(src: str, dst: str) -> None:
         if totalWaitTime > maxWaitTime:
             runLog.warning(
                 f"File move from {dst} to {src} has failed due to exceeding "
-                + f"a maximum wait time of {maxWaitTime/60} minutes."
+                + f"a maximum wait time of {maxWaitTime / 60} minutes."
             )
             return
 

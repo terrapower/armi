@@ -16,6 +16,7 @@
 Reactor objects represent the highest level in the hierarchy of structures that compose the system
 to be modeled.
 """
+
 import copy
 
 from armi import getPluginManagerOrFail, runLog
@@ -90,8 +91,7 @@ class Reactor(composites.Composite):
         if cores:
             if len(cores) != 1:
                 raise ValueError(
-                    "Only 1 core may be specified at this time. Please adjust input. "
-                    f"{len(cores)} cores found."
+                    f"Only 1 core may be specified at this time. Please adjust input. {len(cores)} cores found."
                 )
             self.core = cores[0]
 
@@ -180,9 +180,7 @@ def factory(cs, bp) -> Reactor:
     with directoryChangers.DirectoryChanger(cs.inputDirectory, dumpOnException=False):
         # always construct the core first (for assembly serial number purposes)
         if not bp.systemDesigns:
-            raise ValueError(
-                "The input must define a `core` system, but does not. Update inputs"
-            )
+            raise ValueError("The input must define a `core` system, but does not. Update inputs")
 
         for structure in bp.systemDesigns:
             structure.construct(cs, bp, r)

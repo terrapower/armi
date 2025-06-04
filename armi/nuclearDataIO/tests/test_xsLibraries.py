@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for xsLibraries.IsotxsLibrary."""
+
 import copy
 import filecmp
 import os
@@ -130,8 +131,7 @@ class TestXSLibrary(TempFileMixin, unittest.TestCase):
             dummyFileName = "ISO[]"
             with open(dummyFileName, "w") as file:
                 file.write(
-                    "This is a file that starts with the letters 'ISO' but will"
-                    " break the regular expression search."
+                    "This is a file that starts with the letters 'ISO' but will break the regular expression search."
                 )
 
             try:
@@ -356,9 +356,7 @@ class AbstractTestXSlibraryMerging(TempFileMixin):
         self.libAA = None
         emptyXSLib.merge(self.libAB)
         self.libAB = None
-        self.assertEqual(
-            set(self.libCombined.nuclideLabels), set(emptyXSLib.nuclideLabels)
-        )
+        self.assertEqual(set(self.libCombined.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.assertTrue(xsLibraries.compare(emptyXSLib, self.libCombined))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibAA_ABPath(), self.testFileName))
@@ -438,9 +436,7 @@ class Isotxs_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             nucLabel = nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
-        self.assertEqual(
-            set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels)
-        )
+        self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 
@@ -489,9 +485,7 @@ class Gamiso_Merge_Tests(AbstractTestXSlibraryMerging, unittest.TestCase):
             nucLabel = nuclideBases.byMcc3Id[nucId].label
             del emptyXSLib[nucLabel + "AA"]
             del emptyXSLib[nucLabel + "AB"]
-        self.assertEqual(
-            set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels)
-        )
+        self.assertEqual(set(self.libLumped.nuclideLabels), set(emptyXSLib.nuclideLabels))
         self.getWriteFunc()(emptyXSLib, self.testFileName)
         self.assertTrue(filecmp.cmp(self.getLibLumpedPath(), self.testFileName))
 

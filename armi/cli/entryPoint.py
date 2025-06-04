@@ -31,14 +31,10 @@ class _EntryPointEnforcer(type):
 
     def __new__(mcs, name, bases, attrs):
         if "name" not in attrs:
-            raise AttributeError(
-                "Subclasses of EntryPoint must define a `name` class attribute."
-            )
+            raise AttributeError("Subclasses of EntryPoint must define a `name` class attribute.")
 
         # basic input validation. Will throw a KeyError if argument is incorrect
-        clsSettings = {"optional": "optional", "required": "required", None: None}[
-            attrs.get("settingsArgument", None)
-        ]
+        clsSettings = {"optional": "optional", "required": "required", None: None}[attrs.get("settingsArgument", None)]
         attrs["settingsArgument"] = clsSettings
 
         return type.__new__(mcs, name, bases, attrs)
@@ -101,9 +97,7 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
 
     def __init__(self):
         if self.name is None:
-            raise AttributeError(
-                "Subclasses of EntryPoint must define a `name` class attribute"
-            )
+            raise AttributeError("Subclasses of EntryPoint must define a `name` class attribute")
 
         self.cs = self._initSettings()
 
@@ -198,13 +192,9 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
             Implementations should return an exit code, or ``None``, which is interpreted the
             same as zero (successful completion).
         """
-        raise NotImplementedError(
-            "Subclasses of EntryPoint must override the .invoke() method"
-        )
+        raise NotImplementedError("Subclasses of EntryPoint must override the .invoke() method")
 
-    def createOptionFromSetting(
-        self, settingName: str, additionalAlias: str = None, suppressHelp: bool = False
-    ):
+    def createOptionFromSetting(self, settingName: str, additionalAlias: str = None, suppressHelp: bool = False):
         """
         Create a CLI option from an ARMI setting.
 
@@ -226,13 +216,10 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
         settingsInstance = self.cs.getSetting(settingName)
 
         if settings.isBoolSetting(settingsInstance):
-            helpMessage = (
-                argparse.SUPPRESS if suppressHelp else settingsInstance.description
-            )
+            helpMessage = argparse.SUPPRESS if suppressHelp else settingsInstance.description
             self._createToggleFromSetting(settingName, helpMessage, additionalAlias)
 
         else:
-
             choices = None
             if suppressHelp:
                 helpMessage = argparse.SUPPRESS

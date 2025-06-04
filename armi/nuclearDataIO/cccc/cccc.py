@@ -70,6 +70,7 @@ Defines containers for the reading and writing standard interface files for reac
     The logic to parse or write each specific file format is contained within the
     :py:meth:`Stream.readWrite` implementations of the respective subclasses.
 """
+
 import io
 import itertools
 import os
@@ -112,9 +113,7 @@ class IORecord:
 
     _intSize = struct.calcsize("i")
     _longSize = struct.calcsize("q")
-    maxsize = len(
-        str(2**31 - 1)
-    )  # limit to max short even though Python3 can go bigger.
+    maxsize = len(str(2**31 - 1))  # limit to max short even though Python3 can go bigger.
     _intFormat = " {{:>+{}}}".format(maxsize)
     _intLength = maxsize + 1
 
@@ -237,9 +236,7 @@ class IORecord:
         }
         action = actions.get(containedType)
         if action is None:
-            raise Exception(
-                'Cannot pack or unpack the type "{}".'.format(containedType)
-            )
+            raise Exception('Cannot pack or unpack the type "{}".'.format(containedType))
         # this little trick will make this work for both reading and writing, yay!
         if contents is None or len(contents) == 0:
             contents = [None for _ in range(length)]
@@ -589,9 +586,7 @@ class Stream:
         self._stream = None
 
         if fileMode not in self._fileModes:
-            raise KeyError(
-                "{} not in {}".format("fileMode", list(self._fileModes.keys()))
-            )
+            raise KeyError("{} not in {}".format("fileMode", list(self._fileModes.keys())))
 
     def __deepcopy__(self, memo):
         """Open file objects can't be deepcopied so we clear them before copying."""

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Serial tests for the Context module."""
+
 import unittest
 
 from armi import context

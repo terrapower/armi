@@ -23,6 +23,7 @@ See Also
 armi.operators : Schedule calls to various interfaces
 armi.plugins : Register various interfaces
 """
+
 import copy
 from typing import Dict, List, NamedTuple, Union
 
@@ -207,9 +208,7 @@ class TightCoupler:
                     epsVec.append(norm(np.subtract(old, new), ord=2))
                 self.eps = norm(epsVec, ord=np.inf)
             else:
-                raise RuntimeError(
-                    "Currently only support up to 2D arrays for calculating convergence of arrays."
-                )
+                raise RuntimeError("Currently only support up to 2D arrays for calculating convergence of arrays.")
 
         # Check if convergence is satisfied. If so, or if reached max number of iters, then reset
         # the number of iterations
@@ -322,8 +321,7 @@ class Interface:
         """
         if self.name is None:
             raise RuntimeError(
-                "Interfaces derived from Interface must define "
-                "their name ({}).".format(type(self).__name__)
+                "Interfaces derived from Interface must define their name ({}).".format(type(self).__name__)
             )
         self._enabled = True
         self.reverseAtEOL = False
@@ -731,9 +729,7 @@ def _setTightCouplerByInterfaceFunction(interfaceClass, cs):
     if interfaceClass.function is None:
         return None
 
-    if not cs["tightCoupling"] or (
-        interfaceClass.function not in cs["tightCouplingSettings"]
-    ):
+    if not cs["tightCoupling"] or (interfaceClass.function not in cs["tightCouplingSettings"]):
         return None
 
     parameter = cs["tightCouplingSettings"][interfaceClass.function]["parameter"]
@@ -763,10 +759,7 @@ def getActiveInterfaceInfo(cs):
     for info in getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
         interfaceInfo += info
 
-    interfaceInfo = [
-        (iInfo.interfaceCls, iInfo.kwargs)
-        for iInfo in sorted(interfaceInfo, key=lambda x: x.order)
-    ]
+    interfaceInfo = [(iInfo.interfaceCls, iInfo.kwargs) for iInfo in sorted(interfaceInfo, key=lambda x: x.order)]
 
     return interfaceInfo
 
