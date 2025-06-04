@@ -188,9 +188,7 @@ class SystemBlueprint(yamlize.Object):
         from armi.reactor.reactors import Core  # avoid circular import
 
         if loadComps and gridDesign is not None:
-            self._loadComposites(
-                cs, bp, system, gridDesign.gridContents, gridDesign.orientationBOL
-            )
+            self._loadComposites(cs, bp, system, gridDesign.gridContents, gridDesign.orientationBOL)
 
             if isinstance(system, Core):
                 summarizeMaterialData(system)
@@ -207,10 +205,7 @@ class SystemBlueprint(yamlize.Object):
         for locationInfo, aTypeID in gridContents.items():
             # handle the hex-grid special case, where the user enters (ring, pos)
             i, j = locationInfo
-            if (
-                isinstance(container, Core)
-                and container.geomType == geometry.GeomType.HEX
-            ):
+            if isinstance(container, Core) and container.geomType == geometry.GeomType.HEX:
                 loc = container.spatialGrid.indicesToRingPos(i, j)
             else:
                 loc = locationInfo
@@ -222,9 +217,7 @@ class SystemBlueprint(yamlize.Object):
                 orientation = orientationBOL[loc]
 
             # create a new Composite to add to the grid
-            newAssembly = bp.constructAssem(
-                cs, specifier=aTypeID, orientation=orientation
-            )
+            newAssembly = bp.constructAssem(cs, specifier=aTypeID, orientation=orientation)
 
             # add the Composite to the grid
             posi = container.spatialGrid[i, j, 0]
