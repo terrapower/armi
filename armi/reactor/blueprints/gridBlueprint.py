@@ -403,8 +403,8 @@ class GridBlueprint(yamlize.Object):
     def _readGridContentsLattice(self):
         """Read an ascii map of grid contents.
 
-        This update the gridContents attribute, which is a dict mapping grid i,j,k indices to
-        textual specifiers (e.g. ``IC``)).
+        This update the gridContents attribute, which is a dict mapping grid i,j,k indices to textual specifiers
+        (e.g. ``IC``)).
         """
         self.readFromLatticeMap = True
         symmetry = geometry.SymmetryType.fromStr(self.symmetry)
@@ -418,11 +418,10 @@ class GridBlueprint(yamlize.Object):
         jOffset = 0
         if geom == geometry.GeomType.CARTESIAN and symmetry.domain == geometry.DomainType.FULL_CORE:
             # asciimaps is not smart about where the center should be, so we need to offset
-            # ppropriately to get (0,0) in the middle
+            # apropriately to get (0,0) in the middle
             nx, ny = _getGridSize(asciimap.keys())
 
-            # turns out this works great for even and odd cases. love it when integer math works in
-            # your favor
+            # turns out this works great for even and odd cases. love it when integer math works in your favor
             iOffset = int(-nx / 2)
             jOffset = int(-ny / 2)
 
@@ -468,12 +467,10 @@ class Grids(yamlize.KeyedList):
 
 def _getGridSize(idx) -> Tuple[int, int]:
     """
-    Return the number of spaces between the min and max of a collection of (int, int) tuples,
-    inclusive.
+    Return the number of spaces between the min and max of a collection of (int, int) tuples, inclusive.
 
-    This essentially returns the number of grid locations along the i, and j dimensions, given the
-    (i,j) indices of each occupied location. This is useful for determining certain grid offset
-    behavior.
+    This essentially returns the number of grid locations along the i, and j dimensions, given the (i,j) indices of each
+    occupied location. This is useful for determining certain grid offset behavior.
     """
     nx = max(key[0] for key in idx) - min(key[0] for key in idx) + 1
     ny = max(key[1] for key in idx) - min(key[1] for key in idx) + 1
