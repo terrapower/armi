@@ -2782,7 +2782,7 @@ class Composite(ArmiObject):
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         return list(self.iterComponents(typeSpec, exact))
 
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False) -> Iterator["Component"]:
+    def iterComponents(self, typeSpec: TypeSpec = None, exact: bool=False) -> Iterator["Component"]:
         """
         Return an iterator of armi.reactor.component.Component objects within this Composite.
 
