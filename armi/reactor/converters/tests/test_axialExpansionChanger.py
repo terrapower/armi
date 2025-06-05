@@ -705,12 +705,8 @@ class TestExceptions(AxialExpansionTestBase):
     def test_updateCompTempsBy1DTempFieldError(self):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 10)
-        with self.assertRaisesRegex(
-            RuntimeError, "tempGrid and tempField must have the same length."
-        ):
-            self.obj.expansionData.updateComponentTempsBy1DTempField(
-                tempGrid, tempField
-            )
+        with self.assertRaisesRegex(RuntimeError, "tempGrid and tempField must have the same length."):
+            self.obj.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
 
     def test_AssemblyAxialExpansionException(self):
         """Test that negative height exception is caught."""
@@ -747,9 +743,7 @@ class TestExceptions(AxialExpansionTestBase):
         }
         shield = Circle("shield", "FakeMat", **shieldDims)
         bNoFuel.add(shield)
-        with self.assertRaisesRegex(
-            RuntimeError, f"No fuel component within {bNoFuel}!"
-        ):
+        with self.assertRaisesRegex(RuntimeError, f"No fuel component within {bNoFuel}!"):
             expdata._isFuelLocked(bNoFuel)
 
 
@@ -1001,9 +995,7 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
         self.assertGreater(bExp.getMass(nuclide), bStd.getMass(nuclide))
 
 
-def checkColdBlockHeight(
-    bStd: HexBlock, bExp: HexBlock, assertType: Callable, strForAssertion: str
-):
+def checkColdBlockHeight(bStd: HexBlock, bExp: HexBlock, assertType: Callable, strForAssertion: str):
     assertType(
         bStd.getHeight(),
         bExp.getHeight(),

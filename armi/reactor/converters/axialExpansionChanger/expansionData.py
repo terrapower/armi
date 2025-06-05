@@ -117,8 +117,7 @@ class ExpansionData:
         for exp in expFrac:
             if exp <= 0.0:
                 raise RuntimeError(
-                    f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions "
-                    "should be greater than 0.0."
+                    f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions should be greater than 0.0."
                 )
         for c, p in zip(components, expFrac):
             self._expansionFactors[c] = p

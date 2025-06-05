@@ -147,13 +147,9 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
             lowerFuel1, lowerFuel2 = lowerB.getComponents(Flags.FUEL)
             upperFuel1, _upperFuel2 = upperB.getComponents(Flags.FUEL)
             # same grid locs, are linked
-            self.assertTrue(
-                AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel1)
-            )
+            self.assertTrue(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel1))
             # different grid locs, are not linked
-            self.assertFalse(
-                AssemblyAxialLinkage.areAxiallyLinked(lowerFuel2, upperFuel1)
-            )
+            self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel2, upperFuel1))
 
 
 class TestCheckOverlap(AxialExpansionTestBase):
@@ -249,9 +245,7 @@ class TestCheckOverlap(AxialExpansionTestBase):
         self.runTest(componentTypesToTest, self.assertTrue)
 
     def test_AnnularHexOverlappingThickAnnularHex(self):
-        componentTypesToTest = {
-            Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]
-        }
+        componentTypesToTest = {Hexagon: [{"op": 1.0, "ip": 0.8}, {"op": 1.2, "ip": 0.8}]}
         self.runTest(componentTypesToTest, self.assertTrue)
 
 
@@ -302,9 +296,7 @@ class TestBlockLink(TestCase):
 
     def test_emptyBlocks(self):
         """Test even smaller edge case when no blocks are passed."""
-        with self.assertRaisesRegex(
-            ValueError, "No blocks passed. Cannot determine links"
-        ):
+        with self.assertRaisesRegex(ValueError, "No blocks passed. Cannot determine links"):
             AssemblyAxialLinkage.getLinkedBlocks([])
 
     def test_onAssembly(self):

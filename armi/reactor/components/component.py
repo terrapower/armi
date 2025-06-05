@@ -342,9 +342,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                             f"Components cannot not have periods in their names: `{value}`"
                         )
                     else:
-                        raise KeyError(
-                            f"Bad component link `{dimName}` defined as `{value}` in {self}"
-                        )
+                        raise KeyError(f"Bad component link `{dimName}` defined as `{value}` in {self}")
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
@@ -688,7 +686,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         return self.p.numberDensities.get(nucName, 0.0)
 
-    def getNuclideNumberDensities(self, nucNames):
+    def getNuclideNumberDensities(self, nucNames: list[str]) -> list[float]:
         """Return a list of number densities for the nuc names requested."""
         return [self.p.numberDensities.get(nucName, 0.0) for nucName in nucNames]
 
@@ -863,7 +861,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         except ZeroDivisionError:
             return 0.0
 
-    def getMass(self, nuclideNames=None):
+    def getMass(self, nuclideNames: None | str | list[str] = None) -> float:
         r"""
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
