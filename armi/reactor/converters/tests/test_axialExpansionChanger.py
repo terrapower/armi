@@ -325,9 +325,7 @@ class TestConservation(AxialExpansionTestBase):
             axialExpChngr.axiallyExpandAssembly()
             # ensure that total U235/B10 and FE56 mass is conserved post-expansion
             newFE56Mass = a.getMass("FE56")
-            self.assertAlmostEqual(
-                newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
-            )
+            self.assertAlmostEqual(newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}")
             if a.hasFlags([Flags.FUEL, Flags.CONTROL]):
                 newMass = a.getMass("U235" if a.hasFlags(Flags.FUEL) else "B10")
                 self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
@@ -675,9 +673,7 @@ class TestExceptions(AxialExpansionTestBase):
         tempGrid = [5.0, 15.0, 35.0]
         tempField = linspace(25.0, 310.0, 3)
         with self.assertRaisesRegex(ValueError, "has no temperature points within it!"):
-            self.obj.expansionData.updateComponentTempsBy1DTempField(
-                tempGrid, tempField
-            )
+            self.obj.expansionData.updateComponentTempsBy1DTempField(tempGrid, tempField)
 
     def test_updateCompTempsBy1DTempFieldError(self):
         tempGrid = [5.0, 15.0, 35.0]
