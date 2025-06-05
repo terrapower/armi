@@ -2315,7 +2315,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return components[0]
 
-    def getComponent(self, typeSpec: TypeSpec, exact=False, quiet=False) -> Optional["Component"]:
+    def getComponent(self, typeSpec: TypeSpec, exact: bool=False, quiet: bool=False) -> Optional["Component"]:
         """
         Get a particular component from this object.
 
