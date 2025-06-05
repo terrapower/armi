@@ -239,9 +239,7 @@ class HexGrid(StructuredGrid):
         """Return the number of positions within a ring."""
         return hexagon.numPositionsInRing(ring)
 
-    def getNeighboringCellIndices(
-        self, i: int, j: int = 0, k: int = 0
-    ) -> List[IJKType]:
+    def getNeighboringCellIndices(self, i: int, j: int = 0, k: int = 0) -> List[IJKType]:
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
@@ -443,11 +441,7 @@ class HexGrid(StructuredGrid):
         elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
-            raise NotImplementedError(
-                "Unhandled symmetry condition for HexGrid: {}".format(
-                    str(self.symmetry)
-                )
-            )
+            raise NotImplementedError("Unhandled symmetry condition for HexGrid: {}".format(str(self.symmetry)))
 
     @staticmethod
     def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
@@ -625,10 +619,7 @@ class HexGrid(StructuredGrid):
                 newI *= -1
                 newJ *= -1
             return IndexLocation(newI, newJ, k, loc.grid)
-        raise TypeError(
-            f"Refusing to rotate an index {loc} from a grid {loc.grid} that "
-            f"is not consistent with {self}"
-        )
+        raise TypeError(f"Refusing to rotate an index {loc} from a grid {loc.grid} that is not consistent with {self}")
 
     def _roughlyEqual(self, other) -> bool:
         """Check that two hex grids are nearly identical.

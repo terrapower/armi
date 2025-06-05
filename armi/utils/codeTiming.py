@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities related to profiling code."""
+
 import copy
 import functools
 import os
@@ -61,9 +62,7 @@ def timed(*args):
         label = args[0]
         return time_decorator
     else:
-        raise ValueError(
-            f"The timed decorator has been misused. Input args were {args}"
-        )
+        raise ValueError(f"The timed decorator has been misused. Input args were {args}")
 
 
 class MasterTimer:
@@ -74,9 +73,7 @@ class MasterTimer:
     def __init__(self):
         if MasterTimer._instance is not None:
             raise RuntimeError(
-                "{} is a pseudo singleton, do not attempt to make more than one.".format(
-                    self.__class__.__name__
-                )
+                "{} is a pseudo singleton, do not attempt to make more than one.".format(self.__class__.__name__)
             )
         MasterTimer._instance = self
 
@@ -285,9 +282,7 @@ class MasterTimer:
                 yValues.append(yLevel)
 
         # plot set up: might not be necessary to scale the width with the height like this
-        plt.figure(
-            figsize=(3 + len(master.timers.values()), (3 + len(master.timers.values())))
-        )
+        plt.figure(figsize=(3 + len(master.timers.values()), (3 + len(master.timers.values()))))
         plt.axis([0.0, curTime, 0.0, yLevel + 1])
         plt.xlabel("Time (s)")
         plt.yticks(np.arange(yLevel + 1), [""] + names)
@@ -336,9 +331,7 @@ class _Timer:
         self._active = False
         self._times = []  # [(start, end), (start, end)...]
         self.overStart = 0  # necessary for recursion tracking
-        self.reportedTotal = (
-            0.0  # time elapsed since last asked to report time in __str__
-        )
+        self.reportedTotal = 0.0  # time elapsed since last asked to report time in __str__
 
         if start:
             self.start()

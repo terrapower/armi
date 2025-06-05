@@ -54,9 +54,7 @@ def databaseFactory(dbName: str, permission: str, version: Optional[str] = None)
             raise ValueError("Cannot specify version when reading a database.")
 
         if not dbPath.exists() or not dbPath.is_file():
-            raise ValueError(
-                "Database file `{}` does not appear to be a " "file.".format(dbName)
-            )
+            raise ValueError("Database file `{}` does not appear to be a file.".format(dbName))
 
         # probe for the database version. We started adding these with "database 3", so if
         # databaseVersion is not present, assume it's the "old" version

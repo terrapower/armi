@@ -21,7 +21,6 @@ from armi.utils.units import getTk
 
 
 class Sulfur(material.Fluid):
-
     propertyValidTemperature = {
         "density": ((334, 430), "K"),
         "volumetric expansion": ((334, 430), "K"),
@@ -36,8 +35,7 @@ class Sulfur(material.Fluid):
             )
             if TD_frac is not None:
                 runLog.warning(
-                    "Both 'sulfur_density_frac' and 'TD_frac' are specified "
-                    f"for {self}. 'TD_frac' will be used."
+                    f"Both 'sulfur_density_frac' and 'TD_frac' are specified for {self}. 'TD_frac' will be used."
                 )
             else:
                 self.updateTD(sulfur_density_frac)

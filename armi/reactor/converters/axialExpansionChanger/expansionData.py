@@ -202,9 +202,7 @@ class ExpansionData:
             # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
             self._expansionFactors[c] = c.getThermalExpansionFactor()
         elif c in self.componentReferenceTemperature:
-            growFrac = c.getThermalExpansionFactor(
-                T0=self.componentReferenceTemperature[c]
-            )
+            growFrac = c.getThermalExpansionFactor(T0=self.componentReferenceTemperature[c])
             self._expansionFactors[c] = growFrac
         else:
             # We want expansion factors relative to componentReferenceTemperature not
@@ -259,9 +257,7 @@ class ExpansionData:
         else:
             self.determineTargetComponent(b)
 
-    def determineTargetComponent(
-        self, b: "Block", flagOfInterest: Optional[Flags] = None
-    ) -> "Component":
+    def determineTargetComponent(self, b: "Block", flagOfInterest: Optional[Flags] = None) -> "Component":
         """Determines the component who's expansion will determine block height.
 
         This information is also stored on the block at ``Block.p.axialExpTargetComponent`` for faster

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
+
 import typing
 
 from numpy import array
@@ -42,9 +43,7 @@ def getDefaultReferenceAssem(assems):
     return assemsByNumBlocks[0] if assemsByNumBlocks else None
 
 
-def makeAssemsAbleToSnapToUniformMesh(
-    assems, nonUniformAssemFlags, referenceAssembly=None
-):
+def makeAssemsAbleToSnapToUniformMesh(assems, nonUniformAssemFlags, referenceAssembly=None):
     """Make this set of assemblies aware of the reference mesh so they can stay uniform as they axially expand."""
     if not referenceAssembly:
         referenceAssembly = getDefaultReferenceAssem(assems)
@@ -155,9 +154,7 @@ class AxialExpansionChanger:
                 b.p.heightBOL = b.getHeight()
                 b.completeInitialLoading()
 
-    def performPrescribedAxialExpansion(
-        self, a: Assembly, components: list, percents: list, setFuel=True
-    ):
+    def performPrescribedAxialExpansion(self, a: Assembly, components: list, percents: list, setFuel=True):
         """Perform axial expansion/contraction of an assembly given prescribed expansion percentages.
 
         .. impl:: Perform expansion/contraction, given a list of components and expansion coefficients.
@@ -262,9 +259,7 @@ class AxialExpansionChanger:
         cumulative loss of mass conservation.
         """
         self.linked = AssemblyAxialLinkage(a)
-        self.expansionData = ExpansionData(
-            a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot
-        )
+        self.expansionData = ExpansionData(a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot)
         self._checkAssemblyConstructionIsValid()
 
     def _checkAssemblyConstructionIsValid(self):
@@ -299,9 +294,7 @@ class AxialExpansionChanger:
         the expansion factor applied during applyMaterialMassFracsToNumberDensities.
         """
         for c in self.linked.a.iterComponents():
-            axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(
-                c.temperatureInC, c.inputTemperatureInC
-            )
+            axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(c.temperatureInC, c.inputTemperatureInC)
             c.changeNDensByFactor(axialExpansionFactor)
 
     def _isTopDummyBlockPresent(self):

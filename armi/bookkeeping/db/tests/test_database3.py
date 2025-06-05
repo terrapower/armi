@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the Database class."""
+
 import io
 import os
 import shutil
@@ -54,9 +55,7 @@ class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.td = TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
-        )
+        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"})
         reduceTestReactorRings(self.r, self.o.cs, maxNumRings=3)
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
@@ -166,18 +165,12 @@ class TestDatabase(unittest.TestCase):
         testBlock = testAssem[-1]
 
         # Test assem
-        hist = self.db.getHistoryByLocation(
-            testAssem, params=["chargeTime", "serialNum"]
-        )
-        expectedSn = {
-            (c, n): self.centralAssemSerialNums[c] for c in range(2) for n in range(2)
-        }
+        hist = self.db.getHistoryByLocation(testAssem, params=["chargeTime", "serialNum"])
+        expectedSn = {(c, n): self.centralAssemSerialNums[c] for c in range(2) for n in range(2)}
         self.assertEqual(expectedSn, hist["serialNum"])
 
         # test block
-        hists = self.db.getHistoriesByLocation(
-            [testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)]
-        )
+        hists = self.db.getHistoriesByLocation([testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)])
         expectedSn = {(c, 0): self.centralTopBlockSerialNums[c] for c in range(2)}
         self.assertEqual(expectedSn, hists[testBlock]["serialNum"])
 
@@ -186,9 +179,7 @@ class TestDatabase(unittest.TestCase):
             self.db.getHistoriesByLocation([testAssem, testBlock], params=["serialNum"])
 
         # if requested time step isn't written, return no content
-        hist = self.dbi.getHistory(
-            self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True
-        )
+        hist = self.dbi.getHistory(self.r.core[0], params=["chargeTime", "serialNum"], byLocation=True)
         self.assertIn((2, 0), hist["chargeTime"].keys())
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
@@ -367,9 +358,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             "serialNum",
             "timeNode",
         ]
-        self.assertEqual(
-            sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys)
-        )
+        self.assertEqual(sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys))
 
     def test_getH5File(self):
         """
@@ -404,9 +393,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         threeByThree = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
         dataJag = JaggedArray([twoByTwo, threeByThree], "testParam")
         dataJagNones = JaggedArray([twoByTwo, twoByOne, threeByThree], "testParam")
-        dataDict = np.array(
-            [{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}]
-        )
+        dataDict = np.array([{"bar": 2, "baz": 3}, {"foo": 4, "baz": 6}, {"foo": 7, "bar": 8}])
         self._compareRoundTrip(data3)
         self._compareRoundTrip(data1)
         self._compareRoundTrip(data1iNones)
@@ -449,9 +436,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             )
 
             # exercise the _resolveAttrs function
-            attrs = database.Database._resolveAttrs(
-                tnGroup["layout/serialNum"].attrs, tnGroup
-            )
+            attrs = database.Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
             self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
 
             keys = sorted(db2.keys())
@@ -461,9 +446,7 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_splitDatabase(self):
         self.makeHistory()
 
-        self.db.splitDatabase(
-            [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
-        )
+        self.db.splitDatabase([(c, n) for c in (0, 1) for n in range(2)], "-all-iterations")
 
         # Closing to copy back from fast path
         self.db.close()
@@ -500,9 +483,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         # test an edge case - no DB to split
         with self.assertRaises(ValueError):
             self.db.h5db = None
-            self.db.splitDatabase(
-                [(c, n) for c in (0, 1) for n in range(2)], "-all-iterations"
-            )
+            self.db.splitDatabase([(c, n) for c in (0, 1) for n in range(2)], "-all-iterations")
 
     @unittest.skipIf(GIT_EXE is None, "This test needs Git.")
     def test_grabLocalCommitHash(self):
@@ -550,9 +531,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertEqual(localHash, "thanks")
 
         # delete the .git directory
-        code = subprocess.run(
-            ["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        ).returncode
+        code = subprocess.run(["git", "clean", "-f"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode
         self.assertEqual(code, 0)
         code = subprocess.run(
             ["git", "clean", "-f", "-d"],
@@ -624,9 +603,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_SNAPSHOT_RESTART
         """
         # first successfully call to prepRestartRun
-        o, r = loadTestReactor(
-            TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"}
-        )
+        o, r = loadTestReactor(TEST_ROOT, customSettings={"reloadDBName": "reloadingDB.h5"})
         cs = o.cs
         reduceTestReactorRings(r, cs, maxNumRings=3)
 
@@ -656,9 +633,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         db = dbi.database
 
         # populate the db with some things
-        for cycle, node in (
-            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
-        ):
+        for cycle, node in ((cycle, node) for cycle in range(numCycles) for node in range(numNodes)):
             r.p.cycle = cycle
             r.p.timeNode = node
             r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
@@ -694,9 +669,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         db = dbi.database
 
         # populate the db with something
-        for cycle, node in (
-            (cycle, node) for cycle in range(numCycles) for node in range(numNodes)
-        ):
+        for cycle, node in ((cycle, node) for cycle in range(numCycles) for node in range(numNodes)):
             r.p.cycle = cycle
             r.p.timeNode = node
             r.p.cycleLength = 2000
@@ -760,15 +733,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             None,
         ]
 
-        self.assertEqual(
-            database.Layout.computeAncestors(serialNums, numChildren), expected_1
-        )
-        self.assertEqual(
-            database.Layout.computeAncestors(serialNums, numChildren, 2), expected_2
-        )
-        self.assertEqual(
-            database.Layout.computeAncestors(serialNums, numChildren, 3), expected_3
-        )
+        self.assertEqual(database.Layout.computeAncestors(serialNums, numChildren), expected_1)
+        self.assertEqual(database.Layout.computeAncestors(serialNums, numChildren, 2), expected_2)
+        self.assertEqual(database.Layout.computeAncestors(serialNums, numChildren, 3), expected_3)
 
 
 class TestWriteReadDatabase(unittest.TestCase):

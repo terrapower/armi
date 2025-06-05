@@ -19,6 +19,7 @@ Notes
 -----
 This is a very simple description of this material.
 """
+
 from armi.materials.material import SimpleSolid
 from armi.utils.units import getTk
 

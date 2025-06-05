@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests assemblies.py."""
+
 import math
 import pathlib
 import random
@@ -171,15 +172,12 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
         mat = uThZrFuel.getProperties()
         mat.applyInputParams(0.1, 0.0)
         self.assertAlmostEqual(
-            uThZrFuel.getMass("U235")
-            / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
+            uThZrFuel.getMass("U235") / (uThZrFuel.getMass("U238") + uThZrFuel.getMass("U235")),
             0.1,
         )
 
 
-def makeTestAssembly(
-    numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None
-):
+def makeTestAssembly(numBlocks, assemNum, spatialGrid=grids.HexGrid.fromPitch(1.0), r=None):
     coreGrid = r.core.spatialGrid if r is not None else spatialGrid
     a = HexAssembly("TestAssem", assemNum=assemNum)
     a.spatialGrid = grids.AxialGrid.fromNCells(numBlocks)
@@ -198,9 +196,7 @@ class Assembly_TestCase(unittest.TestCase):
         runLog.setVerbosity("error")
 
         self.r = tests.getEmptyHexReactor()
-        self.r.core.symmetry = geometry.SymmetryType(
-            geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-        )
+        self.r.core.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
 
         self.assembly = makeTestAssembly(NUM_BLOCKS, self.assemNum, r=self.r)
 
@@ -367,9 +363,7 @@ class Assembly_TestCase(unittest.TestCase):
             # np.ndarray
             assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
             # list
-            assert_allclose(
-                np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3
-            )
+            assert_allclose(np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3)
             # string
             self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
 
@@ -480,9 +474,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_getReactiveHeight(self):
         self.assembly[2].getComponent(Flags.FUEL).adjustMassEnrichment(0.01)
         self.assembly[2].setNumberDensity("PU239", 0.0)
-        bottomElevation, reactiveHeight = self.assembly.getReactiveHeight(
-            enrichThresh=0.02
-        )
+        bottomElevation, reactiveHeight = self.assembly.getReactiveHeight(enrichThresh=0.02)
         self.assertEqual(bottomElevation, 0.0)
         self.assertEqual(reactiveHeight, 20.0)
 
@@ -589,9 +581,7 @@ class Assembly_TestCase(unittest.TestCase):
             self.cs = self.cs.modified(newSettings=newSettings)
 
             with open(self.cs[CONF_LOADING_FILE], "r") as y:
-                y = textProcessors.resolveMarkupInclusions(
-                    y, pathlib.Path(self.cs.inputDirectory)
-                )
+                y = textProcessors.resolveMarkupInclusions(y, pathlib.Path(self.cs.inputDirectory))
                 self.r.blueprints = blueprints.Blueprints.load(y)
 
             self.r.blueprints._prepConstruction(self.cs)
@@ -640,9 +630,7 @@ class Assembly_TestCase(unittest.TestCase):
                     self.assertEqual(
                         cur,
                         ref,
-                        msg="The {} param differs: {} vs. {}".format(
-                            refParam, cur, ref
-                        ),
+                        msg="The {} param differs: {} vs. {}".format(refParam, cur, ref),
                     )
 
         # Block level height
@@ -677,9 +665,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_renameBlocksAccordingToAssemblyNum(self):
         self.assembly.p.assemNum = 55
         self.assembly.renameBlocksAccordingToAssemblyNum()
-        self.assertIn(
-            "{0:04d}".format(self.assembly.getNum()), self.assembly[1].getName()
-        )
+        self.assertIn("{0:04d}".format(self.assembly.getNum()), self.assembly[1].getName())
 
     def test_getBlocks(self):
         cur = self.assembly.getBlocks()
@@ -724,9 +710,7 @@ class Assembly_TestCase(unittest.TestCase):
         for bi, b in enumerate(self.assembly):
             b.p.power = bi
 
-        self.assertAlmostEqual(
-            self.assembly.getMaxParam("power"), len(self.assembly) - 1
-        )
+        self.assertAlmostEqual(self.assembly.getMaxParam("power"), len(self.assembly) - 1)
 
     def test_getElevationsMatchingParamValue(self):
         self.assembly[0].p.power = 0.0
@@ -742,9 +726,7 @@ class Assembly_TestCase(unittest.TestCase):
             nums.append(random.random())
             b.p.power = nums[-1]
         self.assertGreater(len(nums), 2)
-        self.assertAlmostEqual(
-            self.assembly.calcAvgParam("power"), sum(nums) / len(nums)
-        )
+        self.assertAlmostEqual(self.assembly.calcAvgParam("power"), sum(nums) / len(nums))
 
     def test_calcTotalParam(self):
         # Remake original assembly
@@ -886,8 +868,9 @@ class Assembly_TestCase(unittest.TestCase):
             self.assertEqual(
                 b,
                 a[bi],
-                msg="The {0}th block in the loop ({1}) is not equal to the"
-                " {0}th block in the assembly {2}".format(bi, b, "dummy"),
+                msg="The {0}th block in the loop ({1}) is not equal to the {0}th block in the assembly {2}".format(
+                    bi, b, "dummy"
+                ),
             )
 
     def test_getBlocksAndZ(self):
@@ -918,9 +901,7 @@ class Assembly_TestCase(unittest.TestCase):
 
         blocksAndHeights = self.assembly.getBlocksBetweenElevations(-10, 1000.0)
         self.assertEqual(len(blocksAndHeights), len(self.assembly))
-        self.assertAlmostEqual(
-            sum([height for _b, height in blocksAndHeights]), self.assembly.getHeight()
-        )
+        self.assertAlmostEqual(sum([height for _b, height in blocksAndHeights]), self.assembly.getHeight())
 
     def test_getParamValuesAtZ(self):
         # single value param
@@ -929,38 +910,26 @@ class Assembly_TestCase(unittest.TestCase):
         percentBuDef = b.p.paramDefs["percentBu"]
         originalLoc = percentBuDef.location
         try:
-            self.assertAlmostEqual(
-                87.5, self.assembly.getParamValuesAtZ("percentBu", 20.0)
-            )
+            self.assertAlmostEqual(87.5, self.assembly.getParamValuesAtZ("percentBu", 20.0))
             percentBuDef.location = parameters.ParamLocation.BOTTOM
             self.assertAlmostEqual(
                 82.5,
                 self.assembly.getParamValuesAtZ("percentBu", 5.0, fillValue="extend"),
             )
             percentBuDef.location = parameters.ParamLocation.TOP
-            self.assertAlmostEqual(
-                82.5, self.assembly.getParamValuesAtZ("percentBu", 15.0)
-            )
+            self.assertAlmostEqual(82.5, self.assembly.getParamValuesAtZ("percentBu", 15.0))
             for b in self.assembly:
                 b.p.percentBu = None
-            self.assertTrue(
-                np.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0))
-            )
+            self.assertTrue(np.isnan(self.assembly.getParamValuesAtZ("percentBu", 25.0)))
 
             # multiDimensional param
             for b, flux in zip(self.assembly, [[1, 10], [2, 8], [3, 6]]):
                 b.p.mgFlux = flux
-            self.assertTrue(
-                np.allclose([2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0))
-            )
-            self.assertTrue(
-                np.allclose([1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
-            )
+            self.assertTrue(np.allclose([2.5, 7.0], self.assembly.getParamValuesAtZ("mgFlux", 20.0)))
+            self.assertTrue(np.allclose([1.5, 9.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)))
             for b in self.assembly:
                 b.p.mgFlux = [0.0] * 2
-            self.assertTrue(
-                np.allclose([0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0))
-            )
+            self.assertTrue(np.allclose([0.0, 0.0], self.assembly.getParamValuesAtZ("mgFlux", 10.0)))
 
             # single value param at corner
             for b, temp in zip(self.assembly, [100, 200, 300]):
@@ -1004,9 +973,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_averagePlenumTemperature(self):
         """Test an assembly's average plenum temperature with a single block outlet."""
         averagePlenumTemp = 42.0
-        plenumBlock = makeTestAssembly(
-            1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0)
-        )
+        plenumBlock = makeTestAssembly(1, 2, grids.CartesianGrid.fromRectangle(1.0, 1.0))
 
         plenumBlock.setType("plenum", Flags.PLENUM)
         plenumBlock.p.THcoolantOutletT = averagePlenumTemp
@@ -1112,7 +1079,6 @@ class Assembly_TestCase(unittest.TestCase):
     def test_assem_hex_type(self):
         """Test that all children of a hex assembly are hexagons."""
         for b in self.assembly:
-
             # For a hex assem, confirm they are of type "Hexagon"
             pitch_comp_type = b.PITCH_COMPONENT_TYPE[0]
             self.assertEqual(pitch_comp_type.__name__, "Hexagon")
@@ -1203,16 +1169,10 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterZircMass1, igniterZircMass1AfterExpand, 7)
         # demonstrate that the duct and coolant mass are not conserved.
         # number density stays constant, mass is scaled by ratio of new to old height
-        self.assertAlmostEqual(
-            igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7
-        )
-        self.assertAlmostEqual(
-            igniterCoolMass, igniterCoolMassAfterExpand * 25.0 / 26.0, 7
-        )
+        self.assertAlmostEqual(igniterDuctMass, igniterDuctMassAfterExpand * 25.0 / 26.0, 7)
+        self.assertAlmostEqual(igniterCoolMass, igniterCoolMassAfterExpand * 25.0 / 26.0, 7)
         # Note the masses are linearly different by the amount that the plenum shrunk
-        self.assertAlmostEqual(
-            igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7
-        )
+        self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7)
 
         # Shrink the core back to the original mesh size to see if mass is conserved
         for a in self.r.core.getAssemblies():
@@ -1313,15 +1273,9 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         shieldPlenumMassAfterExpand = b.getMass() - coolMass
 
         # non mass conserving expansions
-        self.assertAlmostEqual(
-            shieldMassGrid * 26.0 / 25.0, shieldMassGridAfterExpand, 7
-        )
-        self.assertAlmostEqual(
-            shieldShieldMass * 26.0 / 25.0, shieldShieldMassAfterExpand, 7
-        )
-        self.assertAlmostEqual(
-            shieldPlenumMass, shieldPlenumMassAfterExpand * 75.0 / 67.0, 7
-        )
+        self.assertAlmostEqual(shieldMassGrid * 26.0 / 25.0, shieldMassGridAfterExpand, 7)
+        self.assertAlmostEqual(shieldShieldMass * 26.0 / 25.0, shieldShieldMassAfterExpand, 7)
+        self.assertAlmostEqual(shieldPlenumMass, shieldPlenumMassAfterExpand * 75.0 / 67.0, 7)
 
         # Shrink the core back to the original mesh size to see if mass is conserved
         for a in self.r.core.getAssemblies():

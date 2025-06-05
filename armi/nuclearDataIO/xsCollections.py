@@ -38,6 +38,7 @@ Examples
     blocksWithMacros = mc.createMacrosOnBlocklist(microLib, blocks)
 
 """
+
 import numpy as np
 from scipy import sparse
 
@@ -297,11 +298,7 @@ class XSCollection:
                     rtol=relativeTolerance,
                     atol=0.0,
                 ):
-                    verboseData = (
-                        ""
-                        if not verbose
-                        else "\n{},\n\n{}".format(myXsData, theirXsData)
-                    )
+                    verboseData = "" if not verbose else "\n{},\n\n{}".format(myXsData, theirXsData)
                     runLog.important(
                         "  {}{} {:<30} cross section is different.{}".format(
                             nuclideIDMsg, self.source, xsName, verboseData
@@ -312,13 +309,9 @@ class XSCollection:
                 # there are no dicts currently so code is untested
                 raise NotImplementedError("there are no dicts")
             elif not properties.areEqual(myXsData, theirXsData, relativeTolerance):
-                verboseData = (
-                    "" if not verbose else "\n{},\n\n{}".format(myXsData, theirXsData)
-                )
+                verboseData = "" if not verbose else "\n{},\n\n{}".format(myXsData, theirXsData)
                 runLog.important(
-                    "  {}{} {:<30} cross section is different.{}".format(
-                        nuclideIDMsg, self.source, xsName, verboseData
-                    )
+                    "  {}{} {:<30} cross section is different.{}".format(nuclideIDMsg, self.source, xsName, verboseData)
                 )
                 equal = False
         return equal
@@ -336,24 +329,15 @@ class XSCollection:
         3. Libraries are already merged if all attributes in the other library are None (This is nothing to merge!).
         """
         attributesToIgnore = ["source", HIGHORDER_SCATTER]
-        if all(
-            v is None for k, v in self.__dict__.items() if k not in attributesToIgnore
-        ):
+        if all(v is None for k, v in self.__dict__.items() if k not in attributesToIgnore):
             self.__dict__.update(other.__dict__)  # See note 2
-        elif all(
-            v is None for k, v in other.__dict__.items() if k not in attributesToIgnore
-        ):
+        elif all(v is None for k, v in other.__dict__.items() if k not in attributesToIgnore):
             pass  # See note 3
         else:
-            overlappingAttrs = set(
-                k for k, v in self.__dict__.items() if v is not None and k != "source"
-            )
-            overlappingAttrs &= set(
-                k for k, v in other.__dict__.items() if v is not None and k != "source"
-            )
+            overlappingAttrs = set(k for k, v in self.__dict__.items() if v is not None and k != "source")
+            overlappingAttrs &= set(k for k, v in other.__dict__.items() if v is not None and k != "source")
             raise AttributeError(
-                "Cannot merge {} and {}.\n Cross sections overlap in "
-                "attributes: {}.".format(
+                "Cannot merge {} and {}.\n Cross sections overlap in attributes: {}.".format(
                     self.source, other.source, ", ".join(overlappingAttrs)
                 )
             )
@@ -375,20 +359,14 @@ class MacroscopicCrossSectionCreator:
         self.buildScatterMatrix = buildScatterMatrix
         self.block = None
 
-    def createMacrosOnBlocklist(
-        self, microLibrary, blockList, nucNames=None, libType="micros"
-    ):
+    def createMacrosOnBlocklist(self, microLibrary, blockList, nucNames=None, libType="micros"):
         """Create macroscopic cross sections for a list of blocks."""
         for block in blockList:
-            block.macros = self.createMacrosFromMicros(
-                microLibrary, block, nucNames, libType=libType
-            )
+            block.macros = self.createMacrosFromMicros(microLibrary, block, nucNames, libType=libType)
 
         return blockList
 
-    def createMacrosFromMicros(
-        self, microLibrary, block, nucNames=None, libType="micros"
-    ):
+    def createMacrosFromMicros(self, microLibrary, block, nucNames=None, libType="micros"):
         """
         Creates a macroscopic cross section set based on a microscopic XS library using a block object.
 
@@ -437,9 +415,7 @@ class MacroscopicCrossSectionCreator:
         self._computeDiffusionConstants()
         self._buildTotalScatterMatrix()
         self._computeRemovalXS()
-        self.macros.chi = computeBlockAverageChi(
-            b=self.block, isotxsLib=self.microLibrary
-        )
+        self.macros.chi = computeBlockAverageChi(b=self.block, isotxsLib=self.microLibrary)
 
         return self.macros
 
@@ -595,8 +571,7 @@ def _getLibTypeSuffix(libType):
     else:
         libTypeSuffix = None
         runLog.warning(
-            "ARMI currently supports only micro XS libraries of types "
-            '"micros" (neutron) and "gammaXS" (gamma).'
+            'ARMI currently supports only micro XS libraries of types "micros" (neutron) and "gammaXS" (gamma).'
         )
 
     return libTypeSuffix
@@ -633,12 +608,7 @@ def computeNeutronEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Converted here to obtain J/cm (eV-bn * 1/bn-cm * J / eV)
     """
-    return (
-        computeMacroscopicGroupConstants(
-            "neutronHeating", numberDensities, lib, microSuffix
-        )
-        * units.JOULES_PER_eV
-    )
+    return computeMacroscopicGroupConstants("neutronHeating", numberDensities, lib, microSuffix) * units.JOULES_PER_eV
 
 
 def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
@@ -672,12 +642,7 @@ def computeGammaEnergyDepositionConstants(numberDensities, lib, microSuffix):
 
     Convert here to obtain J/cm (eV-bn * 1/bn-cm * J / eV)
     """
-    return (
-        computeMacroscopicGroupConstants(
-            "gammaHeating", numberDensities, lib, microSuffix
-        )
-        * units.JOULES_PER_eV
-    )
+    return computeMacroscopicGroupConstants("gammaHeating", numberDensities, lib, microSuffix) * units.JOULES_PER_eV
 
 
 def computeFissionEnergyGenerationConstants(numberDensities, lib, microSuffix):
@@ -756,11 +721,7 @@ def computeCaptureEnergyGenerationConstants(numberDensities, lib, microSuffix):
     for xs in CAPTURE_XS:
         if captureEnergyFactor is None:
             captureEnergyFactor = np.zeros(
-                np.shape(
-                    computeMacroscopicGroupConstants(
-                        xs, numberDensities, lib, microSuffix, libType="micros"
-                    )
-                )
+                np.shape(computeMacroscopicGroupConstants(xs, numberDensities, lib, microSuffix, libType="micros"))
             )
 
         captureEnergyFactor += computeMacroscopicGroupConstants(
@@ -870,42 +831,29 @@ def computeMacroscopicGroupConstants(
             try:
                 multLibNuclide = multLib.getNuclide(nuclideName, microSuffix)
             except KeyError:
-                skippedMultNuclides.append(
-                    nuclideName
-                )  # Nuclide does not exist in the library
+                skippedMultNuclides.append(nuclideName)  # Nuclide does not exist in the library
                 continue
 
-        microGroupConstants = _getMicroGroupConstants(
-            libNuclide, constantName, nuclideName, libType
-        )
+        microGroupConstants = _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType)
 
         multiplierVal = _getXsMultiplier(multLibNuclide, multConstant, libType)
 
         if macroGroupConstants is None:
             macroGroupConstants = np.zeros(microGroupConstants.shape)
 
-        if (
-            microGroupConstants.shape != macroGroupConstants.shape
-            and not microGroupConstants.any()
-        ):
+        if microGroupConstants.shape != macroGroupConstants.shape and not microGroupConstants.any():
             microGroupConstants = np.zeros(macroGroupConstants.shape)
 
-        macroGroupConstants += (
-            np.asarray(numberDensity) * microGroupConstants * multiplierVal
-        )
+        macroGroupConstants += np.asarray(numberDensity) * microGroupConstants * multiplierVal
 
     if skippedNuclides:
-        msg = "The following nuclides are not in microscopic library {}: {}".format(
-            lib, skippedNuclides
-        )
+        msg = "The following nuclides are not in microscopic library {}: {}".format(lib, skippedNuclides)
         runLog.error(msg, single=True)
         raise ValueError(msg)
 
     if skippedMultNuclides:
         runLog.debug(
-            "The following nuclides are not in multiplier library {}: {}".format(
-                multLib, skippedMultNuclides
-            ),
+            "The following nuclides are not in multiplier library {}: {}".format(multLib, skippedMultNuclides),
             single=True,
         )
 
@@ -935,9 +883,7 @@ def _getMicroGroupConstants(libNuclide, constantName, nuclideName, libType):
 
     if not microGroupConstants.any():
         runLog.debug(
-            "Nuclide {} does not have {} microscopic group constants.".format(
-                nuclideName, constantName
-            ),
+            "Nuclide {} does not have {} microscopic group constants.".format(nuclideName, constantName),
             single=True,
         )
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test report visualization."""
+
 import unittest
 
 import numpy as np
@@ -38,9 +39,7 @@ class TestVtkMesh(unittest.TestCase):
         self.assertEqual(mesh.offsets.size, 0)
         self.assertEqual(mesh.cellTypes.size, 0)
 
-        verts = np.array(
-            [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.25, 0.25, 0.5]]
-        )
+        verts = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.25, 0.25, 0.5]])
         conn = np.array([0, 1, 2, 3])
         offsets = np.array([4])
         cellTypes = np.array([VtkTetra.tid])
@@ -64,9 +63,7 @@ class TestVisDump(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
-        _, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         cls.hexBlock = next(cls.r.core.iterBlocks())
 
@@ -81,11 +78,7 @@ class TestVisDump(unittest.TestCase):
             mult=1.0,
         )
         cls.cartesianBlock.add(cartesianComponent)
-        cls.cartesianBlock.add(
-            components.Circle(
-                "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
-            )
-        )
+        cls.cartesianBlock.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0))
 
     def test_dumpReactorVtk(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash

@@ -18,6 +18,7 @@ The neutronics physics package in the ARMI framework.
 Neutronics encompasses the modeling of nuclear chain reactions and their associated transmutation
 and decay.
 """
+
 # ruff: noqa: F401
 from enum import IntEnum
 

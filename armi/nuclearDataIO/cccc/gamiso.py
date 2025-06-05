@@ -59,9 +59,7 @@ def compare(lib1, lib2):
 
 
 def compareNuclideXS(nuc1, nuc2):
-    equal = nuc1.gamisoMetadata.compare(
-        nuc2.gamisoMetadata, nuc1.container, nuc2.container
-    )
+    equal = nuc1.gamisoMetadata.compare(nuc2.gamisoMetadata, nuc1.container, nuc2.container)
     equal &= nuc1.gammaXS.compare(nuc2.gammaXS, [])
     return equal
 
@@ -89,9 +87,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
         return False
     elif len(lib.xsIDs) > 1:
         runLog.warning(
-            "Cannot add dummy nuclide data to GAMISO library {} containing data for more than 1 XS ID.".format(
-                lib
-            )
+            "Cannot add dummy nuclide data to GAMISO library {} containing data for more than 1 XS ID.".format(lib)
         )
         return False
 
@@ -137,11 +133,7 @@ class _GamisoIO(isotxs.IsotxsIO):
         return _GamisoNuclideIO
 
     def _rwMessage(self):
-        runLog.debug(
-            "{} GAMISO data {}".format(
-                "Reading" if "r" in self._fileMode else "Writing", self
-            )
-        )
+        runLog.debug("{} GAMISO data {}".format("Reading" if "r" in self._fileMode else "Writing", self))
 
     def _rwLibraryEnergies(self, record):
         # neutron velocity (cm/s)

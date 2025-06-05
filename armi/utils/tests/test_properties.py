@@ -12,15 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the properties class."""
+
 import unittest
 
 from armi.utils import properties
 
 
 class ImmutableClass:
-    myNum = properties.createImmutableProperty(
-        "myNum", "You must invoke the initialize() method", "My random number"
-    )
+    myNum = properties.createImmutableProperty("myNum", "You must invoke the initialize() method", "My random number")
 
     def initialize(self, val):
         properties.unlockImmutableProperties(self)

@@ -92,17 +92,13 @@ class CompareCases(EntryPoint):
             type=str,
             help="The database to be used as the comparison, evaluated case.",
         )
-        parser.add_argument(
-            "--output", "-o", type=str, default="", help="Output file name."
-        )
+        parser.add_argument("--output", "-o", type=str, default="", help="Output file name.")
 
     def parse(self, args):
         EntryPoint.parse(self, args)
 
         if self.args.timestepCompare:
-            self.args.timestepCompare = list(
-                tuple(map(int, step.split("."))) for step in self.args.timestepCompare
-            )
+            self.args.timestepCompare = list(tuple(map(int, step.split("."))) for step in self.args.timestepCompare)
 
         if self.args.weights:
             self.args.weights = dict(w.split(".") for w in self.args.weights)
@@ -176,15 +172,11 @@ class CompareSuites(CompareCases):
         from armi import cases
 
         if not os.path.exists(self.args.reference):
-            runLog.error(
-                "Could not find reference directory {}".format(self.args.reference)
-            )
+            runLog.error("Could not find reference directory {}".format(self.args.reference))
             sys.exit(1)
 
         if not os.path.exists(self.args.comparison):
-            runLog.error(
-                "Could not find comparison directory {}".format(self.args.comparison)
-            )
+            runLog.error("Could not find comparison directory {}".format(self.args.comparison))
             sys.exit(1)
 
         refSuite = cases.CaseSuite(self.cs)

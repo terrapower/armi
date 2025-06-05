@@ -194,9 +194,7 @@ class AssemblyAxialLinkage:
         raise ValueError("No blocks passed. Cannot determine links")
 
     @staticmethod
-    def _getLinkedBlocks(
-        blocks: typing.Sequence[Block], nBlocks: int
-    ) -> dict[Block, AxialLink[Block]]:
+    def _getLinkedBlocks(blocks: typing.Sequence[Block], nBlocks: int) -> dict[Block, AxialLink[Block]]:
         # Use islice to avoid making intermediate lists of subsequences of blocks
         lower = itertools.chain((None,), itertools.islice(blocks, 0, nBlocks - 1))
         links = {}
@@ -210,9 +208,7 @@ class AssemblyAxialLinkage:
             for c in iterSolidComponents(b):
                 self._getLinkedComponents(b, c)
 
-    def _findComponentLinkedTo(
-        self, c: Component, otherBlock: typing.Optional[Block]
-    ) -> typing.Optional[Component]:
+    def _findComponentLinkedTo(self, c: Component, otherBlock: typing.Optional[Block]) -> typing.Optional[Component]:
         if otherBlock is None:
             return None
         candidate = None

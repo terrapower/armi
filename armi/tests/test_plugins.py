@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Provides functionality for testing implementations of plugins."""
+
 import unittest
 from copy import deepcopy
 from typing import Optional
@@ -141,9 +142,7 @@ class TestPluginRegistration(unittest.TestCase):
         pm = getPluginManagerOrFail()
         pm.register(BeforeReactorPlugin)
         try:
-            o, r = loadTestReactor(
-                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-            )
+            o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
             self.assertTrue(o.cs.beforeReactorConstructionFlag)
 
             # Check that hook is called for database loading
@@ -153,9 +152,7 @@ class TestPluginRegistration(unittest.TestCase):
                 db = dbi.database
                 db.writeToDB(r)
                 db.close()
-                o = loadOperator(
-                    self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True
-                )
+                o = loadOperator(self._testMethodName + ".h5", 0, 0, callReactorConstructionHook=True)
             self.assertTrue(o.cs.beforeReactorConstructionFlag)
         finally:
             pm.unregister(BeforeReactorPlugin)
@@ -221,9 +218,7 @@ class TestPluginBasics(unittest.TestCase):
             :tests: R_ARMI_PLUGIN_INTERFACES
         """
         # generate a test operator, with a full set of interfaces from plugsin
-        o = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )[0]
+        o = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")[0]
         pm = getPluginManagerOrFail()
 
         # test the plugins were generated

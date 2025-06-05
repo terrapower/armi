@@ -28,6 +28,7 @@ that can be improved upon. For instance:
   wouldn't be too difficult to do here either. Also future work, but probably not super
   important unless dealing with really big meshes.
 """
+
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
@@ -86,14 +87,10 @@ class VtkDumper(dumper.VisFileDumper):
 
         # include and exclude params are mutually exclusive
         if includeParams is not None and excludeParams is not None:
-            raise ValueError(
-                "includeParams and excludeParams can not both be used at the same time"
-            )
+            raise ValueError("includeParams and excludeParams can not both be used at the same time")
 
         blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
-        assems = r.getChildren(
-            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-        )
+        assems = r.getChildren(deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly))
 
         blockMesh = utils.createReactorBlockMesh(r)
         assemMesh = utils.createReactorAssemMesh(r)
@@ -140,7 +137,6 @@ def _collectObjectData(
     includeParams: Optional[Set[str]] = None,
     excludeParams: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
-
     allData = dict()
 
     for pDef in type(objs[0]).pDefs.toWriteToDB(parameters.SINCE_ANYTHING):
@@ -182,8 +178,9 @@ def _collectObjectData(
             if data.dtype.kind == "O":
                 # Didn't work
                 runLog.warning(
-                    "The parameter data for  `{}` could not be coerced into "
-                    "a native type for output; skipping.".format(pDef.name)
+                    "The parameter data for  `{}` could not be coerced into a native type for output; skipping.".format(
+                        pDef.name
+                    )
                 )
                 continue
         if len(data.shape) != 1:

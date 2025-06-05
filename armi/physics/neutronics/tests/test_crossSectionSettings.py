@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """XS Settings tests."""
+
 import io
 import unittest
 
@@ -275,9 +276,7 @@ class TestXSSettings(unittest.TestCase):
         # caseSetting using the ``XSModelingOptions`` or using
         # a dictionary.
         cs = _setInitialXSSettings()
-        cs[CONF_CROSS_SECTION].update(
-            {"CA": XSModelingOptions("CA", geometry="0D"), "DA": {CONF_GEOM: "0D"}}
-        )
+        cs[CONF_CROSS_SECTION].update({"CA": XSModelingOptions("CA", geometry="0D"), "DA": {CONF_GEOM: "0D"}})
         self.assertIn("AA", cs[CONF_CROSS_SECTION])
         self.assertIn("BA", cs[CONF_CROSS_SECTION])
         self.assertIn("CA", cs[CONF_CROSS_SECTION])
@@ -312,9 +311,7 @@ class TestXSSettings(unittest.TestCase):
         cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
         cs[CONF_CROSS_SECTION] = XSSettings()
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", geometry="0D")
-        cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions(
-            "BA", geometry="0D", blockRepresentation="Average"
-        )
+        cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions("BA", geometry="0D", blockRepresentation="Average")
 
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, None)
         self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
@@ -324,9 +321,7 @@ class TestXSSettings(unittest.TestCase):
             cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage")
         self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
 
     def test_csBlockRepresentationFileLocation(self):
@@ -344,9 +339,7 @@ class TestXSSettings(unittest.TestCase):
             cs[CONF_XS_BLOCK_REPRESENTATION],
             cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage")
 
         # Check Average
         cs[CONF_XS_BLOCK_REPRESENTATION] = "Average"
@@ -359,9 +352,7 @@ class TestXSSettings(unittest.TestCase):
 
         # Check Median
         cs[CONF_XS_BLOCK_REPRESENTATION] = "Average"
-        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions(
-            "AA", xsFileLocation=[], blockRepresentation="Median"
-        )
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", xsFileLocation=[], blockRepresentation="Median")
         cs[CONF_CROSS_SECTION].setDefaults(
             cs[CONF_XS_BLOCK_REPRESENTATION],
             cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
@@ -372,25 +363,17 @@ class TestXSSettings(unittest.TestCase):
         """Test the configuration options of the ``setDefaults`` method."""
         cs = caseSettings.Settings()
         cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
-        cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=None
-        )
+        cs[CONF_CROSS_SECTION].setDefaults(blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=None)
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
 
-        cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=True
-        )
+        cs[CONF_CROSS_SECTION].setDefaults(blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=True)
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
 
-        cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=False
-        )
+        cs[CONF_CROSS_SECTION].setDefaults(blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=False)
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["fuel"])
 
         cs[CONF_CROSS_SECTION].setDefaults(
             blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION],
             validBlockTypes=["control", "fuel", "plenum"],
         )
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["control", "fuel", "plenum"]
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["control", "fuel", "plenum"])
