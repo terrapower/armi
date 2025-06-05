@@ -30,7 +30,7 @@ from scipy import interpolate
 from armi import runLog
 from armi.materials.material import Fluid
 from armi.reactor import assemblyParameters, blocks, composites, grids
-from armi.reactor.flags import Flags
+from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool
 
@@ -872,14 +872,14 @@ class Assembly(composites.Composite):
     def hasContinuousCoolantChannel(self):
         return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
-    def getFirstBlock(self, typeSpec=None, exact=False) -> Optional[blocks.Block]:
+    def getFirstBlock(self, typeSpec: TypeSpec = None, exact: bool = False) -> Optional[blocks.Block]:
         """Find the first block that matches the spec.
 
         Parameters
         ----------
-        typeSpec : flag or list of flags, optional
+        typeSpec
             Specification to require on the returned block.
-        exact : bool, optional
+        exact
             Require block to exactly match ``typeSpec``
 
         Returns
