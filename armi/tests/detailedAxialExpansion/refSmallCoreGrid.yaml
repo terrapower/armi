@@ -2,15 +2,11 @@ core:
   geom: hex
   symmetry: third periodic
   lattice map: |
-         -  SH
-          MC  SH
-            MC  SH
-          MC  MC  SH
-            AF  MC  SH
-              AF  MC
-            IC  LA  MC
-              IC  LA
-            PC  IC  MC
+    SH
+      AF
+    MC  SH
+      LA
+    PC  IC
 
 fourPin:
   geom: hex_corners_up
