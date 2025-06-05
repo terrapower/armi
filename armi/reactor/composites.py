@@ -913,7 +913,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMass(self, nuclideNames=None) -> float:
+    def getMass(self, nuclideNames=Optional[str]) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -927,7 +927,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        nuclideNames : str, optional
+        nuclideNames
             The nuclide/element specifier to get the mass of in the object.
             If omitted, total mass is returned.
 

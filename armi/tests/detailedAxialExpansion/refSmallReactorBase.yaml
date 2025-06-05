@@ -115,31 +115,31 @@ blocks:
 
     axial shield multiPin: &block_fuel_multiPin_axial_shield
         grid name: fourPin
-        shield:
+        shield 1: &component_shield_shield1
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
             od: 0.86602
-            latticeIDs: [1,2,3,4]
-        bond:
+            latticeIDs: [1]
+        bond 1: &component_shield_bond1
             shape: Circle
             material: Sodium
             Tinput: 25.0
             Thot: 470.0
-            id: shield.od
-            od: clad.id
-            latticeIDs: [1,2,3,4]
-        clad:
+            id: shield 1.od
+            od: clad 1.id
+            latticeIDs: [1]
+        clad 1: &component_shield_clad1
             shape: Circle
             material: HT9
             Tinput: 25.0
             Thot: 470.0
             id: 1.0
             od: 1.09
-            latticeIDs: [1,2,3,4]
-        wire:
+            latticeIDs: [1]
+        wire 1: &component_shield_wire1
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -148,10 +148,47 @@ blocks:
             helixDiameter: 1.19056
             id: 0.0
             od: 0.10056
-            latticeIDs: [1,2,3,4]
+            latticeIDs: [1]
+        shield 2:
+            <<: *component_shield_shield1
+            latticeIDs: [2]
+        bond 2:
+            <<: *component_shield_bond1
+            latticeIDs: [2]
+        clad 2:
+            <<: *component_shield_clad1
+            latticeIDs: [2]
+        wire 2:
+            <<: *component_shield_wire1
+            latticeIDs: [2]
+        shield 3:
+            <<: *component_shield_shield1
+            latticeIDs: [3]
+        bond 3:
+            <<: *component_shield_bond1
+            latticeIDs: [3]
+        clad 3:
+            <<: *component_shield_clad1
+            latticeIDs: [3]
+        wire 3:
+            <<: *component_shield_wire1
+            latticeIDs: [3]
+        shield 4:
+            <<: *component_shield_shield1
+            latticeIDs: [4]
+        bond 4:
+            <<: *component_shield_bond1
+            latticeIDs: [4]
+        clad 4:
+            <<: *component_shield_clad1
+            latticeIDs: [4]
+        wire 4:
+            <<: *component_shield_wire1
+            latticeIDs: [4]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
+        axial expansion target component: shield 1
 
     fuel: &block_fuelPin
         fuel: &component_fuel_fuel

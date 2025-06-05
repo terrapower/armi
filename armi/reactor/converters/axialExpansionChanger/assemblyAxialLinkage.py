@@ -75,16 +75,10 @@ def areAxiallyLinked(componentA: Component, componentB: Component) -> bool:
             componentB.spatialLocator, MultiIndexLocation
         ):
             ## Case 2
-            fromA = set(
-                (index[0], index[1]) for index in componentA.spatialLocator.indices
-            )
-            fromB = set(
-                (index[0], index[1]) for index in componentB.spatialLocator.indices
-            )
-            if fromA == fromB:
+            fromA = list(list(index) for index in componentA.spatialLocator.indices)
+            fromB = list(list(index) for index in componentB.spatialLocator.indices)
+            if all(index in fromB for index in fromA):
                 linked = _checkOverlap(componentA, componentB)
-            else:
-                linked = False
         elif componentA.getDimension("mult") == componentB.getDimension("mult"):
             ## Case 3
             linked = _checkOverlap(componentA, componentB)
@@ -253,8 +247,7 @@ class AssemblyAxialLinkage:
         RuntimeError
             multiple candidate components are found to be axially linked to a component
         """
-        linkedBlocks = self.linkedBlocks[b]
-        lowerC = self._findComponentLinkedTo(c, linkedBlocks.lower)
+        lowerC = self._findComponentLinkedTo(c, self.linkedBlocks[b].lower)
         lstLinkedC = AxialLink(lowerC)
         self.linkedComponents[c] = lstLinkedC
 

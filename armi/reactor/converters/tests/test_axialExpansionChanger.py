@@ -310,7 +310,7 @@ class TestConservation(AxialExpansionTestBase):
                 continue
             self.complexConservationTest(a)
 
-    def complexConservationTest(self, a):
+    def complexConservationTest(self, a: HexAssembly):
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -325,17 +325,18 @@ class TestConservation(AxialExpansionTestBase):
                     )
             # get U235/B10 and FE56 mass pre-expansion
             prevFE56Mass = a.getMass("FE56")
-            prevMass = self._getMass(a)
+            if a.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                prevMass = a.getMass("U235" if a.hasFlags(Flags.FUEL) else "B10")
             # compute thermal expansion coeffs and expand
             axialExpChngr.expansionData.computeThermalExpansionFactors()
             axialExpChngr.axiallyExpandAssembly()
             # ensure that total U235/B10 and FE56 mass is conserved post-expansion
             newFE56Mass = a.getMass("FE56")
-            newMass = self._getMass(a)
             self.assertAlmostEqual(
                 newFE56Mass / prevFE56Mass, 1.0, places=14, msg=f"{a}"
             )
-            if newMass:
+            if a.hasFlags([Flags.FUEL, Flags.CONTROL]):
+                newMass = a.getMass("U235" if a.hasFlags(Flags.FUEL) else "B10")
                 self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
 
         newMasses, newNDens = self._getComponentMassAndNDens(a)
@@ -344,18 +345,6 @@ class TestConservation(AxialExpansionTestBase):
             self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
-
-    @staticmethod
-    def _getMass(a):
-        """Get the mass of an assembly. The conservation of HT9 pins in shield assems are accounted
-        for in FE56 conservation checks.
-        """
-        newMass = None
-        if a.hasFlags(Flags.FUEL):
-            newMass = a.getMass("U235")
-        elif a.hasFlags(Flags.CONTROL):
-            newMass = a.getMass("B10")
-        return newMass
 
     def test_prescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
