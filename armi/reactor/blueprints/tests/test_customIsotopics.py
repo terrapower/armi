@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit test custom isotopics."""
+
 import unittest
 from logging import DEBUG
 
@@ -347,9 +348,7 @@ assemblies:
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
         cls.numUZrNuclides = 29  # Number of nuclides defined `nuclide flags`
-        cls.numCustomNuclides = (
-            28  # Number of nuclides defined in `nuclide flags` without Zr
-        )
+        cls.numCustomNuclides = 28  # Number of nuclides defined in `nuclide flags` without Zr
 
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
@@ -430,9 +429,7 @@ assemblies:
         # has a density from the blueprint and adjusted from Tinput -> Thot
         s = Sodium()
         self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
-        self.assertAlmostEqual(
-            sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25))
-        )
+        self.assertAlmostEqual(sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25)))
 
     def test_customDensityLogsAndErrors(self):
         """Test that the right warning messages and errors are emitted when applying custom densities."""
@@ -456,9 +453,7 @@ assemblies:
                 streamVal,
                 msg=streamVal,
             )
-            self.assertIn(
-                "A custom material density was specified", streamVal, msg=streamVal
-            )
+            self.assertIn("A custom material density was specified", streamVal, msg=streamVal)
             self.assertIn(
                 "A custom isotopic with associated density has been specified for non-`Custom`",
                 streamVal,
@@ -503,6 +498,7 @@ assemblies:
         keys2 = set([i for i, v in enumerate(fuel2.p.numberDensities) if v == 0.0])
         keys4 = set([i for i, v in enumerate(fuel4.p.numberDensities) if v == 0.0])
         self.assertEqual(keys2, keys4)
+        np.testing.assert_almost_equal(fuel2.p.numberDensities, fuel4.p.numberDensities)
 
     def test_numberDensities(self):
         """Ensure that the custom isotopics can be specified via number densities.
@@ -520,9 +516,7 @@ assemblies:
         for i, nuc in enumerate(fuel2.p.nuclides):
             self.assertIn(nuc, fuel5.p.nuclides)
             j = np.where(fuel5.p.nuclides == nuc)[0][0]
-            self.assertAlmostEqual(
-                fuel2.p.numberDensities[i], fuel5.p.numberDensities[j]
-            )
+            self.assertAlmostEqual(fuel2.p.numberDensities[i], fuel5.p.numberDensities[j])
 
     def test_numberDensitiesAnchor(self):
         fuel4 = self.a[4].getComponent(Flags.FUEL)
@@ -689,7 +683,4 @@ assemblies:
                     cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: x})
                     _ = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
 
-                self.assertTrue(
-                    "Failed to determine nuclides for modeling"
-                    in str(context.exception)
-                )
+                self.assertTrue("Failed to determine nuclides for modeling" in str(context.exception))

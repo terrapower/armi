@@ -34,9 +34,7 @@ class ThU(FuelMaterial):
         self.refDens = 11.68
 
     def getEnrichment(self):
-        return self.getMassFrac("U233") / (
-            self.getMassFrac("U233") + self.getMassFrac("TH232")
-        )
+        return self.getMassFrac("U233") / (self.getMassFrac("U233") + self.getMassFrac("TH232"))
 
     def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
         runLog.warning(

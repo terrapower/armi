@@ -18,6 +18,7 @@ This module defines the ARMI input for a component definition, and code for cons
 
 Special logic is required for handling component links.
 """
+
 import yamlize
 
 from armi import materials, runLog
@@ -41,11 +42,7 @@ class ComponentDimension(yamlize.Object):
         self.value = value
         if isinstance(value, str):
             if not components.COMPONENT_LINK_REGEX.search(value):
-                raise ValueError(
-                    "Bad component link `{}`, must be in form `name.dimension`".format(
-                        value
-                    )
-                )
+                raise ValueError("Bad component link `{}`, must be in form `name.dimension`".format(value))
 
     def __repr__(self):
         return "<ComponentDimension value: {}>".format(self.value)
@@ -157,22 +154,15 @@ class ComponentBlueprint(yamlize.Object):
         if name == "cladding":
             # many users were mixing cladding and clad and it caused issues downstream
             # where physics plugins checked for clad.
-            raise ValueError(
-                f"Cannot set ComponentBlueprint.name to {name}. Prefer 'clad'."
-            )
+            raise ValueError(f"Cannot set ComponentBlueprint.name to {name}. Prefer 'clad'.")
 
     shape = yamlize.Attribute(type=str)
 
     @shape.validator
     def shape(self, shape):
         normalizedShape = shape.strip().lower()
-        if (
-            normalizedShape not in components.ComponentType.TYPES
-            and normalizedShape != COMPONENT_GROUP_SHAPE
-        ):
-            raise ValueError(
-                f"Cannot set ComponentBlueprint.shape to unknown shape: {shape}"
-            )
+        if normalizedShape not in components.ComponentType.TYPES and normalizedShape != COMPONENT_GROUP_SHAPE:
+            raise ValueError(f"Cannot set ComponentBlueprint.shape to unknown shape: {shape}")
 
     material = yamlize.Attribute(type=str, default=None)
     Tinput = yamlize.Attribute(type=float, default=None)
@@ -223,9 +213,7 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = composites.Composite(self.name)
             for groupedComponent in group:
                 componentDesign = blueprint.componentDesigns[groupedComponent.name]
-                component = componentDesign.construct(
-                    blueprint, {}, inputHeightsConsideredHot
-                )
+                component = componentDesign.construct(blueprint, {}, inputHeightsConsideredHot)
                 # override free component multiplicity if it's set based on the group definition
                 component.setDimension("mult", groupedComponent.mult)
                 _setComponentFlags(component, self.flags, blueprint)
@@ -236,9 +224,7 @@ class ComponentBlueprint(yamlize.Object):
             constructedObject = components.factory(shape, [], kwargs)
             _setComponentFlags(constructedObject, self.flags, blueprint)
             insertDepletableNuclideKeys(constructedObject, blueprint)
-            constructedObject.p.theoreticalDensityFrac = (
-                constructedObject.material.getTD()
-            )
+            constructedObject.p.theoreticalDensityFrac = constructedObject.material.getTD()
 
         self._setComponentCustomDensity(
             constructedObject,
@@ -249,9 +235,7 @@ class ComponentBlueprint(yamlize.Object):
 
         return constructedObject
 
-    def _setComponentCustomDensity(
-        self, comp, blueprint, matMods, inputHeightsConsideredHot
-    ):
+    def _setComponentCustomDensity(self, comp, blueprint, matMods, inputHeightsConsideredHot):
         """Apply a custom density to a material with custom isotopics but not a 'custom material'."""
         if self.isotopics is None:
             # No custom isotopics specified
@@ -268,9 +252,7 @@ class ComponentBlueprint(yamlize.Object):
                 "This is not permitted, if a 0 density material is needed, use 'Void'. "
                 f"The component is {comp} and the isotopics entry is {self.isotopics}."
             )
-            raise ValueError(
-                "A zero or negative density was specified in the custom isotopics for a component"
-            )
+            raise ValueError("A zero or negative density was specified in the custom isotopics for a component")
 
         mat = materials.resolveMaterialClassByName(self.material)()
         if not isinstance(mat, materials.Custom):
@@ -286,25 +268,19 @@ class ComponentBlueprint(yamlize.Object):
                     "density. Only materials with a starting density may be assigned a density. "
                     "This comes up e.g. if isotopics are assigned to 'Void'."
                 )
-                raise ValueError(
-                    "Cannot apply custom densities to materials without density."
-                )
+                raise ValueError("Cannot apply custom densities to materials without density.")
 
             # Apply a density scaling to account for the temperature change between
             # Tinput and Thot
             if isinstance(mat, materials.Fluid):
-                densityRatio = densityFromCustomIsotopic / mat.density(
-                    Tc=comp.inputTemperatureInC
-                )
+                densityRatio = densityFromCustomIsotopic / mat.density(Tc=comp.inputTemperatureInC)
             else:
                 # for solids we need to consider if the input heights are hot or
                 # cold, in order to get the density correct.
                 # There may be a better place in the initialization to determine
                 # if the block height will be interpreted as hot dimensions, which would
                 # allow us to not have to pass the case settings down this far
-                dLL = mat.linearExpansionFactor(
-                    Tc=comp.temperatureInC, T0=comp.inputTemperatureInC
-                )
+                dLL = mat.linearExpansionFactor(Tc=comp.temperatureInC, T0=comp.inputTemperatureInC)
                 if inputHeightsConsideredHot:
                     f = 1.0 / (1 + dLL) ** 2
                 else:
@@ -366,13 +342,7 @@ class ComponentBlueprint(yamlize.Object):
 
         # add mass fraction custom isotopics info, since some material modifications need
         # to see them e.g. in the base Material.applyInputParams
-        matMods.update(
-            {
-                "customIsotopics": {
-                    k: v.massFracs for k, v in blueprint.customIsotopics.items()
-                }
-            }
-        )
+        matMods.update({"customIsotopics": {k: v.massFracs for k, v in blueprint.customIsotopics.items()}})
         if len(matMods) > 1:
             # don't apply if only customIsotopics is in there
             try:
@@ -399,9 +369,7 @@ class ComponentBlueprint(yamlize.Object):
             raise ValueError(
                 "The nuclides {} are present in material {} by compositions, but are not "
                 "specified in the `nuclide flags` section of the input file. "
-                "They need to be added, or custom isotopics need to be applied.".format(
-                    missing, mat
-                )
+                "They need to be added, or custom isotopics need to be applied.".format(missing, mat)
             )
 
         return mat
@@ -424,9 +392,7 @@ def expandElementals(mat, blueprint):
             continue
         nucFlags = blueprint.nuclideFlags.get(elementToExpand.symbol)
         nuclidesToBecome = (
-            [nuclideBases.byName[nn] for nn in nucFlags.expandTo]
-            if (nucFlags and nucFlags.expandTo)
-            else None
+            [nuclideBases.byName[nn] for nn in nucFlags.expandTo] if (nucFlags and nucFlags.expandTo) else None
         )
         elementExpansionPairs.append((elementToExpand, nuclidesToBecome))
 
@@ -536,13 +502,7 @@ class ComponentGroups(yamlize.KeyedList):
 # was to make registration basically automatic. This has proven
 # to be quite problematic and will be replaced with an
 # explicit plugin-level component registration system.
-for dimName in set(
-    [
-        kw
-        for cType in components.ComponentType.TYPES.values()
-        for kw in cType.DIMENSION_NAMES
-    ]
-):
+for dimName in set([kw for cType in components.ComponentType.TYPES.values() for kw in cType.DIMENSION_NAMES]):
     setattr(
         ComponentBlueprint,
         dimName,

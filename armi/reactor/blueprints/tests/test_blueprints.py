@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests the blueprints (loading input) file."""
+
 import io
 import os
 import pathlib
@@ -46,9 +47,7 @@ class TestBlueprints(unittest.TestCase):
         cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT)
         cls.directoryChanger.open()
 
-        y = textProcessors.resolveMarkupInclusions(
-            pathlib.Path(os.getcwd()) / "refSmallReactor.yaml"
-        )
+        y = textProcessors.resolveMarkupInclusions(pathlib.Path(os.getcwd()) / "refSmallReactor.yaml")
         cls.blueprints = blueprints.Blueprints.load(y)
         cls.blueprints._prepConstruction(cls.cs)
 
@@ -118,9 +117,7 @@ class TestBlueprints(unittest.TestCase):
         """Tests the available sets of nuclides work as expected."""
         actives = set(self.blueprints.activeNuclides)
         inerts = set(self.blueprints.inertNuclides)
-        self.assertEqual(
-            actives.union(inerts), set(self.blueprints.allNuclidesInProblem)
-        )
+        self.assertEqual(actives.union(inerts), set(self.blueprints.allNuclidesInProblem))
         self.assertEqual(actives.intersection(inerts), set())
 
     def test_getAssemblyTypeBySpecifier(self):
@@ -159,9 +156,7 @@ class TestBlueprints(unittest.TestCase):
             :tests: R_ARMI_BP_NUC_FLAGS
         """
         fuel = (
-            self.blueprints.constructAssem(self.cs, "igniter fuel")
-            .getFirstBlock(Flags.FUEL)
-            .getComponent(Flags.FUEL)
+            self.blueprints.constructAssem(self.cs, "igniter fuel").getFirstBlock(Flags.FUEL).getComponent(Flags.FUEL)
         )
         self.assertIn("AM241", fuel.getNuclides())
         self.assertLess(fuel.getNumberDensity("AM241"), 1e-5)
@@ -273,9 +268,7 @@ grids:
         design = blueprints.Blueprints.load(self._yamlString)
         fa = design.constructAssem(cs, name="fuel a")
         fb = design.constructAssem(cs, name="fuel b")
-        for paramDef in fa.p.paramDefs.inCategory(
-            parameters.Category.assignInBlueprints
-        ):
+        for paramDef in fa.p.paramDefs.inCategory(parameters.Category.assignInBlueprints):
             # Semantics of __iter__() and items() is different now in the parameter
             # system. Since we aren't using __slots__ anymore, we use the parameter
             # definitions (which have a global-ish sense of `assigned`ness), so we can't
@@ -294,14 +287,10 @@ grids:
 
         design = blueprints.Blueprints.load(self._yamlString)
         design._prepConstruction(cs)
-        self.assertTrue(
-            set({"U238", "U235", "ZR"}).issubset(set(design.allNuclidesInProblem))
-        )
+        self.assertTrue(set({"U238", "U235", "ZR"}).issubset(set(design.allNuclidesInProblem)))
 
         assem = design.constructAssem(cs, name="fuel a")
-        self.assertTrue(
-            set(assem.getNuclides()).issubset(set(design.allNuclidesInProblem))
-        )
+        self.assertTrue(set(assem.getNuclides()).issubset(set(design.allNuclidesInProblem)))
 
     def test_nuclidesMc2v3(self):
         """Tests that ZR is expanded to its isotopics for MC2v3."""
@@ -314,9 +303,7 @@ grids:
 
         # 93 and 95 are not naturally occurring.
         zrNucs = {"ZR" + str(A) for A in range(90, 97)} - {"ZR93", "ZR95"}
-        self.assertTrue(
-            set({"U238", "U235"} | zrNucs).issubset(set(design.allNuclidesInProblem))
-        )
+        self.assertTrue(set({"U238", "U235"} | zrNucs).issubset(set(design.allNuclidesInProblem)))
         self.assertTrue(zrNucs.issubset(set(design.inertNuclides)))
 
         assem = design.constructAssem(cs, name="fuel a")
@@ -447,9 +434,7 @@ assemblies:
             try:
                 self.assertAlmostEqual(n1, n2)
             except AssertionError:
-                errorMessage += "\nnuc {} not equal. unmerged: {} merged: {}".format(
-                    nucName, n1, n2
-                )
+                errorMessage += "\nnuc {} not equal. unmerged: {} merged: {}".format(nucName, n1, n2)
         self.assertTrue(not errorMessage, errorMessage)
         self.assertAlmostEqual(mergedBlock.getMass(), unmergedBlock.getMass())
 
@@ -468,9 +453,7 @@ assemblies:
             CustomIsotopics.load("MOX: {input format: number densities, density: -0.1}")
 
         with self.assertRaises(yamlize.YamlizingError):
-            CustomIsotopics.load(
-                "MOX: {input format: number densities, density: 1.5, FAKENUC234: 0.000286}"
-            )
+            CustomIsotopics.load("MOX: {input format: number densities, density: 1.5, FAKENUC234: 0.000286}")
 
     def test_components(self):
         bads = [

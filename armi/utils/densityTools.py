@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Assorted utilities to help with basic density calculations."""
+
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -140,8 +141,9 @@ def calculateNumberDensity(nucName, mass, volume):
             return 0
 
         raise ValueError(
-            "Could not calculate number density with input.\n"
-            "mass : {}\nvolume : {}\natomic weight : {}\n".format(mass, volume, A)
+            "Could not calculate number density with input.\nmass : {}\nvolume : {}\natomic weight : {}\n".format(
+                mass, volume, A
+            )
         )
 
 
@@ -218,10 +220,7 @@ def formatMaterialCard(
     mCard : list
         list of material card strings
     """
-    if all(
-        isinstance(nuc, (nuclideBases.LumpNuclideBase, nuclideBases.DummyNuclideBase))
-        for nuc in densities
-    ):
+    if all(isinstance(nuc, (nuclideBases.LumpNuclideBase, nuclideBases.DummyNuclideBase)) for nuc in densities):
         return []  # no valid nuclides to write
     if matNum >= 0:
         mCard = ["m{matNum}\n".format(matNum=matNum)]
@@ -231,9 +230,7 @@ def formatMaterialCard(
     for nuc, dens in sorted(densities.items()):
         # skip LFPs and Dummies.
         if isinstance(nuc, (nuclideBases.LumpNuclideBase)):
-            runLog.important(
-                "The material card returned will ignore LFPs.", single=True
-            )
+            runLog.important("The material card returned will ignore LFPs.", single=True)
             continue
         elif isinstance(nuc, nuclideBases.DummyNuclideBase):
             runLog.info("Omitting dummy nuclides such as {}".format(nuc), single=True)
@@ -348,16 +345,12 @@ def expandElementalMassFracsToNuclides(
         if massFrac is None:
             continue
 
-        expandedNucs = expandElementalNuclideMassFracs(
-            element, massFrac, isotopicSubset
-        )
+        expandedNucs = expandElementalNuclideMassFracs(element, massFrac, isotopicSubset)
         massFracs.update(expandedNucs)
 
         total = sum(expandedNucs.values())
         if massFrac > 0.0 and abs(total - massFrac) / massFrac > 1e-6:
-            raise ValueError(
-                "Mass fractions not normalized properly {}!".format((total, massFrac))
-            )
+            raise ValueError("Mass fractions not normalized properly {}!".format((total, massFrac)))
 
 
 def expandElementalNuclideMassFracs(
@@ -388,15 +381,10 @@ def expandElementalNuclideMassFracs(
         expandedNucBases = elementNucBases
     elementalWeightGperMole = sum(nb.weight * nb.abundance for nb in expandedNucBases)
     if not any(expandedNucBases):
-        raise ValueError(
-            "Cannot expand element `{}` into isotopes: `{}`"
-            "".format(element, expandedNucBases)
-        )
+        raise ValueError("Cannot expand element `{}` into isotopes: `{}`".format(element, expandedNucBases))
     expanded = {}
     for nb in expandedNucBases:
-        expanded[nb.name] = (
-            massFrac * nb.abundance * nb.weight / elementalWeightGperMole
-        )
+        expanded[nb.name] = massFrac * nb.abundance * nb.weight / elementalWeightGperMole
     return expanded
 
 
@@ -426,9 +414,7 @@ def getChemicals(nuclideInventory):
     return chemicals
 
 
-def applyIsotopicsMix(
-    material, enrichedMassFracs: Dict[str, float], fertileMassFracs: Dict[str, float]
-):
+def applyIsotopicsMix(material, enrichedMassFracs: Dict[str, float], fertileMassFracs: Dict[str, float]):
     """
     Update material heavy metal mass fractions based on its enrichment and two nuclide feeds.
 
@@ -461,13 +447,10 @@ def applyIsotopicsMix(
     hmFrac = hm / total
     hmEnrich = material.class1_wt_frac
     for nucName in (
-        set(enrichedMassFracs.keys())
-        .union(set(fertileMassFracs.keys()))
-        .union(set(material.massFrac.keys()))
+        set(enrichedMassFracs.keys()).union(set(fertileMassFracs.keys())).union(set(material.massFrac.keys()))
     ):
         nb = nuclideBases.byName[nucName]
         if nb.isHeavyMetal():
             material.massFrac[nucName] = hmFrac * (
-                hmEnrich * enrichedMassFracs.get(nucName, 0.0)
-                + (1 - hmEnrich) * fertileMassFracs.get(nucName, 0.0)
+                hmEnrich * enrichedMassFracs.get(nucName, 0.0) + (1 - hmEnrich) * fertileMassFracs.get(nucName, 0.0)
             )

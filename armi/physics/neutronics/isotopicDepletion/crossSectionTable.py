@@ -21,6 +21,7 @@ isotopicDepletionInterface, but that proved to be an unpleasant coupling between
 model and the physics code contained therein. Separating it out at least means that the composite
 model doesn't need to import the isotopicDepletionInterface to function.
 """
+
 import collections
 from typing import List
 
@@ -73,10 +74,7 @@ class CrossSectionTable(collections.OrderedDict):
         n3n - float
             (n,3n) cross section in barns
         """
-        xsData = {
-            rateType: xs
-            for rateType, xs in zip(self.rateTypes, [nG, nF, n2n, nA, nP, n3n])
-        }
+        xsData = {rateType: xs for rateType, xs in zip(self.rateTypes, [nG, nF, n2n, nA, nP, n3n])}
         nb = nucDir.nuclideBases.byName[nucName]
         mcnpNucName = int(nb.getMcnpId())
         self[mcnpNucName] = xsData
@@ -115,10 +113,7 @@ class CrossSectionTable(collections.OrderedDict):
 
     def hasValues(self):
         """Determines if there are non-zero values in this cross section table."""
-        return any(
-            any(nuclideCrossSectionSet.values())
-            for nuclideCrossSectionSet in self.values()
-        )
+        return any(any(nuclideCrossSectionSet.values()) for nuclideCrossSectionSet in self.values())
 
     def getXsecTable(
         self,
@@ -218,10 +213,7 @@ def makeReactionRateTable(obj, nuclides: List = None):
     if nuclides is None:
         nuclides = obj.getNuclides()
 
-    rxRates = {
-        nucName: {rxName: 0 for rxName in CrossSectionTable.rateTypes}
-        for nucName in nuclides
-    }
+    rxRates = {nucName: {rxName: 0 for rxName in CrossSectionTable.rateTypes} for nucName in nuclides}
 
     for armiObject in obj:
         for nucName in nuclides:
@@ -235,9 +227,7 @@ def makeReactionRateTable(obj, nuclides: List = None):
     totalFlux = sum(obj.getIntegratedMgFlux())
     if totalFlux:
         for nucName, nucRxRates in rxRates.items():
-            xSecs = {
-                rxName: rxRate / totalFlux for rxName, rxRate in nucRxRates.items()
-            }
+            xSecs = {rxName: rxRate / totalFlux for rxName, rxRate in nucRxRates.items()}
             crossSectionTable.add(nucName, **xSecs)
 
     return crossSectionTable

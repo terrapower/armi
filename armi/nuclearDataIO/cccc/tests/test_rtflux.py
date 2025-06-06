@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test rtflux reading and writing."""
+
 import os
 import unittest
 
@@ -48,9 +49,7 @@ class Testrtflux(unittest.TestCase):
             flux.groupFluxes[1, 2, 4, 6] *= 1.2
             rtflux.RtfluxStream.writeBinary(flux, "rtflux2")
             flux2 = rtflux.RtfluxStream.readBinary("rtflux2")
-            self.assertAlmostEqual(
-                flux2.groupFluxes[2, 1, 3, 5], flux.groupFluxes[2, 1, 3, 5]
-            )
+            self.assertAlmostEqual(flux2.groupFluxes[2, 1, 3, 5], flux.groupFluxes[2, 1, 3, 5])
 
     def test_rwAscii(self):
         """Ensure that we can read/write in ascii format."""
@@ -67,8 +66,5 @@ class Testrtflux(unittest.TestCase):
         self.assertFalse((real.groupFluxes == adjoint.groupFluxes).all())
         g = 3
         self.assertTrue(
-            (
-                real.groupFluxes[:, :, :, g]
-                == adjoint.groupFluxes[:, :, :, real.metadata["NGROUP"] - g - 1]
-            ).all()
+            (real.groupFluxes[:, :, :, g] == adjoint.groupFluxes[:, :, :, real.metadata["NGROUP"] - g - 1]).all()
         )

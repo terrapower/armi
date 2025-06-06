@@ -18,6 +18,7 @@ These are stored here so that they can be accessed from within this test package
 also re-exported by `__init__.py`, so that other things (like the documentation system)
 can use it without having to import the rest of ARMI.
 """
+
 import os
 
 from armi.tests import TEST_ROOT

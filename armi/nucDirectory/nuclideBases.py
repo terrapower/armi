@@ -89,6 +89,7 @@ Retrieve U-235 by the AAAZZZS ID:
 <NuclideBase U235:  Z:92, A:235, S:0, W:2.350439e+02, Label:U235>, HL:2.22160758861e+16, Abund:7.204000e-03>
 
 """
+
 import os
 
 import numpy as np
@@ -338,9 +339,7 @@ class INuclide(NuclideInterface):
                 "state must be a positive integer."
             )
         if halflife < 0.0:
-            raise ValueError(
-                f"Error in initializing nuclide {name}. The halflife must be a positive value."
-            )
+            raise ValueError(f"Error in initializing nuclide {name}. The halflife must be a positive value.")
 
         self.element = element
         self.z = element.z
@@ -395,19 +394,11 @@ class INuclide(NuclideInterface):
                 )
             nuclideBurnType = list(nuclideBurnCategory.keys())[0]
             if nuclideBurnType == self.TRANSMUTATION:
-                self.trans.append(
-                    transmutations.Transmutation(
-                        self, nuclideBurnCategory[nuclideBurnType]
-                    )
-                )
+                self.trans.append(transmutations.Transmutation(self, nuclideBurnCategory[nuclideBurnType]))
             elif nuclideBurnType == self.DECAY:
-                self.decays.append(
-                    transmutations.DecayMode(self, nuclideBurnCategory[nuclideBurnType])
-                )
+                self.decays.append(transmutations.DecayMode(self, nuclideBurnCategory[nuclideBurnType]))
             elif nuclideBurnType == self.SPONTANEOUS_FISSION:
-                userSpontaneousFissionYield = nuclideBurnCategory.get(
-                    nuclideBurnType, None
-                )
+                userSpontaneousFissionYield = nuclideBurnCategory.get(nuclideBurnType, None)
 
                 # Check for user-defined value of nuSF within the burn-chain data. If this is
                 # updated then prefer the user change and then note this to the user. Otherwise,
@@ -422,8 +413,7 @@ class INuclide(NuclideInterface):
                         self.nuSF = userSpontaneousFissionYield
             else:
                 raise Exception(
-                    "Undefined Burn Data {} for {}. Expected {}, {}, or {}."
-                    "".format(
+                    "Undefined Burn Data {} for {}. Expected {}, {}, or {}.".format(
                         nuclideBurnType,
                         self,
                         self.TRANSMUTATION,
@@ -542,9 +532,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
     def _createName(element, a, state):
         metaChar = ["", "M", "M2", "M3"]
         if state > len(metaChar):
-            raise ValueError(
-                f"The state of NuclideBase is not valid and must not be larger than {len(metaChar)}."
-            )
+            raise ValueError(f"The state of NuclideBase is not valid and must not be larger than {len(metaChar)}.")
         return "{}{}{}".format(element.symbol, a, metaChar[state])
 
     @staticmethod
@@ -562,9 +550,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         # the division by 10 removes the last digit.
         firstTwoDigits = (a % (10 ** (4 - len(element.symbol)))) // 10
         # the last digit is either 0-9 if state=0, or A-J if state=1, or K-T if state=2, or U-d if state=3
-        lastDigit = (
-            "0123456789" "ABCDEFGHIJ" "KLMNOPQRST" "UVWXYZabcd"[(a % 10) + state * 10]
-        )
+        lastDigit = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcd"[(a % 10) + state * 10]
         return "{}{}{}".format(element.symbol, firstTwoDigits, lastDigit)
 
     def getNaturalIsotopics(self):
@@ -716,9 +702,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         else:
             naturalIsotopes = self.getNaturalIsotopics()
             if naturalIsotopes:
-                smallestStableA = min(
-                    ni.a for ni in naturalIsotopes
-                )  # no guarantee they were sorted
+                smallestStableA = min(ni.a for ni in naturalIsotopes)  # no guarantee they were sorted
             else:
                 raise KeyError(f"Nuclide {self} is unknown in the MAT number lookup")
 
@@ -744,9 +728,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             element=element,
             a=0,
             state=0,
-            weight=sum(
-                [nn.weight * nn.abundance for nn in element.getNaturalIsotopics()]
-            ),
+            weight=sum([nn.weight * nn.abundance for nn in element.getNaturalIsotopics()]),
             abundance=0.0,
             halflife=np.inf,
             name=name,
@@ -814,9 +796,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             runLog.warning(
                 "The only elemental in ENDF/B VII.1 is carbon. "
                 "ENDF mat num was requested for the elemental {} and will not be helpful "
-                "for working with ENDF/B VII.1. Try to expandElementalsToIsotopics".format(
-                    self
-                )
+                "for working with ENDF/B VII.1. Try to expandElementalsToIsotopics".format(self)
             )
         return "{0}".format(self.z * 100)
 
@@ -969,9 +949,7 @@ class LumpNuclideBase(INuclide):
         return self.mcc3idEndfbVII1
 
 
-def initReachableActiveNuclidesThroughBurnChain(
-    nuclides, numberDensities, activeNuclides
-):
+def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activeNuclides):
     """
     March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
 
@@ -1057,19 +1035,14 @@ def fromName(name):
     """Return a nuclide from its name."""
     matches = [nn for nn in instances if nn.name == name]
     if len(matches) != 1:
-        raise Exception(
-            "Too many or too few ({}) matches for {}" "".format(len(matches), name)
-        )
+        raise Exception("Too many or too few ({}) matches for {}".format(len(matches), name))
     return matches[0]
 
 
 def isMonoIsotopicElement(name):
     """Return true if this is the only naturally occurring isotope of its element."""
     base = byName[name]
-    return (
-        base.abundance > 0
-        and len([e for e in base.element.nuclides if e.abundance > 0]) == 1
-    )
+    return base.abundance > 0 and len([e for e in base.element.nuclides if e.abundance > 0]) == 1
 
 
 def where(predicate):
@@ -1386,11 +1359,7 @@ def __deriveElementalWeightsByNaturalNuclideAbundances():
 
 def addGlobalNuclide(nuclide: NuclideBase):
     """Add an element to the global dictionaries."""
-    if (
-        nuclide.name in byName
-        or nuclide.getDatabaseName() in byDBName
-        or nuclide.label in byLabel
-    ):
+    if nuclide.name in byName or nuclide.getDatabaseName() in byDBName or nuclide.label in byLabel:
         raise ValueError(f"{nuclide} has already been added and cannot be duplicated.")
 
     instances.append(nuclide)

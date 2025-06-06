@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test rzflux reading and writing."""
+
 import os
 import unittest
 
@@ -29,9 +30,7 @@ class TestRzflux(unittest.TestCase):
     def test_readRzflux(self):
         """Ensure we can read a RZFLUX file."""
         flux = rzflux.readBinary(SIMPLE_RZFLUX)
-        self.assertEqual(
-            flux.groupFluxes.shape, (flux.metadata["NGROUP"], flux.metadata["NZONE"])
-        )
+        self.assertEqual(flux.groupFluxes.shape, (flux.metadata["NGROUP"], flux.metadata["NZONE"]))
 
     def test_writeRzflux(self):
         """Ensure that we can write a modified RZFLUX file."""

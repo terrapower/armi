@@ -35,6 +35,7 @@ This is not *yet* smart enough to use shared memory when the MPI
 tasks are on the same machine. Everything goes through MPI. This can
 be optimized as needed.
 """
+
 import gc
 import os
 import re
@@ -74,18 +75,12 @@ class OperatorMPI(Operator):
                 Operator.operate(self)
                 runLog.important(time.ctime())
             except Exception as ee:
-                runLog.error(
-                    "Error in Primary Node. Check STDERR for a traceback.\n{}".format(
-                        ee
-                    )
-                )
+                runLog.error("Error in Primary Node. Check STDERR for a traceback.\n{}".format(ee))
                 raise
             finally:
                 # If there are other processes, tell them to stop
                 if context.MPI_SIZE > 1:
-                    runLog.important(
-                        "Stopping all MPI worker nodes and cleaning temps."
-                    )
+                    runLog.important("Stopping all MPI worker nodes and cleaning temps.")
                     # send the quit command to the workers.
                     context.MPI_COMM.bcast("quit", root=0)
                     runLog.debug("Waiting for all nodes to close down")
@@ -101,9 +96,7 @@ class OperatorMPI(Operator):
                 self.workerOperate()
             except:
                 # grab the final command
-                runLog.warning(
-                    "An error has occurred in one of the worker nodes. See STDERR for traceback."
-                )
+                runLog.warning("An error has occurred in one of the worker nodes. See STDERR for traceback.")
                 # bcasting quit won't work if the main is sitting around waiting for a
                 # different bcast or gather.
                 traceback.print_exc()
@@ -176,16 +169,11 @@ class OperatorMPI(Operator):
                         "available interfaces:\n  {1}".format(
                             cmd,
                             "\n  ".join(
-                                "name:{} typeName:{} {}".format(i.name, i.function, i)
-                                for i in self.interfaces
+                                "name:{} typeName:{} {}".format(i.name, i.function, i) for i in self.interfaces
                             ),
                         )
                     )
-                    raise RuntimeError(
-                        "Failed to delegate worker command {} to an interface.".format(
-                            cmd
-                        )
-                    )
+                    raise RuntimeError("Failed to delegate worker command {} to an interface.".format(cmd))
 
             pm = getPluginManager()
             resetFlags = pm.hook.mpiActionRequiresReset(cmd=cmd)

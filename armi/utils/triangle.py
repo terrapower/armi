@@ -17,9 +17,7 @@
 import math
 
 
-def getTriangleArea(
-    x1: float, y1: float, x2: float, y2: float, x3: float, y3: float
-) -> float:
+def getTriangleArea(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float) -> float:
     """
     Get the area of a triangle given the vertices of a triangle using Heron's formula.
 
@@ -46,11 +44,7 @@ def getTriangleArea(
     b = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
     c = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
 
-    area = (
-        1.0
-        / 4.0
-        * math.sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)))
-    )
+    area = 1.0 / 4.0 * math.sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)))
 
     return area
 
@@ -117,12 +111,8 @@ def checkIfPointIsInTriangle(
     This method uses the barycentric method.
     See `http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html`
     """
-    a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / (
-        (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
-    )
-    b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / (
-        (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
-    )
+    a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
+    b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
     c = 1.0 - a - b
     epsilon = 1e-10  # need to have some tolerance in case the point lies on the edge of the triangle
 

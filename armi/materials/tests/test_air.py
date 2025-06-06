@@ -194,9 +194,7 @@ class Test_Air(unittest.TestCase):
 
         for Tk, densKgPerM3 in zip(REFERENCE_Tk, REFERENCE_DENSITY_KG_PER_M3):
             if Tk < 2400:
-                error = math.fabs(
-                    (air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3
-                )
+                error = math.fabs((air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3)
                 self.assertLess(error, 1e-2)
 
     def test_heatCapacity(self):
@@ -208,10 +206,7 @@ class Test_Air(unittest.TestCase):
 
         for Tk, heatCapacity in zip(REFERENCE_Tk, REFERENCE_HEAT_CAPACITY_kJ_PER_KG_K):
             if Tk < 1300:
-                error = math.fabs(
-                    (air.heatCapacity(Tk=Tk) - heatCapacity * 1e3)
-                    / (heatCapacity * 1e3)
-                )
+                error = math.fabs((air.heatCapacity(Tk=Tk) - heatCapacity * 1e3) / (heatCapacity * 1e3))
                 self.assertLess(error, 1e-2)
 
     def test_thermalConductivity(self):
@@ -221,13 +216,10 @@ class Test_Air(unittest.TestCase):
         """
         air = Air()
 
-        for Tk, thermalConductivity in zip(
-            REFERENCE_Tk, REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K
-        ):
+        for Tk, thermalConductivity in zip(REFERENCE_Tk, REFERENCE_THERMAL_CONDUCTIVITY_mJ_PER_M_K):
             if Tk > 200 and Tk < 850:
                 error = math.fabs(
-                    (air.thermalConductivity(Tk=Tk) - thermalConductivity * 1e-3)
-                    / (thermalConductivity * 1e-3)
+                    (air.thermalConductivity(Tk=Tk) - thermalConductivity * 1e-3) / (thermalConductivity * 1e-3)
                 )
                 self.assertLess(error, 1e-2)
 
@@ -240,9 +232,7 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nuclides, nDens = densityTools.getNDensFromMasses(
-            air.pseudoDensity(Tk=300), air.massFrac
-        )
+        nuclides, nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
 
         diff = 1e-4
         error = abs(nDens[0] / sum(nDens) - refC)

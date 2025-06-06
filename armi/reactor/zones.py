@@ -17,6 +17,7 @@ A Zone object is a collection of locations in the Core.
 A Zones object is a collection of Zone objects.
 Together, they are used to conceptually divide the Core for analysis.
 """
+
 from typing import Iterator, List, Optional, Set, Union
 
 from armi import runLog
@@ -47,18 +48,12 @@ class Zone:
 
     VALID_TYPES = (Assembly, Block)
 
-    def __init__(
-        self, name: str, locations: Optional[List] = None, zoneType: type = Assembly
-    ):
+    def __init__(self, name: str, locations: Optional[List] = None, zoneType: type = Assembly):
         self.name = name
 
         # A single Zone must contain items of the same type
         if zoneType not in Zone.VALID_TYPES:
-            raise TypeError(
-                "Invalid Type {0}; A Zone can only be of type {1}".format(
-                    zoneType, Zone.VALID_TYPES
-                )
-            )
+            raise TypeError("Invalid Type {0}; A Zone can only be of type {1}".format(zoneType, Zone.VALID_TYPES))
         self.zoneType = zoneType
 
         # a Zone is mostly just a collection of locations in the Reactor
@@ -162,9 +157,9 @@ class Zone:
         item : Assembly or Block
             A single item with Core location (Assembly or Block)
         """
-        assert issubclass(
-            type(item), self.zoneType
-        ), "The item ({0}) but be have a type in: {1}".format(item, Zone.VALID_TYPES)
+        assert issubclass(type(item), self.zoneType), "The item ({0}) but be have a type in: {1}".format(
+            item, Zone.VALID_TYPES
+        )
         self.addLoc(item.getLocation())
 
     def removeItem(self, item: Union[Assembly, Block]) -> None:
@@ -176,9 +171,9 @@ class Zone:
         item : Assembly or Block
             A single item with Core location (Assembly or Block)
         """
-        assert issubclass(
-            type(item), self.zoneType
-        ), "The item ({0}) but be have a type in: {1}".format(item, Zone.VALID_TYPES)
+        assert issubclass(type(item), self.zoneType), "The item ({0}) but be have a type in: {1}".format(
+            item, Zone.VALID_TYPES
+        )
         self.removeLoc(item.getLocation())
 
     def addItems(self, items: List) -> None:
@@ -265,11 +260,7 @@ class Zones:
             A new Zone to add to this collection.
         """
         if zone.name in self._zones:
-            raise ValueError(
-                "Cannot add {} because a zone of that name already exists.".format(
-                    zone.name
-                )
-            )
+            raise ValueError("Cannot add {} because a zone of that name already exists.".format(zone.name))
         self._zones[zone.name] = zone
 
     def addZones(self, zones: List) -> None:
@@ -353,9 +344,7 @@ class Zones:
             try:
                 thisZoneLocs = set(self[zn])
             except KeyError:
-                runLog.error(
-                    "The zone {0} does not exist. Please define it.".format(zn)
-                )
+                runLog.error("The zone {0} does not exist. Please define it.".format(zn))
                 raise
             zoneLocs.update(thisZoneLocs)
 

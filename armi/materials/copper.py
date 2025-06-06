@@ -19,7 +19,6 @@ from armi.utils.units import getTk
 
 
 class Cu(Material):
-
     propertyValidTemperature = {"linear expansion percent": ((40.43, 788.83), "K")}
 
     def setDefaultMassFracs(self):

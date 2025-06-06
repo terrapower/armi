@@ -24,6 +24,7 @@ support extension. We also considered the ``aenum`` package, which permits exten
 make our own. This is a much simplified version of what comes with ``aenum``, but still
 provides most of the safety and functionality.
 """
+
 import math
 from typing import Dict, List, Sequence, Tuple, Union
 
@@ -49,8 +50,7 @@ class auto:  # noqa: N801
         know that the metaclass consumes the autos.
         """
         raise NotImplementedError(
-            "__iter__() is not actually implemented on "
-            "{}; it is only defined to appease mypy.".format(type(self))
+            "__iter__() is not actually implemented on {}; it is only defined to appease mypy.".format(type(self))
         )
 
 
@@ -70,9 +70,7 @@ class _FlagMeta(type):
 
     def __new__(cls, name, bases, attrs):
         autoAt = 1
-        explicitFields = [
-            (attr, val) for attr, val in attrs.items() if isinstance(val, int)
-        ]
+        explicitFields = [(attr, val) for attr, val in attrs.items() if isinstance(val, int)]
         explicitValues = set(val for name, val in explicitFields)
 
         flagClass = type.__new__(cls, name, bases, attrs)
@@ -166,9 +164,7 @@ class Flag(metaclass=_FlagMeta):
         return flagsOn
 
     def __repr__(self):
-        return "<{}.{}: {}>".format(
-            type(self).__name__, "|".join(self._flagsOn()), self._value
-        )
+        return "<{}.{}: {}>".format(type(self).__name__, "|".join(self._flagsOn()), self._value)
 
     def __str__(self):
         return "{}.{}".format(type(self).__name__, "|".join(self._flagsOn()))
@@ -220,9 +216,7 @@ class Flag(metaclass=_FlagMeta):
     @classmethod
     def sortedFields(cls):
         """Return a list of all field names, sorted by increasing integer value."""
-        return [
-            i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])
-        ]
+        return [i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])]
 
     @classmethod
     def extend(cls, fields: Dict[str, Union[int, auto]]):

@@ -15,6 +15,7 @@
 """The Global flux interface provide a base class for all neutronics tools that compute the neutron
 and/or photon flux.
 """
+
 import math
 from typing import Dict, Optional
 
@@ -66,9 +67,7 @@ class GlobalFluxInterface(interfaces.Interface):
         - this is splt off from self.__init__ for testing
         """
         if self.coupler is None and self.cs["tightCoupling"]:
-            self.coupler = interfaces.TightCoupler(
-                "keff", 1.0e-4, self.cs["tightCouplingMaxNumIters"]
-            )
+            self.coupler = interfaces.TightCoupler("keff", 1.0e-4, self.cs["tightCouplingMaxNumIters"])
 
     @staticmethod
     def getHistoryParams():
@@ -110,7 +109,6 @@ class GlobalFluxInterface(interfaces.Interface):
         # A 1 burnstep cycle would have 2 nodes, and the last node would be node index 1 (first is zero)
         lastNodeInCycle = getBurnSteps(self.cs)[self.r.p.cycle]
         if self.r.p.timeNode == lastNodeInCycle and self._bocKeff is not None:
-
             eocKeff = self.r.core.p.keffUnc or self.r.core.p.keff
             swing = (eocKeff - self._bocKeff) / (eocKeff * self._bocKeff)
             self.r.core.p.rxSwing = swing * units.ABS_REACTIVITY_TO_PCM
@@ -136,19 +134,12 @@ class GlobalFluxInterface(interfaces.Interface):
             above :math:`10^{-5}`.
         """
         powerGenerated = (
-            self.r.core.calcTotalParam(
-                "power", calcBasedOnFullObj=False, generationNum=2
-            )
-            / units.WATTS_PER_MW
+            self.r.core.calcTotalParam("power", calcBasedOnFullObj=False, generationNum=2) / units.WATTS_PER_MW
         )
         self.r.core.setPowerIfNecessary()
-        specifiedPower = (
-            self.r.core.p.power / units.WATTS_PER_MW / self.r.core.powerMultiplier
-        )
+        specifiedPower = self.r.core.p.power / units.WATTS_PER_MW / self.r.core.powerMultiplier
 
-        if not math.isclose(
-            powerGenerated, specifiedPower, rel_tol=self._ENERGY_BALANCE_REL_TOL
-        ):
+        if not math.isclose(powerGenerated, specifiedPower, rel_tol=self._ENERGY_BALANCE_REL_TOL):
             raise ValueError(
                 "The power generated in {} is {} MW, but the user specified power is {} MW.\n"
                 "This indicates a software bug. Please report to the developers.".format(
@@ -181,22 +172,12 @@ class GlobalFluxInterface(interfaces.Interface):
         stdName : str
             Standard output file name
         """
-        timeId = (
-            "{0:" + self.cycleFmt + "}_{1:" + self.nodeFmt + "}"
-        )  # build names with proper number of zeros
+        timeId = "{0:" + self.cycleFmt + "}_{1:" + self.nodeFmt + "}"  # build names with proper number of zeros
         if coupledIter is not None:
             timeId += "_{0:03d}".format(coupledIter)
 
-        inName = (
-            self.cs.caseTitle
-            + timeId.format(cycle, node)
-            + "{}.{}.inp".format(additionalLabel, self.name)
-        )
-        outName = (
-            self.cs.caseTitle
-            + timeId.format(cycle, node)
-            + "{}.{}.out".format(additionalLabel, self.name)
-        )
+        inName = self.cs.caseTitle + timeId.format(cycle, node) + "{}.{}.inp".format(additionalLabel, self.name)
+        outName = self.cs.caseTitle + timeId.format(cycle, node) + "{}.{}.out".format(additionalLabel, self.name)
         stdName = outName.strip(".out") + ".stdout"
 
         return inName, outName, stdName
@@ -243,9 +224,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
     def interactCoupled(self, iteration):
         """Runs during a tightly-coupled physics iteration to updated the flux and power."""
         executer = self.getExecuter(
-            label=self.getLabel(
-                self.cs.caseTitle, self.r.p.cycle, self.r.p.timeNode, iteration
-            )
+            label=self.getLabel(self.cs.caseTitle, self.r.p.cycle, self.r.p.timeNode, iteration)
         )
         executer.run()
         GlobalFluxInterface.interactCoupled(self, iteration)
@@ -304,8 +283,7 @@ class GlobalFluxInterfaceUsingExecuters(GlobalFluxInterface):
         """
         if options and label:
             raise ValueError(
-                f"Cannot supply a label (`{label}`) and options at the same time. "
-                "Apply label to options object first."
+                f"Cannot supply a label (`{label}`) and options at the same time. Apply label to options object first."
             )
         opts = options or self.getExecuterOptions(label)
         executer = self.getExecuterCls()(options=opts, reactor=self.r)
@@ -485,9 +463,7 @@ class GlobalFluxOptions(executers.ExecutionOptions):
         self.adjoint = neutronics.adjointCalculationRequested(cs)
         self.real = neutronics.realCalculationRequested(cs)
         self.detailedAxialExpansion = cs[CONF_DETAILED_AXIAL_EXPANSION]
-        self.hasNonUniformAssems = any(
-            [Flags.fromStringIgnoreErrors(f) for f in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]]
-        )
+        self.hasNonUniformAssems = any([Flags.fromStringIgnoreErrors(f) for f in cs[CONF_NON_UNIFORM_ASSEM_FLAGS]])
         self.eigenvalueProblem = cs[CONF_EIGEN_PROB]
 
         # dose/dpa specific (should be separate subclass?)
@@ -596,9 +572,7 @@ class GlobalFluxExecuter(executers.DefaultExecuter):
                 self.geomConverters["axial"] = converter
 
         if self.edgeAssembliesAreNeeded():
-            converter = self.geomConverters.get(
-                "edgeAssems", geometryConverters.EdgeAssemblyChanger()
-            )
+            converter = self.geomConverters.get("edgeAssems", geometryConverters.EdgeAssemblyChanger())
             converter.addEdgeAssemblies(neutronicsReactor.core)
             self.geomConverters["edgeAssems"] = converter
 
@@ -703,9 +677,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         currentCorePower = 0.0
         for b in self.r.core.iterBlocks():
             # The multi-group flux is volume integrated, so J/cm * n-cm/s gives units of Watts
-            b.p.power = np.dot(
-                b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux()
-            )
+            b.p.power = np.dot(b.getTotalEnergyGenerationConstants(), b.getIntegratedMgFlux())
             b.p.flux = sum(b.getMgFlux())
             currentCorePower += b.p.power
 
@@ -713,9 +685,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         runLog.info(
             "Renormalizing the neutron flux in {:<s} by a factor of {:<8.5e}, "
             "which is derived from the current core power of {:<8.5e} W and "
-            "desired power of {:<8.5e} W".format(
-                self.r.core, powerRatio, currentCorePower, renormalizationCorePower
-            )
+            "desired power of {:<8.5e} W".format(self.r.core, powerRatio, currentCorePower, renormalizationCorePower)
         )
         for b in self.r.core.iterBlocks():
             b.p.mgFlux *= powerRatio
@@ -768,9 +738,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         try:
             return constants.DPA_CROSS_SECTIONS[dpaXsSetName]
         except KeyError:
-            raise KeyError(
-                "DPA cross section set {} does not exist".format(dpaXsSetName)
-            )
+            raise KeyError("DPA cross section set {} does not exist".format(dpaXsSetName))
 
     def getBurnupPeakingFactor(self, b: Block):
         """
@@ -827,9 +795,7 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
         if not hasDPA:
             return
 
-        peakRate = self.r.core.getMaxBlockParam(
-            "detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False
-        )
+        peakRate = self.r.core.getMaxBlockParam("detailedDpaPeakRate", typeSpec=Flags.GRID_PLATE, absolute=False)
         self.r.core.p.peakGridDpaAt60Years = peakRate * 60.0 * units.SECONDS_PER_YEAR
 
         # also update maxes at this point (since this runs at every timenode, not just those w/ depletion steps)
@@ -941,11 +907,7 @@ def computeDpaRate(mgFlux, dpaXs):
         )
         # ensure physical meaning of dpaPerSecond, it is likely just slightly negative
         if dpaPerSecond < -1.0e-10:
-            raise RuntimeError(
-                "Calculated DPA rate is substantially negative at {}".format(
-                    dpaPerSecond
-                )
-            )
+            raise RuntimeError("Calculated DPA rate is substantially negative at {}".format(dpaPerSecond))
         dpaPerSecond = 0.0
 
     return dpaPerSecond
@@ -1032,9 +994,7 @@ def calcReactionRates(obj, keff, lib):
                 else:
                     nucrate["rateFis"] += dphi * xs
                     # scale nu by keff.
-                    nucrate["rateProdFis"] += (
-                        dphi * xs * micros.neutronsPerFission[g] / keff
-                    )
+                    nucrate["rateProdFis"] += dphi * xs * micros.neutronsPerFission[g] / keff
 
         for groupFlux, n2nXs in zip(mgFlux, micros.n2n):
             # this n2n xs is reaction based. Multiply by 2.

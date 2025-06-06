@@ -20,6 +20,7 @@ Converts microscopic cross sections to macroscopic cross sections by multiplying
     \Sigma_i = N_i \sigma_i
 
 """
+
 from armi import context, interfaces, mpiActions, runLog
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics.settings import CONF_MINIMUM_NUCLIDE_DENSITY
@@ -73,27 +74,19 @@ class MacroXSGenerator(mpiActions.MpiAction):
             allBlocks = []
             lib = None
 
-        mc = xsCollections.MacroscopicCrossSectionCreator(
-            self.buildScatterMatrix, self.minimumNuclideDensity
-        )
+        mc = xsCollections.MacroscopicCrossSectionCreator(self.buildScatterMatrix, self.minimumNuclideDensity)
 
         if context.MPI_SIZE > 1:
             myBlocks = _scatterList(allBlocks)
 
             lib = context.MPI_COMM.bcast(lib, root=0)
 
-            myMacros = [
-                mc.createMacrosFromMicros(lib, b, libType=self.libType)
-                for b in myBlocks
-            ]
+            myMacros = [mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in myBlocks]
 
             allMacros = _gatherList(myMacros)
 
         else:
-            allMacros = [
-                mc.createMacrosFromMicros(lib, b, libType=self.libType)
-                for b in allBlocks
-            ]
+            allMacros = [mc.createMacrosFromMicros(lib, b, libType=self.libType) for b in allBlocks]
 
         if context.MPI_RANK == 0:
             for b, macro in zip(allBlocks, allMacros):
@@ -173,9 +166,7 @@ class MacroXSGenerationInterface(interfaces.Interface):
         """
         cycle = self.r.p.cycle
         burnSteps = getBurnSteps(self.cs)
-        self.macrosLastBuiltAt = (
-            sum([burnSteps[i] + 1 for i in range(cycle)]) + self.r.p.timeNode
-        )
+        self.macrosLastBuiltAt = sum([burnSteps[i] + 1 for i in range(cycle)]) + self.r.p.timeNode
 
         runLog.important("Building macro XS")
         xsGen = MacroXSGenerator(

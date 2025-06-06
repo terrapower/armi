@@ -17,6 +17,7 @@ Tests some capabilities of the fuel handling machine.
 This test is high enough level that it requires input files to be present. The ones to use
 are called armiRun.yaml which is located in armi.tests
 """
+
 import collections
 import copy
 import os
@@ -51,9 +52,7 @@ class FuelHandlerTestHelper(ArmiTestHelper):
     def setUpClass(cls):
         # prepare the input files. This is important so the unit tests run from wherever
         # they need to run from.
-        cls.directoryChanger = directoryChangers.DirectoryChanger(
-            TEST_ROOT, dumpOnException=False
-        )
+        cls.directoryChanger = directoryChangers.DirectoryChanger(TEST_ROOT, dumpOnException=False)
         cls.directoryChanger.open()
 
     @classmethod
@@ -157,7 +156,6 @@ class MockXSGM(CrossSectionGroupManager):
 class TestFuelHandler(FuelHandlerTestHelper):
     @patch("armi.reactor.assemblies.Assembly.getSymmetryFactor")
     def test_getParamMax(self, mockGetSymmetry):
-
         a = self.assembly
         mockGetSymmetry.return_value = 1
         expectedValue = 0.5
@@ -193,9 +191,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         fhi = self.o.getInterface("fuelHandler")
         with mockRunLogs.BufferLog() as mock:
             fhi.interactBOC()
-            self.assertIn(
-                "lattice physics before fuel management due to the", mock._outputStream
-            )
+            self.assertIn("lattice physics before fuel management due to the", mock._outputStream)
 
     def test_findHighBu(self):
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(5, 4)
@@ -204,9 +200,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         a[0].p.percentBu = 50
 
         fh = fuelHandlers.FuelHandler(self.o)
-        a1 = fh.findAssembly(
-            param="percentBu", compareTo=100, blockLevelMax=True, typeSpec=None
-        )
+        a1 = fh.findAssembly(param="percentBu", compareTo=100, blockLevelMax=True, typeSpec=None)
         self.assertIs(a, a1)
 
     @patch("armi.physics.fuelCycle.fuelHandlers.FuelHandler.chooseSwaps")
@@ -222,9 +216,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # edge case: fail if the shuffle file is missing
         fh.moved = []
-        self.o.cs = self.o.cs.modified(
-            newSettings={"explicitRepeatShuffles": "fakePath"}
-        )
+        self.o.cs = self.o.cs.modified(newSettings={"explicitRepeatShuffles": "fakePath"})
         with self.assertRaises(RuntimeError):
             fh.outage(factor=1.0)
 
@@ -300,9 +292,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             4,
             "The highest power ring returned is {0}. It should be {1}".format(ring, 4),
         )
-        a = fh.findAssembly(
-            targetRing=3, width=(1, 0), param=paramName, blockLevelMax=True, compareTo=0
-        )
+        a = fh.findAssembly(targetRing=3, width=(1, 0), param=paramName, blockLevelMax=True, compareTo=0)
         ring = a.spatialLocator.getRingPos()[0]
         self.assertEqual(
             ring,
@@ -324,9 +314,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             5,
             "The highest power ring returned is {0}. It should be {1}".format(ring, 5),
         )
-        a = fh.findAssembly(
-            targetRing=3, width=(2, 1), param=paramName, blockLevelMax=True, compareTo=0
-        )
+        a = fh.findAssembly(targetRing=3, width=(2, 1), param=paramName, blockLevelMax=True, compareTo=0)
         ring = a.spatialLocator.getRingPos()[0]
         self.assertEqual(
             ring,
@@ -368,16 +356,12 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         igniters = fh.findAssembly(typeSpec=Flags.IGNITER | Flags.FUEL, findMany=True)
         feeds = fh.findAssembly(typeSpec=Flags.FEED | Flags.FUEL, findMany=True)
-        fewFeeds = fh.findAssembly(
-            typeSpec=Flags.FEED | Flags.FUEL, findMany=True, maxNumAssems=4
-        )
+        fewFeeds = fh.findAssembly(typeSpec=Flags.FEED | Flags.FUEL, findMany=True, maxNumAssems=4)
 
         self.assertEqual(
             len(igniters),
             self.nigniter,
-            "Found {0} igniters. Should have found {1}".format(
-                len(igniters), self.nigniter
-            ),
+            "Found {0} igniters. Should have found {1}".format(len(igniters), self.nigniter),
         )
         self.assertEqual(
             len(feeds),
@@ -387,8 +371,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(
             len(fewFeeds),
             4,
-            "Reduced findMany returned {0} assemblies instead of {1}"
-            "".format(len(fewFeeds), 4),
+            "Reduced findMany returned {0} assemblies instead of {1}".format(len(fewFeeds), 4),
         )
 
     def test_findInSFP(self):
@@ -404,17 +387,14 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(
             len(spent),
             self.nSfp,
-            "Found {0} assems in SFP. Should have found {1}".format(
-                len(spent), self.nSfp
-            ),
+            "Found {0} assems in SFP. Should have found {1}".format(len(spent), self.nSfp),
         )
         burnups = [a.getMaxParam("percentBu") for a in spent]
         bu = spent[0].getMaxParam("percentBu")
         self.assertEqual(
             bu,
             max(burnups),
-            "First assembly does not have the "
-            "highest burnup ({0}). It has ({1})".format(max(burnups), bu),
+            "First assembly does not have the highest burnup ({0}). It has ({1})".format(max(burnups), bu),
         )
 
     def test_findByCoords(self):
@@ -650,15 +630,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a1
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a1 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         a2PreSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a2
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a2 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         # swap the stationary blocks
@@ -667,15 +643,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab the stationary blocks post swap
         a1PostSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a1
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a1 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         a2PostSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a2
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a2 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         # validate the stationary blocks have swapped locations and are aligned
@@ -700,9 +672,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # change a block in assembly 1 to be flagged as a stationary block
         for block in a1:
             if not any(block.hasFlags(sbf) for sbf in sBFList):
-                a1[block.spatialLocator.k].setType(
-                    a1[block.spatialLocator.k].p.type, sBFList[0]
-                )
+                a1[block.spatialLocator.k].setType(a1[block.spatialLocator.k].p.type, sBFList[0])
                 self.assertTrue(any(block.hasFlags(sbf) for sbf in sBFList))
                 break
 
@@ -730,31 +700,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for block in a1:
             if any(block.hasFlags(sbf) for sbf in sBFList):
                 # change flag of first identified stationary block to fuel
-                a1[block.spatialLocator.k].setType(
-                    a1[block.spatialLocator.k].p.type, Flags.FUEL
-                )
+                a1[block.spatialLocator.k].setType(a1[block.spatialLocator.k].p.type, Flags.FUEL)
                 self.assertTrue(a1[block.spatialLocator.k].hasFlags(Flags.FUEL))
                 # change next or previous block flag to stationary flag
                 try:
-                    a1[block.spatialLocator.k + 1].setType(
-                        a1[block.spatialLocator.k + 1].p.type, sBFList[0]
-                    )
-                    self.assertTrue(
-                        any(
-                            a1[block.spatialLocator.k + 1].hasFlags(sbf)
-                            for sbf in sBFList
-                        )
-                    )
+                    a1[block.spatialLocator.k + 1].setType(a1[block.spatialLocator.k + 1].p.type, sBFList[0])
+                    self.assertTrue(any(a1[block.spatialLocator.k + 1].hasFlags(sbf) for sbf in sBFList))
                 except Exception:
-                    a1[block.spatialLocator.k - 1].setType(
-                        a1[block.spatialLocator.k - 1].p.type, sBFList[0]
-                    )
-                    self.assertTrue(
-                        any(
-                            a1[block.spatialLocator.k - 1].hasFlags(sbf)
-                            for sbf in sBFList
-                        )
-                    )
+                    a1[block.spatialLocator.k - 1].setType(a1[block.spatialLocator.k - 1].p.type, sBFList[0])
+                    self.assertTrue(any(a1[block.spatialLocator.k - 1].hasFlags(sbf) for sbf in sBFList))
                 break
 
         # try to swap stationary blocks between assembly 1 and 2
@@ -807,15 +761,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab the stationary blocks pre swap
         a1PreSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a1
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a1 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         a2PreSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a2
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a2 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         # test discharging assembly 1 and replacing with assembly 2
@@ -826,15 +776,11 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # grab the stationary blocks post swap
         a1PostSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a1
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a1 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         a2PostSwapStationaryBlocks = [
-            [block.getName(), block.spatialLocator.k]
-            for block in a2
-            if any(block.hasFlags(sbf) for sbf in sBFList)
+            [block.getName(), block.spatialLocator.k] for block in a2 if any(block.hasFlags(sbf) for sbf in sBFList)
         ]
 
         # validate the stationary blocks have swapped locations correctly and are aligned
@@ -856,9 +802,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         # change a block in assembly 1 to be flagged as a stationary block
         for block in a1:
             if not any(block.hasFlags(sbf) for sbf in sBFList):
-                a1[block.spatialLocator.k].setType(
-                    a1[block.spatialLocator.k].p.type, sBFList[0]
-                )
+                a1[block.spatialLocator.k].setType(a1[block.spatialLocator.k].p.type, sBFList[0])
                 self.assertTrue(any(block.hasFlags(sbf) for sbf in sBFList))
                 break
 
@@ -876,31 +820,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for block in a1:
             if any(block.hasFlags(sbf) for sbf in sBFList):
                 # change flag of first identified stationary block to fuel
-                a1[block.spatialLocator.k].setType(
-                    a1[block.spatialLocator.k].p.type, Flags.FUEL
-                )
+                a1[block.spatialLocator.k].setType(a1[block.spatialLocator.k].p.type, Flags.FUEL)
                 self.assertTrue(a1[block.spatialLocator.k].hasFlags(Flags.FUEL))
                 # change next or previous block flag to stationary flag
                 try:
-                    a1[block.spatialLocator.k + 1].setType(
-                        a1[block.spatialLocator.k + 1].p.type, sBFList[0]
-                    )
-                    self.assertTrue(
-                        any(
-                            a1[block.spatialLocator.k + 1].hasFlags(sbf)
-                            for sbf in sBFList
-                        )
-                    )
+                    a1[block.spatialLocator.k + 1].setType(a1[block.spatialLocator.k + 1].p.type, sBFList[0])
+                    self.assertTrue(any(a1[block.spatialLocator.k + 1].hasFlags(sbf) for sbf in sBFList))
                 except Exception:
-                    a1[block.spatialLocator.k - 1].setType(
-                        a1[block.spatialLocator.k - 1].p.type, sBFList[0]
-                    )
-                    self.assertTrue(
-                        any(
-                            a1[block.spatialLocator.k - 1].hasFlags(sbf)
-                            for sbf in sBFList
-                        )
-                    )
+                    a1[block.spatialLocator.k - 1].setType(a1[block.spatialLocator.k - 1].p.type, sBFList[0])
+                    self.assertTrue(any(a1[block.spatialLocator.k - 1].hasFlags(sbf) for sbf in sBFList))
                 break
 
         # try to discharge assembly 1 and replace with assembly 2
@@ -918,9 +846,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         aList2 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, True, None, False)
         self.assertEqual(len(aList2), 3)
 
-        aList3 = fh._getAssembliesInRings(
-            [0, 1, 2, "SFP"], Flags.FUEL, True, None, False
-        )
+        aList3 = fh._getAssembliesInRings([0, 1, 2, "SFP"], Flags.FUEL, True, None, False)
         self.assertEqual(len(aList3), 4)
 
         aList4 = fh._getAssembliesInRings([0, 1, 2], Flags.FUEL, False, None, True)

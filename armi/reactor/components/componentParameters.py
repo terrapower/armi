@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Component parameter definitions."""
+
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyF32Array
@@ -23,10 +24,7 @@ def getComponentParameterDefinitions():
     """Return the base Component parameters."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-
-        pb.defParam(
-            "volume", units=f"{units.CM}^3", description="Volume of this object."
-        )
+        pb.defParam("volume", units=f"{units.CM}^3", description="Volume of this object.")
 
         pb.defParam(
             "area",
@@ -117,8 +115,7 @@ def getComponentParameterDefinitions():
             units=f"{units.PERCENT_FIMA}/{units.DAYS}",
             # This is very related to power, but normalized to %FIMA.
             description=(
-                "Current rate of burnup accumulation. Useful for estimating times when "
-                "burnup limits may be exceeded."
+                "Current rate of burnup accumulation. Useful for estimating times when burnup limits may be exceeded."
             ),
         )
 
@@ -157,9 +154,7 @@ def getComponentParameterDefinitions():
 
         def _assignTDFrac(self, val):
             if val > 1 or val < 0:
-                raise ValueError(
-                    f"Theoretical density fraction must be in range [0,1], got {val}"
-                )
+                raise ValueError(f"Theoretical density fraction must be in range [0,1], got {val}")
             self._p_theoreticalDensityFrac = val
 
         pb.defParam(
@@ -219,13 +214,9 @@ def getHoledHexagonParameterDefinitions():
     """Return parameters for HoledHexagon."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam(
-            "holeOD", units=units.CM, description="Diameter of interior hole(s)"
-        )
+        pb.defParam("holeOD", units=units.CM, description="Diameter of interior hole(s)")
 
-        pb.defParam(
-            "nHoles", units=units.UNITLESS, description="Number of interior holes"
-        )
+        pb.defParam("nHoles", units=units.UNITLESS, description="Number of interior holes")
 
     return pDefs
 
@@ -243,12 +234,8 @@ def getFilletedHexagonParameterDefinitions():
     """Return parameters for FilletedHexagon."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam(
-            "iR", units=units.CM, description="Radius of curvature of the inner corners"
-        )
-        pb.defParam(
-            "oR", units=units.CM, description="Radius of curvature of the outer corners"
-        )
+        pb.defParam("iR", units=units.CM, description="Radius of curvature of the inner corners")
+        pb.defParam("oR", units=units.CM, description="Radius of curvature of the outer corners")
 
     return pDefs
 
@@ -309,9 +296,7 @@ def getCubeParameterDefinitions():
             description="Inner length dimension (if the cube is hollow).",
         )
 
-        pb.defParam(
-            "lengthOuter", units=units.CM, description="Outermost length dimension"
-        )
+        pb.defParam("lengthOuter", units=units.CM, description="Outermost length dimension")
 
         pb.defParam(
             "widthInner",
@@ -320,9 +305,7 @@ def getCubeParameterDefinitions():
             description="Inner width dimension (if the cube is hollow).",
         )
 
-        pb.defParam(
-            "widthOuter", units=units.CM, description="Outermost width dimension"
-        )
+        pb.defParam("widthOuter", units=units.CM, description="Outermost width dimension")
 
         pb.defParam(
             "heightInner",
@@ -331,9 +314,7 @@ def getCubeParameterDefinitions():
             description="Inner height dimension (if the cube is hollow).",
         )
 
-        pb.defParam(
-            "heightOuter", units=units.CM, description="Outermost height dimension"
-        )
+        pb.defParam("heightOuter", units=units.CM, description="Outermost height dimension")
 
     return pDefs
 
@@ -342,9 +323,7 @@ def getTriangleParameterDefinitions():
     """Return parameters for Triangle."""
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(location=ParamLocation.AVERAGE, saveToDB=True) as pb:
-        pb.defParam(
-            "base", units=units.CM, description="Length of the base of the triangle"
-        )
+        pb.defParam("base", units=units.CM, description="Length of the base of the triangle")
 
         pb.defParam("height", units=units.CM, description="Height of the triangle")
 
@@ -388,13 +367,9 @@ def getRadialSegmentParameterDefinitions():
             description="Starting radial position; this can be zero.",
         )
 
-        pb.defParam(
-            "outer_radius", units=units.CM, description="Ending radial position."
-        )
+        pb.defParam("outer_radius", units=units.CM, description="Ending radial position.")
 
-        pb.defParam(
-            "height", units=units.CM, description="Height of the 3D radial segment."
-        )
+        pb.defParam("height", units=units.CM, description="Height of the 3D radial segment.")
 
         pb.defParam(
             "azimuthal_differential",

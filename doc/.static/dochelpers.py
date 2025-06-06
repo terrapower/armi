@@ -35,9 +35,7 @@ def escapeSpecialCharacters(s):
     return news
 
 
-def createTable(
-    rst_table, caption=None, label=None, align=None, widths=None, width=None
-):
+def createTable(rst_table, caption=None, label=None, align=None, widths=None, width=None):
     """
     This method is available within ``.. exec::``. It allows someone to create a table with a
     caption.
@@ -58,9 +56,7 @@ def createTable(
     return "\n".join(rst)
 
 
-def createListTable(
-    rows, caption=None, align=None, widths=None, width=None, klass=None
-):
+def createListTable(rows, caption=None, align=None, widths=None, width=None, klass=None):
     """Take a list of data, and produce an RST-type string for a list-table.
 
     Parameters
@@ -156,9 +152,7 @@ def generateParamTable(klass, fwParams, app=None):
         * - Name
           - Description
           - Units
-    """.format(
-        klass.__name__
-    )
+    """.format(klass.__name__)
 
     content = []
 

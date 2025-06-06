@@ -24,6 +24,7 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
+
 import os
 import shutil
 import unittest
@@ -160,14 +161,8 @@ class MpiOperatorTests(unittest.TestCase):
             else:
                 self.o.workerOperate()
 
-            logMessage = (
-                "Workers have been reset."
-                if context.MPI_RANK == 0
-                else "Workers are being reset."
-            )
-            numCalls = len(
-                [line for line in mock.getStdout().splitlines() if logMessage in line]
-            )
+            logMessage = "Workers have been reset." if context.MPI_RANK == 0 else "Workers are being reset."
+            numCalls = len([line for line in mock.getStdout().splitlines() if logMessage in line])
             self.assertGreaterEqual(numCalls, 1)
 
 
@@ -283,9 +278,7 @@ class MpiDistributeStateTests(unittest.TestCase):
             self.assertEqual(original_lib, self.o.r.core.lib)
 
         for pDef in parameterDefinitions.ALL_DEFINITIONS:
-            self.assertFalse(
-                pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE
-            )
+            self.assertFalse(pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE)
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_compileResults(self):

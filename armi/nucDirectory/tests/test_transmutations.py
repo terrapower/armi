@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests for transmutations."""
+
 import random
 import string
 import unittest
@@ -32,14 +33,10 @@ class TransmutationTests(unittest.TestCase):
             data["type"] = rxn
             temp = transmutations.Transmutation(nuclideBases.byName["AM242M"], data)
             self.assertEqual(temp.type, rxn)
-            self.assertEqual(
-                temp.productParticle, transmutations.PRODUCT_PARTICLES.get(temp.type)
-            )
+            self.assertEqual(temp.productParticle, transmutations.PRODUCT_PARTICLES.get(temp.type))
 
     def test_Transmutation_productParticle(self):
-        temp = transmutations.Transmutation(
-            nuclideBases.byName["AM242M"], {"products": [""], "type": "nalph"}
-        )
+        temp = transmutations.Transmutation(nuclideBases.byName["AM242M"], {"products": [""], "type": "nalph"})
         self.assertEqual(temp.productParticle, "HE4")
 
     def test_Transmutation_invalidReactionTypes(self):
@@ -49,9 +46,7 @@ class TransmutationTests(unittest.TestCase):
             rxn = randomString(3)
             data["type"] = rxn
             if rxn in transmutations.TRANSMUTATION_TYPES:
-                self.assertIsNotNone(
-                    transmutations.Transmutation(nuclideBases.byName["AM242M"], data)
-                )
+                self.assertIsNotNone(transmutations.Transmutation(nuclideBases.byName["AM242M"], data))
             else:
                 with self.assertRaises(KeyError):
                     errorCount += 1
@@ -73,9 +68,7 @@ class DecayModeTests(unittest.TestCase):
             rxn = randomString(3)
             data["type"] = rxn
             if rxn in transmutations.DECAY_MODES:
-                self.assertIsNotNone(
-                    transmutations.DecayMode(nuclideBases.byName["AM242M"], data)
-                )
+                self.assertIsNotNone(transmutations.DecayMode(nuclideBases.byName["AM242M"], data))
             else:
                 with self.assertRaises(KeyError):
                     transmutations.DecayMode(nuclideBases.byName["AM242M"], data)

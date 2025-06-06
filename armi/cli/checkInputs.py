@@ -34,9 +34,7 @@ class ExpandBlueprints(EntryPoint):
     splash = False
 
     def addOptions(self):
-        self.parser.add_argument(
-            "blueprints", type=str, help="Path to root blueprints file"
-        )
+        self.parser.add_argument("blueprints", type=str, help="Path to root blueprints file")
 
     def invoke(self):
         p = pathlib.Path(self.args.blueprints)

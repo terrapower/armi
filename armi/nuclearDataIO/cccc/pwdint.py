@@ -98,9 +98,7 @@ class PwdintStream(cccc.StreamWithDataContainer):
     def _rw1DRecord(self):
         """Read/write File specifications on 1D record."""
         with self.createRecord() as record:
-            self._metadata.update(
-                record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata)
-            )
+            self._metadata.update(record.rwImplicitlyTypedMap(FILE_SPEC_1D_KEYS, self._metadata))
 
     def _rw2DRecord(self):
         """Read/write power density by mesh point."""
