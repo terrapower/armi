@@ -930,7 +930,7 @@ class ArmiObject(metaclass=CompositeModelType):
             " of composite such as Blocks or Components have the concept of micro suffixes."
         )
 
-    def _getNuclidesFromSpecifier(self, nucSpec: Union[None | str | list[str]]):
+    def _getNuclidesFromSpecifier(self, nucSpec: Union[None, str, list[str]]):
         """
         Convert a nuclide specification to a list of valid nuclide/element keys.
 
@@ -2175,7 +2175,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 componentsWithThisMat.append(c)
         return componentsWithThisMat
 
-    def hasComponents(self, typeSpec: Union[TypeSpec | List[TypeSpec]], exact=False):
+    def hasComponents(self, typeSpec: Union[TypeSpec, List[TypeSpec]], exact=False):
         """
         Return true if components matching all TypeSpec exist in this object.
 
