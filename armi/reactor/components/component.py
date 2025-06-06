@@ -20,7 +20,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 
@@ -829,7 +829,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         except ZeroDivisionError:
             return 0.0
 
-    def getMass(self, nuclideNames: None | str | list[str] = None) -> float:
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         r"""
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 

@@ -46,6 +46,7 @@ from typing import (
     Optional,
     Tuple,
     Type,
+    Union,
 )
 
 import numpy as np
@@ -885,7 +886,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMass(self, nuclideNames: None | str | list[str] = None) -> float:
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -929,7 +930,7 @@ class ArmiObject(metaclass=CompositeModelType):
             " of composite such as Blocks or Components have the concept of micro suffixes."
         )
 
-    def _getNuclidesFromSpecifier(self, nucSpec: None | str | list[str]):
+    def _getNuclidesFromSpecifier(self, nucSpec: Union[None | str | list[str]]):
         """
         Convert a nuclide specification to a list of valid nuclide/element keys.
 
@@ -2174,7 +2175,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 componentsWithThisMat.append(c)
         return componentsWithThisMat
 
-    def hasComponents(self, typeSpec: TypeSpec | List[TypeSpec], exact=False):
+    def hasComponents(self, typeSpec: Union[TypeSpec | List[TypeSpec]], exact=False):
         """
         Return true if components matching all TypeSpec exist in this object.
 
