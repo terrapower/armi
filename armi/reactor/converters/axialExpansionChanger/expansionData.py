@@ -222,7 +222,7 @@ class ExpansionData:
         return value
 
     def _setAllTargetComponents(self, setFuel: bool):
-        """Sets axial expansion target component on each block in self._a.
+        """Sets axial expansion target component on each block in the expanded assembly.
 
         Parameters
         ----------

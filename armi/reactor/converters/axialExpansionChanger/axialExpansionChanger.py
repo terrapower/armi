@@ -269,7 +269,7 @@ class AxialExpansionChanger:
     def _checkForBlocksWithoutSolids(self):
         """
         Makes sure that there aren't any blocks (other than the top-most dummy block)
-        that consist of entirely fluid components. The expansion changer doesn't know
+        that consist entirely of fluid components. The expansion changer doesn't know
         what to do with such assemblies.
         """
         # skip top most dummy block since that is, by design, all fluid
