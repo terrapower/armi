@@ -38,11 +38,10 @@ from armi.settings.caseSettings import Settings
 if TYPE_CHECKING:
     from armi.reactor.components import Component
 
-MULTIPIN_BP = """
-blocks:
-    fuel multiPin: &block_fuel_multiPin
+TWOPIN_BLOCK = """
+    fuel twoPin: &block_fuel_twoPin
         grid name: twoPin
-        fuel 1: &component_fuelmultiPin
+        fuel 1: &component_fueltwoPin
             shape: Circle
             material: UZr
             Tinput: 25.0
@@ -51,7 +50,7 @@ blocks:
             od: 0.8
             latticeIDs: [1]
         fuel 2:
-            <<: *component_fuelmultiPin
+            <<: *component_fueltwoPin
             latticeIDs: [2]
         coolant:
             shape: DerivedShape
@@ -66,14 +65,47 @@ blocks:
             ip: 16.0
             mult: 1.0
             op: 16.6
-assemblies:
-    fuel:
+"""
+
+ONEPIN_BLOCK = """
+    fuel onePin: &block_fuel_onePin
+        grid name: onePin
+        fuel 1:
+            <<: *component_fueltwoPin
+        coolant:
+            shape: DerivedShape
+            material: Sodium
+            Tinput: 450.0
+            Thot: 450.0
+        duct:
+            shape: Hexagon
+            material: HT9
+            Tinput: 25.0
+            Thot: 450.0
+            ip: 16.0
+            mult: 1.0
+            op: 16.6
+"""
+
+CORRECT_ASSEMBLY = """
+    fuel pass:
         specifier: LA
-        blocks: [*block_fuel_multiPin, *block_fuel_multiPin]
+        blocks: [*block_fuel_twoPin, *block_fuel_twoPin]
         height: [25.0, 25.0]
         axial mesh points: [1, 1]
         xs types: [A, A]
-grids:
+"""
+
+WRONG_ASSEMBLY = """
+    fuel fail:
+        specifier: LA
+        blocks: [*block_fuel_onePin, *block_fuel_twoPin]
+        height: [25.0, 25.0]
+        axial mesh points: [1, 1]
+        xs types: [A, A]
+"""
+
+TWOPIN_GRID = """
     twoPin:
        geom: hex_corners_up
        symmetry: full
@@ -86,6 +118,34 @@ grids:
                1 1 2 1 1
                 1 1 1 1
 """
+
+ONEPIN_GRID = """
+    onePin:
+       geom: hex_corners_up
+       symmetry: full
+       lattice map: |
+         - - -  1 1 1 1
+           - - 1 1 1 1 1
+            - 1 1 1 1 1 1
+             1 1 1 1 1 1 1
+              1 1 1 1 1 1
+               1 1 1 1 1
+                1 1 1 1
+"""
+
+
+def createMultipinBlueprints(blockDef: list[str], assemDef: list[str], gridDef: list[str]) -> str:
+    multiPinDef = "blocks:"
+    for block in blockDef:
+        multiPinDef += block
+    multiPinDef += "\nassemblies:"
+    for assem in assemDef:
+        multiPinDef += assem
+    multiPinDef += "\ngrids:"
+    for grid in gridDef:
+        multiPinDef += grid
+
+    return multiPinDef
 
 
 class TestAxialLinkHelper(TestCase):
@@ -139,17 +199,36 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
     def test_multiIndexLocation(self):
         """Case 2; block-grid based linking."""
         cs = Settings()
-        with io.StringIO(MULTIPIN_BP) as stream:
+        multiPinBPs = createMultipinBlueprints([TWOPIN_BLOCK], [CORRECT_ASSEMBLY], [TWOPIN_GRID])
+        with io.StringIO(multiPinBPs) as stream:
             bps = Blueprints.load(stream)
             bps._prepConstruction(cs)
-            lowerB: HexBlock = bps.assemblies["fuel"][0]
-            upperB: HexBlock = bps.assemblies["fuel"][1]
+            lowerB: HexBlock = bps.assemblies["fuel pass"][0]
+            upperB: HexBlock = bps.assemblies["fuel pass"][1]
             lowerFuel1, lowerFuel2 = lowerB.getComponents(Flags.FUEL)
             upperFuel1, _upperFuel2 = upperB.getComponents(Flags.FUEL)
             # same grid locs, are linked
             self.assertTrue(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel1))
             # different grid locs, are not linked
             self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel2, upperFuel1))
+
+    def test_multiIndexLocation_Fail(self):
+        """Case 2; block-grid based linking."""
+        cs = Settings()
+        multiPinBPs = createMultipinBlueprints(
+            [TWOPIN_BLOCK, ONEPIN_BLOCK], [WRONG_ASSEMBLY], [TWOPIN_GRID, ONEPIN_GRID]
+        )
+        with io.StringIO(multiPinBPs) as stream:
+            bps = Blueprints.load(stream)
+            bps._prepConstruction(cs)
+            lowerB: HexBlock = bps.assemblies["fuel fail"][0]
+            upperB: HexBlock = bps.assemblies["fuel fail"][1]
+            lowerFuel1 = lowerB.getComponent(Flags.FUEL)
+            upperFuel1, upperFuel2 = upperB.getComponents(Flags.FUEL)
+            # different/not exact match grid locs, are not linked
+            self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel1))
+            # different/not exact match grid locs, are not linked
+            self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel2))
 
 
 class TestCheckOverlap(AxialExpansionTestBase):
