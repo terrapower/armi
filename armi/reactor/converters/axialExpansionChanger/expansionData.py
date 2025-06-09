@@ -307,9 +307,12 @@ class ExpansionData:
         if len(candidates) == 0:
             raise RuntimeError(f"No target component found!\n   Block {b}")
         if len(candidates) > 1:
-            raise RuntimeError(
-                "Cannot have more than one component within a block that has the target flag!\n"
-                f"Block {b}\n\tflagOfInterest {flagOfInterest}\n\tComponents {candidates}"
+            raise RuntimeError(f"""
+                Cannot have more than one component within a block that has the target flag!
+                "Block {b}
+                    flagOfInterest {flagOfInterest}
+                    Components {candidates}
+                """
             )
         target = candidates[0]
         self._setExpansionTarget(b, target)

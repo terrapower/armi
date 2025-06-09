@@ -218,12 +218,15 @@ class AssemblyAxialLinkage:
             if candidate is None:
                 candidate = otherComp
             else:
-                errMsg = (
-                    "Multiple component axial linkages have been found for the following component!\n"
-                    f"\tComponent {c}\n\t  -> Block {c.parent}\n\t  -> Assembly {c.parent.parent}.\n"
-                    f"This is indicative of an error in the blueprints! Candidate components in {otherBlock}:\n"
-                    f"\t{candidate}\n\t{otherComp}"
-                )
+                errMsg = f"""
+                    Multiple component axial linkages have been found for the following component!
+                        Component {c}
+                          -> Block {c.parent}
+                          -> Assembly {c.parent.parent}
+                    This is indicative of an error in the blueprints! Candidate components in {otherBlock}:
+                        {candidate}
+                        {otherComp}
+                """
                 runLog.error(msg=errMsg)
                 raise RuntimeError(errMsg)
         return candidate
