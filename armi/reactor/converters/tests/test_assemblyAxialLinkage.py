@@ -335,13 +335,14 @@ class TestMultipleComponentLinkage(AxialExpansionTestBase):
         """Test for multiple component axial linkage."""
         linked = AssemblyAxialLinkage(buildTestAssemblyWithFakeMaterial("FakeMat"))
         b = linked.a.getFirstBlockByType("fuel")
-        c = b.getComponent(typeSpec=Flags.FUEL)
-        c.setDimension("od", 0.785, cold=True)
+        fuelComp = b.getComponent(Flags.FUEL)
+        cladComp = b.getComponent(Flags.CLAD)
+        fuelComp.setDimension("od", 0.5 * (cladComp.getDimension("id") + cladComp.getDimension("od")))
         with self.assertRaisesRegex(
             RuntimeError,
             expected_regex="Multiple component axial linkages have been found for ",
         ):
-            linked._getLinkedComponents(b, c)
+            linked._getLinkedComponents(b, fuelComp)
 
 
 class TestBlockLink(TestCase):
