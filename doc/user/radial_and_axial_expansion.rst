@@ -314,11 +314,12 @@ the Block-grid based approach.
       <<: *component_fuelmultiPin
       latticeIDs: [2]
 
-The following incorporates the fix for ``block_fuel_axial_shield`` and illustrates another situation in which the
-Component axial linking implementation will interpret multiple axial links and raise a ``RuntimeError``. In this
-example, a plenum block is added above the fuel and while it does utilize a Block-grid, ``clad`` will try to link to
-both the ``fuel 1`` and ``fuel 2`` components below it, raising a ``RuntimeError`` (this would also occur if a
-multiplicity-based definition were used for ``clad``).
+The following incorporates the fix for ``block_fuel_axial_shield`` and illustrates another potentially undesirable
+situation where unexpected results or runtime failure may occur. Here a plenum block is added above the fuel and while
+it does utilize a Block-grid, ``clad`` will not be axially linked to either the ``fuel 1`` or ``fuel 2`` components
+below it. This is because the ``clad`` and ``fuel*`` components have different grids via their ``grid.spatialLocator``
+values. As in the previous example, similar unexpected behavior would also occur if a multiplicity-based definition
+were used for ``clad``.
 
 .. code-block:: yaml
 
@@ -361,7 +362,7 @@ multiplicity-based definition were used for ``clad``).
       od: 1.0
       latticeIDs: [1,2]
 
-To resolve this issue, ``block_plenum_multiPin`` should be replaced with the following definition. See the
+To resolve this potential issue, ``block_plenum_multiPin`` should be replaced with the following definition. See the
 ``multi pin fuel`` assembly definition within ``armi/tests/detailedAxialExpansion/refSmallReactorBase.yaml`` for a
 complete example.
 
