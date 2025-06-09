@@ -99,7 +99,7 @@ CORRECT_ASSEMBLY = """
 WRONG_ASSEMBLY = """
     fuel fail:
         specifier: LA
-        blocks: [*block_fuel_onePin, *block_fuel_twoPin]
+        blocks: [*block_fuel_twoPin, *block_fuel_onePin]
         height: [25.0, 25.0]
         axial mesh points: [1, 1]
         xs types: [A, A]
@@ -223,12 +223,12 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
             bps._prepConstruction(cs)
             lowerB: HexBlock = bps.assemblies["fuel fail"][0]
             upperB: HexBlock = bps.assemblies["fuel fail"][1]
-            lowerFuel1 = lowerB.getComponent(Flags.FUEL)
-            upperFuel1, upperFuel2 = upperB.getComponents(Flags.FUEL)
+            lowerFuel1, lowerFuel2 = lowerB.getComponents(Flags.FUEL)
+            upperFuel1 = upperB.getComponent(Flags.FUEL)
             # different/not exact match grid locs, are not linked
             self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel1))
             # different/not exact match grid locs, are not linked
-            self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel1, upperFuel2))
+            self.assertFalse(AssemblyAxialLinkage.areAxiallyLinked(lowerFuel2, upperFuel1))
 
 
 class TestCheckOverlap(AxialExpansionTestBase):
