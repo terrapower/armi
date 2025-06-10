@@ -37,7 +37,17 @@ import collections
 import itertools
 import operator
 import timeit
-from typing import Callable, Dict, Iterator, List, Optional, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import numpy as np
 
@@ -50,6 +60,9 @@ from armi.reactor.parameters import resolveCollections
 from armi.utils import densityTools, tabulate, units
 from armi.utils.densityTools import calculateNumberDensity
 from armi.utils.flags import auto
+
+if TYPE_CHECKING:
+    from armi.reactor.components.component import Component
 
 
 class FlagSerializer(parameters.Serializer):
@@ -873,7 +886,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         raise NotImplementedError()
 
-    def getMass(self, nuclideNames=None) -> float:
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         """
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -887,7 +900,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         Parameters
         ----------
-        nuclideNames : str, optional
+        nuclideNames
             The nuclide/element specifier to get the mass of in the object.
             If omitted, total mass is returned.
 
@@ -917,7 +930,7 @@ class ArmiObject(metaclass=CompositeModelType):
             " of composite such as Blocks or Components have the concept of micro suffixes."
         )
 
-    def _getNuclidesFromSpecifier(self, nucSpec):
+    def _getNuclidesFromSpecifier(self, nucSpec: Union[None, str, list[str]]):
         """
         Convert a nuclide specification to a list of valid nuclide/element keys.
 
@@ -2179,14 +2192,18 @@ class ArmiObject(metaclass=CompositeModelType):
 
         return all(self.getComponents(t, exact) for t in typeSpec)
 
-    def getComponentByName(self, name):
+    def getComponentByName(self, name: str) -> "Component":
         """
         Gets a particular component from this object, based on its name.
 
         Parameters
         ----------
-        name : str
+        name
             The blueprint name of the component to return
+
+        Returns
+        -------
+        Component, c, whose c.name matches name.
         """
         components = [c for c in self.iterComponents() if c.name == name]
         nComp = len(components)
@@ -2197,7 +2214,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return components[0]
 
-    def getComponent(self, typeSpec: TypeSpec, exact=False, quiet=False):
+    def getComponent(self, typeSpec: TypeSpec, exact: bool = False, quiet: bool = False) -> Optional["Component"]:
         """
         Get a particular component from this object.
 
@@ -2217,6 +2234,10 @@ class ArmiObject(metaclass=CompositeModelType):
         Returns
         -------
         Component : The component that matches the criteria or None
+
+        Raises
+        ------
+        ValueError: more than one Component matches the typeSpec
         """
         results = self.getComponents(typeSpec, exact=exact)
         if len(results) == 1:
@@ -2224,13 +2245,13 @@ class ArmiObject(metaclass=CompositeModelType):
         elif not results:
             if not quiet:
                 runLog.warning(
-                    "No component matched {0} in {1}. Returning None".format(typeSpec, self),
+                    f"No component matched {typeSpec} in {self}. Returning None",
                     single=True,
-                    label="None component returned instead of {0}".format(typeSpec),
+                    label=f"None component returned instead of {typeSpec}",
                 )
             return None
         else:
-            raise ValueError("Multiple components match in {} match typeSpec {}: {}".format(self, typeSpec, results))
+            raise ValueError(f"Multiple components match in {self} match typeSpec {typeSpec}: {results}")
 
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
@@ -2645,7 +2666,7 @@ class Composite(ArmiObject):
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
         return list(self.iterComponents(typeSpec, exact))
 
-    def iterComponents(self, typeSpec: TypeSpec = None, exact=False):
+    def iterComponents(self, typeSpec: TypeSpec = None, exact: bool = False) -> Iterator["Component"]:
         """
         Return an iterator of armi.reactor.component.Component objects within this Composite.
 
