@@ -50,7 +50,7 @@ Functional Requirements
 .. req:: ARMI shall provide an ex-core composite to represent spent fuel pools (SFP) for spent fuel assemblies.
     :id: R_ARMI_SFP
     :status: accepted
-    :basis: A SFP data model is a fundamental concept in modeling pin-type reactors.
+    :basis: A SFP data model is a fundamental concept in modeling solid fuel reactors.
     :acceptance_criteria: Build a reactor data model with a SFP, then move an assembly from the reactor core to the the SFP and back.
     :subtype: functional
 

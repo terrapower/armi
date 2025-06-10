@@ -28,7 +28,7 @@ class SpentFuelPool(ExcoreStructure):
 
     This class is a core-like system object, so it has a spatial grid that Assemblies can fit in.
 
-    .. impl:: The user-specified reactor.
+    .. impl:: The user-specified spent fuel pool.
         :id: I_ARMI_SFP
         :implements: R_ARMI_SFP
 
