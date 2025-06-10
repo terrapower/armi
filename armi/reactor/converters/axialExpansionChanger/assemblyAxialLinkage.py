@@ -16,6 +16,7 @@ import dataclasses
 import functools
 import itertools
 import typing
+from textwrap import dedent
 
 from armi import runLog
 from armi.reactor.blocks import Block
@@ -227,8 +228,8 @@ class AssemblyAxialLinkage:
                         {candidate}
                         {otherComp}
                 """
-                runLog.error(msg=errMsg)
-                raise RuntimeError(errMsg)
+                runLog.error(msg=dedent(errMsg))
+                raise RuntimeError(dedent(errMsg))
         return candidate
 
     def _getLinkedComponents(self, b: Block, c: Component):

@@ -14,6 +14,7 @@
 """Data container for axial expansion."""
 
 from statistics import mean
+from textwrap import dedent
 from typing import TYPE_CHECKING, Iterable, Optional
 
 from armi.materials import material
@@ -307,13 +308,13 @@ class ExpansionData:
         if len(candidates) == 0:
             raise RuntimeError(f"No target component found!\n   Block {b}")
         if len(candidates) > 1:
-            raise RuntimeError(f"""
+            msg = f"""
                 Cannot have more than one component within a block that has the target flag!
-                "Block {b}
+                Block {b}
                     flagOfInterest {flagOfInterest}
                     Components {candidates}
-                """
-            )
+            """
+            raise RuntimeError(dedent(msg))
         target = candidates[0]
         self._setExpansionTarget(b, target)
         return target
