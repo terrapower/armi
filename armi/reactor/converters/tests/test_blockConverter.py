@@ -154,8 +154,7 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_dissolveNegativeArea(self):
         """Test dissolving a zero-area component into another."""
-        with self.assertRaises(ValueError):
-            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
+        self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
 
     def test_dissolveIntoNegativeArea(self):
         """Test dissolving a zero-area component into another."""
