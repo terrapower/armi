@@ -18,6 +18,7 @@ whether or not one of the specific methods were called. These should only be use
 
 import io
 import sys
+from logging import LogRecord
 
 from armi import runLog
 
@@ -33,9 +34,8 @@ class BufferLog(runLog._RunLog):
         super(BufferLog, self).__init__(*args, **kwargs)
         self.originalLog = None
         self._outputStream = ""
-        self._singleMessageCounts = {}
-        self._singleWarningMessageCounts = {}
         self._errStream = io.StringIO()
+        self._deduplication = runLog.DeduplicationFilter()
         sys.stderr = self._errStream
         self.setVerbosity(0)
 
@@ -64,32 +64,19 @@ class BufferLog(runLog._RunLog):
             return
 
         # Skip writing the message if it is single-print warning
-        if single and self._msgHasAlreadyBeenEmitted(label, msgType):
+        record = LogRecord("BufferLog", msgVerbosity, "pathname", 1, msg, {}, ())
+        record.label = label
+        record.single = single
+        if single and not self._deduplication.filter(record):
             return
 
         # Do the actual logging, but add that custom indenting first
         msg = self.logLevels[msgType][1] + str(msg) + "\n"
         self._outputStream += msg
 
-    def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
-        """Return True if the count of the label is greater than 1."""
-        if msgType in ("warning", "critical"):
-            if label not in self._singleWarningMessageCounts:
-                self._singleWarningMessageCounts[label] = 1
-            else:
-                self._singleWarningMessageCounts[label] += 1
-                return True
-        else:
-            if label not in self._singleMessageCounts:
-                self._singleMessageCounts[label] = 1
-            else:
-                self._singleMessageCounts[label] += 1
-                return True
-        return False
-
     def clearSingleLogs(self):
         """Reset the single warned list so we get messages again."""
-        self._singleMessageCounts.clear()
+        self._deduplication.singleMessageCounts.clear()
 
     def getStdout(self):
         return self._outputStream

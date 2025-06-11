@@ -357,7 +357,7 @@ class TestRunLog(unittest.TestCase):
             mock.emptyStdout()
 
     def test_deduplicationFilter(self):
-        """Test that the logic to ."""
+        """Test that the logic to only print a log message once works correctly."""
         with mockRunLogs.BufferLog() as mock:
             # we should start with a clean slate
             self.assertEqual("", mock.getStdout())
