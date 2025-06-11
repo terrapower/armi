@@ -18,6 +18,7 @@ Tool to build SCR tables to be added to the RST docs.
 This script is meant to generate an RST-formatted list-table to the docs, to automate the process of
 generating an SCR in ARMI.
 """
+
 import subprocess
 
 # A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.

@@ -22,6 +22,7 @@ sodium coolant. A dummy multigroup flux is applied.
 This example also demonstrates how to build a reactor model from code alone
 rather than relying upon input files.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -64,9 +65,7 @@ def createDummyReactor():
     r = reactors.Reactor("Reactor", bp)
     r.add(reactors.Core("Core"))
     r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    r.core.spatialGrid.symmetry = geometry.SymmetryType(
-        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-    )
+    r.core.spatialGrid.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
     r.core.spatialGrid.geomType = geometry.GeomType.HEX
     r.core.spatialGrid.armiObject = r.core
     r.core.setOptionsFromCs(cs)

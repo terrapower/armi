@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Code that needs to be executed before most ARMI components are safe to import."""
+
 from armi.nucDirectory import nuclideBases  # noqa: E402
 
 # Nuclide bases get built explicitly here to have better determinism

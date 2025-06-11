@@ -52,9 +52,7 @@ class LocationBase(ABC):
         self._grid = grid
 
     def __repr__(self) -> str:
-        return "<{} @ ({},{:},{})>".format(
-            self.__class__.__name__, self.i, self.j, self.k
-        )
+        return "<{} @ ({},{:},{})>".format(self.__class__.__name__, self.i, self.j, self.k)
 
     def __getstate__(self) -> Hashable:
         """Used in pickling and deepcopy, this detaches the grid."""
@@ -101,12 +99,7 @@ class LocationBase(ABC):
         if isinstance(other, tuple):
             return (self.i, self.j, self.k) == other
         if isinstance(other, LocationBase):
-            return (
-                self.i == other.i
-                and self.j == other.j
-                and self.k == other.k
-                and self.grid is other.grid
-            )
+            return self.i == other.i and self.j == other.j and self.k == other.k and self.grid is other.grid
         return NotImplemented
 
     def __lt__(self, that: "LocationBase") -> bool:
@@ -176,21 +169,15 @@ class IndexLocation(LocationBase):
     """
     An immutable location representing one cell in a grid.
 
-    The locator is intimately tied to a grid and together, they represent
-    a grid cell somewhere in the coordinate system of the grid.
+    The locator is intimately tied to a grid and together, they represent a grid cell somewhere in
+    the coordinate system of the grid.
 
-    ``grid`` is not in the constructor (must be added after construction ) because
-    the extra argument (grid) gives an inconsistency between __init__ and __new__.
-    Unfortunately this decision makes whipping up IndexLocations on the fly awkward.
-    But perhaps that's ok because they should only be created by their grids.
-
-    TODO Is the above correct still? The constructor has an optional ``Grid``
-
+    ``grid`` is not in the constructor (must be added after construction ) because the extra
+    argument (grid) gives an inconsistency between __init__ and __new__. Unfortunately this decision
+    makes whipping up IndexLocations on the fly awkward. But perhaps that's ok because they should
+    only be created by their grids.
     """
 
-    # TODO Maybe __slots__ = LocationBase.__slots__ + ("parentLocation", )
-    # But parentLocation is a property...
-    # Maybe other parts of ARMI set attributes?
     __slots__ = ()
 
     def __add__(self, that: Union[IJKType, "IndexLocation"]) -> "IndexLocation":
@@ -200,14 +187,10 @@ class IndexLocation(LocationBase):
         Tuples are needed so we can terminate the recursive additions with a (0,0,0) basis.
         """
         # New location is not associated with any particular grid.
-        return self.__class__(
-            self[0] + that[0], self[1] + that[1], self[2] + that[2], None
-        )
+        return self.__class__(self[0] + that[0], self[1] + that[1], self[2] + that[2], None)
 
     def __sub__(self, that: Union[IJKType, "IndexLocation"]) -> "IndexLocation":
-        return self.__class__(
-            self[0] - that[0], self[1] - that[1], self[2] - that[2], None
-        )
+        return self.__class__(self[0] - that[0], self[1] - that[1], self[2] - that[2], None)
 
     def detachedCopy(self) -> "IndexLocation":
         """
@@ -230,11 +213,7 @@ class IndexLocation(LocationBase):
         """
         grid = self.grid  # performance matters a lot here so we remove a dot
         # check for None rather than __nonzero__ for speed (otherwise it checks the length)
-        if (
-            grid is not None
-            and grid.armiObject is not None
-            and grid.armiObject.parent is not None
-        ):
+        if grid is not None and grid.armiObject is not None and grid.armiObject.parent is not None:
             return grid.armiObject.spatialLocator
         return None
 
@@ -279,45 +258,37 @@ class IndexLocation(LocationBase):
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         indices = self.indices
         if parentLocation is not None:
-            if parentLocation.grid is not None and addingIsValid(
-                self.grid, parentLocation.grid
-            ):
+            if parentLocation.grid is not None and addingIsValid(self.grid, parentLocation.grid):
                 indices += parentLocation.indices
         return tuple(indices)
 
     def getLocalCoordinates(self, nativeCoords=False):
         """Return the coordinates of the center of the mesh cell here in cm."""
         if self.grid is None:
-            raise ValueError(
-                f"Cannot get local coordinates of {self} because grid is None."
-            )
+            raise ValueError(f"Cannot get local coordinates of {self} because grid is None.")
         return self.grid.getCoordinates(self.indices, nativeCoords=nativeCoords)
 
     def getGlobalCoordinates(self, nativeCoords=False):
         """Get coordinates in global 3D space of the centroid of this object."""
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         if parentLocation:
-            return self.getLocalCoordinates(
+            return self.getLocalCoordinates(nativeCoords=nativeCoords) + parentLocation.getGlobalCoordinates(
                 nativeCoords=nativeCoords
-            ) + parentLocation.getGlobalCoordinates(nativeCoords=nativeCoords)
+            )
         return self.getLocalCoordinates(nativeCoords=nativeCoords)
 
     def getGlobalCellBase(self):
         """Return the cell base (i.e. "bottom left"), in global coordinate system."""
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         if parentLocation:
-            return parentLocation.getGlobalCellBase() + self.grid.getCellBase(
-                self.indices
-            )
+            return parentLocation.getGlobalCellBase() + self.grid.getCellBase(self.indices)
         return self.grid.getCellBase(self.indices)
 
     def getGlobalCellTop(self):
         """Return the cell top (i.e. "top right"), in global coordinate system."""
         parentLocation = self.parentLocation  # to avoid evaluating property if's twice
         if parentLocation:
-            return parentLocation.getGlobalCellTop() + self.grid.getCellTop(
-                self.indices
-            )
+            return parentLocation.getGlobalCellTop() + self.grid.getCellTop(self.indices)
         return self.grid.getCellTop(self.indices)
 
     def getRingPos(self):
@@ -336,15 +307,7 @@ class IndexLocation(LocationBase):
 
     def distanceTo(self, other: "IndexLocation") -> float:
         """Return the distance from this locator to another."""
-        return math.sqrt(
-            (
-                (
-                    np.array(self.getGlobalCoordinates())
-                    - np.array(other.getGlobalCoordinates())
-                )
-                ** 2
-            ).sum()
-        )
+        return math.sqrt(((np.array(self.getGlobalCoordinates()) - np.array(other.getGlobalCoordinates())) ** 2).sum())
 
 
 class MultiIndexLocation(IndexLocation):
@@ -390,9 +353,7 @@ class MultiIndexLocation(IndexLocation):
         self._locations = state
 
     def __repr__(self) -> str:
-        return "<{} with {} locations>".format(
-            self.__class__.__name__, len(self._locations)
-        )
+        return "<{} with {} locations>".format(self.__class__.__name__, len(self._locations))
 
     def __getitem__(self, index: int) -> IndexLocation:
         return self._locations[index]

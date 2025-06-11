@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Test the reading and writing of the DIF3D/VARIANT LABELS interface file."""
+
 import os
 import unittest
 
@@ -36,14 +37,10 @@ class TestLabels(unittest.TestCase):
         expectedNumHexagonalRings = 13
         labelsData = labels.readBinary(LABELS_FILE_BIN)
         self.assertEqual(labelsData.metadata["hname"], expectedName)
-        self.assertEqual(
-            labelsData.metadata["numTrianglesPerHex"], expectedTrianglesPerHex
-        )
+        self.assertEqual(labelsData.metadata["numTrianglesPerHex"], expectedTrianglesPerHex)
         self.assertEqual(labelsData.metadata["numZones"], expectedNumZones)
         self.assertEqual(labelsData.metadata["numRegions"], expectedNumRegions)
-        self.assertEqual(
-            labelsData.metadata["numHexagonalRings"], expectedNumHexagonalRings
-        )
+        self.assertEqual(labelsData.metadata["numHexagonalRings"], expectedNumHexagonalRings)
         self.assertEqual(len(labelsData.regionLabels), expectedNumRegions)
 
     def test_writeLabelsAscii(self):

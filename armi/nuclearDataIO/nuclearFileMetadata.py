@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Assists in reconstruction/rewriting nuclear data files. 
+Assists in reconstruction/rewriting nuclear data files.
 
 One might
 refer to the information stored in these files as the scaffolding or blueprints.
@@ -102,9 +102,7 @@ class _Metadata:
             mergedData.update(other)
             return mergedData
         self._mergeLibrarySpecificData(other, selfContainer, otherContainer, mergedData)
-        skippedKeys = self._getSkippedKeys(
-            other, selfContainer, otherContainer, mergedData
-        )
+        skippedKeys = self._getSkippedKeys(other, selfContainer, otherContainer, mergedData)
         for key in set(list(self.keys()) + list(other.keys())) - skippedKeys:
             selfVal = self[key]
             otherVal = other[key]
@@ -132,9 +130,7 @@ class _Metadata:
     def _getSkippedKeys(self, other, selfContainer, otherContainer, mergedData):
         return set()
 
-    def _mergeLibrarySpecificData(
-        self, other, selfContainer, otherContainer, mergedData
-    ):
+    def _mergeLibrarySpecificData(self, other, selfContainer, otherContainer, mergedData):
         pass
 
     def compare(self, other, selfContainer, otherContainer, tolerance=0.0):
@@ -194,9 +190,7 @@ class FileMetadata(_Metadata):
         _Metadata.update(self, other)
         self.fileNames += other.fileNames
 
-    def _mergeLibrarySpecificData(
-        self, other, selfContainer, otherContainer, mergedData
-    ):
+    def _mergeLibrarySpecificData(self, other, selfContainer, otherContainer, mergedData):
         mergedData.fileNames = self.fileNames + other.fileNames
 
 
@@ -221,24 +215,16 @@ class NuclideXSMetadata(FileMetadata):
                     nuc.isotxsMetadata["chiFlag"] = 1
         return skippedKeys
 
-    def _mergeLibrarySpecificData(
-        self, other, selfContainer, otherContainer, mergedData
-    ):
-        FileMetadata._mergeLibrarySpecificData(
-            self, other, selfContainer, otherContainer, mergedData
-        )
+    def _mergeLibrarySpecificData(self, other, selfContainer, otherContainer, mergedData):
+        FileMetadata._mergeLibrarySpecificData(self, other, selfContainer, otherContainer, mergedData)
         mergedData["libraryLabel"] = self["libraryLabel"] or other["libraryLabel"]
 
 
 class RegionXSMetadata(FileMetadata):
     """Metadata for library files containing region cross sections, e.g. ``COMPXS``."""
 
-    def _mergeLibrarySpecificData(
-        self, other, selfContainer, otherContainer, mergedData
-    ):
-        FileMetadata._mergeLibrarySpecificData(
-            self, other, selfContainer, otherContainer, mergedData
-        )
+    def _mergeLibrarySpecificData(self, other, selfContainer, otherContainer, mergedData):
+        FileMetadata._mergeLibrarySpecificData(self, other, selfContainer, otherContainer, mergedData)
         for datum in COMPXS_POWER_CONVERSION_FACTORS:
             mergedData[datum] = self[datum] + other[datum]
         mergedData["compFamiliesWithPrecursors"] = (
@@ -247,10 +233,7 @@ class RegionXSMetadata(FileMetadata):
         mergedData["numFissComps"] = self["numFissComps"] + other["numFissComps"]
 
     def _getSkippedKeys(self, other, selfContainer, otherContainer, mergedData):
-        return set(
-            ["numComps", "compFamiliesWithPrecursors", "numFissComps"]
-            + COMPXS_POWER_CONVERSION_FACTORS
-        )
+        return set(["numComps", "compFamiliesWithPrecursors", "numFissComps"] + COMPXS_POWER_CONVERSION_FACTORS)
 
 
 class NuclideMetadata(_Metadata):

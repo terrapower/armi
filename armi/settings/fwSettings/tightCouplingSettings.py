@@ -56,9 +56,7 @@ class TightCouplingSettings(dict):
         return f"<{self.__class__.__name__} with Interface functions {self.keys()}>"
 
 
-def serializeTightCouplingSettings(
-    tightCouplingSettingsDict: Union[TightCouplingSettings, Dict]
-) -> Dict[str, Dict]:
+def serializeTightCouplingSettings(tightCouplingSettingsDict: Union[TightCouplingSettings, Dict]) -> Dict[str, Dict]:
     """
     Return a serialized form of the ``TightCouplingSettings`` as a dictionary.
 
@@ -71,7 +69,6 @@ def serializeTightCouplingSettings(
 
     output = {}
     for interfaceFunction, options in tightCouplingSettingsDict.items():
-
         # Setting the value to an empty dictionary
         # if it is set to a None or an empty
         # dictionary.
@@ -94,8 +91,7 @@ class TightCouplingSettingDef(Setting):
 
     def __init__(self, name):
         description = (
-            "Data structure defining the tight coupling parameters "
-            "and convergence criteria for each interface."
+            "Data structure defining the tight coupling parameters and convergence criteria for each interface."
         )
         label = "Interface Tight Coupling Control"
         default = TightCouplingSettings()
@@ -124,13 +120,9 @@ class TightCouplingSettingDef(Setting):
         return serializeTightCouplingSettings(self._value)
 
 
-def tightCouplingSettingsValidator(
-    tightCouplingSettingsDict: Dict[str, Dict]
-) -> TightCouplingSettings:
+def tightCouplingSettingsValidator(tightCouplingSettingsDict: Dict[str, Dict]) -> TightCouplingSettings:
     """Returns a ``TightCouplingSettings`` object if validation is successful."""
-    tightCouplingSettingsDict = serializeTightCouplingSettings(
-        tightCouplingSettingsDict
-    )
+    tightCouplingSettingsDict = serializeTightCouplingSettings(tightCouplingSettingsDict)
     tightCouplingSettingsDict = _SCHEMA(tightCouplingSettingsDict)
     vals = TightCouplingSettings()
     for interfaceFunction, inputParams in tightCouplingSettingsDict.items():

@@ -22,6 +22,7 @@ Notes
 -----
 This will not be a catch-all for random unit test functions. Be very sparing here.
 """
+
 import os
 import pickle
 
@@ -102,7 +103,7 @@ def loadTestReactor(
 def reduceTestReactorRings(r, cs, maxNumRings):
     """Helper method for the test reactor above.
 
-    The goal is to reduce the size of the reactor for tests that don't neeed such a large reactor,
+    The goal is to reduce the size of the reactor for tests that don't need such a large reactor,
     and would run much faster with a smaller one.
     """
     maxRings = r.core.getNumRings()

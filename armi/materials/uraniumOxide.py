@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """
-Uranium Oxide properties. 
+Uranium Oxide properties.
 
 UO2 is a common ceramic nuclear fuel form. It's properties are well known. This mostly
 uses data from [#ornltm2000]_.
@@ -21,6 +21,7 @@ uses data from [#ornltm2000]_.
 .. [#ornltm2000] Thermophysical Properties of MOX and UO2 Fuels Including the Effects of Irradiation. S.G. Popov,
     et.al. Oak Ridge National Laboratory. ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 """
+
 import collections
 import math
 
@@ -32,21 +33,16 @@ from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import thermalScattering as tsl
 from armi.utils.units import getTk
 
-HeatCapacityConstants = collections.namedtuple(
-    "HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"]
-)
+HeatCapacityConstants = collections.namedtuple("HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"])
 
 
 class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
-
     enrichedNuclide = "U235"
 
     REFERENCE_TEMPERATURE = 27
 
     # ORNL/TM-2000/351 section 4.3
-    heatCapacityConstants = HeatCapacityConstants(
-        c1=302.27, c2=8.463e-3, c3=8.741e7, theta=548.68, Ea=18531.7
-    )
+    heatCapacityConstants = HeatCapacityConstants(c1=302.27, c2=8.463e-3, c3=8.741e7, theta=548.68, Ea=18531.7)
 
     __meltingPoint = 3123.0
 
@@ -106,9 +102,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         material.FuelMaterial.__init__(self)
         self.refDens = self.density(Tk=self.refTempK)
 
-    def applyInputParams(
-        self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs
-    ) -> None:
+    def applyInputParams(self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs) -> None:
         if U235_wt_frac is not None:
             self.adjustMassEnrichment(U235_wt_frac)
 
@@ -116,8 +110,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         if td is not None:
             if td > 1.0:
                 runLog.warning(
-                    "Theoretical density frac for {0} is {1}, which is >1"
-                    "".format(self, td),
+                    "Theoretical density frac for {0} is {1}, which is >1".format(self, td),
                     single=True,
                     label="Large theoretical density",
                 )
@@ -137,14 +130,8 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         u238 = nb.byName["U238"]
         oxygen = nb.byName["O"]
 
-        u238Abundance = (
-            1.0 - u235.abundance
-        )  # neglect U234 and keep U235 at natural level
-        gramsIn1Mol = (
-            2 * oxygen.weight
-            + u235.abundance * u235.weight
-            + u238Abundance * u238.weight
-        )
+        u238Abundance = 1.0 - u235.abundance  # neglect U234 and keep U235 at natural level
+        gramsIn1Mol = 2 * oxygen.weight + u235.abundance * u235.weight + u238Abundance * u238.weight
 
         self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
         self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
@@ -181,10 +168,7 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         hcc = self.heatCapacityConstants
         # eq 4.2
         specificHeatCapacity = (
-            hcc.c1
-            * (hcc.theta / Tk) ** 2
-            * math.exp(hcc.theta / Tk)
-            / (math.exp(hcc.theta / Tk) - 1.0) ** 2
+            hcc.c1 * (hcc.theta / Tk) ** 2 * math.exp(hcc.theta / Tk) / (math.exp(hcc.theta / Tk) - 1.0) ** 2
             + 2 * hcc.c2 * Tk
             + hcc.c3 * hcc.Ea * math.exp(-hcc.Ea / Tk) / Tk**2
         )
@@ -211,13 +195,9 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
         self.checkPropertyTempRange("linear expansion percent", Tk)
 
         if Tk >= 273.0 and Tk < 923.0:
-            return (
-                -2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk**2 + 4.391e-13 * Tk**3
-            ) * 100.0
+            return (-2.66e-03 + 9.802e-06 * Tk - 2.705e-10 * Tk**2 + 4.391e-13 * Tk**3) * 100.0
         else:
-            return (
-                -3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk**2 + 1.219e-12 * Tk**3
-            ) * 100.0
+            return (-3.28e-03 + 1.179e-05 * Tk - 2.429e-09 * Tk**2 + 1.219e-12 * Tk**3) * 100.0
 
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """

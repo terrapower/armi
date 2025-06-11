@@ -22,6 +22,7 @@ This is analogous to a real reactor operating over some period of time,
 often from initial startup, through the various cycles, and out to
 the end of plant life.
 """
+
 import collections
 import os
 import re
@@ -156,7 +157,7 @@ class Operator:
         self.r = None
         self.cs = cs
         runLog.LOG.startLog(self.cs.caseTitle)
-        self.timer = codeTiming.getMasterTimer()
+        self.timer = codeTiming.MasterTimer.getMasterTimer()
         self.interfaces = []
         self.restartData = []
         self.loadedRestartData = []
@@ -241,9 +242,7 @@ class Operator:
     def availabilityFactors(self):
         if not self._availabilityFactors:
             self._availabilityFactors = getAvailabilityFactors(self.cs)
-            self._checkReactorCycleAttrs(
-                {"availabilityFactors": self._availabilityFactors}
-            )
+            self._checkReactorCycleAttrs({"availabilityFactors": self._availabilityFactors})
         return self._availabilityFactors
 
     @property
@@ -289,9 +288,7 @@ class Operator:
                 raise ValueError(
                     "The `{}` setting did not have a length consistent with the number of cycles.\n"
                     "Expected {} value(s), but only had {} defined.\n"
-                    "Current input: {}".format(
-                        name, self.cs["nCycles"], len(param), param
-                    )
+                    "Current input: {}".format(name, self.cs["nCycles"], len(param), param)
                 )
 
     def _consistentPowerFractionsAndStepLengths(self):
@@ -301,9 +298,7 @@ class Operator:
         """
         if self._powerFractions and self._stepLengths:
             for cycleIdx in range(len(self._powerFractions)):
-                if len(self._powerFractions[cycleIdx]) != len(
-                    self._stepLengths[cycleIdx]
-                ):
+                if len(self._powerFractions[cycleIdx]) != len(self._stepLengths[cycleIdx]):
                     raise ValueError(
                         "The number of entries in lists for subcycle power "
                         f"fractions and sub-steps are inconsistent in cycle {cycleIdx}"
@@ -314,9 +309,8 @@ class Operator:
         """
         Return whether we are approaching EOL.
 
-        For the standard operator, this will return true when the current cycle
-        is the last cycle (cs["nCycles"] - 1). Other operators may need to
-        impose different logic.
+        For the standard operator, this will return true when the current cycle is the last cycle
+        (cs["nCycles"] - 1). Other operators may need to impose different logic.
         """
         return self.r.p.cycle == self.cs["nCycles"] - 1
 
@@ -333,7 +327,7 @@ class Operator:
             The Reactor object to attach to this Operator.
         """
         self.r = r
-        r.o = self  # TODO: this is only necessary for fuel-handler hacking
+        r.o = self
         with self.timer.getTimer("Interface Creation"):
             self.createInterfaces()
             self._processInterfaceDependencies()
@@ -355,9 +349,7 @@ class Operator:
 
     def __exit__(self, exception_type, exception_value, stacktrace):
         if any([exception_type, exception_value, stacktrace]):
-            runLog.error(
-                r"{}\n{}\{}".format(exception_type, exception_value, stacktrace)
-            )
+            runLog.error(r"{}\n{}\{}".format(exception_type, exception_value, stacktrace))
             self.interactAllError()
 
     def operate(self):
@@ -397,15 +389,11 @@ class Operator:
             return False
 
         # read total core power from settings (power or powerDensity)
-        basicPower = self.cs["power"] or (
-            self.cs["powerDensity"] * self.r.core.getHMMass()
-        )
+        basicPower = self.cs["power"] or (self.cs["powerDensity"] * self.r.core.getHMMass())
 
         for timeNode in range(startingNode, int(self.burnSteps[cycle])):
             self.r.core.p.power = self.powerFractions[cycle][timeNode] * basicPower
-            self.r.p.capacityFactor = (
-                self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
-            )
+            self.r.p.capacityFactor = self.r.p.availabilityFactor * self.powerFractions[cycle][timeNode]
             self.r.p.stepLength = self.stepLengths[cycle][timeNode]
 
             self._timeNodeLoop(cycle, timeNode)
@@ -440,9 +428,7 @@ class Operator:
         if not self.couplingIsActive():
             # no coupling was requested
             return
-        skipCycles = tuple(
-            int(val) for val in self.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION]
-        )
+        skipCycles = tuple(int(val) for val in self.cs[CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION])
         if cycle in skipCycles:
             runLog.warning(
                 f"interactAllCoupled disabled this cycle ({self.r.p.cycle}) due to "
@@ -454,9 +440,7 @@ class Operator:
                 self.r.core.p.coupledIteration = coupledIteration + 1
                 converged = self.interactAllCoupled(coupledIteration)
                 if converged:
-                    runLog.important(
-                        f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have converged!"
-                    )
+                    runLog.important(f"Tight coupling iterations for c{cycle:02d}n{timeNode:02d} have converged!")
                     break
             if not converged:
                 runLog.warning(
@@ -485,11 +469,7 @@ class Operator:
         halt = False
 
         cycleNodeTag = self._expandCycleAndTimeNodeArgs(interactionName)
-        runLog.header(
-            "===========  Triggering {} Event ===========".format(
-                interactionName + cycleNodeTag
-            )
-        )
+        runLog.header("===========  Triggering {} Event ===========".format(interactionName + cycleNodeTag))
 
         for statePointIndex, interface in enumerate(activeInterfaces, start=1):
             self.printInterfaceSummary(interface, interactionName, statePointIndex)
@@ -500,9 +480,7 @@ class Operator:
                 memBefore.broadcast()
                 memBefore.invoke(self, self.r, self.cs)
 
-            interactionMessage = " {} interacting with {} ".format(
-                interactionName, interface.name
-            )
+            interactionMessage = f"{interface.name}.{interactionName}"
             with self.timer.getTimer(interactionMessage):
                 interactMethod = getattr(interface, interactMethodName)
                 halt = halt or interactMethod(*args)
@@ -515,20 +493,12 @@ class Operator:
                 memAfter.broadcast()
                 memAfter.invoke(self, self.r, self.cs)
                 memAfter -= memBefore
-                memAfter.printUsage(
-                    "after {:25s} {:15s} interaction".format(
-                        interface.name, interactionName
-                    )
-                )
+                memAfter.printUsage("after {:25s} {:15s} interaction".format(interface.name, interactionName))
 
             # Allow inherited classes to clean up things after an interaction
             self._finalizeInteract()
 
-        runLog.header(
-            "===========  Completed {} Event ===========\n".format(
-                interactionName + cycleNodeTag
-            )
-        )
+        runLog.header("===========  Completed {} Event ===========\n".format(interactionName + cycleNodeTag))
 
         return halt
 
@@ -575,8 +545,7 @@ class Operator:
             cycleNodeInfo = ""
         else:
             cycleNodeInfo = (
-                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
-                f"year {'{0:.2f}'.format(self.r.p.time)}"
+                f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, year {'{0:.2f}'.format(self.r.p.time)}"
             )
 
         return cycleNodeInfo
@@ -587,7 +556,8 @@ class Operator:
 
         Notes
         -----
-        Used within _interactAll to write details between each physics interaction when cs['debugDB'] is enabled.
+        Used within _interactAll to write details between each physics interaction when
+        cs['debugDB'] is enabled.
 
         Parameters
         ----------
@@ -596,8 +566,8 @@ class Operator:
         interfaceName : str
             name of the interface that is interacting (e.g. globalflux, lattice, th)
         statePointIndex : int (optional)
-            used as a counter to make labels that increment throughout an _interactAll call. The result should be fed
-            into the next call to ensure labels increment.
+            used as a counter to make labels that increment throughout an _interactAll call. The
+            result should be fed into the next call to ensure labels increment.
         """
         dbiForDetailedWrite = self.getInterface("database")
         db = dbiForDetailedWrite.database if dbiForDetailedWrite is not None else None
@@ -661,10 +631,9 @@ class Operator:
 
         Notes
         -----
-        If the interfaces are flagged to be reversed at EOL, they are
-        separated from the main stack and appended at the end in reverse
-        order. This allows, for example, an interface that must run
-        first to also run last.
+        If the interfaces are flagged to be reversed at EOL, they are separated from the main stack
+        and appended at the end in reverse order. This allows, for example, an interface that must
+        run first to also run last.
         """
         activeInterfaces = self.getActiveInterfaces("EOL", excludedInterfaceNames)
         self._interactAll("EOL", activeInterfaces)
@@ -699,9 +668,7 @@ class Operator:
         # for each interface.
         for interface in activeInterfaces:
             if interface.coupler is not None:
-                interface.coupler.storePreviousIterationValue(
-                    interface.getTightCouplingValue()
-                )
+                interface.coupler.storePreviousIterationValue(interface.getTightCouplingValue())
         self._interactAll("Coupled", activeInterfaces, coupledIteration)
 
         return self._checkTightCouplingConvergence(activeInterfaces)
@@ -716,7 +683,7 @@ class Operator:
 
         Notes
         -----
-        This is split off from self.interactAllCoupled to accommodate testing
+        This is split off from self.interactAllCoupled to accommodate testing.
         """
         # Summarize the coupled results and the convergence status.
         converged = []
@@ -807,17 +774,16 @@ class Operator:
             Operator.
         """
         if self.getInterface(interface.name):
-            raise RuntimeError(
-                "An interface with name {0} is already attached.".format(interface.name)
-            )
+            raise RuntimeError("An interface with name {0} is already attached.".format(interface.name))
 
         iFunc = self.getInterface(function=interface.function)
 
         if iFunc:
             if issubclass(type(iFunc), type(interface)):
                 runLog.info(
-                    "Ignoring Interface {newFunc} because existing interface {old} already "
-                    " more specific".format(newFunc=interface, old=iFunc)
+                    "Ignoring Interface {newFunc} because existing interface {old} already  more specific".format(
+                        newFunc=interface, old=iFunc
+                    )
                 )
                 return
             elif issubclass(type(interface), type(iFunc)):
@@ -830,9 +796,7 @@ class Operator:
                 raise RuntimeError(
                     "Cannot add {0}; the {1} already is designated "
                     "as the {2} interface. Multiple interfaces of the same "
-                    "function is not supported.".format(
-                        interface, iFunc, interface.function
-                    )
+                    "function is not supported.".format(interface, iFunc, interface.function)
                 )
 
         runLog.debug("Adding {0}".format(interface))
@@ -877,9 +841,7 @@ class Operator:
                                 klass.name, i.name
                             )
                         )
-                        self.addInterface(
-                            klass(r=self.r, cs=self.cs), enabled=False, bolForce=True
-                        )
+                        self.addInterface(klass(r=self.r, cs=self.cs), enabled=False, bolForce=True)
             if len(self.interfaces) == numInterfaces:
                 break
         else:
@@ -916,11 +878,7 @@ class Operator:
             interface.detachReactor()
             return True
         else:
-            runLog.warning(
-                "Cannot remove interface {0} because it is not in the interface stack.".format(
-                    interface
-                )
-            )
+            runLog.warning("Cannot remove interface {0} because it is not in the interface stack.".format(interface))
             return False
 
     def getInterface(self, name=None, function=None):
@@ -948,9 +906,7 @@ class Operator:
                 else:
                     raise RuntimeError(
                         "Cannot retrieve a single interface as there are multiple "
-                        "interfaces with name {} or function {} attached. ".format(
-                            name, function
-                        )
+                        "interfaces with name {} or function {} attached. ".format(name, function)
                     )
 
         return candidateI
@@ -1031,8 +987,7 @@ class Operator:
             nameCheck = lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
         elif interactState == "BOL":
             nameCheck = (
-                lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES]
-                and i.name not in excludedInterfaceNames
+                lambda i: i.name not in self.cs[CONF_DEFERRED_INTERFACE_NAMES] and i.name not in excludedInterfaceNames
             )
 
         # Finally, find the active interfaces.
@@ -1127,23 +1082,15 @@ class Operator:
                     else:
                         # list based factorList. Load a list. (old style, backward compat)
                         try:
-                            factorList = [
-                                float(item) for item in match.group(3).split(",")
-                            ]
+                            factorList = [float(item) for item in match.group(3).split(",")]
                         except ValueError:
                             factorList = match.group(3).split(",")
-                    runLog.debug(
-                        "loaded restart data for cycle %d" % float(match.group(1))
-                    )
+                    runLog.debug("loaded restart data for cycle %d" % float(match.group(1)))
 
-                    self.restartData.append(
-                        (float(match.group(1)), float(match.group(2)), factorList)
-                    )
+                    self.restartData.append((float(match.group(1)), float(match.group(2)), factorList))
         runLog.info("loaded restart data for {0} cycles".format(len(self.restartData)))
 
-    def loadState(
-        self, cycle, timeNode, timeStepName="", fileName=None, updateMassFractions=None
-    ):
+    def loadState(self, cycle, timeNode, timeStepName="", fileName=None, updateMassFractions=None):
         """
         Convenience method reroute to the database interface state reload method.
 
@@ -1165,9 +1112,7 @@ class Operator:
             raise RuntimeError("Cannot load from snapshot without a database interface")
 
         if updateMassFractions is not None:
-            runLog.warning(
-                "deprecated: updateMassFractions is no longer a valid option for loadState"
-            )
+            runLog.warning("deprecated: updateMassFractions is no longer a valid option for loadState")
 
         dbi.loadState(cycle, timeNode, timeStepName, fileName)
 
@@ -1197,9 +1142,7 @@ class Operator:
             time.sleep(1)
 
         if os.path.exists(newFolder):
-            runLog.warning(
-                "Deleting existing snapshot data in {0} failed".format(newFolder)
-            )
+            runLog.warning("Deleting existing snapshot data in {0} failed".format(newFolder))
         else:
             os.mkdir(newFolder)
 
@@ -1210,44 +1153,30 @@ class Operator:
             if "mcc" in fileName and re.search(r"[A-Z]AF?\d?.inp", fileName):
                 base, ext = os.path.splitext(fileName)
                 if iteration is not None:
-                    newFile = "{0}_{1:03d}_{2:d}_{4}{3}".format(
-                        base, cycle, node, ext, iteration
-                    )
+                    newFile = "{0}_{1:03d}_{2:d}_{4}{3}".format(base, cycle, node, ext, iteration)
                 else:
                     newFile = "{0}_{1:03d}_{2:d}{3}".format(base, cycle, node, ext)
                 # add the cycle and timenode to the XS input file names so that a rx-coeff case that
                 # runs in here won't overwrite them.
-                pathTools.copyOrWarn(
-                    fileName, fileName, os.path.join(newFolder, newFile)
-                )
+                pathTools.copyOrWarn(fileName, fileName, os.path.join(newFolder, newFile))
             if "rzmflx" in fileName:
                 pathTools.copyOrWarn("rzmflx for snapshot", fileName, newFolder)
 
         fileNamePossibilities = [f"ISOTXS-c{cycle}n{node}", f"ISOTXS-c{cycle}"]
         if iteration is not None:
-            fileNamePossibilities = [
-                f"ISOTXS-c{cycle}n{node}i{iteration}"
-            ] + fileNamePossibilities
+            fileNamePossibilities = [f"ISOTXS-c{cycle}n{node}i{iteration}"] + fileNamePossibilities
 
         for isoFName in fileNamePossibilities:
             if os.path.exists(isoFName):
                 break
-        pathTools.copyOrWarn(
-            "ISOTXS for snapshot", isoFName, pathTools.armiAbsPath(newFolder, "ISOTXS")
-        )
-        globalFluxLabel = GlobalFluxInterfaceUsingExecuters.getLabel(
-            self.cs.caseTitle, cycle, node, iteration
-        )
+        pathTools.copyOrWarn("ISOTXS for snapshot", isoFName, pathTools.armiAbsPath(newFolder, "ISOTXS"))
+        globalFluxLabel = GlobalFluxInterfaceUsingExecuters.getLabel(self.cs.caseTitle, cycle, node, iteration)
         globalFluxInput = globalFluxLabel + ".inp"
         globalFluxOutput = globalFluxLabel + ".out"
         pathTools.copyOrWarn("DIF3D input for snapshot", globalFluxInput, newFolder)
         pathTools.copyOrWarn("DIF3D output for snapshot", globalFluxOutput, newFolder)
-        pathTools.copyOrWarn(
-            "Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder
-        )
-        pathTools.copyOrWarn(
-            "Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder
-        )
+        pathTools.copyOrWarn("Shuffle logic for snapshot", self.cs[CONF_SHUFFLE_LOGIC], newFolder)
+        pathTools.copyOrWarn("Loading definition for snapshot", self.cs[CONF_LOADING_FILE], newFolder)
 
     @staticmethod
     def setStateToDefault(cs):

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for operators."""
+
 import collections
 import io
 import os
@@ -62,9 +63,7 @@ class InterfaceC(Interface):
 
 class OperatorTests(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, self.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_operatorData(self):
@@ -171,9 +170,7 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
     def test_interfaceIsActive(self):
-        self.o, _r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, _r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
@@ -187,9 +184,7 @@ class OperatorTests(unittest.TestCase):
             self.o.getActiveInterfaces("notAnInterface")
 
         # Test BOL
-        interfaces = self.o.getActiveInterfaces(
-            "BOL", excludedInterfaceNames=("xsGroups")
-        )
+        interfaces = self.o.getActiveInterfaces("BOL", excludedInterfaceNames=("xsGroups"))
         interfaceNames = [interface.name for interface in interfaces]
         self.assertNotIn("xsGroups", interfaceNames)
         self.assertNotIn("history", interfaceNames)
@@ -200,9 +195,7 @@ class OperatorTests(unittest.TestCase):
         self.assertNotIn("history", interfaceNames)
 
         # Test EveryNode and EOC
-        interfaces = self.o.getActiveInterfaces(
-            "EveryNode", excludedInterfaceNames=("xsGroups")
-        )
+        interfaces = self.o.getActiveInterfaces("EveryNode", excludedInterfaceNames=("xsGroups"))
         interfaceNames = [interface.name for interface in interfaces]
         self.assertIn("history", interfaceNames)
         self.assertNotIn("xsGroups", interfaceNames)
@@ -218,9 +211,7 @@ class OperatorTests(unittest.TestCase):
 
         # Test excludedInterfaceNames
         excludedInterfaceNames = ["fissionProducts", "fuelHandler", "xsGroups"]
-        interfaces = self.o.getActiveInterfaces(
-            "EOL", excludedInterfaceNames=excludedInterfaceNames
-        )
+        interfaces = self.o.getActiveInterfaces("EOL", excludedInterfaceNames=excludedInterfaceNames)
         interfaceNames = [ii.name for ii in interfaces]
         self.assertIn("history", interfaceNames)
         self.assertIn("main", interfaceNames)
@@ -363,9 +354,7 @@ class TestTightCoupling(unittest.TestCase):
         self.o.addInterface(InterfaceNoConverge(None, self.o.cs))
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(0, 0, writeDB=False)
-            self.assertIn(
-                "have not converged! The maximum number of iterations", mock.getStdout()
-            )
+            self.assertIn("have not converged! The maximum number of iterations", mock.getStdout())
 
     def test_performTightCoupling_WriteDB(self):
         """Ensure a tight coupling iteration accours and that a DB WILL be written if requested."""
@@ -374,9 +363,7 @@ class TestTightCoupling(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 self.dbWriteForCoupling(writeDB=True)
                 self.assertIn("Writing to database for statepoint:", mock.getStdout())
-                self.assertEqual(
-                    self.o.r.core.p.coupledIteration, hasCouplingInteraction
-                )
+                self.assertEqual(self.o.r.core.p.coupledIteration, hasCouplingInteraction)
 
     def test_performTightCoupling_NoWriteDB(self):
         """Ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested."""
@@ -384,12 +371,8 @@ class TestTightCoupling(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             with mockRunLogs.BufferLog() as mock:
                 self.dbWriteForCoupling(writeDB=False)
-                self.assertNotIn(
-                    "Writing to database for statepoint:", mock.getStdout()
-                )
-                self.assertEqual(
-                    self.o.r.core.p.coupledIteration, hasCouplingInteraction
-                )
+                self.assertNotIn("Writing to database for statepoint:", mock.getStdout())
+                self.assertEqual(self.o.r.core.p.coupledIteration, hasCouplingInteraction)
 
     def dbWriteForCoupling(self, writeDB: bool):
         self.o.removeAllInterfaces()
@@ -415,9 +398,7 @@ class TestTightCoupling(unittest.TestCase):
         """
         prevIterKeff = 0.9
         currIterKeff = 1.0
-        self.o.cs[CONF_TIGHT_COUPLING_SETTINGS] = {
-            "globalFlux": {"parameter": "keff", "convergence": 1e-05}
-        }
+        self.o.cs[CONF_TIGHT_COUPLING_SETTINGS] = {"globalFlux": {"parameter": "keff", "convergence": 1e-05}}
         globalFlux = GlobalFluxInterfaceUsingExecuters(self.o.r, self.o.cs)
         globalFlux.coupler.storePreviousIterationValue(prevIterKeff)
         self.o.addInterface(globalFlux)
@@ -483,14 +464,10 @@ settings:
             :id: T_ARMI_SETTINGS_POWER1
             :tests: R_ARMI_SETTINGS_POWER
         """
-        self.assertEqual(
-            self.detailedOperator.powerFractions, self.powerFractionsSolution
-        )
+        self.assertEqual(self.detailedOperator.powerFractions, self.powerFractionsSolution)
 
         self.detailedOperator._powerFractions = None
-        self.assertEqual(
-            self.detailedOperator.powerFractions, self.powerFractionsSolution
-        )
+        self.assertEqual(self.detailedOperator.powerFractions, self.powerFractionsSolution)
 
     def test_getCycleNames(self):
         self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
@@ -564,9 +541,7 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
     def test_expandCycleAndTimeNodeArgs_Empty(self):
         """When cycleNodeInfo should be an empty string."""
         for task in ["Init", "BOL", "EOL"]:
-            self.assertEqual(
-                self.o._expandCycleAndTimeNodeArgs(interactionName=task), ""
-            )
+            self.assertEqual(self.o._expandCycleAndTimeNodeArgs(interactionName=task), "")
 
     def test_expandCycleAndTimeNodeArgs_Cycle(self):
         """When cycleNodeInfo should return only the cycle."""
@@ -580,8 +555,7 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
         """When cycleNodeInfo should return the cycle and node."""
         self.assertEqual(
             self.o._expandCycleAndTimeNodeArgs(interactionName="EveryNode"),
-            f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
-            f"year {'{0:.2f}'.format(self.r.p.time)}",
+            f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, year {'{0:.2f}'.format(self.r.p.time)}",
         )
 
     def test_expandCycleAndTimeNodeArgs_Coupled(self):

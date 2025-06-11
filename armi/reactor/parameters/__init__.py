@@ -196,6 +196,7 @@ Design Considerations
 .. _thefreedictionary: http://www.thefreedictionary.com/parameter
 .. _Meriam-Webster: http://www.merriam-webster.com/dictionary/parameter
 """
+
 # ruff: noqa: F401
 from armi.reactor.parameters.exceptions import (
     ParameterDefinitionError,
@@ -231,7 +232,7 @@ since = ALL_DEFINITIONS.since
 
 
 def reset():
-    """Reset the status of all parameter definintions.
+    """Reset the status of all parameter definitions.
 
     This may become necessary when the state of the global parameter definitions becomes
     invalid.  Typically this happens when running multiple cases for the same import of

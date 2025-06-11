@@ -36,6 +36,7 @@ See Also
 https://pythonhosted.org/psutil/
 https://docs.python.org/3/library/gc.html#gc.garbage
 """
+
 import gc
 import sys
 from os import cpu_count
@@ -47,14 +48,12 @@ from armi.utils import tabulate
 from armi.utils.customExceptions import NonexistentSetting
 
 try:
-    # psutil is an optional requirement, since it doesnt support MacOS very well
+    # psutil is an optional requirement, since it doesn't support MacOS very well
     import psutil
 
     _havePsutil = True
 except ImportError:
-    runLog.warning(
-        "Failed to import psutil; MemoryProfiler will not provide meaningful data."
-    )
+    runLog.warning("Failed to import psutil; MemoryProfiler will not provide meaningful data.")
     _havePsutil = False
 
 
@@ -87,7 +86,6 @@ def getCurrentMemoryUsage():
 
 
 class MemoryProfiler(interfaces.Interface):
-
     name = "memoryProfiler"
 
     def __init__(self, r, cs):
@@ -155,14 +153,10 @@ class MemoryProfiler(interfaces.Interface):
 
         Turn these on as appropriate to find all your problems.
         """
-        runLog.important(
-            "----- Memory Usage Report at {} -----".format(timeDescription)
-        )
+        runLog.important("----- Memory Usage Report at {} -----".format(timeDescription))
         self._printFullMemoryBreakdown(reportSize=self.cs["debugMemSize"])
         self._reactorAssemblyTrackingBreakdown()
-        runLog.important(
-            "----- End Memory Usage Report at {} -----".format(timeDescription)
-        )
+        runLog.important("----- End Memory Usage Report at {} -----".format(timeDescription))
 
     def _reactorAssemblyTrackingBreakdown(self):
         runLog.important("Reactor attribute ArmiObject tracking count")
@@ -171,24 +165,16 @@ class MemoryProfiler(interfaces.Interface):
                 continue
 
             if isinstance(attrObj, list) and isinstance(attrObj[0], ArmiObject):
-                runLog.important(
-                    "List {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
-                )
+                runLog.important("List {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj)))
 
-            if isinstance(attrObj, dict) and isinstance(
-                list(attrObj.values())[0], ArmiObject
-            ):
-                runLog.important(
-                    "Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj))
-                )
+            if isinstance(attrObj, dict) and isinstance(list(attrObj.values())[0], ArmiObject):
+                runLog.important("Dict {:30s} has {:4d} ArmiObjects".format(attrName, len(attrObj)))
 
         if self.r.excore.get("sfp") is not None:
-            runLog.important(
-                "SFP has {:4d} ArmiObjects".format(len(self.r.excore["sfp"]))
-            )
+            runLog.important("SFP has {:4d} ArmiObjects".format(len(self.r.excore["sfp"])))
 
     def checkForDuplicateObjectsOnArmiModel(self, attrName, refObject):
-        """Scans thorugh ARMI model for duplicate objects."""
+        """Scans through ARMI model for duplicate objects."""
         if self.r is None:
             return
         uniqueIds = set()
@@ -232,7 +218,7 @@ class MemoryProfiler(interfaces.Interface):
 
     def _printFullMemoryBreakdown(self, reportSize=True, printReferrers=False):
         """
-        looks for any class from any module in the garbage collector and prints their count and size.
+        Looks for any class from any module in the garbage collector and prints their count and size.
 
         Parameters
         ----------
@@ -378,18 +364,14 @@ class ProfileMemoryUsageAction(mpiActions.MpiAction):
 class SystemAndProcessMemoryUsage:
     def __init__(self):
         self.nodeName = context.MPI_NODENAME
-        # no psutil, no memory diagnostics.
-        # TODO: Ideally, we could cut MemoryProfiler entirely, but it is referred to
-        # directly by the standard operator and reports, so easier said than done.
         self.percentNodeRamUsed: Optional[float] = None
         self.processMemoryInMB: Optional[float] = None
         self.processVirtualMemoryInMB: Optional[float] = None
+        # no psutil, no memory diagnostics
         if _havePsutil:
             self.percentNodeRamUsed = psutil.virtual_memory().percent
             self.processMemoryInMB = psutil.Process().memory_info().rss / (1024.0**2)
-            self.processVirtualMemoryInMB = psutil.Process().memory_info().vms / (
-                1024.0**2
-            )
+            self.processVirtualMemoryInMB = psutil.Process().memory_info().vms / (1024.0**2)
 
     def __isub__(self, other):
         if self.percentNodeRamUsed is not None and other.percentNodeRamUsed is not None:
@@ -451,20 +433,13 @@ class PrintSystemMemoryUsageAction(mpiActions.MpiAction):
                 continue
             printedNodes.add(memoryUsage.nodeName)
             nodeUsages = [mu for mu in self if mu.nodeName == memoryUsage.nodeName]
-            sysMemAvg = sum(mu.percentNodeRamUsed or 0.0 for mu in nodeUsages) / len(
-                nodeUsages
-            )
+            sysMemAvg = sum(mu.percentNodeRamUsed or 0.0 for mu in nodeUsages) / len(nodeUsages)
 
             memoryData.append(
                 (
                     "{:<24}".format(memoryUsage.nodeName),
                     "{:5.1f}%".format(sysMemAvg),
-                    "{}".format(
-                        " ".join(
-                            "{:5.0f}".format(mu.processMemoryInMB or 0.0)
-                            for mu in nodeUsages
-                        )
-                    ),
+                    "{}".format(" ".join("{:5.0f}".format(mu.processMemoryInMB or 0.0) for mu in nodeUsages)),
                 )
             )
 

@@ -160,9 +160,7 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
         If ``orientationNumber`` is less than zero or greater than five.
     """
     if orientationNumber < 0 or orientationNumber > 5:
-        raise ValueError(
-            f"Orientation number must be in [0:5], got {orientationNumber}"
-        )
+        raise ValueError(f"Orientation number must be in [0:5], got {orientationNumber}")
     if initialCellIndex > 1:
         if orientationNumber == 0:
             return initialCellIndex

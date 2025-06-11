@@ -31,6 +31,7 @@ See Also
 --------
 armi.reactor.blueprints.gridBlueprints : Method for storing system assembly layouts.
 """
+
 import yamlize
 
 from armi import context, getPluginManagerOrFail, runLog
@@ -136,14 +137,12 @@ class SystemBlueprint(yamlize.Object):
         ValueError
             input error, no grid design provided
         ValueError
-            objects were added to non-existant grid locations
+            objects were added to non-existent grid locations
         """
         runLog.info(f"Constructing the `{self.name}`")
 
         if not bp.gridDesigns:
-            raise ValueError(
-                "The input must define grids to construct a reactor, but does not. Update input."
-            )
+            raise ValueError("The input must define grids to construct a reactor, but does not. Update input.")
 
         gridDesign = bp.gridDesigns.get(self.gridName, None)
         system = self._resolveSystemType(self.typ)(self.name)
@@ -155,9 +154,7 @@ class SystemBlueprint(yamlize.Object):
             system.spatialGrid.armiObject = system
 
         reactor.add(system)  # ensure the reactor is the parent
-        spatialLocator = grids.CoordinateLocation(
-            self.origin.x, self.origin.y, self.origin.z, None
-        )
+        spatialLocator = grids.CoordinateLocation(self.origin.x, self.origin.y, self.origin.z, None)
         system.spatialLocator = spatialLocator
         if context.MPI_RANK != 0:
             # Non-primary nodes get the reactor via DistributeState.
@@ -181,7 +178,7 @@ class SystemBlueprint(yamlize.Object):
         system : Composite
             The composite we are building.
         gridDesign : GridBlueprint
-            The defintion of the grid on the object.
+            The definition of the grid on the object.
 
         Returns
         -------
@@ -204,9 +201,6 @@ class SystemBlueprint(yamlize.Object):
         runLog.header(f"=========== Adding Composites to {container} ===========")
         badLocations = set()
         for locationInfo, aTypeID in gridContents.items():
-
-            # TODO: We should allow for non-Assembly objects/geometries to be loaded into the grid.
-            #       For instance, an ex-core grid may define ducts, not just Assemblies.
             newAssembly = bp.constructAssem(cs, specifier=aTypeID)
 
             i, j = locationInfo
@@ -217,9 +211,7 @@ class SystemBlueprint(yamlize.Object):
                 badLocations.add(loc)
 
         if badLocations:
-            raise ValueError(
-                f"Attempted to add objects to non-existant locations on the grid: {badLocations}."
-            )
+            raise ValueError(f"Attempted to add objects to non-existent locations on the grid: {badLocations}.")
 
     def _modifyGeometry(self, container, gridDesign):
         """Perform post-load geometry conversions like full core, edge assems."""
@@ -236,9 +228,7 @@ class SystemBlueprint(yamlize.Object):
         # now update the spatial grid dimensions based on the populated children
         # (unless specified on input)
         if not gridDesign.latticeDimensions:
-            runLog.info(
-                f"Updating spatial grid pitch data for {container.geomType} geometry"
-            )
+            runLog.info(f"Updating spatial grid pitch data for {container.geomType} geometry")
             if container.geomType == geometry.GeomType.HEX:
                 container.spatialGrid.changePitch(container[0][0].getPitch())
             elif container.geomType == geometry.GeomType.CARTESIAN:
@@ -260,9 +250,7 @@ def summarizeMaterialData(container):
     container : Core object
         Any Core object with Blocks and Components defined.
     """
-    runLog.header(
-        f"=========== Summarizing Source of Material Data for {container} ==========="
-    )
+    runLog.header(f"=========== Summarizing Source of Material Data for {container} ===========")
     materialNames = set()
     materialData = []
     for c in container.iterComponents():

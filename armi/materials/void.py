@@ -17,6 +17,7 @@ Void material.
 
 Use this to fill empty spaces while maintaining proper volume fractions.
 """
+
 from armi.materials import material
 
 

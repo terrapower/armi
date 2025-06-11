@@ -27,6 +27,7 @@ What in particular is done is dependent on the case settings and the collection 
 
 Snapshots can be requested through the settings: ``dumpSnapshot`` and/or ``defaultSnapshots``.
 """
+
 from armi import interfaces, operators, runLog
 from armi.utils import getStepLengths
 
@@ -84,20 +85,16 @@ class SnapshotInterface(interfaces.Interface):
 
         snapText = ["{0:03d}{1:03d}".format(c, n) for c, n in snapTimeCycleNodePairs]
 
-        # determine if there are new snapshots to add to the setings file
+        # determine if there are new snapshots to add to the settings file
         for snapT in snapText:
             if snapT not in self.cs["dumpSnapshot"]:
-                runLog.info(
-                    "Adding default snapshot {0} to snapshot queue.".format(snapT)
-                )
+                runLog.info("Adding default snapshot {0} to snapshot queue.".format(snapT))
                 self.cs["dumpSnapshot"] = self.cs["dumpSnapshot"] + [snapT]
 
     def _getSnapTimesEquilibrium(self):
         """Set BOEC, MOEC, EOEC snapshots."""
         if not self.cs["eqToDatabaseOnlyWhenConverged"]:
-            raise ValueError(
-                "Cannot create default snapshots when `eqToDatabaseOnlyWhenConverged` setting is active"
-            )
+            raise ValueError("Cannot create default snapshots when `eqToDatabaseOnlyWhenConverged` setting is active")
         return [(0, 0), (0, self.cs["burnSteps"] // 2), (0, self.cs["burnSteps"])]
 
     def _getSnapTimesNormal(self):

@@ -103,8 +103,9 @@ def getGroupStructure(name):
         return copy.copy(GROUP_STRUCTURE[name])
     except KeyError as ke:
         runLog.error(
-            'Could not find groupStructure with the name "{}".\n'
-            "Choose one of: {}".format(name, ", ".join(GROUP_STRUCTURE.keys()))
+            'Could not find groupStructure with the name "{}".\nChoose one of: {}'.format(
+                name, ", ".join(GROUP_STRUCTURE.keys())
+            )
         )
         raise ke
 
@@ -136,6 +137,9 @@ Values are the upper bound of each energy in eV from highest energy to lowest
 """
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
+
+# for calculating fast flux
+GROUP_STRUCTURE["FastFlux"] = [HIGH_ENERGY_EV, FAST_FLUX_THRESHOLD_EV]
 
 # Nuclear Reactor Engineering: Reactor Systems Engineering, Vol. 1
 GROUP_STRUCTURE["4gGlasstoneSesonske"] = [HIGH_ENERGY_EV, 5.00e04, 5.00e02, 6.25e-01]
@@ -250,9 +254,7 @@ GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
 
 
 # fmt: on
-def _create_multigroup_structures_on_finegroup_energies(
-    multigroup_energy_bounds, finegroup_energy_bounds
-):
+def _create_multigroup_structures_on_finegroup_energies(multigroup_energy_bounds, finegroup_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     modifiedEnergyBounds = set()
     modifiedEnergyBounds.add(max(finegroup_energy_bounds))
@@ -265,9 +267,7 @@ def _create_multigroup_structures_on_finegroup_energies(
 def _create_anl_energies_with_group_energies(group_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     ufgEnergies = _create_anl_energies_with_group_lethargies(itertools.repeat(1, 2082))
-    return _create_multigroup_structures_on_finegroup_energies(
-        group_energy_bounds, ufgEnergies
-    )
+    return _create_multigroup_structures_on_finegroup_energies(group_energy_bounds, ufgEnergies)
 
 
 """
@@ -734,7 +734,7 @@ GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
 )
 
 """
-Taken from Table 5.1 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.1 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL21G"] = [
@@ -762,7 +762,7 @@ GROUP_STRUCTURE["ANL21G"] = [
 ]
 
 """
-Taken from Table 5.2 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.2 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL94G"] = [

@@ -20,6 +20,7 @@ equal to 1.0 cm.
 
 Learn more about :py:mod:`grids <armi.reactor.grids>`.
 """
+
 import math
 
 import matplotlib.patches as mpatches
@@ -41,11 +42,7 @@ ax.set_axis_off()
 for hex_i in hexes.generateSortedHexLocationList(127):
     x, y, z = hex_i.getGlobalCoordinates()
     ax.text(x, y, f"{hex_i.i},{hex_i.j}", ha="center", va="center", fontsize=8)
-    polys.append(
-        mpatches.RegularPolygon(
-            (x, y), numVertices=6, radius=1 / math.sqrt(3), orientation=math.pi / 2
-        )
-    )
+    polys.append(mpatches.RegularPolygon((x, y), numVertices=6, radius=1 / math.sqrt(3), orientation=math.pi / 2))
 patches = PatchCollection(polys, fc="white", ec="k")
 ax.add_collection(patches)
 

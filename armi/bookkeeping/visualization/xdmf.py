@@ -125,17 +125,14 @@ class XdmfDumper(dumper.VisFileDumper):
     def __init__(self, baseName: str, inputName: Optional[str] = None):
         self._baseName = baseName
         if inputName is None:
-            runLog.warning(
-                "No input database name was given, so only an XMDF mesh will be created"
-            )
+            runLog.warning("No input database name was given, so only an XMDF mesh will be created")
         self._inputName = inputName
 
         # Check that the inputName is a relative path. XDMF doesn't seem to like
         # absolute paths; at least on windows with ParaView
         if pathlib.Path(inputName).is_absolute():
             raise ValueError(
-                "XDMF tools tend not to like absolute paths; provide a "
-                "relative path to the input database."
+                "XDMF tools tend not to like absolute paths; provide a relative path to the input database."
             )
 
         self._meshH5 = None
@@ -155,7 +152,7 @@ class XdmfDumper(dumper.VisFileDumper):
         self._meshH5 = h5py.File(self._baseName + "_mesh.h5", "w")
 
         if self._inputName is None:
-            # we could handle the case where the database wasnt passed by pumping state
+            # we could handle the case where the database wasn't passed by pumping state
             # into a new h5 file, but why?
             raise ValueError("Input database needed to generate XDMF output!")
 
@@ -164,11 +161,7 @@ class XdmfDumper(dumper.VisFileDumper):
             dbVersion = db.version
 
         if math.floor(float(dbVersion)) != 3:
-            raise ValueError(
-                "XDMF output requires Database version 3. Got version `{}`".format(
-                    dbVersion
-                )
-            )
+            raise ValueError("XDMF output requires Database version 3. Got version `{}`".format(dbVersion))
 
         self._times = []
         self._blockGrids = []
@@ -187,20 +180,14 @@ class XdmfDumper(dumper.VisFileDumper):
             self._inputDb.close()
             self._inputDb = None
 
-        timeCollectionBlk = ET.Element(
-            "Grid", attrib={"GridType": "Collection", "CollectionType": "Temporal"}
-        )
-        timeCollectionAsm = ET.Element(
-            "Grid", attrib={"GridType": "Collection", "CollectionType": "Temporal"}
-        )
+        timeCollectionBlk = ET.Element("Grid", attrib={"GridType": "Collection", "CollectionType": "Temporal"})
+        timeCollectionAsm = ET.Element("Grid", attrib={"GridType": "Collection", "CollectionType": "Temporal"})
 
         # make sure all times are unique. Paraview will crash if they are not
         times = self._dedupTimes(self._times)
 
         for aGrid, bGrid, time in zip(self._assemGrids, self._blockGrids, times):
-            timeElement = ET.Element(
-                "Time", attrib={"TimeType": "Single", "Value": str(time)}
-            )
+            timeElement = ET.Element("Time", attrib={"TimeType": "Single", "Value": str(time)})
             bGrid.append(timeElement)
             timeCollectionBlk.append(bGrid)
 
@@ -239,9 +226,7 @@ class XdmfDumper(dumper.VisFileDumper):
         are within Ndup*epsilon of each other. In such cases, this function probably
         isn't valid anyways.
         """
-        assert all(
-            a <= b for a, b in zip(times, times[1:])
-        ), "Input list must be sorted"
+        assert all(a <= b for a, b in zip(times, times[1:])), "Input list must be sorted"
 
         # This should be used as a multiplicative epsilon, to avoid precision issues
         # with large times
@@ -292,9 +277,7 @@ class XdmfDumper(dumper.VisFileDumper):
         blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
         blks = sorted(blks, key=lambda b: snToIdx[b.p.serialNum])
 
-        assems = r.getChildren(
-            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-        )
+        assems = r.getChildren(deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly))
         assems = sorted(assems, key=lambda a: snToIdx[a.p.serialNum])
 
         blockGrid = self._makeBlockMesh(r, snToIdx)
@@ -307,9 +290,7 @@ class XdmfDumper(dumper.VisFileDumper):
         self._assemGrids.append(assemGrid)
         self._times.append(r.p.time)
 
-    def _collectObjectData(
-        self, objs: List[composites.ArmiObject], timeGroupName, node: ET.Element
-    ):
+    def _collectObjectData(self, objs: List[composites.ArmiObject], timeGroupName, node: ET.Element):
         """
         Scan for things that look plottable in the input database.
 
@@ -335,9 +316,7 @@ class XdmfDumper(dumper.VisFileDumper):
                 if val.shape != (len(objs),):
                     continue
                 try:
-                    dataItem = ET.Element(
-                        "DataItem", attrib=_getAttributesFromDataset(val)
-                    )
+                    dataItem = ET.Element("DataItem", attrib=_getAttributesFromDataset(val))
                 except KeyError:
                     continue
                 dataItem.text = ":".join((db.fileName, val.name))
@@ -377,16 +356,12 @@ class XdmfDumper(dumper.VisFileDumper):
         topoInH5 = groupName + "/blk_topology"
         self._meshH5[topoInH5] = topoValues
 
-        return self._makeGenericMesh(
-            "Blocks", len(blks), self._meshH5[verticesInH5], self._meshH5[topoInH5]
-        )
+        return self._makeGenericMesh("Blocks", len(blks), self._meshH5[verticesInH5], self._meshH5[topoInH5])
 
     def _makeAssemblyMesh(self, r: reactors.Reactor, indexMap) -> ET.Element:
         cycle = r.p.cycle
         node = r.p.timeNode
-        asys = r.getChildren(
-            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-        )
+        asys = r.getChildren(deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly))
         asys = sorted(asys, key=lambda b: indexMap[b.p.serialNum])
 
         groupName = "c{}n{}".format(cycle, node)
@@ -411,14 +386,10 @@ class XdmfDumper(dumper.VisFileDumper):
         topoInH5 = groupName + "/asy_topology"
         self._meshH5[topoInH5] = topoValues
 
-        return self._makeGenericMesh(
-            "Assemblies", len(asys), self._meshH5[verticesInH5], self._meshH5[topoInH5]
-        )
+        return self._makeGenericMesh("Assemblies", len(asys), self._meshH5[verticesInH5], self._meshH5[topoInH5])
 
     @staticmethod
-    def _makeGenericMesh(
-        name: str, nCells: int, vertexData: h5py.Dataset, topologyData: h5py.Dataset
-    ) -> ET.Element:
+    def _makeGenericMesh(name: str, nCells: int, vertexData: h5py.Dataset, topologyData: h5py.Dataset) -> ET.Element:
         grid = ET.Element("Grid", attrib={"GridType": "Uniform", "Name": name})
         geometry = ET.Element("Geometry", attrib={"GeometryType": "XYZ"})
         geomData = ET.Element(

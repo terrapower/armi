@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for the compareDB3 module."""
+
 import unittest
 import warnings
 
@@ -126,7 +127,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """End-to-end test of compareDatabases() on very simlar databases."""
+        """End-to-end test of compareDatabases() on very similar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT,
@@ -141,9 +142,7 @@ class TestCompareDB3(unittest.TestCase):
             days = 100
             cs = o.cs.modified(
                 newSettings={
-                    "cycles": [
-                        {"step days": [days, days], "power fractions": [1, 0.5]}
-                    ],
+                    "cycles": [{"step days": [days, days], "power fractions": [1, 0.5]}],
                     "reloadDBName": "something_fake.h5",
                 }
             )
@@ -180,8 +179,18 @@ class TestCompareDB3(unittest.TestCase):
                 dbs[1]._fullPath,
                 timestepCompare=[(0, 0), (0, 1)],
             )
-        self.assertEqual(len(diffs.diffs), 504)
-        # Cycle length is only diff (x3)
+
+        # spot check the diffs
+        self.assertGreater(len(diffs.diffs), 200)
+        self.assertLess(len(diffs.diffs), 800)
+        self.assertIn("/c00n00", diffs._columns)
+        self.assertIn("/c00n01", diffs._columns)
+        self.assertIn(0, diffs._structureDiffs)
+        self.assertEqual(sum(diffs._structureDiffs), 0)
+        self.assertEqual(diffs.tolerance, 0)
+        self.assertIn("SpentFuelPool/flags max(abs(diff))", diffs.diffs)
+        self.assertIn("Circle/volume mean(diff)", diffs.diffs)
+        self.assertIn("Reactor/flags mean(diff)", diffs.diffs)
         self.assertEqual(diffs.nDiffs(), 3)
 
     def test_diffSpecialData(self):

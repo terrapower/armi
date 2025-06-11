@@ -59,12 +59,7 @@ class MigrateInputs(EntryPoint):
         Some migrations change the paths so we update them one by one.
         """
         for migrationI in ACTIVE_MIGRATIONS:
-            if (
-                issubclass(
-                    migrationI, (base.SettingsMigration, base.BlueprintsMigration)
-                )
-                and settingsPath
-            ):
+            if issubclass(migrationI, (base.SettingsMigration, base.BlueprintsMigration)) and settingsPath:
                 mig = migrationI(path=settingsPath)
                 mig.apply()
                 if issubclass(migrationI, base.SettingsMigration):

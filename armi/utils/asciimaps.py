@@ -48,6 +48,7 @@ armi.reactor.blueprints.latticeBlueprint : user input of generic lattices
 armi.reactor.geometry : a specific usage of lattices, for core maps
 
 """
+
 import re
 from typing import Union
 
@@ -113,10 +114,7 @@ class AsciiMap:
         if len(self.asciiOffsets) != len(self.asciiLines):
             runLog.error(f"AsciiLines: {self.asciiLines}")
             runLog.error(f"Offsets: {self.asciiOffsets}")
-            raise ValueError(
-                f"Inconsistent lines ({len(self.asciiLines)}) "
-                f"and offsets ({len(self.asciiOffsets)})"
-            )
+            raise ValueError(f"Inconsistent lines ({len(self.asciiLines)}) and offsets ({len(self.asciiOffsets)})")
 
         # Finally, build the string representation.
         txt = ""
@@ -214,9 +212,7 @@ class AsciiMap:
             for colNum in range(self._asciiMaxCol):
                 ij = self._getIJFromColRow(colNum, lineNum)
                 # convert to string and strip any whitespace in thing we're representing
-                line.append(
-                    str(self.asciiLabelByIndices.get(ij, PLACEHOLDER)).replace(" ", "")
-                )
+                line.append(str(self.asciiLabelByIndices.get(ij, PLACEHOLDER)).replace(" ", ""))
             self.asciiLines.append(line)
 
         # clean data
@@ -234,9 +230,7 @@ class AsciiMap:
                 # if entire newline is wiped out, it's a full row of placeholders!
                 # but oops this actually still won't work. Needs more work when
                 # doing pure rows from data is made programmatically.
-                raise ValueError(
-                    "Cannot write asciimaps with blank rows from pure data yet."
-                )
+                raise ValueError("Cannot write asciimaps with blank rows from pure data yet.")
 
         if not newLines:
             raise ValueError("No data found")
@@ -310,8 +304,9 @@ class AsciiMapCartesian(AsciiMap):
 
         if iMin > 0 or jMin > 0:
             raise ValueError(
-                "Asciimaps only supports sets of indices that "
-                "start at less than or equal to zero, got {}, {}".format(iMin, jMin)
+                "Asciimaps only supports sets of indices that start at less than or equal to zero, got {}, {}".format(
+                    iMin, jMin
+                )
             )
 
     def _getIJFromColRow(self, columnNum, lineNum):
@@ -438,9 +433,8 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         Used before writing the asciimap from data.
 
-        Add flat-hex specific corner truncation detection that allows
-        some positions to be empty near the corners of the full hex,
-        as is typical for hexagonal core maps.
+        Add flat-hex specific corner truncation detection that allows some positions to be empty
+        near the corners of the full hex, as is typical for hexagonal core maps.
 
         For 1/3 hex, _ijMax represents the outer outline
         """
@@ -453,8 +447,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         maxIWithData = max(iWithData) if iWithData else -1
         self._asciiLinesOffCorner = (self._ijMax - maxIWithData) * 2 - 1
 
-        # in jagged systems we have to also check the neighbor.
-        # TODO: maybe even more corner positions could be left out in very large maps.
+        # in jagged systems we have to also check the neighbor
         nextIWithData = [i for i, j in self.asciiLabelByIndices if j == 1]
         nextMaxIWithData = max(nextIWithData) if nextIWithData else -1
         if nextMaxIWithData == maxIWithData - 1:
@@ -478,8 +471,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
     number of placeholders on the left. This makes this one's
     base computation more complex.
 
-    We also allow all corners to be cut off on these, further
-    complicating things.
+    We also allow all corners to be cut off on these, further complicating things.
     """
 
     def _getIJBaseByAsciiLine(self, asciiLineNum):

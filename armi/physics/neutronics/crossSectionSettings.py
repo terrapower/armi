@@ -268,11 +268,7 @@ class XSSettings(dict):
         # settings since users do not typically provide all combinations of second chars explicitly
         xsType = xsID[0]
         envGroup = xsID[1]
-        existingXsOpts = [
-            xsOpt
-            for xsOpt in self.values()
-            if xsOpt.xsType == xsType and xsOpt.envGroup < envGroup
-        ]
+        existingXsOpts = [xsOpt for xsOpt in self.values() if xsOpt.xsType == xsType and xsOpt.envGroup < envGroup]
 
         if not any(existingXsOpts):
             return self._getDefault(xsID)
@@ -284,22 +280,18 @@ class XSSettings(dict):
         """
         Set defaults for current and future xsIDs based user settings.
 
-        This must be delayed past read-time since the settings that effect this
-        may not be loaded yet and could still be at their own defaults when
-        this input is being processed. Thus, defaults are set at a later time.
+        This must be delayed after read-time since the settings affecting this may not be loaded yet and could still be
+        at their own defaults when this input is being processed. Thus, defaults are set at a later time.
 
         Parameters
         ----------
         blockRepresentation : str
             Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
-
         validBlockTypes : list of str or bool
-           This configures which blocks (by their type) that the cross section
-           group manager will merge together to create a representative block. If
-           set to ``None`` or ``True`` then all block types in the XS ID will be
-           considered. If this is set to ``False`` then a default of ["fuel"] will
-           be used. If this is set to a list of strings then the specific list will
-           be used. A typical input may be ["fuel"] to just consider the fuel blocks.
+           This configures which blocks (by their type) the cross section group manager will merge together to create a
+           representative block. If set to ``None`` or ``True`` then all block types in the XS ID will be considered. If
+           set to ``False`` then a default of ["fuel"] will be used. If set to a list of strings then the specific list
+           will be used. A typical input may be ["fuel"] to just consider the fuel blocks.
 
         See Also
         --------
@@ -308,10 +300,7 @@ class XSSettings(dict):
         self._blockRepresentation = blockRepresentation
         self._validBlockTypes = validBlockTypes
         for _xsId, xsOpt in self.items():
-            xsOpt.setDefaults(
-                blockRepresentation,
-                validBlockTypes,
-            )
+            xsOpt.setDefaults(blockRepresentation, validBlockTypes)
             xsOpt.validate()
 
     def _getDefault(self, xsID):
@@ -333,9 +322,7 @@ class XSSettings(dict):
                     "before attempting to add a new XS ID."
                 )
 
-        xsOpt = XSModelingOptions(
-            xsID, geometry=XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL)
-        )
+        xsOpt = XSModelingOptions(xsID, geometry=XSGeometryTypes.getStr(XSGeometryTypes.ZERO_DIMENSIONAL))
         xsOpt.setDefaults(self._blockRepresentation, self._validBlockTypes)
         xsOpt.validate()
         return xsOpt
@@ -581,11 +568,7 @@ class XSModelingOptions:
     def serialize(self):
         """Return as a dictionary without ``CONF_XSID`` and with ``None`` values excluded."""
         doNotSerialize = [CONF_XSID]
-        return {
-            key: val
-            for key, val in self
-            if key not in doNotSerialize and val is not None
-        }
+        return {key: val for key, val in self if key not in doNotSerialize and val is not None}
 
     def validate(self):
         """
@@ -608,9 +591,7 @@ class XSModelingOptions:
 
         if self.xsFileLocation is None or self.fluxFileLocation is not None:
             if self.geometry is None:
-                raise ValueError(
-                    f"{self} is missing a geometry input or a file location."
-                )
+                raise ValueError(f"{self} is missing a geometry input or a file location.")
 
         invalids = []
         if self.xsFileLocation is not None:
@@ -623,9 +604,7 @@ class XSModelingOptions:
                     invalids.append((var, val))
 
         if invalids:
-            runLog.debug(
-                f"The following inputs in {self} are not valid when the file location is set:"
-            )
+            runLog.debug(f"The following inputs in {self} are not valid when the file location is set:")
             for var, val in invalids:
                 runLog.debug(f"\tAttribute: {var}, Value: {val}")
 
@@ -638,14 +617,10 @@ class XSModelingOptions:
                     invalids.append((var, val))
 
         if invalids:
-            runLog.debug(
-                f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:"
-            )
+            runLog.debug(f"The following inputs in {self} are not valid when `{self.geometry}` geometry type is set:")
             for var, val in invalids:
                 runLog.debug(f"\tAttribute: {var}, Value: {val}")
-            runLog.debug(
-                f"The valid options for the `{self.geometry}` geometry are: {validOptions}"
-            )
+            runLog.debug(f"The valid options for the `{self.geometry}` geometry are: {validOptions}")
 
     def setDefaults(self, blockRepresentation, validBlockTypes):
         """
@@ -656,18 +631,16 @@ class XSModelingOptions:
         blockRepresentation : str
             Valid options are provided in ``CrossSectionGroupManager.BLOCK_COLLECTIONS``
         validBlockTypes : list of str or bool
-           This configures which blocks (by their type) that the cross section
-           group manager will merge together to create a representative block. If
-           set to ``None`` or ``True`` then all block types in the XS ID will be
-           considered. If this is set to ``False`` then a default of ["fuel"] will
-           be used. If this is set to a list of strings then the specific list will
-           be used. A typical input may be ["fuel"] to just consider the fuel blocks.
+           This configures which blocks (by their type) the cross section group manager will merge together to create a
+           representative block. If set to ``None`` or ``True`` then all block types in the XS ID will be considered. If
+           set to ``False`` then a default of ["fuel"] will be used. If set to a list of strings then the specific list
+           will be used. A typical input may be ["fuel"] to just consider the fuel blocks.
 
         Notes
         -----
-        These defaults are application-specific and design specific. They are included to provide an
-        example and are tuned to fit the internal needs of TerraPower. Consider a separate
-        implementation/subclass if you would like different behavior.
+        These defaults are application-specific and design specific. They are included to provide an example and are
+        tuned to fit the internal needs of TerraPower. Consider a separate implementation/subclass if you would like
+        different behavior.
         """
         if type(validBlockTypes) is bool:
             validBlockTypes = None if validBlockTypes else ["fuel"]
@@ -701,9 +674,7 @@ class XSModelingOptions:
                 CONF_BLOCKTYPES: validBlockTypes,
                 CONF_EXTERNAL_FLUX_FILE_LOCATION: self.fluxFileLocation,
             }
-        elif self.geometry == XSGeometryTypes.getStr(
-            XSGeometryTypes.ONE_DIMENSIONAL_SLAB
-        ):
+        elif self.geometry == XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_SLAB):
             allowableBlockCollections = [
                 crossSectionGroupManager.SLAB_COMPONENTS_BLOCK_COLLECTION,
             ]
@@ -713,12 +684,8 @@ class XSModelingOptions:
                 CONF_BLOCK_REPRESENTATION: crossSectionGroupManager.SLAB_COMPONENTS_BLOCK_COLLECTION,
                 CONF_BLOCKTYPES: validBlockTypes,
             }
-        elif self.geometry == XSGeometryTypes.getStr(
-            XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER
-        ):
-            allowableBlockCollections = [
-                crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION
-            ]
+        elif self.geometry == XSGeometryTypes.getStr(XSGeometryTypes.ONE_DIMENSIONAL_CYLINDER):
+            allowableBlockCollections = [crossSectionGroupManager.CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION]
             defaults = {
                 CONF_GEOM: self.geometry,
                 CONF_DRIVER: "",
@@ -733,9 +700,7 @@ class XSModelingOptions:
                 CONF_DUCT_HETEROGENEOUS: False,
                 CONF_TRACE_ISOTOPE_THRESHOLD: 0.0,
             }
-        elif self.geometry == XSGeometryTypes.getStr(
-            XSGeometryTypes.TWO_DIMENSIONAL_HEX
-        ):
+        elif self.geometry == XSGeometryTypes.getStr(XSGeometryTypes.TWO_DIMENSIONAL_HEX):
             allowableBlockCollections = [
                 crossSectionGroupManager.MEDIAN_BLOCK_COLLECTION,
                 crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION,
@@ -784,7 +749,6 @@ def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Di
 
     output = {}
     for xsID, xsOpts in xsSettingsDict.items():
-
         # Setting the value to an empty dictionary
         # if it is set to a None or an empty
         # dictionary.
@@ -796,9 +760,7 @@ def serializeXSSettings(xsSettingsDict: Union[XSSettings, Dict]) -> Dict[str, Di
 
         elif isinstance(xsOpts, dict):
             xsIDVals = {
-                config: confVal
-                for config, confVal in xsOpts.items()
-                if config != CONF_XSID and confVal is not None
+                config: confVal for config, confVal in xsOpts.items() if config != CONF_XSID and confVal is not None
             }
         else:
             raise TypeError(

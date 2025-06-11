@@ -57,7 +57,7 @@ N2N_SCATTER = 300  # 300 + NN, (N,2N) SCATTERING
 
 def compareSet(fileNames, tolerance=0.0, verbose=False):
     """
-    takes a list of strings and reads all binaries with that name comparing them in all combinations.
+    Takes a list of strings and reads all binaries with that name comparing them in all combinations.
 
     Notes
     -----
@@ -67,29 +67,18 @@ def compareSet(fileNames, tolerance=0.0, verbose=False):
     comparisons = []
 
     xsLibs = [readBinary(fileName) for fileName in fileNames]
-    for thisXSLib, thatXSLib in itertools.combinations(
-        xsLibs, 2
-    ):  # all unique combinations with 2 itmes
-        runLog.info(
-            "\n*****\n*****comparing {} and {}\n*****".format(thisXSLib, thatXSLib)
-        )
-        comparisons.append(
-            (compare(thisXSLib, thatXSLib, tolerance, verbose), thisXSLib, thatXSLib)
-        )
+    for thisXSLib, thatXSLib in itertools.combinations(xsLibs, 2):
+        # all unique combinations with 2 items
+        runLog.info("\n*****\n*****comparing {} and {}\n*****".format(thisXSLib, thatXSLib))
+        comparisons.append((compare(thisXSLib, thatXSLib, tolerance, verbose), thisXSLib, thatXSLib))
 
     sameFileNames = "\n"
     for comparison in comparisons:
         if comparison[0]:
             sameFileNames += "\t{} and {}\n".format(comparison[1], comparison[2])
 
-    sameFileNames = (
-        sameFileNames + "None were the same" if sameFileNames == "\n" else sameFileNames
-    )
-    runLog.info(
-        "the following libraries are the same within the specified tolerance:{}".format(
-            sameFileNames
-        )
-    )
+    sameFileNames = sameFileNames + "None were the same" if sameFileNames == "\n" else sameFileNames
+    runLog.info("the following libraries are the same within the specified tolerance:{}".format(sameFileNames))
 
 
 def compare(lib1, lib2, tolerance=0.0, verbose=False):
@@ -99,7 +88,7 @@ def compare(lib1, lib2, tolerance=0.0, verbose=False):
     Notes
     -----
     Tolerance allows the user to ignore small changes that may be caused by
-    small library differences or floating point cacluations
+    small library differences or floating point calculations
     the closer to zero the more differences will be shown
     10**-5 is a good tolerance to use if not using default.
     Verbose shows the XS matrixes that are not equal
@@ -155,9 +144,7 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
         return False
     elif len(lib.xsIDs) > 1:
         runLog.warning(
-            "Cannot add dummy nuclide data to ISOTXS library {} containing data for more than 1 XS ID.".format(
-                lib
-            )
+            "Cannot add dummy nuclide data to ISOTXS library {} containing data for more than 1 XS ID.".format(lib)
         )
         return False
 
@@ -226,9 +213,7 @@ class IsotxsIO(cccc.Stream):
 
     @classmethod
     def _write(cls, lib, fileName, fileMode):
-        return cls._readWrite(
-            lib, fileName, fileMode, lambda containerKey: lib[containerKey]
-        )
+        return cls._readWrite(lib, fileName, fileMode, lambda containerKey: lib[containerKey])
 
     @classmethod
     def _readWrite(cls, lib, fileName, fileMode, getNuclideFunc):
@@ -237,11 +222,7 @@ class IsotxsIO(cccc.Stream):
         return lib
 
     def _rwMessage(self):
-        runLog.debug(
-            "{} ISOTXS data {}".format(
-                "Reading" if "r" in self._fileMode else "Writing", self
-            )
-        )
+        runLog.debug("{} ISOTXS data {}".format("Reading" if "r" in self._fileMode else "Writing", self))
 
     def _updateFileLabel(self):
         """
@@ -327,9 +308,7 @@ class IsotxsIO(cccc.Stream):
                 nuclideIO = self._getNuclideIO()(nuc, self, self._lib)
                 nuclideIO.rwNuclide()
         except Exception:
-            raise OSError(
-                "Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc())
-            )
+            raise OSError("Failed to read/write {} \n\n\n{}".format(self, traceback.format_exc()))
         finally:
             properties.lockImmutableProperties(self._lib)
 
@@ -343,24 +322,12 @@ class IsotxsIO(cccc.Stream):
         with self.createRecord() as record:
             self._metadata["numGroups"] = record.rwInt(self._metadata["numGroups"])
             numNucs = record.rwInt(numNucs)
-            self._metadata["maxUpScatterGroups"] = record.rwInt(
-                self._metadata["maxUpScatterGroups"]
-            )
-            self._metadata["maxDownScatterGroups"] = record.rwInt(
-                self._metadata["maxDownScatterGroups"]
-            )
-            self._metadata["maxScatteringOrder"] = record.rwInt(
-                self._metadata["maxScatteringOrder"]
-            )
-            self._metadata["fileWideChiFlag"] = record.rwInt(
-                self._metadata["fileWideChiFlag"]
-            )
-            self._metadata["maxScatteringBlocks"] = record.rwInt(
-                self._metadata["maxScatteringBlocks"]
-            )
-            self._metadata["subblockingControl"] = record.rwInt(
-                self._metadata["subblockingControl"]
-            )
+            self._metadata["maxUpScatterGroups"] = record.rwInt(self._metadata["maxUpScatterGroups"])
+            self._metadata["maxDownScatterGroups"] = record.rwInt(self._metadata["maxDownScatterGroups"])
+            self._metadata["maxScatteringOrder"] = record.rwInt(self._metadata["maxScatteringOrder"])
+            self._metadata["fileWideChiFlag"] = record.rwInt(self._metadata["fileWideChiFlag"])
+            self._metadata["maxScatteringBlocks"] = record.rwInt(self._metadata["maxScatteringBlocks"])
+            self._metadata["subblockingControl"] = record.rwInt(self._metadata["subblockingControl"])
         return numNucs
 
     def _rw2DRecord(self, numNucs, nucNames):
@@ -374,27 +341,19 @@ class IsotxsIO(cccc.Stream):
         """
         with self.createRecord() as record:
             # skip "merger   test..." string
-            self._metadata["libraryLabel"] = record.rwString(
-                self._metadata["libraryLabel"], 12 * 8
-            )
+            self._metadata["libraryLabel"] = record.rwString(self._metadata["libraryLabel"], 12 * 8)
             nucNames = record.rwList(nucNames, "string", numNucs, 8)
             if self._metadata["fileWideChiFlag"] == 1:
                 # file-wide chi distribution vector listed here.
-                self._metadata["chi"] = record.rwMatrix(
-                    self._metadata["chi"], self._metadata["numGroups"]
-                )
+                self._metadata["chi"] = record.rwMatrix(self._metadata["chi"], self._metadata["numGroups"])
             self._rwLibraryEnergies(record)
-            self._metadata["minimumNeutronEnergy"] = record.rwFloat(
-                self._metadata["minimumNeutronEnergy"]
-            )
+            self._metadata["minimumNeutronEnergy"] = record.rwFloat(self._metadata["minimumNeutronEnergy"])
             record.rwList(self._computeNuclideRecordOffset(), "int", numNucs)
         return nucNames
 
     def _rwLibraryEnergies(self, record):
         # neutron velocity (cm/s)
-        self._lib.neutronVelocity = record.rwMatrix(
-            self._lib.neutronVelocity, self._metadata["numGroups"]
-        )
+        self._lib.neutronVelocity = record.rwMatrix(self._lib.neutronVelocity, self._metadata["numGroups"])
         # read emax for each group in descending eV.
         self._lib.neutronEnergyUpperBounds = record.rwMatrix(
             self._lib.neutronEnergyUpperBounds, self._metadata["numGroups"]
@@ -414,9 +373,7 @@ class IsotxsIO(cccc.Stream):
         reader can dynamically calculate the offset itself. Therefore, during a
         read operation, this data is ignored.
         """
-        recordsPerNuclide = [
-            self._computeNumIsotxsRecords(nuc) for nuc in self._lib.nuclides
-        ]
+        recordsPerNuclide = [self._computeNumIsotxsRecords(nuc) for nuc in self._lib.nuclides]
         return [sum(recordsPerNuclide[0:ii]) for ii in range(len(self._lib))]
 
     def _computeNumIsotxsRecords(self, nuclide):
@@ -518,14 +475,10 @@ class _IsotxsNuclideIO:
                 self._metadata[datum] = nucRecord.rwInt(self._metadata[datum])
 
             # defines what kind of scattering block each block is; total, inelastic, elastic, n2n
-            self._metadata["scatFlag"] = nucRecord.rwList(
-                self._metadata["scatFlag"], "int", self._maxScatteringBlocks
-            )
+            self._metadata["scatFlag"] = nucRecord.rwList(self._metadata["scatFlag"], "int", self._maxScatteringBlocks)
 
             # number of scattering orders in this block. if 0, this block isn't present.
-            self._metadata["ords"] = nucRecord.rwList(
-                self._metadata["ords"], "int", self._maxScatteringBlocks
-            )
+            self._metadata["ords"] = nucRecord.rwList(self._metadata["ords"], "int", self._maxScatteringBlocks)
             # bandwidth of this block: number of groups that scatter into this group, including this one.
             jband = self._metadata["jband"] or {}
             for n in range(self._maxScatteringBlocks):
@@ -548,19 +501,13 @@ class _IsotxsNuclideIO:
             micros = self._getMicros()
             nuc = self._nuclide
             numGroups = self._numGroups
-            micros.transport = record.rwMatrix(
-                micros.transport, self._metadata["ltrn"], numGroups
-            )
-            micros.total = record.rwMatrix(
-                micros.total, self._metadata["ltot"], numGroups
-            )
+            micros.transport = record.rwMatrix(micros.transport, self._metadata["ltrn"], numGroups)
+            micros.total = record.rwMatrix(micros.total, self._metadata["ltot"], numGroups)
             micros.nGamma = record.rwMatrix(micros.nGamma, numGroups)
 
             if self._metadata["fisFlag"] > 0:
                 micros.fission = record.rwMatrix(micros.fission, numGroups)
-                micros.neutronsPerFission = record.rwMatrix(
-                    micros.neutronsPerFission, numGroups
-                )
+                micros.neutronsPerFission = record.rwMatrix(micros.neutronsPerFission, numGroups)
             else:
                 micros.fission = micros.getDefaultXs(numGroups)
                 micros.neutronsPerFission = micros.getDefaultXs(numGroups)
@@ -569,11 +516,7 @@ class _IsotxsNuclideIO:
                 micros.chi = record.rwMatrix(micros.chi, numGroups)
             elif self._metadata["fisFlag"] > 0:
                 if self._fileWideChiFlag != 1:
-                    raise OSError(
-                        "Fissile nuclide {} in library but no individual or global chi!".format(
-                            nuc
-                        )
-                    )
+                    raise OSError("Fissile nuclide {} in library but no individual or global chi!".format(nuc))
                 micros.chi = self._fileWideChi
             else:
                 micros.chi = micros.getDefaultXs(numGroups)
@@ -581,17 +524,13 @@ class _IsotxsNuclideIO:
             # read some other important XS, if they exist
             for xstype in ["nalph", "np", "n2n", "nd", "nt"]:
                 if self._metadata[xstype]:
-                    micros.__dict__[xstype] = record.rwMatrix(
-                        micros.__dict__[xstype], numGroups
-                    )
+                    micros.__dict__[xstype] = record.rwMatrix(micros.__dict__[xstype], numGroups)
                 else:
                     micros.__dict__[xstype] = micros.getDefaultXs(numGroups)
 
             # coordinate direction transport cross section (for various coordinate directions)
             if self._metadata["strpd"] > 0:
-                micros.strpd = record.rwMatrix(
-                    micros.strpd, self._metadata["strpd"], numGroups
-                )
+                micros.strpd = record.rwMatrix(micros.strpd, self._metadata["strpd"], numGroups)
             else:
                 micros.strpd = micros.getDefaultXs(numGroups)
 
@@ -657,9 +596,7 @@ class _IsotxsNuclideIO:
         with self._isotxsIO.createRecord() as record:
             ng = self._numGroups
             nsblok = self._subblockingControl
-            m = (
-                subBlock + 1
-            )  # fix starting at zero problem and use same indices as CCCC specification
+            m = subBlock + 1  # fix starting at zero problem and use same indices as CCCC specification
             # be careful with starting indices at 0 here!!
             lordn = self._metadata["ords"][blockNumIndex]
             # this is basically how many scattering cross sections there are for this scatter type for this nuclide
@@ -689,9 +626,7 @@ class _IsotxsNuclideIO:
 
         if scatter is None:
             # we're reading.
-            scatter = sparse.csr_matrix(
-                (np.array(dataVals), indices, indptr), shape=(ng, ng)
-            )
+            scatter = sparse.csr_matrix((np.array(dataVals), indices, indptr), shape=(ng, ng))
             scatter.eliminate_zeros()
             self._setScatterMatrix(blockNumIndex, scatter)
 
@@ -768,8 +703,6 @@ class _IsotxsNuclideIO:
         elif blockNumIndex == self._getElasticScatterBlockNumIndex(1):
             scatterMatrix = self._getMicros().elasticScatter1stOrder
         else:
-            scatterMatrix = self._getMicros().higherOrderScatter.get(
-                blockNumIndex, None
-            )
+            scatterMatrix = self._getMicros().higherOrderScatter.get(blockNumIndex, None)
 
         return scatterMatrix

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License0.
 """Testing the settingsIO."""
+
 import datetime
 import io
 import os
@@ -33,9 +34,7 @@ class SettingsFailureTests(unittest.TestCase):
     def test_settingsObjSetting(self):
         sets = settings.Settings()
         with self.assertRaises(NonexistentSetting):
-            sets[
-                "idontexist"
-            ] = "this test should fail because no setting named idontexist should exist."
+            sets["idontexist"] = "this test should fail because no setting named idontexist should exist."
 
     def test_loadFromYamlFailsOnBadNames(self):
         ss = settings.Settings()
@@ -48,10 +47,7 @@ class SettingsFailureTests(unittest.TestCase):
         with self.assertRaises(InvalidSettingsFileError):
             cs = settings.caseSettings.Settings()
             reader = settingsIO.SettingsReader(cs)
-            reader.readFromStream(
-                io.StringIO("useless:\n    should_fail"),
-                fmt=settingsIO.SettingsReader.SettingsInputFormat.YAML,
-            )
+            reader.readFromStream(io.StringIO("useless:\n    should_fail"))
 
 
 class SettingsReaderTests(unittest.TestCase):
@@ -110,9 +106,7 @@ class SettingsRenameTests(unittest.TestCase):
     ]
 
     def test_rename(self):
-        renamer = settingsIO.SettingRenamer(
-            {setting.name: setting for setting in self.testSettings}
-        )
+        renamer = settingsIO.SettingRenamer({setting.name: setting for setting in self.testSettings})
 
         self.assertEqual(renamer.renameSetting("testSetting1"), ("testSetting1", False))
         self.assertEqual(renamer.renameSetting("oSetting1"), ("testSetting1", True))
@@ -147,9 +141,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         self.init_mode = context.CURRENT_MODE
-        self.filepathYaml = os.path.join(
-            os.getcwd(), self._testMethodName + "test_setting_io.yaml"
-        )
+        self.filepathYaml = os.path.join(os.getcwd(), self._testMethodName + "test_setting_io.yaml")
         self.cs = settings.Settings()
         self.cs = self.cs.modified(newSettings={"nCycles": 55})
 

@@ -15,6 +15,7 @@
 This module contains subclasses of the armi.runLog._RunLog class that can be used to determine
 whether or not one of the specific methods were called. These should only be used in testing.
 """
+
 import io
 import sys
 
@@ -86,7 +87,7 @@ class BufferLog(runLog._RunLog):
                 return True
         return False
 
-    def clearSingleWarnings(self):
+    def clearSingleLogs(self):
         """Reset the single warned list so we get messages again."""
         self._singleMessageCounts.clear()
 

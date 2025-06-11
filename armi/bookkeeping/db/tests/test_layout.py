@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the db Layout and associated tools."""
+
 import os
 import unittest
 
@@ -104,11 +105,7 @@ class TestLocationPacking(unittest.TestCase):
         self.assertIsNone(db._fullPath)  # this isn't set until the db is opened
 
         db.open()
-        self.assertEqual(
-            db._fullPath, os.path.join(context.getFastPath(), intendedFileName)
-        )
+        self.assertEqual(db._fullPath, os.path.join(context.getFastPath(), intendedFileName))
 
         db.close()  # this should move the file out of the FAST_PATH
-        self.assertEqual(
-            db._fullPath, os.path.join(os.path.abspath("."), intendedFileName)
-        )
+        self.assertEqual(db._fullPath, os.path.join(os.path.abspath("."), intendedFileName))

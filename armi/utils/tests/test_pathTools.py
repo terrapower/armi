@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests for pathTools."""
+
 import os
 import time
 import types
@@ -37,7 +38,7 @@ class PathToolsTests(unittest.TestCase):
             pathTools.copyOrWarn("Test File", path, pathCopy)
             self.assertTrue(os.path.exists(pathCopy))
 
-            # Test a non-existant file
+            # Test a non-existent file
             with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "FileDoesntExist.txt", pathCopy)
                 self.assertIn("Could not copy", mock.getStdout())
@@ -55,15 +56,13 @@ class PathToolsTests(unittest.TestCase):
             self.assertTrue(os.path.exists(pathDirCopy))
             self.assertTrue(os.path.exists(os.path.join(pathDirCopy, "test.txt")))
 
-            # Test a non-existant file
+            # Test a non-existent file
             with mockRunLogs.BufferLog() as mock:
                 pathTools.copyOrWarn("Test File", "DirDoesntExist", pathDirCopy)
                 self.assertIn("Could not copy", mock.getStdout())
 
     def test_separateModuleAndAttribute(self):
-        self.assertRaises(
-            ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon"
-        )
+        self.assertRaises(ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon")
         self.assertEqual(
             (r"aPath/file.py", "MyClass"),
             pathTools.separateModuleAndAttribute(r"aPath/file.py:MyClass"),
@@ -93,9 +92,7 @@ class PathToolsTests(unittest.TestCase):
         # test that no `:` doesn't raise an exception
         self.assertFalse(pathTools.moduleAndAttributeExist(r"path/that/not/exist.py"))
         # test that multiple `:` doesn't raise an exception
-        self.assertFalse(
-            pathTools.moduleAndAttributeExist(r"c:/path/that/not/exist.py:MyClass")
-        )
+        self.assertFalse(pathTools.moduleAndAttributeExist(r"c:/path/that/not/exist.py:MyClass"))
         thisFile = os.path.join(THIS_DIR, __file__)
         # no module attribute specified
         self.assertFalse(pathTools.moduleAndAttributeExist(thisFile))

@@ -78,7 +78,6 @@ grids = ["wxpython==4.2.1"]
 memprof = ["psutil"]
 mpi = ["mpi4py"]
 test = [
-    "black==22.6.0", # Code formatter (version-pinned)
     "ipykernel>=6.0.0", # IPython Kernel (We run test notebooks from the doc tutorials.)
     "jupyter_client>=7.0.0", # Reference implementation of the Jupyter protocol
     "nbconvert>=7.0.0", # Converting Jupyter Notebooks to other formats
@@ -86,7 +85,7 @@ test = [
     "pytest-cov>=4.0.0", # coverage plugin
     "pytest-xdist>=3.0.0", # To spread our tests over multiple CPUs
     "pytest>=7.0.0", # Our primary test tooling
-    "ruff==0.5.1", # Linting and code formatting (version-pinned)
+    "ruff==0.9.7", # Linting and code formatting (version-pinned)
 ]
 docs = [
 ######################################################################################
@@ -134,12 +133,12 @@ find = {}
 #######################################################################
 [tool.ruff]
 # This is the exact version of Ruff we use.
-required-version = "0.5.1"
+required-version = "0.9.7"
 
 # Assume Python 3.13
 target-version = "py313"
 
-# Setting line-length to 120 (though blacks default is 88)
+# Setting line-length to 120
 line-length = 120
 
 # Exclude a variety of commonly ignored directories.
@@ -176,7 +175,6 @@ exclude = [
 # N801 - Class name should use CapWords convention
 # SIM - code simplification rules
 # TID - tidy imports
-# TODO: We want to support PLW0603 - don't use the global keyword
 select = ["D", "E", "F", "I", "N801", "SIM", "TID"]
 
 # Ruff rules we ignore (for now) because they are not 100% automatable

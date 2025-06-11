@@ -17,6 +17,7 @@ Components represent geometric objects within an assembly such as fuel, bond, co
 
 This module contains the abstract definition of a Component.
 """
+
 import copy
 import re
 from typing import Optional
@@ -56,7 +57,7 @@ def componentTypeIsValid(component, name):
 
     Notes
     -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be specfied as a
+    - `Coolant` components are can no longer be defined as a general `Component` and should be specified as a
       `DerivedShape` if the coolant dimensions are not provided.
     """
     from armi.reactor.components import NullComponent
@@ -92,9 +93,7 @@ class _DimensionLink(tuple):
         return linkedComponent.getDimension(dimID, Tc=Tc, cold=cold)
 
     def __eq__(self, other):
-        otherDimension = (
-            other.resolveDimension() if isinstance(other, _DimensionLink) else other
-        )
+        otherDimension = other.resolveDimension() if isinstance(other, _DimensionLink) else other
         return self.resolveDimension() == otherDimension
 
     def __ne__(self, other):
@@ -145,17 +144,11 @@ class ComponentType(composites.CompositeModelType):
 
         # the co_varnames attribute contains arguments and then locals so we must
         # restrict it to just the arguments.
-        signature = newType.__init__.__code__.co_varnames[
-            1 : newType.__init__.__code__.co_argcount
-        ]
+        signature = newType.__init__.__code__.co_varnames[1 : newType.__init__.__code__.co_argcount]
 
         # INIT_SIGNATURE and DIMENSION_NAMES are in the same order as the method signature
         newType.INIT_SIGNATURE = tuple(signature)
-        newType.DIMENSION_NAMES = tuple(
-            k
-            for k in newType.INIT_SIGNATURE
-            if k not in ComponentType.NON_DIMENSION_NAMES
-        )
+        newType.DIMENSION_NAMES = tuple(k for k in newType.INIT_SIGNATURE if k not in ComponentType.NON_DIMENSION_NAMES)
         return newType
 
 
@@ -190,7 +183,7 @@ class Component(composites.Composite, metaclass=ComponentType):
     Attributes
     ----------
     temperatureInC : float
-        Current temperature of component in celcius.
+        Current temperature of component in celsius.
     inputTemperatureInC : float
         Reference temperature in C at which dimension definitions were input
     temperatureInC : float
@@ -236,9 +229,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         components=None,
     ):
         if components and name in components:
-            raise ValueError(
-                "Non-unique component name {} repeated in same block.".format(name)
-            )
+            raise ValueError(f"Non-unique component name {name} repeated in same block.")
 
         composites.Composite.__init__(self, str(name))
         componentTypeIsValid(self, str(name))
@@ -287,15 +278,11 @@ class Component(composites.Composite, metaclass=ComponentType):
                 return thisOD < thatOD
         except (NotImplementedError, Exception) as e:
             if isinstance(e, NotImplementedError):
-                raise NotImplementedError(
-                    f"getCircleInnerDiameter not implemented for at least one of {self}, {other}"
-                )
+                raise NotImplementedError(f"getCircleInnerDiameter not implemented for at least one of {self}, {other}")
             else:
                 raise ValueError(
-                    "Components 1 ({} with OD {}) and 2 ({} and OD {}) cannot be ordered because their "
-                    "bounding circle outer diameters are not comparable.".format(
-                        self, thisOD, other, thatOD
-                    )
+                    f"Components 1 ({self} with OD {thisOD}) and 2 ({other} and OD {thatOD}) cannot be ordered because "
+                    "their bounding circle outer diameters are not comparable."
                 )
 
     def __setstate__(self, state):
@@ -339,17 +326,9 @@ class Component(composites.Composite, metaclass=ComponentType):
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
                 except Exception:
                     if value.count(".") > 1:
-                        raise ValueError(
-                            "Component names should not have periods in them: `{}`".format(
-                                value
-                            )
-                        )
+                        raise ValueError(f"Component names should not have periods in them: `{value}`")
                     else:
-                        raise KeyError(
-                            "Bad component link `{}` defined as `{}`".format(
-                                dimName, value
-                            )
-                        )
+                        raise KeyError(f"Bad component link `{dimName}` defined as `{value}`")
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
@@ -382,16 +361,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         # `density` is 3D density
         # call getProperty to cache and improve speed
         density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
-        self.p.numberDensities = densityTools.getNDensFromMasses(
-            density, self.material.massFrac
-        )
+        self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
 
         # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
         # setting number densities can sometimes change thermal expansion behavior. Call again so
         # the material has access to its parent's comp when providing the reference initial density.
-        densityBasedOnParentComposition = self.material.getProperty(
-            "pseudoDensity", Tc=self.temperatureInC
-        )
+        densityBasedOnParentComposition = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
         self.p.numberDensities = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
@@ -401,9 +376,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         # component.getThermalExpansionFactor.
         # Materials don't typically define the temperature for which their references
         # density is defined so linearExpansionPercent must be called
-        coldMatAxialExpansionFactor = (
-            1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
-        )
+        coldMatAxialExpansionFactor = 1.0 + self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100
         self.changeNDensByFactor(1.0 / coldMatAxialExpansionFactor)
 
     def adjustDensityForHeightExpansion(self, newHot):
@@ -503,7 +476,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             elif arg == "add":
                 area += comp.getComponentArea(cold=cold, Tc=Tc)
             else:
-                raise ValueError("Option {} does not exist".format(arg))
+                raise ValueError(f"Option {arg} does not exist")
 
         self._checkNegativeArea(area, cold)
         return area
@@ -529,7 +502,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         if self.p.volume is None:
             self._updateVolume()
             if self.p.volume is None:
-                raise ValueError("{} has undefined volume.".format(self))
+                raise ValueError(f"{self} has undefined volume.")
         return self.p.volume
 
     def clearCache(self):
@@ -577,15 +550,10 @@ class Component(composites.Composite, metaclass=ComponentType):
             return
 
         if area < 0.0:
-            if (
-                cold and not self.containsVoidMaterial()
-            ) or self.containsSolidMaterial():
+            if (cold and not self.containsVoidMaterial()) or self.containsSolidMaterial():
                 negAreaFailure = (
-                    "Component {} with {} has cold negative area of {} cm^2. "
-                    "This can be caused by component "
-                    "overlap with component dimension linking or by invalid inputs.".format(
-                        self, self.material, area
-                    )
+                    f"Component {self} with {self.material} has cold negative area of {area} cm^2. "
+                    "This can be caused by component overlap with component dimension linking or by invalid inputs."
                 )
                 raise ArithmeticError(negAreaFailure)
 
@@ -601,11 +569,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         if volume < 0.0 and self.containsSolidMaterial():
             negVolFailure = (
-                "Component {} with {} has cold negative volume of {} cm^3. "
-                "This can be caused by component "
-                "overlap with component dimension linking or by invalid inputs.".format(
-                    self, self.material, volume
-                )
+                f"Component {self} with {self.material} has cold negative volume of {volume} cm^3. "
+                "This can be caused by component overlap with component dimension linking or by invalid inputs."
             )
             raise ArithmeticError(negVolFailure)
 
@@ -669,9 +634,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         """
         prevTemp, self.temperatureInC = self.temperatureInC, float(temperatureInC)
-        f = self.material.getThermalExpansionDensityReduction(
-            prevTemp, self.temperatureInC
-        )
+        f = self.material.getThermalExpansionDensityReduction(prevTemp, self.temperatureInC)
         self.changeNDensByFactor(f)
         self.clearLinkedCache()
 
@@ -784,9 +747,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         # prepare to change the densities with knowledge that dims could change due to
         # material thermal expansion dependence on composition
         if len(self.p.numberDensities) > 0:
-            dLLprev = (
-                self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
-            )
+            dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             materialExpansion = True
         else:
             dLLprev = 0.0
@@ -826,9 +787,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        newDensities = {
-            nuc: dens * factor for nuc, dens in self.p.numberDensities.items()
-        }
+        newDensities = {nuc: dens * factor for nuc, dens in self.p.numberDensities.items()}
         self.p.numberDensities = newDensities
         self._changeOtherDensParamsByFactor(factor)
 
@@ -855,23 +814,15 @@ class Component(composites.Composite, metaclass=ComponentType):
         sense.
         """
         if self.material.enrichedNuclide is None:
-            raise ValueError(
-                "Cannot get enrichment of {} because `enrichedNuclide` is not defined."
-                "".format(self.material)
-            )
+            raise ValueError(f"Cannot get enrichment of {self.material} because `enrichedNuclide` is not defined.")
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracs = self.getMassFracs()
         massFracEnrichedElement = sum(
-            massFrac
-            for nucName, massFrac in massFracs.items()
-            if nucName in baselineNucNames
+            massFrac for nucName, massFrac in massFracs.items() if nucName in baselineNucNames
         )
         try:
-            return (
-                massFracs.get(self.material.enrichedNuclide, 0.0)
-                / massFracEnrichedElement
-            )
+            return massFracs.get(self.material.enrichedNuclide, 0.0) / massFracEnrichedElement
         except ZeroDivisionError:
             return 0.0
 
@@ -903,9 +854,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         mass : float
             The mass in grams.
         """
-        volume = self.getVolume() / (
-            self.parent.getSymmetryFactor() if self.parent else 1.0
-        )
+        volume = self.getVolume() / (self.parent.getSymmetryFactor() if self.parent else 1.0)
         nuclideNames = self._getNuclidesFromSpecifier(nuclideNames)
         # densities comes from self.p.numberDensities
         densities = self.getNuclideNumberDensities(nuclideNames)
@@ -923,8 +872,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             Dimensions should be set considering the impact of thermal expansion. This
             method allows for a user or plugin to set a dimension and indicate if the
             dimension is for a cold configuration or not. If it is not for a cold
-            configuration, the thermal expansion factor is considered when setting the
-            dimension.
+            configuration, the thermal expansion factor is considered when setting the dimension.
 
             If the ``retainLink`` argument is ``True``, any Components linked to this
             one will also have its dimensions changed consistently. After a dimension
@@ -951,11 +899,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             linkedComp.setDimension(linkedDimName, val, cold=cold)
         else:
             if not cold:
-                expansionFactor = (
-                    self.getThermalExpansionFactor()
-                    if key in self.THERMAL_EXPANSION_DIMS
-                    else 1.0
-                )
+                expansionFactor = self.getThermalExpansionFactor() if key in self.THERMAL_EXPANSION_DIMS else 1.0
                 val /= expansionFactor
             self.p[key] = val
 
@@ -1081,17 +1025,14 @@ class Component(composites.Composite, metaclass=ComponentType):
         dLL = self.material.linearExpansionFactor(Tc=Tc, T0=T0)
         if not dLL and abs(Tc - T0) > self._TOLERANCE:
             runLog.error(
-                "Linear expansion percent may not be implemented in the {} material class.\n"
+                f"Linear expansion percent may not be implemented in the {self.material} material class.\n"
                 "This method needs to be implemented on the material to allow thermal expansion."
-                ".\nReference temperature: {}, Adjusted temperature: {}, Temperature difference: {}, "
-                "Specified tolerance: {}".format(
-                    self.material, T0, Tc, (Tc - T0), self._TOLERANCE
-                ),
+                f".\nReference temperature: {T0}, Adjusted temperature: {Tc}, Temperature difference: {(Tc - T0)}, "
+                f"Specified tolerance: {self._TOLERANCE}",
                 single=True,
             )
             raise RuntimeError(
-                "Linear expansion percent may not be implemented in the {} material "
-                "class.".format(self.material)
+                f"Linear expansion percent may not be implemented in the {self.material} material class."
             )
         return 1.0 + dLL
 
@@ -1101,9 +1042,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         runLog.important(self.setDimensionReport())
         if includeNuclides:
             for nuc in self.getNuclides():
-                runLog.important(
-                    "{0:10s} {1:.7e}".format(nuc, self.getNumberDensity(nuc))
-                )
+                runLog.important(f"{nuc:10s} {self.getNumberDensity(nuc):.7e}")
 
     def setDimensionReport(self):
         """Gives a report of the dimensions of this component."""
@@ -1113,17 +1052,15 @@ class Component(composites.Composite, metaclass=ComponentType):
                 reportGroup = componentReport
                 break
         if not reportGroup:
-            return "No report group designated for {} component.".format(self.getName())
+            return f"No report group designated for {self.getName()} component."
         reportGroup.header = [
             "",
-            "Tcold ({0})".format(self.inputTemperatureInC),
-            "Thot ({0})".format(self.temperatureInC),
+            f"Tcold ({self.inputTemperatureInC})",
+            f"Thot ({self.temperatureInC})",
         ]
 
         dimensions = {
-            k: self.p[k]
-            for k in self.DIMENSION_NAMES
-            if k not in ("modArea", "area") and self.p[k] is not None
+            k: self.p[k] for k in self.DIMENSION_NAMES if k not in ("modArea", "area") and self.p[k] is not None
         }  # py3 cannot format None
         # Set component name and material
         report.setData("Name", [self.getName(), ""], reportGroup)
@@ -1136,11 +1073,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             try:
                 report.setData(niceName, [refVal, hotVal], reportGroup)
             except ValueError:
-                runLog.warning(
-                    "{0} has an invalid dimension for {1}. refVal: {2} hotVal: {3}".format(
-                        self, dimName, refVal, hotVal
-                    )
-                )
+                runLog.warning(f"{self} has an invalid dimension for {dimName}. refVal: {refVal} hotVal: {hotVal}")
 
         # calculate thickness if applicable.
         suffix = None
@@ -1150,18 +1083,18 @@ class Component(composites.Composite, metaclass=ComponentType):
             suffix = "p"
 
         if suffix:
-            coldIn = self.getDimension("i{0}".format(suffix), cold=True)
-            hotIn = self.getDimension("i{0}".format(suffix))
-            coldOut = self.getDimension("o{0}".format(suffix), cold=True)
-            hotOut = self.getDimension("o{0}".format(suffix))
+            coldIn = self.getDimension(f"i{suffix}", cold=True)
+            hotIn = self.getDimension(f"i{suffix}")
+            coldOut = self.getDimension(f"o{suffix}", cold=True)
+            hotOut = self.getDimension(f"o{suffix}")
 
         if suffix and coldIn > 0.0:
             hotThick = (hotOut - hotIn) / 2.0
             coldThick = (coldOut - coldIn) / 2.0
             vals = (
                 "Thickness (cm)",
-                "{0:.7f}".format(coldThick),
-                "{0:.7f}".format(hotThick),
+                f"{coldThick:.7f}",
+                f"{hotThick:.7f}",
             )
             report.setData(vals[0], [vals[1], vals[2]], reportGroup)
 
@@ -1183,20 +1116,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         if aMe <= 0.0:
             return
         aMerge = compToMergeWith.getArea()
-        meNDens = {
-            nucName: aMe / aMerge * self.getNumberDensity(nucName)
-            for nucName in self.getNuclides()
-        }
-        mergeNDens = {
-            nucName: compToMergeWith.getNumberDensity(nucName)
-            for nucName in compToMergeWith.getNuclides()
-        }
+        meNDens = {nucName: aMe / aMerge * self.getNumberDensity(nucName) for nucName in self.getNuclides()}
+        mergeNDens = {nucName: compToMergeWith.getNumberDensity(nucName) for nucName in compToMergeWith.getNuclides()}
         # set the new homogenized number densities from both. Allow
         # overlapping nuclides.
         for nucName in set(meNDens) | set(mergeNDens):
-            compToMergeWith.setNumberDensity(
-                nucName, (meNDens.get(nucName, 0.0) + mergeNDens.get(nucName, 0.0))
-            )
+            compToMergeWith.setNumberDensity(nucName, (meNDens.get(nucName, 0.0) + mergeNDens.get(nucName, 0.0)))
 
     def iterComponents(self, typeSpec=None, exact=False):
         if self.hasFlags(typeSpec, exact):
@@ -1215,7 +1140,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def restoreBackup(self, paramsToApply):
         """
-        Restore the parameters from perviously created backup.
+        Restore the parameters from previously created backup.
 
         This needed to be overridden due to linked components which actually have a parameter value
         of another ARMI component.
@@ -1235,8 +1160,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 val = self.p[dimName]
             except Exception:
                 raise RuntimeError(
-                    "Could not find parameter {} defined for {}. Is the desired "
-                    "Component class?".format(dimName, self)
+                    f"Could not find parameter {dimName} defined for {self}. Is the desired Component class?"
                 )
             if isinstance(val, _DimensionLink):
                 linkedDims.append((self.p.paramDefs[dimName].fieldName, val))
@@ -1269,35 +1193,24 @@ class Component(composites.Composite, metaclass=ComponentType):
         Material.enrichedNuclide
         """
         if self.material.enrichedNuclide is None:
-            raise ValueError(
-                "Cannot adjust enrichment of {} because `enrichedNuclide` is not defined."
-                "".format(self.material)
-            )
+            raise ValueError(f"Cannot adjust enrichment of {self.material} because `enrichedNuclide` is not defined.")
         enrichedNuclide = nuclideBases.byName[self.material.enrichedNuclide]
         baselineNucNames = [nb.name for nb in enrichedNuclide.element.nuclides]
         massFracsBefore = self.getMassFracs()
         massFracEnrichedElement = sum(
-            massFrac
-            for nucName, massFrac in massFracsBefore.items()
-            if nucName in baselineNucNames
+            massFrac for nucName, massFrac in massFracsBefore.items() if nucName in baselineNucNames
         )
 
-        adjustedMassFracs = {
-            self.material.enrichedNuclide: massFracEnrichedElement * massFraction
-        }
+        adjustedMassFracs = {self.material.enrichedNuclide: massFracEnrichedElement * massFraction}
 
         baselineNucNames.remove(self.material.enrichedNuclide)
-        massFracTotalUnenriched = (
-            massFracEnrichedElement - massFracsBefore[self.material.enrichedNuclide]
-        )
+        massFracTotalUnenriched = massFracEnrichedElement - massFracsBefore[self.material.enrichedNuclide]
         for baseNucName in baselineNucNames:
             # maintain relative mass fractions of baseline nuclides.
             frac = massFracsBefore.get(baseNucName, 0.0) / massFracTotalUnenriched
             if not frac:
                 continue
-            adjustedMassFracs[baseNucName] = (
-                massFracEnrichedElement * (1 - massFraction) * frac
-            )
+            adjustedMassFracs[baseNucName] = massFracEnrichedElement * (1 - massFraction) * frac
         self.setMassFracs(adjustedMassFracs)
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
@@ -1327,10 +1240,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             multigroup neutron flux in [n/cm^2/s]
         """
         if average:
-            raise NotImplementedError(
-                "Component has no method for producing average MG flux -- try"
-                "using blocks"
-            )
+            raise NotImplementedError("Component has no method for producing average MG flux -- tryusing blocks")
 
         volume = volume or self.getVolume() / self.parent.getSymmetryFactor()
         return self.getIntegratedMgFlux(adjoint=adjoint, gamma=gamma) / volume
@@ -1358,9 +1268,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             if not self.parent:
                 return np.zeros(1)
 
-            volumeFraction = (
-                self.getVolume() / self.parent.getSymmetryFactor()
-            ) / self.parent.getVolume()
+            volumeFraction = (self.getVolume() / self.parent.getSymmetryFactor()) / self.parent.getVolume()
             return volumeFraction * self.parent.getIntegratedMgFlux(adjoint, gamma)
 
         # pin-level flux is available. Note that it is NOT integrated on the param level.
@@ -1375,15 +1283,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 pinFluxes = self.parent.p.pinMgFluxes
 
-        return (
-            pinFluxes[self.p.pinNum - 1]
-            * self.getVolume()
-            / self.parent.getSymmetryFactor()
-        )
+        return pinFluxes[self.p.pinNum - 1] * self.getVolume() / self.parent.getSymmetryFactor()
 
-    def getPinMgFluxes(
-        self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False
-    ) -> np.ndarray:
+    def getPinMgFluxes(self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False) -> np.ndarray:
         """Retrieves the pin multigroup fluxes for the component.
 
         Parameters
@@ -1408,9 +1310,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             a pin.
         """
         # Get the (i, j, k) location of all pins from the parent block
-        indicesAll = {
-            (loc.i, loc.j): i for i, loc in enumerate(self.parent.getPinLocations())
-        }
+        indicesAll = {(loc.i, loc.j): i for i, loc in enumerate(self.parent.getPinLocations())}
 
         # Retrieve the indices of this component
         if isinstance(self.spatialLocator, grids.MultiIndexLocation):
@@ -1451,10 +1351,10 @@ class Component(composites.Composite, metaclass=ComponentType):
         density = composites.Composite.density(self)
 
         if not density and not isinstance(self.material, void.Void):
-            # possible that there are no nuclides in this component yet. In that case, defer to
-            # Material. Material.density is wrapped to warn if it's attached to a parent. Avoid that
-            # by calling the inner function directly
-            density = self.material.density(Tc=self.temperatureInC)
+            # possible that there are no nuclides in this component yet. In that case,
+            # defer to Material. Material.density is wrapped to warn if it's attached
+            # to a parent. Avoid that by calling the inner function directly
+            density = self.material.density.__wrapped__(self.material, Tc=self.temperatureInC)
 
         return density
 

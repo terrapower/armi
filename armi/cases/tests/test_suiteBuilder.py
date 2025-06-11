@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Unit tests for the SuiteBuilder."""
+
 import os
 import unittest
 
@@ -42,9 +43,7 @@ case = cases.Case(cs)
 
 class LatinHyperCubeModifier(SamplingInputModifier):
     def __init__(self, name, paramType: str, bounds: list, independentVariable=None):
-        super().__init__(
-            name, paramType, bounds, independentVariable=independentVariable
-        )
+        super().__init__(name, paramType, bounds, independentVariable=independentVariable)
         self.value = None
 
     def __call__(self, cs, bp):
@@ -79,9 +78,7 @@ class TestLatinHyperCubeSuiteBuilder(unittest.TestCase):
         """
         builder = LatinHyperCubeSuiteBuilder(case, size=20)
         powerMod = LatinHyperCubeModifier("power", "continuous", [0, 1e6])
-        availabilityMod = LatinHyperCubeModifier(
-            "availabilityFactor", "discrete", [0.0, 0.2, 0.4, 0.6, 0.8]
-        )
+        availabilityMod = LatinHyperCubeModifier("availabilityFactor", "discrete", [0.0, 0.2, 0.4, 0.6, 0.8])
         builder.addDegreeOfFreedom([powerMod, availabilityMod])
         builder.buildSuite()
         assert len(builder.modifierSets) == 20
@@ -109,12 +106,8 @@ class TestFullFactorialSuiteBuilder(unittest.TestCase):
             :tests: R_ARMI_CASE_MOD
         """
         builder = FullFactorialSuiteBuilder(case)
-        builder.addDegreeOfFreedom(
-            SettingModifier("settingName1", value) for value in (1, 2)
-        )
-        builder.addDegreeOfFreedom(
-            SettingModifier("settingName2", value) for value in (3, 4, 5)
-        )
+        builder.addDegreeOfFreedom(SettingModifier("settingName1", value) for value in (1, 2))
+        builder.addDegreeOfFreedom(SettingModifier("settingName2", value) for value in (3, 4, 5))
 
         self.assertEqual(builder.modifierSets[0][0].value, 1)
         self.assertEqual(builder.modifierSets[0][1].value, 3)
@@ -148,12 +141,8 @@ class TestSeparateEffectsBuilder(unittest.TestCase):
             :tests: R_ARMI_CASE_MOD
         """
         builder = SeparateEffectsSuiteBuilder(case)
-        builder.addDegreeOfFreedom(
-            SettingModifier("settingName1", value) for value in (1, 2)
-        )
-        builder.addDegreeOfFreedom(
-            SettingModifier("settingName2", value) for value in (3, 4, 5)
-        )
+        builder.addDegreeOfFreedom(SettingModifier("settingName1", value) for value in (1, 2))
+        builder.addDegreeOfFreedom(SettingModifier("settingName2", value) for value in (3, 4, 5))
 
         self.assertEqual(builder.modifierSets[0][0].value, 1)
         self.assertEqual(builder.modifierSets[0][0].settingName, "settingName1")

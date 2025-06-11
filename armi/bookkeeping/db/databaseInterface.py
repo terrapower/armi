@@ -16,6 +16,7 @@
 The database interface provides a way to save the reactor state to a file, throughout
 a simulation.
 """
+
 import copy
 import os
 import pathlib
@@ -69,17 +70,12 @@ class DatabaseInterface(interfaces.Interface):
                     toSet[name].add(pDef)
 
             for name, pDefs in toSet.items():
-                runLog.info(
-                    "Forcing parameter {} to be written to the database, per user "
-                    "input".format(name)
-                )
+                runLog.info("Forcing parameter {} to be written to the database, per user input".format(name))
                 for pDef in pDefs:
                     pDef.saveToDB = True
 
     def __repr__(self):
-        return "<{} '{}' {} >".format(
-            self.__class__.__name__, self.name, repr(self._db)
-        )
+        return "<{} '{}' {} >".format(self.__class__.__name__, self.name, repr(self._db))
 
     @property
     def database(self):
@@ -93,7 +89,7 @@ class DatabaseInterface(interfaces.Interface):
             )
 
     def interactBOL(self):
-        """Initialize the database if the main interface was not available. (Begining of Life)."""
+        """Initialize the database if the main interface was not available. (Beginning of Life)."""
         if not self._db:
             self.initDB()
 
@@ -133,7 +129,7 @@ class DatabaseInterface(interfaces.Interface):
           writeDBEveryNode.
         """
         if self.o.cs["tightCoupling"]:
-            # h5 cant handle overwriting so we skip here and write once the tight coupling loop has completed
+            # h5 can't handle overwriting so we skip here and write once the tight coupling loop has completed
             return
         self.writeDBEveryNode()
 
@@ -169,9 +165,7 @@ class DatabaseInterface(interfaces.Interface):
     def interactError(self):
         """Get shutdown state information even if the run encounters an error."""
         try:
-            self.r.core.p.minutesSinceStart = (
-                time.time() - self.r.core.timeOfStart
-            ) / 60.0
+            self.r.core.p.minutesSinceStart = (time.time() - self.r.core.timeOfStart) / 60.0
 
             # this can result in a double-error if the error occurred in the database
             # writing
@@ -225,13 +219,11 @@ class DatabaseInterface(interfaces.Interface):
         that the cycle histories prior to `startCycle`/`startNode` are equivalent.
 
         ARMI expects the reload DB to have been made in the same version of ARMI as you
-        are running. ARMI does not gaurantee that a DB from a decade ago will be easily
+        are running. ARMI does not guarantee that a DB from a decade ago will be easily
         used to restart a run.
         """
         reloadDBName = self.cs["reloadDBName"]
-        runLog.info(
-            f"Merging database history from {reloadDBName} for restart analysis."
-        )
+        runLog.info(f"Merging database history from {reloadDBName} for restart analysis.")
         startCycle = self.cs["startCycle"]
         startNode = self.cs["startNode"]
 
@@ -245,16 +237,12 @@ class DatabaseInterface(interfaces.Interface):
                 self.cs,
             )
 
-            self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
-                loadDbCs, dbCycle, dbNode
-            )
+            self._checkThatCyclesHistoriesAreEquivalentUpToRestartTime(loadDbCs, dbCycle, dbNode)
 
             self._db.mergeHistory(inputDB, startCycle, startNode)
         self.loadState(dbCycle, dbNode)
 
-    def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(
-        self, loadDbCs, dbCycle, dbNode
-    ):
+    def _checkThatCyclesHistoriesAreEquivalentUpToRestartTime(self, loadDbCs, dbCycle, dbNode):
         """Check that cycle histories are equivalent up to this point."""
         dbStepLengths = getStepLengths(loadDbCs)
         currentCaseStepLengths = getStepLengths(self.cs)
@@ -265,22 +253,16 @@ class DatabaseInterface(interfaces.Interface):
                 if cycleIdx == dbCycle:
                     # truncate it at dbNode
                     dbStepHistory.append(dbStepLengths[cycleIdx][:dbNode])
-                    currentCaseStepHistory.append(
-                        currentCaseStepLengths[cycleIdx][:dbNode]
-                    )
+                    currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx][:dbNode])
                 else:
                     dbStepHistory.append(dbStepLengths[cycleIdx])
                     currentCaseStepHistory.append(currentCaseStepLengths[cycleIdx])
         except IndexError:
-            runLog.error(
-                f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}"
-            )
+            runLog.error(f"DB cannot be loaded to this time: cycle={dbCycle}, node={dbNode}")
             raise
 
         if dbStepHistory != currentCaseStepHistory:
-            raise ValueError(
-                "The cycle history up to the restart cycle/node must be equivalent."
-            )
+            raise ValueError("The cycle history up to the restart cycle/node must be equivalent.")
 
     def _getLoadDB(self, fileName):
         """
@@ -309,15 +291,15 @@ class DatabaseInterface(interfaces.Interface):
 
         Notes
         -----
-        Will load preferentially from the `fileName` if passed. Otherwise will load from
-        existing database in memory or `cs["reloadDBName"]` in that order.
+        Will load preferentially from the ``fileName`` if passed. Otherwise will load from
+        existing database in memory or ``cs["reloadDBName"`]` in that order.
 
         Raises
         ------
         RuntimeError
             If fileName is specified and that  file does not have the time step.
             If fileName is not specified and neither the database in memory, nor the
-            `cs["reloadDBName"]` have the time step specified.
+            ``cs["reloadDBName"]`` have the time step specified.
         """
         for potentialDatabase in self._getLoadDB(fileName):
             with potentialDatabase as loadDB:
@@ -340,9 +322,7 @@ class DatabaseInterface(interfaces.Interface):
                     )
                 )
             raise RuntimeError(
-                "Cannot load state from <unspecified file> @ {}".format(
-                    getH5GroupName(cycle, timeNode, timeStepName)
-                )
+                "Cannot load state from <unspecified file> @ {}".format(getH5GroupName(cycle, timeNode, timeStepName))
             )
 
     def getHistory(
@@ -379,9 +359,7 @@ class DatabaseInterface(interfaces.Interface):
             for param in params or history.keys():
                 if param == "location":
                     # might save as int or np.int64, so forcing int keeps things predictable
-                    history[param][now] = tuple(
-                        int(i) for i in comp.spatialLocator.indices
-                    )
+                    history[param][now] = tuple(int(i) for i in comp.spatialLocator.indices)
                 else:
                     history[param][now] = comp.p[param]
 

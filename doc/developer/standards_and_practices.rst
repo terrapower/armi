@@ -25,39 +25,45 @@ Just try to be as clear as possible, while using as few words as possible.
     consistency. Code reviewers should make sure to be familiar with the standards, so that their comments are
     consistent with other reviewers.
 
-Code formatting with Black
-==========================
-ARMI uses the Python code formatter `black <https://pypi.org/project/black/>`_. So while developing code in ARMI
-it is important to remember to us the ``black`` formatter before pushing any code to the repo. All changes pushed
-to ARMI on github.com will be automatically checked to see if they conform to the ``black`` code formatter standards.
-
-The ``black`` formatter provides 100% consistency in ARMI for: whitespace, line length, trailing commas, and string
-formatting. And it is easy to run on the command line::
-
-    black .
-
-Address the ruff warnings
+Code formatting with ruff
 =========================
-ARMI also uses the amazing Python linter `ruff <https://docs.astral.sh/ruff/>`_. Again, any new code you add must have
-zero ``ruff`` warnings or errors.
+ARMI uses the Python code formatter `ruff <https://docs.astral.sh/ruff/>`_. So while developing code
+in ARMI it is important to remember to us the ``ruff`` formatter before pushing any code to the
+repo. All changes pushed to ARMI on github.com will be automatically checked to see if they conform
+to the ``ruff`` code formatter standards.
 
-This is very easy to run on the command line::
+The ``ruff`` formatter provides 100% consistency in ARMI for: whitespace, line length, trailing
+commas, and string formatting. And it is easy to run on the command line:
 
-    ruff check .
+.. code-block:: bash
+
+    ruff format .
+
+Code linting with ruff
+======================
+ARMI also uses the amazing Python linter `ruff <https://docs.astral.sh/ruff/>`_. Again, any new code
+you add must have zero ``ruff`` warnings or errors.
+
+This is very easy to run on the command line:
+
+.. code-block:: bash
+
+    ruff check . --fix
 
 Remove commented-out code
 =========================
-If you were testing code and you commented out a block, delete it before sending it in for code review/production.
-If you want to see the old code later, it will still be in the Git history.
+If you were testing code and you commented out a block, delete it before sending it in for code
+review/production. If you want to see the old code later, it will still be in the Git history.
 
 Avoid hard-coding run parameters
 ================================
-Use the global settings object ``self.cs`` for most user-setable parameters that determine the run environment, etc. This
-will help keep the amount of repeated code down.
+Use the global settings object ``self.cs`` for most user-setable parameters that determine the run
+environment, etc. This will help keep the amount of repeated code down.
 
-Also, do not **ever** code the following things into the code: user names, passwords, or file paths on your computer. Use
-environmental variables where possible and user-configurable settings elsewhere. You can also use the ``armi.ROOT``
-variable (for the active code directory) or ``armi.RES``, and some other useful root-level variables.
+Also, do not **ever** code the following things into the code: user names, passwords, or file paths
+on your computer. Use environmental variables where possible and user-configurable settings
+elsewhere. You can also use the ``armi.ROOT`` variable (for the active code directory) or
+``armi.RES``, and some other useful root-level variables.
 
 Avoid the global keyword
 ========================
@@ -310,9 +316,8 @@ General do's and don'ts
 Do not use ``print``
     ARMI code should not use the ``print`` function; use one of the methods within ``armi.runLog``.
 
-Do not add new ``TODO`` statements in your commits and PRs.
-    If your new ``TODO`` statement is important, it should be a GitHub Issue. Yes, we have existing
-    ``TODO`` statements in the code, those are relic and need to be removed. Similarly, never mark
+Do not add new ``TODO`` statements to the repo.
+    If your new ``TODO`` statement is important, it should be a GitHub Issue. Similarly, never mark
     the code with ``FIXME`` or ``XXX```; open a ticket.
 
 Do not link GitHub tickets or PRs in code.

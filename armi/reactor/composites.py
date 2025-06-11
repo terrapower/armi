@@ -32,6 +32,7 @@ See Also
 --------
 :doc:`/developer/index`.
 """
+
 import collections
 import itertools
 import operator
@@ -85,9 +86,7 @@ class FlagSerializer(parameters.Serializer):
         functionality without having to do unholy things to ARMI's actual set of
         ``reactor.flags.Flags``.
         """
-        npa = np.array([b for f in data for b in f.to_bytes()], dtype=np.uint8).reshape(
-            (len(data), flagCls.width())
-        )
+        npa = np.array([b for f in data for b in f.to_bytes()], dtype=np.uint8).reshape((len(data), flagCls.width()))
 
         return npa, {"flag_order": flagCls.sortedFields()}
 
@@ -152,11 +151,9 @@ class FlagSerializer(parameters.Serializer):
 
         if version != cls.version:
             raise ValueError(
-                "The FlagSerializer version used to pack the data ({}) does not match "
-                "the current version ({})! This database either needs to be migrated, "
-                "or on-the-fly inter-version conversion needs to be implemented.".format(
-                    version, cls.version
-                )
+                f"The FlagSerializer version used to pack the data ({version}) does not match "
+                f"the current version ({cls.version})! This database either needs to be migrated, "
+                "or on-the-fly inter-version conversion needs to be implemented."
             )
 
         flagSetIn = set(flagOrderPassed)
@@ -176,18 +173,8 @@ class FlagSerializer(parameters.Serializer):
         if all(i == j for i, j in zip(flagOrderPassed, flagOrderNow)):
             out = [flagCls.from_bytes(row.tobytes()) for row in data]
         else:
-            newFlags = {
-                i: flagOrderNow.index(oldFlag)
-                for (i, oldFlag) in enumerate(flagOrderPassed)
-            }
-            out = [
-                flagCls(
-                    cls._remapBits(
-                        int.from_bytes(row.tobytes(), byteorder="little"), newFlags
-                    )
-                )
-                for row in data
-            ]
+            newFlags = {i: flagOrderNow.index(oldFlag) for (i, oldFlag) in enumerate(flagOrderPassed)}
+            out = [flagCls(cls._remapBits(int.from_bytes(row.tobytes(), byteorder="little"), newFlags)) for row in data]
 
         return out
 
@@ -254,9 +241,7 @@ class CompositeModelType(resolveCollections.ResolveParametersMeta):
     """
 
     def __new__(cls, name, bases, attrs):
-        newType = resolveCollections.ResolveParametersMeta.__new__(
-            cls, name, bases, attrs
-        )
+        newType = resolveCollections.ResolveParametersMeta.__new__(cls, name, bases, attrs)
 
         CompositeModelType.TYPES[name] = newType
 
@@ -335,10 +320,7 @@ class ArmiObject(metaclass=CompositeModelType):
         self.cached = {}
         self._backupCache = None
         self.p = self.paramCollectionType()
-        # TODO: These are not serialized to the database, and will therefore
-        # lead to surprising behavior when using databases. We need to devise a
-        # way to either represent them in parameters, or otherwise reliably
-        # recover them.
+        # NOTE: LFPs are not serialized to the database, which could matter when loading an old DB.
         self._lumpedFissionProducts = None
         self.spatialGrid = None
         self.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, None)
@@ -347,40 +329,31 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Implement the less-than operator.
 
-        Implementing this on the ArmiObject allows most objects, under most
-        circumstances to be sorted. This is useful from the context of the Database
-        classes, so that they can produce a stable layout of the serialized composite
-        structure.
+        Implementing this on the ArmiObject allows most objects, under most circumstances to be
+        sorted. This is useful from the context of the Database classes, so that they can produce a
+        stable layout of the serialized composite structure.
 
-        By default, this sorts using the spatial locator, in K, J, I order, which should
-        give a relatively intuitive order. For safety, it makes sure that the objects
-        being sorted live in the same grid, since it probably doesn't make
-        sense to sort things across containers or scopes. If this ends up being too
-        restrictive, it can probably be relaxed or overridden on specific classes.
+        By default, this sorts using the spatial locator in K, J, I order, which should give a
+        relatively intuitive order. It also makes sure that the objects being sorted live in the
+        same grid.
         """
         if self.spatialLocator is None or other.spatialLocator is None:
-            runLog.error("could not compare {} and {}".format(self, other))
-            raise ValueError(
-                "One or more of the compared objects have no spatialLocator"
-            )
+            runLog.error(f"could not compare {self} and {other}")
+            raise ValueError("One or more of the compared objects have no spatialLocator")
 
         if self.spatialLocator.grid is not other.spatialLocator.grid:
-            runLog.error("could not compare {} and {}".format(self, other))
+            runLog.error(f"could not compare {self} and {other}")
             raise ValueError(
                 "Composite grids must be the same to compare:\n"
-                "This grid: {}\n"
-                "Other grid: {}".format(self.spatialGrid, other.spatialGrid)
+                f"This grid: {self.spatialGrid}\n"
+                f"Other grid: {other.spatialGrid}"
             )
         try:
             t1 = tuple(reversed(self.spatialLocator.getCompleteIndices()))
             t2 = tuple(reversed(other.spatialLocator.getCompleteIndices()))
             return t1 < t2
         except ValueError:
-            runLog.error(
-                "failed to compare {} and {}".format(
-                    self.spatialLocator, other.spatialLocator
-                )
-            )
+            runLog.error(f"failed to compare {self.spatialLocator} and {other.spatialLocator}")
             raise
 
     def __getstate__(self):
@@ -430,7 +403,7 @@ class ArmiObject(metaclass=CompositeModelType):
             c.parent = self
 
     def __repr__(self):
-        return "<{}: {}>".format(self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}: {self.name}>"
 
     def __format__(self, spec):
         return format(str(self), spec)
@@ -471,7 +444,7 @@ class ArmiObject(metaclass=CompositeModelType):
         for child in self:
             child.clearCache()
 
-    def _getCached(self, name):  # TODO: stop the "returns None" nonsense?
+    def _getCached(self, name):
         """
         Obtain a value from the cache.
 
@@ -483,7 +456,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         return self.cached.get(name, None)
 
-    def _setCache(self, name, val):  # TODO: remove me
+    def _setCache(self, name, val):
         """
         Set a value in the cache.
 
@@ -527,21 +500,15 @@ class ArmiObject(metaclass=CompositeModelType):
         """Iterate over children of this object."""
         raise NotImplementedError()
 
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False
-    ) -> list["ArmiObject"]:
+    def getChildren(self, deep=False, generationNum=1, includeMaterials=False) -> list["ArmiObject"]:
         """Return the children of this object."""
         raise NotImplementedError()
 
-    def iterChildrenWithFlags(
-        self, typeSpec: TypeSpec, exactMatch=False
-    ) -> Iterator["ArmiObject"]:
+    def iterChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> Iterator["ArmiObject"]:
         """Produce an iterator of children that have given flags."""
         return self.iterChildren(predicate=lambda o: o.hasFlags(typeSpec, exactMatch))
 
-    def getChildrenWithFlags(
-        self, typeSpec: TypeSpec, exactMatch=False
-    ) -> list["ArmiObject"]:
+    def getChildrenWithFlags(self, typeSpec: TypeSpec, exactMatch=False) -> list["ArmiObject"]:
         """Get all children that have given flags."""
         return list(self.iterChildrenWithFlags(typeSpec, exactMatch))
 
@@ -777,9 +744,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if not typeID:
             return not exact
         if isinstance(typeID, str):
-            raise TypeError(
-                "Must pass Flags, or an iterable of Flags; Strings are no longer supported"
-            )
+            raise TypeError("Must pass Flags, or an iterable of Flags; Strings are no longer supported")
 
         elif not isinstance(typeID, Flags):
             # list behavior gives a spec1 OR spec2 OR ... behavior.
@@ -896,9 +861,7 @@ class ArmiObject(metaclass=CompositeModelType):
                 if child is self:
                     return frac
 
-        raise ValueError(
-            f"No parent is defined for {self}. Cannot compute its volume fraction."
-        )
+        raise ValueError(f"No parent is defined for {self}. Cannot compute its volume fraction.")
 
     def getMaxArea(self):
         """
@@ -976,10 +939,7 @@ class ArmiObject(metaclass=CompositeModelType):
             for ns in nucSpec:
                 nuclideNames.extend(self._getNuclidesFromSpecifier(ns))
         else:
-            raise TypeError(
-                "nucSpec={0} is an invalid specifier. It is a {1}"
-                "".format(nucSpec, type(nucSpec))
-            )
+            raise TypeError(f"nucSpec={nucSpec} is an invalid specifier. It is a {type(nucSpec)}")
 
         # expand elementals if appropriate.
         convertedNucNames = []
@@ -1058,22 +1018,13 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         rho = self.density()
         if not rho:
-            raise ValueError(
-                "Cannot set mass fractions on {} because the mass density is zero.".format(
-                    self
-                )
-            )
+            raise ValueError(f"Cannot set mass fractions on {self} because the mass density is zero.")
         oldMassFracs = self.getMassFracs()
         totalFracSet = 0.0
         for nucName, massFrac in massFracs.items():
             self.setNumberDensity(
                 nucName,
-                (
-                    massFrac
-                    * rho
-                    * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-                    / nucDir.getAtomicWeight(nucName)
-                ),
+                (massFrac * rho * units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM / nucDir.getAtomicWeight(nucName)),
             )
             if nucName in oldMassFracs:
                 del oldMassFracs[nucName]
@@ -1082,10 +1033,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if totalOther:
             # we normalize the remaining mass fractions so their concentrations relative
             # to each other stay constant.
-            normalizedOtherMassFracs = {
-                nucNameOther: val / totalOther
-                for nucNameOther, val in oldMassFracs.items()
-            }
+            normalizedOtherMassFracs = {nucNameOther: val / totalOther for nucNameOther, val in oldMassFracs.items()}
             for nucNameOther, massFracOther in normalizedOtherMassFracs.items():
                 self.setNumberDensity(
                     nucNameOther,
@@ -1154,15 +1102,9 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         self.clearCache()  # don't keep densities around or anything.
         if val > 1.0 or val < 0:
-            raise ValueError(
-                "Invalid mass fraction {0} for {1}/{2} in {3}".format(
-                    val, nuclideToAdjust, elementToAdjust, self.getName()
-                )
-            )
+            raise ValueError(f"Invalid mass fraction {val} for {nuclideToAdjust}/{elementToAdjust} in {self.getName()}")
         if not nuclideToAdjust and not elementToAdjust:
-            raise TypeError(
-                "Must provide a nuclide or element to adjust to adjustMassFrac"
-            )
+            raise TypeError("Must provide a nuclide or element to adjust to adjustMassFrac")
 
         # sum of other nuclide mass fractions before change is Y
         # need Yx+newZr = 1.0 where x is a scaling factor
@@ -1176,9 +1118,7 @@ class ArmiObject(metaclass=CompositeModelType):
             # nucDir.getNuclides to get all. Intersect with current nuclides to
             # eliminate double counting of element/isotopes
             constantNuclides = set(
-                nucDir.getNuclideNames(
-                    nucName=nuclideToHoldConstant, elementSymbol=elementToHoldConstant
-                )
+                nucDir.getNuclideNames(nucName=nuclideToHoldConstant, elementSymbol=elementToHoldConstant)
             ).intersection(nuclides)
             constantSum = sum(self.getMassFrac(nucName) for nucName in constantNuclides)
         else:
@@ -1190,9 +1130,7 @@ class ArmiObject(metaclass=CompositeModelType):
         # nucDirectory to do this. this way, even zeroed-out nuclides will get in the
         # mix
         adjustNuclides = set(
-            nucDir.getNuclideNames(
-                nucName=nuclideToAdjust, elementSymbol=elementToAdjust
-            )
+            nucDir.getNuclideNames(nucName=nuclideToAdjust, elementSymbol=elementToAdjust)
         ).intersection(nuclides)
         # get original mass frac A of those to be adjusted.
         A = sum(self.getMassFrac(ni) for ni in adjustNuclides)
@@ -1223,11 +1161,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
         # error checking.
         if abs(newA - val) > 1e-10:
-            runLog.error(
-                "Adjust Mass fraction did not adjust {0} from {1} to {2}. It got to {3}".format(
-                    adjustNuclides, A, val, newA
-                )
-            )
+            runLog.error(f"Adjust Mass fraction did not adjust {adjustNuclides} from {A} to {val}. It got to {newA}")
             raise RuntimeError("Failed to adjust mass fraction.")
 
         # determine the mass fraction of the nuclides that will be adjusted to
@@ -1300,12 +1234,7 @@ class ArmiObject(metaclass=CompositeModelType):
             multiplying the number densities within each child Composite by the volume
             of the child Composite and dividing by the total volume of the Composite.
         """
-        volumes = np.array(
-            [
-                c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0)
-                for c in self
-            ]
-        )  # c x 1
+        volumes = np.array([c.getVolume() / (c.parent.getSymmetryFactor() if c.parent else 1.0) for c in self])  # c x 1
         totalVol = volumes.sum()
         if totalVol == 0.0:
             # there are no children so no volume or number density
@@ -1314,9 +1243,7 @@ class ArmiObject(metaclass=CompositeModelType):
         densListForEachComp = []
         for c in self:
             numberDensityDict = c.getNumberDensities()
-            densListForEachComp.append(
-                [numberDensityDict.get(nuc, 0.0) for nuc in nucNames]
-            )
+            densListForEachComp.append([numberDensityDict.get(nuc, 0.0) for nuc in nucNames])
         nucDensForEachComp = np.array(densListForEachComp)  # c x n
 
         return volumes.dot(nucDensForEachComp) / totalVol
@@ -1372,8 +1299,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if lfpCollection:  # may not have lfps in non-fuel
             lfpDensities = lfpCollection.getNumberDensities(self)
             numberDensities = {
-                nucName: numberDensities.get(nucName, 0.0)
-                + lfpDensities.get(nucName, 0.0)
+                nucName: numberDensities.get(nucName, 0.0) + lfpDensities.get(nucName, 0.0)
                 for nucName in set(numberDensities) | set(lfpDensities)
             }
             # remove LFPs from the result
@@ -1387,8 +1313,8 @@ class ArmiObject(metaclass=CompositeModelType):
             )
             if lfpMass:
                 raise RuntimeError(
-                    "Composite {} is attempting to expand lumped fission products, but does not have "
-                    "an lfpCollection.".format(self)
+                    f"Composite {self} is attempting to expand lumped fission products, but does not have "
+                    "an lfpCollection."
                 )
         return numberDensities
 
@@ -1414,9 +1340,7 @@ class ArmiObject(metaclass=CompositeModelType):
         else:
             return self.parent.getAncestor(fn)
 
-    def getAncestorAndDistance(
-        self, fn, _distance=0
-    ) -> Optional[Tuple["ArmiObject", int]]:
+    def getAncestorAndDistance(self, fn, _distance=0) -> Optional[Tuple["ArmiObject", int]]:
         """
         Return the first ancestor that satisfies the supplied predicate, along with how
         many levels above self the ancestor lies.
@@ -1472,13 +1396,8 @@ class ArmiObject(metaclass=CompositeModelType):
         nTot : float
             Total ndens of all nuclides in atoms/bn-cm. Not homogenized.
         """
-        nFPsPerLFP = (
-            fissionProductModel.NUM_FISSION_PRODUCTS_PER_LFP
-        )  # LFPs count as two! Big deal in non BOL cases.
-        return sum(
-            dens * (nFPsPerLFP if "LFP" in name else 1.0)
-            for name, dens in self.getNumberDensities().items()
-        )
+        nFPsPerLFP = fissionProductModel.NUM_FISSION_PRODUCTS_PER_LFP  # LFPs count as two! Big deal in non BOL cases.
+        return sum(dens * (nFPsPerLFP if "LFP" in name else 1.0) for name, dens in self.getNumberDensities().items())
 
     def setNumberDensity(self, nucName, val):
         """
@@ -1495,18 +1414,12 @@ class ArmiObject(metaclass=CompositeModelType):
             activeVolumeFrac = 1.0
             if val:
                 raise ValueError(
-                    "The nuclide {} does not exist in any children of {}; "
-                    "cannot set its number density to {}. The nuclides here are: {}".format(
-                        nucName, self, val, self.getNuclides()
-                    )
+                    f"The nuclide {nucName} does not exist in any children of {self}; "
+                    f"cannot set its number density to {val}. The nuclides here are: {self.getNuclides()}"
                 )
         else:
-            activeVolumeFrac = sum(
-                vf for ci, vf in self.getVolumeFractions() if ci in activeChildren
-            )
-        dehomogenizedNdens = (
-            val / activeVolumeFrac
-        )  # scale up to dehomogenize on children.
+            activeVolumeFrac = sum(vf for ci, vf in self.getVolumeFractions() if ci in activeChildren)
+        dehomogenizedNdens = val / activeVolumeFrac  # scale up to dehomogenize on children.
         for child in activeChildren:
             child.setNumberDensity(nucName, dehomogenizedNdens)
 
@@ -1525,9 +1438,7 @@ class ArmiObject(metaclass=CompositeModelType):
         want to call ``getVolumeFractions`` for each nuclide (it's inefficient).
 
         """
-        numberDensities.update(
-            {nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities}
-        )
+        numberDensities.update({nuc: 0.0 for nuc in self.getNuclides() if nuc not in numberDensities})
         self.updateNumberDensities(numberDensities)
 
     def updateNumberDensities(self, numberDensities):
@@ -1560,9 +1471,7 @@ class ArmiObject(metaclass=CompositeModelType):
             # NOTE: this is one of the rare instances in which (imo), using explicit
             # indexing clarifies subsequent code since it's not necessary to zip +
             # filter + extract individual components (just extract by filtered index).
-            indiciesToSet = tuple(
-                i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild
-            )
+            indiciesToSet = tuple(i for i, nucsInChild in enumerate(childNucs) if nuc in nucsInChild)
 
             if not indiciesToSet:
                 if dens == 0:
@@ -1587,9 +1496,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        densitiesScaled = {
-            nuc: val * factor for nuc, val in self.getNumberDensities().items()
-        }
+        densitiesScaled = {nuc: val * factor for nuc, val in self.getNumberDensities().items()}
         self.setNumberDensities(densitiesScaled)
         # Update detailedNDens
         if self.p.detailedNDens is not None:
@@ -1612,9 +1519,7 @@ class ArmiObject(metaclass=CompositeModelType):
         density = 0.0
         for nuc in self.getNuclides():
             density += (
-                self.getNumberDensity(nuc)
-                * nucDir.getAtomicWeight(nuc)
-                / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
+                self.getNumberDensity(nuc) * nucDir.getAtomicWeight(nuc) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
             )
 
         return density
@@ -1711,15 +1616,14 @@ class ArmiObject(metaclass=CompositeModelType):
         if addSymmetricPositions:
             if calcBasedOnFullObj:
                 raise ValueError(
-                    "AddSymmetricPositions is Incompatible with "
-                    "calcBasedOnFullObj. Will result in double counting."
+                    "AddSymmetricPositions is Incompatible with calcBasedOnFullObj. Will result in double counting."
                 )
             try:
                 coreMult = self.powerMultiplier
             except AttributeError:
                 coreMult = self.parent.powerMultiplier
             if not coreMult:
-                raise ValueError("powerMultiplier is equal to {}".format(coreMult))
+                raise ValueError(f"powerMultiplier is equal to {coreMult}")
         else:
             coreMult = 1.0
 
@@ -1796,11 +1700,7 @@ class ArmiObject(metaclass=CompositeModelType):
                     weight = child.p[weightingParam]
                     if weight < 0:
                         # Just for conservatism, do not allow negative weights.
-                        raise ValueError(
-                            "Weighting value ({0},{1}) cannot be negative.".format(
-                                weightingParam, weight
-                            )
-                        )
+                        raise ValueError(f"Weighting value ({weightingParam},{weight}) cannot be negative.")
                 else:
                     weight = 1.0
 
@@ -1814,9 +1714,8 @@ class ArmiObject(metaclass=CompositeModelType):
                     total += child.p[param] * weight
         if not weightSum:
             raise ValueError(
-                "Cannot calculate {0}-weighted average of {1} in {2}. "
-                "Weights sum to zero. typeSpec is {3}"
-                "".format(weightingParam, param, self, typeSpec)
+                f"Cannot calculate {weightingParam}-weighted average of {param} in {self}. "
+                f"Weights sum to zero. typeSpec is {typeSpec}"
             )
         return total / weightSum
 
@@ -1879,9 +1778,7 @@ class ArmiObject(metaclass=CompositeModelType):
         getMaxParam : details
         """
         compartor = lambda x, y: x < y
-        return self._minMaxHelper(
-            param, typeSpec, absolute, generationNum, returnObj, float("inf"), compartor
-        )
+        return self._minMaxHelper(param, typeSpec, absolute, generationNum, returnObj, float("inf"), compartor)
 
     def _minMaxHelper(
         self,
@@ -1971,11 +1868,7 @@ class ArmiObject(metaclass=CompositeModelType):
         is reduced to reflect that the block is not wholly within the reactor. This
         reduction in volume reduces the reported HM moles.
         """
-        return (
-            self.getHMDens()
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-        )
+        return self.getHMDens() / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * self.getVolume()
 
     def getHMDens(self):
         """
@@ -1986,9 +1879,7 @@ class ArmiObject(metaclass=CompositeModelType):
         hmDens : float
             The total heavy metal number (atom) density in atoms/bn-cm.
         """
-        hmNuclides = [
-            nuclide for nuclide in self.getNuclides() if nucDir.isHeavyMetal(nuclide)
-        ]
+        hmNuclides = [nuclide for nuclide in self.getNuclides() if nucDir.isHeavyMetal(nuclide)]
         hmDens = sum(self.getNuclideNumberDensities(hmNuclides))
         return hmDens
 
@@ -2013,21 +1904,14 @@ class ArmiObject(metaclass=CompositeModelType):
         columns = [-1, self.getHMMass(), self.getFuelMass()]
 
         for base_ele in ["U", "PU"]:
-            total = sum(
-                [self.getMass(nuclide.name) for nuclide in elements.bySymbol[base_ele]]
-            )
+            total = sum([self.getMass(nuclide.name) for nuclide in elements.bySymbol[base_ele]])
             rows.append([base_ele, total, total])
 
         fp_total = self.getFPMass()
         rows.append(["FP", fp_total, fp_total])
 
         ma_nuclides = iterables.flatten(
-            [
-                ele.nuclides
-                for ele in [
-                    elements.byZ[key] for key in elements.byZ.keys() if key > 94
-                ]
-            ]
+            [ele.nuclides for ele in [elements.byZ[key] for key in elements.byZ.keys() if key > 94]]
         )
         ma_total = sum([self.getMass(nuclide.name) for nuclide in ma_nuclides])
         rows.append(["MA", ma_total, ma_total])
@@ -2079,10 +1963,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         numDensities = self.getNumberDensities()
         vol = self.getVolume()
-        return {
-            nucName: densityTools.getMassInGrams(nucName, vol, ndens)
-            for nucName, ndens in numDensities.items()
-        }
+        return {nucName: densityTools.getMassInGrams(nucName, vol, ndens) for nucName, ndens in numDensities.items()}
 
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         raise NotImplementedError
@@ -2120,8 +2001,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         if average:
             raise NotImplementedError(
-                "{} class has no method for producing average MG flux -- try"
-                "using blocks".format(self.__class__)
+                f"{self.__class__} class has no method for producing average MG flux -- tryusing blocks"
             )
 
         volume = volume or self.getVolume()
@@ -2143,9 +2023,7 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         volume = self.getVolume()
         addedNumberDensity = densityTools.calculateNumberDensity(nucName, mass, volume)
-        self.setNumberDensity(
-            nucName, self.getNumberDensity(nucName) + addedNumberDensity
-        )
+        self.setNumberDensity(nucName, self.getNumberDensity(nucName) + addedNumberDensity)
 
     def addMasses(self, masses):
         """
@@ -2276,9 +2154,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if materialName is None:
             materialName = material.getName()
         else:
-            assert (
-                material is None
-            ), "Cannot call with more than one selector. Choose one or the other."
+            assert material is None, "Cannot call with more than one selector. Choose one or the other."
 
         componentsWithThisMat = []
         for c in self.iterComponents():
@@ -2317,9 +2193,7 @@ class ArmiObject(metaclass=CompositeModelType):
         if nComp == 0:
             return None
         elif nComp > 1:
-            raise ValueError(
-                "More than one component named '{}' in {}".format(name, self)
-            )
+            raise ValueError(f"More than one component named '{name}' in {self}")
         else:
             return components[0]
 
@@ -2350,19 +2224,13 @@ class ArmiObject(metaclass=CompositeModelType):
         elif not results:
             if not quiet:
                 runLog.warning(
-                    "No component matched {0} in {1}. Returning None".format(
-                        typeSpec, self
-                    ),
+                    "No component matched {0} in {1}. Returning None".format(typeSpec, self),
                     single=True,
                     label="None component returned instead of {0}".format(typeSpec),
                 )
             return None
         else:
-            raise ValueError(
-                "Multiple components match in {} match typeSpec {}: {}".format(
-                    self, typeSpec, results
-                )
-            )
+            raise ValueError("Multiple components match in {} match typeSpec {}: {}".format(self, typeSpec, results))
 
     def getNumComponents(self, typeSpec: TypeSpec, exact=False):
         """
@@ -2395,8 +2263,7 @@ class ArmiObject(metaclass=CompositeModelType):
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
         for elemental in nuclideBases.where(
-            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase)
-            and nb.name in reactorNucs
+            lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
         ):
             self.expandElementalToIsotopics(elemental)
 
@@ -2418,9 +2285,7 @@ class ArmiObject(metaclass=CompositeModelType):
             del component.p.numberDensities[natName]
             # add in isotopics
             for natNuc in elementalNuclide.getNaturalIsotopics():
-                component.setNumberDensity(
-                    natNuc.name, elementalDensity * natNuc.abundance
-                )
+                component.setNumberDensity(natNuc.name, elementalDensity * natNuc.abundance)
 
     def getAverageTempInC(self, typeSpec: TypeSpec = None, exact=False):
         """Return the average temperature of the ArmiObject in C by averaging all components."""
@@ -2576,11 +2441,7 @@ class Composite(ArmiObject):
     def add(self, obj):
         """Add one new child."""
         if obj in self:
-            raise RuntimeError(
-                "Cannot add {0} because it has already been added to {1}.".format(
-                    obj, self
-                )
-            )
+            raise RuntimeError(f"Cannot add {obj} because it has already been added to {self}.")
         obj.parent = self
         self._children.append(obj)
 
@@ -2594,19 +2455,15 @@ class Composite(ArmiObject):
         """Move to specific location in parent. Often in a grid."""
         if locator.grid.armiObject is not self.parent:
             raise ValueError(
-                "Cannot move {} to a location in  {}, which is not its parent ({})."
-                "".format(self, locator.grid.armiObject, self.parent)
+                f"Cannot move {self} to a location in  {locator.grid.armiObject}"
+                ", which is not its parent ({self.parent})."
             )
         self.spatialLocator = locator
 
     def insert(self, index, obj):
         """Insert an object into the list of children at a particular index."""
         if obj in self._children:
-            raise RuntimeError(
-                "Cannot insert {0} because it has already been added to {1}.".format(
-                    obj, self
-                )
-            )
+            raise RuntimeError(f"Cannot insert {obj} because it has already been added to {self}.")
         obj.parent = self
         self._children.insert(index, obj)
 
@@ -2674,9 +2531,7 @@ class Composite(ArmiObject):
 
         """
         if deep and generationNum > 1:
-            raise RuntimeError(
-                "Cannot get children with a generation number set and the deep flag set"
-            )
+            raise RuntimeError("Cannot get children with a generation number set and the deep flag set")
         if predicate is None:
             checker = lambda _: True
         else:
@@ -2705,9 +2560,7 @@ class Composite(ArmiObject):
         children = self.iterChildren(*args, **kwargs)
         # Each entry is either (c, ) or (c, c.material) if the child has a material attribute
         stitched = map(
-            lambda c: (
-                (c,) if getattr(c, "material", None) is None else (c, c.material)
-            ),
+            lambda c: ((c,) if getattr(c, "material", None) is None else (c, c.material)),
             children,
         )
         # Iterator that iterates over each "sub" iterator. If we have ((c0, ), (c1, m1)), this produces a single
@@ -2784,13 +2637,9 @@ class Composite(ArmiObject):
 
         """
         if not includeMaterials:
-            items = self.iterChildren(
-                deep=deep, generationNum=generationNum, predicate=predicate
-            )
+            items = self.iterChildren(deep=deep, generationNum=generationNum, predicate=predicate)
         else:
-            items = self.iterChildrenWithMaterials(
-                deep=deep, generationNum=generationNum, predicate=predicate
-            )
+            items = self.iterChildrenWithMaterials(deep=deep, generationNum=generationNum, predicate=predicate)
         return list(items)
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
@@ -2851,7 +2700,7 @@ class Composite(ArmiObject):
         )
         allComps = [c for c in genItems if hasattr(c, "p")]
         sendBuf = [c.p.getSyncData() for c in allComps]
-        runLog.debug("syncMpiState has {} comps".format(len(allComps)))
+        runLog.debug(f"syncMpiState has {len(allComps)} comps")
 
         try:
             context.MPI_COMM.barrier()  # sync up
@@ -2862,7 +2711,7 @@ class Composite(ArmiObject):
             msg = ["Failure while trying to allgather."]
             for ci, compData in enumerate(sendBuf):
                 if compData is not None:
-                    msg += ["sendBuf[{}]: {}".format(ci, compData)]
+                    msg += [f"sendBuf[{ci}]: {compData}"]
             runLog.error("\n".join(msg))
             raise
 
@@ -2872,11 +2721,7 @@ class Composite(ArmiObject):
         compsPerNode = {len(nodeSyncData) for nodeSyncData in allSyncData}
 
         if len(compsPerNode) != 1:
-            raise ValueError(
-                "The workers have different reactor sizes! comp lengths: {}".format(
-                    compsPerNode
-                )
-            )
+            raise ValueError(f"The workers have different reactor sizes! comp lengths: {compsPerNode}")
 
         for ci, comp in enumerate(allComps):
             if not hasattr(comp, "_syncParameters"):
@@ -2890,58 +2735,50 @@ class Composite(ArmiObject):
                 (str(comp), comp.__class__.__name__, str(comp.parent), paramName, nodes)
                 for (comp, paramName), nodes in errors.items()
             )
-            message = (
-                "Synchronization failed due to overlapping data. Only the first "
-                "duplicates are listed\n{}".format(
-                    tabulate.tabulate(
-                        errorData,
-                        headers=[
-                            "Composite",
-                            "Composite Type",
-                            "Composite Parent",
-                            "ParameterName",
-                            "NodeRanks",
-                        ],
-                    )
+            message = "Synchronization failed due to overlapping data. Only the first duplicates are listed\n{}".format(
+                tabulate.tabulate(
+                    errorData,
+                    headers=[
+                        "Composite",
+                        "Composite Type",
+                        "Composite Parent",
+                        "ParameterName",
+                        "NodeRanks",
+                    ],
                 )
             )
             raise ValueError(message)
 
         self._markSynchronized()
         runLog.extra(
-            "Synchronized reactor over MPI in {:.4f} seconds, {:.4f} seconds in MPI "
-            "allgather. count:{}".format(
-                timeit.default_timer() - startTime, allGatherTime, syncCount
-            )
+            f"Synchronized reactor over MPI in {timeit.default_timer() - startTime:.4f} seconds"
+            f", {allGatherTime:.4f} seconds in MPI allgather. count:{syncCount}"
         )
 
         return syncCount
 
     def _syncParameters(self, allSyncData, errors):
-        # ensure no overlap with syncedKeys, use errors to report overlapping data
+        """Ensure no overlap with syncedKeys, use errors to report overlapping data."""
         syncedKeys = set()
         for nodeRank, nodeSyncData in enumerate(allSyncData):
             if nodeSyncData is None:
                 continue
-            # nodeSyncData is a list of tuples
+
             for key, val in nodeSyncData.items():
                 if key in syncedKeys:
-                    # TODO: this requires further investigation and should be avoidable.
-                    # this situation results when a composite object is flagged as being
-                    # out of sync, and this parameter was also globally modified and
-                    # readjusted to the original value.
+                    # Edge Case: a Composite object is flagged as out of sync, and this parameter
+                    # was also globally modified and readjusted to the original value.
                     curVal = self.p[key]
                     if isinstance(val, np.ndarray) or isinstance(curVal, np.ndarray):
                         if (val != curVal).any():
                             errors[self, key].append(nodeRank)
                     elif curVal != val:
                         errors[self, key].append(nodeRank)
-                        runLog.error(
-                            "in {}, {} differ ({} != {})".format(self, key, curVal, val)
-                        )
+                        runLog.error(f"in {self}, {key} differ ({curVal} != {val})")
                     continue
                 syncedKeys.add(key)
                 self.p[key] = val
+
         self.clearCache()
         return len(syncedKeys)
 
@@ -3160,9 +2997,7 @@ class Composite(ArmiObject):
         from armi.reactor.components import Component
 
         # find child objects
-        objects = self.getChildren(
-            deep=True, predicate=lambda x: isinstance(x, Component)
-        )
+        objects = self.getChildren(deep=True, predicate=lambda x: isinstance(x, Component))
         if not len(objects):
             objects = [self]
 
@@ -3264,9 +3099,7 @@ class StateRetainer:
             func(paramDef)
 
 
-def gatherMaterialsByVolume(
-    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
-):
+def gatherMaterialsByVolume(objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False):
     """
     Compute the total volume of each material in a set of objects and give samples.
 
@@ -3305,9 +3138,7 @@ def gatherMaterialsByVolume(
     return volumes, samples
 
 
-def getDominantMaterial(
-    objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False
-):
+def getDominantMaterial(objects: List[ArmiObject], typeSpec: TypeSpec = None, exact=False):
     """
     Return the first sample of the most dominant material (by volume) in a set of objects.
 
@@ -3356,7 +3187,7 @@ def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     Assume there is no n3n cross section in ISOTXS
     """
     nucLabel = nuclideBases.byName[nucName].label
-    key = "{}{}".format(nucLabel, xsSuffix)
+    key = f"{nucLabel}{xsSuffix}"
     libNuc = lib[key]
     rxnRates = {"n3n": 0}
     for rxName, mgXSs in [

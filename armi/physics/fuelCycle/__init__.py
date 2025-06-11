@@ -28,6 +28,7 @@ There is one included fuel cycle plugin: The Fuel Handler.
 
 The fuel handler plugin moves fuel around in a reactor.
 """
+
 from armi import interfaces, operators, plugins
 from armi.operators import RunTypes
 from armi.physics.fuelCycle import fuelHandlers, settings
@@ -36,7 +37,7 @@ ORDER = interfaces.STACK_ORDER.FUEL_MANAGEMENT
 
 
 class FuelHandlerPlugin(plugins.ArmiPlugin):
-    """The build-in ARMI fuel management plugin."""
+    """The built-in ARMI fuel management plugin."""
 
     @staticmethod
     @plugins.HOOKIMPL
@@ -57,13 +58,8 @@ class FuelHandlerPlugin(plugins.ArmiPlugin):
         if not fuelHandlerNeedsToBeActive or "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
             return []
         else:
-
             enabled = cs["runType"] != operators.RunTypes.SNAPSHOTS
-            return [
-                interfaces.InterfaceInfo(
-                    ORDER, fuelHandlers.FuelHandlerInterface, {"enabled": enabled}
-                )
-            ]
+            return [interfaces.InterfaceInfo(ORDER, fuelHandlers.FuelHandlerInterface, {"enabled": enabled})]
 
     @staticmethod
     @plugins.HOOKIMPL

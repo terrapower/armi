@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Testing for reactors.py."""
+
 import copy
 import logging
 import os
@@ -140,9 +141,7 @@ class ReactorTests(unittest.TestCase):
 
 class HexReactorTests(ReactorTests):
     def setUp(self):
-        self.o, self.r = loadTestReactor(
-            self.directoryChanger.destination, customSettings={"trackAssems": True}
-        )
+        self.o, self.r = loadTestReactor(self.directoryChanger.destination, customSettings={"trackAssems": True})
 
     def test_coreSfp(self):
         """The reactor object includes a core and an SFP.
@@ -299,9 +298,7 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(numControlBlocks, 3)
 
-        numControlBlocks = self.r.core.countBlocksWithFlags(
-            [Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL
-        )
+        numControlBlocks = self.r.core.countBlocksWithFlags([Flags.DUCT, Flags.CONTROL, Flags.FUEL], Flags.CONTROL)
         self.assertEqual(numControlBlocks, 3)
 
     def test_normalizeNames(self):
@@ -335,9 +332,7 @@ class HexReactorTests(ReactorTests):
 
             startingVol = controlBlock.p.initialB10ComponentVol
             self.assertGreater(startingVol, 0)
-            self.assertAlmostEqual(
-                controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol
-            )
+            self.assertAlmostEqual(controlComp.getArea(cold=True) * controlBlock.getHeight(), startingVol)
 
             # input temp is same as hot temp, so change input temp to test that behavior
             controlComp.inputTemperatureInC = 30
@@ -424,21 +419,15 @@ class HexReactorTests(ReactorTests):
         self.assertFalse(smallMeshGood)
 
     def test_findAxialMeshIndexOf(self):
-        numMeshPoints = (
-            len(self.r.core.p.axialMesh) - 2
-        )  # -1 for typical reason, -1 more because mesh includes 0
+        numMeshPoints = len(self.r.core.p.axialMesh) - 2  # -1 for typical reason, -1 more because mesh includes 0
         self.assertEqual(self.r.core.findAxialMeshIndexOf(0.0), 0)
         self.assertEqual(self.r.core.findAxialMeshIndexOf(0.1), 0)
-        self.assertEqual(
-            self.r.core.findAxialMeshIndexOf(self.r.core[0].getHeight()), numMeshPoints
-        )
+        self.assertEqual(self.r.core.findAxialMeshIndexOf(self.r.core[0].getHeight()), numMeshPoints)
         self.assertEqual(
             self.r.core.findAxialMeshIndexOf(self.r.core[0].getHeight() - 0.1),
             numMeshPoints,
         )
-        self.assertEqual(
-            self.r.core.findAxialMeshIndexOf(self.r.core[0][0].getHeight() + 0.1), 1
-        )
+        self.assertEqual(self.r.core.findAxialMeshIndexOf(self.r.core[0][0].getHeight() + 0.1), 1)
 
     def test_findAllAxialMeshPoints(self):
         mesh = self.r.core.findAllAxialMeshPoints(applySubMesh=False)
@@ -451,9 +440,7 @@ class HexReactorTests(ReactorTests):
 
     def test_findAllAxialMeshPoints_wSubmesh(self):
         referenceMesh = [0.0, 25.0, 50.0, 75.0, 100.0, 118.75, 137.5, 156.25, 175.0]
-        mesh = self.r.core.findAllAxialMeshPoints(
-            assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True
-        )
+        mesh = self.r.core.findAllAxialMeshPoints(assems=[self.r.core.getFirstAssembly(Flags.FUEL)], applySubMesh=True)
         self.assertListEqual(referenceMesh, mesh)
 
     def test_findAllAziMeshPoints(self):
@@ -511,9 +498,7 @@ class HexReactorTests(ReactorTests):
         """
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
-        neighbs = self.r.core.findNeighbors(
-            a, duplicateAssembliesOnReflectiveBoundary=True
-        )
+        neighbs = self.r.core.findNeighbors(a, duplicateAssembliesOnReflectiveBoundary=True)
         locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
         self.assertIn((2, 1), locs)
@@ -522,18 +507,14 @@ class HexReactorTests(ReactorTests):
 
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(1, 1)
         a = self.r.core.childrenByLocator[loc]
-        neighbs = self.r.core.findNeighbors(
-            a, duplicateAssembliesOnReflectiveBoundary=True
-        )
+        neighbs = self.r.core.findNeighbors(a, duplicateAssembliesOnReflectiveBoundary=True)
         locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(locs, [(2, 1), (2, 2)] * 3, 6)
 
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
         a = self.r.core.childrenByLocator[loc]
 
-        neighbs = self.r.core.findNeighbors(
-            a, duplicateAssembliesOnReflectiveBoundary=True
-        )
+        neighbs = self.r.core.findNeighbors(a, duplicateAssembliesOnReflectiveBoundary=True)
         locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
         self.assertEqual(locs, [(3, 2), (3, 3), (3, 12), (2, 1), (1, 1), (2, 1)])
@@ -544,9 +525,7 @@ class HexReactorTests(ReactorTests):
         converter.addEdgeAssemblies(self.r.core)
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
         a = self.r.core.childrenByLocator[loc]
-        neighbs = self.r.core.findNeighbors(
-            a, duplicateAssembliesOnReflectiveBoundary=True
-        )
+        neighbs = self.r.core.findNeighbors(a, duplicateAssembliesOnReflectiveBoundary=True)
         locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
         # in this case no locations that aren't actually in the core should be returned
@@ -573,9 +552,7 @@ class HexReactorTests(ReactorTests):
         # Try the duplicate option in full core as well
         loc = self.r.core.spatialGrid.getLocatorFromRingAndPos(2, 2)
         a = self.r.core.childrenByLocator[loc]
-        neighbs = self.r.core.findNeighbors(
-            a, duplicateAssembliesOnReflectiveBoundary=True
-        )
+        neighbs = self.r.core.findNeighbors(a, duplicateAssembliesOnReflectiveBoundary=True)
         locs = [a.spatialLocator.getRingPos() for a in neighbs]
         self.assertEqual(len(neighbs), 6)
         self.assertEqual(locs, [(3, 2), (3, 3), (3, 4), (2, 3), (1, 1), (2, 1)])
@@ -584,28 +561,19 @@ class HexReactorTests(ReactorTests):
         expectedAssemsInRing = [5, 6, 8, 10, 12, 16, 14, 2]
         actualAssemsInRing = []
         for ring in range(1, self.r.core.getNumRings()):
-            actualAssemsInRing.append(
-                len(self.r.core.getAssembliesInCircularRing(ring))
-            )
+            actualAssemsInRing.append(len(self.r.core.getAssembliesInCircularRing(ring)))
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
 
     def test_getAssembliesInHexRing(self):
         expectedAssemsInRing = [1, 2, 4, 6, 8, 10, 12, 14, 16]
         actualAssemsInRing = []
         for ring in range(1, self.r.core.getNumRings() + 1):
-            actualAssemsInRing.append(
-                len(self.r.core.getAssembliesInSquareOrHexRing(ring))
-            )
+            actualAssemsInRing.append(len(self.r.core.getAssembliesInSquareOrHexRing(ring)))
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
 
     def test_genAssembliesAddedThisCycle(self):
         allAssems = self.r.core.getAssemblies()
-        self.assertTrue(
-            all(
-                a1 is a2
-                for a1, a2 in zip(allAssems, self.r.core.genAssembliesAddedThisCycle())
-            )
-        )
+        self.assertTrue(all(a1 is a2 for a1, a2 in zip(allAssems, self.r.core.genAssembliesAddedThisCycle())))
         a = self.r.core.getAssemblies()[0]
         newA = copy.deepcopy(a)
         newA.name = None
@@ -679,9 +647,7 @@ class HexReactorTests(ReactorTests):
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
         # grow to full core
         converter = self.r.core.growToFullCore(self.o.cs)
@@ -693,26 +659,20 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(numOfAssembliesOneThird, len(self.r.core.getAssemblies()))
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(numOfAssembliesOneThird, len(self.r.core.getAssemblies()))
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
 
     def test_differentNuclideModels(self):
         self.assertEqual(self.o.cs[CONF_XS_KERNEL], "MC2v3")
         _o2, r2 = loadTestReactor(customSettings={CONF_XS_KERNEL: "MC2v2"})
 
-        self.assertNotEqual(
-            set(self.r.blueprints.elementsToExpand), set(r2.blueprints.elementsToExpand)
-        )
+        self.assertNotEqual(set(self.r.blueprints.elementsToExpand), set(r2.blueprints.elementsToExpand))
 
         for b2, b3 in zip(r2.core.iterBlocks(), self.r.core.iterBlocks()):
             for element in self.r.blueprints.elementsToExpand:
@@ -843,12 +803,7 @@ class HexReactorTests(ReactorTests):
 
         # make sure that the loaded reactor and grid are aligned
         self.assertIs(loaded.core.spatialGrid.armiObject, loaded.core)
-        self.assertTrue(
-            all(
-                isinstance(key, grids.LocationBase)
-                for key in loaded.core.childrenByLocator.keys()
-            )
-        )
+        self.assertTrue(all(isinstance(key, grids.LocationBase) for key in loaded.core.childrenByLocator.keys()))
         loc = loaded.core.spatialGrid[0, 0, 0]
         loaded.core.sortAssemsByRing()
         self.r.core.sortAssemsByRing()
@@ -911,14 +866,9 @@ class HexReactorTests(ReactorTests):
             self.assertIn("No Spent Fuel Pool", mock.getStdout())
 
     def test_removeAssembliesInRing(self):
-        aLoc = [
-            self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1)
-            for i in range(12)
-        ]
+        aLoc = [self.r.core.spatialGrid.getLocatorFromRingAndPos(3, i + 1) for i in range(12)]
         assems = {
-            i: self.r.core.childrenByLocator[loc]
-            for i, loc in enumerate(aLoc)
-            if loc in self.r.core.childrenByLocator
+            i: self.r.core.childrenByLocator[loc] for i, loc in enumerate(aLoc) if loc in self.r.core.childrenByLocator
         }
         self.r.core.removeAssembliesInRing(3, self.o.cs)
         for i, a in assems.items():
@@ -957,9 +907,7 @@ class HexReactorTests(ReactorTests):
         """
         self.assertEqual(self.r.core.getNumRings(), 9)
         for ringNum in range(6, 10):
-            self.r.core.removeAssembliesInRing(
-                ringNum, self.o.cs, overrideCircularRingMode=True
-            )
+            self.r.core.removeAssembliesInRing(ringNum, self.o.cs, overrideCircularRingMode=True)
         self.assertEqual(self.r.core.getNumRings(), 5)
 
     def test_getNozzleTypes(self):
@@ -978,9 +926,7 @@ class HexReactorTests(ReactorTests):
         # test axial mesh alignment
         aNewMesh = aNew.getAxialMesh()
         for i, meshValue in enumerate(aNewMesh):
-            self.assertAlmostEqual(
-                meshValue, self.r.core.p.referenceBlockAxialMesh[i + 1]
-            )  # use i+1 to skip 0.0
+            self.assertAlmostEqual(meshValue, self.r.core.p.referenceBlockAxialMesh[i + 1])  # use i+1 to skip 0.0
 
         # creation with modified enrichment
         aNew2 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
@@ -993,9 +939,7 @@ class HexReactorTests(ReactorTests):
         changer = AxialExpansionChanger()
         changer.performPrescribedAxialExpansion(bol, [fuelComp], [0.05])
         aNew3 = self.r.core.createAssemblyOfType(aOld.getType(), 0.195, self.o.cs)
-        self.assertAlmostEqual(
-            aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195
-        )
+        self.assertAlmostEqual(aNew3.getFirstBlock(Flags.FUEL).getUraniumMassEnrich(), 0.195)
         self.assertAlmostEqual(aNew3.getMass(), bol.getMass())
 
     def test_createFreshFeed(self):
@@ -1053,16 +997,14 @@ class HexReactorTests(ReactorTests):
             self.assertGreater(len(coords), -1)
 
     def test_nonUniformAssems(self):
-        o, r = loadTestReactor(
-            customSettings={"nonUniformAssemFlags": ["primary control"]}
-        )
+        o, r = loadTestReactor(customSettings={"nonUniformAssemFlags": ["primary control"]})
         a = o.r.core.getFirstAssembly(Flags.FUEL)
         self.assertTrue(all(b.p.topIndex != 0 for b in a[1:]))
         a = o.r.core.getFirstAssembly(Flags.PRIMARY)
         self.assertTrue(all(b.p.topIndex == 0 for b in a))
         originalHeights = [b.p.height for b in a]
         differntMesh = [val + 2 for val in r.core.p.referenceBlockAxialMesh]
-        # wont change because nonUnfiform assem doesn't conform to reference mesh
+        # won't change because nonUnfiform assem doesn't conform to reference mesh
         a.setBlockMesh(differntMesh)
         heights = [b.p.height for b in a]
         self.assertEqual(originalHeights, heights)
@@ -1089,10 +1031,7 @@ class HexReactorTests(ReactorTests):
                 "assemFlagsToSkipAxialExpansion": ["feed fuel"],
             },
         )
-        aToSkip = list(
-            Flags.fromStringIgnoreErrors(t)
-            for t in o.cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
-        )
+        aToSkip = list(Flags.fromStringIgnoreErrors(t) for t in o.cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP])
 
         for i, val in enumerate(oldRefBlockAxialMesh[1:]):
             self.assertNotEqual(val, coldHeightR.core.p.referenceBlockAxialMesh[i])
@@ -1101,17 +1040,13 @@ class HexReactorTests(ReactorTests):
 
         coldHeightAssems = coldHeightR.core.getAssemblies()
         for a, coldHeightA in zip(originalAssems, coldHeightAssems):
-            if a.hasFlags(Flags.CONTROL) or any(
-                a.hasFlags(aFlags) for aFlags in aToSkip
-            ):
+            if a.hasFlags(Flags.CONTROL) or any(a.hasFlags(aFlags) for aFlags in aToSkip):
                 continue
             for b, coldHeightB in zip(a[1:], coldHeightA[1:]):
                 for param in nonEqualParameters:
                     p, coldHeightP = b.p[param], coldHeightB.p[param]
                     if p and coldHeightP:
-                        self.assertNotEqual(
-                            p, coldHeightP, f"{param} {p} {coldHeightP}"
-                        )
+                        self.assertNotEqual(p, coldHeightP, f"{param} {p} {coldHeightP}")
                     else:
                         self.assertAlmostEqual(p, coldHeightP)
                 for param in equalParameters:
@@ -1261,9 +1196,7 @@ class CartesianReactorTests(ReactorTests):
         expectedAssemsInRing = [1, 0]
         actualAssemsInRing = []
         for ring in range(1, self.r.core.getNumRings() + 1):
-            actualAssemsInRing.append(
-                len(self.r.core.getAssembliesInSquareOrHexRing(ring))
-            )
+            actualAssemsInRing.append(len(self.r.core.getAssembliesInSquareOrHexRing(ring)))
         self.assertSequenceEqual(actualAssemsInRing, expectedAssemsInRing)
 
     def test_getNuclideCategoriesLogging(self):

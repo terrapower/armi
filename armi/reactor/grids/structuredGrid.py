@@ -274,9 +274,7 @@ class StructuredGrid(Grid):
             locators = [self[idx] for idx in ijk]
             val.extend(locators)
         else:
-            raise TypeError(
-                "Unsupported index type `{}` for `{}`".format(type(ijk), ijk)
-            )
+            raise TypeError("Unsupported index type `{}` for `{}`".format(type(ijk), ijk))
         return val
 
     def items(self) -> Iterable[Tuple[IJKType, IndexLocation]]:
@@ -309,23 +307,17 @@ class StructuredGrid(Grid):
             the centroid of a octagon on a rectangular mesh, or the like.
         """
         indices = np.array(indices)
-        return self._evaluateMesh(
-            indices, self._centroidBySteps, self._centroidByBounds
-        )
+        return self._evaluateMesh(indices, self._centroidBySteps, self._centroidByBounds)
 
     def getCellBase(self, indices) -> np.ndarray:
         """Get the mesh base (lower left) of this mesh cell in cm."""
         indices = np.array(indices)
-        return self._evaluateMesh(
-            indices, self._meshBaseBySteps, self._meshBaseByBounds
-        )
+        return self._evaluateMesh(indices, self._meshBaseBySteps, self._meshBaseByBounds)
 
     def getCellTop(self, indices) -> np.ndarray:
         """Get the mesh top (upper right) of this mesh cell in cm."""
         indices = np.array(indices) + 1
-        return self._evaluateMesh(
-            indices, self._meshBaseBySteps, self._meshBaseByBounds
-        )
+        return self._evaluateMesh(indices, self._meshBaseBySteps, self._meshBaseByBounds)
 
     def _evaluateMesh(self, indices, stepOperator, boundsOperator) -> np.ndarray:
         """
@@ -359,9 +351,7 @@ class StructuredGrid(Grid):
         return np.dot(self._unitSteps, indices)
 
     def _meshBaseBySteps(self, indices):
-        return (
-            self._centroidBySteps(indices - 1) + self._centroidBySteps(indices)
-        ) / 2.0
+        return (self._centroidBySteps(indices - 1) + self._centroidBySteps(indices)) / 2.0
 
     @staticmethod
     def _centroidByBounds(index, bounds):
@@ -406,9 +396,7 @@ class StructuredGrid(Grid):
 
     def getBounds(
         self,
-    ) -> Tuple[
-        Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]
-    ]:
+    ) -> Tuple[Optional[Sequence[float]], Optional[Sequence[float]], Optional[Sequence[float]]]:
         """Return the grid bounds for each dimension, if present."""
         return self._bounds
 
@@ -442,7 +430,7 @@ class StructuredGrid(Grid):
         Note
         ----
         This should be implemented as a staticmethod, since no Grids currently in
-        exsistence actually need any instance data to perform this task, and
+        existence actually need any instance data to perform this task, and
         staticmethods provide the convenience of calling the method without an instance
         of the class in the first place.
         """
@@ -486,9 +474,7 @@ class StructuredGrid(Grid):
     def getAllIndices(self):
         """Get all possible indices in this grid."""
         iBounds, jBounds, kBounds = self.getIndexBounds()
-        allIndices = tuple(
-            itertools.product(range(*iBounds), range(*jBounds), range(*kBounds))
-        )
+        allIndices = tuple(itertools.product(range(*iBounds), range(*jBounds), range(*kBounds)))
         return allIndices
 
     def _buildLocations(self):
@@ -516,9 +502,6 @@ class StructuredGrid(Grid):
 
 def _tuplify(maybeArray) -> tuple:
     if isinstance(maybeArray, (np.ndarray, list, tuple)):
-        maybeArray = tuple(
-            tuple(row) if isinstance(row, (np.ndarray, list)) else row
-            for row in maybeArray
-        )
+        maybeArray = tuple(tuple(row) if isinstance(row, (np.ndarray, list)) else row for row in maybeArray)
 
     return maybeArray

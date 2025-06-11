@@ -98,7 +98,7 @@ class Grid(ABC):
     def symmetry(self) -> str:
         """Symmetry applied to the grid.
 
-        .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
+        .. impl:: Grids shall be able to represent 1/3 and full core symmetries.
             :id: I_ARMI_GRID_SYMMETRY0
             :implements: R_ARMI_GRID_SYMMETRY
 
@@ -167,9 +167,7 @@ class Grid(ABC):
         """Return list of ((i, j, k), IndexLocation) tuples."""
 
     @abstractmethod
-    def locatorInDomain(
-        self, locator: LocationBase, symmetryOverlap: Optional[bool] = False
-    ) -> bool:
+    def locatorInDomain(self, locator: LocationBase, symmetryOverlap: Optional[bool] = False) -> bool:
         """
         Return whether the passed locator is in the domain represented by the Grid.
 

@@ -16,13 +16,13 @@
 COMPXS is a binary file that contains multigroup macroscopic cross sections for homogenized
 regions in a full core. The file format can be found in [DIF3D]_.
 
-.. [DIF3D] Derstine, K. L. DIF3D: A Code to Solve One-, Two-, and 
-           Three-Dimensional Finite-Difference Diffusion Theory Problems, 
-           report, April 1984; Argonne, Illinois. 
-           (https://digital.library.unt.edu/ark:/67531/metadc283553/: 
-           accessed October 17, 2019), University of North Texas Libraries, 
-           Digital Library, https://digital.library.unt.edu; crediting UNT  
-           Libraries Government Documents Department. 
+.. [DIF3D] Derstine, K. L. DIF3D: A Code to Solve One-, Two-, and
+           Three-Dimensional Finite-Difference Diffusion Theory Problems,
+           report, April 1984; Argonne, Illinois.
+           (https://digital.library.unt.edu/ark:/67531/metadc283553/:
+           accessed October 17, 2019), University of North Texas Libraries,
+           Digital Library, https://digital.library.unt.edu; crediting UNT
+           Libraries Government Documents Department.
 
 The file structure is listed here ::
 
@@ -68,10 +68,11 @@ containing the current composition yields the total power in those regions and
 energy group J due to fissions and non-fission absorptions."
 
 The ``d<1,2,3>Multiplier`` values are the first, second, and third dimension
-directional diffusion coefficient multipliers, respectively. Similary, the ``d<1,2,3>Additive``
+directional diffusion coefficient multipliers, respectively. Similarly, the ``d<1,2,3>Additive``
 values are the first, second, and third dimension directional diffusion coefficient
 additive terms, respectively.
 """
+
 from traceback import format_exc
 
 import numpy as np
@@ -93,9 +94,7 @@ def _getRegionIO():
 
 
 def _flattenScatteringVector(colVector, group, numUpScatter, numDownScatter):
-    flatVector = (
-        colVector[group - numDownScatter : group + numUpScatter + 1].toarray().flatten()
-    )
+    flatVector = colVector[group - numDownScatter : group + numUpScatter + 1].toarray().flatten()
     return list(reversed(flatVector))
 
 
@@ -207,9 +206,7 @@ class _CompxsIO(cccc.Stream):
 
     @classmethod
     def _write(cls, lib, fileName, fileMode):
-        return cls._readWrite(
-            lib, fileName, fileMode, lambda containerKey: lib[containerKey]
-        )
+        return cls._readWrite(lib, fileName, fileMode, lambda containerKey: lib[containerKey])
 
     @classmethod
     def _readWrite(cls, lib, fileName, fileMode, getRegionFunc):
@@ -225,11 +222,7 @@ class _CompxsIO(cccc.Stream):
         --------
         armi.nuclearDataIO.cccc.isotxs.IsotxsIO.readWrite : reading/writing ISOTXS files
         """
-        runLog.info(
-            "{} macroscopic cross library {}".format(
-                "Reading" if self._isReading else "Writing", self
-            )
-        )
+        runLog.info("{} macroscopic cross library {}".format("Reading" if self._isReading else "Writing", self))
         unlockImmutableProperties(self._lib)
         try:
             regNames = self._rw1DRecord(self._lib.regionLabels)
@@ -240,11 +233,7 @@ class _CompxsIO(cccc.Stream):
                 regionIO.rwRegionData()
             self._rw5DRecord()
         except Exception:
-            raise OSError(
-                "Failed to {} {} \n\n\n{}".format(
-                    "read" if self._isReading else "write", self, format_exc()
-                )
-            )
+            raise OSError("Failed to {} {} \n\n\n{}".format("read" if self._isReading else "write", self, format_exc()))
         finally:
             lockImmutableProperties(self._lib)
 
@@ -253,12 +242,8 @@ class _CompxsIO(cccc.Stream):
         with self.createRecord() as record:
             for datum in self._METADATA_TAGS:
                 self._metadata[datum] = record.rwInt(self._metadata[datum])
-            self._metadata["reservedFlag1"] = record.rwInt(
-                self._metadata["reservedFlag1"]
-            )
-            self._metadata["reservedFlag2"] = record.rwInt(
-                self._metadata["reservedFlag2"]
-            )
+            self._metadata["reservedFlag1"] = record.rwInt(self._metadata["reservedFlag1"])
+            self._metadata["reservedFlag2"] = record.rwInt(self._metadata["reservedFlag2"])
             regNames = list(range(self._metadata["numComps"]))
         return regNames
 
@@ -271,15 +256,11 @@ class _CompxsIO(cccc.Stream):
                     (self._metadata["fileWideChiFlag"], self._metadata["numGroups"]),
                 )
             self._rwLibraryEnergies(record)
-            self._metadata["minimumNeutronEnergy"] = record.rwDouble(
-                self._metadata["minimumNeutronEnergy"]
-            )
+            self._metadata["minimumNeutronEnergy"] = record.rwDouble(self._metadata["minimumNeutronEnergy"])
             self._rwDelayedProperties(record, self._metadata["numDelayedFam"])
 
     def _rwLibraryEnergies(self, record):
-        self._lib.neutronVelocity = record.rwList(
-            self._lib.neutronVelocity, "double", self._metadata["numGroups"]
-        )
+        self._lib.neutronVelocity = record.rwList(self._lib.neutronVelocity, "double", self._metadata["numGroups"])
         self._lib.neutronEnergyUpperBounds = record.rwList(
             self._lib.neutronEnergyUpperBounds, "double", self._metadata["numGroups"]
         )
@@ -306,9 +287,7 @@ class _CompxsIO(cccc.Stream):
         numComps = self._getFileMetadata()["numComps"]
         with self.createRecord() as record:
             for factor in COMPXS_POWER_CONVERSION_FACTORS:
-                self._getFileMetadata()[factor] = record.rwList(
-                    self._getFileMetadata()[factor], "double", numComps
-                )
+                self._getFileMetadata()[factor] = record.rwList(self._getFileMetadata()[factor], "double", numComps)
 
 
 readBinary = _CompxsIO.readBinary
@@ -354,9 +333,7 @@ class _CompxsRegionIO:
     def _rw3DRecord(self):
         r"""Write the composition specifications block."""
         with self._compxsIO.createRecord() as record:
-            self._getRegionMetadata()["chiFlag"] = record.rwInt(
-                self._getRegionMetadata()["chiFlag"]
-            )
+            self._getRegionMetadata()["chiFlag"] = record.rwInt(self._getRegionMetadata()["chiFlag"])
             self._getRegionMetadata()["numUpScatterGroups"] = record.rwList(
                 self._getRegionMetadata()["numUpScatterGroups"], "int", self._numGroups
             )
@@ -388,9 +365,7 @@ class _CompxsRegionIO:
         self._rwScatteringMatrix(record, group, macros, 0)
 
         for datum in REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF:
-            self._getRegionMetadata()[datum][group] = record.rwDouble(
-                self._getRegionMetadata()[datum][group]
-            )
+            self._getRegionMetadata()[datum][group] = record.rwDouble(self._getRegionMetadata()[datum][group])
 
         if self._getRegionMetadata()["numPrecursorFamilies"]:
             self._getRegionMetadata()["numPrecursorsProduced", group] = record.rwList(
@@ -410,9 +385,7 @@ class _CompxsRegionIO:
         if self._getRegionMetadata()["chiFlag"]:
             macros["fission"][group] = record.rwDouble(macros["fission"][group])
             macros["nuSigF"][group] = record.rwDouble(macros["nuSigF"][group])
-            macros["chi"][group] = record.rwList(
-                macros["chi"][group], "double", self._getRegionMetadata()["chiFlag"]
-            )
+            macros["chi"][group] = record.rwList(macros["chi"][group], "double", self._getRegionMetadata()["chiFlag"])
 
     def _rwScatteringMatrix(self, record, group, macros, order):
         numUpScatter = self._getRegionMetadata()["numUpScatterGroups"][group]
@@ -423,15 +396,11 @@ class _CompxsRegionIO:
         dataj = (
             None
             if self._isReading
-            else _flattenScatteringVector(
-                sparseMat[:, group], group, numUpScatter, numDownScatter
-            )
+            else _flattenScatteringVector(sparseMat[:, group], group, numUpScatter, numDownScatter)
         )
 
         dataj = record.rwList(dataj, "double", numUpScatter + 1 + numDownScatter)
-        indicesj = list(
-            reversed(range(group - numDownScatter, group + numUpScatter + 1))
-        )
+        indicesj = list(reversed(range(group - numDownScatter, group + numUpScatter + 1)))
 
         if self._isReading:
             sparseMat.addColumnData(dataj, indicesj)
@@ -518,16 +487,10 @@ class CompxsRegion:
         specs = RegionXSMetadata()
         chiFlag = specs["fileWideChiFlag"] = self._getFileMetadata()["fileWideChiFlag"]
         if chiFlag:
-            self.macros.chi = specs["fileWideChi"] = self._getFileMetadata()[
-                "fileWideChi"
-            ]
-        compFamiliesWithPrecursors = self._getFileMetadata()[
-            "compFamiliesWithPrecursors"
-        ]
+            self.macros.chi = specs["fileWideChi"] = self._getFileMetadata()["fileWideChi"]
+        compFamiliesWithPrecursors = self._getFileMetadata()["compFamiliesWithPrecursors"]
         if compFamiliesWithPrecursors is not None and compFamiliesWithPrecursors.size:
-            specs["numPrecursorFamilies"] = compFamiliesWithPrecursors[
-                self.regionNumber
-            ]
+            specs["numPrecursorFamilies"] = compFamiliesWithPrecursors[self.regionNumber]
         else:
             specs["numPrecursorFamilies"] = 0
 
@@ -581,17 +544,11 @@ class CompxsRegion:
             self.macros.chi = np.zeros((numGroups, self.metadata["chiFlag"]))
 
         if self._getFileMetadata()["maxScatteringOrder"]:
-            for scatterOrder in range(
-                1, self._getFileMetadata()["maxScatteringOrder"] + 1
-            ):
-                self.macros.higherOrderScatter[scatterOrder] = _CompxsScatterMatrix(
-                    (numGroups, numGroups)
-                )
+            for scatterOrder in range(1, self._getFileMetadata()["maxScatteringOrder"] + 1):
+                self.macros.higherOrderScatter[scatterOrder] = _CompxsScatterMatrix((numGroups, numGroups))
 
         for datum in REGIONXS_POWER_CONVERT_DIRECTIONAL_DIFF:
-            self.metadata[datum] = (
-                np.zeros(numGroups) if "Additive" in datum else np.ones(numGroups)
-            ).tolist()
+            self.metadata[datum] = (np.zeros(numGroups) if "Additive" in datum else np.ones(numGroups)).tolist()
 
     def makeScatteringMatrices(self):
         r"""
@@ -632,7 +589,5 @@ class CompxsRegion:
 
     def merge(self, other):
         """Merge attributes of two homogenized Regions."""
-        self.metadata = self.metadata.merge(
-            other.metadata, self, other, "COMPXS", OSError
-        )
+        self.metadata = self.metadata.merge(other.metadata, self, other, "COMPXS", OSError)
         self.macros.merge(other.macros)
