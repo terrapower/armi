@@ -76,7 +76,7 @@ class BufferLog(runLog._RunLog):
 
     def clearSingleLogs(self):
         """Reset the single warned list so we get messages again."""
-        self._deduplication.singleMessageCounts.clear()
+        self._deduplication.singleMessageLabels.clear()
 
     def getStdout(self):
         return self._outputStream

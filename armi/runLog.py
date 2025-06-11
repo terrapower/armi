@@ -194,7 +194,7 @@ class _RunLog:
         """Reset the list of de-duplicated warnings, so users can see those warnings again."""
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter:
-            dupsFilter.singleMessageCounts.clear()
+            dupsFilter.singleMessageLabels.clear()
 
     def warningReport(self):
         """Summarize all warnings for the run."""
@@ -442,7 +442,7 @@ class DeduplicationFilter(logging.Filter):
 
     def __init__(self, *args, **kwargs):
         logging.Filter.__init__(self, *args, **kwargs)
-        self.singleMessageCounts = set()
+        self.singleMessageLabels = set()
         self.warningCounts = {}
 
     def filter(self, record):
@@ -457,7 +457,7 @@ class DeduplicationFilter(logging.Filter):
         # Track all warnings, for warning report
         if record.levelno in (logging.WARNING, logging.CRITICAL):
             if label not in self.warningCounts:
-                self.warningCounts[label] = 0
+                self.warningCounts[label] = 1
             else:
                 self.warningCounts[label] += 1
                 if single:
@@ -467,8 +467,8 @@ class DeduplicationFilter(logging.Filter):
         if single:
             # in sub-warning cases, hash the label, for faster lookup
             label = hash(label)
-            if label not in self.singleMessageCounts:
-                self.singleMessageCounts.add(label)
+            if label not in self.singleMessageLabels:
+                self.singleMessageLabels.add(label)
             else:
                 return False
 
