@@ -442,7 +442,7 @@ class DeduplicationFilter(logging.Filter):
 
     def __init__(self, *args, **kwargs):
         logging.Filter.__init__(self, *args, **kwargs)
-        self.singleMessageCounts = {}
+        self.singleMessageCounts = set()
         self.warningCounts = {}
 
     def filter(self, record):
@@ -468,9 +468,8 @@ class DeduplicationFilter(logging.Filter):
             # in sub-warning cases, hash the label, for faster lookup
             label = hash(label)
             if label not in self.singleMessageCounts:
-                self.singleMessageCounts[label] = 1  # TODO: Could be a set
+                self.singleMessageCounts.add(label)
             else:
-                self.singleMessageCounts[label] += 1
                 return False
 
         # Handle some special string-mangling we want to do, for multi-line messages
