@@ -835,6 +835,11 @@ class HexReactorTests(ReactorTests):
                 checkAdd(b1)
 
     def test_removeAssembly(self):
+        """Test the removeAssembly method.
+
+        In particular, the Settings here set trackAssems to True, so when an Assembly is removed
+        from the Core, it shows up in the SFP.
+        """
         a = self.r.core[-1]  # last assembly
         b = a[-1]  # use the last block in case we ever figure out stationary blocks
         aLoc = a.spatialLocator
@@ -842,6 +847,8 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
+
+        # confirm the Assembly is now in the SFP
         self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
         # confirm only attached to removed assem

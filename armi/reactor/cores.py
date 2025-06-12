@@ -336,24 +336,16 @@ class Core(composites.Composite):
         ----------
         a1 : assembly
             The assembly to remove
-
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
 
         Notes
         -----
-        Please expect this method will delete your assembly (instead of moving it to a
-        Spent Fuel Pool) unless you set the ``trackAssems`` to True in your settings file.
+        Please expect this method will delete your assembly (instead of moving it into a Spent Fuel
+        Pool) unless you set the ``trackAssems`` to True in your settings file.
 
-        Originally, this held onto all assemblies in the spend fuel pool. However, having
-        this sitting in memory becomes constraining for large simulations. It is more
-        memory-efficient to only save the assemblies that are required for detailed
-        history tracking. In fact, there's no need to save the assembly object at all,
-        just have the history interface save the relevant parameters.
-
-        See Also
-        --------
-        add : adds an assembly
+        Originally, this held onto all assemblies in the Spend Fuel Pool. However, they use memory.
+        And it is possible to have the history interface record only the parameters you need.
         """
         from armi.reactor.reactors import Reactor
 
@@ -363,10 +355,11 @@ class Core(composites.Composite):
         for paramDef in paramDefs:
             if paramDef.assigned & parameters.SINCE_ANYTHING:
                 paramDef.assigned = parameters.SINCE_ANYTHING
+
         if discharge:
-            runLog.debug("Removing {0} from {1}".format(a1, self))
+            runLog.debug(f"Removing {a1} from {self}")
         else:
-            runLog.debug("Purging  {0} from {1}".format(a1, self))
+            runLog.debug(f"Purging  {a1} from {self}")
 
         self.childrenByLocator.pop(a1.spatialLocator)
         a1.p.dischargeTime = self.r.p.time
@@ -392,7 +385,7 @@ class Core(composites.Composite):
             A relevant settings object
         overrideCircularRingMode : bool, optional
             False ~ default: use circular/square/hex rings, just as the reactor defines them
-            True ~ If you know you don't want to use the circular ring mode, and instead want square or hex.
+            True ~ Turn off circular ring mode, and instead use square or hex.
 
         See Also
         --------
@@ -429,8 +422,8 @@ class Core(composites.Composite):
         Parameters
         ----------
         startIndex : int, optional
-            The default is to start counting at zero. But if you are renumbering assemblies
-            across the entire Reactor, you may want to start at a different number.
+            The default is to start counting at zero. But if you are renumbering assemblies across
+            the entire Reactor, you may want to start at a different number.
 
         Returns
         -------
@@ -471,10 +464,9 @@ class Core(composites.Composite):
         """
         Adds an assembly to the reactor.
 
-        An object must be added before it is placed in a particular cell
-        in the reactor's spatialGrid. When an object is added to a reactor
-        it get placed in a generic location at the center of the reactor unless
-        a spatialLocator is passed in as well.
+        An object must be added before it is placed in a particular cell in the reactor's
+        spatialGrid. When an object is added to a Reactor it get placed in a generic location at the
+        center of the Reactor unless a spatialLocator is passed in as well.
 
         Parameters
         ----------
