@@ -42,5 +42,4 @@ class ArmiPluginManager(pluggy.PluginManager):
         pluggy.PluginManager.register(self, *args, **kwargs)
 
     def unregister(self, *args, **kwargs):
-        self._counter += 1
         pluggy.PluginManager.unregister(self, *args, **kwargs)
