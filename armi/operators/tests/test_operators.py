@@ -436,22 +436,6 @@ settings:
   runType: Standard
 """
 
-    powerFractionsSolution = [
-        [0.1, 0.2, 0.3],
-        [0.2, 0.2, 0.2, 0.2, 0],
-        [0.3, 0.3, 0.3, 0.3, 0.3],
-    ]
-    cycleNamesSolution = ["startup sequence", None, "prepare for shutdown"]
-    availabilityFactorsSolution = [0.1, 0.5, 1]
-    stepLengthsSolution = [
-        [1, 1, 1],
-        [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
-        [3, 3, 3, 3, 3],
-    ]
-    cycleLengthsSolution = [30, 10, 15]
-    burnStepsSolution = [3, 5, 5]
-    maxBurnStepsSolution = 5
-
     def setUp(self):
         self.standaloneDetailedCS = Settings()
         self.standaloneDetailedCS.loadFromString(self.detailedCyclesSettings)
@@ -464,28 +448,35 @@ settings:
             :id: T_ARMI_SETTINGS_POWER1
             :tests: R_ARMI_SETTINGS_POWER
         """
-        self.assertEqual(self.detailedOperator.powerFractions, self.powerFractionsSolution)
+        powerFractionsSolution = [
+            [0.1, 0.2, 0.3],
+            [0.2, 0.2, 0.2, 0.2, 0],
+            [0.3, 0.3, 0.3, 0.3, 0.3],
+        ]
 
+        self.assertEqual(self.detailedOperator.powerFractions, powerFractionsSolution)
         self.detailedOperator._powerFractions = None
-        self.assertEqual(self.detailedOperator.powerFractions, self.powerFractionsSolution)
+        self.assertEqual(self.detailedOperator.powerFractions, powerFractionsSolution)
 
     def test_getCycleNames(self):
-        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+        cycleNamesSolution = ["startup sequence", None, "prepare for shutdown"]
+        self.assertEqual(self.detailedOperator.cycleNames, cycleNamesSolution)
 
         self.detailedOperator._cycleNames = None
-        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+        self.assertEqual(self.detailedOperator.cycleNames, cycleNamesSolution)
 
     def test_getAvailabilityFactors(self):
-        self.assertEqual(
-            self.detailedOperator.availabilityFactors,
-            self.availabilityFactorsSolution,
-        )
+        """Check that the "availability factor" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY3
+            :tests: R_ARMI_FW_HISTORY
+        """
+        availabilityFactorsSolution = [0.1, 0.5, 1]
+        self.assertEqual(self.detailedOperator.availabilityFactors, availabilityFactorsSolution)
 
         self.detailedOperator._availabilityFactors = None
-        self.assertEqual(
-            self.detailedOperator.availabilityFactors,
-            self.availabilityFactorsSolution,
-        )
+        self.assertEqual(self.detailedOperator.availabilityFactors, availabilityFactorsSolution)
 
     def test_getStepLengths(self):
         """Test that the manually-set, detailed time steps are retrievable.
@@ -494,10 +485,16 @@ settings:
             :id: T_ARMI_FW_HISTORY1
             :tests: R_ARMI_FW_HISTORY
         """
+        stepLengthsSolution = [
+            [1, 1, 1],
+            [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
+            [3, 3, 3, 3, 3],
+        ]
+
         # detailed step lengths can be set manually
-        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+        self.assertEqual(self.detailedOperator.stepLengths, stepLengthsSolution)
         self.detailedOperator._stepLength = None
-        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+        self.assertEqual(self.detailedOperator.stepLengths, stepLengthsSolution)
 
         # when doing detailed step information, we don't get step information from settings
         cs = self.detailedOperator.cs
@@ -508,22 +505,43 @@ settings:
             cs["burnSteps"]
 
     def test_getCycleLengths(self):
-        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+        """Check that the "cycle length" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY4
+            :tests: R_ARMI_FW_HISTORY
+        """
+        cycleLengthsSolution = [30, 10, 15]
+        self.assertEqual(self.detailedOperator.cycleLengths, cycleLengthsSolution)
 
         self.detailedOperator._cycleLengths = None
-        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+        self.assertEqual(self.detailedOperator.cycleLengths, cycleLengthsSolution)
 
     def test_getBurnSteps(self):
-        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+        """Check that the "burn steps" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY5
+            :tests: R_ARMI_FW_HISTORY
+        """
+        burnStepsSolution = [3, 5, 5]
+        self.assertEqual(self.detailedOperator.burnSteps, burnStepsSolution)
 
         self.detailedOperator._burnSteps = None
-        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+        self.assertEqual(self.detailedOperator.burnSteps, burnStepsSolution)
 
     def test_getMaxBurnSteps(self):
-        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
+        """Check that the max of the "burn steps" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY6
+            :tests: R_ARMI_FW_HISTORY
+        """
+        maxBurnStepsSolution = 5
+        self.assertEqual(self.detailedOperator.maxBurnSteps, maxBurnStepsSolution)
 
         self.detailedOperator._maxBurnSteps = None
-        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
+        self.assertEqual(self.detailedOperator.maxBurnSteps, maxBurnStepsSolution)
 
 
 class TestInterfaceAndEventHeaders(unittest.TestCase):
