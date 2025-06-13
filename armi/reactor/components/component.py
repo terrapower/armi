@@ -360,13 +360,13 @@ class Component(composites.Composite, metaclass=ComponentType):
         # note, that this is not the actual material density, but rather 2D expanded
         # `density` is 3D density
         # call getProperty to cache and improve speed
-        density = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
+        density = self.material.getProperty("density", Tc=self.temperatureInC)
         self.p.numberDensities = densityTools.getNDensFromMasses(density, self.material.massFrac)
 
         # Sometimes material thermal expansion depends on its parent's composition (e.g. Pu frac) so
         # setting number densities can sometimes change thermal expansion behavior. Call again so
         # the material has access to its parent's comp when providing the reference initial density.
-        densityBasedOnParentComposition = self.material.getProperty("pseudoDensity", Tc=self.temperatureInC)
+        densityBasedOnParentComposition = self.material.getProperty("density", Tc=self.temperatureInC)
         self.p.numberDensities = densityTools.getNDensFromMasses(
             densityBasedOnParentComposition, self.material.massFrac
         )
