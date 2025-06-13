@@ -934,12 +934,13 @@ class Core(composites.Composite):
         """
         Return a list of all the assemblies in the reactor.
 
-        Assemblies from the Core itself are sorted based on the Assemblies' comparison
-        operators (location-based). This is done so that two reactors with physically
-        identical properties are more likely to behave similarly when their assemblies
-        may have been added in different orders. In the future this will likely be
-        replaced by sorting the _children list itself internally, as there is still
-        opportunity for inconsistencies.
+        Assemblies from the Core are sorted based on the location-based Assembly comparison
+        operators. This is done so that two reactors with physically identical properties are
+        more likely to behave similarly when their assemblies may have been added in different
+        orders.
+
+        (In the future this will likely be replaced by sorting the _children list itself internally,
+        as there is still opportunity for inconsistencies.)
 
         Parameters
         ----------
