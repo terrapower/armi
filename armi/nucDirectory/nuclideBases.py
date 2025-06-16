@@ -1427,8 +1427,8 @@ def destroyGlobalNuclides():
 
 
 """
-TODO: JOHN: Above this point is the old "global nuclides" code. Soon to be deleted.
-TODO: JOHN: Below this point is the new code.
+TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
+TODO: Below this point is the new code.
 """
 
 
@@ -1505,21 +1505,21 @@ class NuclideBases:
                 "first."
             )
 
-        # self.addNuclideBases()
-        # self.__addNaturalNuclideBases()
-        # self.__addDummyNuclideBases()
-        # self.__addLumpedFissionProductNuclideBases()
-        # self.updateNuclideBasesForSpecialCases()
-        # self.readMCCNuclideData()
-        # self.__renormalizeNuclideToElementRelationship()
-        # self.__deriveElementalWeightsByNaturalNuclideAbundances()
+        self.addNuclideBases()
+        self.__addNaturalNuclideBases()
+        self.__addDummyNuclideBases()
+        self.__addLumpedFissionProductNuclideBases()
+        self.updateNuclideBasesForSpecialCases()
+        self.readMCCNuclideData()
+        self.__renormalizeNuclideToElementRelationship()
+        self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
         # reload the thermal scattering library with the new nuclideBases too
         from armi.nucDirectory import thermalScattering
 
         thermalScattering.factory()
 
-    def initReachableActiveNuclidesThroughBurnChain(self, numberDensityDict, activeNuclides):
+    def initReachableActiveNuclidesThroughBurnChain(self, numberDensities, activeNuclides):
         """
         March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
 
@@ -1528,31 +1528,81 @@ class NuclideBases:
         Parameters
         ----------
         numberDensityDict : dict
-            Starting number densities.
+            Starting number densities
         activeNuclides : OrderedSet
             Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
         """
-        pass
+        if not self.burnChainImposed:
+            return
+
+        missingActiveNuclides = set()
+        memo = set()
+        difference = set(numberDensities).difference(memo)
+        while any(difference):
+            nuclide = difference.pop()
+            memo.add(nuclide)
+            # Skip the nuclide if it is not `active` in the burn-chain
+            if nuclide not in activeNuclides:
+                continue
+
+            nuclideObj = self.byName[nuclide]
+
+            for interaction in nuclideObj.trans + nuclideObj.decays:
+                try:
+                    # Interaction nuclides can only be added to the number density dictionary if they are a part of the
+                    # user-defined active nuclides
+                    productNuclide = interaction.getPreferredProduct(activeNuclides)
+                    if productNuclide not in numberDensities:
+                        numberDensities[productNuclide] = 0.0
+                except KeyError:
+                    # Keep track of the first production nuclide
+                    missingActiveNuclides.add(interaction.productNuclides)
+
+            difference = set(numberDensities).difference(memo)
+
+        if self.burnChainImposed and missingActiveNuclides:
+            self._failOnMissingActiveNuclides(missingActiveNuclides)
 
     def _failOnMissingActiveNuclides(self, missingActiveNuclides):
         """Raise ValueError with notification of which nuclides to include in the burn-chain."""
-        pass
+        msg = "Missing active nuclides in loading file. Add the following nuclides:"
+        for i, nucList in enumerate(missingActiveNuclides, 1):
+            msg += f"\n {i} - "  # Index of
+            for j, nuc in enumerate(nucList, 1):
+                delimiter = " or " if j < len(nucList) else ""
+                msg += f"{nuc}{delimiter}"
 
-    def isotopes(self, z):
-        """TODO: JOHN."""
-        pass
+        raise ValueError(msg)
+
+    def isotopes(self, z: int):
+        """TODO."""
+        return elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName):
         """Expand elemental nuc name to isotopic nuc bases."""
-        pass
+        nb = self.byName[nucName]
+        if isinstance(nb, (LumpNuclideBase, DummyNuclideBase)):
+            # skip lumped fission products or dumps
+            return []
+        elif isinstance(nb, NaturalNuclideBase):
+            isotopics = nb.getNaturalIsotopics()
+        else:
+            isotopics = [nb]
+
+        return isotopics
 
     def fromName(self, name):
         """Return a nuclide from its name."""
-        pass
+        matches = [nn for nn in self.instances if nn.name == name]
+        if len(matches) != 1:
+            raise Exception(f"Too many or too few ({len(matches)}) matches for {name}")
+
+        return matches[0]
 
     def isMonoIsotopicElement(self, name):
         """Return true if this is the only naturally occurring isotope of its element."""
-        pass
+        base = self.byName[name]
+        return base.abundance > 0 and len([e for e in base.element.nuclides if e.abundance > 0]) == 1
 
     def where(self, predicate):
         """
@@ -1580,7 +1630,9 @@ class NuclideBases:
         <NuclideBase NB95: Z:41, A:95, S:0, label:NB2N>
         <NuclideBase ZR95: Z:40, A:95, S:0, label:ZR2N>
         """
-        pass
+        for nuc in self.instances:
+            if predicate(nuc):
+                yield (nuc)
 
     def single(self, predicate):
         """
@@ -1598,7 +1650,15 @@ class NuclideBases:
         >>> nuclideBases.single(lambda nb: nb.z == 95 and nb.a == 242 and nb.state == 1)
         <NuclideBase AM242M: Z:95, A:242, S:1, label:AM4C>
         """
-        pass
+        matches = [nuc for nuc in self.instances if predicate(nuc)]
+        if len(matches) != 1:
+            raise IndexError(
+                "Expected single match, but got {} matches:\n  {}".format(
+                    len(matches), "\n  ".join(str(mo) for mo in matches)
+                )
+            )
+
+        return matches[0]
 
     def changeLabel(self, nuclideBase, newLabel):
         """
@@ -1608,11 +1668,12 @@ class NuclideBases:
         -----
         Since nuclide objects are defined and stored globally, any change to the attributes will be maintained.
         """
-        pass
+        nuclideBase.label = newLabel
+        self.byLabel[newLabel] = nuclideBase
 
     def getDepletableNuclides(self, activeNuclides, obj):
         """Get nuclides in this object that are in the burn chain."""
-        pass
+        return sorted(set(activeNuclides) & set(obj.getNuclides()))
 
     def imposeBurnChain(self, burnChainStream):
         """
@@ -1635,7 +1696,21 @@ class NuclideBases:
         --------
         armi.nucDirectory.transmutations : describes file format
         """
-        pass
+        if self.burnChainImposed:
+            # The only time this should happen is if in a unit test that has already processed
+            # conftest.py and is now building a Case that also imposes this.
+            runLog.warning("Burn chain already imposed. Skipping reimposition.")
+            return
+
+        self.burnChainImposed = True
+        yaml = YAML(typ="rt")
+        yaml.allow_duplicate_keys = False
+        burnData = yaml.load(burnChainStream)
+
+        for nucName, burnInfo in burnData.items():
+            nuclide = self.byName[nucName]
+            # think of this protected stuff as "module level protection" rather than class.
+            nuclide._processBurnData(burnInfo)
 
     def addNuclideBases(self):
         """
@@ -1653,11 +1728,37 @@ class NuclideBases:
             ``nuclides.dat`` have been collected from multiple different sources; the references are given in comments
             at the top of that file.
         """
-        pass
+        with open(self.nuclidesFile, "r") as f:
+            for line in f:
+                # Skip header lines
+                if line.startswith("#") or line.startswith("Z"):
+                    continue
+                lineData = line.split()
+                _z = int(lineData[0])
+                _n = int(lineData[1])
+                a = int(lineData[2])
+                state = int(lineData[3])
+                sym = lineData[4].upper()
+                mass = float(lineData[5])
+                abun = float(lineData[6])
+                halflife = lineData[7]
+                if halflife == "inf":
+                    halflife = np.inf
+                else:
+                    halflife = float(halflife)
+                nuSF = float(lineData[8])
+
+                element = elements.bySymbol[sym]
+                nb = NuclideBase(element, a, mass, abun, state, halflife)
+                nb.nuSF = nuSF
+                self.addNuclide(nb)
 
     def __addNaturalNuclideBases(self):
         """Generates a complete set of nuclide bases for each naturally occurring element."""
-        pass
+        for element in elements.byZ.values():
+            if element.symbol not in self.byName:
+                if element.isNaturallyOccurring():
+                    self.addNuclide(NaturalNuclideBase(element.symbol, element))
 
     def __addDummyNuclideBases(self):
         """
@@ -1667,11 +1768,17 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the
         """
-        pass
+        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0))
+        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0))
 
     def __addLumpedFissionProductNuclideBases(self):
-        """TODO: JOHN."""
-        pass
+        """TODO."""
+        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273))
+        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78))
+        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898))
+        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7))
+        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812))
+        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0))
 
     def readMCCNuclideData(self):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
@@ -1687,7 +1794,27 @@ class NuclideBases:
             read, and the global dictionaries ``byMcc2Id`` ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated
             with the nuclide bases keyed by their corresponding ID for each code.
         """
-        pass
+        with open(self.mccNuclidesFile, "r") as f:
+            yaml = YAML(typ="rt")
+            nuclides = yaml.load(f)
+
+        for n in nuclides:
+            nb = self.byName[n]
+            mcc2id = nuclides[n]["ENDF/B-V.2"]
+            mcc3idEndfbVII0 = nuclides[n]["ENDF/B-VII.0"]
+            mcc3idEndfbVII1 = nuclides[n]["ENDF/B-VII.1"]
+            if mcc2id is not None:
+                nb.mcc2id = mcc2id
+                self.byMcc2Id[nb.getMcc2Id()] = nb
+            if mcc3idEndfbVII0 is not None:
+                nb.mcc3idEndfbVII0 = mcc3idEndfbVII0
+                self.byMcc3IdEndfbVII0[nb.getMcc3IdEndfbVII0()] = nb
+            if mcc3idEndfbVII1 is not None:
+                nb.mcc3idEndfbVII1 = mcc3idEndfbVII1
+                self.byMcc3IdEndfbVII1[nb.getMcc3IdEndfbVII1()] = nb
+
+        # Have the byMcc3Id dictionary be VII.1 IDs.
+        self.byMcc3Id = self.byMcc3IdEndfbVII1
 
     def updateNuclideBasesForSpecialCases(self):
         """
@@ -1708,12 +1835,33 @@ class NuclideBases:
         `AM242M` by default. `AM242M` is most common isomer of `AM242` and is typically the desired isomer when being
         requested rather than than the ground state (i.e., S=0) of `AM242`.
         """
-        pass
+        # Change the name of `AM242` to specific represent its ground state.
+        am242g = self.byName["AM242"]
+        am242g.name = "AM242G"
+        self.byName["AM242G"] = am242g
+        self.byDBName[self.byName["AM242G"].getDatabaseName()] = am242g
+
+        # Update the pointer of `AM242` to refer to `AM242M`.
+        am242m = self.byName["AM242M"]
+        self.byName["AM242"] = am242m
+        self.byDBName["nAm242"] = am242m
+        self.byDBName[self.byName["AM242"].getDatabaseName()] = am242m
 
     def __renormalizeNuclideToElementRelationship(self):
-        """TODO: JOHN."""
-        pass
+        """TODO."""
+        for nuc in self.instances:
+            if nuc.element is not None:
+                nuc.element = elements.byZ[nuc.z]
+                nuc.element.append(nuc)
 
     def __deriveElementalWeightsByNaturalNuclideAbundances(self):
         """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
-        pass
+        for element in elements.byName.values():
+            numer = 0.0
+            denom = 0.0
+            for nb in element.getNaturalIsotopics():
+                numer += nb.weight * nb.abundance
+                denom += nb.abundance
+
+            if denom:
+                element.standardWeight = numer / denom
