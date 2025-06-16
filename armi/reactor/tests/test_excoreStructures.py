@@ -77,9 +77,17 @@ class TestSpentFuelPool(TestCase):
         self.sfp.spatialGrid = grids.CartesianGrid.fromRectangle(1.0, 1.0)
 
     def test_constructor(self):
+        """Show that the spent fuel pool is a composite.
+
+        .. test:: The spent fuel pool is a Composite structure.
+            :id: T_ARMI_SFP0
+            :tests: R_ARMI_SFP
+        """
         self.assertEqual(self.sfp.name, "sfp")
         self.assertIsNone(self.sfp.parent)
         self.assertIsNone(self.sfp.numColumns)
+        self.assertTrue(isinstance(self.sfp, Composite))
+        self.assertTrue(isinstance(self.sfp, ExcoreStructure))
         self.assertTrue(isinstance(self.sfp.spatialGrid, grids.CartesianGrid))
 
     def test_representation(self):
@@ -88,7 +96,13 @@ class TestSpentFuelPool(TestCase):
         self.assertIn("sfp", rep)
         self.assertIn("id:", rep)
 
-    def test_add(self):
+    def test_addRemove(self):
+        """Show that we can add and remove Assemblies from the spent fuel pool.
+
+        .. test:: Show that we can add and remove Assemblies from the spent fuel pool.
+            :id: T_ARMI_SFP1
+            :tests: R_ARMI_SFP
+        """
         self.assertEqual(len(self.sfp.getChildren()), 0)
 
         # add one assembly object and validate
@@ -101,6 +115,10 @@ class TestSpentFuelPool(TestCase):
         loc = self.sfp.spatialGrid[(1, -4, 0)]
         self.sfp.add(a1, loc)
         self.assertEqual(len(self.sfp.getChildren()), 2)
+
+        # remove the first assembly we added and validate
+        self.sfp.remove(a0)
+        self.assertEqual(len(self.sfp.getChildren()), 1)
 
     def test_getAssembly(self):
         a0 = makeTestAssembly(1, 678, spatialGrid=self.sfp.spatialGrid)

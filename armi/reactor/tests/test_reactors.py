@@ -623,8 +623,7 @@ class HexReactorTests(ReactorTests):
         self.assertEqual(a1.getLocation(), "003-001")
 
     def test_getAssemblyWithName(self):
-        """
-        Get assembly by name.
+        """Test getting an assembly by name.
 
         .. test:: Get assembly by name.
             :id: T_ARMI_R_GET_ASSEM1
@@ -635,6 +634,23 @@ class HexReactorTests(ReactorTests):
 
         self.assertEqual(a1, a2)
         self.assertEqual(a1.name, "A0010")
+
+    def test_getAssemblies(self):
+        """Basic test of getAssemblies, with and without including the SFP.
+
+        .. test:: The spent fuel pool is a Composite structure.
+            :id: T_ARMI_SFP2
+            :tests: R_ARMI_SFP
+        """
+        # where are we starting
+        numCoreStart = len(self.r.core.getAssemblies())
+        numTotalStart = len(self.r.core.getAssemblies(includeSFP=True))
+
+        # remove one assembly and confirm behavior
+        for i in range(1, 5):
+            self.r.core.removeAssembly(self.r.core.getFirstAssembly())
+            self.assertEqual(len(self.r.core.getAssemblies()), numCoreStart - i)
+            self.assertEqual(len(self.r.core.getAssemblies(includeSFP=True)), numTotalStart)
 
     def test_restoreReactor(self):
         """Restore a reactor after growing it from third to full core.
@@ -835,6 +851,11 @@ class HexReactorTests(ReactorTests):
                 checkAdd(b1)
 
     def test_removeAssembly(self):
+        """Test the removeAssembly method.
+
+        In particular, the Settings here set trackAssems to True, so when an Assembly is removed
+        from the Core, it shows up in the SFP.
+        """
         a = self.r.core[-1]  # last assembly
         b = a[-1]  # use the last block in case we ever figure out stationary blocks
         aLoc = a.spatialLocator
@@ -842,6 +863,8 @@ class HexReactorTests(ReactorTests):
         bLoc = b.spatialLocator
         self.r.core.removeAssembly(a)
         self.assertNotEqual(aLoc, a.spatialLocator)
+
+        # confirm the Assembly is now in the SFP
         self.assertEqual(a.spatialLocator.grid, self.r.excore["sfp"].spatialGrid)
 
         # confirm only attached to removed assem
