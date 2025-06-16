@@ -1424,3 +1424,80 @@ def destroyGlobalNuclides():
     byMcc3IdEndfbVII0.clear()
     byMcnpId.clear()
     byAAAZZZSId.clear()
+
+
+"""
+TODO: JOHN: Above this point is the old "global nuclides" code. Soon to be deleted.
+TODO: JOHN: Below this point is the new code.
+"""
+
+
+class NuclideBases:
+    """
+    TODO: This is the class I am crafting to replace global nuclides.
+    To start with, I will keep everything global, but use this class.
+    """
+
+    def __init__(self):
+        self.burnChainImposed = False
+        self.instances = []
+        self.byName = {}
+        self.byDBName = {}
+        self.byLabel = {}
+        self.byMcc2Id = {}
+        self.byMcc3Id = {}  # for backwards compat. Identical to byMcc3IdEndfbVII1
+        self.byMcc3IdEndfbVII0 = {}
+        self.byMcc3IdEndfbVII1 = {}
+        self.byMcnpId = {}
+        self.byAAAZZZSId = {}
+        self.nuclidesFile = os.path.join(context.RES, "nuclides.dat")
+        self.mccNuclidesFile = os.path.join(context.RES, "mcc-nuclides.yaml")
+        self.factory()
+
+    def clear(self):
+        self.burnChainImposed = False
+        self.instances = []
+        self.byName = {}
+        self.byDBName = {}
+        self.byLabel = {}
+        self.byMcc2Id = {}
+        self.byMcc3Id = {}
+        self.byMcc3IdEndfbVII0 = {}
+        self.byMcc3IdEndfbVII1 = {}
+        self.byMcnpId = {}
+        self.byAAAZZZSId = {}
+
+    def factory(self):
+        """
+        Reads data files to instantiate the :py:class:`INuclides <INuclide>`.\
+
+        Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`. Also clears and
+        fills in the :py:data:`~armi.nucDirectory.nuclideBases.instances`, :py:data:`byName`, :py:attr:`byLabel`,
+        :py:data:`byMcc3IdEndfbVII0`, and :py:data:`byMcc3IdEndfbVII1` module attributes. This method is automatically
+        run upon loading the module, hence it is not usually necessary to re-run it unless there is a change to the data
+        files, which should not happen during run time, or a *bad* :py:class`INuclide` is created.
+
+        Notes
+        -----
+        This cannot be run more than once. NuclideBase instances are used throughout the ARMI ecosystem and are even
+        class attributes in some cases. Re-instantiating them would orphan any existing ones and break everything.
+        """
+        if len(self.instances) != 0:
+            raise RuntimeError(
+                "Nuclides are already initialized and cannot be re-initialized unless `nuclideBases.clear()` is called "
+                "first."
+            )
+
+        # self.addNuclideBases()
+        # self.__addNaturalNuclideBases()
+        # self.__addDummyNuclideBases()
+        # self.__addLumpedFissionProductNuclideBases()
+        # self.updateNuclideBasesForSpecialCases()
+        # self.readMCCNuclideData()
+        # self.__renormalizeNuclideToElementRelationship()
+        # self.__deriveElementalWeightsByNaturalNuclideAbundances()
+
+        # reload the thermal scattering library with the new nuclideBases too
+        from armi.nucDirectory import thermalScattering
+
+        thermalScattering.factory()

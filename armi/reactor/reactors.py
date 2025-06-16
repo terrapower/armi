@@ -20,6 +20,7 @@ to be modeled.
 import copy
 
 from armi import getPluginManagerOrFail, runLog
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.reactor import composites, reactorParameters
 from armi.reactor.cores import Core
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
@@ -64,6 +65,7 @@ class Reactor(composites.Composite):
         self.p.maxAssemNum = 0
         self.p.cycle = 0
         self.core = None
+        self.nuclideBases = NuclideBases()
         self.excore = ExcoreCollection()
         self.blueprints = blueprints
 
