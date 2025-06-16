@@ -83,6 +83,47 @@ def buildSimpleFuelBlock():
     return b
 
 
+def buildLinkedFuelBlock():
+    """Return a simple hex block containing linked bond."""
+    b = blocks.HexBlock("fuel", height=10.0)
+
+    fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    bondDims = {
+        "Tinput": 25.0,
+        "Thot": 450,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
+    cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
+    ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    bondDims["components"] = {"clad": clad, "fuel": fuel}
+    bond = components.Circle("bond", "HT9", **bondDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
+    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(fuel)
+    b.add(bond)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    return b
+
+
 def loadTestBlock(cold=True, depletable=False) -> blocks.HexBlock:
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
