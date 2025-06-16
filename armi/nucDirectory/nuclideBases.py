@@ -1467,9 +1467,26 @@ class NuclideBases:
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
 
+    def addNuclide(self, nuclide: INuclide):
+        """Add an element to the dictionaries in this class."""
+        if nuclide.name in self.byName or nuclide.getDatabaseName() in self.byDBName or nuclide.label in self.byLabel:
+            raise ValueError(f"{nuclide} has already been added.")
+
+        self.instances.append(nuclide)
+        self.byName[nuclide.name] = nuclide
+        self.byDBName[nuclide.getDatabaseName()] = nuclide
+        self.byLabel[nuclide.label] = nuclide
+
+        # Add look-up based on the MCNP nuclide ID
+        if isinstance(nuclide, IMcnpNuclide):
+            if nuclide.getMcnpId() in self.byMcnpId:
+                raise ValueError(f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added.")
+            self.byMcnpId[nuclide.getMcnpId()] = nuclide
+            self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
+
     def factory(self):
         """
-        Reads data files to instantiate the :py:class:`INuclides <INuclide>`.\
+        Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
 
         Reads NIST, MC**2 and burn chain data files to instantiate the :py:class:`INuclides <INuclide>`. Also clears and
         fills in the :py:data:`~armi.nucDirectory.nuclideBases.instances`, :py:data:`byName`, :py:attr:`byLabel`,
@@ -1501,3 +1518,202 @@ class NuclideBases:
         from armi.nucDirectory import thermalScattering
 
         thermalScattering.factory()
+
+    def initReachableActiveNuclidesThroughBurnChain(self, numberDensityDict, activeNuclides):
+        """
+        March through the depletion chain and find all nuclides that can be reached by depleting nuclides passed in.
+
+        This limits depletion to the smallest set of nuclides that matters.
+
+        Parameters
+        ----------
+        numberDensityDict : dict
+            Starting number densities.
+        activeNuclides : OrderedSet
+            Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
+        """
+        pass
+
+    def _failOnMissingActiveNuclides(self, missingActiveNuclides):
+        """Raise ValueError with notification of which nuclides to include in the burn-chain."""
+        pass
+
+    def isotopes(self, z):
+        """TODO: JOHN."""
+        pass
+
+    def getIsotopics(self, nucName):
+        """Expand elemental nuc name to isotopic nuc bases."""
+        pass
+
+    def fromName(self, name):
+        """Return a nuclide from its name."""
+        pass
+
+    def isMonoIsotopicElement(self, name):
+        """Return true if this is the only naturally occurring isotope of its element."""
+        pass
+
+    def where(self, predicate):
+        """
+        Return all :py:class:`INuclides <INuclide>` objects matching a condition.
+
+        Returns an iterator of :py:class:`INuclides <INuclide>` matching the specified condition.
+
+        Attributes
+        ----------
+        predicate: lambda
+            A lambda, or function, accepting a :py:class:`INuclide` as a parameter
+
+        Examples
+        --------
+        >>> from armi.nucDirectory.nuclideBases import NuclideBases
+        >>> nuclideBases = NuclideBases()
+        >>> [nn.name for nn in nuclideBases.where(lambda nb: 'Z' in nb.name)]
+        ['ZN64', 'ZN66', 'ZN67', 'ZN68', 'ZN70', 'ZR90', 'ZR91', 'ZR92', 'ZR94', 'ZR96', 'ZR93', 'ZR95', 'ZR']
+        >>> # in order to get length, convert to list
+        >>> isomers90 = list(nuclideBases.where(lambda nb: nb.a == 95))
+        >>> len(isomers90)
+        3
+        >>> for iso in isomers: print(iso)
+        <NuclideBase MO95: Z:42, A:95, S:0, label:MO2N>
+        <NuclideBase NB95: Z:41, A:95, S:0, label:NB2N>
+        <NuclideBase ZR95: Z:40, A:95, S:0, label:ZR2N>
+        """
+        pass
+
+    def single(self, predicate):
+        """
+        Return a single :py:class:`INuclide` object meeting the specified condition.
+
+        Similar to :py:func:`where`, this function uses a lambda input to filter the
+        :py:attr:`INuclide instances <instances>`. If there is not 1 and only 1 match for the specified condition, an
+        exception is raised.
+
+        Examples
+        --------
+        >>> from armi.nucDirectory import nuclideBases
+        >>> nuclideBases.single(lambda nb: nb.name == 'C')
+        <NaturalNuclideBase C: Z:6, w:12.0107358968, label:C>
+        >>> nuclideBases.single(lambda nb: nb.z == 95 and nb.a == 242 and nb.state == 1)
+        <NuclideBase AM242M: Z:95, A:242, S:1, label:AM4C>
+        """
+        pass
+
+    def changeLabel(self, nuclideBase, newLabel):
+        """
+        Updates a nuclide label and modifies the ``byLabel`` look-up dictionary.
+
+        Notes
+        -----
+        Since nuclide objects are defined and stored globally, any change to the attributes will be maintained.
+        """
+        pass
+
+    def getDepletableNuclides(self, activeNuclides, obj):
+        """Get nuclides in this object that are in the burn chain."""
+        pass
+
+    def imposeBurnChain(self, burnChainStream):
+        """
+        Apply transmutation and decay information to each nuclide.
+
+        Notes
+        -----
+        You cannot impose a burn chain twice. Doing so would require that you clean out the transmutations and decays
+        from all the module-level nuclide bases, which generally requires that you rebuild them. But rebuilding those is
+        not an option because some of them get set as class-level attributes and would be orphaned. If a need to change
+        burn chains mid-run re-arises, then a better nuclideBase-level burnchain cleanup should be implemented so the
+        objects don't have to change identity.
+
+        Notes
+        -----
+        We believe the transmutation information would probably be better stored on a less fundamental place (e.g. not
+        on the NuclideBase).
+
+        See Also
+        --------
+        armi.nucDirectory.transmutations : describes file format
+        """
+        pass
+
+    def addNuclideBases(self):
+        """
+        Read natural abundances of any natural nuclides.
+
+        This adjusts already-existing NuclideBases and Elements with the new information.
+
+        .. impl:: Separating natural abundance data from code.
+            :id: I_ARMI_ND_DATA0
+            :implements: R_ARMI_ND_DATA
+
+            This function reads the ``nuclides.dat`` file from the ARMI resources folder. This file contains metadata
+            for 4,614 nuclides, including number of protons, number of neutrons, atomic number, excited state, element
+            symbol, atomic mass, natural abundance, half-life, and spontaneous fission yield. The data in
+            ``nuclides.dat`` have been collected from multiple different sources; the references are given in comments
+            at the top of that file.
+        """
+        pass
+
+    def __addNaturalNuclideBases(self):
+        """Generates a complete set of nuclide bases for each naturally occurring element."""
+        pass
+
+    def __addDummyNuclideBases(self):
+        """
+        Generates a set of dummy nuclides.
+
+        Notes
+        -----
+        These nuclides can be used to truncate a depletion / burn-up chain within the
+        """
+        pass
+
+    def __addLumpedFissionProductNuclideBases(self):
+        """TODO: JOHN."""
+        pass
+
+    def readMCCNuclideData(self):
+        r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
+
+        .. impl:: Separating MCC data from code.
+            :id: I_ARMI_ND_DATA1
+            :implements: R_ARMI_ND_DATA
+
+            This function reads the mcc-nuclides.yaml file from the ARMI resources folder. This file contains the
+            MC\ :sup:`2`-2 ID (from ENDF/B-V.2) and MC\ :sup:`2`-3 ID (from ENDF/B-VII.0) for all nuclides in
+            MC\ :sup:`2`. The ``mcc2id``, ``mcc3idEndfVII0``, and  ``mcc3idEndfVII1`` attributes of each
+            :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>` instance are updated as the data is
+            read, and the global dictionaries ``byMcc2Id`` ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated
+            with the nuclide bases keyed by their corresponding ID for each code.
+        """
+        pass
+
+    def updateNuclideBasesForSpecialCases(self):
+        """
+        Update the nuclide bases for special case name changes.
+
+        .. impl:: The special case name Am242g is supported.
+            :id: I_ARMI_ND_ISOTOPES6
+            :implements: R_ARMI_ND_ISOTOPES
+
+            This function updates the keys for the :py:class:`NuclideBase <armi.nucDirectory.nuclideBases.NuclideBase>`
+            instances for Am-242m and Am-242 in the ``byName`` and ``byDBName`` global dictionaries. This function
+            associates the more common isomer Am-242m with the name "AM242", and uses "AM242G" to denote the ground
+            state.
+
+        Notes
+        -----
+        This function is specifically added to change the definition of `AM242` to refer to its metastable isomer,
+        `AM242M` by default. `AM242M` is most common isomer of `AM242` and is typically the desired isomer when being
+        requested rather than than the ground state (i.e., S=0) of `AM242`.
+        """
+        pass
+
+    def __renormalizeNuclideToElementRelationship(self):
+        """TODO: JOHN."""
+        pass
+
+    def __deriveElementalWeightsByNaturalNuclideAbundances(self):
+        """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
+        pass
