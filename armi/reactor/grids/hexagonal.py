@@ -392,9 +392,8 @@ class HexGrid(StructuredGrid):
         Returns
         -------
         None or int
-            None if not line of symmetry goes through the object at the
-            requested index. Otherwise, some grid constants like ``BOUNDARY_CENTER``
-            will be returned.
+            None if not line of symmetry goes through the object at the requested index. Otherwise,
+            some grid constants like ``BOUNDARY_CENTER`` will be returned.
 
         Notes
         -----
@@ -420,18 +419,17 @@ class HexGrid(StructuredGrid):
         return symmetryLine
 
     def getSymmetricEquivalents(self, indices: IJKType) -> List[IJType]:
-        """Retrieve the equivalent indices. If full core return nothing, if 1/3-core grid,
-        return the symmetric equivalents, if any other grid, raise an error.
+        """Retrieve the equivalent indices. If full core return nothing, if 1/3-core grid, return
+        the symmetric equivalents, if any other grid, raise an error.
 
         .. impl:: Equivalent contents in 1/3-core geometries are retrievable.
             :id: I_ARMI_GRID_EQUIVALENTS
             :implements: R_ARMI_GRID_EQUIVALENTS
 
-            This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core,
-            it returns nothing. If this ``HexGrid`` is 1/3-core, this method will return
-            the 1/3-core symmetric equivalent of just (I,J). If this grid is any other kind,
-            this method will just return an error; a hexagonal grid with any other
-            symmetry is probably an error.
+            This method takes in (I,J,K) indices, and if this ``HexGrid`` is full core, it returns
+            nothing. If this ``HexGrid`` is 1/3-core, this method will return the 1/3-core symmetric
+            equivalent of just (I,J). If this grid is any other kind, this method will just return
+            an error; a hexagonal grid with any other symmetry is probably an error.
         """
         if (
             self.symmetry.domain == geometry.DomainType.THIRD_CORE
@@ -441,7 +439,7 @@ class HexGrid(StructuredGrid):
         elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
-            raise NotImplementedError("Unhandled symmetry condition for HexGrid: {}".format(str(self.symmetry)))
+            raise NotImplementedError(f"Unhandled symmetry condition for HexGrid: {self.symmetry}")
 
     @staticmethod
     def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
@@ -449,13 +447,14 @@ class HexGrid(StructuredGrid):
         i, j = indices[:2]
         if i == 0 and j == 0:
             return []
+
         identicals = [(-i - j, i), (j, -i - j)]
         return identicals
 
     def triangleCoords(self, indices: IJKType) -> np.ndarray:
         """
-        Return 6 coordinate pairs representing the centers of the 6 triangles in a
-        hexagon centered here.
+        Return 6 coordinate pairs representing the centers of the 6 triangles in a hexagon centered
+        here.
 
         Ignores z-coordinate and only operates in 2D for now.
         """
@@ -501,8 +500,8 @@ class HexGrid(StructuredGrid):
         self._unitSteps = unitSteps[self._stepDims]
 
     def locatorInDomain(self, locator, symmetryOverlap: Optional[bool] = False) -> bool:
-        # This will include the "top" 120-degree symmetry lines. This is to support
-        # adding of edge assemblies.
+        # This will include the "top" 120-degree symmetry lines. This is to support adding of edge
+        # assemblies.
         if self.symmetry.domain == geometry.DomainType.THIRD_CORE:
             return self.isInFirstThird(locator, includeTopEdge=symmetryOverlap)
         else:
@@ -515,11 +514,10 @@ class HexGrid(StructuredGrid):
             :id: I_ARMI_GRID_SYMMETRY_LOC
             :implements: R_ARMI_GRID_SYMMETRY_LOC
 
-            This is a simple helper method to determine if a given locator (from an
-            ArmiObject) is in the first 1/3 of the ``HexGrid``. This method does not
-            attempt to check if this grid is full or 1/3-core. It just does the basic
-            math of dividing up a hex-assembly reactor core into thirds and testing if
-            the given location is in the first 1/3 or not.
+            This is a simple helper method to determine if a given locator (from an ArmiObject) is
+            in the first 1/3 of the ``HexGrid``. This method does not attempt to check if this grid
+            is full or 1/3-core. It just does the basic math of dividing up a hex-assembly reactor
+            core into thirds and testing if the given location is in the first 1/3 or not.
         """
         ring, pos = self.getRingPos(locator.indices)
         if ring == 1:
@@ -545,8 +543,8 @@ class HexGrid(StructuredGrid):
 
         IndexLocation are taken from a full core.
 
-        Ties between locations with the same distance (e.g. A3001 and A3003) are broken
-        by ring number then position number.
+        Ties between locations with the same distance (e.g. A3001 and A3003) are broken by ring
+        number then position number.
         """
         # first, roughly calculate how many rings need to be created to cover nLocs worth of assemblies
         nLocs = int(nLocs)
@@ -587,27 +585,27 @@ class HexGrid(StructuredGrid):
 
         Notes
         -----
-        Rotation uses a three-dimensional index in what can be known elsewhere
-        by the confusing name of "cubic" coordinate system for a hexagon. Cubic stems
-        from the notion of using three dimensions, ``(q, r, s)`` to describe a point in the
-        hexagonal grid. The conversion from the indexing used in the ARMI framework follows::
+        Rotation uses a three-dimensional index in what can be known elsewhere by the confusing name
+        of "cubic" coordinate system for a hexagon. Cubic stems from the notion of using three
+        dimensions, ``(q, r, s)`` to describe a point in the hexagonal grid. The conversion from the
+        indexing used in the ARMI framework follows::
 
             q = i
             r = j
             # s = - q - r = - (q + r)
             s = -(i + j)
 
-        The motivation for the cubic notation is rotation is far simpler: a clockwise
-        rotation by 60 degrees results in a shifting and negating of the coordinates. So
-        the first rotation of ``(q, r, s)`` would produce a new coordinate
-        ``(-r, -s, -q)``. Another rotation would produce ``(s, q, r)``, and so on.
+        The motivation for the cubic notation is rotation is far simpler: a clockwise rotation by 60
+        degrees results in a shifting and negating of the coordinates. So the first rotation of
+        ``(q, r, s)`` would produce a new coordinate ``(-r, -s, -q)``. Another rotation would
+        produce ``(s, q, r)``, and so on.
 
         Raises
         ------
         TypeError
-            If ``loc.grid`` is populated and not consistent with this grid. For example,
-            it doesn't make sense to rotate an index from a Cartesian grid in a hexagonal coordinate
-            system, nor hexagonal grid with different orientation (flats up vs. corners up)
+            If ``loc.grid`` is populated and not consistent with this grid. For example, it doesn't
+            make sense to rotate an index from a Cartesian grid in a hexagonal coordinate system,
+            nor hexagonal grid with different orientation (flats up vs. corners up)
         """
         if self._roughlyEqual(loc.grid) or loc.grid is None:
             i, j, k = loc[:3]
