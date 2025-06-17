@@ -1434,7 +1434,7 @@ def destroyGlobalNuclides():
 
 """
 TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
-TODO: Below this point is the new code.
+      Below this point is the new code.
 """
 
 

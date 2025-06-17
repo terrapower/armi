@@ -430,7 +430,7 @@ class TestNuclideBases(unittest.TestCase):
             self.assertEqual(nb.getMcc3Id(), nb.mcc3idEndfbVII1)
             self.assertEqual(nb.getMcc3Id(), nuc)
 
-        # Subtract 1 nuclide due to DUMP2.
+        # Subtract 1 nuclide due to DUMP2
         self.assertEqual(len(self.nuclideBases.byMcc3IdEndfbVII1), len(expectedNuclides) - 1)
 
 
