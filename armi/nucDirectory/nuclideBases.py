@@ -828,10 +828,10 @@ class DummyNuclideBase(INuclide):
     in the instances where the burn chain is truncated.
     """
 
-    def __init__(self, name, weight, skipGlobal=False):
+    def __init__(self, element, name, weight, skipGlobal=False):
         INuclide.__init__(
             self,
-            element=elements.byName["Dummy"],  # TODO: JOHN. Elements() used here.
+            element=element,
             a=0,
             state=0,
             weight=weight,
@@ -1269,8 +1269,8 @@ def __addDummyNuclideBases():
     -----
     These nuclides can be used to truncate a depletion / burn-up chain within the
     """
-    DummyNuclideBase(name="DUMP1", weight=10.0)
-    DummyNuclideBase(name="DUMP2", weight=240.0)
+    DummyNuclideBase(element=elements.byName["Dummy"], name="DUMP1", weight=10.0)
+    DummyNuclideBase(element=elements.byName["Dummy"], name="DUMP2", weight=240.0)
 
 
 def __addLumpedFissionProductNuclideBases():
@@ -1777,8 +1777,8 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the
         """
-        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, skipGlobal=True))
-        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, skipGlobal=True))
+        self.addNuclide(DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP1", weight=10.0, skipGlobal=True))
+        self.addNuclide(DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP2", weight=240.0, skipGlobal=True))
 
     def __addLumpedFissionProductNuclideBases(self):
         """TODO."""
