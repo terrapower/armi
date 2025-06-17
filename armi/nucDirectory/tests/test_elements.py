@@ -15,7 +15,7 @@
 
 import unittest
 
-from armi.nucDirectory.elements import Element, Elements, ChemicalPhase
+from armi.nucDirectory.elements import ChemicalPhase, Element, Elements
 
 
 class TestElements(unittest.TestCase):
