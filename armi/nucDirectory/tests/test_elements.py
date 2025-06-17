@@ -15,12 +15,13 @@
 
 import unittest
 
-from armi.nucDirectory.elements import Element, Elements
+from armi.nucDirectory.elements import Element, Elements, ChemicalPhase
 
 
-class TestElement(unittest.TestCase):
+class TestElements(unittest.TestCase):
     def setUp(self):
         self.elements = Elements()
+        self.elements.factory()
 
     def test_elements_elementBulkProperties(self):
         numElements = len(self.elements.byZ)
@@ -61,7 +62,7 @@ class TestElement(unittest.TestCase):
     def test_element_addExistingElementFails(self):
         for ee in self.elements.byZ.values():
             with self.assertRaises(ValueError):
-                self.elements.Element(ee.z, ee.symbol, ee.name, skipGlobal=True)
+                self.elements.addElement(Element(ee.z, ee.symbol, ee.name, skipGlobal=True))
 
     def test_element_addedElementAppearsInElementList(self):
         self.assertNotIn("bacon", self.elements.byName)
@@ -97,7 +98,7 @@ class TestElement(unittest.TestCase):
                 self.assertFalse(ee.isNaturallyOccurring())
             else:
                 nat = ee.isNaturallyOccurring()
-                self.assertTrue(nat)
+                self.assertTrue(nat, msg=f"z = {ee.z}")
 
     def test_abundancesAddToOne(self):
         for ee in self.elements.byZ.values():
@@ -123,3 +124,25 @@ class TestElement(unittest.TestCase):
                 self.assertTrue(ee.isHeavyMetal())
             else:
                 self.assertFalse(ee.isHeavyMetal())
+
+    def test_getElementsByChemicalPhase(self):
+        liquids = self.elements.getElementsByChemicalPhase(ChemicalPhase.LIQUID)
+        self.assertGreater(len(liquids), 1)
+
+        gasses = self.elements.getElementsByChemicalPhase(ChemicalPhase.GAS)
+        self.assertGreater(len(gasses), 10)
+
+        solids = self.elements.getElementsByChemicalPhase(ChemicalPhase.SOLID)
+        self.assertGreater(len(solids), 100)
+
+    def test_getElementsByChemicalGroup(self):
+        pass
+
+    def test_getName(self):
+        pass
+
+    def test_getSymbol(self):
+        pass
+
+    def test_getElementZ(self):
+        pass

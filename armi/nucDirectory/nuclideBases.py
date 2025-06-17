@@ -341,10 +341,6 @@ class INuclide(NuclideInterface):
         -------
         Do not call this constructor directly; use the factory instead.
         """
-        if element not in elements.byName.values():
-            raise ValueError(
-                f"Error in initializing nuclide {name}. Element {element} does not exist in the global element list."
-            )
         if state < 0:
             raise ValueError(
                 f"Error in initializing nuclide {name}. An invalid state {state} is provided. The "
@@ -835,7 +831,7 @@ class DummyNuclideBase(INuclide):
     def __init__(self, name, weight, skipGlobal=False):
         INuclide.__init__(
             self,
-            element=elements.byName["Dummy"],
+            element=elements.byName["Dummy"], # TODO: JOHN. Elements() used here.
             a=0,
             state=0,
             weight=weight,
@@ -907,10 +903,10 @@ class LumpNuclideBase(INuclide):
         Describes what nuclides LumpNuclideBase is expend to.
     """
 
-    def __init__(self, name, weight, skipGlobal=False):
+    def __init__(self, element, name, weight, skipGlobal=False):
         INuclide.__init__(
             self,
-            element=elements.byName["LumpedFissionProduct"],
+            element=element,
             a=0,
             state=0,
             weight=weight,
@@ -1278,12 +1274,12 @@ def __addDummyNuclideBases():
 
 
 def __addLumpedFissionProductNuclideBases():
-    LumpNuclideBase(name="LFP35", weight=233.273)
-    LumpNuclideBase(name="LFP38", weight=235.78)
-    LumpNuclideBase(name="LFP39", weight=236.898)
-    LumpNuclideBase(name="LFP40", weight=237.7)
-    LumpNuclideBase(name="LFP41", weight=238.812)
-    LumpNuclideBase(name="LREGN", weight=1.0)
+    LumpNuclideBase(element=elements.byName["LumpedFissionProduct"], name="LFP35", weight=233.273)
+    LumpNuclideBase(element=elements.byName["LumpedFissionProduct"], name="LFP38", weight=235.78)
+    LumpNuclideBase(element=elements.byName["LumpedFissionProduct"], name="LFP39", weight=236.898)
+    LumpNuclideBase(element=elements.byName["LumpedFissionProduct"], name="LFP40", weight=237.7)
+    LumpNuclideBase(element=elements.byName["LumpedFissionProduct"], name="LFP41", weight=238.812)
+    LumpNuclideBase(element=elements.byName["LumpedFissionProduct"], name="LREGN", weight=1.0)
 
 
 def readMCCNuclideData():
@@ -1447,6 +1443,7 @@ class NuclideBases:
     def __init__(self):
         self.burnChainImposed = False
         self.instances = []
+        self.elements = None
         self.byName = {}
         self.byDBName = {}
         self.byLabel = {}
@@ -1463,6 +1460,7 @@ class NuclideBases:
     def clear(self):
         self.burnChainImposed = False
         self.instances = []
+        self.elements = None
         self.byName = {}
         self.byDBName = {}
         self.byLabel = {}
@@ -1512,6 +1510,9 @@ class NuclideBases:
                 "Nuclides are already initialized and cannot be re-initialized unless `nuclideBases.clear()` is called "
                 "first."
             )
+
+        self.elements = elements.Elements()
+        self.elements.factory()
 
         self.addNuclideBases()
         self.__addNaturalNuclideBases()
@@ -1584,7 +1585,7 @@ class NuclideBases:
 
     def isotopes(self, z: int):
         """TODO."""
-        return elements.byZ[z].nuclides
+        return elements.byZ[z].nuclides # TODO: JOHN. Elements() used here.
 
     def getIsotopics(self, nucName):
         """Expand elemental nuc name to isotopic nuc bases."""
@@ -1756,14 +1757,14 @@ class NuclideBases:
                     halflife = float(halflife)
                 nuSF = float(lineData[8])
 
-                element = elements.bySymbol[sym]
+                element = elements.bySymbol[sym] # TODO: JOHN. Elements() used here.
                 nb = NuclideBase(element, a, mass, abun, state, halflife, skipGlobal=True)
                 nb.nuSF = nuSF
                 self.addNuclide(nb)
 
     def __addNaturalNuclideBases(self):
         """Generates a complete set of nuclide bases for each naturally occurring element."""
-        for element in elements.byZ.values():
+        for element in elements.byZ.values(): # TODO: JOHN. Elements() used here.
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
                     self.addNuclide(NaturalNuclideBase(element.symbol, element, skipGlobal=True))
@@ -1781,12 +1782,12 @@ class NuclideBases:
 
     def __addLumpedFissionProductNuclideBases(self):
         """TODO."""
-        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812, skipGlobal=True))
-        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP35", weight=233.273, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP38", weight=235.78, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP39", weight=236.898, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP40", weight=237.7, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LFP41", weight=238.812, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(element=self.elements.byName["LumpedFissionProduct"], name="LREGN", weight=1.0, skipGlobal=True))
 
     def readMCCNuclideData(self):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
@@ -1859,12 +1860,12 @@ class NuclideBases:
         """TODO."""
         for nuc in self.instances:
             if nuc.element is not None:
-                nuc.element = elements.byZ[nuc.z]
+                nuc.element = elements.byZ[nuc.z] # TODO: JOHN. Elements() used here.
                 nuc.element.append(nuc)
 
     def __deriveElementalWeightsByNaturalNuclideAbundances(self):
         """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
-        for element in elements.byName.values():
+        for element in elements.byName.values(): # TODO: JOHN. Elements() used here.
             numer = 0.0
             denom = 0.0
             for nb in element.getNaturalIsotopics():
