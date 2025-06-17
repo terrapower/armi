@@ -332,6 +332,7 @@ class INuclide(NuclideInterface):
         mcc2id=None,
         mcc3idEndfbVII0=None,
         mcc3idEndfbVII1=None,
+        skipGlobal=False,
     ):
         """
         Create an instance of an INuclide.
@@ -367,7 +368,8 @@ class INuclide(NuclideInterface):
         self.mcc2id = mcc2id or ""
         self.mcc3idEndfbVII0 = mcc3idEndfbVII0 or ""
         self.mcc3idEndfbVII1 = mcc3idEndfbVII1 or ""
-        addGlobalNuclide(self)
+        if not skipGlobal:
+            addGlobalNuclide(self)
         self.element.append(self)
 
     def __hash__(self):
@@ -521,7 +523,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
         MAT number.
     """
 
-    def __init__(self, element, a, weight, abundance, state, halflife):
+    def __init__(self, element, a, weight, abundance, state, halflife, skipGlobal=False):
         IMcnpNuclide.__init__(self)
         INuclide.__init__(
             self,
@@ -533,6 +535,7 @@ class NuclideBase(INuclide, IMcnpNuclide):
             halflife=halflife,
             name=NuclideBase._createName(element, a, state),
             label=NuclideBase._createLabel(element, a, state),
+            skipGlobal=skipGlobal,
         )
 
     def __repr__(self):
@@ -739,7 +742,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
     have any interactions with the NuclideBase objects.
     """
 
-    def __init__(self, name, element):
+    def __init__(self, name, element, skipGlobal=False):
         INuclide.__init__(
             self,
             element=element,
@@ -750,6 +753,7 @@ class NaturalNuclideBase(INuclide, IMcnpNuclide):
             halflife=np.inf,
             name=name,
             label=name,
+            skipGlobal=skipGlobal,
         )
 
     def __repr__(self):
@@ -828,7 +832,7 @@ class DummyNuclideBase(INuclide):
     in the instances where the burn chain is truncated.
     """
 
-    def __init__(self, name, weight):
+    def __init__(self, name, weight, skipGlobal=False):
         INuclide.__init__(
             self,
             element=elements.byName["Dummy"],
@@ -839,6 +843,7 @@ class DummyNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label="DMP" + name[4],
+            skipGlobal=skipGlobal,
         )
 
     def __repr__(self):
@@ -902,7 +907,7 @@ class LumpNuclideBase(INuclide):
         Describes what nuclides LumpNuclideBase is expend to.
     """
 
-    def __init__(self, name, weight):
+    def __init__(self, name, weight, skipGlobal=False):
         INuclide.__init__(
             self,
             element=elements.byName["LumpedFissionProduct"],
@@ -913,6 +918,7 @@ class LumpNuclideBase(INuclide):
             halflife=np.inf,
             name=name,
             label=name[1:],
+            skipGlobal=skipGlobal,
         )
 
     def __repr__(self):
@@ -1482,6 +1488,8 @@ class NuclideBases:
             if nuclide.getMcnpId() in self.byMcnpId:
                 raise ValueError(f"{nuclide} with McnpId {nuclide.getMcnpId()} has already been added.")
             self.byMcnpId[nuclide.getMcnpId()] = nuclide
+
+        if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
             self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
     def factory(self):
@@ -1749,7 +1757,7 @@ class NuclideBases:
                 nuSF = float(lineData[8])
 
                 element = elements.bySymbol[sym]
-                nb = NuclideBase(element, a, mass, abun, state, halflife)
+                nb = NuclideBase(element, a, mass, abun, state, halflife, skipGlobal=True)
                 nb.nuSF = nuSF
                 self.addNuclide(nb)
 
@@ -1758,7 +1766,7 @@ class NuclideBases:
         for element in elements.byZ.values():
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
-                    self.addNuclide(NaturalNuclideBase(element.symbol, element))
+                    self.addNuclide(NaturalNuclideBase(element.symbol, element, skipGlobal=True))
 
     def __addDummyNuclideBases(self):
         """
@@ -1768,17 +1776,17 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the
         """
-        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0))
-        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0))
+        self.addNuclide(DummyNuclideBase(name="DUMP1", weight=10.0, skipGlobal=True))
+        self.addNuclide(DummyNuclideBase(name="DUMP2", weight=240.0, skipGlobal=True))
 
     def __addLumpedFissionProductNuclideBases(self):
         """TODO."""
-        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273))
-        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78))
-        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898))
-        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7))
-        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812))
-        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0))
+        self.addNuclide(LumpNuclideBase(name="LFP35", weight=233.273, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(name="LFP38", weight=235.78, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(name="LFP39", weight=236.898, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(name="LFP40", weight=237.7, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(name="LFP41", weight=238.812, skipGlobal=True))
+        self.addNuclide(LumpNuclideBase(name="LREGN", weight=1.0, skipGlobal=True))
 
     def readMCCNuclideData(self):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
