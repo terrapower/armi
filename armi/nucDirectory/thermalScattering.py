@@ -81,12 +81,10 @@ class ThermalScattering:
     Parameters
     ----------
     nuclideBases : INuclide or tuple of INuclide
-        One or more nuclide bases whose existence would trigger the inclusion of the TSL.
-        Generally items here will be a NaturalNuclideBase like ``nb.byName["C"]`` for Carbon
-        but it is a tuple to capture, e.g. the C and H in *methane*.
+        One or more nuclide bases whose existence would trigger the inclusion of the TSL. Generally items here will be a
+        NaturalNuclideBase like Carbon but it is a tuple to capture, e.g. the C and H in *methane*.
     compoundName : str, optional
-        Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``.
-        Can be left off for, e.g. Fe56.
+        Label indicating what the subjects are in (e.g. ``"Graphite"`` or ``"H2O"``. Can be left off for, e.g. Fe56.
     endf8Label : str, optional
         Label for endf8 evaluation
     aceLabel: str, optional

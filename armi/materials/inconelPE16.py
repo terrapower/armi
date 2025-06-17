@@ -16,7 +16,6 @@
 
 from armi import runLog
 from armi.materials.material import SimpleSolid
-from armi.nucDirectory import nuclideBases
 
 
 class InconelPE16(SimpleSolid):
@@ -31,11 +30,11 @@ class InconelPE16(SimpleSolid):
             "SI": 0.0025,
             "MN55": 0.001,
             "S": 0.000075,
-            "AG107": 0.0000025 * nuclideBases.byName["AG107"].abundance,
-            "AG109": 0.0000025 * nuclideBases.byName["AG109"].abundance,
+            "AG107": 0.0000025 * 0.51839001,
+            "AG109": 0.0000025 * 0.48160999,
             "AL27": 0.012,
-            "B10": 0.000025 * nuclideBases.byName["B10"].abundance,
-            "B11": 0.000025 * nuclideBases.byName["B11"].abundance,
+            "B10": 0.000025 * 0.19799999,
+            "B11": 0.000025 * 0.80199997,
             "BI209": 0.0000005,
             "CO59": 0.01,
             "CR": 0.165,
@@ -46,11 +45,7 @@ class InconelPE16(SimpleSolid):
             "TI": 0.012,
             "ZR": 0.0003,
         }
-        massFracs["FE"] = 1 - sum(massFracs.values())  # balance*
-
-        # *Reference to the 'balance' of a composition does not guarantee this
-        # is exclusively of the element mentioned but that it predominates and
-        # others are present only in minimal quantities.
+        massFracs["FE"] = 1 - sum(massFracs.values())
 
         for element, massFrac in massFracs.items():
             self.setMassFrac(element, massFrac)
