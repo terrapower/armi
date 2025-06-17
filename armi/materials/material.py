@@ -354,6 +354,8 @@ class Material:
 
         nucsNames = list(self.massFrac)
 
+        # TODO: This method is the only thing in `Material` that uses `NuclideBases`
+
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
         massDensities = np.array([self.massFrac[nuc] for nuc in nucsNames]) * density

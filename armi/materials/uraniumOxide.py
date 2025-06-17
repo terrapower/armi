@@ -29,7 +29,6 @@ from numpy import interp
 
 from armi import runLog
 from armi.materials import material
-from armi.nucDirectory import nuclideBases as nb
 from armi.utils.units import getTk
 
 HeatCapacityConstants = collections.namedtuple("HeatCapacityConstants", ["c1", "c2", "c3", "theta", "Ea"])
@@ -120,16 +119,17 @@ class UraniumOxide(material.FuelMaterial, material.SimpleSolid):
 
     def setDefaultMassFracs(self) -> None:
         """UO2 mass fractions. Using Natural Uranium without U234."""
-        u235 = nb.byName["U235"]
-        u238 = nb.byName["U238"]
-        oxygen = nb.byName["O"]
+        oWeight = 15.999304875697803
+        u235Abundance = 0.007204
+        u235Weight = 235.043929425
+        u238Abundance = 0.992742
+        u238Weight = 238.050788298
 
-        u238Abundance = 1.0 - u235.abundance  # neglect U234 and keep U235 at natural level
-        gramsIn1Mol = 2 * oxygen.weight + u235.abundance * u235.weight + u238Abundance * u238.weight
+        gramsIn1Mol = 2 * oWeight + u235Abundance * u235Weight + u238Abundance * u238Weight
 
-        self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
-        self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
-        self.setMassFrac("O", 2 * oxygen.weight / gramsIn1Mol)
+        self.setMassFrac("U235", u235Weight * u235Abundance / gramsIn1Mol)
+        self.setMassFrac("U238", u238Weight * u238Abundance / gramsIn1Mol)
+        self.setMassFrac("O", 2 * oWeight / gramsIn1Mol)
 
     def meltingPoint(self):
         """
