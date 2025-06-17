@@ -1777,8 +1777,12 @@ class NuclideBases:
         -----
         These nuclides can be used to truncate a depletion / burn-up chain within the
         """
-        self.addNuclide(DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP1", weight=10.0, skipGlobal=True))
-        self.addNuclide(DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP2", weight=240.0, skipGlobal=True))
+        self.addNuclide(
+            DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP1", weight=10.0, skipGlobal=True)
+        )
+        self.addNuclide(
+            DummyNuclideBase(element=self.elements.byName["Dummy"], name="DUMP2", weight=240.0, skipGlobal=True)
+        )
 
     def __addLumpedFissionProductNuclideBases(self):
         """TODO."""
