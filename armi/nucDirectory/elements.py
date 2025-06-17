@@ -566,7 +566,7 @@ class Elements:
         if z:
             element = self.byZ[z]
         else:
-            element = self.byName[symbol.upper()]
+            element = self.bySymbol[symbol.upper()]
 
         return element.name
 
@@ -593,7 +593,7 @@ class Elements:
         if z:
             element = self.byZ[z]
         else:
-            element = self.byName[name.lower()]
+            element = self.byName[name]
 
         return element.symbol
 
@@ -626,6 +626,6 @@ class Elements:
         if symbol:
             element = self.bySymbol[symbol.upper()]
         else:
-            element = self.byName[name.lower()]
+            element = self.byName[name]
 
         return element.z

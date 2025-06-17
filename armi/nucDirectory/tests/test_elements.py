@@ -15,7 +15,7 @@
 
 import unittest
 
-from armi.nucDirectory.elements import ChemicalPhase, Element
+from armi.nucDirectory.elements import ChemicalGroup, ChemicalPhase, Element
 from armi.nucDirectory.nuclideBases import NuclideBases
 
 
@@ -137,13 +137,65 @@ class TestElements(unittest.TestCase):
         self.assertGreater(len(solids), 100)
 
     def test_getElementsByChemicalGroup(self):
-        pass
+        metals = self.elements.getElementsByChemicalGroup(ChemicalGroup.METALLOID)
+        self.assertGreater(len(metals), 5)
+
+        nonmetals = self.elements.getElementsByChemicalGroup(ChemicalGroup.NONMETAL)
+        self.assertGreater(len(nonmetals), 5)
 
     def test_getName(self):
-        pass
+        name = self.elements.getName(z=2)
+        self.assertEqual(name, "Helium")
+
+        name = self.elements.getName(z=92)
+        self.assertEqual(name, "Uranium")
+
+        with self.assertRaises(KeyError):
+            self.elements.getName(z=654)
+
+        name = self.elements.getName(symbol="H")
+        self.assertEqual(name, "Hydrogen")
+
+        name = self.elements.getName(symbol="U")
+        self.assertEqual(name, "Uranium")
+
+        with self.assertRaises(KeyError):
+            self.elements.getName(symbol="Boring")
 
     def test_getSymbol(self):
-        pass
+        symbol = self.elements.getSymbol(z=2)
+        self.assertEqual(symbol, "HE")
+
+        symbol = self.elements.getSymbol(z=92)
+        self.assertEqual(symbol, "U")
+
+        with self.assertRaises(KeyError):
+            self.elements.getSymbol(z=654)
+
+        symbol = self.elements.getSymbol(name="Hydrogen")
+        self.assertEqual(symbol, "H")
+
+        symbol = self.elements.getSymbol(name="Uranium")
+        self.assertEqual(symbol, "U")
+
+        with self.assertRaises(KeyError):
+            self.elements.getSymbol(name="Boring")
 
     def test_getElementZ(self):
-        pass
+        z = self.elements.getElementZ(symbol="HE")
+        self.assertEqual(z, 2)
+
+        z = self.elements.getElementZ(symbol="U")
+        self.assertEqual(z, 92)
+
+        with self.assertRaises(KeyError):
+            self.elements.getElementZ(symbol="XYZ")
+
+        z = self.elements.getElementZ(name="Hydrogen")
+        self.assertEqual(z, 1)
+
+        z = self.elements.getElementZ(name="Uranium")
+        self.assertEqual(z, 92)
+
+        with self.assertRaises(KeyError):
+            self.elements.getElementZ(name="Boring")
