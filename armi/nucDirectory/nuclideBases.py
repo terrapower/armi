@@ -1585,7 +1585,7 @@ class NuclideBases:
 
     def isotopes(self, z: int):
         """TODO."""
-        return elements.byZ[z].nuclides  # TODO: JOHN. Elements() used here.
+        return self.elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName):
         """Expand elemental nuc name to isotopic nuc bases."""
@@ -1757,14 +1757,14 @@ class NuclideBases:
                     halflife = float(halflife)
                 nuSF = float(lineData[8])
 
-                element = elements.bySymbol[sym]  # TODO: JOHN. Elements() used here.
+                element = self.elements.bySymbol[sym]
                 nb = NuclideBase(element, a, mass, abun, state, halflife, skipGlobal=True)
                 nb.nuSF = nuSF
                 self.addNuclide(nb)
 
     def __addNaturalNuclideBases(self):
         """Generates a complete set of nuclide bases for each naturally occurring element."""
-        for element in elements.byZ.values():  # TODO: JOHN. Elements() used here.
+        for element in self.elements.byZ.values():
             if element.symbol not in self.byName:
                 if element.isNaturallyOccurring():
                     self.addNuclide(NaturalNuclideBase(element.symbol, element, skipGlobal=True))
@@ -1888,12 +1888,12 @@ class NuclideBases:
         """TODO."""
         for nuc in self.instances:
             if nuc.element is not None:
-                nuc.element = elements.byZ[nuc.z]  # TODO: JOHN. Elements() used here.
+                nuc.element = self.elements.byZ[nuc.z]
                 nuc.element.append(nuc)
 
     def __deriveElementalWeightsByNaturalNuclideAbundances(self):
         """Derives and sets the standard atomic weights for each element that has naturally occurring nuclides."""
-        for element in elements.byName.values():  # TODO: JOHN. Elements() used here.
+        for element in self.elements.byName.values():
             numer = 0.0
             denom = 0.0
             for nb in element.getNaturalIsotopics():

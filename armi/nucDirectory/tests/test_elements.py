@@ -15,13 +15,14 @@
 
 import unittest
 
-from armi.nucDirectory.elements import ChemicalPhase, Element, Elements
+from armi.nucDirectory.elements import ChemicalPhase, Element
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 
 class TestElements(unittest.TestCase):
     def setUp(self):
-        self.elements = Elements()
-        self.elements.factory()
+        self.nuclideBases = NuclideBases()
+        self.elements = self.nuclideBases.elements
 
     def test_elements_elementBulkProperties(self):
         numElements = len(self.elements.byZ)
