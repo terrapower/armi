@@ -17,12 +17,11 @@ import unittest
 
 from armi.materials.lithium import Lithium
 from armi.materials.tests.test_materials import _Material_Test
-from armi.nucDirectory import nuclideBases as nb
 
 
 class Lithium_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = Lithium
-    defaultMassFrac = nb.byName["LI6"].abundance
+    defaultMassFrac = 0.0759
 
     def setUp(self):
         _Material_Test.setUp(self)
