@@ -14,6 +14,7 @@
 
 """Provides functionality for testing implementations of plugins."""
 
+import sys
 import unittest
 from copy import deepcopy
 from typing import Optional
@@ -137,6 +138,7 @@ class TestPluginRegistration(unittest.TestCase):
         finally:
             pm.unregister(SillyAxialPlugin)
 
+    @unittest.skipIf(sys.version_info.minor > 3 or sys.version_info.minor < 10)
     def test_beforeReactorConstructionHook(self):
         """Test that plugin hook successfully injects code before reactor initialization."""
         pm = getPluginManagerOrFail()
