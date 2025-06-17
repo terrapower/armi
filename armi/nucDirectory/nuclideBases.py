@@ -1207,7 +1207,7 @@ def factory():
     # reload the thermal scattering library with the new nuclideBases too
     from armi.nucDirectory import thermalScattering
 
-    thermalScattering.factory()
+    thermalScattering.factory(byName)
 
 
 def addNuclideBases():
@@ -1523,10 +1523,10 @@ class NuclideBases:
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
-        # reload the thermal scattering library with the new nuclideBases too
+        # reload the thermal scattering library with the new nuclideBases too: TODO: JOHN: wording...
         from armi.nucDirectory import thermalScattering
 
-        thermalScattering.factory()
+        thermalScattering.factory(self.byName)
 
     def initReachableActiveNuclidesThroughBurnChain(self, numberDensities, activeNuclides):
         """

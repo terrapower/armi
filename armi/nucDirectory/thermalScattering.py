@@ -198,7 +198,7 @@ class ThermalScattering:
         return label
 
 
-def factory():
+def factory(byName):
     """
     Generate the :class:`ThermalScattering` instances.
 
@@ -220,17 +220,17 @@ def factory():
     global byNbAndCompound
     byNbAndCompound.clear()
 
-    al27 = nb.byName["AL27"]
-    fe56 = nb.byName["FE56"]
-    be = nb.byName["BE"]
-    c = nb.byName["C"]
-    d = nb.byName["H2"]
-    n = nb.byName["N"]
-    o = nb.byName["O"]
-    h = nb.byName["H"]
-    u = nb.byName["U"]
-    zr = nb.byName["ZR"]
-    si = nb.byName["SI"]
+    al27 = byName["AL27"]
+    fe56 = byName["FE56"]
+    be = byName["BE"]
+    c = byName["C"]
+    d = byName["H2"]
+    n = byName["N"]
+    o = byName["O"]
+    h = byName["H"]
+    u = byName["U"]
+    zr = byName["ZR"]
+    si = byName["SI"]
 
     for isotope in [al27, fe56]:
         byNbAndCompound[isotope, None] = ThermalScattering(isotope)
