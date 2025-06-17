@@ -71,8 +71,7 @@ CRYSTALLINE_GRAPHITE = "crystalline-graphite"
 GRAPHITE_10P = "reactor-graphite-10P"
 GRAPHITE_30P = "reactor-graphite-30P"
 
-
-byNbAndCompound = {}
+byNbAndCompound = {}  # TODO: This can be removed when we get rid of globals
 
 
 class ThermalScattering:
@@ -217,7 +216,7 @@ def factory(byName):
         This gets called automatically during init, so don't call it
         unless you know what you're doing.
     """
-    global byNbAndCompound
+    global byNbAndCompound  # TODO: This can be removed when we get rid of globals
     byNbAndCompound.clear()
 
     al27 = byName["AL27"]
@@ -256,3 +255,5 @@ def factory(byName):
     )
     byNbAndCompound[c, GRAPHITE_10P] = ThermalScattering(c, GRAPHITE_10P, f"tsl-{GRAPHITE_10P}.endf", "grph10")
     byNbAndCompound[c, GRAPHITE_30P] = ThermalScattering(c, GRAPHITE_30P, f"tsl-{GRAPHITE_30P}.endf", "grph30")
+
+    return byNbAndCompound

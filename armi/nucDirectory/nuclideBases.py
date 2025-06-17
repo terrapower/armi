@@ -1453,6 +1453,7 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+        self.byNbAndCompound = {}
         self.nuclidesFile = os.path.join(context.RES, "nuclides.dat")
         self.mccNuclidesFile = os.path.join(context.RES, "mcc-nuclides.yaml")
         self.factory()
@@ -1470,6 +1471,7 @@ class NuclideBases:
         self.byMcc3IdEndfbVII1 = {}
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
+        self.byNbAndCompound = {}
 
     def addNuclide(self, nuclide: INuclide):
         """Add an element to the dictionaries in this class."""
@@ -1511,9 +1513,11 @@ class NuclideBases:
                 "first."
             )
 
+        # load the fundamental elements library
         self.elements = elements.Elements()
         self.elements.factory()
 
+        # load the isotopes and isomers library
         self.addNuclideBases()
         self.__addNaturalNuclideBases()
         self.__addDummyNuclideBases()
@@ -1523,10 +1527,10 @@ class NuclideBases:
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
-        # reload the thermal scattering library with the new nuclideBases too: TODO: JOHN: wording...
+        # load the thermal scattering library with these nuclideBases
         from armi.nucDirectory import thermalScattering
 
-        thermalScattering.factory(self.byName)
+        self.byNbAndCompound = thermalScattering.factory(self.byName)
 
     def initReachableActiveNuclidesThroughBurnChain(self, numberDensities, activeNuclides):
         """
