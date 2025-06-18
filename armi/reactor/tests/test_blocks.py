@@ -26,7 +26,8 @@ import numpy as np
 from numpy.testing import assert_allclose
 
 from armi import materials, runLog, settings, tests
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsCollections
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics import GAMMA, NEUTRON
@@ -1654,6 +1655,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_expandElementalToIsotopics(self):
         """Tests the expand to elementals capability."""
+        nuclideBases = NuclideBases()
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]
@@ -1686,6 +1688,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_expandAllElementalsToIsotopics(self):
         """Tests the expand all elementals simlutaneously capability."""
+        nuclideBases = NuclideBases()
         initialN = {}
         initialM = {}
         elementals = [nuclideBases.byName[nn] for nn in ["FE", "CR", "SI", "V", "MO"]]

@@ -20,7 +20,8 @@ import unittest
 from copy import deepcopy
 
 from armi import nuclearDataIO, runLog, settings, utils
-from armi.nucDirectory import nucDir, nuclideBases
+from armi.nucDirectory import nucDir
+from armi.nucDirectory.nuclideBases import NuclideBase, NuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
@@ -35,6 +36,7 @@ from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:
+    nuclideBases = NuclideBases()
     allNuclidesInProblem = set(nuclideBases.byName.keys())
     """:meta hide-value:"""
     activeNuclides = allNuclidesInProblem
@@ -718,7 +720,7 @@ class TestCompositeTree(unittest.TestCase):
 
         mass = 0.0
         for nucName in self.refDict.keys():
-            if nucName in nuclideBases.NuclideBase.fissile:
+            if nucName in NuclideBase.fissile:
                 mass += self.block.getMass(nucName)
         ref = mass
 

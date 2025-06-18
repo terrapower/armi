@@ -1489,6 +1489,7 @@ class NuclideBases:
         if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
             self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
+    # TODO: This could take optional nuclides.dat files paths
     def factory(self):
         """
         Reads data files to instantiate the :py:class:`INuclides <INuclide>`.

@@ -452,7 +452,7 @@ TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
 
 
 class Elements:
-    """TODO."""
+    """A collection of all the fundamental elements on the Periodic Table."""
 
     def __init__(self):
         self.byZ = {}
@@ -475,6 +475,7 @@ class Elements:
         self.byName[element.name] = element
         self.bySymbol[element.symbol] = element
 
+    # TODO: This could take an optional elements.dat file path
     def factory(self):
         """Generate the :class:`Elements <Element>` instances."""
         self.clear()
