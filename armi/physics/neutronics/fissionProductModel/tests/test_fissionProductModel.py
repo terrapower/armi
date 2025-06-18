@@ -15,7 +15,6 @@
 
 import unittest
 
-from armi import nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
@@ -117,7 +116,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
         # products in the reactor data model.
         self.fpModel.interactBOL()
 
-        for nb in nuclideBases.byMcc3Id.values():
+        for nb in self.r.nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, self.r.blueprints.nuclideFlags.keys())
 
     def test_nuclidesInModelFuel(self):
@@ -128,7 +127,7 @@ class TestFissionProductModelExplicitMC2Library(unittest.TestCase):
 
         b = self.r.core.getFirstBlock(Flags.FUEL)
         nuclideList = b.getNuclides()
-        for nb in nuclideBases.byMcc3Id.values():
+        for nb in self.r.nuclideBases.byMcc3Id.values():
             self.assertIn(nb.name, nuclideList)
 
 
@@ -197,7 +196,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
         for b in self.r.core.iterBlocks():
             nuclideList = b.getNuclides()
             if isDepletable(b):
-                for nb in nuclideBases.byMcc3Id.values():
+                for nb in self.r.nuclideBases.byMcc3Id.values():
                     self.assertIn(nb.name, nuclideList)
             else:
-                self.assertLess(len(b.getNuclides()), len(nuclideBases.byMcc3Id))
+                self.assertLess(len(b.getNuclides()), len(self.r.nuclideBases.byMcc3Id))
