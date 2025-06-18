@@ -1435,10 +1435,7 @@ TODO: Above this point is the old "global nuclides" code. Soon to be deleted.
 
 
 class NuclideBases:
-    """
-    TODO: This is the class I am crafting to replace global nuclides.
-    To start with, I will keep everything global, but use this class.
-    """
+    """A collection of NuclideBase objects, used to represent a collection of nuclides / isotopes."""
 
     def __init__(self):
         self.burnChainImposed = False
@@ -1588,7 +1585,7 @@ class NuclideBases:
         raise ValueError(msg)
 
     def isotopes(self, z: int):
-        """TODO."""
+        """Get all the nuclides in this collection for a given atomic number."""
         return self.elements.byZ[z].nuclides
 
     def getIsotopics(self, nucName):
@@ -1789,7 +1786,7 @@ class NuclideBases:
         )
 
     def __addLumpedFissionProductNuclideBases(self):
-        """TODO."""
+        """Add a custom selection of lumped fission products to the collection."""
         self.addNuclide(
             LumpNuclideBase(
                 element=self.elements.byName["LumpedFissionProduct"], name="LFP35", weight=233.273, skipGlobal=True
@@ -1889,7 +1886,7 @@ class NuclideBases:
         self.byDBName[self.byName["AM242"].getDatabaseName()] = am242m
 
     def __renormalizeNuclideToElementRelationship(self):
-        """TODO."""
+        """Connect all the nuclides in this collection to the correct element."""
         for nuc in self.instances:
             if nuc.element is not None:
                 nuc.element = self.elements.byZ[nuc.z]

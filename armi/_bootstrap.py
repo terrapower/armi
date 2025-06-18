@@ -21,4 +21,4 @@ from armi.nucDirectory import nuclideBases  # noqa: E402
 # at this point, but only after input is read. Nuclides need to be built super early
 # because some import-time code needs them to function. Namely, Block parameter
 # collection uses them to create number density params.
-nuclideBases.factory()
+nuclideBases.factory()  # TODO: Removable as soon as globals go away.

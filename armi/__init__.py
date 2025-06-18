@@ -81,7 +81,7 @@ from armi.context import (
     Mode,
 )
 from armi.meta import __version__
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory import nuclideBases  # TODO: Removable as soon as globals go away.
 from armi.reactor import flags, parameters
 
 # ARMI does not configure its own application by default. This is mostly to catch issues
