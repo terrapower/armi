@@ -47,7 +47,7 @@ def bootstrapArmiTestEnv():
     .. tip:: This can be imported and run from other ARMI applications
         for test support.
     """
-    from armi.nucDirectory import nuclideBases
+    from armi.nucDirectory import nuclideBases  # TODO: Last step, simply remove at the very end
 
     cs = caseSettings.Settings()
 

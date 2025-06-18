@@ -16,7 +16,6 @@
 import math
 
 from armi.materials.material import Fluid
-from armi.nucDirectory import elements
 from armi.utils import units
 from armi.utils.units import getTk
 
@@ -72,8 +71,8 @@ class Water(Fluid):
     }
 
     def setDefaultMassFracs(self) -> None:
-        massHydrogen = elements.bySymbol["H"].standardWeight
-        massOxygen = elements.bySymbol["O"].standardWeight
+        massHydrogen = 1.007976004510346
+        massOxygen = 15.999304715704756
         totalMass = 2 * massHydrogen + massOxygen
         massFrac = {"H": 2.0 * massHydrogen / totalMass, "O": massOxygen / totalMass}
         for nucName, mfrac in massFrac.items():
