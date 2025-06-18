@@ -161,3 +161,6 @@ class TestThermalScattering(unittest.TestCase):
             raise RuntimeError(f"{freeAndBound} is/are present in both bound and free forms in {armiObj}")
 
         return tslByNuclideBase
+
+    def test_factory(self):
+        pass

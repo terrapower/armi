@@ -56,7 +56,6 @@ Thus, in practice, users should rarely instantiate these on their own.
 
 from typing import Tuple, Union
 
-from armi.nucDirectory import elements  # TODO: JOHN! Major design choices ahead.
 from armi.nucDirectory import nuclideBases as nb
 
 BE_METAL = "Be-metal"
@@ -161,7 +160,7 @@ class ThermalScattering:
             label = f"tsl-{first.element.symbol}in{self.compoundName}.endf"
         elif isinstance(first, nb.NuclideBase):
             # just isotope
-            element = elements.byZ[first.z]
+            element = first.element
             label = f"tsl-{first.z:03d}_{element.symbol.capitalize()}_{first.a:03d}.endf"
         else:
             raise ValueError(f"{self} label cannot be generated")
@@ -188,7 +187,7 @@ class ThermalScattering:
             label = f"{first.element.symbol.lower()}-{self.compoundName.lower()}"
         elif isinstance(first, nb.NuclideBase):
             # just isotope
-            element = elements.byZ[first.z]
+            element = first.element
             label = f"{element.symbol.lower()}-{first.a:d}"
         else:
             raise ValueError(f"{self} label cannot be generated")
