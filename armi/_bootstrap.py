@@ -14,11 +14,11 @@
 
 """Code that needs to be executed before most ARMI components are safe to import."""
 
-from armi.nucDirectory import nuclideBases  # noqa: E402
+from armi.nucDirectory import nuclideBases  # noqa: E402  # TODO: Delete this whole file when Globals go away.
 
 # Nuclide bases get built explicitly here to have better determinism
 # about when they get instantiated. The burn chain is not applied
 # at this point, but only after input is read. Nuclides need to be built super early
 # because some import-time code needs them to function. Namely, Block parameter
 # collection uses them to create number density params.
-nuclideBases.factory()  # TODO: Removable as soon as globals go away.
+nuclideBases.factory()

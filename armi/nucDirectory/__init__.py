@@ -36,7 +36,8 @@ and are mainly used as a building block of the nuclide objects discussed below. 
 grab an element for some reason there are three available dictionaries provided for rapid
 access.::
 
-    >>> from armi.nucDirectory import elements
+    >>> from armi.nucDirectory.elements import Elements
+    >>> elements = Elements()
     >>> uranium = elements.byZ[92]
     >>> uranium.name
     'uranium'
@@ -52,8 +53,8 @@ Likewise, elements can be retrieved by their name or symbol.::
     True
 
 .. warning ::
-    Note that :py:data:`~armi.nucDirectory.elements.byName` and
-    :py:data:`~armi.nucDirectory.elements.bySymbol` are case specific;
+    Note that :py:data:`~armi.nucDirectory.elements.Elements.byName` and
+    :py:data:`~armi.nucDirectory.elements.Elements.bySymbol` are case specific;
     names are *lower case* and symbols are *UPPER CASE*.
 
 The elements are truly the *same* :py:class:`~armi.nucDirectory.elements.Element` object.
@@ -80,7 +81,8 @@ some basic information, such as Z, A, and atomic weight (if known). Similar to
 :py:class:`Elements <armi.nucDirectory.elements.Element>`, the information is loaded from a
 series of data files within ARMI. The data is originally from [NIST]_::
 
-    >>> from armi.nucDirectory import nuclideBases
+    >>> from armi.nucDirectory.nuclideBases import NuclideBases
+    >>> nuclideBases = NuclideBases()
     >>> u235= nuclideBases.byName['U235']
     >>> u235.z
     92
@@ -92,7 +94,7 @@ series of data files within ARMI. The data is originally from [NIST]_::
 .. [NIST] http://physics.nist.gov/cgi-bin/Compositions/stand_alone.pl
 
 Upon loading the :py:mod:`armi.nucDirectory` package, the
-:py:data:`nuclideBases.instances <armi.nucDirectory.nuclideBases.instances>`, will
+:py:data:`NuclideBases.instances <armi.nucDirectory.nuclideBases.NuclideBases.instances>`, will
 be filled with nuclide base objects. Nuclide bases do not *do* much, but they contain a lot of
 basic information about a nuclide, such as the atomic mass, atomic number (Z), the mass
 number (A), the natural abundance, and all of the decay and transmutation modes (well, ARMI's
@@ -126,13 +128,14 @@ Indices - rapid access
 
 There are three main ways to retrieve a nuclide, which are provided for convenience depending on
 what information you have, or "know," about a nuclide. For example, if you know a nuclide name, use
-the :py:data:`~armi.nucDirectory.nuclideBases.byName` dictionary. There are also dictionaries
-available for retrieving by the label, :py:data:`~armi.nucDirectory.nuclideBases.byLabel`, and by
+the :py:data:`~armi.nucDirectory.nuclideBases.NuclideBases.byName` dictionary. There are also dictionaries
+available for retrieving by the label, :py:data:`~armi.nucDirectory.nuclideBases.NuclideBases.byLabel`, and by
 other software-specific IDs (i.e., MCNP, Serpent, MC2-2, and MC2-3). The software-specific labels
 are incorporated into the framework to support plugin developments and may be extended as needed
 by end-users as needs arise.
 
-    >>> from armi.nucDirectory import nuclideBases
+    >>> from armi.nucDirectory.nuclideBases import NuclideBases
+    >>> nuclideBases = NuclideBases()
     >>> pu239 = nuclideBases.byName['PU239']
     >>> pu239.z
     94
