@@ -163,4 +163,5 @@ class TestThermalScattering(unittest.TestCase):
         return tslByNuclideBase
 
     def test_factory(self):
+        # TODO: test default and with custom / simpler inputs
         pass
