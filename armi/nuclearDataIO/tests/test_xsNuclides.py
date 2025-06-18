@@ -16,7 +16,7 @@
 
 import unittest
 
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import isotxs, xsLibraries, xsNuclides
 from armi.tests import ISOAA_PATH, mockRunLogs
 
@@ -25,6 +25,7 @@ class NuclideTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.nuclideBases = NuclideBases()
 
     def test_nucl_createFromLabelFailsOnBadName(self):
         nuc = xsNuclides.XSNuclide(None, "BACONAA")
@@ -33,7 +34,7 @@ class NuclideTests(unittest.TestCase):
             nuc.updateBaseNuclide()
 
     def test_nuc_creatingNucNotMessWithUnderlyingNucDict(self):
-        nuc = nuclideBases.byName["U238"]
+        nuc = self.nuclideBases.byName["U238"]
         self.assertFalse(hasattr(nuc, "xsId"))
         nrAA = xsNuclides.XSNuclide(None, "U238AA")
         nrAA.isotxsMetadata["nuclideId"] = nuc.name
@@ -43,7 +44,11 @@ class NuclideTests(unittest.TestCase):
 
     def test_nucl_modifyingNucAttrUpdatesTheIsotxsNuc(self):
         lib = xsLibraries.IsotxsLibrary()
+        # TODO: This fails because xsNuclides.py needs updates
+        from armi.nucDirectory import nuclideBases
+
         nuc = nuclideBases.byName["FE"]
+        # nuc = self.nuclideBases.byName["FE"]  # TODO: This fails because xsNuclides.py needs updates
         nrAA = xsNuclides.XSNuclide(lib, "FEAA")
         lib["FEAA"] = nrAA
         nrAA.isotxsMetadata["nuclideId"] = nuc.name
@@ -59,7 +64,7 @@ class NuclideTests(unittest.TestCase):
     def test_nuclide_newLabelsDontCauseWarnings(self):
         with mockRunLogs.BufferLog() as logCapture:
             self.assertEqual("", logCapture.getStdout())
-            fe = nuclideBases.byName["FE"]
+            fe = self.nuclideBases.byName["FE"]
             feNuc = xsNuclides.XSNuclide(None, "FEAA")
             feNuc.isotxsMetadata["nuclideId"] = fe.name
             feNuc.updateBaseNuclide()
@@ -69,7 +74,7 @@ class NuclideTests(unittest.TestCase):
     def test_nuclide_oldLabelsCauseWarnings(self):
         with mockRunLogs.BufferLog() as logCapture:
             self.assertEqual("", logCapture.getStdout())
-            pu = nuclideBases.byName["PU239"]
+            pu = self.nuclideBases.byName["PU239"]
             puNuc = xsNuclides.XSNuclide(None, "PLUTAA")
             puNuc.isotxsMetadata["nuclideId"] = pu.name
             puNuc.updateBaseNuclide()
