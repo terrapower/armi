@@ -27,7 +27,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from armi import configure, materials
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 MAX_Z = 98  # stop at Californium
 
@@ -39,6 +39,7 @@ numMats = len(mats)
 
 zVals = np.zeros((numMats, MAX_Z))
 
+nuclideBases = NuclideBases()
 for mi, matCls in enumerate(mats):
     m = matCls()
     materialNames.append(m.name)

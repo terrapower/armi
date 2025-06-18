@@ -38,7 +38,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 
 from armi.context import RES
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 
 
 def plotNuc(nb, ax):
@@ -63,6 +63,7 @@ def plotNuc(nb, ax):
 def plotAll(xlim, ylim):
     """Plot all nuclides and transformations."""
     # load the burn chain input that comes with ARMI
+    nuclideBases = NuclideBases()
     with open(os.path.join(RES, "burn-chain.yaml")) as burnChainStream:
         nuclideBases.imposeBurnChain(burnChainStream)
     nbs = nuclideBases.instances

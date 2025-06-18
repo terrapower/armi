@@ -25,7 +25,6 @@ that it made it into the framework
 # sphinx_gallery_thumbnail_path = '.static/armi-logo.png'
 
 from armi import configure
-from armi.nucDirectory import nuclideBases as nb
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
 from armi.utils.densityTools import formatMaterialCard
@@ -40,5 +39,5 @@ bFuel = r.core.getBlocks(Flags.FUEL)[0]
 for ci, component in enumerate(bFuel, start=1):
     ndens = component.getNumberDensities()
     # convert nucName (str) keys to nuclideBase keys
-    ndensByBase = {nb.byName[nucName]: dens for nucName, dens in ndens.items()}
+    ndensByBase = {r.nuclideBases.byName[nucName]: dens for nucName, dens in ndens.items()}
     print("".join(formatMaterialCard(ndensByBase, matNum=ci)))
