@@ -16,7 +16,7 @@
 import unittest
 
 from armi import nuclearDataIO
-from armi.nucDirectory import nuclideBases
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import isotxs
 from armi.tests import ISOAA_PATH
@@ -31,6 +31,7 @@ class TestIsotxs(unittest.TestCase):
         # load a library that is in the ARMI tree. This should
         # be a small library with LFPs, Actinides, structure, and coolant
         cls.lib = isotxs.readBinary(ISOAA_PATH)
+        cls.nuclideBases = NuclideBases()
 
     def test_writeBinary(self):
         """Test reading in an ISOTXS file, and then writing it back out again.
@@ -119,8 +120,8 @@ class TestIsotxs(unittest.TestCase):
             self.assertAlmostEqual(v1, v2)
 
     def test_getNuclide(self):
-        self.assertEqual(nuclideBases.byName["U235"], self.lib.getNuclide("U235", "AA")._base)
-        self.assertEqual(nuclideBases.byName["PU239"], self.lib.getNuclide("PU239", "AA")._base)
+        self.assertEqual(self.nuclideBases.byName["U235"], self.lib.getNuclide("U235", "AA")._base)
+        self.assertEqual(self.nuclideBases.byName["PU239"], self.lib.getNuclide("PU239", "AA")._base)
 
     def test_n2nIsReactionBased(self):
         """
