@@ -19,7 +19,7 @@ import unittest
 from copy import deepcopy
 
 from armi.nuclearDataIO import xsLibraries
-from armi.nuclearDataIO.cccc import gamiso
+from armi.nuclearDataIO.cccc import gamiso, isotxs
 from armi.nuclearDataIO.xsNuclides import XSNuclide
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -69,3 +69,14 @@ class TestGamiso(unittest.TestCase):
         diff = set(after).difference(set(before))
         self.assertEqual(len(diff), 1)
         self.assertEqual(list(diff)[0].xsId, "38")
+
+    def test_addDummyNuclidesToLibraryNumGroups(self):
+        isoLib = isotxs.readBinary(os.path.join(FIXTURE_DIR, "ISOAA"))
+        gamLib = gamiso.readBinary(GAMISO_AA)
+        gamLib.gamisoMetadata["numGroups"] = 50
+        dummyNuc = XSNuclide(isoLib, "DMP1AA")
+        dummyNuc.isotxsMetadata = isoLib.getNuclides("AA")[0].isotxsMetadata
+        gamiso.addDummyNuclidesToLibrary(gamLib, [dummyNuc])
+        # Why doesn't  lib.getNuclide("DMP1", "AA") work?
+        self.assertEqual(gamLib.getNuclides("AA")[-1].nucLabel, "DMP1")
+        self.assertEqual(gamLib.getNuclides("AA")[-1].gamisoMetadata["jband"][(49, 3)], 1)
