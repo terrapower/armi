@@ -13,9 +13,9 @@
 # limitations under the License.
 """A nuclear reactor frequently has storage pools (or 'ponds') for spent fuel.
 
-This file implements a simple/default representation of such as an ARMI "system". ARMI systems, like
-the core are grids filled with ArmiObjects. This module also includes some helper tools to aid
-transferring spent fuel assemblies from the core to the SFP.
+This file implements a simple/default representation of such as an ARMI "system". ARMI systems, like the core are grids
+filled with ArmiObjects. This module also includes some helper tools to aid transferring spent fuel assemblies from the
+core to the SFP.
 """
 
 import itertools
@@ -24,9 +24,18 @@ from armi.reactor.excoreStructure import ExcoreStructure
 
 
 class SpentFuelPool(ExcoreStructure):
-    """A place to put assemblies when they've been discharged.
+    """The Spent Fuel Pool (SFP) is a place to store discharged assemblies.
 
     This class is a core-like system object, so it has a spatial grid that Assemblies can fit in.
+
+    .. impl:: The user-specified spent fuel pool.
+        :id: I_ARMI_SFP
+        :implements: R_ARMI_SFP
+
+        The SpentFuelPool is a composite structure meant to represent storage ponds for used fuel
+        assemblies. As a data structure, it is little more than a container for ``Assembly``
+        objects. It should be able to easily support adding or removing ``Assembly`` objects. And at
+        every time node the current state of the SFP will be written to the database.
     """
 
     def __init__(self, name, parent=None):
@@ -89,9 +98,9 @@ class SpentFuelPool(ExcoreStructure):
     def _getNextLocation(self):
         """Helper method to allow each discharged assembly to be easily dropped into the SFP.
 
-        The logic here is that we assume that the SFP is a rectangular-ish grid, with a set number
-        of columns per row. So when you add an Assembly here, if you don't provide a location, the
-        grid is filled in a col/row order with whatever grid cell is found open first.
+        The logic here is that we assume that the SFP is a rectangular-ish grid, with a set number of columns per row.
+        So when you add an Assembly here, if you don't provide a location, the grid is filled in a col/row order with
+        whatever grid cell is found open first.
         """
         filledLocations = {a.spatialLocator for a in self}
         grid = self.spatialGrid
@@ -112,8 +121,8 @@ class SpentFuelPool(ExcoreStructure):
         Parameters
         ----------
         startIndex : int, optional
-            The default is to start counting at zero. But if you are renumbering assemblies across
-            the entire Reactor, you may want to start at a different number.
+            The default is to start counting at zero. But if you are renumbering assemblies across the entire Reactor,
+            you may want to start at a different number.
 
         Returns
         -------

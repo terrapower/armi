@@ -1058,9 +1058,9 @@ class Block(composites.Composite):
             return tFrac
         else:
             runLog.warning(
-                "No component {0} exists on {1}, so area fraction is zero.".format(typeSpec, self),
+                f"No component {typeSpec} exists on {self}, so area fraction is zero.",
                 single=True,
-                label="{0} areaFrac is zero".format(typeSpec),
+                label=f"{typeSpec} areaFrac is zero",
             )
             return 0.0
 
@@ -1094,7 +1094,7 @@ class Block(composites.Composite):
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
 
-        raise ValueError("Cannot get Dimension because Flag not found: {0}".format(typeSpec))
+        raise ValueError(f"Cannot get Dimension because Flag not found: {typeSpec}")
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
