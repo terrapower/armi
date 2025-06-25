@@ -32,10 +32,11 @@ hard-coded into the app.
 
 The base class for all materials is in :py:mod:`armi.materials.material`.
 """
-from typing import List
+
 import importlib
 import inspect
 import pkgutil
+from typing import List
 
 from armi.materials.material import Material
 
@@ -95,9 +96,7 @@ def importMaterialsIntoModuleNamespace(path, name, namespace, updateSource=None)
         Change DATA_SOURCE on import to a different string.
         Useful for saying where plugin materials are coming from.
     """
-    for _modImporter, modname, _ispkg in pkgutil.walk_packages(
-        path=path, prefix=name + "."
-    ):
+    for _modImporter, modname, _ispkg in pkgutil.walk_packages(path=path, prefix=name + "."):
         if "test" not in modname:
             mod = importlib.import_module(modname)
             for item, obj in mod.__dict__.items():

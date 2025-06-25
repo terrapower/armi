@@ -17,22 +17,20 @@ This module performs some file manipulations, cleanups, state loads, etc.
 
 It's a bit of a catch-all interface, and it's name is admittedly not very descriptive.
 """
+
 import glob
 import itertools
 import os
 import re
 
-from armi import context
-from armi import interfaces
-from armi import operators
-from armi import runLog
-from armi import utils
-from armi.bookkeeping.db.database3 import Database3
-from armi.settings.fwSettings.globalSettings import CONF_COPY_FILES_FROM
-from armi.settings.fwSettings.globalSettings import CONF_COPY_FILES_TO
+from armi import context, interfaces, operators, runLog, utils
+from armi.bookkeeping.db.database import Database
+from armi.settings.fwSettings.globalSettings import (
+    CONF_COPY_FILES_FROM,
+    CONF_COPY_FILES_TO,
+)
 from armi.utils import pathTools
 from armi.utils.customExceptions import InputError
-
 
 ORDER = interfaces.STACK_ORDER.PREPROCESSING
 
@@ -44,7 +42,7 @@ def describeInterfaces(_cs):
 
 class MainInterface(interfaces.Interface):
     """
-    Do some basic manipulations, calls, Instantiates the databse.
+    Do some basic manipulations, calls, Instantiates the database.
 
     Notes
     -----
@@ -73,10 +71,7 @@ class MainInterface(interfaces.Interface):
         if not dbi.enabled():
             return
         dbi.initDB()
-        if (
-            self.cs["loadStyle"] != "fromInput"
-            and self.cs["runType"] != operators.RunTypes.SNAPSHOTS
-        ):
+        if self.cs["loadStyle"] != "fromInput" and self.cs["runType"] != operators.RunTypes.SNAPSHOTS:
             # load case before going forward with normal cycle
             runLog.important("MainInterface loading DB history for restart.")
 
@@ -95,8 +90,7 @@ class MainInterface(interfaces.Interface):
                 # so here we explicitly call the EOC interactions now and then proceed with normal
                 # BOL interactions for the cycle we are starting
                 runLog.important(
-                    "MainInterface calling `o.interactAllEOC` due to "
-                    "loading the last time node of the previous cycle."
+                    "MainInterface calling `o.interactAllEOC` due to loading the last time node of the previous cycle."
                 )
                 self.o.interactAllEOC(self.r.p.cycle)
 
@@ -131,9 +125,7 @@ class MainInterface(interfaces.Interface):
         """
         # handle a lot of asterisks and missing files
         copyFilesFrom = [
-            filePath
-            for possiblePath in self.cs[CONF_COPY_FILES_FROM]
-            for filePath in glob.glob(possiblePath)
+            filePath for possiblePath in self.cs[CONF_COPY_FILES_FROM] for filePath in glob.glob(possiblePath)
         ]
         copyFilesTo = self.cs[CONF_COPY_FILES_TO]
 
@@ -141,9 +133,7 @@ class MainInterface(interfaces.Interface):
             # if any files to copy, then use the first as the default, i.e. len() == 1,
             # otherwise assume '.'
             default = copyFilesTo[0] if any(copyFilesTo) else "."
-            for filename, dest in itertools.zip_longest(
-                copyFilesFrom, copyFilesTo, fillvalue=default
-            ):
+            for filename, dest in itertools.zip_longest(copyFilesFrom, copyFilesTo, fillvalue=default):
                 pathTools.copyOrWarn(CONF_COPY_FILES_FROM, filename, dest)
         else:
             runLog.error(
@@ -152,16 +142,14 @@ class MainInterface(interfaces.Interface):
                 f"    {CONF_COPY_FILES_TO}   : {copyFilesTo}\n"
                 f"    {CONF_COPY_FILES_FROM} : {copyFilesFrom}"
             )
-            raise InputError(
-                f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}"
-            )
+            raise InputError(f"Failed to process {CONF_COPY_FILES_FROM}/{CONF_COPY_FILES_TO}")
 
     def interactBOC(self, cycle=None):
         """Typically the first interface to interact beginning of cycle."""
-        runLog.important("Beginning of Cycle {0}".format(cycle))
-        runLog.LOG.clearSingleWarnings()
+        runLog.important(f"Beginning of Cycle {cycle}")
+        runLog.LOG.clearSingleLogs()
 
-        if self.cs["reallySmallRun"]:
+        if self.cs["rmExternalFilesAtBOC"]:
             self.cleanLastCycleFiles()
 
     def interactEveryNode(self, cycle, node):
@@ -171,14 +159,14 @@ class MainInterface(interfaces.Interface):
                 # skip at BOL because interactBOL handled it.
                 pass
             else:
-                with Database3(self.cs["reloadDBName"], "r") as db:
+                with Database(self.cs["reloadDBName"], "r") as db:
                     r = db.load(cycle, node, self.cs)
 
                 self.o.reattach(r, self.cs)
 
     def interactEOL(self):
-        if self.cs["smallRun"]:
-            # successful run with smallRun activated. Clean things up.
+        if self.cs["rmExternalFilesAtEOL"]:
+            # successful run with rmExternalFilesAtEOL activated. Clean things up.
             self.cleanARMIFiles()
         runLog.warningReport()
 
@@ -191,7 +179,7 @@ class MainInterface(interfaces.Interface):
         if context.MPI_RANK != 0:
             # avoid inadvertently calling from worker nodes which could cause filesystem lockups.
             raise ValueError("Only the master node is allowed to clean files here.")
-        runLog.important("Cleaning ARMI files due to smallRun option")
+        runLog.important("Cleaning ARMI files due to rmExternalFilesAtEOL option")
         for fileName in os.listdir(os.getcwd()):
             # clean simulation inputs and outputs
             for candidate in [".BCD", ".inp", ".out", "ISOTXS-"]:
@@ -229,7 +217,7 @@ class MainInterface(interfaces.Interface):
         """Delete ARMI files from previous cycle that aren't necessary for the next cycle.
         Unless you're doing reloads, of course.
         """
-        runLog.important("Cleaning ARMI files due to reallySmallRun option")
+        runLog.important("Cleaning ARMI files due to rmExternalFilesAtBOC option")
         for fileName in os.listdir(os.getcwd()):
             # clean MC**2 and REBUS inputs and outputs
             for candidate in [".BCD", ".inp", ".out", "ISOTXS-"]:
@@ -244,6 +232,5 @@ class MainInterface(interfaces.Interface):
                         os.remove(fileName)
                     except OSError:
                         runLog.warning(
-                            "Error removing file {0} during cleanup. It is still in use,"
-                            " probably".format(fileName)
+                            "Error removing file {0} during cleanup. It is still in use, probably".format(fileName)
                         )

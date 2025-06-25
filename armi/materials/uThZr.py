@@ -13,9 +13,10 @@
 # limitations under the License.
 
 """Uranium Thorium Zirconium alloy metal."""
-from armi.utils.units import getTk
-from armi.materials.material import FuelMaterial
+
 from armi import runLog
+from armi.materials.material import FuelMaterial
+from armi.utils.units import getTk
 
 
 class UThZr(FuelMaterial):
@@ -65,7 +66,6 @@ class UThZr(FuelMaterial):
         zr0 = 6.52
         th0 = 11.68
         # use vegard's law to mix densities by weight fraction at 50C
-        # uzr0 = 1.0/(zrFrac/zr0+(1-zrFrac)/u0)
         uThZr0 = 1.0 / (zrFrac / zr0 + (uFrac) / u0 + thFrac / th0)
 
         dLL = self.linearExpansionPercent(Tk=Tk)

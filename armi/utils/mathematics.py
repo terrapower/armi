@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Various math utilities."""
+
 import math
 import operator  # the python package, not the ARMI module
 import re
@@ -57,8 +58,7 @@ def average1DWithinTolerance(vals, tolerance=0.2):
 
     if (avg <= 0.0).any():
         raise ValueError(
-            "A non-physical value (<=0) was computed, but this is not possible.\n"
-            "Values: {}\navg: {}".format(vals, avg)
+            "A non-physical value (<=0) was computed, but this is not possible.\nValues: {}\navg: {}".format(vals, avg)
         )
 
     return avg
@@ -147,9 +147,7 @@ def convertToSlice(x, increment=0):
     elif isinstance(x, np.ndarray):
         return np.array([i + increment for i in x])
     else:
-        raise Exception(
-            f"It is not known how to handle x type: {type(x)} in utils.convertToSlice"
-        )
+        raise Exception(f"It is not known how to handle x type: {type(x)} in utils.convertToSlice")
 
 
 def efmt(a: str) -> str:
@@ -411,16 +409,16 @@ def minimizeScalarFunc(
         tol=tol,
         options={"maxiter": maxIterations},
     )
-    ans = float(X["x"])
+
+    # X returns `[num]` instead of `num`, so we have to grab the first/only element in that list
+    ans = float(X["x"][0])
     if positiveGuesses is True:
         ans = abs(ans)
 
     return ans
 
 
-def newtonsMethod(
-    func, goal, guess, maxIterations=None, cs=None, positiveGuesses=False
-):
+def newtonsMethod(func, goal, guess, maxIterations=None, cs=None, positiveGuesses=False):
     r"""
     Solves a Newton's method with the given function, goal value, and first guess.
 
@@ -456,7 +454,6 @@ def newtonsMethod(
     if (maxIterations is None) and (cs is not None):
         maxIterations = cs["maxNewtonsIterations"]
 
-    # try:
     ans = float(
         sciopt.newton(
             goalFunc,
@@ -503,9 +500,7 @@ def parabolaFromPoints(p1, p2, p3):
     tuple
         3 floats: a,b,c coefficients of y=ax^2+bx+c
     """
-    A = np.array(
-        [[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]]
-    )
+    A = np.array([[p1[0] ** 2, p1[0], 1], [p2[0] ** 2, p2[0], 1], [p3[0] ** 2, p3[0], 1]])
 
     b = np.array([[p1[1]], [p2[1]], [p3[1]]])
 
@@ -515,7 +510,8 @@ def parabolaFromPoints(p1, p2, p3):
         print("Error in parabola {} {}".format(A, b))
         raise
 
-    return float(x[0]), float(x[1]), float(x[2])
+    # x[#] returns `[num]` instead of `num`, so we have to grab the first/only element in that list
+    return float(x[0][0]), float(x[1][0]), float(x[2][0])
 
 
 def parabolicInterpolation(ap, bp, cp, targetY):
@@ -565,9 +561,7 @@ def parabolicInterpolation(ap, bp, cp, targetY):
         if newTime < 0:
             raise RuntimeError("No positive roots or maxima.")
         slope = 2.0 * ap * newTime + bp
-        newTime = (
-            -newTime
-        )  # return a negative newTime to signal that it is not expected to be critical.
+        newTime = -newTime  # return a negative newTime to signal that it is not expected to be critical.
         realRoots = [(newTime, slope)]
 
     return realRoots

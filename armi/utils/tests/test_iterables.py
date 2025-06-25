@@ -13,7 +13,7 @@
 # limitations under the License.
 
 """Unittests for iterables.py."""
-import time
+
 import unittest
 
 import numpy as np
@@ -69,20 +69,14 @@ class TestIterables(unittest.TestCase):
         self.assertEqual(unchu, data)
 
     def test_packingAndUnpackingBinaryStrings(self):
-        start = time.perf_counter()
         packed = iterables.packBinaryStrings(_TEST_DATA)
         unpacked = iterables.unpackBinaryStrings(packed["turtle"][0])
-        timeDelta = time.perf_counter() - start
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
-        return timeDelta
 
     def test_packingAndUnpackingHexStrings(self):
-        start = time.perf_counter()
         packed = iterables.packHexStrings(_TEST_DATA)
         unpacked = iterables.unpackHexStrings(packed["turtle"][0])
-        timeDelta = time.perf_counter() - start
         self.assertEqual(_TEST_DATA["turtle"], unpacked)
-        return timeDelta
 
     def test_sequenceInit(self):
         # init an empty sequence
@@ -112,11 +106,7 @@ class TestIterables(unittest.TestCase):
 
         # stringing together the methods in a more modern Python way
         s = iterables.Sequence(range(1000000))
-        result = tuple(
-            s.drop(lambda i: i % 2 == 0)
-            .select(lambda i: i < 20)
-            .transform(lambda i: i * 10)
-        )
+        result = tuple(s.drop(lambda i: i % 2 == 0).select(lambda i: i < 20).transform(lambda i: i * 10))
         self.assertEqual(result, (10, 30, 50, 70, 90, 110, 130, 150, 170, 190))
 
         # call tuple() after a couple methods

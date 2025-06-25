@@ -20,13 +20,13 @@ import math
 import numpy as np
 
 from armi import runLog
-from armi.utils.mathematics import findNearestValue
 from armi.physics.neutronics.const import (
     FAST_FLUX_THRESHOLD_EV,
+    HIGH_ENERGY_EV,
     MAXIMUM_XS_LIBRARY_ENERGY,
     ULTRA_FINE_GROUP_LETHARGY_WIDTH,
-    HIGH_ENERGY_EV,
 )
+from armi.utils.mathematics import findNearestValue
 
 
 def getFastFluxGroupCutoff(eGrpStruc):
@@ -103,8 +103,9 @@ def getGroupStructure(name):
         return copy.copy(GROUP_STRUCTURE[name])
     except KeyError as ke:
         runLog.error(
-            'Could not find groupStructure with the name "{}".\n'
-            "Choose one of: {}".format(name, ", ".join(GROUP_STRUCTURE.keys()))
+            'Could not find groupStructure with the name "{}".\nChoose one of: {}'.format(
+                name, ", ".join(GROUP_STRUCTURE.keys())
+            )
         )
         raise ke
 
@@ -137,6 +138,9 @@ Values are the upper bound of each energy in eV from highest energy to lowest
 
 GROUP_STRUCTURE["2"] = [HIGH_ENERGY_EV, 6.25e-01]
 
+# for calculating fast flux
+GROUP_STRUCTURE["FastFlux"] = [HIGH_ENERGY_EV, FAST_FLUX_THRESHOLD_EV]
+
 # Nuclear Reactor Engineering: Reactor Systems Engineering, Vol. 1
 GROUP_STRUCTURE["4gGlasstoneSesonske"] = [HIGH_ENERGY_EV, 5.00e04, 5.00e02, 6.25e-01]
 
@@ -159,74 +163,6 @@ GROUP_STRUCTURE["CASMO12"] = [
     3.00e-02,
 ]
 
-
-# For typically for use with MCNP will need conversion to MeV,
-# and ordering from low to high.
-GROUP_STRUCTURE["CINDER63"] = [
-    2.5000e07,
-    2.0000e07,
-    1.6905e07,
-    1.4918e07,
-    1.0000e07,
-    6.0650e06,
-    4.9658e06,
-    3.6788e06,
-    2.8651e06,
-    2.2313e06,
-    1.7377e06,
-    1.3534e06,
-    1.1080e06,
-    8.2085e05,
-    6.3928e05,
-    4.9790e05,
-    3.8870e05,
-    3.0200e05,
-    1.8320e05,
-    1.1110e05,
-    6.7380e04,
-    4.0870e04,
-    2.5540e04,
-    1.9890e04,
-    1.5030e04,
-    9.1190e03,
-    5.5310e03,
-    3.3550e03,
-    2.8400e03,
-    2.4040e03,
-    2.0350e03,
-    1.2340e03,
-    7.4850e02,
-    4.5400e02,
-    2.7540e02,
-    1.6700e02,
-    1.0130e02,
-    6.1440e01,
-    3.7270e01,
-    2.2600e01,
-    1.3710e01,
-    8.3150e00,
-    5.0430e00,
-    3.0590e00,
-    1.8550e00,
-    1.1250e00,
-    6.8300e-01,
-    4.1400e-01,
-    2.5100e-01,
-    1.5200e-01,
-    1.0000e-01,
-    8.0000e-02,
-    6.7000e-02,
-    5.8000e-02,
-    5.0000e-02,
-    4.2000e-02,
-    3.5000e-02,
-    3.0000e-02,
-    2.5000e-02,
-    2.0000e-02,
-    1.5000e-02,
-    1.0000e-02,
-    5.0000e-03,
-]
 
 # fmt: off
 # Group structures below here are derived from Appendix E in
@@ -318,9 +254,7 @@ GROUP_STRUCTURE["ANL2082"] = _create_anl_energies_with_group_lethargies(
 
 
 # fmt: on
-def _create_multigroup_structures_on_finegroup_energies(
-    multigroup_energy_bounds, finegroup_energy_bounds
-):
+def _create_multigroup_structures_on_finegroup_energies(multigroup_energy_bounds, finegroup_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     modifiedEnergyBounds = set()
     modifiedEnergyBounds.add(max(finegroup_energy_bounds))
@@ -333,9 +267,7 @@ def _create_multigroup_structures_on_finegroup_energies(
 def _create_anl_energies_with_group_energies(group_energy_bounds):
     """Set energy group bounds to the nearest ultra-fine group boundaries."""
     ufgEnergies = _create_anl_energies_with_group_lethargies(itertools.repeat(1, 2082))
-    return _create_multigroup_structures_on_finegroup_energies(
-        group_energy_bounds, ufgEnergies
-    )
+    return _create_multigroup_structures_on_finegroup_energies(group_energy_bounds, ufgEnergies)
 
 
 """
@@ -802,7 +734,7 @@ GROUP_STRUCTURE["ARMI45"] = _create_anl_energies_with_group_energies(
 )
 
 """
-Taken from Table 5.1 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.1 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL21G"] = [
@@ -830,7 +762,7 @@ GROUP_STRUCTURE["ANL21G"] = [
 ]
 
 """
-Taken from Table 5.2 of "GAMSOR: Gamma Souce Preparation and DIF3D Flux Solution",
+Taken from Table 5.2 of "GAMSOR: Gamma Source Preparation and DIF3D Flux Solution",
 ANL/NE-16/50 Rev 2.0, M.A. Smith, C.H. Lee, R.N. Hill, Aug 30 2022.
 """
 GROUP_STRUCTURE["ANL94G"] = [

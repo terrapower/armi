@@ -16,7 +16,7 @@ settings:
   neutronicsKernel: DIF3D-FD
   neutronicsOutputsToSave: All
   neutronicsType: both
-  numProcessors: 36
+  nTasks: 36
   outers: 200
   power: 0.001
   verbosity: debug

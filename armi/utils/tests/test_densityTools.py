@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test densityTools."""
+
 import unittest
 
 from armi.materials.material import Material
@@ -74,9 +75,7 @@ class TestDensityTools(unittest.TestCase):
         for symbol in ["U", "O"]:
             self.assertIn(symbol, uo2Chemicals.keys())
 
-        self.assertAlmostEqual(
-            uo2Chemicals["U"], uo2.massFrac["U235"] + uo2.massFrac["U238"], 6
-        )
+        self.assertAlmostEqual(uo2Chemicals["U"], uo2.massFrac["U235"] + uo2.massFrac["U238"], 6)
         self.assertAlmostEqual(uo2Chemicals["O"], uo2.massFrac["O"], 6)
 
         # ensure getChemicals works if the nuclideBase is the dict key
@@ -112,12 +111,8 @@ class TestDensityTools(unittest.TestCase):
         fertileMassFracs = {"U238": 0.3, "PU240": 0.7}
         densityTools.applyIsotopicsMix(uo2, enrichedMassFracs, fertileMassFracs)
 
-        self.assertAlmostEqual(
-            uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1
-        )  # HM blended
-        self.assertAlmostEqual(
-            uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3
-        )  # HM blended
+        self.assertAlmostEqual(uo2.massFrac["U234"], (1 - massFracO) * 0.2 * 0.1)  # HM blended
+        self.assertAlmostEqual(uo2.massFrac["U238"], (1 - massFracO) * 0.8 * 0.3)  # HM blended
         self.assertAlmostEqual(uo2.massFrac["O"], massFracO)  # non-HM stays unchanged
 
     def test_getNDensFromMasses(self):
@@ -164,13 +159,7 @@ class TestDensityTools(unittest.TestCase):
         self.assertAlmostEqual(m, 843.5790671316283)
 
     def test_normalizeNuclideList(self):
-        """
-        Normalize a nuclide list.
-
-        .. test:: Normalize nuclide vector
-            :id: T_ARMI_UTIL_DENS_TOOLS
-            :tests: R_ARMI_UTIL_DENS_TOOLS
-        """
+        """Normalize a nuclide list."""
         nList = {"PU239": 23.2342, "U234": 0.001234, "U235": 34.152}
         norm = densityTools.normalizeNuclideList(nList)
 

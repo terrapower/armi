@@ -13,13 +13,10 @@
 # limitations under the License.
 
 """Tests the Interface."""
-import unittest
-import os
 
-from armi import interfaces
-from armi import settings
-from armi.tests import TEST_ROOT
-from armi.utils import textProcessors
+import unittest
+
+from armi import interfaces, settings
 
 
 class DummyInterface(interfaces.Interface):
@@ -75,34 +72,13 @@ class TestCodeInterface(unittest.TestCase):
         self.assertEqual(i.enabled(), iDup.enabled())
 
 
-class TestTextProcessor(unittest.TestCase):
-    """Test Text processor."""
-
-    def setUp(self):
-        self.tp = textProcessors.TextProcessor(os.path.join(TEST_ROOT, "geom.xml"))
-
-    def test_fsearch(self):
-        """Test fsearch in re mode."""
-        line = self.tp.fsearch("xml")
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
-
-    def test_fsearch_text(self):
-        """Test fsearch in text mode."""
-        line = self.tp.fsearch("xml", textFlag=True)
-        self.assertIn("version", line)
-        self.assertEqual(self.tp.fsearch("xml"), "")
-
-
 class TestTightCoupler(unittest.TestCase):
     """Test the tight coupler class."""
 
     def setUp(self):
         cs = settings.Settings()
         cs["tightCoupling"] = True
-        cs["tightCouplingSettings"] = {
-            "dummyAction": {"parameter": "nothing", "convergence": 1.0e-5}
-        }
+        cs["tightCouplingSettings"] = {"dummyAction": {"parameter": "nothing", "convergence": 1.0e-5}}
         self.interface = DummyInterface(None, cs)
 
     def test_couplerActive(self):

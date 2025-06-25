@@ -12,18 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for MPI actions."""
+
 import unittest
 
+from armi import context
 from armi.mpiActions import (
-    _diagnosePickleError,
     DistributeStateAction,
     DistributionAction,
     MpiAction,
-    runActions,
+    _diagnosePickleError,
     _disableForExclusiveTasks,
     _makeQueue,
+    runActions,
 )
-from armi import context
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 from armi.utils import iterables
@@ -125,9 +126,7 @@ class MpiIterTests(unittest.TestCase):
         allObjs = list(range(numObjs))
         objs = self._distributeObjects(allObjs, numProcs)
 
-        o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         act = DistributionAction([self.action])
         act.invokeHook = passer
@@ -140,9 +139,7 @@ class MpiIterTests(unittest.TestCase):
         allObjs = list(range(numObjs))
         objs = self._distributeObjects(allObjs, numProcs)
 
-        o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         act = DistributeStateAction([self.action])
 
         act.invokeHook = passer
@@ -156,9 +153,7 @@ class MpiIterTests(unittest.TestCase):
         We expect this to run all the way through the pickle diagnoser,
         because the test reactor should be easily picklable.
         """
-        o, _ = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, _ = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         with mockRunLogs.BufferLog() as mock:
             self.assertEqual("", mock.getStdout())
@@ -185,12 +180,10 @@ class QueueActionsTests(unittest.TestCase):
         for i in exclusiveIndices:
             actionsThisRound[i].runActionExclusive = True
 
-        useForComputation = _disableForExclusiveTasks(
-            actionsThisRound, useForComputation
-        )
+        useForComputation = _disableForExclusiveTasks(actionsThisRound, useForComputation)
         for i in range(num):
             if i in exclusiveIndices:
-                # wont be used for computation in future round
+                # won't be used for computation in future round
                 self.assertFalse(useForComputation[i])
             else:
                 self.assertTrue(useForComputation[i])

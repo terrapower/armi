@@ -12,25 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """XS Settings tests."""
+
 import io
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
 from armi import settings
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.physics.neutronics.crossSectionSettings import CONF_BLOCK_REPRESENTATION
-from armi.physics.neutronics.crossSectionSettings import CONF_GEOM
-from armi.physics.neutronics.crossSectionSettings import XSModelingOptions
-from armi.physics.neutronics.crossSectionSettings import XSSettingDef
-from armi.physics.neutronics.crossSectionSettings import XSSettings
-from armi.physics.neutronics.crossSectionSettings import xsSettingsValidator
-from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
-from armi.physics.neutronics.settings import (
-    CONF_XS_BLOCK_REPRESENTATION,
-    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+from armi.physics.neutronics.crossSectionSettings import (
+    CONF_BLOCK_REPRESENTATION,
+    CONF_GEOM,
+    XSModelingOptions,
+    XSSettingDef,
+    XSSettings,
+    xsSettingsValidator,
 )
+from armi.physics.neutronics.settings import (
+    CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
+    CONF_XS_BLOCK_REPRESENTATION,
+)
+from armi.physics.neutronics.tests.test_neutronicsPlugin import XS_EXAMPLE
 from armi.settings import caseSettings
 
 
@@ -118,8 +121,10 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("YA", xsModel)
         self.assertEqual(xsModel["YA"].geometry, "0D")
         self.assertEqual(xsModel["YA"].criticalBuckling, True)
+        self.assertEqual(xsModel["YA"].ductHeterogeneous, False)
+        self.assertEqual(xsModel["YA"].traceIsotopeThreshold, 0.0)
 
-    def test_setDefaultSettingsByLowestBuGroupHomogeneous(self):
+    def test_setDefSettingsByLowestEnvGroupHomog(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xs = XSSettings()
@@ -145,7 +150,7 @@ class TestCrossSectionSettings(unittest.TestCase):
         self.assertNotIn("JB", xs)
         self.assertNotEqual(xs["JD"], xs["JB"])
 
-    def test_setDefaultSettingsByLowestBuGroupOneDimensional(self):
+    def test_setDefSettingsByLowestEnvGroup1D(self):
         # Initialize some micro suffix in the cross sections
         cs = settings.Settings()
         xsModel = XSSettings()
@@ -177,7 +182,13 @@ class TestCrossSectionSettings(unittest.TestCase):
         """Test that optional key shows up with default value."""
         cs = settings.Settings()
         xsModel = XSSettings()
-        da = XSModelingOptions("DA", geometry="1D cylinder", meshSubdivisionsPerCm=1.0)
+        da = XSModelingOptions(
+            "DA",
+            geometry="1D cylinder",
+            meshSubdivisionsPerCm=1.0,
+            ductHeterogeneous=True,
+            traceIsotopeThreshold=1.0e-5,
+        )
         xsModel["DA"] = da
         xsModel.setDefaults(
             cs[CONF_XS_BLOCK_REPRESENTATION],
@@ -185,6 +196,9 @@ class TestCrossSectionSettings(unittest.TestCase):
         )
         self.assertEqual(xsModel["DA"].mergeIntoClad, ["gap"])
         self.assertEqual(xsModel["DA"].meshSubdivisionsPerCm, 1.0)
+        self.assertEqual(xsModel["DA"].ductHeterogeneous, True)
+        self.assertEqual(xsModel["DA"].traceIsotopeThreshold, 1.0e-5)
+        self.assertEqual(xsModel["DA"].mergeIntoFuel, [])
 
     def test_badCrossSections(self):
         with self.assertRaises(TypeError):
@@ -262,9 +276,7 @@ class TestXSSettings(unittest.TestCase):
         # caseSetting using the ``XSModelingOptions`` or using
         # a dictionary.
         cs = _setInitialXSSettings()
-        cs[CONF_CROSS_SECTION].update(
-            {"CA": XSModelingOptions("CA", geometry="0D"), "DA": {CONF_GEOM: "0D"}}
-        )
+        cs[CONF_CROSS_SECTION].update({"CA": XSModelingOptions("CA", geometry="0D"), "DA": {CONF_GEOM: "0D"}})
         self.assertIn("AA", cs[CONF_CROSS_SECTION])
         self.assertIn("BA", cs[CONF_CROSS_SECTION])
         self.assertIn("CA", cs[CONF_CROSS_SECTION])
@@ -299,9 +311,7 @@ class TestXSSettings(unittest.TestCase):
         cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
         cs[CONF_CROSS_SECTION] = XSSettings()
         cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", geometry="0D")
-        cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions(
-            "BA", geometry="0D", blockRepresentation="Average"
-        )
+        cs[CONF_CROSS_SECTION]["BA"] = XSModelingOptions("BA", geometry="0D", blockRepresentation="Average")
 
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, None)
         self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
@@ -311,9 +321,7 @@ class TestXSSettings(unittest.TestCase):
             cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
 
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage")
         self.assertEqual(cs[CONF_CROSS_SECTION]["BA"].blockRepresentation, "Average")
 
     def test_csBlockRepresentationFileLocation(self):
@@ -331,9 +339,7 @@ class TestXSSettings(unittest.TestCase):
             cs[CONF_XS_BLOCK_REPRESENTATION],
             cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
         )
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage"
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].blockRepresentation, "FluxWeightedAverage")
 
         # Check Average
         cs[CONF_XS_BLOCK_REPRESENTATION] = "Average"
@@ -346,9 +352,7 @@ class TestXSSettings(unittest.TestCase):
 
         # Check Median
         cs[CONF_XS_BLOCK_REPRESENTATION] = "Average"
-        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions(
-            "AA", xsFileLocation=[], blockRepresentation="Median"
-        )
+        cs[CONF_CROSS_SECTION]["AA"] = XSModelingOptions("AA", xsFileLocation=[], blockRepresentation="Median")
         cs[CONF_CROSS_SECTION].setDefaults(
             cs[CONF_XS_BLOCK_REPRESENTATION],
             cs[CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION],
@@ -359,25 +363,17 @@ class TestXSSettings(unittest.TestCase):
         """Test the configuration options of the ``setDefaults`` method."""
         cs = caseSettings.Settings()
         cs[CONF_XS_BLOCK_REPRESENTATION] = "FluxWeightedAverage"
-        cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=None
-        )
+        cs[CONF_CROSS_SECTION].setDefaults(blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=None)
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
 
-        cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=True
-        )
+        cs[CONF_CROSS_SECTION].setDefaults(blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=True)
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, None)
 
-        cs[CONF_CROSS_SECTION].setDefaults(
-            blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=False
-        )
+        cs[CONF_CROSS_SECTION].setDefaults(blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION], validBlockTypes=False)
         self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["fuel"])
 
         cs[CONF_CROSS_SECTION].setDefaults(
             blockRepresentation=cs[CONF_XS_BLOCK_REPRESENTATION],
             validBlockTypes=["control", "fuel", "plenum"],
         )
-        self.assertEqual(
-            cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["control", "fuel", "plenum"]
-        )
+        self.assertEqual(cs[CONF_CROSS_SECTION]["AA"].validBlockTypes, ["control", "fuel", "plenum"])

@@ -15,10 +15,8 @@
 """
 Thorium Uranium metal.
 
-Data is from [IAEA-TECDOCT-1450]_.
+Data is from [IAEA-TECDOC-1450]_.
 
-.. [IAEA-TECDOCT-1450] Thorium fuel cycle -- Potential benefits and challenges, IAEA-TECDOC-1450 (2005).
-    https://www-pub.iaea.org/mtcd/publications/pdf/te_1450_web.pdf
 """
 
 from armi import runLog
@@ -36,9 +34,7 @@ class ThU(FuelMaterial):
         self.refDens = 11.68
 
     def getEnrichment(self):
-        return self.getMassFrac("U233") / (
-            self.getMassFrac("U233") + self.getMassFrac("TH232")
-        )
+        return self.getMassFrac("U233") / (self.getMassFrac("U233") + self.getMassFrac("TH232"))
 
     def applyInputParams(self, U233_wt_frac=None, *args, **kwargs):
         runLog.warning(

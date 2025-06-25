@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """This script is used to compare ISOTXS files."""
+
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
 
@@ -25,8 +26,7 @@ class CompareIsotxsLibraries(EntryPoint):
     def addOptions(self):
         self.parser.add_argument(
             "reference",
-            help="Reference ISOTXS for comparison. Percent differences are given in "
-            "relation to this file.",
+            help="Reference ISOTXS for comparison. Percent differences are given in relation to this file.",
         )
         self.parser.add_argument(
             "comparisonFiles",
@@ -52,8 +52,7 @@ class CompareIsotxsLibraries(EntryPoint):
         )
 
     def invoke(self):
-        from armi.nuclearDataIO import isotxs
-        from armi.nuclearDataIO import xsLibraries
+        from armi.nuclearDataIO import isotxs, xsLibraries
 
         runLog.setVerbosity(0)
         refIsotxs = isotxs.readBinary(self.args.reference)

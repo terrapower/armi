@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests of the Database Interface."""
+
 import os
 import types
 import unittest
@@ -21,17 +22,15 @@ import numpy as np
 from numpy.testing import assert_allclose, assert_equal
 
 from armi import __version__ as version
-from armi import interfaces
-from armi import runLog
-from armi import settings
-from armi.bookkeeping.db.database3 import Database3
+from armi import interfaces, runLog, settings
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.cases import case
 from armi.context import PROJECT_ROOT
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import grids
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 
@@ -46,22 +45,17 @@ def getSimpleDBOperator(cs):
     It's used to make the db unit tests run very quickly.
     """
     newSettings = {}
-    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refOneBlockReactor.yaml"
+    newSettings[CONF_LOADING_FILE] = "smallestTestReactor/refSmallestReactor.yaml"
     newSettings["verbosity"] = "important"
     newSettings["db"] = True
     newSettings["runType"] = "Standard"
-    newSettings["geomFile"] = "geom1Assem.xml"
     newSettings["nCycles"] = 1
     cs = cs.modified(newSettings=newSettings)
     genDBCase = case.Case(cs)
     runLog.setVerbosity("info")
 
     o = genDBCase.initializeOperator()
-    o.interfaces = [
-        interface
-        for interface in o.interfaces
-        if interface.name in ["database", "main"]
-    ]
+    o.interfaces = [interface for interface in o.interfaces if interface.name in ["database", "main"]]
 
     return o, cs
 
@@ -83,14 +77,12 @@ class TestDatabaseInterfaceBOL(unittest.TestCase):
     def test_interactBOL(self):
         """This test is in its own class, because of temporary directory issues."""
         with directoryChangers.TemporaryDirectoryChanger():
-            self.o, self.r = loadTestReactor(
-                TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-            )
+            self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
             self.dbi = DatabaseInterface(self.r, self.o.cs)
 
             dbName = f"{self._testMethodName}.h5"
             self.dbi.initDB(fName=dbName)
-            self.db: Database3 = self.dbi.database
+            self.db: Database = self.dbi.database
             self.stateRetainer = self.r.retainState().__enter__()
             self.assertIsNotNone(self.dbi._db)
             self.dbi.interactBOL()
@@ -108,12 +100,10 @@ class TestDatabaseInterface(unittest.TestCase):
     def setUp(self):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
-        self.o, self.r = loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, self.r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: Database3 = self.dbi.database
+        self.db: Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
@@ -174,7 +164,7 @@ class TestDatabaseInterface(unittest.TestCase):
         self.dbi.interactEOL()  # this also saves and closes db
 
         # reopen db to show EOL is written
-        with Database3(self._testMethodName + ".h5", "r") as db:
+        with Database(self._testMethodName + ".h5", "r") as db:
             self.assertTrue(db.hasTimeStep(r.p.cycle, r.p.timeNode, "EOL"))
             # and confirm that last time node is still there/separate
             self.assertTrue(db.hasTimeStep(r.p.cycle, r.p.timeNode))
@@ -217,7 +207,7 @@ class TestDatabaseInterface(unittest.TestCase):
             self.assertTrue(os.path.exists(self.dbi.database.fileName))
 
             # The copied file should have the newest time node
-            with Database3(self.dbi.database.fileName, "r") as db:
+            with Database(self.dbi.database.fileName, "r") as db:
                 for tn in range(timeNode + 1):
                     self.assertTrue(db.hasTimeStep(r.p.cycle, tn))
 
@@ -264,7 +254,7 @@ class TestDatabaseWriter(unittest.TestCase):
             :tests: R_ARMI_DB_QA
         """
         with h5py.File("test_writeSystemAttributes.h5", "w") as h5:
-            Database3.writeSystemAttributes(h5)
+            Database.writeSystemAttributes(h5)
 
         with h5py.File("test_writeSystemAttributes.h5", "r") as h5:
             self.assertIn("user", h5.attrs)
@@ -303,7 +293,6 @@ class TestDatabaseWriter(unittest.TestCase):
             self.assertEqual(h5.attrs["version"], version)
 
             self.assertIn("caseTitle", h5.attrs)
-            self.assertIn("geomFile", h5["inputs"])
             self.assertIn("settings", h5["inputs"])
             self.assertIn("blueprints", h5["inputs"])
 
@@ -346,7 +335,7 @@ class TestDatabaseWriter(unittest.TestCase):
         expectedFluxes7 = {}
 
         def setFluxAwesome(cycle, node):
-            for bi, b in enumerate(self.r.core.getBlocks()):
+            for bi, b in enumerate(self.r.core.iterBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
                 if bi == 0:
                     expectedFluxes0[cycle, node] = b.p.flux
@@ -360,8 +349,7 @@ class TestDatabaseWriter(unittest.TestCase):
             if cycle != 0 or node != 2:
                 return
 
-            blocks = self.r.core.getBlocks()
-            b0 = blocks[0]
+            b0 = next(self.r.core.iterBlocks())
 
             db = self.o.getInterface("database")._db
 
@@ -380,15 +368,14 @@ class TestDatabaseWriter(unittest.TestCase):
 
     def test_getHistoryByLocation(self):
         def setFluxAwesome(cycle, node):
-            for bi, b in enumerate(self.r.core.getBlocks()):
+            for bi, b in enumerate(self.r.core.iterBlocks()):
                 b.p.flux = 1e6 * bi + 1e3 * cycle + node
 
         def getFluxAwesome(cycle, node):
             if cycle != 1 or node != 2:
                 return
 
-            blocks = self.r.core.getBlocks()
-            b = blocks[0]
+            b = next(self.r.core.iterBlocks())
 
             db = self.o.getInterface("database").database
 
@@ -428,7 +415,7 @@ class TestDatabaseReading(unittest.TestCase):
 
         # update a few parameters
         def writeFlux(cycle, node):
-            for bi, b in enumerate(o.r.core.getBlocks()):
+            for bi, b in enumerate(o.r.core.iterBlocks()):
                 b.p.flux = 1e6 * bi + cycle * 100 + node
                 b.p.mgFlux = np.repeat(b.p.flux / 33, 33)
 
@@ -456,8 +443,23 @@ class TestDatabaseReading(unittest.TestCase):
         self.assertEqual(len(r.core.circularRingList), 0)
         self.assertEqual(len(r.core.blocksByName), 95)
 
+    def test_loadReadOnly(self):
+        with Database(self.dbName, "r") as db:
+            r = db.loadReadOnly(0, 0)
+
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
+
+            b = r.core.getFirstBlock()
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1
+
+            for c in b:
+                self.assertGreater(c.getVolume(), 0)
+
     def test_growToFullCore(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         # test partial core values
@@ -471,7 +473,7 @@ class TestDatabaseReading(unittest.TestCase):
         self._fullCoreSizeChecker(r)
 
     def test_growToFullCoreWithCS(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r = db.load(0, 0, allowMissing=True)
 
         r.core.growToFullCore(self.cs)
@@ -498,7 +500,7 @@ class TestDatabaseReading(unittest.TestCase):
         self._fullCoreSizeChecker(r)
 
     def test_readWritten(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r2 = db.load(0, 0, self.cs)
 
         for a1, a2 in zip(self.r.core, r2.core):
@@ -522,9 +524,7 @@ class TestDatabaseReading(unittest.TestCase):
                             np.array(c2.spatialLocator.indices),
                         )
                     else:
-                        assert_equal(
-                            c1.spatialLocator.indices, c2.spatialLocator.indices
-                        )
+                        assert_equal(c1.spatialLocator.indices, c2.spatialLocator.indices)
                     self.assertEqual(c1.p.serialNum, c2.p.serialNum)
 
                 # volume is pretty difficult to get right. it relies upon linked dimensions
@@ -539,18 +539,18 @@ class TestDatabaseReading(unittest.TestCase):
             )
 
     def test_readWithoutInputs(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r2 = db.load(0, 0)
 
-        for b1, b2 in zip(self.r.core.getBlocks(), r2.core.getBlocks()):
+        for b1, b2 in zip(self.r.core.iterBlocks(), r2.core.iterBlocks()):
             for c1, c2 in zip(sorted(b1), sorted(b2)):
                 self.assertEqual(c1.name, c2.name)
 
-        for bi, b in enumerate(r2.core.getBlocks()):
+        for bi, b in enumerate(r2.core.iterBlocks()):
             assert_allclose(b.p.flux, 1e6 * bi)
 
     def test_variousTypesWork(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             r2 = db.load(1, 1)
 
         b1 = self.r.core.getFirstBlock(Flags.FUEL)
@@ -577,7 +577,7 @@ class TestDatabaseReading(unittest.TestCase):
         assert_allclose(numDensVec1, numDensVec2)
 
     def test_timesteps(self):
-        with Database3(self.dbName, "r") as db:
+        with Database(self.dbName, "r") as db:
             # build time steps in the DB file
             timesteps = []
             for cycle in range(self.nCycles):
@@ -610,7 +610,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         Notes
         -----
-        Ensures that parameters are consistant between Standard runs and restart runs.
+        Ensures that parameters are consistent between Standard runs and restart runs.
         """
         o, cs = getSimpleDBOperator(cs)
 
@@ -618,7 +618,7 @@ class TestStandardFollowOn(unittest.TestCase):
 
         def interactEveryNode(self, cycle, node):
             # Could use just += 1 but this will show more errors since it is less
-            # suseptable to cancelation of errors off by one.
+            # susceptible to cancellation of errors off by one.
             self.r.p.time += self.r.p.timeNode + 1
 
         # Magic to change the method only on this instance of the class.
@@ -632,15 +632,11 @@ class TestStandardFollowOn(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         with self.td:
             # make DB to load from
-            o = self._getOperatorThatChangesVariables(
-                settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml"))
-            )
+            o = self._getOperatorThatChangesVariables(settings.Settings(os.path.join(TEST_ROOT, "armiRun.yaml")))
             with o:
                 o.operate()
                 firstEndTime = o.r.p.time
-                self.assertNotEqual(
-                    firstEndTime, 0, "Time should have advanced by the end of the run."
-                )
+                self.assertNotEqual(firstEndTime, 0, "Time should have advanced by the end of the run.")
 
             # run standard restart case
             loadDB = "loadFrom.h5"
@@ -662,7 +658,5 @@ class TestStandardFollowOn(unittest.TestCase):
                     firstEndTime,
                     o.r.p.time,
                     "End time should have been the same for the restart run.\n"
-                    "First end time: {},\nSecond End time: {}".format(
-                        firstEndTime, o.r.p.time
-                    ),
+                    "First end time: {},\nSecond End time: {}".format(firstEndTime, o.r.p.time),
                 )

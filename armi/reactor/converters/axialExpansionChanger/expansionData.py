@@ -14,7 +14,7 @@
 """Data container for axial expansion."""
 
 from statistics import mean
-from typing import List
+from typing import TYPE_CHECKING, Iterable, Optional
 
 from armi import runLog
 from armi.materials import material
@@ -28,8 +28,18 @@ TARGET_FLAGS_IN_PREFERRED_ORDER = [
     Flags.SLUG,
 ]
 
+if TYPE_CHECKING:
+    from armi.reactor.assemblies import Assembly
+    from armi.reactor.blocks import Block
+    from armi.reactor.components import Component
 
-def getSolidComponents(b):
+
+def iterSolidComponents(b: "Block") -> Iterable["Component"]:
+    """Iterate over all solid components in the block."""
+    return filter(lambda c: not isinstance(c.material, material.Fluid), b)
+
+
+def getSolidComponents(b: "Block") -> list["Component"]:
     """
     Return list of components in the block that have solid material.
 
@@ -37,28 +47,46 @@ def getSolidComponents(b):
     -----
     Axial expansion only needs to be applied to solid materials. We should not update
     number densities on fluid materials to account for changes in block height.
+
+    See Also
+    --------
+    :func:`iterSolidComponents` produces an iterable rather than a list and may be better
+    suited if you simply want to iterate over solids in a block.
     """
-    return [c for c in b if not isinstance(c.material, material.Fluid)]
+    return list(iterSolidComponents(b))
 
 
 class ExpansionData:
-    """Data container for axial expansion."""
+    r"""Data container for axial expansion.
 
-    def __init__(self, a, setFuel: bool, expandFromTinputToThot: bool):
-        """
-        Parameters
-        ----------
-        a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
-            Assembly to assign component-wise expansion data to
-        setFuel: bool
-            used to determine if fuel component should be set as
-            axial expansion target component during initialization.
-            see self._isFuelLocked
-        expandFromTinputToThot: bool
-            determines if thermal expansion factors should be calculated
-            from c.inputTemperatureInC to c.temperatureInC (True) or some other
-            reference temperature and c.temperatureInC (False)
-        """
+    The primary responsibility of this class is to determine the axial expansion factors
+    for each solid component in the assembly. Expansion factors can be computed from the component
+    temperatures in :meth:`computeThermalExpansionFactors` or provided directly to the class
+    via :meth:`setExpansionFactors`.
+
+    This class relies on the concept of a "target" expansion component for each block. While
+    components will expand at different rates, the final height of the block must be determined.
+    The target component, determined by :meth:`determineTargetComponents`, will drive the total
+    height of the block post-expansion.
+
+    Parameters
+    ----------
+    a: :py:class:`Assembly <armi.reactor.assemblies.Assembly>`
+        Assembly to assign component-wise expansion data to
+    setFuel: bool
+        used to determine if fuel component should be set as
+        axial expansion target component during initialization.
+        see self._isFuelLocked
+    expandFromTinputToThot: bool
+        Determines if thermal expansion factors should be calculated from
+            - ``c.inputTemperatureInC`` to ``c.temperatureInC`` when ``True``, or
+            - some other reference temperature and ``c.temperatureInC`` when ``False``
+    """
+
+    _expansionFactors: dict["Component", float]
+    componentReferenceTemperature: dict["Component", float]
+
+    def __init__(self, a: "Assembly", setFuel: bool, expandFromTinputToThot: bool):
         self._a = a
         self.componentReferenceTemperature = {}
         self._expansionFactors = {}
@@ -66,44 +94,34 @@ class ExpansionData:
         self._setTargetComponents(setFuel)
         self.expandFromTinputToThot = expandFromTinputToThot
 
-    def setExpansionFactors(self, componentLst: List, expFrac: List):
+    def setExpansionFactors(self, components: list["Component"], expFrac: list[float]):
         """Sets user defined expansion fractions.
 
         Parameters
         ----------
-        componentLst : List[:py:class:`Component <armi.reactor.components.component.Component>`]
+        components : List[:py:class:`Component <armi.reactor.components.component.Component>`]
             list of Components to have their heights changed
         expFrac : List[float]
-            list of L1/L0 height changes that are to be applied to componentLst
+            list of L1/L0 height changes that are to be applied to components
 
         Raises
         ------
         RuntimeError
-            If componentLst and expFrac are different lengths
+            If components and expFrac are different lengths
         """
-        if len(componentLst) != len(expFrac):
+        if len(components) != len(expFrac):
             runLog.error(
                 "Number of components and expansion fractions must be the same!\n"
-                f"    len(componentLst) = {len(componentLst)}\n"
+                f"     len(components) = {len(components)}\n"
                 f"        len(expFrac) = {len(expFrac)}"
             )
             raise RuntimeError
-        if 0.0 in expFrac:
-            msg = (
-                "An expansion fraction, L1/L0, equal to 0.0, is not physical. Expansion fractions "
-                "should be greater than 0.0."
-            )
-            runLog.error(msg)
-            raise RuntimeError(msg)
         for exp in expFrac:
-            if exp < 0.0:
-                msg = (
-                    "A negative expansion fraction, L1/L0, is not physical. Expansion fractions "
-                    "should be greater than 0.0."
-                )
+            if exp <= 0.0:
+                msg = f"Expansion factor {exp}, L1/L0, is not physical. Expansion fractions should be greater than 0.0."
                 runLog.error(msg)
                 raise RuntimeError(msg)
-        for c, p in zip(componentLst, expFrac):
+        for c, p in zip(components, expFrac):
             self._expansionFactors[c] = p
 
     def updateComponentTempsBy1DTempField(self, tempGrid, tempField):
@@ -152,7 +170,7 @@ class ExpansionData:
             for c in b:
                 self.updateComponentTemp(c, blockAveTemp)
 
-    def updateComponentTemp(self, c, temp: float):
+    def updateComponentTemp(self, c: "Component", temp: float):
         """Update component temperatures with a provided temperature.
 
         Parameters
@@ -174,33 +192,39 @@ class ExpansionData:
     def computeThermalExpansionFactors(self):
         """Computes expansion factors for all components via thermal expansion."""
         for b in self._a:
-            for c in getSolidComponents(b):
-                if self.expandFromTinputToThot:
-                    # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
-                    self._expansionFactors[c] = c.getThermalExpansionFactor()
-                elif c in self.componentReferenceTemperature:
-                    growFrac = c.getThermalExpansionFactor(
-                        T0=self.componentReferenceTemperature[c]
-                    )
-                    self._expansionFactors[c] = growFrac
-                else:
-                    # We want expansion factors relative to componentReferenceTemperature not
-                    # Tinput. But for this component there isn't a componentReferenceTemperature, so
-                    # we'll assume that the expansion factor is 1.0.
-                    self._expansionFactors[c] = 1.0
+            self._setComponentThermalExpansionFactors(b)
 
-    def getExpansionFactor(self, c):
+    def _setComponentThermalExpansionFactors(self, b: "Block"):
+        """For each component in the block, set the thermal expansion factors."""
+        for c in iterSolidComponents(b):
+            self._perComponentThermalExpansionFactors(c)
+
+    def _perComponentThermalExpansionFactors(self, c: "Component"):
+        """Set the thermal expansion factors for a single component."""
+        if self.expandFromTinputToThot:
+            # get thermal expansion factor between c.inputTemperatureInC & c.temperatureInC
+            self._expansionFactors[c] = c.getThermalExpansionFactor()
+        elif c in self.componentReferenceTemperature:
+            growFrac = c.getThermalExpansionFactor(T0=self.componentReferenceTemperature[c])
+            self._expansionFactors[c] = growFrac
+        else:
+            # We want expansion factors relative to componentReferenceTemperature not
+            # Tinput. But for this component there isn't a componentReferenceTemperature, so
+            # we'll assume that the expansion factor is 1.0.
+            self._expansionFactors[c] = 1.0
+
+    def getExpansionFactor(self, c: "Component"):
         """Retrieves expansion factor for c.
 
         Parameters
         ----------
         c : :py:class:`Component <armi.reactor.components.component.Component>`
-            Component to retrive expansion factor for
+            Component to retrieve expansion factor for
         """
         value = self._expansionFactors.get(c, 1.0)
         return value
 
-    def _setTargetComponents(self, setFuel):
+    def _setTargetComponents(self, setFuel: bool):
         """Sets target component for each block.
 
         Parameters
@@ -211,21 +235,23 @@ class ExpansionData:
         """
         for b in self._a:
             if b.p.axialExpTargetComponent:
-                self._componentDeterminesBlockHeight[
-                    b.getComponentByName(b.p.axialExpTargetComponent)
-                ] = True
+                target = b.getComponentByName(b.p.axialExpTargetComponent)
+                self._setExpansionTarget(b, target)
             elif b.hasFlags(Flags.PLENUM) or b.hasFlags(Flags.ACLP):
                 self.determineTargetComponent(b, Flags.CLAD)
             elif b.hasFlags(Flags.DUMMY):
-                self.determineTargetComponent(b, Flags.COOLANT)
+                # Dummy blocks are intended to contain only fluid and do not need a target component
+                pass
             elif setFuel and b.hasFlags(Flags.FUEL):
                 self._isFuelLocked(b)
             else:
                 self.determineTargetComponent(b)
 
-    def determineTargetComponent(self, b, flagOfInterest=None):
-        """Determines target component, stores it on the block, and appends it to
-        self._componentDeterminesBlockHeight.
+    def determineTargetComponent(self, b: "Block", flagOfInterest: Optional[Flags] = None) -> "Component":
+        """Determines the component who's expansion will determine block height.
+
+        This information is also stored on the block at ``Block.p.axialExpTargetComponent`` for faster
+        retrieval later.
 
         Parameters
         ----------
@@ -233,6 +259,11 @@ class ExpansionData:
             block to specify target component for
         flagOfInterest : :py:class:`Flags <armi.reactor.flags.Flags>`
             the flag of interest to identify the target component
+
+        Returns
+        -------
+        Component
+            Component identified as target component, if found.
 
         Notes
         -----
@@ -250,32 +281,35 @@ class ExpansionData:
         if flagOfInterest is None:
             # Follow expansion of most neutronically important component, fuel then control/poison
             for targetFlag in TARGET_FLAGS_IN_PREFERRED_ORDER:
-                componentWFlag = [c for c in b.getChildren() if c.hasFlags(targetFlag)]
-                if componentWFlag != []:
+                candidates = b.getChildrenWithFlags(targetFlag)
+                if candidates:
                     break
             # some blocks/components are not included in the above list but should still be found
-            if not componentWFlag:
-                componentWFlag = [c for c in b.getChildren() if c.p.flags in b.p.flags]
+            if not candidates:
+                candidates = [c for c in b.getChildren() if c.p.flags in b.p.flags]
         else:
-            componentWFlag = [c for c in b.getChildren() if c.hasFlags(flagOfInterest)]
-        if len(componentWFlag) == 0:
+            candidates = b.getChildrenWithFlags(flagOfInterest)
+        if len(candidates) == 0:
             # if only 1 solid, be smart enought to snag it
-            solidMaterials = list(
-                c for c in b if not isinstance(c.material, material.Fluid)
-            )
+            solidMaterials = getSolidComponents(b)
             if len(solidMaterials) == 1:
-                componentWFlag = solidMaterials
-        if len(componentWFlag) == 0:
+                candidates = solidMaterials
+        if len(candidates) == 0:
             raise RuntimeError(f"No target component found!\n   Block {b}")
-        if len(componentWFlag) > 1:
+        if len(candidates) > 1:
             raise RuntimeError(
                 "Cannot have more than one component within a block that has the target flag!"
-                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {componentWFlag}"
+                f"Block {b}\nflagOfInterest {flagOfInterest}\nComponents {candidates}"
             )
-        self._componentDeterminesBlockHeight[componentWFlag[0]] = True
-        b.p.axialExpTargetComponent = componentWFlag[0].name
+        target = candidates[0]
+        self._setExpansionTarget(b, target)
+        return target
 
-    def _isFuelLocked(self, b):
+    def _setExpansionTarget(self, b: "Block", target: "Component"):
+        self._componentDeterminesBlockHeight[target] = True
+        b.p.axialExpTargetComponent = target.name
+
+    def _isFuelLocked(self, b: "Block"):
         """Physical/realistic implementation reserved for ARMI plugin.
 
         Parameters
@@ -296,10 +330,9 @@ class ExpansionData:
         c = b.getComponent(Flags.FUEL)
         if c is None:
             raise RuntimeError(f"No fuel component within {b}!")
-        self._componentDeterminesBlockHeight[c] = True
-        b.p.axialExpTargetComponent = c.name
+        self._setExpansionTarget(b, c)
 
-    def isTargetComponent(self, c):
+    def isTargetComponent(self, c: "Component") -> bool:
         """Returns bool if c is a target component.
 
         Parameters

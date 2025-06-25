@@ -11,11 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests of the Parameters class."""
+"""Tests for assorted Parameters tools."""
+
 import copy
+import os
 import unittest
+from glob import glob
+from shutil import copyfile
 
 from armi.reactor import parameters
+from armi.reactor.reactorParameters import makeParametersReadOnly
+from armi.testing import loadTestReactor
+from armi.tests import TEST_ROOT
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class MockComposite:
@@ -75,7 +83,7 @@ class ParameterTests(unittest.TestCase):
             :tests: R_ARMI_PARAM_DB
 
         .. test:: Ensure that new parameters can be defined.
-            :id: T_ARMI_PARAM
+            :id: T_ARMI_PARAM0
             :tests: R_ARMI_PARAM
         """
         pDefs = parameters.ParameterDefinitionCollection()
@@ -98,7 +106,7 @@ class ParameterTests(unittest.TestCase):
         This tests the ability to add a serializer to a parameter instantiation line.
         It assumes that if this parameter is not None, that the pack and unpack methods
         will be called during storage to and reading from the database. See
-        database3._writeParams for an example use of this functionality.
+        database._writeParams for an example use of this functionality.
 
         .. test:: Custom parameter serializer
             :id: T_ARMI_PARAM_SERIALIZE
@@ -157,12 +165,8 @@ class ParameterTests(unittest.TestCase):
         self.assertEqual(42, mock1.doodle)
         self.assertEqual(42, mock2.doodle)
         self.assertEqual(0.0, mock1.cheese)  # make sure factory default is applied
-        self.assertEqual(
-            19, mock2.fudge
-        )  # make sure we can override the factory default
-        self.assertEqual(
-            None, mock2.noodles
-        )  # make sure we can override the factory default
+        self.assertEqual(19, mock2.fudge)  # make sure we can override the factory default
+        self.assertEqual(None, mock2.noodles)  # make sure we can override the factory default
         mock1.doodle = 17
         self.assertEqual(17, mock1.doodle)
         self.assertEqual(42, mock2.doodle)
@@ -171,9 +175,7 @@ class ParameterTests(unittest.TestCase):
         class Mock(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
-                pb.defParam(
-                    "noneDefault", "units", "description", "location", default=None
-                )
+                pb.defParam("noneDefault", "units", "description", "location", default=None)
 
         mock1 = Mock()
         mock2 = Mock()
@@ -238,13 +240,7 @@ class ParameterTests(unittest.TestCase):
                 pb.defParam("nPlus1", "units", "description", "location", setter=nPlus1)
 
         mock = Mock()
-        self.assertTrue(
-            all(
-                pd.assigned == parameters.NEVER
-                for pd in mock.paramDefs
-                if pd.name != "serialNum"
-            )
-        )
+        self.assertTrue(all(pd.assigned == parameters.NEVER for pd in mock.paramDefs if pd.name != "serialNum"))
         with self.assertRaises(parameters.ParameterError):
             print(mock.n)
         with self.assertRaises(parameters.ParameterError):
@@ -344,9 +340,7 @@ class ParameterTests(unittest.TestCase):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
                 pb.defParam("base1", "units", "a param on the base collection", "avg")
-                pb.defParam(
-                    "base2", "units", "another param on the base collection", "avg"
-                )
+                pb.defParam("base2", "units", "another param on the base collection", "avg")
 
         class MockDerivedACollection(MockBaseParamCollection):
             pDefs = parameters.ParameterDefinitionCollection()
@@ -363,17 +357,11 @@ class ParameterTests(unittest.TestCase):
         derA = MockDerivedACollection()
         derB = MockDerivedBCollection()
 
-        self.assertTrue(
-            set(base.paramDefs._paramDefs).issubset(set(derA.paramDefs._paramDefs))
-        )
-        self.assertTrue(
-            set(base.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs))
-        )
-        self.assertTrue(
-            set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs))
-        )
+        self.assertTrue(set(base.paramDefs._paramDefs).issubset(set(derA.paramDefs._paramDefs)))
+        self.assertTrue(set(base.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs)))
+        self.assertTrue(set(derA.paramDefs._paramDefs).issubset(set(derB.paramDefs._paramDefs)))
 
-    def test_cannotDefineParameterWithSameNameForCollectionSubclass(self):
+    def test_cannotDefineParamSameNameCollectionSubclass(self):
         class MockPCParent(parameters.ParameterCollection):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder() as pb:
@@ -416,9 +404,7 @@ class ParameterTests(unittest.TestCase):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder(location=parameters.ParamLocation.AVERAGE) as pb:
                 pb.defParam("p1", "units", "p1 description")
-                pb.defParam(
-                    "p2", "units", "p2 description", parameters.ParamLocation.TOP
-                )
+                pb.defParam("p2", "units", "p2 description", parameters.ParamLocation.TOP)
 
         pc = MockPC()
         self.assertEqual(pc.paramDefs["p1"].location, parameters.ParamLocation.AVERAGE)
@@ -437,14 +423,10 @@ class ParameterTests(unittest.TestCase):
             pDefs = parameters.ParameterDefinitionCollection()
             with pDefs.createBuilder(categories=["awesome", "stuff"]) as pb:
                 pb.defParam("p1", "units", "p1 description", "location")
-                pb.defParam(
-                    "p2", "units", "p2 description", "location", categories=["bacon"]
-                )
+                pb.defParam("p2", "units", "p2 description", "location", categories=["bacon"])
 
             with pDefs.createBuilder() as pb:
-                pb.defParam(
-                    "p3", "units", "p3 description", "location", categories=["bacon"]
-                )
+                pb.defParam("p3", "units", "p3 description", "location", categories=["bacon"])
 
         pc = MockPC()
         self.assertEqual(pc.paramDefs.categories, set(["awesome", "stuff", "bacon"]))
@@ -471,7 +453,16 @@ class ParameterTests(unittest.TestCase):
     def test_parameterCollectionsHave__slots__(self):
         """Tests we prevent accidental creation of attributes."""
         self.assertEqual(
-            set(["_hist", "_backup", "assigned", "_p_serialNum", "serialNum"]),
+            set(
+                [
+                    "_hist",
+                    "_backup",
+                    "assigned",
+                    "_p_serialNum",
+                    "serialNum",
+                    "readOnly",
+                ]
+            ),
             set(parameters.ParameterCollection._slots),
         )
 
@@ -557,9 +548,7 @@ class ParamCollectionWhere(unittest.TestCase):
     def test_onCategory(self):
         """Test the use of Parameter.hasCategory on filtering."""
         names = {"keff", "cornerFlux"}
-        for p in self.pc.where(
-            lambda pd: pd.hasCategory(parameters.Category.neutronics)
-        ):
+        for p in self.pc.where(lambda pd: pd.hasCategory(parameters.Category.neutronics)):
             self.assertTrue(p.hasCategory(parameters.Category.neutronics), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty!")
@@ -567,9 +556,7 @@ class ParamCollectionWhere(unittest.TestCase):
     def test_onLocation(self):
         """Test the use of Parameter.atLocation in filtering."""
         names = {"edgeTemperature"}
-        for p in self.pc.where(
-            lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)
-        ):
+        for p in self.pc.where(lambda pd: pd.atLocation(parameters.ParamLocation.EDGES)):
             self.assertTrue(p.atLocation(parameters.ParamLocation.EDGES), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty!")
@@ -579,11 +566,35 @@ class ParamCollectionWhere(unittest.TestCase):
         names = {"cornerFlux"}
 
         def check(p: parameters.Parameter) -> bool:
-            return p.atLocation(parameters.ParamLocation.CORNERS) and p.hasCategory(
-                parameters.Category.neutronics
-            )
+            return p.atLocation(parameters.ParamLocation.CORNERS) and p.hasCategory(parameters.Category.neutronics)
 
         for p in self.pc.where(check):
             self.assertTrue(check(p), msg=p)
             names.remove(p.name)
         self.assertFalse(names, msg=f"{names=} should be empty")
+
+
+class TestMakeParametersReadOnly(unittest.TestCase):
+    def test_makeParametersReadOnly(self):
+        with TemporaryDirectoryChanger():
+            # copy test reactor to local
+            yamls = glob(os.path.join(TEST_ROOT, "smallestTestReactor", "*.yaml"))
+            for yamlFile in yamls:
+                copyfile(yamlFile, os.path.basename(yamlFile))
+
+            # load some random test reactor
+            _o, r = loadTestReactor(os.getcwd(), inputFileName="armiRunSmallest.yaml")
+
+            # prove we can edit various params at will
+            r.core.p.keff = 1.01
+            b = r.core.getFirstBlock()
+            b.p.power = 123.4
+
+            makeParametersReadOnly(r)
+
+            # now show we can no longer edit those parameters
+            with self.assertRaises(RuntimeError):
+                r.core.p.keff = 0.99
+
+            with self.assertRaises(RuntimeError):
+                b.p.power = 432.1

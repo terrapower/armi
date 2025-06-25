@@ -26,11 +26,8 @@ import numpy as np
 from pyevtk.hl import unstructuredGridToVTK
 from pyevtk.vtk import VtkHexahedron, VtkQuadraticHexahedron
 
-from armi.reactor import assemblies
-from armi.reactor import reactors
-from armi.reactor import blocks
+from armi.reactor import assemblies, blocks, reactors
 from armi.utils import hexagon
-
 
 # The hex prism cell type is not very well-documented, and so is not described in
 # pyevtk. Digging into the header reveals that `16` does the trick.
@@ -61,7 +58,7 @@ class VtkMesh:
         offsets : np.ndarray
             A 1-D array containing the index of the first vertex for the next cell
         cellTypes : np.ndarray
-            A 1-D array contining the cell type ID for each cell
+            A 1-D array containing the cell type ID for each cell
         """
         self.vertices = vertices
         self.connectivity = connectivity
@@ -95,9 +92,7 @@ class VtkMesh:
         offsetOffset = self.offsets[-1] if self.offsets.size > 0 else 0
 
         self.vertices = np.vstack((self.vertices, other.vertices))
-        self.connectivity = np.append(
-            self.connectivity, other.connectivity + connectOffset
-        )
+        self.connectivity = np.append(self.connectivity, other.connectivity + connectOffset)
         self.offsets = np.append(self.offsets, other.offsets + offsetOffset)
         self.cellTypes = np.append(self.cellTypes, other.cellTypes)
 
@@ -130,9 +125,7 @@ def createReactorBlockMesh(r: reactors.Reactor) -> VtkMesh:
 
 def createReactorAssemMesh(r: reactors.Reactor) -> VtkMesh:
     mesh = VtkMesh.empty()
-    assems = r.getChildren(
-        deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-    )
+    assems = r.getChildren(deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly))
     for a in assems:
         mesh.append(createAssemMesh(a))
 
@@ -150,10 +143,7 @@ def createBlockMesh(b: blocks.Block) -> VtkMesh:
         raise TypeError(
             "Unsupported block type `{}`. Supported types are: {}".format(
                 type(b).__name__,
-                {
-                    t.__name__
-                    for t in {blocks.CartesianBlock, blocks.HexBlock, blocks.ThRZBlock}
-                },
+                {t.__name__ for t in {blocks.CartesianBlock, blocks.HexBlock, blocks.ThRZBlock}},
             )
         )
 
@@ -281,9 +271,7 @@ def _createTRZBlockMesh(b: blocks.ThRZBlock) -> VtkMesh:
         (rOut, thIn, (zIn + zOut) * 0.5),
         (rOut, thOut, (zIn + zOut) * 0.5),
     ]
-    vertsXYZ = np.array(
-        [[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ]
-    )
+    vertsXYZ = np.array([[r * math.cos(th), r * math.sin(th), z] for r, th, z in vertsRTZ])
 
     return VtkMesh(
         vertsXYZ,

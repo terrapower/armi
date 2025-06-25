@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """MacroXSGenerationInterface tests."""
+
 import unittest
 from collections import defaultdict
 
@@ -20,8 +21,8 @@ from armi.nuclearDataIO.xsCollections import XSCollection
 from armi.physics.neutronics.macroXSGenerationInterface import (
     MacroXSGenerationInterface,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -34,12 +35,10 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
             :tests: R_ARMI_MACRO_XS
         """
         cs = Settings()
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         # Before: verify there are no macro XS on each block
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             self.assertIsNone(b.macros)
 
         # create the macro XS interface
@@ -59,6 +58,6 @@ class TestMacroXSGenerationInterface(unittest.TestCase):
         self.assertEqual(i.macrosLastBuiltAt, 0)
 
         # After: verify there are macro XS on each block
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             self.assertIsNotNone(b.macros)
             self.assertTrue(isinstance(b.macros, XSCollection))

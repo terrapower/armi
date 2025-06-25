@@ -17,34 +17,33 @@ Groundwork for ARMI Database, version 3.4.
 
 When interacting with the database file, the :py:class:`Layout` class is used to help
 map the hierarchical Composite Reactor Model to the flat representation in
-:py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`.
+:py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
 This module also stores packing/packing tools to support
-:py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`, as well as datbase
+:py:class:`Database <armi.bookkeeping.db.database.Database>`, as well as database
 versioning information.
 """
 
 import collections
 from typing import (
+    Any,
+    Dict,
+    List,
     Optional,
     Tuple,
     Type,
-    Dict,
-    Any,
-    List,
 )
 
 import numpy as np
 
 from armi import runLog
 from armi.reactor import grids
-from armi.reactor.assemblyLists import AssemblyList
 from armi.reactor.components import Component
 from armi.reactor.composites import ArmiObject
-from armi.reactor.reactors import Core
-from armi.reactor.reactors import Reactor
+from armi.reactor.excoreStructure import ExcoreStructure
+from armi.reactor.reactors import Core, Reactor
 
-# Here we store the Database3 version information.
+# Here we store the Database version information.
 DB_MAJOR = 3
 DB_MINOR = 4
 DB_VERSION = f"{DB_MAJOR}.{DB_MINOR}"
@@ -95,7 +94,7 @@ class Layout:
     """
     The Layout class describes the hierarchical layout of the Composite Reactor model
     in a flat representation for
-    :py:class:`Database3 <armi.bookkeeping.db.database3.Database3>`.
+    :py:class:`Database <armi.bookkeeping.db.database.Database>`.
 
     A Layout is built by starting at the root of a composite tree and recursively
     appending each node in the tree to a list of data. So the data will be ordered by
@@ -138,7 +137,7 @@ class Layout:
         # There is a minor asymmetry here in that before writing to the DB, this is
         # truly a flat list of tuples. However when reading, this may contain lists of
         # tuples, which represent MI locations. This comes from the fact that we map the
-        # tuples to Location objects in Database3._compose, but map from Locations to
+        # tuples to Location objects in Database._compose, but map from Locations to
         # tuples in Layout._createLayout. Ideally we would handle both directions in the
         # same place so this can be less surprising. Resolving this would require
         # changing the interface of the various pack/unpack functions, which have
@@ -160,9 +159,7 @@ class Layout:
         self.gridParams: List[Any] = []
         self.version = version
 
-        self.groupedComps: Dict[
-            Type[ArmiObject], List[ArmiObject]
-        ] = collections.defaultdict(list)
+        self.groupedComps: Dict[Type[ArmiObject], List[ArmiObject]] = collections.defaultdict(list)
 
         # it should be noted, one of the two inputs must be non-None: comp/h5group
         if comp is not None:
@@ -239,8 +236,9 @@ class Layout:
             comps = sorted(list(comp))
         except ValueError:
             runLog.error(
-                "Failed to sort some collection of ArmiObjects for database output: {} "
-                "value {}".format(type(comp), list(comp))
+                "Failed to sort some collection of ArmiObjects for database output: {} value {}".format(
+                    type(comp), list(comp)
+                )
             )
             raise
 
@@ -262,12 +260,8 @@ class Layout:
             # location is either an index, or a point
             # iter over list is faster
             locations = h5group["layout/location"][:].tolist()
-            self.locationType = np.char.decode(
-                h5group["layout/locationType"][:]
-            ).tolist()
-            self.location = _unpackLocations(
-                self.locationType, locations, self.version[1]
-            )
+            self.locationType = np.char.decode(h5group["layout/locationType"][:]).tolist()
+            self.location = _unpackLocations(self.locationType, locations, self.version[1])
             self.type = np.char.decode(h5group["layout/type"][:])
             self.name = np.char.decode(h5group["layout/name"][:])
             self.serialNum = h5group["layout/serialNum"][:]
@@ -275,9 +269,7 @@ class Layout:
             self.numChildren = h5group["layout/numChildren"][:]
             self.material = np.char.decode(h5group["layout/material"][:])
             self.temperatures = h5group["layout/temperatures"][:]
-            self.gridIndex = replaceNonsenseWithNones(
-                h5group["layout/gridIndex"][:], "layout/gridIndex"
-            )
+            self.gridIndex = replaceNonsenseWithNones(h5group["layout/gridIndex"][:], "layout/gridIndex")
 
             gridGroup = h5group["layout/grids"]
             gridTypes = [t.decode() for t in gridGroup["type"][:]]
@@ -296,16 +288,8 @@ class Layout:
                         bounds.append(None)
                 unitStepLimits = thisGroup["unitStepLimits"][:]
                 offset = thisGroup["offset"][:] if thisGroup.attrs["offset"] else None
-                geomType = (
-                    thisGroup["geomType"].asstr()[()]
-                    if "geomType" in thisGroup
-                    else None
-                )
-                symmetry = (
-                    thisGroup["symmetry"].asstr()[()]
-                    if "symmetry" in thisGroup
-                    else None
-                )
+                geomType = thisGroup["geomType"].asstr()[()] if "geomType" in thisGroup else None
+                symmetry = thisGroup["symmetry"].asstr()[()] if "symmetry" in thisGroup else None
 
                 self.gridParams.append(
                     (
@@ -322,9 +306,7 @@ class Layout:
                 )
 
         except KeyError as e:
-            runLog.error(
-                "Failed to get layout information from group: {}".format(h5group.name)
-            )
+            runLog.error("Failed to get layout information from group: {}".format(h5group.name))
             raise e
 
     def _initComps(self, caseTitle, bp):
@@ -356,7 +338,7 @@ class Layout:
                 comp = Klass(caseTitle, bp)
             elif issubclass(Klass, Core):
                 comp = Klass(name)
-            elif issubclass(Klass, AssemblyList):
+            elif issubclass(Klass, ExcoreStructure):
                 comp = Klass(name)
             elif issubclass(Klass, Component):
                 # init all dimensions to 0, they will be loaded and assigned after load
@@ -371,9 +353,7 @@ class Layout:
 
             if gridIndex is not None:
                 gridParams = self.gridParams[gridIndex]
-                comp.spatialGrid = self.gridClasses[gridParams[0]](
-                    *gridParams[1], armiObject=comp
-                )
+                comp.spatialGrid = self.gridClasses[gridParams[0]](*gridParams[1], armiObject=comp)
 
             comps.append((comp, serialNum, numChildren, location))
             groupedComps[compType].append(comp)
@@ -384,7 +364,7 @@ class Layout:
         """Write a chunk of data to the database.
 
         .. impl:: Write data to the DB for a given time step.
-            :id: I_ARMI_DB_TIME
+            :id: I_ARMI_DB_TIME0
             :implements: R_ARMI_DB_TIME
 
             This method writes a snapshot of the current state of the reactor to the
@@ -394,8 +374,7 @@ class Layout:
             objects are written to the file. Though, this turns out to still be very
             powerful. For instance, the data for all ``HexBlock`` children of a given
             parent are stored contiguously within the ``HexBlock`` group, and will not
-            be interleaved with data from the ``HexBlock`` children of any of the
-            parent's siblings.
+            be interleaved with data from the ``HexBlock`` children of any of the parent's siblings.
         """
         if "layout/type" in h5group:
             # It looks like we have already written the layout to DB, skip for now
@@ -411,12 +390,8 @@ class Layout:
                 data=np.array(self.name).astype("S"),
                 compression="gzip",
             )
-            h5group.create_dataset(
-                "layout/serialNum", data=self.serialNum, compression="gzip"
-            )
-            h5group.create_dataset(
-                "layout/indexInData", data=self.indexInData, compression="gzip"
-            )
+            h5group.create_dataset("layout/serialNum", data=self.serialNum, compression="gzip")
+            h5group.create_dataset("layout/indexInData", data=self.indexInData, compression="gzip")
             h5group.create_dataset(
                 "layout/numChildren",
                 data=self.numChildren,
@@ -450,9 +425,7 @@ class Layout:
 
             h5group.create_dataset(
                 "layout/gridIndex",
-                data=replaceNonesWithNonsense(
-                    np.array(self.gridIndex), "layout/gridIndex"
-                ),
+                data=replaceNonesWithNonsense(np.array(self.gridIndex), "layout/gridIndex"),
                 compression="gzip",
             )
 
@@ -466,31 +439,21 @@ class Layout:
 
             for igrid, gridParams in enumerate(gp[1] for gp in self.gridParams):
                 thisGroup = gridsGroup.create_group(str(igrid), track_order=True)
-                thisGroup.create_dataset(
-                    "unitSteps", data=gridParams.unitSteps, track_order=True
-                )
+                thisGroup.create_dataset("unitSteps", data=gridParams.unitSteps, track_order=True)
 
                 for ibound, bound in enumerate(gridParams.bounds):
                     if bound is not None:
                         bound = np.array(bound)
-                        thisGroup.create_dataset(
-                            "bounds_{}".format(ibound), data=bound, track_order=True
-                        )
+                        thisGroup.create_dataset("bounds_{}".format(ibound), data=bound, track_order=True)
 
-                thisGroup.create_dataset(
-                    "unitStepLimits", data=gridParams.unitStepLimits, track_order=True
-                )
+                thisGroup.create_dataset("unitStepLimits", data=gridParams.unitStepLimits, track_order=True)
 
                 offset = gridParams.offset
                 thisGroup.attrs["offset"] = offset is not None
                 if offset is not None:
                     thisGroup.create_dataset("offset", data=offset, track_order=True)
-                thisGroup.create_dataset(
-                    "geomType", data=gridParams.geomType, track_order=True
-                )
-                thisGroup.create_dataset(
-                    "symmetry", data=gridParams.symmetry, track_order=True
-                )
+                thisGroup.create_dataset("geomType", data=gridParams.geomType, track_order=True)
+                thisGroup.create_dataset("symmetry", data=gridParams.symmetry, track_order=True)
         except RuntimeError:
             runLog.error("Failed to create datasets in: {}".format(h5group))
             raise
@@ -550,24 +513,19 @@ class Layout:
             # handle deeper scenarios. This is a bit tricky. Store the original
             # ancestors for the first generation, since that ultimately contains all of
             # the information that we need. Then in a loop, keep hopping one more layer
-            # of indirection, and indexing into the corresponding locaition in the
+            # of indirection, and indexing into the corresponding location in the
             # original ancestor array
             indexMap = {sn: i for i, sn in enumerate(serialNum)}
             origAncestors = ancestors
             for _ in range(depth - 1):
-                ancestors = [
-                    origAncestors[indexMap[ia]] if ia is not None else None
-                    for ia in ancestors
-                ]
+                ancestors = [origAncestors[indexMap[ia]] if ia is not None else None for ia in ancestors]
 
         return ancestors
 
     @staticmethod
     def allSubclasses(cls) -> set:
         """Find all subclasses of the given class, in any namespace."""
-        return set(cls.__subclasses__()).union(
-            [s for c in cls.__subclasses__() for s in Layout.allSubclasses(c)]
-        )
+        return set(cls.__subclasses__()).union([s for c in cls.__subclasses__() for s in Layout.allSubclasses(c)])
 
 
 def _packLocations(
@@ -739,9 +697,7 @@ def _unpackLocationsV2(locationTypes, locData):
     return unpackedLocs
 
 
-def replaceNonesWithNonsense(
-    data: np.ndarray, paramName: str, nones: np.ndarray = None
-) -> np.ndarray:
+def replaceNonesWithNonsense(data: np.ndarray, paramName: str, nones: np.ndarray = None) -> np.ndarray:
     """
     Replace instances of ``None`` with nonsense values that can be detected/recovered
     when reading.
@@ -763,7 +719,7 @@ def replaceNonesWithNonsense(
     Notes
     -----
     This only supports situations where the data is a straight-up ``None``, or a valid,
-    database-storable numpy array (or easily convertable to one (e.g. tuples/lists with
+    database-storable numpy array (or easily convertible to one (e.g. tuples/lists with
     numerical values)). This does not support, for instance, a numpy ndarray with some
     Nones in it.
 
@@ -800,9 +756,7 @@ def replaceNonesWithNonsense(
                 if realType is type(None):
                     continue
 
-                defaultValue = np.reshape(
-                    np.repeat(NONE_MAP[realType], val.size), val.shape
-                )
+                defaultValue = np.reshape(np.repeat(NONE_MAP[realType], val.size), val.shape)
                 break
             else:
                 realType = type(val)
@@ -825,9 +779,7 @@ def replaceNonesWithNonsense(
 
     except Exception as ee:
         runLog.error(
-            "Error while attempting to determine default for {}.\nvalue: {}\nError: {}".format(
-                paramName, val, ee
-            )
+            "Error while attempting to determine default for {}.\nvalue: {}\nError: {}".format(paramName, val, ee)
         )
         raise TypeError(
             "Could not determine None replacement for {} with type {}, val {}, default {}".format(
@@ -838,18 +790,10 @@ def replaceNonesWithNonsense(
     try:
         data = data.astype(realType)
     except Exception:
-        raise ValueError(
-            "Could not coerce data for {} to {}, data:\n{}".format(
-                paramName, realType, data
-            )
-        )
+        raise ValueError("Could not coerce data for {} to {}, data:\n{}".format(paramName, realType, data))
 
     if data.dtype.kind == "O":
-        raise TypeError(
-            "Failed to convert data to valid HDF5 type {}, data:{}".format(
-                paramName, data
-            )
-        )
+        raise TypeError("Failed to convert data to valid HDF5 type {}, data:{}".format(paramName, data))
 
     return data
 
@@ -881,9 +825,7 @@ def replaceNonsenseWithNones(data: np.ndarray, paramName: str) -> np.ndarray:
     elif np.issubdtype(data.dtype, np.str_):
         isNone = data == "<!None!>"
     else:
-        raise TypeError(
-            "Unable to resolve values that should be None for `{}`".format(paramName)
-        )
+        raise TypeError("Unable to resolve values that should be None for `{}`".format(paramName))
 
     if data.ndim > 1:
         result = np.ndarray(data.shape[0], dtype=np.dtype("O"))

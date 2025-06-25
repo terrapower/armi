@@ -18,27 +18,18 @@ The base ARMI App class.
 This module defines the :py:class:`App` class, which is used to configure the ARMI
 Framework for a specific application. An ``App`` implements a simple interface for
 customizing much of the Framework's behavior.
-
-Notes
------
-Historical Fun Fact
-
-This pattern is used by many frameworks as a way of encapsulating what would otherwise be global
-state. The ARMI Framework has historically made heavy use of global state (e.g.,
-:py:mod:`armi.nucDirectory.nuclideBases`), and it will take quite a bit of effort to refactor the
-code to access such things through an App object.
 """
+
 # ruff: noqa: E402
-from typing import Dict, Optional, Tuple, List
 import collections
 import importlib
 import sys
+from typing import Dict, List, Optional, Tuple
 
-from armi import context, plugins, pluginManager, meta, settings
+from armi import context, meta, pluginManager, plugins, settings
 from armi.reactor import parameters
 from armi.reactor.flags import Flags
-from armi.settings import fwSettings
-from armi.settings import Setting
+from armi.settings import Setting, fwSettings
 
 
 class App:
@@ -85,14 +76,14 @@ class App:
         self.__initNewPlugins()
 
     def __initNewPlugins(self):
-        from armi import cli
-        from armi import bookkeeping
-        from armi.physics import fuelCycle
-        from armi.physics import fuelPerformance
-        from armi.physics import neutronics
-        from armi.physics import safety
-        from armi.physics import thermalHydraulics
-        from armi import reactor
+        from armi import bookkeeping, cli, reactor
+        from armi.physics import (
+            fuelCycle,
+            fuelPerformance,
+            neutronics,
+            safety,
+            thermalHydraulics,
+        )
 
         self._pm = plugins.getNewPluginManager()
         for plugin in (
@@ -125,35 +116,15 @@ class App:
         return self._pm
 
     def getSettings(self) -> Dict[str, Setting]:
-        """
-        Return a dictionary containing all Settings defined by the framework and all plugins.
-
-        .. impl:: Applications will not allow duplicate settings.
-            :id: I_ARMI_SETTINGS_UNIQUE
-            :implements: R_ARMI_SETTINGS_UNIQUE
-
-            Each ARMI application includes a collection of Plugins. Among other
-            things, these plugins can register new settings in addition to
-            the default settings that come with ARMI. This feature provides a
-            lot of utility, so application developers can easily configure
-            their ARMI appliction in customizable ways.
-
-            However, it would get confusing if two different plugins registered
-            a setting with the same name string. Or if a plugin registered a
-            setting with the same name as an ARMI default setting. So this
-            method throws an error if such a situation arises.
-        """
+        """Return a dictionary containing all Settings defined by the framework and all plugins."""
         # Start with framework settings
-        settingDefs = {
-            setting.name: setting for setting in fwSettings.getFrameworkSettings()
-        }
+        settingDefs = {setting.name: setting for setting in fwSettings.getFrameworkSettings()}
 
-        # The optionsCache stores options that may have come from a plugin before the
-        # setting to which they apply. Whenever a new setting is added, we check to see
-        # if there are any options in the cache, popping them out and adding them to the
-        # setting.  If all plugins' settings have been processed and the cache is not
-        # empty, that's an error, because a plugin must have provided options to a
-        # setting that doesn't exist.
+        # The optionsCache stores options that may have come from a plugin before the setting to
+        # which they apply. Whenever a new setting is added, we check to see if there are any
+        # options in the cache, popping them out and adding them to the setting. If all plugins'
+        # settings have been processed and the cache is not empty, that's an error, because a plugin
+        # must have provided options to a setting that doesn't exist.
         optionsCache: Dict[str, List[settings.Option]] = collections.defaultdict(list)
         defaultsCache: Dict[str, settings.Default] = {}
 
@@ -162,10 +133,7 @@ class App:
                 if isinstance(pluginSetting, settings.Setting):
                     name = pluginSetting.name
                     if name in settingDefs:
-                        raise ValueError(
-                            f"The setting {pluginSetting.name} "
-                            "already exists and cannot be redefined."
-                        )
+                        raise ValueError(f"The setting {pluginSetting.name} already exists and cannot be redefined.")
                     settingDefs[name] = pluginSetting
                     # handle when new setting has modifier in the cache (modifier loaded first)
                     if name in optionsCache:
@@ -182,17 +150,13 @@ class App:
                 elif isinstance(pluginSetting, settings.Default):
                     if pluginSetting.settingName in settingDefs:
                         # modifier loaded after setting, so just apply it (no cache needed)
-                        settingDefs[pluginSetting.settingName].changeDefault(
-                            pluginSetting
-                        )
+                        settingDefs[pluginSetting.settingName].changeDefault(pluginSetting)
                     else:
                         # no setting yet, cache it and apply when it arrives
                         defaultsCache[pluginSetting.settingName] = pluginSetting
                 else:
                     raise TypeError(
-                        "Invalid setting definition found: {} ({})".format(
-                            pluginSetting, type(pluginSetting)
-                        )
+                        "Invalid setting definition found: {} ({})".format(pluginSetting, type(pluginSetting))
                     )
 
         if optionsCache:
@@ -215,11 +179,10 @@ class App:
         """
         Return the parameter renames from all registered plugins.
 
-        This renders a merged dictionary containing all parameter renames from all of
-        the registered plugins. It also performs simple error checking. The result of
-        this operation is cached, since it is somewhat expensive to perform. If the App
-        detects that its plugin manager's set of registered plugins has changed, the
-        cache will be invalidated and recomputed.
+        This renders a merged dictionary containing all parameter renames from all of the registered
+        plugins. It also performs simple error checking. The result of this operation is cached,
+        since it is somewhat expensive to perform. If the App detects that its plugin manager's set
+        of registered plugins has changed, the cache will be invalidated and recomputed.
         """
         cacheInvalid = False
         if self._paramRenames is not None:
@@ -243,8 +206,9 @@ class App:
                 pluginCollisions = renames.keys() & pluginRenames.keys()
                 if pluginCollisions:
                     raise plugins.PluginError(
-                        "The following parameter renames are already defined by another "
-                        "plugin:\n{}".format(pluginCollisions)
+                        "The following parameter renames are already defined by another plugin:\n{}".format(
+                            pluginCollisions
+                        )
                     )
                 renames.update(pluginRenames)
             self._paramRenames = renames, self._pm.counter
@@ -259,9 +223,7 @@ class App:
         armi.plugins.ArmiPlugin.defineFlags
         """
         if self._pluginFlagsRegistered:
-            raise RuntimeError(
-                "Plugin flags have already been registered. Cannot do it twice!"
-            )
+            raise RuntimeError("Plugin flags have already been registered. Cannot do it twice!")
 
         for pluginFlags in self._pm.hook.defineFlags():
             Flags.extend(pluginFlags)
@@ -399,9 +361,7 @@ class App:
 |        Advanced  Reactor  Modeling Interface      |
 |                                                   |
 |                    version {0:10s}             |
-|                                                   |""".format(
-            meta.__version__
-        )
+|                                                   |""".format(meta.__version__)
 
         # add the name/version of the current App, if it's not the default
         if context.APP_NAME != "armi":
@@ -409,9 +369,7 @@ class App:
 
             splash += r"""
 |---------------------------------------------------|
-|   {0:>17s} app version {1:10s}        |""".format(
-                context.APP_NAME, getApp().version
-            )
+|   {0:>17s} app version {1:10s}        |""".format(context.APP_NAME, getApp().version)
 
         # bottom border of the splash
         splash += r"""

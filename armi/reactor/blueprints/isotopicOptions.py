@@ -18,24 +18,22 @@ Defines nuclide flags and custom isotopics via input.
 Nuclide flags control meta-data about nuclides. Custom isotopics
 allow specification of arbitrary isotopic compositions.
 """
+
 import yamlize
 
-from armi import materials
-from armi import runLog
-from armi.nucDirectory import elements
-from armi.nucDirectory import nucDir
-from armi.nucDirectory import nuclideBases
-from armi.utils import densityTools
-from armi.utils import units
-from armi.utils.customExceptions import InputError
+from armi import materials, runLog
+from armi.nucDirectory import elements, nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_FP_MODEL,
     CONF_FISSION_PRODUCT_LIBRARY_NAME,
+    CONF_FP_MODEL,
 )
 from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
     CONF_NEUTRONICS_KERNEL,
     CONF_XS_KERNEL,
 )
+from armi.utils import densityTools, units
+from armi.utils.customExceptions import InputError
 
 ALLOWED_KEYS = set(nuclideBases.byName.keys()) | set(elements.bySymbol.keys())
 
@@ -101,11 +99,7 @@ class NuclideFlag(yamlize.Object):
     @nuclideName.validator
     def nuclideName(self, value):
         if value not in ALLOWED_KEYS:
-            raise ValueError(
-                "`{}` is not a valid nuclide name, must be one of: {}".format(
-                    value, ALLOWED_KEYS
-                )
-            )
+            raise ValueError("`{}` is not a valid nuclide name, must be one of: {}".format(value, ALLOWED_KEYS))
 
     burn = yamlize.Attribute(type=bool)
     xs = yamlize.Attribute(type=bool)
@@ -119,9 +113,7 @@ class NuclideFlag(yamlize.Object):
         self.expandTo = expandTo
 
     def __repr__(self):
-        return "<NuclideFlag name:{} burn:{} xs:{}>".format(
-            self.nuclideName, self.burn, self.xs
-        )
+        return "<NuclideFlag name:{} burn:{} xs:{}>".format(self.nuclideName, self.burn, self.xs)
 
     def fileAsActiveOrInert(self, activeSet, inertSet):
         """
@@ -196,11 +188,7 @@ class CustomIsotopic(yamlize.Map):
     @inputFormat.validator
     def inputFormat(self, value):
         if value not in self._allowedFormats:
-            raise ValueError(
-                "Cannot set `inputFormat` to `{}`, must be one of: {}".format(
-                    value, self._allowedFormats
-                )
-            )
+            raise ValueError("Cannot set `inputFormat` to `{}`, must be one of: {}".format(value, self._allowedFormats))
 
     _density = yamlize.Attribute(key="density", type=float, default=None)
 
@@ -224,9 +212,7 @@ class CustomIsotopic(yamlize.Map):
 
     def __setitem__(self, key, value):
         if key not in ALLOWED_KEYS:
-            raise ValueError(
-                "Key `{}` is not valid, must be one of: {}".format(key, ALLOWED_KEYS)
-            )
+            raise ValueError("Key `{}` is not valid, must be one of: {}".format(key, ALLOWED_KEYS))
 
         yamlize.Map.__setitem__(self, key, value)
 
@@ -237,15 +223,10 @@ class CustomIsotopic(yamlize.Map):
     @density.setter
     def density(self, value):
         if self._computedDensity is not None:
-            raise AttributeError(
-                "Density was computed from number densities, and should not be "
-                "set directly."
-            )
+            raise AttributeError("Density was computed from number densities, and should not be set directly.")
         self._density = value
         if value is not None and value < 0:
-            raise ValueError(
-                "Cannot set `density` to `{}`, must greater than 0".format(value)
-            )
+            raise ValueError("Cannot set `density` to `{}`, must greater than 0".format(value))
 
     @classmethod
     def from_yaml(cls, loader, node, rtd):
@@ -270,9 +251,7 @@ class CustomIsotopic(yamlize.Map):
         Override the ``Yamlizable.from_yaml`` to inject custom data validation logic, and complete initialization of the
         object.
         """
-        self = yamlize.Map.from_yaml_key_val.__func__(
-            cls, loader, key_node, val_node, key_attr, rtd
-        )
+        self = yamlize.Map.from_yaml_key_val.__func__(cls, loader, key_node, val_node, key_attr, rtd)
 
         try:
             self._initializeMassFracs()
@@ -287,17 +266,11 @@ class CustomIsotopic(yamlize.Map):
         self.massFracs = dict()  # defaults to 0.0, __init__ is not called
 
         if any(v < 0.0 for v in self.values()):
-            raise ValueError(
-                "Custom isotopic input for {} is negative".format(self.name)
-            )
+            raise ValueError("Custom isotopic input for {} is negative".format(self.name))
 
         valSum = sum(self.values())
         if not abs(valSum - 1.0) < 1e-5 and "fractions" in self.inputFormat:
-            raise ValueError(
-                "Fractional custom isotopic input values must sum to 1.0 in: {}".format(
-                    self.name
-                )
-            )
+            raise ValueError("Fractional custom isotopic input values must sum to 1.0 in: {}".format(self.name))
 
         if self.inputFormat == "number fractions":
             sumNjAj = 0.0
@@ -319,9 +292,7 @@ class CustomIsotopic(yamlize.Map):
                 )
 
             M = {
-                nuc: Ni
-                / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-                * nucDir.getAtomicWeight(nuc)
+                nuc: Ni / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * nucDir.getAtomicWeight(nuc)
                 for nuc, Ni in self.items()
             }
             densityTotal = sum(M.values())
@@ -337,11 +308,7 @@ class CustomIsotopic(yamlize.Map):
             self.massFracs = dict(self)  # as input
 
         else:
-            raise ValueError(
-                "Unrecognized custom isotopics input format {}.".format(
-                    self.inputFormat
-                )
-            )
+            raise ValueError("Unrecognized custom isotopics input format {}.".format(self.inputFormat))
 
     def _expandElementMassFracs(self):
         """
@@ -361,22 +328,14 @@ class CustomIsotopic(yamlize.Map):
                 element = elements.bySymbol.get(nucName)
                 if element is not None:
                     runLog.info(
-                        "Expanding custom isotopic `{}` element `{}` to natural isotopics".format(
-                            self.name, nucName
-                        )
+                        "Expanding custom isotopic `{}` element `{}` to natural isotopics".format(self.name, nucName)
                     )
                     # include all natural isotopes with None flag
                     elementsToExpand.append((element, None))
                 else:
-                    raise InputError(
-                        "Unrecognized nuclide/isotope/element in input: {}".format(
-                            nucName
-                        )
-                    )
+                    raise InputError("Unrecognized nuclide/isotope/element in input: {}".format(nucName))
 
-        densityTools.expandElementalMassFracsToNuclides(
-            self.massFracs, elementsToExpand
-        )
+        densityTools.expandElementalMassFracsToNuclides(self.massFracs, elementsToExpand)
 
     def apply(self, material):
         """
@@ -394,10 +353,10 @@ class CustomIsotopic(yamlize.Map):
         if self.density is not None:
             if not isinstance(material, materials.Custom):
                 runLog.important(
-                    "A custom density or number densities has been specified for non-custom "
-                    "material {}. The material object's density will not be updated to prevent unintentional "
-                    "density changes across the model. Only custom materials may have a density "
-                    "specified.".format(material),
+                    "A custom isotopic with associated density has been specified for non-`Custom` "
+                    f"material {material}. The reference density of materials in the materials library "
+                    "will not be changed, but the associated components will use the density "
+                    "implied by the custom isotopics.",
                     single=True,
                 )
                 # specifically, non-Custom materials only use refDensity and dLL, mat.customDensity has no effect
@@ -432,8 +391,7 @@ class CustomIsotopics(yamlize.KeyedList):
         """
         if customIsotopicsName not in self:
             raise KeyError(
-                "The input custom isotopics do not include {}. "
-                "The only present specifications are {}".format(
+                "The input custom isotopics do not include {}. The only present specifications are {}".format(
                     customIsotopicsName, self.keys()
                 )
             )
@@ -456,7 +414,6 @@ def getDefaultNuclideFlags():
     We will include B10 and B11 without depletion, sodium, and structural elements.
 
     We will include LFPs with depletion.
-
     """
     nuclideFlags = {}
     actinides = {
@@ -511,7 +468,6 @@ def eleExpandInfoBasedOnCodeENDF(cs):
         For example: {oxygen: [oxygen16]} indicates that all
         oxygen should be expanded to O16, ignoring natural
         O17 and O18. (variables are Natural/NuclideBases)
-
     """
     elementalsToKeep = set()
     oxygenElementals = [nuclideBases.byName["O"]]
@@ -536,24 +492,30 @@ def eleExpandInfoBasedOnCodeENDF(cs):
 
     if "MCNP" in cs[CONF_NEUTRONICS_KERNEL]:
         expansionStrings.update(mcnpExpansions)
-        if int(cs["mcnpLibrary"]) == 50:
+        if cs[CONF_MCNP_LIB_BASE] == "ENDF/B-V.0":
+            # ENDF/B V.0
             elementalsToKeep.update(nuclideBases.instances)  # skip expansion
-        # ENDF/B VII.0
-        elif 70 <= int(cs["mcnpLibrary"]) <= 79:
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.0":
+            # ENDF/B VII.0
             elementalsToKeep.update(endf70Elementals)
-        # ENDF/B VII.1
-        elif 80 <= int(cs["mcnpLibrary"]) <= 89:
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VII.1":
+            # ENDF/B VII.1
             elementalsToKeep.update(endf71Elementals)
+        elif cs[CONF_MCNP_LIB_BASE] == "ENDF/B-VIII.0":
+            # ENDF/B VIII.0
+            elementalsToKeep.update(endf80Elementals)
         else:
             raise InputError(
-                "Failed to determine nuclides for modeling. "
-                "The `mcnpLibrary` setting value ({}) is not supported.".format(
-                    cs["mcnpLibrary"]
-                )
+                "Failed to determine nuclides for modeling. The `mcnpLibraryVersion` "
+                f"setting value ({cs[CONF_MCNP_LIB_BASE]}) is not supported."
             )
 
-    elif cs[CONF_XS_KERNEL] in ["", "SERPENT", "MC2v3", "MC2v3-PARTISN"]:
+    elif cs[CONF_XS_KERNEL] == "SERPENT":
         elementalsToKeep.update(endf70Elementals)
+        expansionStrings.update(mc2Expansions)
+
+    elif cs[CONF_XS_KERNEL] in ["", "MC2v3", "MC2v3-PARTISN"]:
+        elementalsToKeep.update(endf71Elementals)
         expansionStrings.update(mc2Expansions)
 
     elif cs[CONF_XS_KERNEL] == "DRAGON":
@@ -569,9 +531,7 @@ def eleExpandInfoBasedOnCodeENDF(cs):
             elementalsToKeep.update(hydrogenElementals)
             elementalsToKeep.update(oxygenElementals)
         else:
-            raise ValueError(
-                f"Unrecognized DRAGLIB name: {dragLib} Use default file name."
-            )
+            raise ValueError(f"Unrecognized DRAGLIB name: {dragLib} Use default file name.")
 
     elif cs[CONF_XS_KERNEL] == "MC2v2":
         # strip out any NaturalNuclideBase with no getMcc2Id() (not on mcc-nuclides.yaml)
@@ -591,9 +551,7 @@ def genDefaultNucFlags():
     flagsDict = getDefaultNuclideFlags()
     flags = NuclideFlags()
     for nucName, nucFlags in flagsDict.items():
-        flag = NuclideFlag(
-            nucName, nucFlags["burn"], nucFlags["xs"], nucFlags["expandTo"]
-        )
+        flag = NuclideFlag(nucName, nucFlags["burn"], nucFlags["xs"], nucFlags["expandTo"])
         flags[nucName] = flag
     return flags
 

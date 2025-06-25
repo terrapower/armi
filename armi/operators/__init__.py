@@ -23,11 +23,11 @@ Operators are generally created by a :py:mod:`armi.cases` object and are chosen 
 the ``runType`` setting. Custom operators may be introduced via the :py:mod:`armi.plugins` system.
 
 The ARMI framework comes with two general-purpose Operators, which can be used for
-very real analysis given a proper set of plugins. The :py:class:`~armi.operators.operator.Operator` 
-is the Standard operator, which loops over cycles and timenodes. The 
+very real analysis given a proper set of plugins. The :py:class:`~armi.operators.operator.Operator`
+is the Standard operator, which loops over cycles and timenodes. The
 :py:class:`~armi.operators.snapshots.OperatorSnapshots`
 is the Snapshots operator, which loops over specific point in time from a previous Standard run
-and performs additional analysis (e.g. for detailed follow-on analysis/transients). 
+and performs additional analysis (e.g. for detailed follow-on analysis/transients).
 
 See Also
 --------
@@ -39,8 +39,8 @@ armi.interfaces : Code that operators schedule to perform the real analysis or
     math on the reactor model
 """
 
-from armi import context
-from armi import getPluginManagerOrFail
+# ruff: noqa: I001
+from armi import context, getPluginManagerOrFail
 from armi.operators.runTypes import RunTypes
 from armi.operators.operator import Operator
 from armi.operators.operatorMPI import OperatorMPI
@@ -80,9 +80,7 @@ def getOperatorClassFromSettings(cs):
         return OperatorSnapshots
 
     plugInOperator = None
-    for potentialOperator in getPluginManagerOrFail().hook.getOperatorClassFromRunType(
-        runType=runType
-    ):
+    for potentialOperator in getPluginManagerOrFail().hook.getOperatorClassFromRunType(runType=runType):
         if plugInOperator:
             raise ValueError(
                 "More than one Operator class was "
@@ -95,6 +93,5 @@ def getOperatorClassFromSettings(cs):
         return plugInOperator
 
     raise ValueError(
-        f"No valid operator was found for runType: `{runType}`. "
-        "Please adjust settings or plugin configuration."
+        f"No valid operator was found for runType: `{runType}`. Please adjust settings or plugin configuration."
     )

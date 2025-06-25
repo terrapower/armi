@@ -13,10 +13,9 @@
 # limitations under the License.
 
 """Module of utilities to help dealing with iterable objects in Python."""
-from itertools import tee, chain
-import struct
 
-from six.moves import filterfalse, map, xrange, filter
+import struct
+from itertools import chain, filterfalse, tee
 
 import numpy as np
 
@@ -43,7 +42,7 @@ def chunk(lst, n):
     >>> list(chunk([1,2,3,4,5,6,7,8,9,10], 4))
      [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10]]
     """
-    for i in xrange(0, len(lst), n):
+    for i in range(0, len(lst), n):
         yield lst[i : i + n]
 
 
@@ -83,18 +82,14 @@ def split(a, n, padWith=()):
     assert n > 0, "Cannot chunk into less than 1 chunks. You requested {0}".format(n)
 
     k, m = divmod(N, n)
-    chunked = [
-        a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] or padWith for i in xrange(n)
-    ]
+    chunked = [a[i * k + min(i, m) : (i + 1) * k + min(i + 1, m)] or padWith for i in range(n)]
     return chunked
 
 
 def unpackBinaryStrings(binaryRow):
     """Unpacks a row of binary strings to a list of floats."""
     if len(binaryRow) % 8:
-        raise ValueError(
-            "Cannot unpack binary strings from misformatted row. Expected chunks of size 8."
-        )
+        raise ValueError("Cannot unpack binary strings from misformatted row. Expected chunks of size 8.")
     return [(struct.unpack("<d", barray)[0]) for barray in chunk(binaryRow, 8)]
 
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for nuclideBases."""
+
 import math
 import os
 import random
@@ -23,7 +24,7 @@ from ruamel.yaml import YAML
 from armi.context import RES
 from armi.nucDirectory import nuclideBases
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
-from armi.utils.units import SECONDS_PER_HOUR, AVOGADROS_NUMBER, CURIE_PER_BECQUEREL
+from armi.utils.units import AVOGADROS_NUMBER, CURIE_PER_BECQUEREL, SECONDS_PER_HOUR
 
 
 class TestNuclide(unittest.TestCase):
@@ -45,24 +46,21 @@ class TestNuclide(unittest.TestCase):
         for zz in range(1, 102):
             nuclides = nuclideBases.isotopes(zz)
             # We only process nuclides with measured masses. Some are purely theoretical, mostly over z=100
-            self.assertTrue(
-                len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz)
-            )
+            self.assertTrue(len(nuclides) > 0, msg="z={} unexpectedly has no nuclides".format(zz))
             total = sum([nn.abundance for nn in nuclides if nn.a > 0])
             self.assertAlmostEqual(
                 any([nn.abundance > 0 for nn in nuclides]),
                 total,
                 delta=1e-4,
-                msg="Abundance ({}) not 1.0 for nuclideBases:\n  {}"
-                "".format(total, "\n  ".join(repr(nn) for nn in nuclides)),
+                msg="Abundance ({}) not 1.0 for nuclideBases:\n  {}".format(
+                    total, "\n  ".join(repr(nn) for nn in nuclides)
+                ),
             )
 
     def test_nucBases_AllLabelsAreUnique(self):
         labels = []
         for nn in nuclideBases.instances:
-            self.assertTrue(
-                nn.label not in labels, "Label already exists: {}".format(nn.label)
-            )
+            self.assertTrue(nn.label not in labels, "Label already exists: {}".format(nn.label))
             labels.append(nn.label)
 
     def test_nucBases_NegativeZRaisesException(self):
@@ -86,24 +84,18 @@ class TestNuclide(unittest.TestCase):
             "DUMP2",
             "LREGN",
         ]
-        for lump in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase)
-        ):
+        for lump in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase)):
             if lump.name in notElemental:
                 self.assertIsInstance(lump, nuclideBases.LumpNuclideBase)
             else:
                 self.assertIsInstance(lump, nuclideBases.NaturalNuclideBase)
 
-    def test_LumpNuclideBase_getNatrualIsotopicsDoesNotFail(self):
-        for nuc in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0
-        ):
+    def test_LumpNucBaseGetNatIsotopDoesNotFail(self):
+        for nuc in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.LumpNuclideBase) and nn.z == 0):
             self.assertEqual(0, len(list(nuc.getNaturalIsotopics())), nuc)
 
     def test_NaturalNuclideBase_getNatrualIsotpics(self):
-        for nuc in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
-        ):
+        for nuc in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)):
             numNaturals = len(list(nuc.getNaturalIsotopics()))
             self.assertGreaterEqual(len(nuc.element.nuclides) - 1, numNaturals)
 
@@ -120,16 +112,14 @@ class TestNuclide(unittest.TestCase):
         self.assertEqual(235, u235.a)
         self.assertEqual(92, u235.z)
 
-    def test_NaturalNuclide_atomicWeightIsAverageOfNaturallyOccuringIsotopes(self):
-        for natNuk in nuclideBases.where(
-            lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)
-        ):
+    def test_natNucStomicWgtIsAvgOfNatIsotopes(self):
+        for natNuk in nuclideBases.where(lambda nn: isinstance(nn, nuclideBases.NaturalNuclideBase)):
             atomicMass = 0.0
             for natIso in natNuk.getNaturalIsotopics():
                 atomicMass += natIso.abundance * natIso.weight
             self.assertAlmostEqual(atomicMass, natNuk.weight, delta=0.000001)
 
-    def test_nucBases_labelAndNameCollsionsAreForSameNuclide(self):
+    def test_nucBasesLabelAndNameCollsAreForSameNuc(self):
         """The name and labels for correct for nuclides.
 
         .. test:: Validate the name, label, and DB name are accessible for nuclides.
@@ -144,7 +134,7 @@ class TestNuclide(unittest.TestCase):
             self.assertEqual(nuc, nuclideBases.byLabel[nuc.label])
         self.assertGreater(count, 10)
 
-    def test_nucBases_imposeBurnChainDecayBulkStatistics(self):
+    def test_nucBases_imposeBurnChainDecayBulkStats(self):
         """Test must be updated manually when burn chain is modified."""
         decayers = list(nuclideBases.where(lambda nn: len(nn.decays) > 0))
         self.assertTrue(decayers)
@@ -162,7 +152,7 @@ class TestNuclide(unittest.TestCase):
                 continue
             self.assertAlmostEqual(1.0, sum(dd.branch for dd in nuc.decays))
 
-    def test_nucBases_imposeBurnChainTransmutationBulkStatistics(self):
+    def test_nucBasesImposeBurnChainTransmBulkStats(self):
         """
         Make sure all branches are equal to 1 for every transmutation type.
 
@@ -178,8 +168,7 @@ class TestNuclide(unittest.TestCase):
             self.assertAlmostEqual(
                 expected,
                 actual,
-                msg="{0} has {1} transmutation but the branches add up to {2}"
-                "".format(nuc, expected, actual),
+                msg="{0} has {1} transmutation but the branches add up to {2}".format(nuc, expected, actual),
                 delta=3e-4,
             )  # ternary fission
 
@@ -190,9 +179,7 @@ class TestNuclide(unittest.TestCase):
             :id: T_ARMI_ND_DATA0
             :tests: R_ARMI_ND_DATA
         """
-        actual = {
-            nn.name: nn.nuSF for nn in nuclideBases.where(lambda nn: nn.nuSF > 0.0)
-        }
+        actual = {nn.name: nn.nuSF for nn in nuclideBases.where(lambda nn: nn.nuSF > 0.0)}
         expected = {
             "CM248": 3.1610,
             "BK249": 3.4000,
@@ -261,9 +248,7 @@ class TestNuclide(unittest.TestCase):
         for nb in nuclideBases.where(lambda nn: nn.z <= 89):
             self.assertFalse(nb.isHeavyMetal())
         for nb in nuclideBases.where(lambda nn: nn.z > 89):
-            if isinstance(
-                nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)
-            ):
+            if isinstance(nb, (nuclideBases.DummyNuclideBase, nuclideBases.LumpNuclideBase)):
                 self.assertFalse(nb.isHeavyMetal())
             else:
                 self.assertTrue(nb.isHeavyMetal())
@@ -351,10 +336,8 @@ class TestNuclide(unittest.TestCase):
             except ZeroDivisionError:
                 self.assertEqual(refDecayConstant, decayConstantNb)
             except AssertionError:
-                errorMessage = (
-                    "{} reference decay constant {} ARMI decay constant {}".format(
-                        nucName, refDecayConstant, decayConstantNb
-                    )
+                errorMessage = "{} reference decay constant {} ARMI decay constant {}".format(
+                    nucName, refDecayConstant, decayConstantNb
                 )
                 raise AssertionError(errorMessage)
 
@@ -382,18 +365,16 @@ class TestNuclide(unittest.TestCase):
         self.assertAlmostEqual(activity, 0.9885593, places=6)
 
     def test_loadMcc2Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-V.2 nuclides in the data model.
 
-        .. test:: Test that MCC v2 IDs can be queried by nuclides.
+        .. test:: Test that MCC v2 ENDF/B-V.2 IDs can be queried by nuclides.
             :id: T_ARMI_ND_ISOTOPES3
             :tests: R_ARMI_ND_ISOTOPES
         """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
-            expectedNuclides = set(
-                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None]
-            )
+            expectedNuclides = set([nuc for nuc in data.keys() if data[nuc]["ENDF/B-V.2"] is not None])
 
         for nuc, nb in nuclideBases.byMcc2Id.items():
             self.assertIn(nb.name, expectedNuclides)
@@ -402,31 +383,55 @@ class TestNuclide(unittest.TestCase):
 
         self.assertEqual(len(nuclideBases.byMcc2Id), len(expectedNuclides))
 
-    def test_loadMcc3Data(self):
-        """Tests consistency with the `mcc-nuclides.yaml` input and the nuclides in the data model.
+    def test_loadMcc3EndfVII0Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-VII.0 nuclides in the data model.
 
-        .. test:: Test that MCC v3 IDs can be queried by nuclides.
+        .. test:: Test that MCC v3 ENDF/B-VII.0 IDs can be queried by nuclides.
             :id: T_ARMI_ND_ISOTOPES4
             :tests: R_ARMI_ND_ISOTOPES
 
-        .. test:: Test the MCC nuclide data that was read from file instead of code.
+        .. test:: Test the MCC ENDF/B-VII.0 nuclide data that was read from file instead of code.
             :id: T_ARMI_ND_DATA1
             :tests: R_ARMI_ND_DATA
         """
         with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
             yaml = YAML(typ="rt")
             data = yaml.load(f)
-            expectedNuclides = set(
-                [nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None]
-            )
+            expectedNuclides = set([nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.0"] is not None])
 
-        for nuc, nb in nuclideBases.byMcc3Id.items():
+        for nuc, nb in nuclideBases.byMcc3IdEndfbVII0.items():
             self.assertIn(nb.name, expectedNuclides)
-            self.assertEqual(nb.getMcc3Id(), nb.mcc3id)
+            self.assertEqual(nb.getMcc3IdEndfbVII0(), nb.mcc3idEndfbVII0)
+            self.assertEqual(nb.getMcc3IdEndfbVII0(), nuc)
+
+        # Subtract 1 nuclide due to DUMP2.
+        self.assertEqual(len(nuclideBases.byMcc3IdEndfbVII0), len(expectedNuclides) - 1)
+
+    def test_loadMcc3EndfVII1Data(self):
+        """Tests consistency with the `mcc-nuclides.yaml` input and the ENDF/B-VII.1 nuclides in the data model.
+
+        .. test:: Test that MCC v3 ENDF/B-VII.1 IDs can be queried by nuclides.
+            :id: T_ARMI_ND_ISOTOPES6
+            :tests: R_ARMI_ND_ISOTOPES
+
+        .. test:: Test the MCC ENDF/B-VII.1 nuclide data that was read from file instead of code.
+            :id: T_ARMI_ND_DATA2
+            :tests: R_ARMI_ND_DATA
+        """
+        with open(os.path.join(RES, "mcc-nuclides.yaml")) as f:
+            yaml = YAML(typ="rt")
+            data = yaml.load(f)
+            expectedNuclides = set([nuc for nuc in data.keys() if data[nuc]["ENDF/B-VII.1"] is not None])
+
+        for nuc, nb in nuclideBases.byMcc3IdEndfbVII1.items():
+            self.assertIn(nb.name, expectedNuclides)
+            self.assertEqual(nb.getMcc3IdEndfbVII1(), nb.mcc3idEndfbVII1)
+            self.assertEqual(nb.getMcc3IdEndfbVII1(), nuc)
+            self.assertEqual(nb.getMcc3Id(), nb.mcc3idEndfbVII1)
             self.assertEqual(nb.getMcc3Id(), nuc)
 
         # Subtract 1 nuclide due to DUMP2.
-        self.assertEqual(len(nuclideBases.byMcc3Id), len(expectedNuclides) - 1)
+        self.assertEqual(len(nuclideBases.byMcc3IdEndfbVII1), len(expectedNuclides) - 1)
 
 
 class TestAAAZZZSId(unittest.TestCase):
@@ -438,11 +443,9 @@ class TestAAAZZZSId(unittest.TestCase):
             :tests: R_ARMI_ND_ISOTOPES
         """
         referenceNucNames = [
-            ("C", "120060"),
+            ("C12", "120060"),
             ("U235", "2350920"),
             ("AM242M", "2420951"),
-            ("LFP35", None),
-            ("DUMP1", None),
         ]
 
         for nucName, refAaazzzs in referenceNucNames:

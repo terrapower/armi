@@ -13,31 +13,25 @@
 # limitations under the License.
 
 """Tests for the composite pattern."""
-from copy import deepcopy
+
+import itertools
 import logging
 import unittest
+from copy import deepcopy
 
-from armi import nuclearDataIO
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import nuclearDataIO, runLog, settings, utils
 from armi.nucDirectory import nucDir, nuclideBases
 from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct import (
     getDummyLFPFile,
 )
-from armi.reactor import assemblies
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
 from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor
-from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
+from armi.testing import loadTestReactor
+from armi.tests import ISOAA_PATH, mockRunLogs
 
 
 class MockBP:
@@ -76,10 +70,10 @@ class DummyLeaf(composites.Composite):
         composites.Composite.__init__(self, name)
         self.p.type = name
         self.spatialLocator = grids.IndexLocation(i, i, i, _testGrid)
+        # Some special material attribute for testing getChildren(includeMaterials=True)
+        self.material = ("hello", "world")
 
-    def getChildren(
-        self, deep=False, generationNum=1, includeMaterials=False, predicate=None
-    ):
+    def getChildren(self, deep=False, generationNum=1, includeMaterials=False, predicate=None):
         """Return empty list, representing that this object has no children."""
         return []
 
@@ -106,12 +100,21 @@ class TestCompositePattern(unittest.TestCase):
             container.add(leaf)
         nested = DummyComposite("clad", 98)
         nested.setType("clad")
+        self.cladChild = nested
         self.secondGen = DummyComposite("liner", 97)
         self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
         nested.add(self.secondGen)
         container.add(nested)
         self.container = container
+        # Composite tree structure in list of lists for testing
+        # tree[i] contains the children at "generation" or "depth" i
+        self.tree: list[list[composites.Composite]] = [
+            [self.container],
+            list(self.container),
+            [self.secondGen],
+            [self.thirdGen],
+        ]
 
     def test_composite(self):
         """Test basic Composite things.
@@ -139,30 +142,96 @@ class TestCompositePattern(unittest.TestCase):
             :id: T_ARMI_CMP1
             :tests: R_ARMI_CMP
         """
-        # There are 5 leaves and 1 composite in container. The composite has one leaf.
         firstGen = self.container.getChildren()
-        self.assertEqual(len(firstGen), 6)
+        self.assertEqual(firstGen, self.tree[1])
+
         secondGen = self.container.getChildren(generationNum=2)
-        self.assertEqual(len(secondGen), 1)
+        self.assertEqual(secondGen, self.tree[2])
+
         self.assertIs(secondGen[0], self.secondGen)
         third = self.container.getChildren(generationNum=3)
-        self.assertEqual(len(third), 1)
+        self.assertEqual(third, self.tree[3])
         self.assertIs(third[0], self.thirdGen)
-        allC = self.container.getChildren(deep=True)
-        self.assertEqual(len(allC), 8)
 
-        onlyLiner = self.container.getChildren(
-            deep=True, predicate=lambda o: o.p.type == "liner"
+        allC = self.container.getChildren(deep=True)
+        expected = self.tree[1] + self.tree[2] + self.tree[3]
+        self.assertTrue(
+            all(a is e for a, e in itertools.zip_longest(allC, expected)),
+            msg=f"Deep traversal differs: {allC=} != {expected=}",
         )
+
+        onlyLiner = self.container.getChildren(deep=True, predicate=lambda o: o.p.type == "liner")
         self.assertEqual(len(onlyLiner), 1)
+        self.assertIs(onlyLiner[0], self.secondGen)
+
+    def test_getChildrenWithMaterials(self):
+        """Test the ability for getChildren to place the material after the object."""
+        withMaterials = self.container.getChildren(deep=True, includeMaterials=True)
+        # Grab the iterable so we can control the progression
+        items = iter(withMaterials)
+        for item in items:
+            expectedMat = getattr(item, "material", None)
+            if expectedMat is None:
+                continue
+            # Material should be the next item in the list
+            actualMat = next(items)
+            self.assertIs(actualMat, expectedMat)
+            break
+        else:
+            raise RuntimeError("No materials found with includeMaterials=True")
+
+    def test_iterChildren(self):
+        """Detailed testing on Composite.iterChildren."""
+
+        def compareIterables(actual, expected: list[composites.Composite]):
+            for e in expected:
+                a = next(actual)
+                self.assertIs(a, e)
+            # Ensure we've consumed the actual iterator and there's nothing left
+            with self.assertRaises(StopIteration):
+                next(actual)
+
+        compareIterables(self.container.iterChildren(), self.tree[1])
+        compareIterables(self.container.iterChildren(generationNum=2), self.tree[2])
+        compareIterables(self.container.iterChildren(generationNum=3), self.tree[3])
+        compareIterables(
+            self.container.iterChildren(deep=True),
+            self.tree[1] + self.tree[2] + self.tree[3],
+        )
+
+    def test_iterAndGetChildren(self):
+        """Compare that iter children and get children are consistent."""
+        self._compareIterGetChildren()
+        self._compareIterGetChildren(deep=True)
+        self._compareIterGetChildren(generationNum=2)
+        # Some wacky predicate just to check we can use that too
+        self._compareIterGetChildren(deep=True, predicate=lambda c: len(c.name) % 3)
+
+    def _compareIterGetChildren(self, **kwargs):
+        fromIter = self.container.iterChildren(**kwargs)
+        fromGetter = self.container.getChildren(**kwargs)
+        msg = repr(kwargs)
+        # Use zip longest just in case one iterator comes up short
+        for count, (it, gt) in enumerate(itertools.zip_longest(fromIter, fromGetter)):
+            self.assertIs(it, gt, msg=f"{count=} :: {msg}")
+
+    def test_simpleIterChildren(self):
+        """Test that C.iterChildren() is identical to iter(C)."""
+        for count, (fromNative, fromIterChildren) in enumerate(
+            itertools.zip_longest(self.container, self.container.iterChildren())
+        ):
+            self.assertIs(fromIterChildren, fromNative, msg=count)
+
+    def test_iterChildrenWithMaterials(self):
+        """Test that C.iterChildrenWithMaterials gets materials following their parent component."""
+        items = iter(self.container.iterChildrenWithMaterials(deep=True))
+        for item in items:
+            if isinstance(item, components.Component):
+                mat = next(items)
+                self.assertIs(mat, item.material)
 
     def test_getName(self):
-        """Test the getName method.
-
-        .. test:: Composites names should be accessible.
-            :id: T_ARMI_CMP_GET_NAME
-            :tests: R_ARMI_CMP_GET_NAME
-        """
+        """Test the getName method."""
         self.assertEqual(self.secondGen.getName(), "liner")
         self.assertEqual(self.thirdGen.getName(), "pin 77")
         self.assertEqual(self.secondGen.getName(), "liner")
@@ -170,26 +239,26 @@ class TestCompositePattern(unittest.TestCase):
 
     def test_sort(self):
         # in this case, the children should start sorted
-        c0 = [c.name for c in self.container.getChildren()]
+        c0 = [c.name for c in self.container]
         self.container.sort()
-        c1 = [c.name for c in self.container.getChildren()]
+        c1 = [c.name for c in self.container]
         self.assertNotEqual(c0, c1)
 
         # verify repeated sortings behave
         for _ in range(3):
             self.container.sort()
-            ci = [c.name for c in self.container.getChildren()]
+            ci = [c.name for c in self.container]
             self.assertEqual(c1, ci)
 
         # break the order
         children = self.container.getChildren()
         self.container._children = children[2:] + children[:2]
-        c2 = [c.name for c in self.container.getChildren()]
+        c2 = [c.name for c in self.container]
         self.assertNotEqual(c1, c2)
 
         # verify the sort order
         self.container.sort()
-        c3 = [c.name for c in self.container.getChildren()]
+        c3 = [c.name for c in self.container]
         self.assertEqual(c1, c3)
 
     def test_areChildernOfType(self):
@@ -225,24 +294,18 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIn("U235", uNucs)
         self.assertIn("U241", uNucs)
         self.assertIn("U227", uNucs)
-        self.assertEqual(
-            self.container._getNuclidesFromSpecifier(["U238", "U235"]), ["U235", "U238"]
-        )
+        self.assertEqual(self.container._getNuclidesFromSpecifier(["U238", "U235"]), ["U235", "U238"])
 
         uzr = self.container._getNuclidesFromSpecifier(["U238", "U235", "ZR"])
         self.assertIn("U235", uzr)
         self.assertIn("ZR92", uzr)
         self.assertNotIn("ZR", uzr)
 
-        puIsos = self.container._getNuclidesFromSpecifier(
-            ["PU"]
-        )  # PU is special because it has no natural isotopics
+        puIsos = self.container._getNuclidesFromSpecifier(["PU"])  # PU is special because it has no natural isotopics
         self.assertIn("PU239", puIsos)
         self.assertNotIn("PU", puIsos)
 
-        self.assertEqual(
-            self.container._getNuclidesFromSpecifier(["FE", "FE56"]).count("FE56"), 1
-        )
+        self.assertEqual(self.container._getNuclidesFromSpecifier(["FE", "FE56"]).count("FE56"), 1)
 
     def test_hasFlags(self):
         """Ensure flags are queryable.
@@ -320,12 +383,12 @@ class TestCompositePattern(unittest.TestCase):
 
         # validate that the LFP collection is None
         self.container.setChildrenLumpedFissionProducts(None)
-        for c in self.container.getChildren():
+        for c in self.container:
             self.assertIsNone(c._lumpedFissionProducts)
 
         # validate that the LFP collection is not None
         self.container.setChildrenLumpedFissionProducts(lfps)
-        for c in self.container.getChildren():
+        for c in self.container:
             self.assertIsNotNone(c._lumpedFissionProducts)
 
     def test_requiresLumpedFissionProducts(self):
@@ -371,9 +434,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(sum([r for r in rRates.values()]), 0)
 
         # init reactor
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
         r.core.lib = lib
 
@@ -406,7 +467,7 @@ class TestCompositePattern(unittest.TestCase):
         self.assertEqual(len(rRatesReactor), 6)
         self.assertGreater(sum([r for r in rRatesReactor.values()]), 0)
 
-        # test that all different levels of the heirarchy have the same reaction rates
+        # test that all different levels of the hierarchy have the same reaction rates
         for key, val in rRatesBlock.items():
             self.assertAlmostEqual(rRatesAssem[key], val)
             self.assertAlmostEqual(rRatesCore[key], val)
@@ -416,6 +477,43 @@ class TestCompositePattern(unittest.TestCase):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
         numSynced = self.container._syncParameters(data, {})
         self.assertEqual(numSynced, 2)
+
+    def test_iterChildrenWithFlags(self):
+        expectedChildren = {c for c in self.container if c.hasFlags(Flags.DUCT)}
+        found = set()
+        for c in self.container.iterChildrenWithFlags(Flags.DUCT):
+            self.assertIn(c, expectedChildren)
+            found.add(c)
+        self.assertSetEqual(found, expectedChildren)
+
+    def test_iterChildrenOfType(self):
+        clads = self.container.iterChildrenOfType("clad")
+        first = next(clads)
+        self.assertIs(first, self.cladChild)
+        with self.assertRaises(StopIteration):
+            next(clads)
+
+    def test_removeAll(self):
+        """Test the ability to remove all children of a composite."""
+        self.container.removeAll()
+        self.assertEqual(len(self.container), 0)
+        # Nothing to iterate over
+        items = iter(self.container)
+        with self.assertRaises(StopIteration):
+            next(items)
+        for child in self.tree[1]:
+            self.assertIsNone(child.parent)
+
+    def test_setChildren(self):
+        """Test the ability to override children on a composite."""
+        newChildren = self.tree[2] + self.tree[3]
+        oldChildren = list(self.container)
+        self.container.setChildren(newChildren)
+        self.assertEqual(len(self.container), len(newChildren))
+        for old in oldChildren:
+            self.assertIsNone(old.parent)
+        for actualNew, expectedNew in zip(newChildren, self.container):
+            self.assertIs(actualNew, expectedNew)
 
 
 class TestCompositeTree(unittest.TestCase):
@@ -683,9 +781,7 @@ class TestFlagSerializer(unittest.TestCase):
 
         flagsArray, attrs = composites.FlagSerializer.pack(data)
 
-        data2 = composites.FlagSerializer.unpack(
-            flagsArray, composites.FlagSerializer.version, attrs
-        )
+        data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
         self.assertEqual(data, data2)
 
         # discrepant versions
@@ -700,9 +796,7 @@ class TestFlagSerializer(unittest.TestCase):
             runLog.LOG.startLog(testName)
             runLog.LOG.setVerbosity(logging.WARNING)
 
-            data2 = composites.FlagSerializer.unpack(
-                flagsArray, composites.FlagSerializer.version, attrs
-            )
+            data2 = composites.FlagSerializer.unpack(flagsArray, composites.FlagSerializer.version, attrs)
             flagLog = mock.getStdout()
 
         self.assertIn("The set of flags", flagLog)
@@ -786,7 +880,7 @@ class TestMiscMethods(unittest.TestCase):
         # sum nuc densities from children components
         totalVolume = self.obj.getVolume()
         childDensities = {}
-        for o in self.obj.getChildren():
+        for o in self.obj:
             m = o.getVolume()
             d = o.getNumberDensities()
             for nuc, val in d.items():
@@ -797,11 +891,9 @@ class TestMiscMethods(unittest.TestCase):
 
         # verify the children match this composite
         for nuc in ["FE", "SI"]:
-            self.assertAlmostEqual(
-                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
-            )
+            self.assertAlmostEqual(self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc)
 
-    def test_getNumberDensitiesWithExpandedFissionProducts(self):
+    def test_getNumDensWithExpandedFissProds(self):
         """Get number densities from composite.
 
         .. test:: Get number densities.
@@ -824,7 +916,7 @@ class TestMiscMethods(unittest.TestCase):
         # sum nuc densities from children components
         totalVolume = self.obj.getVolume()
         childDensities = {}
-        for o in self.obj.getChildren():
+        for o in self.obj:
             # get the number densities with and without fission products
             d0 = o.getNumberDensities(expandFissionProducts=False)
             d = o.getNumberDensities(expandFissionProducts=True)
@@ -843,9 +935,7 @@ class TestMiscMethods(unittest.TestCase):
 
         # verify the children match this composite
         for nuc in ["FE", "SI"]:
-            self.assertAlmostEqual(
-                self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc
-            )
+            self.assertAlmostEqual(self.obj.getNumberDensity(nuc), childDensities[nuc], 4, msg=nuc)
 
     def test_dimensionReport(self):
         report = self.obj.setComponentDimensionsReport()
@@ -874,7 +964,5 @@ class TestMiscMethods(unittest.TestCase):
 class TestGetReactionRateDict(unittest.TestCase):
     def test_getReactionRateDict(self):
         lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(
-            nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1
-        )
+        rxRatesDict = getReactionRateDict(nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1)
         self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))

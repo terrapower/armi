@@ -12,29 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-This module contains subclasses of the armi.runLog._RunLog class that can be used to determine whether or not
-one of the specific methods were called. These should only be used in testing.
+This module contains subclasses of the armi.runLog._RunLog class that can be used to determine
+whether or not one of the specific methods were called. These should only be used in testing.
 """
-import six
+
+import io
 import sys
+from logging import LogRecord
 
 from armi import runLog
 
 
 class BufferLog(runLog._RunLog):
-    r"""Log which captures the output in attributes instead of emitting them.
+    """Log which captures the output in attributes instead of emitting them.
 
-    Used mostly in testing to ensure certain things get output, or to prevent any output
-    from showing.
+    Used mostly in testing to ensure certain things get output, or to prevent any output from
+    showing.
     """
 
     def __init__(self, *args, **kwargs):
         super(BufferLog, self).__init__(*args, **kwargs)
         self.originalLog = None
         self._outputStream = ""
-        self._singleMessageCounts = {}
-        self._singleWarningMessageCounts = {}
-        self._errStream = six.StringIO()
+        self._errStream = io.StringIO()
+        self._deduplication = runLog.DeduplicationFilter()
         sys.stderr = self._errStream
         self.setVerbosity(0)
 
@@ -63,32 +64,19 @@ class BufferLog(runLog._RunLog):
             return
 
         # Skip writing the message if it is single-print warning
-        if single and self._msgHasAlreadyBeenEmitted(label, msgType):
+        record = LogRecord("BufferLog", msgVerbosity, "pathname", 1, msg, {}, ())
+        record.label = label
+        record.single = single
+        if single and not self._deduplication.filter(record):
             return
 
         # Do the actual logging, but add that custom indenting first
         msg = self.logLevels[msgType][1] + str(msg) + "\n"
         self._outputStream += msg
 
-    def _msgHasAlreadyBeenEmitted(self, label, msgType=""):
-        """Return True if the count of the label is greater than 1."""
-        if msgType in ("warning", "critical"):
-            if label not in self._singleWarningMessageCounts:
-                self._singleWarningMessageCounts[label] = 1
-            else:
-                self._singleWarningMessageCounts[label] += 1
-                return True
-        else:
-            if label not in self._singleMessageCounts:
-                self._singleMessageCounts[label] = 1
-            else:
-                self._singleMessageCounts[label] += 1
-                return True
-        return False
-
-    def clearSingleWarnings(self):
+    def clearSingleLogs(self):
         """Reset the single warned list so we get messages again."""
-        self._singleMessageCounts.clear()
+        self._deduplication.singleMessageLabels.clear()
 
     def getStdout(self):
         return self._outputStream

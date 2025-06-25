@@ -22,23 +22,15 @@ sodium coolant. A dummy multigroup flux is applied.
 This example also demonstrates how to build a reactor model from code alone
 rather than relying upon input files.
 """
+
 import matplotlib.pyplot as plt
 import numpy as np
 
 from armi import configure, nuclideBases, settings
-from armi.materials import ht9
-from armi.materials import sodium
-from armi.materials import uZr
+from armi.materials import ht9, sodium, uZr
 from armi.nuclearDataIO.cccc import isotxs
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor.components import Circle
-from armi.reactor.components import DerivedShape
-from armi.reactor.components import Hexagon
+from armi.reactor import assemblies, blocks, geometry, grids, reactors
+from armi.reactor.components import Circle, DerivedShape, Hexagon
 from armi.reactor.flags import Flags
 from armi.tests import ISOAA_PATH
 
@@ -65,15 +57,15 @@ def createDummyReactor():
     Often, a reactor model like this is built directly from input files rather
     than from code as done here.
     """
-    bp = blueprints.Blueprints()
+    from armi.reactor.blueprints import Blueprints
+
+    bp = Blueprints()
     cs = settings.Settings()
 
     r = reactors.Reactor("Reactor", bp)
     r.add(reactors.Core("Core"))
     r.core.spatialGrid = grids.HexGrid.fromPitch(1.0)
-    r.core.spatialGrid.symmetry = geometry.SymmetryType(
-        geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-    )
+    r.core.spatialGrid.symmetry = geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)
     r.core.spatialGrid.geomType = geometry.GeomType.HEX
     r.core.spatialGrid.armiObject = r.core
     r.core.setOptionsFromCs(cs)

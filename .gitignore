@@ -5,9 +5,11 @@
 *.pyx
 
 # No build artifacts
+*.aux
 *.dll
+*.fdb_latexmk
+*.fls
 *.lib
-.apidocs/
 /bin
 armi/tests/tutorials/case-suite
 bin/*
@@ -17,7 +19,9 @@ coverage.xml
 coverage_results.*
 dist-*/
 dist/
+doc/.apidocs
 doc/_build
+doc/anl-afci-177
 doc/gallery
 doc/gallery-src/framework/*.yaml
 doc/tutorials/anl-afci-177*
@@ -25,6 +29,7 @@ doc/tutorials/case-suite
 doc/user/tutorials
 htmlcov/
 monkeytype.*
+test_results.*
 wheelhouse
 
 # No workspace crumbs
@@ -59,22 +64,29 @@ armi-venv/*
 dump-temp-*
 dump-tests*
 phabricator-lint.txt
+pytest_verbose.log
 pytestdebug.log
+python_details.log
 reportsOutputFiles/
+system_info.log
 tags
 temp-*
 venv*/
 
-# Ignore common data files
+# Ignore certain data files
 *.avi
 *.diff
+*.flux_bg
+*.flux_ufg
 *.h5
 *.html
 *.mp4
+*.nucdata
+*.out
 *.ppm
+*.sum
 *.txt
-
-# vis files
 *.vtd
 *.vtu
 *.xdmf
+*dlayxs*

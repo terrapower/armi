@@ -12,17 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test the fission product module to ensure all FP are available."""
+
 import unittest
 
 from armi import nuclideBases
 from armi.physics.neutronics.fissionProductModel import fissionProductModel
+from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
+    CONF_FISSION_PRODUCT_LIBRARY_NAME,
+    CONF_FP_MODEL,
+)
 from armi.physics.neutronics.fissionProductModel.tests import test_lumpedFissionProduct
 from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import (
     isDepletable,
-)
-from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_FP_MODEL,
-    CONF_FISSION_PRODUCT_LIBRARY_NAME,
 )
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import (
@@ -72,7 +73,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         # Set up the global LFPs and check that they are setup.
         self.assertTrue(fpModel._useGlobalLFPs)
         fpModel.interactBOL()
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             if b.isFuel():
                 self.assertTrue(b._lumpedFissionProducts is not None)
             else:
@@ -82,7 +83,7 @@ class TestFissionProductModelLumpedFissionProducts(unittest.TestCase):
         fpModel.allBlocksNeedAllNucs = False
         fpModel.interactBOL()
         allNucsInProblem = set(r.blueprints.allNuclidesInProblem)
-        for b in r.core.getBlocks():
+        for b in r.core.iterBlocks():
             if isDepletable(b):
                 if len(allNucsInProblem - set(b.getNuclides())) > 0:
                     break
@@ -151,12 +152,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
         self.assertFalse(self.fpModel._useGlobalLFPs)
 
     def test_nuclidesInModelAllDepletableBlocks(self):
-        """Test that the depletable blocks contain all the MC2-3 modeled nuclides.
-
-        .. test:: Determine if any component is depletable.
-            :id: T_ARMI_DEPL_DEPLETABLE
-            :tests: R_ARMI_DEPL_DEPLETABLE
-        """
+        """Test that the depletable blocks contain all the MC2-3 modeled nuclides."""
         # Check that there are some fuel and control blocks in the core model.
         fuelBlocks = self.r.core.getBlocks(Flags.FUEL)
         controlBlocks = self.r.core.getBlocks(Flags.CONTROL)
@@ -198,7 +194,7 @@ class TestFissionProductModelExplicitMC2LibrarySlower(unittest.TestCase):
 
         # Check that the depletable blocks have all explicit
         # fission products in them.
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             nuclideList = b.getNuclides()
             if isDepletable(b):
                 for nb in nuclideBases.byMcc3Id.values():

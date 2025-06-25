@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import itertools
-from typing import Optional, NoReturn, Tuple
+from typing import NoReturn, Optional, Tuple
 
 import numpy as np
 
@@ -69,9 +69,7 @@ class CartesianGrid(StructuredGrid):
     """
 
     @classmethod
-    def fromRectangle(
-        cls, width, height, numRings=5, symmetry="", isOffset=False, armiObject=None
-    ):
+    def fromRectangle(cls, width, height, numRings=5, symmetry="", isOffset=False, armiObject=None):
         """
         Build a finite step-based 2-D Cartesian grid based on a width and height in cm.
 
@@ -227,9 +225,7 @@ class CartesianGrid(StructuredGrid):
         """
         xwOld = self._unitSteps[0][0]
         ywOld = self._unitSteps[1][1]
-        self._unitSteps = np.array(((xw, 0.0, 0.0), (0.0, yw, 0.0), (0, 0, 0)))[
-            self._stepDims
-        ]
+        self._unitSteps = np.array(((xw, 0.0, 0.0), (0.0, yw, 0.0), (0, 0, 0)))[self._stepDims]
         newOffsetX = self._offset[0] * xw / xwOld
         newOffsetY = self._offset[1] * yw / ywOld
         self._offset = np.array((newOffsetX, newOffsetY, 0.0))
@@ -280,14 +276,10 @@ class CartesianGrid(StructuredGrid):
                     return [(-i - 1, j), (-i - 1, -j - 1), (i, -j - 1)]
 
         elif symmetry.domain == geometry.DomainType.EIGHTH_CORE:
-            raise NotImplementedError(
-                "Eighth-core symmetry isn't fully implemented for grids yet!"
-            )
+            raise NotImplementedError("Eighth-core symmetry isn't fully implemented for grids yet!")
         else:
             raise NotImplementedError(
-                "Unhandled symmetry condition for {}: {}".format(
-                    type(self).__name__, symmetry.domain
-                )
+                "Unhandled symmetry condition for {}: {}".format(type(self).__name__, symmetry.domain)
             )
 
     def _isThroughCenter(self):

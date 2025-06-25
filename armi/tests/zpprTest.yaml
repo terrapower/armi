@@ -9,10 +9,8 @@ settings:
   burnSteps: 0
   comment: ZPPR test case
   cycleLength: 365.25
-  geomFile: zpprTestGeom.xml
-  loadingFile: 1DslabXSByCompTest.yaml
-  mpiTasksPerNode: 6
-  numProcessors: 12
+  loadingFile: zpprTestGeom.yaml
+  nTasks: 12
   outputFileExtension: pdf
   power: 75000000.0
   sortReactor: false # zpprs dont sor the right way. need better component sorting for slab...

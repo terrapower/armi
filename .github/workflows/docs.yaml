@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +21,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.13
       - name: Update package index
         run: sudo apt-get update
       - name: Install mpi libs
@@ -29,14 +30,41 @@ jobs:
         run: sudo apt-get -y install pandoc
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
-      - name: Make HTML Docs
+      - name: Make html/pdf Docs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
+          sudo apt-get install texlive-xetex
+          sudo apt-get install texlive-latex-base
+          sudo apt-get install texlive-fonts-recommended
+          sudo apt-get install texlive-latex-extra
+          sudo apt-get install texlive-full
           pip install -e .[memprof,mpi,test,docs]
+          python -c "from armi.bookkeeping.report.reportingUtils import getSystemInfo;print(getSystemInfo())" > system_info.log
+          date > python_details.log
+          armi --version >> python_details.log
+          python --version >> python_details.log
+          pip freeze >> python_details.log
+          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
+          python doc/.static/cleanup_test_results.py test_results.xml
           cd doc
           git submodule init
           git submodule update
+          git fetch
+          echo "make html:"
           make html
-      - name: deploy
+          echo "make latex:"
+          make latex
+          cd _build/latex/
+          echo "latexmk -pdf -f -interaction=nonstopmode ARMI.tex:"
+          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.6.1
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
@@ -44,3 +72,16 @@ jobs:
           branch: main
           folder: doc/_build/html
           target-folder: armi
+      - name: Archive HTML Docs
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: doc/_build/html
+          retention-days: 5
+      - name: Archive PDF Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-docs
+          path: doc/_build/latex/ARMI.pdf
+          retention-days: 5

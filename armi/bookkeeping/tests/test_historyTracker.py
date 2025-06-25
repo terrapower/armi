@@ -19,19 +19,18 @@ These tests actually run a jupyter notebook that's in the documentation to build
 a valid HDF5 file to load from as a test fixtures. Thus they take a little longer
 than usual.
 """
+
 import os
 import pathlib
 import shutil
 import unittest
 
-from armi import settings
-from armi import utils
+from armi import settings, utils
 from armi.bookkeeping import historyTracker
 from armi.bookkeeping.tests._constants import TUTORIAL_FILES
 from armi.cases import case
 from armi.context import ROOT
-from armi.reactor import blocks
-from armi.reactor import grids
+from armi.reactor import blocks, grids
 from armi.reactor.flags import Flags
 from armi.tests import ArmiTestHelper
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -56,12 +55,19 @@ class TestHistoryTracker(ArmiTestHelper):
 
     @classmethod
     def setUpClass(cls):
-        # We need to be in the TUTORIAL_DIR so that for `filesToMove` to work right.
-        os.chdir(TUTORIAL_DIR)
-
         # Do this work in a temp dir, to avoid race conditions.
-        cls.dirChanger = TemporaryDirectoryChanger(filesToMove=TUTORIAL_FILES)
+        cls.dirChanger = TemporaryDirectoryChanger()
         cls.dirChanger.__enter__()
+
+        os.mkdir("tutorials")
+        os.mkdir(CASE_TITLE)
+
+        for filePath in TUTORIAL_FILES:
+            dirName = CASE_TITLE if CASE_TITLE in filePath else "tutorials"
+            outFile = os.path.join(cls.dirChanger.destination, dirName, os.path.basename(filePath))
+            shutil.copyfile(filePath, outFile)
+
+        os.chdir(os.path.join(cls.dirChanger.destination, "tutorials"))
         runTutorialNotebook()
 
     @classmethod
@@ -69,7 +75,7 @@ class TestHistoryTracker(ArmiTestHelper):
         cls.dirChanger.__exit__(None, None, None)
 
     def setUp(self):
-        cs = settings.Settings(f"{CASE_TITLE}.yaml")
+        cs = settings.Settings(f"../{CASE_TITLE}/{CASE_TITLE}.yaml")
         newSettings = {}
         newSettings["db"] = True
         newSettings["nCycles"] = 2
@@ -104,7 +110,7 @@ class TestHistoryTracker(ArmiTestHelper):
         r"""
         This test confirms that mg flux has many groups when loaded with the history tracker.
 
-        armi.bookeeping.db.hdf.hdfDB.readBlocksHistory requires
+        armi.bookkeeping.db.hdf.hdfDB.readBlocksHistory requires
         historical_values\[historical_indices\] to be cast as a list to read more than the
         first energy group. This test shows that this behavior is preserved.
 
@@ -113,19 +119,14 @@ class TestHistoryTracker(ArmiTestHelper):
             :tests: R_ARMI_HIST_TRACK
         """
         o = self.o
-        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
-            Flags.FUEL
-        )
+        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(Flags.FUEL)
         bVolume = b.getVolume()
         bName = b.name
 
         # duration is None in this DB
         hti = o.getInterface("history")
         timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
-        timeStepsToRead = [
-            utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
-            for i in range(len(timesInYears))
-        ]
+        timeStepsToRead = [utils.getCycleNodeFromCumulativeNode(i, self.o.cs) for i in range(len(timesInYears))]
         hti.preloadBlockHistoryVals([bName], ["mgFlux"], timeStepsToRead)
 
         mgFluence = None
@@ -147,26 +148,21 @@ class TestHistoryTracker(ArmiTestHelper):
         self.assertIsNone(hti._preloadedBlockHistory)
 
     def test_historyParameters(self):
-        """Retrieve various paramaters from the history.
+        """Retrieve various parameters from the history.
 
         .. test:: Demonstrate that various parameters stored at differing time nodes can be recovered.
             :id: T_ARMI_HIST_TRACK1
             :tests: R_ARMI_HIST_TRACK
         """
         o = self.o
-        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(
-            Flags.FUEL
-        )
+        b = o.r.core.childrenByLocator[o.r.core.spatialGrid[0, 0, 0]].getFirstBlock(Flags.FUEL)
         b.getVolume()
         bName = b.name
 
         # duration is None in this DB
         hti = o.getInterface("history")
         timesInYears = [duration or 1.0 for duration in hti.getTimeSteps()]
-        timeStepsToRead = [
-            utils.getCycleNodeFromCumulativeNode(i, self.o.cs)
-            for i in range(len(timesInYears))
-        ]
+        timeStepsToRead = [utils.getCycleNodeFromCumulativeNode(i, self.o.cs) for i in range(len(timesInYears))]
         hti.preloadBlockHistoryVals([bName], ["power"], timeStepsToRead)
 
         # read some parameters
@@ -175,10 +171,7 @@ class TestHistoryTracker(ArmiTestHelper):
             params[param] = []
             for ts, years in enumerate(timesInYears):
                 cycle, node = utils.getCycleNodeFromCumulativeNode(ts, self.o.cs)
-
-                params[param].append(
-                    hti.getBlockHistoryVal(bName, param, (cycle, node))
-                )
+                params[param].append(hti.getBlockHistoryVal(bName, param, (cycle, node)))
 
         # verify the height parameter doesn't change over time
         self.assertGreater(params["height"][0], 0)
@@ -187,7 +180,8 @@ class TestHistoryTracker(ArmiTestHelper):
         # verify the power parameter is retrievable from the history
         self.assertEqual(o.cs["power"], 1000000000.0)
         self.assertAlmostEqual(params["power"][0], 360, delta=0.1)
-        self.assertEqual(params["power"][0], params["power"][1])
+        # assembly was moved to the central location with 1/3rd symmetry
+        self.assertEqual(params["power"][0] / 3, params["power"][1])
 
         # verify the power density parameter is retrievable from the history
         self.assertAlmostEqual(params["pdens"][0], 0.0785, delta=0.001)
@@ -222,8 +216,8 @@ class TestHistoryTracker(ArmiTestHelper):
 
         # test that detailAssemblyNames() is working
         self.assertEqual(len(history.detailAssemblyNames), 1)
-        history.addAllFuelAssems()
-        self.assertEqual(len(history.detailAssemblyNames), 51)
+        history.addAllDetailedAssems()
+        self.assertEqual(len(history.detailAssemblyNames), 54)
 
     def test_getBlockInAssembly(self):
         history = self.o.getInterface("history")
@@ -244,9 +238,7 @@ class TestHistoryTrackerNoModel(unittest.TestCase):
     def setUp(self):
         cs = settings.Settings()
         self.history = historyTracker.HistoryTrackerInterface(None, cs=cs)
-        self._origCaseTitle = (
-            self.history.cs.caseTitle
-        )  # to avoid parallel test interference.
+        self._origCaseTitle = self.history.cs.caseTitle  # to avoid parallel test interference.
         self.history.cs.caseTitle = self._testMethodName + self._origCaseTitle
 
     def tearDown(self):

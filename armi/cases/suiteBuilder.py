@@ -25,20 +25,20 @@ This module contains a variety of ``InputModifier`` objects as well, which are e
 of how you can modify inputs for parameter sweeping. Power-users will generally make
 their own ``Modifier``\ s that are design-specific.
 """
-from collections import Counter
-from pyDOE import lhs
-from typing import List
+
 import copy
 import os
 import random
+from collections import Counter
+from typing import List
+
+from pyDOE import lhs
 
 from armi.cases import suite
 
 
 def getInputModifiers(cls):
-    return cls.__subclasses__() + [
-        g for s in cls.__subclasses__() for g in getInputModifiers(s)
-    ]
+    return cls.__subclasses__() + [g for s in cls.__subclasses__() for g in getInputModifiers(s)]
 
 
 class SuiteBuilder:
@@ -49,17 +49,14 @@ class SuiteBuilder:
         :id: I_ARMI_CASE_MOD0
         :implements: R_ARMI_CASE_MOD
 
-        This class provides the capability to create a
-        :py:class:`~armi.cases.suite.CaseSuite` based on programmatic
-        perturbations/modifications to case settings. It works by being
-        constructed with a base or nominal :py:class:`~armi.cases.case.Case`
-        object. Children classes then append the ``self.modifierSets`` member.
-        Each entry in ``self.modifierSets`` is a
-        :py:class:`~armi.cases.inputModifiers.inputModifiers.InputModifier`
-        representing a case to add to the suite by specifying modifications to
-        the settings of the base case. :py:meth:`SuiteBuilder.buildSuite` is
-        then invoked, returning an instance of the :py:class:`~armi.cases.suite.CaseSuite`
-        containing all the cases with modified settings.
+        This class provides the capability to create a :py:class:`~armi.cases.suite.CaseSuite` based
+        on programmatic perturbations/modifications to case settings. It works by being constructed
+        with a base or nominal :py:class:`~armi.cases.case.Case` object. Children classes then
+        append the ``self.modifierSets`` member. Each entry in ``self.modifierSets`` is a
+        :py:class:`~armi.cases.inputModifiers.inputModifiers.InputModifier` representing a case to
+        add to the suite by specifying modifications to the settings of the base case.
+        :py:meth:`SuiteBuilder.buildSuite` is then invoked, returning an instance of the
+        :py:class:`~armi.cases.suite.CaseSuite` containing all the cases with modified settings.
 
     Attributes
     ----------
@@ -67,13 +64,13 @@ class SuiteBuilder:
         A Case object to perturb
 
     modifierSets : list(tuple(InputModifier))
-        Contains a list of tuples of ``InputModifier`` instances. A single case is
-        constructed by running a series (the tuple) of InputModifiers on the case.
+        Contains a list of tuples of ``InputModifier`` instances. A single case is constructed by
+        running a series (the tuple) of InputModifiers on the case.
 
     Notes
     -----
-    This is public such that someone could pop an item out of the list if it
-    is known to not work, or be unnecessary.
+    This is public such that someone could pop an item out of the list if it is known to not work,
+    or be unnecessary.
     """
 
     def __init__(self, baseCase):
@@ -84,9 +81,7 @@ class SuiteBuilder:
 
         # use an instance variable instead of global lookup. this could allow someone to add their own
         # modifiers, and also prevents it memory usage / discovery from simply loading the module.
-        self._modifierLookup = {
-            k.__name__: k for k in getInputModifiers(inputModifiers.InputModifier)
-        }
+        self._modifierLookup = {k.__name__: k for k in getInputModifiers(inputModifiers.InputModifier)}
 
     def __len__(self):
         return len(self.modifierSets)
@@ -104,9 +99,8 @@ class SuiteBuilder:
         ----------
         inputModifiers : list(callable(Settings, Blueprints, SystemLayoutInput))
             A list of callable objects with the signature
-            ``(Settings, Blueprints, SystemLayoutInput)``. When these objects are called
-            they should perturb the settings, blueprints, and/or geometry by some amount determined
-            by their construction.
+            ``(Settings, Blueprints, SystemLayoutInput)``. When these objects are called they should
+            perturb the settings or blueprints by some amount determined by their construction.
         """
         raise NotImplementedError
 
@@ -170,21 +164,15 @@ class SuiteBuilder:
                 # it may seem late to figure this out, but since we are doing it now, someone could
                 # filter these conditions out before the buildSuite. optionally, we could have a
                 # flag for "skipInvalidModficationCombos=False"
-                shouldHaveBeenBefore = [
-                    fail
-                    for fail in getattr(mod, "FAIL_IF_AFTER", ())
-                    if fail in previousMods
-                ]
+                shouldHaveBeenBefore = [fail for fail in getattr(mod, "FAIL_IF_AFTER", ()) if fail in previousMods]
 
                 if any(shouldHaveBeenBefore):
                     raise RuntimeError(
-                        "{} must occur before {}".format(
-                            mod, ",".join(repr(m) for m in shouldHaveBeenBefore)
-                        )
+                        "{} must occur before {}".format(mod, ",".join(repr(m) for m in shouldHaveBeenBefore))
                     )
 
                 previousMods.append(type(mod))
-                case.cs, case.bp, case.geom = mod(case.cs, case.bp, case.geom)
+                case.cs, case.bp = mod(case.cs, case.bp)
                 case.independentVariables.update(mod.independentVariable)
 
             case.cs.path = namingFunc(index, case, modList)
@@ -215,9 +203,9 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
                     self.settingName = settingName
                     self.value = value
 
-                def __call__(self, cs, bp, geom):
+                def __call__(self, cs, bp):
                     cs = cs.modified(newSettings={self.settingName: self.value})
-                    return cs, bp, geom
+                    return cs, bp
 
             builder = FullFactorialSuiteBuilder(someCase)
             builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
@@ -247,9 +235,7 @@ class FullFactorialSuiteBuilder(SuiteBuilder):
         """
         # Cartesian product. Append a new modifier to the end of a chain of previously defined.
         new = [
-            existingModSet + (newModifier,)
-            for newModifier in inputModifiers
-            for existingModSet in self.modifierSets
+            existingModSet + (newModifier,) for newModifier in inputModifiers for existingModSet in self.modifierSets
         ]
         del self.modifierSets[:]
         self.modifierSets.extend(new)
@@ -308,9 +294,9 @@ class SeparateEffectsSuiteBuilder(SuiteBuilder):
                     self.settingName = settingName
                     self.value = value
 
-                def __call__(self, cs, bp, geom):
+                def __call__(self, cs, bp):
                     cs = cs.modified(newSettings={self.settignName: self.value})
-                    return cs, bp, geom
+                    return cs, bp
 
             builder = SeparateEffectsSuiteBuilder(someCase)
             builder.addDegreeOfFreedom(SettingModifier('settingName1', value) for value in (1,2))
@@ -362,12 +348,10 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
         """
         Add a degree of freedom to the SuiteBuilder.
 
-        Unlike other types of suite builders, only one instance of a
-        modifier class should be added. This is because the Latin Hypercube
-        Sampling will automatically perturb the values and produce modifier
-        sets internally. A settings modfier class passed to this method
-        need include bounds by which the LHS algorithm can perturb the input
-        parameters.
+        Unlike other types of suite builders, only one instance of a modifier class should be added.
+        This is because the Latin Hypercube Sampling will automatically perturb the values and
+        produce modifier sets internally. A settings modifier class passed to this method need
+        include bounds by which the LHS algorithm can perturb the input parameters.
 
         For example::
 
@@ -381,11 +365,11 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
                 ):
                     super().__init__(name, paramType, bounds)
 
-                def __call__(self, cs, bp, geom):
+                def __call__(self, cs, bp):
                     ...
 
-        If the modifier is discrete then bounds specifies a list of options
-        the values can take. If continuous, then bounds specifies a range of values.
+        If the modifier is discrete then bounds specifies a list of options the values can take. If
+        continuous, then bounds specifies a range of values.
         """
         names = [mod.name for mod in self.modifierSets + inputModifiers]
 
@@ -397,10 +381,9 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
                     duplicateNames.append(key)
 
             raise ValueError(
-                "Only a single input parameter should be inserted as an input modifer "
-                + "since cases are added through Latin Hypercube Sampling.\n"
-                + "Each inputModifier adds a dimension to the Latin Hypercube and "
-                + "represents a single input variable.\n"
+                "Only a single input parameter should be inserted as an input modifier since cases "
+                + "are added through Latin Hypercube Sampling.\nEach inputModifier adds a "
+                + "a dimension to the Latin Hypercube and represents a single input variable.\n"
                 + f"{duplicateNames} have duplicates. "
             )
 
@@ -426,7 +409,6 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
 
             If not supplied the path will be ``./case-suite/<0000>/<title>-<0000>``, where
             ``<0000>`` is the four-digit case index, and ``<title>`` is the ``baseCase.title``.
-
 
         Raises
         ------
@@ -454,9 +436,7 @@ class LatinHyperCubeSuiteBuilder(SuiteBuilder):
             for j, mod in enumerate(original_modifiers):
                 new_mod = copy.deepcopy(mod)
                 if mod.paramType == "continuous":
-                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][
-                        j
-                    ] + mod.bounds[0]
+                    value = (mod.bounds[1] - mod.bounds[0]) * samples[i][j] + mod.bounds[0]
                     new_mod.value = value
                 elif mod.paramType == "discrete":
                     index = round(samples[i][j] * (len(mod.bounds) - 1))

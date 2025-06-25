@@ -18,9 +18,10 @@ Plot a reactor facemap.
 Load a test reactor from the test suite and plot a dummy
 power distribution from it. You can plot any block parameter.
 """
+
+from armi import configure
 from armi.reactor.tests import test_reactors
 from armi.utils import plotting
-from armi import configure
 
 # configure ARMI
 configure(permissive=True)
@@ -33,4 +34,3 @@ for b in reactor.core.getBlocks():
     b.p.pdens = x**2 + y**2 + z**2
 
 plotting.plotFaceMap(reactor.core, param="pdens", labelFmt="{0:.1e}")
-plotting.close()

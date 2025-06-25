@@ -16,6 +16,7 @@ Grid editor GUI entry point.
 
 CLI entry point to spin up the GridEditor GUI.
 """
+
 from armi.cli import entryPoint
 
 
@@ -38,6 +39,7 @@ class GridGuiEntryPoint(entryPoint.EntryPoint):
         # invoking the entry point
         try:
             import wx
+
             from armi.utils import gridEditor
         except ImportError:
             raise RuntimeError(

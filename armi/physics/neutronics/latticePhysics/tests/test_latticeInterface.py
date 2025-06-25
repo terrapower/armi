@@ -13,27 +13,27 @@
 # limitations under the License.
 
 """Test the Lattice Interface."""
-from collections import OrderedDict
-import unittest
 
-from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
-    LatticePhysicsInterface,
-)
+import unittest
+from collections import OrderedDict
+
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.operators.operator import Operator
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
-from armi.physics.neutronics.settings import CONF_GEN_XS
-from armi.physics.neutronics.settings import CONF_GLOBAL_FLUX_ACTIVE
-from armi.reactor.reactors import Reactor, Core
-from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
-from armi.tests import mockRunLogs
+from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
+    LatticePhysicsInterface,
+)
+from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 from armi.reactor.assemblies import (
     HexAssembly,
     grids,
 )
-from armi.tests import ISOAA_PATH
+from armi.reactor.reactors import Core, Reactor
+from armi.reactor.tests.test_blocks import buildSimpleFuelBlock
+from armi.tests import ISOAA_PATH, mockRunLogs
+
 
 # As an interface, LatticePhysicsInterface must be subclassed to be used
 class LatticeInterfaceTester(LatticePhysicsInterface):
@@ -68,7 +68,6 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
         cls.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         cls.assembly.spatialGrid.armiObject = cls.assembly
         cls.assembly.add(buildSimpleFuelBlock())
-        # cls.o.r.core.add(assembly)
         # init and add interfaces
         cls.xsGroupInterface = CrossSectionGroupManager(cls.o.r, cls.o.cs)
         cls.o.addInterface(cls.xsGroupInterface)
@@ -88,20 +87,13 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface.testVerification = False
 
     def test_includeGammaXS(self):
-        """Test that we can correctly flip the switch to calculate gamma XS.
-
-        .. test:: Users can flip a setting to determine if gamma XS are generated.
-            :id: T_ARMI_GAMMA_XS
-            :tests: R_ARMI_GAMMA_XS
-        """
+        """Test that we can correctly flip the switch to calculate gamma XS."""
         # The default operator here turns off Gamma XS generation
         self.assertFalse(self.latticeInterface.includeGammaXS)
         self.assertEqual(self.o.cs[CONF_GLOBAL_FLUX_ACTIVE], "Neutron")
 
         # but we can create an operator that turns on Gamma XS generation
-        cs = settings.Settings().modified(
-            newSettings={CONF_GLOBAL_FLUX_ACTIVE: "Neutron and Gamma"}
-        )
+        cs = settings.Settings().modified(newSettings={CONF_GLOBAL_FLUX_ACTIVE: "Neutron and Gamma"})
         newOperator = Operator(cs)
         newLatticeInterface = LatticeInterfaceTesterLibFalse(newOperator.r, cs)
         self.assertTrue(newLatticeInterface.includeGammaXS)
@@ -121,16 +113,13 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to None by the BOC
-        interaction, so this test does not have a good means of verifying the
-        correct function, so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
+        self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.never
         self.latticeInterface.interactBOL()
         self.assertFalse(self.latticeInterface.testVerification)
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.everyNode
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.everyNode
         self.latticeInterface.interactBOL()
         self.assertFalse(self.latticeInterface.testVerification)
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
@@ -143,17 +132,13 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
         Notes
         -----
-        Unlike other interactions, self.o.r.core.lib is not set to
-        None by the BOC interaction, so this test does not have a
-        good means of verifying the correct function,
-        so we use self.testVerification instead.
+        Unlike other interactions, self.o.r.core.lib is not set to None at BOC, so this test uses
+        self.testVerification instead.
         """
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOL
         self.latticeInterface.interactBOC()
         self.assertFalse(self.latticeInterface.testVerification)
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.everyNode
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.everyNode
         self.latticeInterface.interactBOC()
         self.assertFalse(self.latticeInterface.testVerification)
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
@@ -165,17 +150,41 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.BOC
         self.latticeInterface.interactEveryNode()
         self.assertEqual(self.o.r.core.lib, "Nonsense")
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.everyNode
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.everyNode
+        self.latticeInterface.interactEveryNode()
+        self.assertIsNone(self.o.r.core.lib)
+
+    def test_interactEveryNodeWhenCoupled(self):
+        """
+        Test that the XS lib is not cleared when coupled iterations are turned on
+        and XS will be generated during the coupled iterations.
+        """
+        self.o.couplingIsActive = lambda: True
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
+        self.latticeInterface.interactEveryNode()
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+
+        self.o.couplingIsActive = lambda: False
+        self.latticeInterface.interactEveryNode()
+        self.assertIsNone(self.o.r.core.lib)
+
+    def test_interactEveryNodeWhenCoupledButNot(self):
+        """
+        Test that the XS lib is cleared when coupled iterations are turned on
+        but the lattice physics frequency is not high enough.
+        """
+        self.o.couplingIsActive = lambda: True
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
+        self.latticeInterface.interactEveryNode()
+        self.assertEqual(self.o.r.core.lib, "Nonsense")
+
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.everyNode
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactEveryNodeFirstCoupled(self):
         """Test interactEveryNode() with LatticePhysicsFrequency.firstCoupledIteration."""
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.firstCoupledIteration
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
         self.latticeInterface.interactEveryNode()
         self.assertIsNone(self.o.r.core.lib)
 
@@ -187,22 +196,16 @@ class TestLatticePhysicsInterface(TestLatticePhysicsInterfaceBase):
 
     def test_interactFirstCoupledIteration(self):
         """Test interactCoupled() with different update frequencies on first iteration."""
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.everyNode
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.everyNode
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertEqual(self.o.r.core.lib, "Nonsense")
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.firstCoupledIteration
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
         self.latticeInterface.interactCoupled(iteration=0)
         self.assertIsNone(self.o.r.core.lib)
 
     def test_interactAll(self):
         """Test interactCoupled() with different update frequencies on non-first iteration."""
-        self.latticeInterface._latticePhysicsFrequency = (
-            LatticePhysicsFrequency.firstCoupledIteration
-        )
+        self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.firstCoupledIteration
         self.latticeInterface.interactCoupled(iteration=1)
         self.assertEqual(self.o.r.core.lib, "Nonsense")
         self.latticeInterface._latticePhysicsFrequency = LatticePhysicsFrequency.all
@@ -226,9 +229,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
 
     def setUp(self):
         """Reset representativeBlocks and CONF_GEN_XS."""
-        self.xsGroupInterface.representativeBlocks = OrderedDict(
-            {"AA": self.assembly[0]}
-        )
+        self.xsGroupInterface.representativeBlocks = OrderedDict({"AA": self.assembly[0]})
         self.assembly[0].p.xsType = "A"
         self.o.cs[CONF_GEN_XS] = ""
         self.o.r.core.lib = isotxs.readBinary(ISOAA_PATH)
@@ -237,12 +238,8 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         """No ISOTXS and xs gen not requested."""
         self.o.r.core.lib = None
         with mockRunLogs.BufferLog() as mock:
-            xsGen = self.latticeInterface._newLibraryShouldBeCreated(
-                1, self.b, self.xsIDs
-            )
-            self.assertIn(
-                "Cross sections will not be generated on cycle 1.", mock.getStdout()
-            )
+            xsGen = self.latticeInterface._newLibraryShouldBeCreated(1, self.b, self.xsIDs)
+            self.assertIn("Cross sections will not be generated on cycle 1.", mock.getStdout())
             self.assertFalse(xsGen)
 
     def test_libCreation_GenXS(self):
@@ -250,9 +247,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
         self.o.cs[CONF_GEN_XS] = "Neutron"
         self.o.r.core.lib = None
         with mockRunLogs.BufferLog() as mock:
-            xsGen = self.latticeInterface._newLibraryShouldBeCreated(
-                1, self.b, self.xsIDs
-            )
+            xsGen = self.latticeInterface._newLibraryShouldBeCreated(1, self.b, self.xsIDs)
             self.assertIn(
                 "Cross sections will be generated on cycle 1 for the following XS IDs: ['AA']",
                 mock.getStdout(),
@@ -262,9 +257,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
     def test_libCreation_NoGenXS_2(self):
         """ISOTXS present and has all of the necessary information."""
         with mockRunLogs.BufferLog() as mock:
-            xsGen = self.latticeInterface._newLibraryShouldBeCreated(
-                1, self.b, self.xsIDs
-            )
+            xsGen = self.latticeInterface._newLibraryShouldBeCreated(1, self.b, self.xsIDs)
             self.assertIn(
                 "The generation of XS will be skipped.",
                 mock.getStdout(),
@@ -273,9 +266,7 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
 
     def test_libCreation_GenXS_2(self):
         """ISOTXS present and does not have all of the necessary information."""
-        self.xsGroupInterface.representativeBlocks = OrderedDict(
-            {"BB": self.assembly[0]}
-        )
+        self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
         b, xsIDs = self._modifyXSType()
         with mockRunLogs.BufferLog() as mock:
             xsGen = self.latticeInterface._newLibraryShouldBeCreated(1, b, xsIDs)
@@ -295,8 +286,6 @@ class TestLatticePhysicsLibraryCreation(TestLatticePhysicsInterfaceBase):
             self.assertTrue(xsGen)
 
     def _modifyXSType(self):
-        self.xsGroupInterface.representativeBlocks = OrderedDict(
-            {"BB": self.assembly[0]}
-        )
+        self.xsGroupInterface.representativeBlocks = OrderedDict({"BB": self.assembly[0]})
         self.assembly[0].p.xsType = "B"
         return self.latticeInterface._getBlocksAndXsIds()

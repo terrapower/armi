@@ -13,10 +13,11 @@
 # limitations under the License.
 
 """Run multiple ARMI cases one after the other on the local machine."""
+
 import os
 
-from armi.cli.run import RunEntryPoint
 from armi import cases
+from armi.cli.run import RunEntryPoint
 from armi.utils import directoryChangers
 
 
@@ -57,16 +58,11 @@ class RunSuiteCommand(RunEntryPoint):
             "--suiteDir",
             type=str,
             default=os.getcwd(),
-            help=(
-                "The path containing the case suite to run. Default current "
-                "working directory."
-            ),
+            help=("The path containing the case suite to run. Default current working directory."),
         )
 
     def invoke(self):
-        with directoryChangers.DirectoryChanger(
-            self.args.suiteDir, dumpOnException=False
-        ):
+        with directoryChangers.DirectoryChanger(self.args.suiteDir, dumpOnException=False):
             suite = cases.CaseSuite(self.cs)
             suite.discover(patterns=self.args.patterns, ignorePatterns=self.args.ignore)
             if self.args.list:

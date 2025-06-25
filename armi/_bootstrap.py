@@ -14,20 +14,6 @@
 
 """Code that needs to be executed before most ARMI components are safe to import."""
 
-import sys
-
-# This is a courtesy, to help people who accidently run ARMI with an old version of Python.
-if (
-    sys.version_info.major < 3
-    or sys.version_info.major == 3
-    and sys.version_info.minor < 7
-):
-    raise RuntimeError(
-        "ARMI highly recommends using Python 3.9 or 3.11. Are you sure you are using the "
-        f"correct interpreter?\nYou are using: {sys.executable}"
-    )
-
-
 from armi.nucDirectory import nuclideBases  # noqa: E402
 
 # Nuclide bases get built explicitly here to have better determinism

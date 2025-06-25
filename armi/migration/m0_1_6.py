@@ -13,13 +13,13 @@
 # limitations under the License.
 
 """Migrate ARMI settings that have alphanumeric location labels to new numeric mode."""
+
 import io
 import re
 
 from armi import runLog
-from armi.settings import caseSettings
 from armi.migration.base import SettingsMigration
-from armi.settings import settingsIO
+from armi.settings import caseSettings, settingsIO
 from armi.utils.units import ASCII_LETTER_A, ASCII_ZERO
 
 AXIAL_CHARS = [
@@ -45,8 +45,9 @@ class ConvertAlphanumLocationSettingsToNum(SettingsMigration):
 
         if reader.invalidSettings:
             runLog.info(
-                "The following deprecated settings will be deleted:\n  * {}"
-                "".format("\n  * ".join(list(reader.invalidSettings)))
+                "The following deprecated settings will be deleted:\n  * {}".format(
+                    "\n  * ".join(list(reader.invalidSettings))
+                )
             )
 
         cs = _modify_settings(cs)
@@ -65,9 +66,7 @@ def _modify_settings(cs):
                 # assume it is old style assem location.
                 i, j, _k = getIndicesFromDIF3DStyleLocatorLabel(loc)
                 newLoc = f"{i:03d}-{j:03d}"
-                runLog.info(
-                    f"Converting old-style location label `{loc}` to `{newLoc}`, assuming hex geom"
-                )
+                runLog.info(f"Converting old-style location label `{loc}` to `{newLoc}`, assuming hex geom")
                 loc = newLoc
             newLocs.append(loc)
 
@@ -89,9 +88,7 @@ def getIndicesFromDIF3DStyleLocatorLabel(label):
         if firstDigit < 10:
             i = int("{0}{1}".format(firstDigit, ring[1]))
         else:
-            raise RuntimeError(
-                "invalid label {0}. 1st character too large.".format(label)
-            )
+            raise RuntimeError("invalid label {0}. 1st character too large.".format(label))
         j = int(posLabel)
         if axLabel:
             k = AXIAL_CHARS.index(axLabel)

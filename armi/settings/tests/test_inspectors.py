@@ -13,12 +13,11 @@
 # limitations under the License.
 
 """Tests for settings validation system."""
+
 import os
 import unittest
 
-from armi import context
-from armi import operators
-from armi import settings
+from armi import context, operators, settings
 from armi.settings import settingsValidation
 from armi.settings.settingsValidation import createQueryRevertBadPathToDefault
 from armi.utils import directoryChangers
@@ -30,13 +29,9 @@ class TestInspector(unittest.TestCase):
         self.td.__enter__()
         self.init_mode = context.CURRENT_MODE
         self.cs = settings.Settings()
-        self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(
-            self.cs
-        )
+        self.inspector = operators.getOperatorClassFromSettings(self.cs).inspector(self.cs)
         self.inspector.queries = []  # clear out the auto-generated ones
-        self.filepathYaml = os.path.join(
-            os.getcwd(), self._testMethodName + "_test_setting_io.yaml"
-        )
+        self.filepathYaml = os.path.join(os.getcwd(), self._testMethodName + "_test_setting_io.yaml")
 
     def tearDown(self):
         context.Mode.setMode(self.init_mode)
@@ -152,10 +147,10 @@ class TestInspector(unittest.TestCase):
         self.assertIn("nCycles", keys)
 
     def test_createQueryRevertBadPathToDefault(self):
-        query = createQueryRevertBadPathToDefault(self.inspector, "numProcessors")
+        query = createQueryRevertBadPathToDefault(self.inspector, "nTasks")
         self.assertEqual(
             str(query),
-            "<Query: Setting numProcessors points to a nonexistent location:\n1>",
+            "<Query: Setting nTasks points to a nonexistent location:\n1>",
         )
 
     def test_correctCyclesToZeroBurnup(self):

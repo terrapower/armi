@@ -12,16 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License0.
 """Testing the settingsIO."""
+
 import datetime
 import io
 import os
 import unittest
 
-from armi import context
-from armi import settings
+from armi import context, settings
 from armi.cli import entryPoint
-from armi.settings import setting
-from armi.settings import settingsIO
+from armi.settings import setting, settingsIO
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import (
@@ -35,9 +34,7 @@ class SettingsFailureTests(unittest.TestCase):
     def test_settingsObjSetting(self):
         sets = settings.Settings()
         with self.assertRaises(NonexistentSetting):
-            sets[
-                "idontexist"
-            ] = "this test should fail because no setting named idontexist should exist."
+            sets["idontexist"] = "this test should fail because no setting named idontexist should exist."
 
     def test_loadFromYamlFailsOnBadNames(self):
         ss = settings.Settings()
@@ -50,10 +47,7 @@ class SettingsFailureTests(unittest.TestCase):
         with self.assertRaises(InvalidSettingsFileError):
             cs = settings.caseSettings.Settings()
             reader = settingsIO.SettingsReader(cs)
-            reader.readFromStream(
-                io.StringIO("useless:\n    should_fail"),
-                fmt=settingsIO.SettingsReader.SettingsInputFormat.YAML,
-            )
+            reader.readFromStream(io.StringIO("useless:\n    should_fail"))
 
 
 class SettingsReaderTests(unittest.TestCase):
@@ -63,7 +57,7 @@ class SettingsReaderTests(unittest.TestCase):
     def test_basicSettingsReader(self):
         reader = settingsIO.SettingsReader(self.cs)
 
-        self.assertEqual(reader["numProcessors"], 1)
+        self.assertEqual(reader["nTasks"], 1)
         self.assertEqual(reader["nCycles"], 1)
 
         self.assertFalse(getattr(reader, "filelessBP"))
@@ -112,9 +106,7 @@ class SettingsRenameTests(unittest.TestCase):
     ]
 
     def test_rename(self):
-        renamer = settingsIO.SettingRenamer(
-            {setting.name: setting for setting in self.testSettings}
-        )
+        renamer = settingsIO.SettingRenamer({setting.name: setting for setting in self.testSettings})
 
         self.assertEqual(renamer.renameSetting("testSetting1"), ("testSetting1", False))
         self.assertEqual(renamer.renameSetting("oSetting1"), ("testSetting1", True))
@@ -149,9 +141,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.td = directoryChangers.TemporaryDirectoryChanger()
         self.td.__enter__()
         self.init_mode = context.CURRENT_MODE
-        self.filepathYaml = os.path.join(
-            os.getcwd(), self._testMethodName + "test_setting_io.yaml"
-        )
+        self.filepathYaml = os.path.join(os.getcwd(), self._testMethodName + "test_setting_io.yaml")
         self.cs = settings.Settings()
         self.cs = self.cs.modified(newSettings={"nCycles": 55})
 
@@ -165,7 +155,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.cs.loadFromInputFile(self.filepathYaml)
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)
-        self.assertNotIn("numProcessors", txt)
+        self.assertNotIn("nTasks", txt)
 
     def test_writeMedium(self):
         """Setting output as a sparse file that only includes defaults if they are
@@ -173,10 +163,10 @@ class SettingsWriterTests(unittest.TestCase):
         """
         with open(self.filepathYaml, "w") as stream:
             # Specify a setting that is also a default
-            self.cs.writeToYamlStream(stream, "medium", ["numProcessors"])
+            self.cs.writeToYamlStream(stream, "medium", ["nTasks"])
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)
-        self.assertIn("numProcessors: 1", txt)
+        self.assertIn("nTasks: 1", txt)
 
     def test_writeFull(self):
         """Setting output as a full, all defaults included file.
@@ -189,7 +179,7 @@ class SettingsWriterTests(unittest.TestCase):
         txt = open(self.filepathYaml, "r").read()
         self.assertIn("nCycles: 55", txt)
         # check a default setting
-        self.assertIn("numProcessors: 1", txt)
+        self.assertIn("nTasks: 1", txt)
 
     def test_writeYaml(self):
         self.cs.writeToYamlFile(self.filepathYaml)
@@ -218,7 +208,7 @@ class SettingArgsTests(unittest.TestCase):
         ep.parse_args(["--nCycles", "5"])
         self.assertEqual(cs["nCycles"], 5)
 
-    def test_cannotLoadSettingsAfterParsingCommandLineSetting(self):
+    def test_cannotLoadSettingsAfterParsingCLI(self):
         self.test_commandLineSetting()
 
         with self.assertRaises(RuntimeError):

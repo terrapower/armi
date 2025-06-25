@@ -26,15 +26,16 @@ These operations are shared by code that modifies objects in place during runtim
 and also for inputModifiers that change inputs for parameter sweeping.
 
 """
+
 import math
 
-from armi.reactor.flags import Flags
 from armi import runLog
+from armi.reactor.flags import Flags
 
 
 def adjustSmearDensity(obj, value, bolBlock=None):
     r"""
-    modifies the *cold* smear density of a fuel pin by adding or removing fuel dimension.
+    Modifies the *cold* smear density of a fuel pin by adding or removing fuel dimension.
 
     Adjusts fuel dimension while keeping cladding ID constant
 
@@ -54,10 +55,7 @@ def adjustSmearDensity(obj, value, bolBlock=None):
 
     """
     if value <= 0.0 or value > 1.0:
-        raise ValueError(
-            "Cannot modify smear density of {0} to {1}. Must be a positive fraction"
-            "".format(obj, value)
-        )
+        raise ValueError("Cannot modify smear density of {0} to {1}. Must be a positive fraction".format(obj, value))
     fuel = obj.getComponent(Flags.FUEL)
     if not fuel:
         runLog.warning(
@@ -112,9 +110,5 @@ def _getCladdingComponentToModify(obj, value):
     if not clad:
         runLog.warning("{} does not have a cladding component to modify.".format(obj))
     if value < 0.0:
-        raise ValueError(
-            "Cannot modify {} on {} due to a negative modifier {}".format(
-                clad, obj, value
-            )
-        )
+        raise ValueError("Cannot modify {} on {} due to a negative modifier {}".format(clad, obj, value))
     return clad

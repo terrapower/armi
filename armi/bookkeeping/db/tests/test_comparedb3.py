@@ -13,23 +13,25 @@
 # limitations under the License.
 
 """Tests for the compareDB3 module."""
+
 import unittest
+import warnings
 
 import h5py
 import numpy as np
 
 from armi.bookkeeping.db.compareDB3 import (
-    _compareSets,
+    DiffResults,
+    OutputWriter,
     _compareAuxData,
+    _compareSets,
     _diffSimpleData,
     _diffSpecialData,
     compareDatabases,
-    DiffResults,
-    OutputWriter,
 )
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.reactor.tests import test_reactors
-from armi.tests import mockRunLogs, TEST_ROOT
+from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
@@ -113,9 +115,7 @@ class TestCompareDB3(unittest.TestCase):
             # validate the file exists, and force it to be readable again
             b = h5py.File(db._fullPath, "r")
             self.assertEqual(list(b.keys()), ["inputs"])
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
+            self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
             b.close()
 
             # append to lists
@@ -127,7 +127,7 @@ class TestCompareDB3(unittest.TestCase):
         self.assertEqual(diffs.nDiffs(), 0)
 
     def test_compareDatabaseSim(self):
-        """End-to-end test of compareDatabases() on very simlar databases."""
+        """End-to-end test of compareDatabases() on very similar databases."""
         # build two super-simple H5 files for testing
         o, r = test_reactors.loadTestReactor(
             TEST_ROOT,
@@ -142,9 +142,7 @@ class TestCompareDB3(unittest.TestCase):
             days = 100
             cs = o.cs.modified(
                 newSettings={
-                    "cycles": [
-                        {"step days": [days, days], "power fractions": [1, 0.5]}
-                    ],
+                    "cycles": [{"step days": [days, days], "power fractions": [1, 0.5]}],
                     "reloadDBName": "something_fake.h5",
                 }
             )
@@ -167,22 +165,32 @@ class TestCompareDB3(unittest.TestCase):
             self.assertEqual(len(dbKeys), 3)
             self.assertIn("inputs", dbKeys)
             self.assertIn("c00n00", dbKeys)
-            self.assertEqual(
-                sorted(b["inputs"].keys()), ["blueprints", "geomFile", "settings"]
-            )
+            self.assertEqual(sorted(b["inputs"].keys()), ["blueprints", "settings"])
             b.close()
 
             # append to lists
             dbs.append(db)
 
         # end-to-end validation that comparing a photocopy database works
-        diffs = compareDatabases(
-            dbs[0]._fullPath,
-            dbs[1]._fullPath,
-            timestepCompare=[(0, 0), (0, 1)],
-        )
-        self.assertEqual(len(diffs.diffs), 477)
-        # Cycle length is only diff (x3)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore")
+            diffs = compareDatabases(
+                dbs[0]._fullPath,
+                dbs[1]._fullPath,
+                timestepCompare=[(0, 0), (0, 1)],
+            )
+
+        # spot check the diffs
+        self.assertGreater(len(diffs.diffs), 200)
+        self.assertLess(len(diffs.diffs), 800)
+        self.assertIn("/c00n00", diffs._columns)
+        self.assertIn("/c00n01", diffs._columns)
+        self.assertIn(0, diffs._structureDiffs)
+        self.assertEqual(sum(diffs._structureDiffs), 0)
+        self.assertEqual(diffs.tolerance, 0)
+        self.assertIn("SpentFuelPool/flags max(abs(diff))", diffs.diffs)
+        self.assertIn("Circle/volume mean(diff)", diffs.diffs)
+        self.assertIn("Reactor/flags mean(diff)", diffs.diffs)
         self.assertEqual(diffs.nDiffs(), 3)
 
     def test_diffSpecialData(self):
@@ -228,15 +236,17 @@ class TestCompareDB3(unittest.TestCase):
             refData4 = f4.create_dataset("numberDensities", data=a2)
             refData4.attrs["shapes"] = "2"
             refData4.attrs["numDens"] = a2
+            refData4.attrs["specialFormatting"] = True
             f5 = h5py.File("test_diffSpecialData5.hdf5", "w")
             srcData5 = f5.create_dataset("numberDensities", data=a2)
             srcData5.attrs["shapes"] = "2"
             srcData5.attrs["numDens"] = a2
+            srcData5.attrs["specialFormatting"] = True
 
-            # there should an exception
-            with self.assertRaises(Exception) as e:
+            # there should a log message
+            with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData4, srcData5, out, dr)
-                self.assertIn("Unable to unpack special data for paramName", e)
+                self.assertIn("Unable to unpack special data for", mock.getStdout())
 
             # make an H5 datasets that will add a np.inf diff because keys don't match
             f6 = h5py.File("test_diffSpecialData6.hdf5", "w")
@@ -254,7 +264,7 @@ class TestCompareDB3(unittest.TestCase):
 
         # spin up one example H5 Dataset
         f1 = h5py.File("test_diffSimpleData1.hdf5", "w")
-        a1 = np.arange(100, dtype="<f8")
+        a1 = np.arange(1, 101, dtype="<f8")
         refData = f1.create_dataset("numberDensities", data=a1)
         refData.attrs["1"] = 1
         refData.attrs["2"] = 22
@@ -273,7 +283,7 @@ class TestCompareDB3(unittest.TestCase):
 
         # spin up a different size example H5 Dataset
         f3 = h5py.File("test_diffSimpleData3.hdf5", "w")
-        a2 = np.arange(90, dtype="<f8")
+        a2 = np.arange(1, 91, dtype="<f8")
         srcData3 = f3.create_dataset("numberDensities", data=a2)
         srcData3.attrs["1"] = 1
         srcData3.attrs["2"] = 22

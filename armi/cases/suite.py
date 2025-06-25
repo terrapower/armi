@@ -27,15 +27,14 @@ See Also
 --------
 armi.cases.case : An individual item of a case suite.
 """
-import os
-from typing import Optional, Sequence
-import traceback
 
-from armi import runLog
-from armi import settings
+import os
+import traceback
+from typing import Optional, Sequence
+
+from armi import runLog, settings
 from armi.cases import case as armicase
-from armi.utils import directoryChangers
-from armi.utils import tabulate
+from armi.utils import directoryChangers, tabulate
 
 
 class CaseSuite:
@@ -68,8 +67,9 @@ class CaseSuite:
         existing = next((c for c in self if case == c), None)
         if existing is not None:
             raise ValueError(
-                "CaseSuite already contains case with title `{}`\nFirst case:  {}\n"
-                "Second case: {}".format(case.title, existing, case)
+                "CaseSuite already contains case with title `{}`\nFirst case:  {}\nSecond case: {}".format(
+                    case.title, existing, case
+                )
             )
         self._cases.append(case)
         case._caseSuite = self
@@ -136,13 +136,9 @@ class CaseSuite:
         be delegated to the plugins/app.
         """
         for setting in self.cs.environmentSettings:
-            runLog.important(
-                "{}: {}".format(self.cs.getSetting(setting).label, self.cs[setting])
-            )
+            runLog.important("{}: {}".format(self.cs.getSetting(setting).label, self.cs[setting]))
 
-        runLog.important(
-            "Test inputs will be taken from test case results when they have finished"
-        )
+        runLog.important("Test inputs will be taken from test case results when they have finished")
         runLog.important(
             tabulate.tabulate(
                 [
@@ -189,20 +185,14 @@ class CaseSuite:
         """
         clone = CaseSuite(self.cs.duplicate())
 
-        modifiedSettings = {
-            ss.name: ss.value for ss in self.cs.values() if ss.offDefault
-        }
+        modifiedSettings = {ss.name: ss.value for ss in self.cs.values() if ss.offDefault}
         for case in self:
             if oldRoot:
                 newDir = os.path.dirname(os.path.relpath(case.cs.path, oldRoot))
             else:
                 newDir = case.title
-            with directoryChangers.ForcedCreationDirectoryChanger(
-                newDir, dumpOnException=False
-            ):
-                clone.add(
-                    case.clone(modifiedSettings=modifiedSettings, writeStyle=writeStyle)
-                )
+            with directoryChangers.ForcedCreationDirectoryChanger(newDir, dumpOnException=False):
+                clone.add(case.clone(modifiedSettings=modifiedSettings, writeStyle=writeStyle))
         return clone
 
     def run(self):
@@ -215,7 +205,7 @@ class CaseSuite:
         HPC but are still working on a platform independent way of handling HPCs.
         """
         for ci, case in enumerate(self):
-            runLog.important(f"Running case {ci+1}/{len(self)}: {case}")
+            runLog.important(f"Running case {ci + 1}/{len(self)}: {case}")
             with directoryChangers.DirectoryChanger(case.directory):
                 try:
                     case.run()
@@ -278,9 +268,7 @@ class CaseSuite:
 
         self.writeTable(tableResults)
         if suiteHasMissingFiles:
-            runLog.warning(
-                (UNMISSABLE_FAILURE.format(", ".join(t for t in refTitles - cmpTitles)))
-            )
+            runLog.warning((UNMISSABLE_FAILURE.format(", ".join(t for t in refTitles - cmpTitles))))
 
         return nIssues
 
@@ -322,11 +310,7 @@ class CaseSuite:
             totalDiffs += caseIssues
 
         print(tabulate.tabulate(data, header, tableFmt=fmt))
-        print(
-            tabulate.tabulate(
-                [["Total number of differences: {}".format(totalDiffs)]], tableFmt=fmt
-            )
-        )
+        print(tabulate.tabulate([["Total number of differences: {}".format(totalDiffs)]], tableFmt=fmt))
 
 
 UNMISSABLE_FAILURE = '''

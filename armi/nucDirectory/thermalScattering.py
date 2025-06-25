@@ -53,11 +53,11 @@ would otherwise have identical instances of these.
 
 Thus, in practice, users should rarely instantiate these on their own.
 """
+
 from typing import Tuple, Union
 
-from armi.nucDirectory import nuclideBases as nb
 from armi.nucDirectory import elements
-
+from armi.nucDirectory import nuclideBases as nb
 
 BE_METAL = "Be-metal"
 BEO = "BeO"
@@ -165,9 +165,7 @@ class ThermalScattering:
         elif isinstance(first, nb.NuclideBase):
             # just isotope
             element = elements.byZ[first.z]
-            label = (
-                f"tsl-{first.z:03d}_{element.symbol.capitalize()}_{first.a:03d}.endf"
-            )
+            label = f"tsl-{first.z:03d}_{element.symbol.capitalize()}_{first.a:03d}.endf"
         else:
             raise ValueError(f"{self} label cannot be generated")
         return label
@@ -240,9 +238,7 @@ def factory():
     byNbAndCompound[be, BE_METAL] = ThermalScattering(
         be, BE_METAL, endf8Label=f"tsl-{BE_METAL}.endf", aceLabel="be-met"
     )
-    byNbAndCompound[be, BEO] = ThermalScattering(
-        be, BEO, endf8Label=BEO, aceLabel="be-beo"
-    )
+    byNbAndCompound[be, BEO] = ThermalScattering(be, BEO, endf8Label=BEO, aceLabel="be-beo")
     byNbAndCompound[c, SIC] = ThermalScattering(c, SIC)
     byNbAndCompound[d, D2O] = ThermalScattering(d, D2O, f"tsl-Din{D2O}.endf", "d-d2o")
     byNbAndCompound[h, H2O] = ThermalScattering(h, H2O)
@@ -258,9 +254,5 @@ def factory():
     byNbAndCompound[c, CRYSTALLINE_GRAPHITE] = ThermalScattering(
         c, CRYSTALLINE_GRAPHITE, f"tsl-{CRYSTALLINE_GRAPHITE}.endf", "grph"
     )
-    byNbAndCompound[c, GRAPHITE_10P] = ThermalScattering(
-        c, GRAPHITE_10P, f"tsl-{GRAPHITE_10P}.endf", "grph10"
-    )
-    byNbAndCompound[c, GRAPHITE_30P] = ThermalScattering(
-        c, GRAPHITE_30P, f"tsl-{GRAPHITE_30P}.endf", "grph30"
-    )
+    byNbAndCompound[c, GRAPHITE_10P] = ThermalScattering(c, GRAPHITE_10P, f"tsl-{GRAPHITE_10P}.endf", "grph10")
+    byNbAndCompound[c, GRAPHITE_30P] = ThermalScattering(c, GRAPHITE_30P, f"tsl-{GRAPHITE_30P}.endf", "grph30")

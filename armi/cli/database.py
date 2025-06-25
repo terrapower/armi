@@ -13,11 +13,11 @@
 # limitations under the License.
 
 """Entry point into ARMI for manipulating output databases."""
+
 import os
 import pathlib
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
 from armi.cli.entryPoint import EntryPoint
 from armi.utils.textProcessors import resolveMarkupInclusions
 
@@ -26,9 +26,9 @@ class ExtractInputs(EntryPoint):
     """
     Recover input files from a database file.
 
-    This can come in handy when input files need to be hand-migrated to facilitate
-    loading or migration of the database file itself, or when attempting to re-run a
-    slightly-modified version of a case.
+    This can come in handy when input files need to be hand-migrated to facilitate loading or
+    migration of the database file itself, or when attempting to re-run a slightly-modified version
+    of a case.
     """
 
     name = "extract-inputs"
@@ -39,8 +39,7 @@ class ExtractInputs(EntryPoint):
         self.parser.add_argument(
             "--output-base",
             "-o",
-            help="Base name for extracted inputs. If not provided, base name is "
-            "implied from the database name.",
+            help="Base name for extracted inputs. If not provided, base name is implied from the database name.",
             type=str,
             default=None,
         )
@@ -52,23 +51,18 @@ class ExtractInputs(EntryPoint):
             self.args.output_base = os.path.splitext(self.args.h5db)[0]
 
     def invoke(self):
-        from armi.bookkeeping.db.database3 import Database3
+        from armi.bookkeeping.db.database import Database
 
-        db = Database3(self.args.h5db, "r")
+        db = Database(self.args.h5db, "r")
 
         with db:
-            settings, geom, bp = db.readInputsFromDB()
+            settings, bp = db.readInputsFromDB()
 
         settingsPath = self.args.output_base + "_settings.yaml"
         bpPath = self.args.output_base + "_blueprints.yaml"
 
-        geomPath = None
-        if geom:
-            geomExt = ".xml" if geom.lstrip()[0] == "<" else ".yaml"
-            geomPath = self.args.output_base + "_geom" + geomExt
-
         bail = False
-        for path in [settingsPath, bpPath, geomPath]:
+        for path in [settingsPath, bpPath]:
             if os.path.exists(settingsPath):
                 runLog.error("`{}` already exists. Aborting.".format(path))
                 bail = True
@@ -78,7 +72,6 @@ class ExtractInputs(EntryPoint):
         for path, data, inp in [
             (settingsPath, settings, "settings"),
             (bpPath, bp, "blueprints"),
-            (geomPath, geom, "geometry"),
         ]:
             if path is None:
                 continue
@@ -93,8 +86,7 @@ class InjectInputs(EntryPoint):
     """
     Insert new inputs into a database file, overwriting any existing inputs.
 
-    This is useful for performing hand migrations of inputs to facilitate database
-    migrations.
+    This is useful for performing hand migrations of inputs to facilitate database migrations.
     """
 
     name = "inject-inputs"
@@ -102,52 +94,33 @@ class InjectInputs(EntryPoint):
 
     def addOptions(self):
         self.parser.add_argument("h5db", help="Path to affected database", type=str)
-        self.parser.add_argument(
-            "--blueprints", help="Path to blueprints file", type=str, default=None
-        )
-        self.parser.add_argument(
-            "--geom", help="Path to geometry file", type=str, default=None
-        )
-        self.parser.add_argument(
-            "--settings", help="Path to settings file", type=str, default=None
-        )
+        self.parser.add_argument("--blueprints", help="Path to blueprints file", type=str, default=None)
+        self.parser.add_argument("--settings", help="Path to settings file", type=str, default=None)
 
     def invoke(self):
-        from armi.bookkeeping.db.database3 import Database3
+        from armi.bookkeeping.db.database import Database
 
-        if all(
-            li is None
-            for li in [self.args.blueprints, self.args.geom, self.args.settings]
-        ):
-            runLog.error(
-                "No settings, blueprints, or geometry files specified; "
-                "nothing to do."
-            )
+        if all(li is None for li in [self.args.blueprints, self.args.settings]):
+            runLog.error("No settings, blueprints, or geometry files specified; nothing to do.")
             return
 
         bp = None
         settings = None
-        geom = None
 
         if self.args.blueprints is not None:
             bp = resolveMarkupInclusions(pathlib.Path(self.args.blueprints)).read()
 
-        if self.args.geom is not None:
-            with open(self.args.geom, "r") as f:
-                geom = f.read()
-
         if self.args.settings is not None:
             settings = resolveMarkupInclusions(pathlib.Path(self.args.settings)).read()
 
-        db = Database3(self.args.h5db, "a")
+        db = Database(self.args.h5db, "a")
 
         with db:
-            # Not calling writeInputsToDb, since it makes too many assumptions about
-            # where the inputs are coming from, and which ones we want to write.
-            # Instead, we assume that we know where to store them, and do it ourselves.
+            # Not calling writeInputsToDb, since it makes too many assumptions about where the
+            # inputs are coming from, and which ones we want to write. Instead, we assume that we
+            # know where to store them, and do it ourselves.
             for data, key in [
                 (bp, "blueprints"),
-                (geom, "geomFile"),
                 (settings, "settings"),
             ]:
                 if data is not None:

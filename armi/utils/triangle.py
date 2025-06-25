@@ -17,26 +17,24 @@
 import math
 
 
-def getTriangleArea(
-    x1: float, y1: float, x2: float, y2: float, x3: float, y3: float
-) -> float:
+def getTriangleArea(x1: float, y1: float, x2: float, y2: float, x3: float, y3: float) -> float:
     """
-    Get the area of a triangle given the verticies of a triangle using Heron's formula.
+    Get the area of a triangle given the vertices of a triangle using Heron's formula.
 
     Parameters
     ----------
     x1 : float
-        x coordindate of first point defining a triangle
+        x coordinate of first point defining a triangle
     y1 : float
-        y coordindate of first point defining a triangle
+        y coordinate of first point defining a triangle
     x2 : float
-        x coordindate of second point defining a triangle
+        x coordinate of second point defining a triangle
     y2 : float
-        y coordindate of second point defining a triangle
+        y coordinate of second point defining a triangle
     x3 : float
-        x coordindate of third point defining a triangle
+        x coordinate of third point defining a triangle
     y3 : float
-        y coordindate of third point defining a triangle
+        y coordinate of third point defining a triangle
 
     Notes
     -----
@@ -46,11 +44,7 @@ def getTriangleArea(
     b = math.sqrt((x2 - x3) ** 2 + (y2 - y3) ** 2)
     c = math.sqrt((x1 - x3) ** 2 + (y1 - y3) ** 2)
 
-    area = (
-        1.0
-        / 4.0
-        * math.sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)))
-    )
+    area = 1.0 / 4.0 * math.sqrt((a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c)))
 
     return area
 
@@ -62,17 +56,17 @@ def getTriangleCentroid(x1, y1, x2, y2, x3, y3):
     Parameters
     ----------
     x1 : float
-        x coordindate of first point defining a triangle
+        x coordinate of first point defining a triangle
     y1 : float
-        y coordindate of first point defining a triangle
+        y coordinate of first point defining a triangle
     x2 : float
-        x coordindate of second point defining a triangle
+        x coordinate of second point defining a triangle
     y2 : float
-        y coordindate of second point defining a triangle
+        y coordinate of second point defining a triangle
     x3 : float
-        x coordindate of third point defining a triangle
+        x coordinate of third point defining a triangle
     y3 : float
-        y coordindate of third point defining a triangle
+        y coordinate of third point defining a triangle
 
     Returns
     -------
@@ -91,22 +85,22 @@ def checkIfPointIsInTriangle(
     x1: float, y1: float, x2: float, y2: float, x3: float, y3: float, x: float, y: float
 ) -> bool:
     """
-    Test if a point defined by x,y coordinates is within a triangle defined by verticies with x,y coordinates.
+    Test if a point defined by x,y coordinates is within a triangle defined by vertices with x,y coordinates.
 
     Parameters
     ----------
     x1 : float
-        x coordindate of first point of the bounding triangle
+        x coordinate of first point of the bounding triangle
     y1 : float
-        y coordindate of first point of the bounding triangle
+        y coordinate of first point of the bounding triangle
     x2 : float
-        x coordindate of second point of the bounding triangle
+        x coordinate of second point of the bounding triangle
     y2 : float
-        y coordindate of second point of the bounding triangle
+        y coordinate of second point of the bounding triangle
     x3 : float
-        x coordindate of third point of the bounding triangle
+        x coordinate of third point of the bounding triangle
     y3 : float
-        y coordindate of third point of the bounding triangle
+        y coordinate of third point of the bounding triangle
     x : float
         x coordinate of point being tested
     y : float
@@ -117,14 +111,10 @@ def checkIfPointIsInTriangle(
     This method uses the barycentric method.
     See `http://totologic.blogspot.com/2014/01/accurate-point-in-triangle-test.html`
     """
-    a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / (
-        (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
-    )
-    b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / (
-        (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
-    )
+    a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
+    b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / ((y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3))
     c = 1.0 - a - b
-    epsilon = 1e-10  # need to have some tollerance in case the point lies on the edge of the triangle
+    epsilon = 1e-10  # need to have some tolerance in case the point lies on the edge of the triangle
 
     aCondition = a + epsilon >= 0.0 and a - epsilon <= 1.0
     bCondition = b + epsilon >= 0.0 and b - epsilon <= 1.0

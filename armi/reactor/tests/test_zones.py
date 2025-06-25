@@ -13,18 +13,21 @@
 # limitations under the License.
 
 """Test for Zones."""
+
 import logging
 import os
 import unittest
 
 from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import blueprints
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import reactors
-from armi.reactor import zones
+from armi.reactor import (
+    assemblies,
+    blocks,
+    blueprints,
+    geometry,
+    grids,
+    reactors,
+    zones,
+)
 from armi.reactor.tests import test_reactors
 from armi.tests import mockRunLogs
 
@@ -187,7 +190,7 @@ class TestZone(unittest.TestCase):
         # loop once to prove looping works
         for aLoc in zone:
             self.assertIn(aLoc, zone.locs)
-            self.assertTrue(aLoc in zone)  # Tests Zone.__contains__()
+            self.assertTrue(aLoc in zone)  # test Zone.__contains__()
 
 
 class TestZones(unittest.TestCase):
@@ -211,8 +214,8 @@ class TestZones(unittest.TestCase):
         Test creating and interacting with the Zones object.
 
         .. test:: Create collection of Zones.
-            :id: T_ARMI_ZONES
-            :tests: R_ARMI_ZONES
+            :id: T_ARMI_ZONE4
+            :tests: R_ARMI_ZONE
         """
         zs = zones.Zones()
 
@@ -267,9 +270,7 @@ class TestZones(unittest.TestCase):
             self.assertEqual(aZone, zone)
 
         # get assem from first zone
-        a = self.r.core.getAssemblyWithStringLocation(
-            sorted(daZones[daZones.names[0]].locs)[0]
-        )
+        a = self.r.core.getAssemblyWithStringLocation(sorted(daZones[daZones.names[0]].locs)[0])
         # remove the zone
         daZones.removeZone(daZones.names[0])
 
@@ -287,9 +288,7 @@ class TestZones(unittest.TestCase):
         self.r.core.buildManualZones(cs)
 
         # test the retrieval of zone locations
-        self.assertEqual(
-            set(["002-001", "002-002"]), self.r.core.zones.getZoneLocations("ring-2")
-        )
+        self.assertEqual(set(["002-001", "002-002"]), self.r.core.zones.getZoneLocations("ring-2"))
 
     def test_getAllLocations(self):
         # customize settings for this test
@@ -302,9 +301,7 @@ class TestZones(unittest.TestCase):
         self.r.core.buildManualZones(cs)
 
         # test the retrieval of zone locations
-        self.assertEqual(
-            set(["001-001", "002-001", "002-002"]), self.r.core.zones.getAllLocations()
-        )
+        self.assertEqual(set(["001-001", "002-001", "002-002"]), self.r.core.zones.getAllLocations())
 
     def test_summary(self):
         # make sure we have a couple of zones to test on

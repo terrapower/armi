@@ -13,13 +13,14 @@
 # limitations under the License.
 
 """Really basic tests of the report Utils."""
-from glob import glob
-from unittest.mock import patch
+
 import logging
 import os
 import subprocess
 import sys
 import unittest
+from glob import glob
+from unittest.mock import patch
 
 from armi import runLog, settings
 from armi.bookkeeping import report
@@ -40,7 +41,7 @@ from armi.bookkeeping.report.reportingUtils import (
     writeCycleSummary,
     writeWelcomeHeaders,
 )
-from armi.reactor.tests.test_reactors import loadTestReactor
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -119,7 +120,7 @@ Processor(s):    1 Processor(s) Installed.
         to fail if the test is run on some other OS.
         """
         if "darwin" in sys.platform:
-            # too comlicated to test MacOS in this method
+            # too complicated to test MacOS in this method
             return
 
         out = getSystemInfo()
@@ -147,18 +148,12 @@ class TestReport(unittest.TestCase):
     def test_setData(self):
         report.setData("banana_1", ["sundae", "plain"])
         report.setData("banana_2", ["sundae", "vanilla"], self.test_group)
-        report.setData(
-            "banana_3", ["sundae", "chocolate"], self.test_group, [report.ALL]
-        )
+        report.setData("banana_3", ["sundae", "chocolate"], self.test_group, [report.ALL])
 
         with self.assertRaises(AttributeError):
-            report.setData(
-                "banana_4", ["sundae", "strawberry"], "no_workie", [report.ALL]
-            )
+            report.setData("banana_4", ["sundae", "strawberry"], "no_workie", [report.ALL])
         with self.assertRaises(AttributeError):
-            report.setData(
-                "banana_5", ["sundae", "peanut_butter"], self.test_group, "no_workie"
-            )
+            report.setData("banana_5", ["sundae", "peanut_butter"], self.test_group, "no_workie")
 
         ungroup_instance = report.ALL[report.UNGROUPED]
         self.assertEqual(ungroup_instance["banana_1"], ["sundae", "plain"])
@@ -226,7 +221,6 @@ class TestReport(unittest.TestCase):
 
             writeCycleSummary(r.core)
             self.assertIn("Core Average", mock.getStdout())
-            self.assertIn("Outlet Temp", mock.getStdout())
             self.assertIn("End of Cycle", mock.getStdout())
             mock.emptyStdout()
 
@@ -261,6 +255,7 @@ class TestReport(unittest.TestCase):
             self.assertIn("Case Info", mock.getStdout())
             self.assertIn("Input File Info", mock.getStdout())
             self.assertIn("crossSectionControl-DA", mock.getStdout())
+            self.assertIn("Python Executable", mock.getStdout())
             self.assertIn(randoFile, mock.getStdout())
 
 
@@ -281,11 +276,6 @@ class TestReportInterface(unittest.TestCase):
 
         self.assertIn("REPORTS BEGIN", rep)
         self.assertIn("REPORTS END", rep)
-
-    def test_writeReports(self):
-        """Test writing html reports."""
-        repInt = reportInterface.ReportInterface(None, None)
-        repInt.writeReports()
 
     def test_distributableReportInt(self):
         repInt = reportInterface.ReportInterface(None, None)

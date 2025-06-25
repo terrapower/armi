@@ -210,14 +210,15 @@ single line, tabulate can help automate word wrapping long fields for you. Use t
 
 Header column width can be specified in a similar way using `maxheadercolwidth`.
 """
-from collections import namedtuple
-from collections.abc import Iterable, Sized
-from functools import reduce, partial
-from itertools import chain, zip_longest
-from textwrap import TextWrapper
+
 import dataclasses
 import math
 import re
+from collections import namedtuple
+from collections.abc import Iterable, Sized
+from functools import partial, reduce
+from itertools import chain, zip_longest
+from textwrap import TextWrapper
 
 from armi import runLog
 
@@ -292,8 +293,7 @@ TableFormat = namedtuple(
 def _isSeparatingLine(row):
     rowType = type(row)
     isSl = (rowType is list or rowType is str) and (
-        (len(row) >= 1 and row[0] == SEPARATING_LINE)
-        or (len(row) >= 2 and row[1] == SEPARATING_LINE)
+        (len(row) >= 1 and row[0] == SEPARATING_LINE) or (len(row) >= 2 and row[1] == SEPARATING_LINE)
     )
     return isSl
 
@@ -475,9 +475,7 @@ _ansiEscapePat = rf"""
 """
 _ansiCodes = re.compile(_ansiEscapePat, re.VERBOSE)
 _ansiCodesBytes = re.compile(_ansiEscapePat.encode("utf8"), re.VERBOSE)
-_floatWithThousandsSeparators = re.compile(
-    r"^(([+-]?[0-9]{1,3})(?:,([0-9]{3}))*)?(?(1)\.[0-9]*|\.[0-9]+)?$"
-)
+_floatWithThousandsSeparators = re.compile(r"^(([+-]?[0-9]{1,3})(?:,([0-9]{3}))*)?(?(1)\.[0-9]*|\.[0-9]+)?$")
 
 
 def _isnumberWithThousandsSeparator(string):
@@ -536,9 +534,7 @@ def _isnumber(string):
     """
     if not _isconvertible(float, string):
         return False
-    elif isinstance(string, (str, bytes)) and (
-        math.isinf(float(string)) or math.isnan(float(string))
-    ):
+    elif isinstance(string, (str, bytes)) and (math.isinf(float(string)) or math.isnan(float(string))):
         return string.lower() in ["inf", "-inf", "nan"]
     return True
 
@@ -557,9 +553,7 @@ def _isint(string, inttype=int):
             (hasattr(string, "is_integer") or hasattr(string, "__array__"))
             and str(type(string)).startswith("<class 'numpy.int")
         )  # numpy.int64 and similar
-        or (
-            isinstance(string, (bytes, str)) and _isconvertible(inttype, string)
-        )  # integer as string
+        or (isinstance(string, (bytes, str)) and _isconvertible(inttype, string))  # integer as string
     )
 
 
@@ -573,9 +567,7 @@ def _isbool(string):
     >>> _isbool(1)
     False
     """
-    return type(string) is bool or (
-        isinstance(string, (bytes, str)) and string in ("True", "False")
-    )
+    return type(string) is bool or (isinstance(string, (bytes, str)) and string in ("True", "False"))
 
 
 def _type(string, hasInvisible=True, numparse=True):
@@ -806,17 +798,11 @@ def _alignColumn(strings, alignment, minwidth=0, hasInvisible=True, isMultiline=
     maxwidth = max(max(_flatList(sWidths)), minwidth)
     if isMultiline:
         if not hasInvisible:
-            paddedStrings = [
-                "\n".join([padfn(maxwidth, s) for s in ms.splitlines()])
-                for ms in strings
-            ]
+            paddedStrings = ["\n".join([padfn(maxwidth, s) for s in ms.splitlines()]) for ms in strings]
         else:
             # enable wide-character width corrections
             sLens = [[len(s) for s in re.split("[\r\n]", ms)] for ms in strings]
-            visibleWidths = [
-                [maxwidth - (w - ll) for w, ll in zip(mw, ml)]
-                for mw, ml in zip(sWidths, sLens)
-            ]
+            visibleWidths = [[maxwidth - (w - ll) for w, ll in zip(mw, ml)] for mw, ml in zip(sWidths, sLens)]
             # wcswidth and _visibleWidth don't count invisible characters;
             # padfn doesn't need to apply another correction
             paddedStrings = [
@@ -920,17 +906,13 @@ def _format(val, valtype, floatFmt, intFmt, missingVal="", hasInvisible=True):
         return f"{val}"
 
 
-def _alignHeader(
-    header, alignment, width, visibleWidth, isMultiline=False, widthFn=None
-):
+def _alignHeader(header, alignment, width, visibleWidth, isMultiline=False, widthFn=None):
     """Pad string header to width chars given known visibleWidth of the header."""
     if isMultiline:
         headerLines = re.split(_multilineCodes, header)
-        paddedLines = [
-            _alignHeader(h, alignment, width, widthFn(h)) for h in headerLines
-        ]
+        paddedLines = [_alignHeader(h, alignment, width, widthFn(h)) for h in headerLines]
         return "\n".join(paddedLines)
-    # else: not multiline
+
     ninvisible = len(header) - visibleWidth
     width += ninvisible
     if alignment == "left":
@@ -1040,19 +1022,10 @@ def _normalizeTabularData(data, headers, showIndex="default"):
         if headers == "keys" and not rows:
             # an empty table
             headers = []
-        elif (
-            headers == "keys"
-            and hasattr(data, "dtype")
-            and getattr(data.dtype, "names")
-        ):
+        elif headers == "keys" and hasattr(data, "dtype") and getattr(data.dtype, "names"):
             # numpy record array
             headers = data.dtype.names
-        elif (
-            headers == "keys"
-            and len(rows) > 0
-            and isinstance(rows[0], tuple)
-            and hasattr(rows[0], "_fields")
-        ):
+        elif headers == "keys" and len(rows) > 0 and isinstance(rows[0], tuple) and hasattr(rows[0], "_fields"):
             # namedtuple
             headers = list(map(str, rows[0]._fields))
         elif len(rows) > 0 and hasattr(rows[0], "keys") and hasattr(rows[0], "values"):
@@ -1083,9 +1056,7 @@ def _normalizeTabularData(data, headers, showIndex="default"):
                 else:
                     headers = []
             elif headers:
-                raise ValueError(
-                    "headers for a list of dicts is not a dict or a keyword"
-                )
+                raise ValueError("headers for a list of dicts is not a dict or a keyword")
             rows = [[row.get(k) for k in keys] for row in rows]
         elif len(rows) > 0 and dataclasses.is_dataclass(rows[0]):
             # Python 3.7+'s dataclass
@@ -1154,14 +1125,8 @@ def _wrapTextToColWidths(listOfLists, colwidths, numparses=True):
                 wrapper = TextWrapper(width=width)
                 # Cast based on our internal type handling. Any future custom formatting of types
                 # (such as datetimes) may need to be more explicit than just `str` of the object
-                castedCell = (
-                    str(cell) if _isnumber(cell) else _type(cell, numparse)(cell)
-                )
-                wrapped = [
-                    "\n".join(wrapper.wrap(line))
-                    for line in castedCell.splitlines()
-                    if line.strip() != ""
-                ]
+                castedCell = str(cell) if _isnumber(cell) else _type(cell, numparse)(cell)
+                wrapped = ["\n".join(wrapper.wrap(line)) for line in castedCell.splitlines() if line.strip() != ""]
                 newRow.append("\n".join(wrapped))
             else:
                 newRow.append(cell)
@@ -1273,9 +1238,7 @@ def tabulate(
     if data is None:
         data = []
 
-    listOfLists, headers, headersPad = _normalizeTabularData(
-        data, headers, showIndex=showIndex
-    )
+    listOfLists, headers, headersPad = _normalizeTabularData(data, headers, showIndex=showIndex)
     listOfLists, separatingLines = _removeSeparatingLines(listOfLists)
 
     if maxColWidths is not None:
@@ -1289,23 +1252,17 @@ def tabulate(
             maxColWidths = _expandIterable(maxColWidths, numCols, None)
 
         numparses = _expandNumparse(disableNumParse, numCols)
-        listOfLists = _wrapTextToColWidths(
-            listOfLists, maxColWidths, numparses=numparses
-        )
+        listOfLists = _wrapTextToColWidths(listOfLists, maxColWidths, numparses=numparses)
 
     if maxHeaderColWidths is not None:
         numCols = len(listOfLists[0])
         if isinstance(maxHeaderColWidths, int):  # Expand scalar for all columns
-            maxHeaderColWidths = _expandIterable(
-                maxHeaderColWidths, numCols, maxHeaderColWidths
-            )
+            maxHeaderColWidths = _expandIterable(maxHeaderColWidths, numCols, maxHeaderColWidths)
         else:  # Ignore col width for any 'trailing' columns
             maxHeaderColWidths = _expandIterable(maxHeaderColWidths, numCols, None)
 
         numparses = _expandNumparse(disableNumParse, numCols)
-        headers = _wrapTextToColWidths(
-            [headers], maxHeaderColWidths, numparses=numparses
-        )[0]
+        headers = _wrapTextToColWidths([headers], maxHeaderColWidths, numparses=numparses)[0]
 
     # empty values in the first column of RST tables should be escaped
     # "" should be escaped as "\\ " or ".."
@@ -1342,11 +1299,7 @@ def tabulate(
 
     hasInvisible = _ansiCodes.search(plainText) is not None
 
-    if (
-        not isinstance(tableFmt, TableFormat)
-        and tableFmt in multilineFormats
-        and _isMultiline(plainText)
-    ):
+    if not isinstance(tableFmt, TableFormat) and tableFmt in multilineFormats and _isMultiline(plainText):
         tableFmt = multilineFormats.get(tableFmt, tableFmt)
         isMultiline = True
     else:
@@ -1379,9 +1332,7 @@ def tabulate(
             missingVals.extend((len(cols) - len(missingVals)) * [_DEFAULT_MISSING_VAL])
     cols = [
         [_format(v, ct, flFmt, intFmt, missV, hasInvisible) for v in c]
-        for c, ct, flFmt, intFmt, missV in zip(
-            cols, coltypes, floatFormats, intFormats, missingVals
-        )
+        for c, ct, flFmt, intFmt, missV in zip(cols, coltypes, floatFormats, intFormats, missingVals)
     ]
 
     # align columns
@@ -1391,7 +1342,7 @@ def tabulate(
     else:  # default
         aligns = [numAlign if ct in [int, float] else strAlign for ct in coltypes]
 
-    # then specific alignements
+    # then specific alignments
     if colAlign is not None:
         assert isinstance(colAlign, Iterable)
         if isinstance(colAlign, str):
@@ -1404,13 +1355,8 @@ def tabulate(
                 break
             elif align != "global":
                 aligns[idx] = align
-    minwidths = (
-        [widthFn(h) + minPadding for h in headers] if headers else [0] * len(cols)
-    )
-    cols = [
-        _alignColumn(c, a, minw, hasInvisible, isMultiline)
-        for c, a, minw in zip(cols, aligns, minwidths)
-    ]
+    minwidths = [widthFn(h) + minPadding for h in headers] if headers else [0] * len(cols)
+    cols = [_alignColumn(c, a, minw, hasInvisible, isMultiline) for c, a, minw in zip(cols, aligns, minwidths)]
 
     alignsHeaders = None
     if headers:
@@ -1421,7 +1367,7 @@ def tabulate(
             alignsHeaders = [headersGlobalAlign] * len(tCols)
         else:  # default
             alignsHeaders = aligns or [strAlign] * len(headers)
-        # then specific header alignements
+        # then specific header alignments
         if headersAlign is not None:
             assert isinstance(headersAlign, Iterable)
             if isinstance(headersAlign, str):
@@ -1438,9 +1384,7 @@ def tabulate(
                     alignsHeaders[hidx] = aligns[hidx]
                 elif align != "global":
                     alignsHeaders[hidx] = align
-        minwidths = [
-            max(minw, max(widthFn(cl) for cl in c)) for minw, c in zip(minwidths, tCols)
-        ]
+        minwidths = [max(minw, max(widthFn(cl) for cl in c)) for minw, c in zip(minwidths, tCols)]
         headers = [
             _alignHeader(h, a, minw, widthFn(h), isMultiline, widthFn)
             for h, a, minw in zip(headers, alignsHeaders, minwidths)
@@ -1544,17 +1488,12 @@ def _alignCellVeritically(textLines, numLines, columnWidth, rowAlignment):
         return textLines + blank * deltaLines
 
 
-def _appendMultilineRow(
-    lines, paddedMultilineCells, paddedWidths, colAligns, rowfmt, pad, rowAlign=None
-):
+def _appendMultilineRow(lines, paddedMultilineCells, paddedWidths, colAligns, rowfmt, pad, rowAlign=None):
     colwidths = [w - 2 * pad for w in paddedWidths]
     cellsLines = [c.splitlines() for c in paddedMultilineCells]
     nlines = max(map(len, cellsLines))  # number of lines in the row
 
-    cellsLines = [
-        _alignCellVeritically(cl, nlines, w, rowAlign)
-        for cl, w in zip(cellsLines, colwidths)
-    ]
+    cellsLines = [_alignCellVeritically(cl, nlines, w, rowAlign) for cl, w in zip(cellsLines, colwidths)]
     linesCells = [[cl[i] for cl in cellsLines] for i in range(nlines)]
     for ln in linesCells:
         paddedLn = _padRow(ln, pad)
@@ -1580,9 +1519,7 @@ def _appendLine(lines, colwidths, colAligns, linefmt):
     return lines
 
 
-def _formatTable(
-    fmt, headers, headersAligns, rows, colwidths, colAligns, isMultiline, rowAligns
-):
+def _formatTable(fmt, headers, headersAligns, rows, colwidths, colAligns, isMultiline, rowAligns):
     """Produce a plain-text representation of the table."""
     lines = []
     hidden = fmt.withHeaderHide if (headers and fmt.withHeaderHide) else []
@@ -1624,11 +1561,7 @@ def _formatTable(
         )
     else:
         separatingLine = (
-            fmt.linebetweenrows
-            or fmt.linebelowheader
-            or fmt.linebelow
-            or fmt.lineabove
-            or Line("", "", "", "")
+            fmt.linebetweenrows or fmt.linebelowheader or fmt.linebelow or fmt.lineabove or Line("", "", "", "")
         )
         for row in paddedRows:
             # test to see if either the 1st column or the 2nd column has the SEPARATING_LINE flag

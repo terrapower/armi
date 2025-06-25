@@ -13,18 +13,16 @@
 # limitations under the License.
 
 """Test report visualization."""
+
 import unittest
 
 import numpy as np
 from pyevtk.vtk import VtkTetra
 
 from armi import settings
-from armi.bookkeeping.db import Database3
-from armi.bookkeeping.visualization import utils
-from armi.bookkeeping.visualization import vtk
-from armi.bookkeeping.visualization import xdmf
-from armi.reactor import blocks
-from armi.reactor import components
+from armi.bookkeeping.db import Database
+from armi.bookkeeping.visualization import utils, vtk, xdmf
+from armi.reactor import blocks, components
 from armi.reactor.tests import test_reactors
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -41,9 +39,7 @@ class TestVtkMesh(unittest.TestCase):
         self.assertEqual(mesh.offsets.size, 0)
         self.assertEqual(mesh.cellTypes.size, 0)
 
-        verts = np.array(
-            [[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.25, 0.25, 0.5]]
-        )
+        verts = np.array([[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.25, 0.25, 0.5]])
         conn = np.array([0, 1, 2, 3])
         offsets = np.array([4])
         cellTypes = np.array([VtkTetra.tid])
@@ -67,11 +63,9 @@ class TestVisDump(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         caseSetting = settings.Settings()
-        _, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
-        cls.hexBlock = cls.r.core.getBlocks()[0]
+        cls.hexBlock = next(cls.r.core.iterBlocks())
 
         cls.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
         cartesianComponent = components.HoledSquare(
@@ -84,11 +78,7 @@ class TestVisDump(unittest.TestCase):
             mult=1.0,
         )
         cls.cartesianBlock.add(cartesianComponent)
-        cls.cartesianBlock.add(
-            components.Circle(
-                "clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0
-            )
-        )
+        cls.cartesianBlock.add(components.Circle("clad", "HT9", Tinput=273.0, Thot=273.0, od=68.0, mult=169.0))
 
     def test_dumpReactorVtk(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
@@ -100,7 +90,7 @@ class TestVisDump(unittest.TestCase):
     def test_dumpReactorXdmf(self):
         # This does a lot, and is hard to verify. at least make sure it doesn't crash
         with TemporaryDirectoryChanger(dumpOnException=False):
-            db = Database3("testDatabase.h5", "w")
+            db = Database("testDatabase.h5", "w")
             with db:
                 db.writeToDB(self.r)
             dumper = xdmf.XdmfDumper("testVtk", inputName="testDatabase.h5")

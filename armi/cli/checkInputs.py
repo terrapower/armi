@@ -16,7 +16,6 @@
 
 import pathlib
 import sys
-import traceback
 
 from armi import runLog
 from armi.cli.entryPoint import EntryPoint
@@ -35,9 +34,7 @@ class ExpandBlueprints(EntryPoint):
     splash = False
 
     def addOptions(self):
-        self.parser.add_argument(
-            "blueprints", type=str, help="Path to root blueprints file"
-        )
+        self.parser.add_argument("blueprints", type=str, help="Path to root blueprints file")
 
     def invoke(self):
         p = pathlib.Path(self.args.blueprints)
@@ -53,20 +50,14 @@ class ExpandBlueprints(EntryPoint):
 class CheckInputEntryPoint(EntryPoint):
     """
     Check ARMI inputs for errors, inconsistencies, and the ability to initialize a reactor.
-    Also has functionality to generate a summary report of the input design.
-    This can be run on multiple cases and creates a table detailing the results of the input check.
+
+    Also has functionality to generate a summary report of the input design. This can be run on
+    multiple cases and creates a table detailing the results of the input check.
     """
 
     name = "check-input"
 
     def addOptions(self):
-        self.parser.add_argument(
-            "--generate-design-summary",
-            "-s",
-            action="store_true",
-            default=False,
-            help="Generate a report to summarize the inputs",
-        )
         self.parser.add_argument(
             "--recursive",
             "-r",
@@ -103,15 +94,6 @@ class CheckInputEntryPoint(EntryPoint):
                 hasIssues = "PASSED" if case.checkInputs() else "HAS ISSUES"
 
             canStart = "UNKNOWN"
-            if self.args.generate_design_summary:
-                try:
-                    case.summarizeDesign()
-                    canStart = "PASSED"
-                except Exception:
-                    runLog.error("Failed to initialize/summarize {}".format(case))
-                    runLog.error(traceback.format_exc())
-                    canStart = "FAILED"
-
             table.append((case.cs.path, case.title, canStart, hasIssues))
 
         runLog.important(

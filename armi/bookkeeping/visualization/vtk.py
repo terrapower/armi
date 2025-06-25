@@ -27,23 +27,17 @@ that can be improved upon. For instance:
   vertices than needed. Some fancy canned algorithms probably exist to do this, and it
   wouldn't be too difficult to do here either. Also future work, but probably not super
   important unless dealing with really big meshes.
-
 """
 
-from typing import Dict, Any, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 from pyevtk.vtk import VtkGroup
 
 from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor import blocks
-from armi.reactor import composites
-from armi.reactor import reactors
-from armi.reactor import parameters
-from armi.bookkeeping.db import database3
-from armi.bookkeeping.visualization import dumper
-from armi.bookkeeping.visualization import utils
+from armi.bookkeeping.db import database
+from armi.bookkeeping.visualization import dumper, utils
+from armi.reactor import assemblies, blocks, composites, parameters, reactors
 
 
 class VtkDumper(dumper.VisFileDumper):
@@ -93,14 +87,10 @@ class VtkDumper(dumper.VisFileDumper):
 
         # include and exclude params are mutually exclusive
         if includeParams is not None and excludeParams is not None:
-            raise ValueError(
-                "includeParams and excludeParams can not both be used at the same time"
-            )
+            raise ValueError("includeParams and excludeParams can not both be used at the same time")
 
         blks = r.getChildren(deep=True, predicate=lambda o: isinstance(o, blocks.Block))
-        assems = r.getChildren(
-            deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly)
-        )
+        assems = r.getChildren(deep=True, predicate=lambda o: isinstance(o, assemblies.Assembly))
 
         blockMesh = utils.createReactorBlockMesh(r)
         assemMesh = utils.createReactorAssemMesh(r)
@@ -108,8 +98,8 @@ class VtkDumper(dumper.VisFileDumper):
         # collect param data
         blockData = _collectObjectData(blks, includeParams, excludeParams)
         assemData = _collectObjectData(assems, includeParams, excludeParams)
-        # block number densities are special, since they arent stored as params
-        blockNdens = database3.collectBlockNumberDensities(blks)
+        # block number densities are special, since they aren't stored as params
+        blockNdens = database.collectBlockNumberDensities(blks)
         # we need to copy the number density vectors to guarantee unit stride, which
         # pyevtk requires. Kinda seems like something it could do for us, but oh well.
         blockNdens = {key: np.array(value) for key, value in blockNdens.items()}
@@ -128,7 +118,7 @@ class VtkDumper(dumper.VisFileDumper):
     def __exit__(self, type, value, traceback):
         assert len(self._assemFiles) == len(self._blockFiles)
         if len(self._assemFiles) > 1:
-            # multiple files need to be wrapped up into groups. VTK doesnt like having
+            # multiple files need to be wrapped up into groups. VTK does not like having
             # multiple meshes in the same group, so we write out separate Collection
             # files for them
             asyGroup = VtkGroup(f"{self._baseName}_asm")
@@ -147,7 +137,6 @@ def _collectObjectData(
     includeParams: Optional[Set[str]] = None,
     excludeParams: Optional[Set[str]] = None,
 ) -> Dict[str, Any]:
-
     allData = dict()
 
     for pDef in type(objs[0]).pDefs.toWriteToDB(parameters.SINCE_ANYTHING):
@@ -168,7 +157,7 @@ def _collectObjectData(
             continue
         if data.dtype.kind == "O":
             # datatype is "object", usually because it's jagged, or has Nones. We are
-            # willing to try handling the Nones, but jagged also isnt visualizable.
+            # willing to try handling the Nones, but jagged also isn't visualizable.
             nones = np.where([d is None for d in data])[0]
 
             if len(nones) == data.shape[0]:
@@ -180,7 +169,7 @@ def _collectObjectData(
                 continue
 
             try:
-                data = database3.replaceNonesWithNonsense(data, pDef.name, nones=nones)
+                data = database.replaceNonesWithNonsense(data, pDef.name, nones=nones)
             except (ValueError, TypeError):
                 # Looks like we have some weird data. We might be able to handle it
                 # with more massaging, but probably not visualizable anyhow
@@ -189,8 +178,9 @@ def _collectObjectData(
             if data.dtype.kind == "O":
                 # Didn't work
                 runLog.warning(
-                    "The parameter data for  `{}` could not be coerced into "
-                    "a native type for output; skipping.".format(pDef.name)
+                    "The parameter data for  `{}` could not be coerced into a native type for output; skipping.".format(
+                        pDef.name
+                    )
                 )
                 continue
         if len(data.shape) != 1:

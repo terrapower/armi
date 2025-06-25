@@ -13,21 +13,20 @@
 # limitations under the License.
 
 """Some generic neutronics-related settings."""
+
 import os
 
 from armi import runLog
 from armi.physics.neutronics import LatticePhysicsFrequency
 from armi.physics.neutronics.const import NEUTRON
 from armi.physics.neutronics.energyGroups import GROUP_STRUCTURE
-from armi.settings import setting
-from armi.settings import settingsValidation
-from armi.utils import directoryChangers
+from armi.settings import setting, settingsValidation
 from armi.settings.fwSettings.globalSettings import (
     CONF_DETAILED_AXIAL_EXPANSION,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
     CONF_RUN_TYPE,
 )
-
+from armi.utils import directoryChangers
 
 CONF_BC_COEFFICIENT = "bcCoefficient"
 CONF_BOUNDARIES = "boundaries"
@@ -42,20 +41,19 @@ CONF_GLOBAL_FLUX_ACTIVE = "globalFluxActive"
 CONF_GROUP_STRUCTURE = "groupStructure"
 CONF_INNERS_ = "inners"
 CONF_LOADING_FILE = "loadingFile"
+CONF_MCNP_LIB_BASE = "mcnpLibraryVersion"
 CONF_NEUTRONICS_KERNEL = "neutronicsKernel"
 CONF_NEUTRONICS_TYPE = "neutronicsType"
 CONF_NUMBER_MESH_PER_EDGE = "numberMeshPerEdge"
 CONF_OUTERS_ = "outers"
 CONF_RESTART_NEUTRONICS = "restartNeutronics"
 
-# Used for dpa/dose analysis.
-# TODO: These should be relocated to more design-specific places
+# used by global flux interface
 CONF_ACLP_DOSE_LIMIT = "aclpDoseLimit"
 CONF_DPA_XS_SET = "dpaXsSet"
 CONF_GRID_PLATE_DPA_XS_SET = "gridPlateDpaXsSet"
 CONF_LOAD_PAD_ELEVATION = "loadPadElevation"
 CONF_LOAD_PAD_LENGTH = "loadPadLength"
-
 CONF_OPT_DPA = [
     "",
     "dpa_EBRII_INC600",
@@ -67,33 +65,24 @@ CONF_OPT_DPA = [
 
 # moved from xsSettings
 CONF_CLEAR_XS = "clearXS"
+CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = "disableBlockTypeExclusionInXsGeneration"
+CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
+CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_FISSILE_FRACTION = "minimumFissileFraction"
 CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
-CONF_INFINITE_DILUTE_CUTOFF = "infiniteDiluteCutoff"
+CONF_MINIMUM_NUCLIDE_DENSITY = "minimumNuclideDensity"
+CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_TOLERATE_BURNUP_CHANGE = "tolerateBurnupChange"
 CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
-CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION = (
-    "disableBlockTypeExclusionInXsGeneration"
-)
-CONF_XS_KERNEL = "xsKernel"
-CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
+CONF_XS_BLOCK_REPRESENTATION = "xsBlockRepresentation"
 CONF_XS_BUCKLING_CONVERGENCE = "xsBucklingConvergence"
 CONF_XS_EIGENVALUE_CONVERGENCE = "xsEigenvalueConvergence"
-CONF_LATTICE_PHYSICS_FREQUENCY = "latticePhysicsFrequency"
+CONF_XS_KERNEL = "xsKernel"
+CONF_XS_SCATTERING_ORDER = "xsScatteringOrder"
 
 
 def defineSettings():
-    """Standard function to define settings; for neutronics.
-
-    .. impl:: Users to select if gamma cross sections are generated.
-        :id: I_ARMI_GAMMA_XS
-        :implements: R_ARMI_GAMMA_XS
-
-        A single boolean setting can be used to turn on/off the calculation of gamma
-        cross sections. This is implemented with the usual boolean ``Setting`` logic.
-        The goal here is performance; save the compute time if the analyst doesn't need
-        those cross sections.
-    """
+    """Standard function to define settings; for neutronics."""
     settings = [
         setting.Setting(
             CONF_GROUP_STRUCTURE,
@@ -111,7 +100,6 @@ def defineSettings():
                 "ANL2082",
                 "ARMI33",
                 "ARMI45",
-                "CINDER63",
                 "348",
             ],
         ),
@@ -119,9 +107,8 @@ def defineSettings():
             CONF_GLOBAL_FLUX_ACTIVE,
             default="Neutron",
             label="Global Flux Calculation",
-            description="Calculate the global flux at each timestep for the selected "
-            "particle type(s) using the specified neutronics kernel (see Global Flux "
-            "tab).",
+            description="Calculate the global flux at each timestep for the selected particle "
+            "type(s) using the specified neutronics kernel.",
             options=["", "Neutron", "Neutron and Gamma"],
         ),
         setting.Setting(
@@ -138,22 +125,19 @@ def defineSettings():
             CONF_DPA_PER_FLUENCE,
             default=4.01568627451e-22,
             label="DPA Per Fluence",
-            description="A quick and dirty conversion that is used to get "
-            "dpaPeak by multiplying the factor and fastFluencePeak",
+            description="A quick and dirty conversion that is used to get dpaPeak",
         ),
         setting.Setting(
             CONF_BC_COEFFICIENT,
             default=0.0,
             label="Parameter A for generalized BC",
-            description="Value for the parameter A of the generalized boundary "
-            "condition.",
+            description="Value for the parameter A of the generalized boundary condition.",
         ),
         setting.Setting(
             CONF_BOUNDARIES,
             default="Extrapolated",
             label="Neutronic BCs",
-            description="External Neutronic Boundary Conditions. Reflective does not "
-            "include axial.",
+            description="External Neutronic Boundary Conditions. Reflective does not include axial.",
             options=[
                 "Extrapolated",
                 "Reflective",
@@ -171,6 +155,13 @@ def defineSettings():
             description="The neutronics / depletion solver for global flux solve.",
             options=[],
             enforcedOptions=True,
+        ),
+        setting.Setting(
+            CONF_MCNP_LIB_BASE,
+            default="ENDF/B-VII.1",
+            description="Library name for MCNP cross sections. ENDF/B-VII.1 is the default library.",
+            label="ENDF data library version to use for MCNP Analysis",
+            options=["ENDF/B-V.0", "ENDF/B-VII.0", "ENDF/B-VII.1", "ENDF/B-VIII.0"],
         ),
         setting.Setting(
             CONF_NEUTRONICS_TYPE,
@@ -196,16 +187,14 @@ def defineSettings():
             CONF_NUMBER_MESH_PER_EDGE,
             default=1,
             label="Number of Mesh per Edge",
-            description="Number of mesh per block edge for finite-difference planar "
-            "mesh refinement.",
+            description="Number of mesh per block edge for finite-difference planar mesh refinement.",
             oldNames=[("hexSideSubdivisions", None)],
         ),
         setting.Setting(
             CONF_EPS_EIG,
             default=1e-07,
             label="Eigenvalue Epsilon",
-            description="Convergence criteria for calculating the eigenvalue in the "
-            "global flux solver",
+            description="Convergence criteria for calculating the eigenvalue in the global flux solver",
         ),
         setting.Setting(
             CONF_EPS_FSAVG,
@@ -239,8 +228,7 @@ def defineSettings():
             CONF_ACLP_DOSE_LIMIT,
             default=80.0,
             label="ALCP dose limit",
-            description="Dose limit in dpa used to position the above-core load pad"
-            "(if one exists)",
+            description="Dose limit in dpa used to position the above-core load pad(if one exists)",
         ),
         setting.Setting(
             CONF_RESTART_NEUTRONICS,
@@ -265,10 +253,7 @@ def defineSettings():
             CONF_GRID_PLATE_DPA_XS_SET,
             default="dpa_EBRII_HT9",
             label="Grid plate DPA XS",
-            description=(
-                "The cross sections to use for grid plate blocks DPA when computing "
-                "displacements per atom."
-            ),
+            description=("The cross sections to use for grid plate blocks DPA when computing displacements per atom."),
             options=CONF_OPT_DPA,
         ),
         setting.Setting(
@@ -288,25 +273,16 @@ def defineSettings():
             CONF_MINIMUM_FISSILE_FRACTION,
             default=0.045,
             label="Minimum Fissile Fraction",
-            description="Minimum fissile fraction (fissile number densities / heavy "
-            "metal number densities).",
+            description="Minimum fissile fraction (fissile number densities / heavy metal number densities).",
             oldNames=[("mc2.minimumFissileFraction", None)],
         ),
         setting.Setting(
             CONF_MINIMUM_NUCLIDE_DENSITY,
             default=1e-15,
             label="Minimum nuclide density",
-            description="Density to use for nuclides and fission products at infinite "
-            "dilution. This is also used as the minimum density considered for "
-            "computing macroscopic cross sections. It can also be passed to physics "
-            "plugins.",
-        ),
-        setting.Setting(
-            CONF_INFINITE_DILUTE_CUTOFF,
-            default=1e-10,
-            label="Infinite Dillute Cutoff",
-            description="Do not model nuclides with density less than this cutoff. "
-            "Used with PARTISN and SERPENT.",
+            description="Density to use for nuclides and fission products at infinite dilution. "
+            "This is also used as the minimum density considered for computing macroscopic cross "
+            "sections.",
         ),
         setting.Setting(
             CONF_TOLERATE_BURNUP_CHANGE,
@@ -320,8 +296,7 @@ def defineSettings():
             CONF_XS_BLOCK_REPRESENTATION,
             default="Average",
             label="Cross Section Block Averaging Method",
-            description="The type of averaging to perform when creating cross "
-            "sections for a group of blocks",
+            description="The type of averaging to perform when creating cross sections for a group of blocks",
             options=[
                 "Median",
                 "Average",
@@ -332,10 +307,10 @@ def defineSettings():
         setting.Setting(
             CONF_DISABLE_BLOCK_TYPE_EXCLUSION_IN_XS_GENERATION,
             default=False,
-            label="Include All Block Types in XS Generation",
-            description="Use all blocks in a cross section group when generating a "
-            "representative block. When this is disabled only `fuel` blocks will be "
-            "considered",
+            label="Which Block types to merge together in XS Generation",
+            description="Control which blocks get merged together by the XSGM. If set to ``None`` or ``True`` then all "
+            "block types in the XS ID will be considered. If set to ``False`` then a default of ['fuel'] will be used. "
+            "Can also be set to an exact list of strings for types to consider.",
         ),
         setting.Setting(
             CONF_XS_KERNEL,
@@ -374,8 +349,7 @@ def defineSettings():
             CONF_XS_EIGENVALUE_CONVERGENCE,
             default=1e-05,
             label="Eigenvalue Convergence Criteria",
-            description="Convergence criteria for the eigenvalue in the lattice "
-            "physics kernel",
+            description="Convergence criteria for the eigenvalue in the lattice physics kernel",
         ),
     ]
 
@@ -411,20 +385,18 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateXSOptionGenXS():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GEN_XS)
 
     def migrateXSOptionGlobalFluxActive():
-        """pass-through to migrateXSOption(), because Query functions cannot take arguements."""
+        """pass-through to migrateXSOption(), because Query functions cannot take arguments."""
         migrateXSOption(CONF_GLOBAL_FLUX_ACTIVE)
 
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_GEN_XS] in ("True", "False"),
             "The {0} setting cannot not take `True` or `False` as an exact value any more.",
-            'Would you like to auto-correct {0} to the correct value? ("" or {1})'.format(
-                CONF_GEN_XS, NEUTRON
-            ),
+            'Would you like to auto-correct {0} to the correct value? ("" or {1})'.format(CONF_GEN_XS, NEUTRON),
             migrateXSOptionGenXS,
         )
     )
@@ -442,19 +414,13 @@ def getNeutronicsSettingValidators(inspector):
 
     def migrateNormalBCSetting():
         """The `boundary` setting is migrated from `Normal` to `Extrapolated`."""
-        inspector.cs = inspector.cs.modified(
-            newSettings={CONF_BOUNDARIES: "Extrapolated"}
-        )
+        inspector.cs = inspector.cs.modified(newSettings={CONF_BOUNDARIES: "Extrapolated"})
 
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_BOUNDARIES] == "Normal",
-            "The {0} setting now takes `Extrapolated` instead of `Normal` as a value.".format(
-                CONF_BOUNDARIES
-            ),
-            "Would you like to auto-correct {0} from `Normal` to `Extrapolated`?".format(
-                CONF_BOUNDARIES
-            ),
+            "The {0} setting now takes `Extrapolated` instead of `Normal` as a value.".format(CONF_BOUNDARIES),
+            "Would you like to auto-correct {0} from `Normal` to `Extrapolated`?".format(CONF_BOUNDARIES),
             migrateNormalBCSetting,
         )
     )
@@ -465,11 +431,7 @@ def getNeutronicsSettingValidators(inspector):
         newValue = value.upper()
 
         if newValue in GROUP_STRUCTURE:
-            runLog.info(
-                "Updating the cross section group structure from {} to {}".format(
-                    value, newValue
-                )
-            )
+            runLog.info("Updating the cross section group structure from {} to {}".format(value, newValue))
         else:
             newValue = inspector.cs.getSetting(CONF_GROUP_STRUCTURE).default
             runLog.info(
@@ -478,16 +440,12 @@ def getNeutronicsSettingValidators(inspector):
                 )
             )
 
-        inspector.cs = inspector.cs.modified(
-            newSettings={CONF_GROUP_STRUCTURE: newValue}
-        )
+        inspector.cs = inspector.cs.modified(newSettings={CONF_GROUP_STRUCTURE: newValue})
 
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_GROUP_STRUCTURE] not in GROUP_STRUCTURE,
-            "The given group structure {0} was not recognized.".format(
-                inspector.cs[CONF_GROUP_STRUCTURE]
-            ),
+            "The given group structure {0} was not recognized.".format(inspector.cs[CONF_GROUP_STRUCTURE]),
             "Would you like to auto-correct the group structure value?",
             updateXSGroupStructure,
         )
@@ -504,19 +462,17 @@ def getNeutronicsSettingValidators(inspector):
         inspector.cs = inspector.cs.modified(newSettings={name0: value})
 
     def migrateDpaDpaXsSet():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_DPA_XS_SET)
 
     def migrateDpaGridPlate():
-        """Pass-through to migrateDpa(), because Query functions cannot take arguements."""
+        """Pass-through to migrateDpa(), because Query functions cannot take arguments."""
         migrateDpa(CONF_GRID_PLATE_DPA_XS_SET)
 
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_DPA_XS_SET] in ("dpaHT9_33", "dpa_SS316"),
-            "It appears you are using a shortened version of the {0}.".format(
-                CONF_DPA_XS_SET
-            ),
+            "It appears you are using a shortened version of the {0}.".format(CONF_DPA_XS_SET),
             "Would you like to auto-correct this to the full name?",
             migrateDpaDpaXsSet,
         )
@@ -524,11 +480,8 @@ def getNeutronicsSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs[CONF_GRID_PLATE_DPA_XS_SET]
-            in ("dpaHT9_33", "dpa_SS316"),
-            "It appears you are using a shortened version of the {0}.".format(
-                CONF_GRID_PLATE_DPA_XS_SET
-            ),
+            lambda: inspector.cs[CONF_GRID_PLATE_DPA_XS_SET] in ("dpaHT9_33", "dpa_SS316"),
+            "It appears you are using a shortened version of the {0}.".format(CONF_GRID_PLATE_DPA_XS_SET),
             "Would you like to auto-correct this to the full name?",
             migrateDpaGridPlate,
         )
@@ -536,8 +489,7 @@ def getNeutronicsSettingValidators(inspector):
 
     queries.append(
         settingsValidation.Query(
-            lambda: inspector.cs[CONF_DETAILED_AXIAL_EXPANSION]
-            and inspector.cs[CONF_NON_UNIFORM_ASSEM_FLAGS],
+            lambda: inspector.cs[CONF_DETAILED_AXIAL_EXPANSION] and inspector.cs[CONF_NON_UNIFORM_ASSEM_FLAGS],
             f"The use of {CONF_DETAILED_AXIAL_EXPANSION} and {CONF_NON_UNIFORM_ASSEM_FLAGS} is not supported.",
             "Automatically set non-uniform assembly treatment to its default?",
             lambda: inspector._assignCS(
@@ -560,15 +512,11 @@ def getNeutronicsSettingValidators(inspector):
     queries.append(
         settingsValidation.Query(
             lambda: inspector.cs[CONF_RUN_TYPE] == "Snapshots"
-            and not LatticePhysicsFrequency[
-                inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]
-            ]
+            and not LatticePhysicsFrequency[inspector.cs[CONF_LATTICE_PHYSICS_FREQUENCY]]
             >= LatticePhysicsFrequency.firstCoupledIteration,
             queryMsg,
             queryPrompt,
-            lambda: inspector._assignCS(
-                CONF_LATTICE_PHYSICS_FREQUENCY, "firstCoupledIteration"
-            ),
+            lambda: inspector._assignCS(CONF_LATTICE_PHYSICS_FREQUENCY, "firstCoupledIteration"),
         )
     )
 

@@ -17,9 +17,7 @@ Search through a directory tree and modify ARMI settings in existing input
 file(s). All valid settings may be used as keyword arguments.
 """
 
-from armi import operators
-from armi import runLog
-from armi import settings
+from armi import operators, runLog, settings
 from armi.cli.entryPoint import EntryPoint
 
 
@@ -30,7 +28,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
 
     Run the entry point like this::
 
-        $ python -m armi modify --numProcessors=3 *.yaml
+        $ python -m armi modify --nTasks=3 *.yaml
 
     """
 
@@ -41,10 +39,7 @@ class ModifyCaseSettingsCommand(EntryPoint):
             "--list-setting-files",
             "-l",
             action="store_true",
-            help=(
-                "Just list the settings files found and the proposed changes to make. "
-                "Don't actually modify them."
-            ),
+            help=("Just list the settings files found and the proposed changes to make. Don't actually modify them."),
         )
         self.parser.add_argument(
             "--skip-inspection",
@@ -79,22 +74,15 @@ class ModifyCaseSettingsCommand(EntryPoint):
             self.createOptionFromSetting(settingName, suppressHelp=True)
 
     def invoke(self):
-        csInstances = settings.recursivelyLoadSettingsFiles(
-            self.args.rootDir, self.args.patterns
-        )
-        messages = (
-            ("found", "listing")
-            if self.args.list_setting_files
-            else ("writing", "modifying")
-        )
+        csInstances = settings.recursivelyLoadSettingsFiles(self.args.rootDir, self.args.patterns)
+        messages = ("found", "listing") if self.args.list_setting_files else ("writing", "modifying")
 
         for cs in csInstances:
             runLog.important("{} settings file {}".format(messages[0], cs.path))
             for settingName in self.settingsProvidedOnCommandLine:
                 if cs[settingName] != self.cs[settingName]:
                     runLog.info(
-                        "  changing `{}` from : {}\n"
-                        "           {} to  -> {}".format(
+                        "  changing `{}` from : {}\n           {} to  -> {}".format(
                             settingName,
                             cs[settingName],
                             " " * (2 + len(settingName)),
@@ -111,6 +99,4 @@ class ModifyCaseSettingsCommand(EntryPoint):
             if not self.args.list_setting_files:
                 cs.writeToYamlFile(cs.path, style=self.args.settingsWriteStyle)
 
-        runLog.important(
-            "Finished {} {} settings files.".format(messages[1], len(csInstances))
-        )
+        runLog.important("Finished {} {} settings files.".format(messages[1], len(csInstances)))

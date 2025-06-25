@@ -13,3 +13,6 @@
 # limitations under the License.
 
 """Global flux solvers."""
+
+RX_ABS_MICRO_LABELS = ["nGamma", "fission", "nalph", "np", "nd", "nt"]
+RX_PARAM_NAMES = ["rateCap", "rateFis", "rateProdN2n", "rateProdFis", "rateAbs"]

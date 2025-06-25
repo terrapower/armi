@@ -19,11 +19,10 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
 )
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import (
     AxialExpansionChanger,
-)
-from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import (
     makeAssemsAbleToSnapToUniformMesh,
 )
-from armi.reactor.converters.axialExpansionChanger.expansionData import ExpansionData
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
+    ExpansionData,
     getSolidComponents,
+    iterSolidComponents,
 )

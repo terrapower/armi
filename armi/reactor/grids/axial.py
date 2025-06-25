@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import List, Optional, TYPE_CHECKING, NoReturn
+from typing import TYPE_CHECKING, List, NoReturn, Optional
 
 import numpy as np
 
@@ -33,9 +33,7 @@ class AxialGrid(StructuredGrid):
     """
 
     @classmethod
-    def fromNCells(
-        cls, numCells: int, armiObject: Optional["ArmiObject"] = None
-    ) -> "AxialGrid":
+    def fromNCells(cls, numCells: int, armiObject: Optional["ArmiObject"] = None) -> "AxialGrid":
         """Produces an unit grid where each bin is 1-cm tall.
 
         ``numCells + 1`` mesh boundaries are added, since one block would
@@ -53,9 +51,7 @@ class AxialGrid(StructuredGrid):
         return []
 
     @staticmethod
-    def locatorInDomain(
-        locator: LocationBase, symmetryOverlap: Optional[bool] = False
-    ) -> NoReturn:
+    def locatorInDomain(locator: LocationBase, symmetryOverlap: Optional[bool] = False) -> NoReturn:
         raise NotImplementedError
 
     @staticmethod

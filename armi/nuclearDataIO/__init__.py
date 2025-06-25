@@ -15,8 +15,6 @@
 """Read and/or write data files associated with nuclear data and reactor physics data."""
 # ruff: noqa: F401
 
-from armi.physics import neutronics
-
 # export the cccc modules here to keep external clients happy,
 # though prefer full imports in new code
 from armi.nuclearDataIO.cccc import (
@@ -34,6 +32,7 @@ from armi.nuclearDataIO.cccc import (
     rtflux,
     rzflux,
 )
+from armi.physics import neutronics
 
 
 def getExpectedISOTXSFileName(cycle=None, node=None, suffix=None, xsID=None):
@@ -56,9 +55,7 @@ def getExpectedISOTXSFileName(cycle=None, node=None, suffix=None, xsID=None):
         neutronFileName = neutronics.ISOTXS[:3]
     else:
         neutronFileName = neutronics.ISOTXS
-    return _findExpectedNeutronFileName(
-        neutronFileName, _getNeutronKeywords(cycle, node, suffix, xsID)
-    )
+    return _findExpectedNeutronFileName(neutronFileName, _getNeutronKeywords(cycle, node, suffix, xsID))
 
 
 def getExpectedCOMPXSFileName(cycle=None, node=None):
@@ -71,9 +68,7 @@ def getExpectedCOMPXSFileName(cycle=None, node=None):
     getExpectedGAMISOFileName
     getExpectedPMATRXFileName
     """
-    return _findExpectedNeutronFileName(
-        neutronics.COMPXS, _getNeutronKeywords(cycle, node, suffix=None, xsID=None)
-    )
+    return _findExpectedNeutronFileName(neutronics.COMPXS, _getNeutronKeywords(cycle, node, suffix=None, xsID=None))
 
 
 def _findExpectedNeutronFileName(fileType, fileNameKeywords):
@@ -122,9 +117,7 @@ def getExpectedGAMISOFileName(cycle=None, node=None, suffix=None, xsID=None):
         # GAMISO as a file is upper case
         gamiso0 = neutronics.GAMISO
 
-    return _findExpectedGammaFileName(
-        gamiso0, _getGammaKeywords(cycle, node, suffix, xsID)
-    )
+    return _findExpectedGammaFileName(gamiso0, _getGammaKeywords(cycle, node, suffix, xsID))
 
 
 def getExpectedPMATRXFileName(cycle=None, node=None, suffix=None, xsID=None):
@@ -149,9 +142,7 @@ def getExpectedPMATRXFileName(cycle=None, node=None, suffix=None, xsID=None):
         # PMATRX as a file is upper case
         pmatrx0 = neutronics.PMATRX
 
-    return _findExpectedGammaFileName(
-        pmatrx0, _getGammaKeywords(cycle, node, suffix, xsID)
-    )
+    return _findExpectedGammaFileName(pmatrx0, _getGammaKeywords(cycle, node, suffix, xsID))
 
 
 def _findExpectedGammaFileName(fileType, fileNameKeywords):
@@ -169,9 +160,7 @@ def _getGammaKeywords(cycle, node, suffix, xsID):
     else:
         # example: cycle0.gamiso
         if cycle is not None:
-            keywords = (
-                [f"cycle{cycle}node{node}"] if node is not None else [f"cycle{cycle}"]
-            )
+            keywords = [f"cycle{cycle}node{node}"] if node is not None else [f"cycle{cycle}"]
 
         elif xsID is not None:
             keywords = [xsID]

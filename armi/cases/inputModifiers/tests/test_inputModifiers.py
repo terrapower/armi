@@ -12,20 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for input modifiers."""
-from ruamel import yaml
-import io
+
 import os
 import unittest
 
-from armi import cases
-from armi import settings
+from ruamel import yaml
+
+from armi import cases, settings
 from armi.cases import suiteBuilder
-from armi.reactor import blueprints
-from armi.reactor import systemLayoutInput
-from armi.utils import directoryChangers
 from armi.cases.inputModifiers import (
-    neutronicsModifiers,
     inputModifiers,
+    neutronicsModifiers,
     pinTypeInputModifiers,
 )
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
@@ -36,12 +33,9 @@ from armi.physics.neutronics.settings import (
     CONF_EPS_FSAVG,
     CONF_EPS_FSPOINT,
 )
+from armi.reactor import blueprints
 from armi.reactor.tests import test_reactors
-
-
-class MockGeom:
-    geomType = "hex"
-
+from armi.utils import directoryChangers
 
 FLAGS_INPUT = """nuclide flags:
     U: {burn: false, xs: true}
@@ -92,54 +86,54 @@ BLOCKS_INPUT = """blocks:
     block 5: {{fuel: *fuel_1_fuel, clad: *fuel_1_clad, hex: *fuel_1_hex}}       # non-fuel blocks"""
 BLOCKS_INPUT_1 = BLOCKS_INPUT.format(clad=CLAD)
 BLOCKS_INPUT_2 = BLOCKS_INPUT.format(clad=CLAD_LINKED)
-
 BLUEPRINT_INPUT = f"""
 {FLAGS_INPUT}
 {BLOCKS_INPUT_1}
 assemblies: {{}}
 """
-
 BLUEPRINT_INPUT_LINKS = f"""
 {FLAGS_INPUT}
 {BLOCKS_INPUT_2}
 assemblies: {{}}
 """
 
-GEOM_INPUT = io.StringIO(
-    """<?xml version="1.0" ?>
-<reactor geom="hex" symmetry="third core periodic">
-    <assembly name="A1" pos="1"  ring="1"/>
-    <assembly name="A2" pos="2"  ring="2"/>
-    <assembly name="A3" pos="1"  ring="2"/>
-    <assembly name="A4" pos="3"  ring="3"/>
-    <assembly name="A5" pos="2"  ring="3"/>
-    <assembly name="A6" pos="12" ring="3"/>
-    <assembly name="A7" pos="4"  ring="3"/>
-    <assembly name="A8" pos="1"  ring="3"/>
-</reactor>
+CORE_INPUT = """
+systems:
+    core:
+        grid name: core
+        origin:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+grids:
+    core:
+        geom: hex
+        symmetry: third core periodic
+        grid contents:
+            [0, 0]: A1
+            [1, 0]: A2
+            [1, 1]: A3
+            [2, -2]: A4
+            [2, -1]: A5
+            [2, 0]: A6
+            [2, 1]: A7
+            [2, 2]: A8
 """
-)
 
 
 class TestsuiteBuilderIntegrations(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        geom = systemLayoutInput.SystemLayoutInput()
-        geom.readGeomFromStream(GEOM_INPUT)
-        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS)
+        bp = blueprints.Blueprints.load(BLUEPRINT_INPUT_LINKS + CORE_INPUT)
         cs = settings.Settings()
         bp._prepConstruction(cs)
-        cls.baseCase = cases.Case(cs=cs, bp=bp, geom=geom)
+        cls.baseCase = cases.Case(cs=cs, bp=bp)
 
     def test_smearDensityFail(self):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
-        builder.addDegreeOfFreedom(
-            pinTypeInputModifiers.SmearDensityModifier(v) for v in (0.5, 0.6)
-        )
-        builder.addDegreeOfFreedom(
-            pinTypeInputModifiers.CladThicknessByIDModifier(v) for v in (0.05, 0.01)
-        )
+        builder.addDegreeOfFreedom(pinTypeInputModifiers.SmearDensityModifier(v) for v in (0.5, 0.6))
+        builder.addDegreeOfFreedom(pinTypeInputModifiers.CladThicknessByIDModifier(v) for v in (0.05, 0.01))
         self.assertEqual(4, len(builder))
 
         with self.assertRaisesRegex(RuntimeError, "before .*SmearDensityModifier"):
@@ -148,13 +142,9 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
     def test_settingsModifier(self):
         builder = suiteBuilder.SeparateEffectsSuiteBuilder(self.baseCase)
         builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier(CONF_FP_MODEL, v)
-            for v in ("noFissionProducts", "infinitelyDilute", "MO99")
+            inputModifiers.SettingsModifier(CONF_FP_MODEL, v) for v in ("noFissionProducts", "infinitelyDilute", "MO99")
         )
-        builder.addDegreeOfFreedom(
-            inputModifiers.SettingsModifier("detailedAxialExpansion", v)
-            for v in (True,)
-        )
+        builder.addDegreeOfFreedom(inputModifiers.SettingsModifier("detailedAxialExpansion", v) for v in (True,))
         builder.addDegreeOfFreedom(
             inputModifiers.SettingsModifier("buGroups", v)
             for v in (
@@ -178,15 +168,9 @@ class TestsuiteBuilderIntegrations(unittest.TestCase):
         builder = suiteBuilder.FullFactorialSuiteBuilder(self.baseCase)
 
         builder.addDegreeOfFreedom(
-            [
-                inputModifiers.BluePrintBlockModifier(
-                    "fuel 1", "clad", "od", float("{:.2f}".format(22 / 7))
-                )
-            ]
+            [inputModifiers.BluePrintBlockModifier("fuel 1", "clad", "od", float("{:.2f}".format(22 / 7)))]
         )
-        builder.addDegreeOfFreedom(
-            [inputModifiers.BluePrintBlockModifier("block 5", "clad", "od", 3.14159)]
-        )
+        builder.addDegreeOfFreedom([inputModifiers.BluePrintBlockModifier("block 5", "clad", "od", 3.14159)])
 
         def SuiteNaming(index, _case, _mods):
             uniquePart = "{:0>4}".format(index + case_nbr)
@@ -224,9 +208,7 @@ class TestSettingsModifiers(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2 + 1e-15)
 
-        cs, _, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(
-            cs, None, None
-        )
+        cs, _ = neutronicsModifiers.NeutronicConvergenceModifier(1e-2)(cs, None)
         self.assertAlmostEqual(cs[CONF_EPS_EIG], 1e-2)
         self.assertAlmostEqual(cs[CONF_EPS_FSAVG], 1.0)
         self.assertAlmostEqual(cs[CONF_EPS_FSPOINT], 1.0)
@@ -237,9 +219,9 @@ class NeutronicsKernelOpts(inputModifiers.InputModifier):
         inputModifiers.InputModifier.__init__(self)
         self.neutronicsKernelOpts = neutronicsKernelOpts
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         cs = cs.modified(self.neutronicsKernelOpts)
-        return cs, bp, geom
+        return cs, bp
 
 
 class TestFullCoreModifier(unittest.TestCase):
@@ -250,5 +232,5 @@ class TestFullCoreModifier(unittest.TestCase):
         case = cases.Case(cs=cs)
         mod = inputModifiers.FullCoreModifier()
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "third periodic")
-        case, case.bp, _ = mod(case, case.bp, None)
+        case, case.bp = mod(case, case.bp)
         self.assertEqual(case.bp.gridDesigns["core"].symmetry, "full")

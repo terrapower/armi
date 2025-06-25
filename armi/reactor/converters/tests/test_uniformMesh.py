@@ -12,19 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the uniform mesh geometry converter."""
+
 import collections
+import copy
 import os
 import random
 import unittest
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
-from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.reactor.converters import uniformMesh
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_assemblies
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import TEST_ROOT, ISOAA_PATH
+from armi.reactor.tests import test_assemblies, test_blocks
+from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
+from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.tests import ISOAA_PATH, TEST_ROOT
 
 
 class DummyFluxOptions:
@@ -36,9 +38,7 @@ class DummyFluxOptions:
 
 class TestConverterFactory(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = loadTestReactor(
-            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion")
-        )
+        self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
         reduceTestReactorRings(self.r, self.o.cs, 2)
 
         self.dummyOptions = DummyFluxOptions(self.o.cs)
@@ -61,9 +61,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
     """
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(
-            inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion")
-        )
+        self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
         reduceTestReactorRings(self.r, self.o.cs, 2)
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
@@ -71,7 +69,6 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         self.converter._setParamsToUpdate("in")
 
     def test_makeAssemWithUniformMesh(self):
-
         sourceAssem = self.r.core.getFirstAssembly(Flags.IGNITER)
 
         self.converter._generateUniformMesh(minimumMeshSize=0.01)
@@ -84,7 +81,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
 
         prevB = None
-        for newB, sourceB in zip(newAssem.getBlocks(), sourceAssem.getBlocks()):
+        for newB, sourceB in zip(newAssem, sourceAssem):
             if newB.isFuel() and sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif not newB.isFuel() and not sourceB.isFuel():
@@ -95,8 +92,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
                 self.assertEqual(newB.p["xsType"], prevB.p["xsType"])
             elif sourceB.isFuel() and not newB.isFuel():
                 raise ValueError(
-                    f"The source block {sourceB} is fuel but uniform mesh converter"
-                    f"created a nonfuel block {newB}."
+                    f"The source block {sourceB} is fuel but uniform mesh convertercreated a nonfuel block {newB}."
                 )
             prevB = newB
 
@@ -107,9 +103,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         for nuc, val in sourceAssem.getNumberDensities().items():
             if not val:
                 continue
-            self.assertAlmostEqual(
-                newAssem.getNumberOfAtoms(nuc) / sourceAssem.getNumberOfAtoms(nuc), 1.0
-            )
+            self.assertAlmostEqual(newAssem.getNumberOfAtoms(nuc) / sourceAssem.getNumberOfAtoms(nuc), 1.0)
 
     def test_makeAssemWithUniformMeshSubmesh(self):
         """If sourceAssem has submesh, check that newAssem splits into separate blocks."""
@@ -127,9 +121,7 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
         self.assertNotEqual(len(newAssem), len(sourceAssem))
         newHeights = [b.getHeight() for b in newAssem]
-        sourceHeights = [
-            b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)
-        ]
+        sourceHeights = [b.getHeight() / b.p.axMesh for b in sourceAssem for i in range(b.p.axMesh)]
         self.assertListEqual(newHeights, sourceHeights)
 
     def test_makeAssemUniformMeshParamMappingSameMesh(self):
@@ -200,12 +192,10 @@ class TestAssemblyUniformMesh(unittest.TestCase):
             self.assertListEqual(list(b.p.mgFlux), [1.0, 2.0])
 
         # Let's test the clearing of the assigned parameters on the source assembly.
-        cachedBlockParams = (
-            uniformMesh.UniformMeshGeometryConverter.clearStateOnAssemblies(
-                [sourceAssem],
-                blockParamNames=["flux", "power", "mgFlux"],
-                cache=True,
-            )
+        cachedBlockParams = uniformMesh.UniformMeshGeometryConverter.clearStateOnAssemblies(
+            [sourceAssem],
+            blockParamNames=["flux", "power", "mgFlux"],
+            cache=True,
         )
         for b in sourceAssem:
             self.assertEqual(b.p.flux, b.p.pDefs["flux"].default)
@@ -235,14 +225,10 @@ class TestUniformMeshGenerator(unittest.TestCase):
         a3[2].setHeight(a3[2].getHeight() * 1.20)
 
     def setUp(self):
-        self.generator = uniformMesh.UniformMeshGenerator(
-            self.r, self.o.cs[CONF_UNIFORM_MESH_MINIMUM_SIZE]
-        )
+        self.generator = uniformMesh.UniformMeshGenerator(self.r, self.o.cs[CONF_UNIFORM_MESH_MINIMUM_SIZE])
 
     def test_computeAverageAxialMesh(self):
-        refMesh = self.r.core.findAllAxialMeshPoints(
-            [self.r.core.getFirstAssembly(Flags.FUEL)]
-        )[1:]
+        refMesh = self.r.core.findAllAxialMeshPoints([self.r.core.getFirstAssembly(Flags.FUEL)])[1:]
         self.generator._computeAverageAxialMesh()
         avgMesh = self.generator._commonMesh
 
@@ -294,9 +280,7 @@ class TestUniformMeshGenerator(unittest.TestCase):
         (
             ctrlAndFuelBottoms,
             ctrlAndFuelTops,
-        ) = self.generator._getFilteredMeshTopAndBottom(
-            Flags.CONTROL, fuelBottoms, fuelTops
-        )
+        ) = self.generator._getFilteredMeshTopAndBottom(Flags.CONTROL, fuelBottoms, fuelTops)
         self.assertListEqual(ctrlAndFuelBottoms, [25.0, 50.0])
         self.assertListEqual(ctrlAndFuelTops, [75.0, 101.25, 105.0])
 
@@ -336,9 +320,7 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.o, cls.r = loadTestReactor(
-            TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"}
-        )
+        cls.o, cls.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
         reduceTestReactorRings(cls.r, cls.o.cs, 4)
         cls.r.core.lib = isotxs.readBinary(ISOAA_PATH)
 
@@ -352,9 +334,7 @@ class TestUniformMeshComponents(unittest.TestCase):
 
     def test_blueprintCopy(self):
         """Ensure that necessary blueprint attributes are set."""
-        convReactor = self.converter.initNewReactor(
-            self.converter._sourceReactor, self.o.cs
-        )
+        convReactor = self.converter.initNewReactor(self.converter._sourceReactor, self.o.cs)
         converted = convReactor.blueprints
         original = self.converter._sourceReactor.blueprints
         toCompare = [
@@ -398,16 +378,12 @@ class TestUniformMesh(unittest.TestCase):
         random.seed(987324987234)
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(
-            TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"}
-        )
+        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
         reduceTestReactorRings(self.r, self.o.cs, 3)
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
 
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(
-            cs=self.o.cs, calcReactionRates=True
-        )
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs, calcReactionRates=True)
 
     def test_convertNumberDensities(self):
         """
@@ -449,9 +425,9 @@ class TestUniformMesh(unittest.TestCase):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref mass
 
         self.converter.convert(self.r)
-        for ib, b in enumerate(self.converter.convReactor.core.getBlocks()):
-            b.p.mgFlux = list(range(33))
-            b.p.adjMgFlux = list(range(33))
+        for ib, b in enumerate(self.converter.convReactor.core.iterBlocks()):
+            b.p.mgFlux = list(range(1, 34))
+            b.p.adjMgFlux = list(range(1, 34))
             b.p.fastFlux = 2.0
             b.p.flux = 5.0
             b.p.power = 5.0
@@ -459,19 +435,13 @@ class TestUniformMesh(unittest.TestCase):
             b.p.fluxPeak = 10.0 + (-1) ** ib
 
         # check integral and density params
-        assemblyPowers = [
-            a.calcTotalParam("power") for a in self.converter.convReactor.core
-        ]
-        totalPower = self.converter.convReactor.core.calcTotalParam(
-            "power", generationNum=2
-        )
-        totalPower2 = self.converter.convReactor.core.calcTotalParam(
-            "pdens", volumeIntegrated=True, generationNum=2
-        )
+        assemblyPowers = [a.calcTotalParam("power") for a in self.converter.convReactor.core]
+        totalPower = self.converter.convReactor.core.calcTotalParam("power", generationNum=2)
+        totalPower2 = self.converter.convReactor.core.calcTotalParam("pdens", volumeIntegrated=True, generationNum=2)
 
         self.converter.applyStateToOriginal()
 
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             self.assertAlmostEqual(b.p.fastFlux, 2.0)
             self.assertAlmostEqual(b.p.flux, 5.0)
             self.assertAlmostEqual(b.p.pdens, 0.5)
@@ -487,15 +457,36 @@ class TestUniformMesh(unittest.TestCase):
             self.r.core.calcTotalParam("pdens", volumeIntegrated=True, generationNum=2),
             totalPower2,
         )
-        self.assertAlmostEqual(
-            self.r.core.calcTotalParam("power", generationNum=2), totalPower
-        )
+        self.assertAlmostEqual(self.r.core.calcTotalParam("power", generationNum=2), totalPower)
 
         self.converter.updateReactionRates()
         for a in self.r.core:
             for b in a:
                 self.assertTrue(b.p.rateAbs)
                 self.assertTrue(b.p.rateCap)
+
+
+class TestCalcReationRates(unittest.TestCase):
+    def test_calcReactionRatesBlockList(self):
+        """
+        Test that the efficient reaction rate code executes and sets a param > 0.0.
+
+        .. test:: Return the reaction rates for a given list of ArmiObjects.
+            :id: T_ARMI_FLUX_RX_RATES_BY_XS_ID
+            :tests: R_ARMI_FLUX_RX_RATES
+        """
+        b = test_blocks.loadTestBlock()
+        test_blocks.applyDummyData(b)
+        self.assertAlmostEqual(b.p.rateAbs, 0.0)
+        blockList = [copy.deepcopy(b) for _i in range(3)]
+        xsID = b.getMicroSuffix()
+        xsNucDict = {nuc: b.core.lib.getNuclide(nuc, xsID) for nuc in b.getNuclides()}
+        uniformMesh.UniformMeshGeometryConverter._calcReactionRatesBlockList(blockList, 1.01, xsNucDict)
+        for b in blockList:
+            self.assertGreater(b.p.rateAbs, 0.0)
+            vfrac = b.getComponentAreaFrac(Flags.FUEL)
+            self.assertEqual(b.p.fisDens, b.p.rateFis / vfrac)
+            self.assertEqual(b.p.fisDensHom, b.p.rateFis)
 
 
 class TestGammaUniformMesh(unittest.TestCase):
@@ -511,18 +502,14 @@ class TestGammaUniformMesh(unittest.TestCase):
         random.seed(987324987234)
 
     def setUp(self):
-        self.o, self.r = loadTestReactor(
-            TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"}
-        )
+        self.o, self.r = loadTestReactor(TEST_ROOT, customSettings={CONF_XS_KERNEL: "MC2v2"})
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
         self.converter = uniformMesh.GammaUniformMeshConverter(cs=self.o.cs)
 
     def test_convertNumberDensities(self):
         refMass = self.r.core.getMass("U235")
-        applyNonUniformHeightDistribution(
-            self.r
-        )  # this changes the mass of everything in the core
+        applyNonUniformHeightDistribution(self.r)  # this changes the mass of everything in the core
         perturbedCoreMass = self.r.core.getMass("U235")
         self.assertNotEqual(refMass, perturbedCoreMass)
         self.converter.convert(self.r)
@@ -530,9 +517,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         uniformReactor = self.converter.convReactor
         uniformMass = uniformReactor.core.getMass("U235")
 
-        self.assertAlmostEqual(
-            perturbedCoreMass, uniformMass
-        )  # conversion conserved mass
+        self.assertAlmostEqual(perturbedCoreMass, uniformMass)  # conversion conserved mass
         self.assertAlmostEqual(
             self.r.core.getMass("U235"), perturbedCoreMass
         )  # conversion didn't change source reactor mass
@@ -548,7 +533,7 @@ class TestGammaUniformMesh(unittest.TestCase):
         applyNonUniformHeightDistribution(self.r)  # note: this perturbs the ref. mass
 
         # set original parameters on pre-mapped core with non-uniform assemblies
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             b.p.mgFlux = list(range(33))
             b.p.adjMgFlux = list(range(33))
             b.p.fastFlux = 2.0
@@ -558,29 +543,21 @@ class TestGammaUniformMesh(unittest.TestCase):
 
         # set new parameters on core with uniform assemblies (emulate a physics kernel)
         self.converter.convert(self.r)
-        for b in self.converter.convReactor.core.getBlocks():
+        for b in self.converter.convReactor.core.iterBlocks():
             b.p.powerGamma = 0.5
             b.p.powerNeutron = 0.5
             b.p.linPow = 10.0
             b.p.power = b.p.powerGamma + b.p.powerNeutron
 
         # check integral and density params
-        assemblyPowers = [
-            a.calcTotalParam("power") for a in self.converter.convReactor.core
-        ]
-        assemblyGammaPowers = [
-            a.calcTotalParam("powerGamma") for a in self.converter.convReactor.core
-        ]
-        totalPower = self.converter.convReactor.core.calcTotalParam(
-            "power", generationNum=2
-        )
-        totalPowerGamma = self.converter.convReactor.core.calcTotalParam(
-            "powerGamma", generationNum=2
-        )
+        assemblyPowers = [a.calcTotalParam("power") for a in self.converter.convReactor.core]
+        assemblyGammaPowers = [a.calcTotalParam("powerGamma") for a in self.converter.convReactor.core]
+        totalPower = self.converter.convReactor.core.calcTotalParam("power", generationNum=2)
+        totalPowerGamma = self.converter.convReactor.core.calcTotalParam("powerGamma", generationNum=2)
 
         self.converter.applyStateToOriginal()
 
-        for b in self.r.core.getBlocks():
+        for b in self.r.core.iterBlocks():
             # equal to original value because these were never mapped
             self.assertEqual(b.p.fastFlux, 2.0)
             self.assertEqual(b.p.flux, 5.0)
@@ -594,18 +571,12 @@ class TestGammaUniformMesh(unittest.TestCase):
             self.assertAlmostEqual(b.p.linPow, 10.0)
 
         # equal because these are mapped
-        for expectedPower, expectedGammaPower, a in zip(
-            assemblyPowers, assemblyGammaPowers, self.r.core
-        ):
+        for expectedPower, expectedGammaPower, a in zip(assemblyPowers, assemblyGammaPowers, self.r.core):
             self.assertAlmostEqual(a.calcTotalParam("power"), expectedPower)
             self.assertAlmostEqual(a.calcTotalParam("powerGamma"), expectedGammaPower)
 
-        self.assertAlmostEqual(
-            self.r.core.calcTotalParam("powerGamma", generationNum=2), totalPowerGamma
-        )
-        self.assertAlmostEqual(
-            self.r.core.calcTotalParam("power", generationNum=2), totalPower
-        )
+        self.assertAlmostEqual(self.r.core.calcTotalParam("powerGamma", generationNum=2), totalPowerGamma)
+        self.assertAlmostEqual(self.r.core.calcTotalParam("power", generationNum=2), totalPower)
 
 
 class TestParamConversion(unittest.TestCase):
@@ -618,9 +589,7 @@ class TestParamConversion(unittest.TestCase):
         the two source blocks. They are populated with arbitrary flux and pdens
         values.
         """
-        self.sourceAssem, self.destinationAssem = test_assemblies.buildTestAssemblies()[
-            2:
-        ]
+        self.sourceAssem, self.destinationAssem = test_assemblies.buildTestAssemblies()[2:]
         self.height1 = 3.0
         self.height2 = 7.0
         self.sourceAssem[0].setHeight(self.height1)
@@ -643,9 +612,7 @@ class TestParamConversion(unittest.TestCase):
         self._cachedBlockParamData = collections.defaultdict(dict)
         for b in self.destinationAssem:
             self._cachedBlockParamData[b]["mgNeutronVelocity"] = [1.0] * 33
-            b.p["mgNeutronVelocity"] = self._cachedBlockParamData[b][
-                "mgNeutronVelocity"
-            ]
+            b.p["mgNeutronVelocity"] = self._cachedBlockParamData[b]["mgNeutronVelocity"]
 
     def test_setStateFromOverlaps(self):
         """
@@ -674,8 +641,7 @@ class TestParamConversion(unittest.TestCase):
             sourceVal2 = self.sourceAssem[1].p[paramName]
             self.assertAlmostEqual(
                 self.destinationAssem[0].p[paramName],
-                (sourceVal1 * self.height1 + sourceVal2 * self.height2)
-                / (self.height1 + self.height2),
+                (sourceVal1 * self.height1 + sourceVal2 * self.height2) / (self.height1 + self.height2),
             )
 
         for b in self.sourceAssem:
@@ -709,9 +675,7 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
         )
         self.r.core.lib = isotxs.readBinary(ISOAA_PATH)
         self.r.core.p.keff = 1.0
-        self.converter = uniformMesh.NeutronicsUniformMeshConverter(
-            cs=self.o.cs, calcReactionRates=True
-        )
+        self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs, calcReactionRates=True)
 
     def test_reactorConversion(self):
         """Tests the reactor conversion to and from the original reactor."""

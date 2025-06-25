@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for material modifications."""
+
 import unittest
 
 from numpy.testing import assert_allclose
 
-from armi import materials
-from armi import settings
+from armi import materials, settings
 from armi.reactor import blueprints
 from armi.reactor.blueprints.blockBlueprint import BlockBlueprint
 
@@ -180,7 +180,20 @@ assemblies:
         u = fuelComponent.getMass("U")
         assert_allclose(0.50, u235 / u)
 
-    def test_invalid_component_modification(self):
+    def test_materialModificationLength(self):
+        """If the wrong number of material modifications are defined, there is an error."""
+        with self.assertRaises(ValueError):
+            _a = self.loadUZrAssembly(
+                """
+        material modifications:
+            by component:
+                fuel1:
+                    U235_wt_frac: [0.2]
+            U235_wt_frac: [0.11, 0.22, 0.33, 0.44]
+            """
+            )
+
+    def test_invalidComponentModification(self):
         with self.assertRaises(ValueError):
             _a = self.loadUZrAssembly(
                 """
@@ -188,10 +201,10 @@ assemblies:
             by component:
                 invalid component:
                     U235_wt_frac: [0.2]
-        """
+            """
             )
 
-    def test_zr_wt_frac_modification(self):
+    def test_zrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -203,7 +216,7 @@ assemblies:
         zr = fuelComponent.getMass("ZR")
         assert_allclose(0.077, zr / totalMass)
 
-    def test_both_u235_zr_wt_frac_modification(self):
+    def test_bothU235ZrWtFracModification(self):
         a = self.loadUZrAssembly(
             """
         material modifications:
@@ -237,9 +250,7 @@ assemblies:
             "fuel2": {"ZR_wt_frac": 0.3, "U235_wt_frac": 0.3},
         }
         componentDesign = a[0][0]
-        filteredMaterialInput, _ = BlockBlueprint._filterMaterialInput(
-            materialInput, componentDesign
-        )
+        filteredMaterialInput, _ = BlockBlueprint._filterMaterialInput(materialInput, componentDesign)
 
         filteredMaterialInput_reference = {"ZR_wt_frac": 0.1, "U235_wt_frac": 0.2}
 
@@ -247,7 +258,7 @@ assemblies:
 
     def test_invalidMatModName(self):
         """
-        This test shows proves that we can detect invalid material modification
+        This test shows that we can detect invalid material modification
         names when they are specified on an assembly blueprint. We happen to know
         that ZR_wt_frac is a valid modification for the UZr material class, so we
         use that in the first call to prove that things initially work fine.
@@ -285,6 +296,35 @@ assemblies:
                 fuel2:
                     this_is_a_fake_name: [0]
         """
+            )
+
+    def test_invalidMatModType(self):
+        """
+        This test shows that we can detect material modifications that are invalid
+        because of their values, not just their names.
+        We happen to know that ZR_wt_frac is a valid modification for UZr, so we
+        use that in the first call to prove that things initially work fine.
+        """
+        a = self.loadUZrAssembly(
+            """
+        material modifications:
+            ZR_wt_frac: [1]
+        """
+        )
+        # just to prove that the above works fine before we modify it
+        self.assertAlmostEqual(a[0][0].getMassFrac("ZR"), 1)
+
+        with self.assertRaises(ValueError) as ee:
+            a = self.loadUZrAssembly(
+                """
+        material modifications:
+            ZR_wt_frac: [this_is_a_value_of_incompatible_type]
+        """
+            )
+
+            self.assertIn(
+                "Something went wrong in applying the material modifications",
+                ee.args[0],
             )
 
     def test_matModsUpTheMRO(self):

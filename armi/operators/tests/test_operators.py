@@ -13,12 +13,13 @@
 # limitations under the License.
 
 """Tests for operators."""
-from unittest.mock import patch
+
 import collections
 import io
 import os
 import sys
 import unittest
+from unittest.mock import patch
 
 from armi import settings
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
@@ -27,16 +28,16 @@ from armi.operators.operator import Operator
 from armi.physics.neutronics.globalFlux.globalFluxInterface import (
     GlobalFluxInterfaceUsingExecuters,
 )
-from armi.reactor.reactors import Reactor, Core
+from armi.reactor.reactors import Core, Reactor
 from armi.reactor.tests import test_reactors
 from armi.settings.caseSettings import Settings
 from armi.settings.fwSettings.globalSettings import (
-    CONF_RUN_TYPE,
-    CONF_TIGHT_COUPLING,
     CONF_CYCLES_SKIP_TIGHT_COUPLING_INTERACTION,
-    CONF_TIGHT_COUPLING_SETTINGS,
     CONF_DEFERRED_INTERFACE_NAMES,
     CONF_DEFERRED_INTERFACES_CYCLE,
+    CONF_RUN_TYPE,
+    CONF_TIGHT_COUPLING,
+    CONF_TIGHT_COUPLING_SETTINGS,
 )
 from armi.tests import mockRunLogs
 from armi.utils import directoryChangers
@@ -62,9 +63,7 @@ class InterfaceC(Interface):
 
 class OperatorTests(unittest.TestCase):
     def setUp(self):
-        self.o, self.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, self.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         self.activeInterfaces = [ii for ii in self.o.interfaces if ii.enabled()]
 
     def test_operatorData(self):
@@ -171,9 +170,7 @@ class OperatorTests(unittest.TestCase):
         self.assertEqual(self.o.getInterface("Third"), interfaceC)
 
     def test_interfaceIsActive(self):
-        self.o, _r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        self.o, _r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         self.assertTrue(self.o.interfaceIsActive("main"))
         self.assertFalse(self.o.interfaceIsActive("Fake-o"))
 
@@ -187,9 +184,7 @@ class OperatorTests(unittest.TestCase):
             self.o.getActiveInterfaces("notAnInterface")
 
         # Test BOL
-        interfaces = self.o.getActiveInterfaces(
-            "BOL", excludedInterfaceNames=("xsGroups")
-        )
+        interfaces = self.o.getActiveInterfaces("BOL", excludedInterfaceNames=("xsGroups"))
         interfaceNames = [interface.name for interface in interfaces]
         self.assertNotIn("xsGroups", interfaceNames)
         self.assertNotIn("history", interfaceNames)
@@ -200,9 +195,7 @@ class OperatorTests(unittest.TestCase):
         self.assertNotIn("history", interfaceNames)
 
         # Test EveryNode and EOC
-        interfaces = self.o.getActiveInterfaces(
-            "EveryNode", excludedInterfaceNames=("xsGroups")
-        )
+        interfaces = self.o.getActiveInterfaces("EveryNode", excludedInterfaceNames=("xsGroups"))
         interfaceNames = [interface.name for interface in interfaces]
         self.assertIn("history", interfaceNames)
         self.assertNotIn("xsGroups", interfaceNames)
@@ -218,9 +211,7 @@ class OperatorTests(unittest.TestCase):
 
         # Test excludedInterfaceNames
         excludedInterfaceNames = ["fissionProducts", "fuelHandler", "xsGroups"]
-        interfaces = self.o.getActiveInterfaces(
-            "EOL", excludedInterfaceNames=excludedInterfaceNames
-        )
+        interfaces = self.o.getActiveInterfaces("EOL", excludedInterfaceNames=excludedInterfaceNames)
         interfaceNames = [ii.name for ii in interfaces]
         self.assertIn("history", interfaceNames)
         self.assertIn("main", interfaceNames)
@@ -255,7 +246,6 @@ class OperatorTests(unittest.TestCase):
                 self.assertIn("ISOTXS-c0", mock.getStdout())
                 self.assertIn("DIF3D input for snapshot", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
-                self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_1"))
 
@@ -265,7 +255,6 @@ class OperatorTests(unittest.TestCase):
                 self.assertIn("ISOTXS-c0", mock.getStdout())
                 self.assertIn("DIF3D input for snapshot", mock.getStdout())
                 self.assertIn("Shuffle logic for snapshot", mock.getStdout())
-                self.assertIn("Geometry file for snapshot", mock.getStdout())
                 self.assertIn("Loading definition for snapshot", mock.getStdout())
             self.assertTrue(os.path.exists("snapShot0_2"))
 
@@ -365,9 +354,7 @@ class TestTightCoupling(unittest.TestCase):
         self.o.addInterface(InterfaceNoConverge(None, self.o.cs))
         with mockRunLogs.BufferLog() as mock:
             self.o._performTightCoupling(0, 0, writeDB=False)
-            self.assertIn(
-                "have not converged! The maximum number of iterations", mock.getStdout()
-            )
+            self.assertIn("have not converged! The maximum number of iterations", mock.getStdout())
 
     def test_performTightCoupling_WriteDB(self):
         """Ensure a tight coupling iteration accours and that a DB WILL be written if requested."""
@@ -376,9 +363,7 @@ class TestTightCoupling(unittest.TestCase):
             with mockRunLogs.BufferLog() as mock:
                 self.dbWriteForCoupling(writeDB=True)
                 self.assertIn("Writing to database for statepoint:", mock.getStdout())
-                self.assertEqual(
-                    self.o.r.core.p.coupledIteration, hasCouplingInteraction
-                )
+                self.assertEqual(self.o.r.core.p.coupledIteration, hasCouplingInteraction)
 
     def test_performTightCoupling_NoWriteDB(self):
         """Ensure a tight coupling iteration accours and that a DB WILL NOT be written if requested."""
@@ -386,12 +371,8 @@ class TestTightCoupling(unittest.TestCase):
         with directoryChangers.TemporaryDirectoryChanger():
             with mockRunLogs.BufferLog() as mock:
                 self.dbWriteForCoupling(writeDB=False)
-                self.assertNotIn(
-                    "Writing to database for statepoint:", mock.getStdout()
-                )
-                self.assertEqual(
-                    self.o.r.core.p.coupledIteration, hasCouplingInteraction
-                )
+                self.assertNotIn("Writing to database for statepoint:", mock.getStdout())
+                self.assertEqual(self.o.r.core.p.coupledIteration, hasCouplingInteraction)
 
     def dbWriteForCoupling(self, writeDB: bool):
         self.o.removeAllInterfaces()
@@ -417,9 +398,7 @@ class TestTightCoupling(unittest.TestCase):
         """
         prevIterKeff = 0.9
         currIterKeff = 1.0
-        self.o.cs[CONF_TIGHT_COUPLING_SETTINGS] = {
-            "globalFlux": {"parameter": "keff", "convergence": 1e-05}
-        }
+        self.o.cs[CONF_TIGHT_COUPLING_SETTINGS] = {"globalFlux": {"parameter": "keff", "convergence": 1e-05}}
         globalFlux = GlobalFluxInterfaceUsingExecuters(self.o.r, self.o.cs)
         globalFlux.coupler.storePreviousIterationValue(prevIterKeff)
         self.o.addInterface(globalFlux)
@@ -457,22 +436,6 @@ settings:
   runType: Standard
 """
 
-    powerFractionsSolution = [
-        [0.1, 0.2, 0.3],
-        [0.2, 0.2, 0.2, 0.2, 0],
-        [0.3, 0.3, 0.3, 0.3, 0.3],
-    ]
-    cycleNamesSolution = ["startup sequence", None, "prepare for shutdown"]
-    availabilityFactorsSolution = [0.1, 0.5, 1]
-    stepLengthsSolution = [
-        [1, 1, 1],
-        [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
-        [3, 3, 3, 3, 3],
-    ]
-    cycleLengthsSolution = [30, 10, 15]
-    burnStepsSolution = [3, 5, 5]
-    maxBurnStepsSolution = 5
-
     def setUp(self):
         self.standaloneDetailedCS = Settings()
         self.standaloneDetailedCS.loadFromString(self.detailedCyclesSettings)
@@ -485,32 +448,35 @@ settings:
             :id: T_ARMI_SETTINGS_POWER1
             :tests: R_ARMI_SETTINGS_POWER
         """
-        self.assertEqual(
-            self.detailedOperator.powerFractions, self.powerFractionsSolution
-        )
+        powerFractionsSolution = [
+            [0.1, 0.2, 0.3],
+            [0.2, 0.2, 0.2, 0.2, 0],
+            [0.3, 0.3, 0.3, 0.3, 0.3],
+        ]
 
+        self.assertEqual(self.detailedOperator.powerFractions, powerFractionsSolution)
         self.detailedOperator._powerFractions = None
-        self.assertEqual(
-            self.detailedOperator.powerFractions, self.powerFractionsSolution
-        )
+        self.assertEqual(self.detailedOperator.powerFractions, powerFractionsSolution)
 
     def test_getCycleNames(self):
-        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+        cycleNamesSolution = ["startup sequence", None, "prepare for shutdown"]
+        self.assertEqual(self.detailedOperator.cycleNames, cycleNamesSolution)
 
         self.detailedOperator._cycleNames = None
-        self.assertEqual(self.detailedOperator.cycleNames, self.cycleNamesSolution)
+        self.assertEqual(self.detailedOperator.cycleNames, cycleNamesSolution)
 
     def test_getAvailabilityFactors(self):
-        self.assertEqual(
-            self.detailedOperator.availabilityFactors,
-            self.availabilityFactorsSolution,
-        )
+        """Check that the "availability factor" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY3
+            :tests: R_ARMI_FW_HISTORY
+        """
+        availabilityFactorsSolution = [0.1, 0.5, 1]
+        self.assertEqual(self.detailedOperator.availabilityFactors, availabilityFactorsSolution)
 
         self.detailedOperator._availabilityFactors = None
-        self.assertEqual(
-            self.detailedOperator.availabilityFactors,
-            self.availabilityFactorsSolution,
-        )
+        self.assertEqual(self.detailedOperator.availabilityFactors, availabilityFactorsSolution)
 
     def test_getStepLengths(self):
         """Test that the manually-set, detailed time steps are retrievable.
@@ -519,10 +485,16 @@ settings:
             :id: T_ARMI_FW_HISTORY1
             :tests: R_ARMI_FW_HISTORY
         """
+        stepLengthsSolution = [
+            [1, 1, 1],
+            [10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5, 10 / 5 * 0.5],
+            [3, 3, 3, 3, 3],
+        ]
+
         # detailed step lengths can be set manually
-        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+        self.assertEqual(self.detailedOperator.stepLengths, stepLengthsSolution)
         self.detailedOperator._stepLength = None
-        self.assertEqual(self.detailedOperator.stepLengths, self.stepLengthsSolution)
+        self.assertEqual(self.detailedOperator.stepLengths, stepLengthsSolution)
 
         # when doing detailed step information, we don't get step information from settings
         cs = self.detailedOperator.cs
@@ -533,22 +505,43 @@ settings:
             cs["burnSteps"]
 
     def test_getCycleLengths(self):
-        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+        """Check that the "cycle length" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY4
+            :tests: R_ARMI_FW_HISTORY
+        """
+        cycleLengthsSolution = [30, 10, 15]
+        self.assertEqual(self.detailedOperator.cycleLengths, cycleLengthsSolution)
 
         self.detailedOperator._cycleLengths = None
-        self.assertEqual(self.detailedOperator.cycleLengths, self.cycleLengthsSolution)
+        self.assertEqual(self.detailedOperator.cycleLengths, cycleLengthsSolution)
 
     def test_getBurnSteps(self):
-        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+        """Check that the "burn steps" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY5
+            :tests: R_ARMI_FW_HISTORY
+        """
+        burnStepsSolution = [3, 5, 5]
+        self.assertEqual(self.detailedOperator.burnSteps, burnStepsSolution)
 
         self.detailedOperator._burnSteps = None
-        self.assertEqual(self.detailedOperator.burnSteps, self.burnStepsSolution)
+        self.assertEqual(self.detailedOperator.burnSteps, burnStepsSolution)
 
     def test_getMaxBurnSteps(self):
-        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
+        """Check that the max of the "burn steps" is correctly set from the "cycles" setting.
+
+        .. test:: Users can manually control time discretization of the simulation.
+            :id: R_ARMI_FW_HISTORY6
+            :tests: R_ARMI_FW_HISTORY
+        """
+        maxBurnStepsSolution = 5
+        self.assertEqual(self.detailedOperator.maxBurnSteps, maxBurnStepsSolution)
 
         self.detailedOperator._maxBurnSteps = None
-        self.assertEqual(self.detailedOperator.maxBurnSteps, self.maxBurnStepsSolution)
+        self.assertEqual(self.detailedOperator.maxBurnSteps, maxBurnStepsSolution)
 
 
 class TestInterfaceAndEventHeaders(unittest.TestCase):
@@ -566,9 +559,7 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
     def test_expandCycleAndTimeNodeArgs_Empty(self):
         """When cycleNodeInfo should be an empty string."""
         for task in ["Init", "BOL", "EOL"]:
-            self.assertEqual(
-                self.o._expandCycleAndTimeNodeArgs(interactionName=task), ""
-            )
+            self.assertEqual(self.o._expandCycleAndTimeNodeArgs(interactionName=task), "")
 
     def test_expandCycleAndTimeNodeArgs_Cycle(self):
         """When cycleNodeInfo should return only the cycle."""
@@ -582,8 +573,7 @@ class TestInterfaceAndEventHeaders(unittest.TestCase):
         """When cycleNodeInfo should return the cycle and node."""
         self.assertEqual(
             self.o._expandCycleAndTimeNodeArgs(interactionName="EveryNode"),
-            f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, "
-            f"year {'{0:.2f}'.format(self.r.p.time)}",
+            f" - timestep: cycle {self.r.p.cycle}, node {self.r.p.timeNode}, year {'{0:.2f}'.format(self.r.p.time)}",
         )
 
     def test_expandCycleAndTimeNodeArgs_Coupled(self):

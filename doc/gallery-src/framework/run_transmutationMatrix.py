@@ -29,12 +29,13 @@ Users can input their own transmutation matrix or use this one.
 A Bateman equation/matrix exponential solver is required to actually *solve* transmutation and
 decay problems, which can be provided via a plugin.
 """
-import os
+
 import math
+import os
 
 import matplotlib.patches as mpatch
-from matplotlib.collections import PatchCollection
 import matplotlib.pyplot as plt
+from matplotlib.collections import PatchCollection
 
 from armi.context import RES
 from armi.nucDirectory import nuclideBases
@@ -95,9 +96,7 @@ def plotAll(xlim, ylim):
                 "",
                 (xp, yp),
                 (x, y),
-                arrowprops=dict(
-                    width=2 * trans.branch, shrink=0.1, alpha=0.4, color=color
-                ),
+                arrowprops=dict(width=2 * trans.branch, shrink=0.1, alpha=0.4, color=color),
             )
             # add reaction label towards the middle of the arrow
             xlabel = xp - (xp - x) * 0.5
@@ -115,9 +114,7 @@ def plotAll(xlim, ylim):
                 rotation = math.atan((yp - y) / (xp - x)) * 180 / math.pi
             else:
                 rotation = 0
-            ax.text(
-                xlabel, ylabel, rxnType, color="grey", ha="center", rotation=rotation
-            )
+            ax.text(xlabel, ylabel, rxnType, color="grey", ha="center", rotation=rotation)
 
     pc = PatchCollection(patches, facecolor="mistyrose", alpha=0.2, edgecolor="black")
     ax.add_collection(pc)

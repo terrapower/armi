@@ -24,6 +24,8 @@ DeprecationWarning: This file will disappear in early 2025.
 """
 # ruff: noqa: F401
 
-from armi.settings.settingsValidation import createQueryRevertBadPathToDefault
-from armi.settings.settingsValidation import Inspector
-from armi.settings.settingsValidation import Query
+from armi.settings.settingsValidation import (
+    Inspector,
+    Query,
+    createQueryRevertBadPathToDefault,
+)

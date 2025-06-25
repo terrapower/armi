@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for the JaggedArray class."""
+
 import unittest
 
 import h5py
@@ -140,7 +141,7 @@ class TestJaggedArray(unittest.TestCase):
         - Empty lists become `None`
 
         """
-        # self.assertEqual(type(src), JaggedArray)
+        self.assertEqual(type(src), JaggedArray)
         if isinstance(ref, np.ndarray):
             ref = ref.tolist()
             src = src.tolist()

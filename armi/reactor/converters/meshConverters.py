@@ -15,8 +15,8 @@
 """Mesh specifiers update the mesh structure of a reactor by increasing or decreasing the number of mesh coordinates."""
 
 import collections
-import math
 import itertools
+import math
 
 import numpy as np
 
@@ -102,9 +102,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
         # thetaMesh doesn't include the zero point so add it back in.
         # axial mesh is handled on assemblies so make this 2-D.
 
-        mesh = grids.ThetaRZGrid(
-            bounds=([0.0] + self.thetaMesh, self.radialMesh, (0.0, 0.0))
-        )
+        mesh = grids.ThetaRZGrid(bounds=([0.0] + self.thetaMesh, self.radialMesh, (0.0, 0.0)))
         return mesh
 
     def writeMeshData(self):
@@ -115,14 +113,10 @@ class RZThetaReactorMeshConverter(MeshConverter):
         -----
         This should be on the ``ThetaRZGrid`` object.
         """
-        binCombinations = (
-            self.numRingBins * self.numAxialMeshBins * self.numThetaMeshBins
-        )
+        binCombinations = self.numRingBins * self.numAxialMeshBins * self.numThetaMeshBins
         runLog.info("Total mesh bins (r, z, theta): {0}".format(binCombinations))
         runLog.info(
-            "  Radial bins: {}\n"
-            "  Axial bins:  {}\n"
-            "  Theta bins:  {}".format(
+            "  Radial bins: {}\n  Axial bins:  {}\n  Theta bins:  {}".format(
                 self.numRingBins, self.numAxialMeshBins, self.numThetaMeshBins
             )
         )
@@ -147,9 +141,7 @@ class RZThetaReactorMeshConverter(MeshConverter):
     def setThetaMesh(self):
         """Generate a uniform theta mesh in radians."""
         if self._useUniformThetaMesh is None:
-            raise ValueError(
-                "useUniformThetaMesh setting was not specified in the converterSettings"
-            )
+            raise ValueError("useUniformThetaMesh setting was not specified in the converterSettings")
         if self._numThetaMeshBins is None:
             raise ValueError("numThetaMeshBins were specified in the converterSettings")
         if self._useUniformThetaMesh:
@@ -159,26 +151,18 @@ class RZThetaReactorMeshConverter(MeshConverter):
 
     def _generateUniformThetaMesh(self):
         """Create a uniform theta mesh over 2*pi using the user specified number of theta bins."""
-        self.thetaMesh = list(
-            np.linspace(0, 2 * math.pi, self._numThetaMeshBins + 1)[1:]
-        )
+        self.thetaMesh = list(np.linspace(0, 2 * math.pi, self._numThetaMeshBins + 1)[1:])
 
     def _generateNonUniformThetaMesh(self):
-        raise NotImplementedError(
-            "Non-uniform theta mesh not implemented. Use uniform theta mesh."
-        )
+        raise NotImplementedError("Non-uniform theta mesh not implemented. Use uniform theta mesh.")
 
     def _checkRingList(self, core):
         """Check for any errors in the radial rings."""
         minRingNum = 1
         self.radialMesh = sorted(self.radialMesh)
-        rings = checkLastValueInList(
-            self.radialMesh, "rings", self._numRingsInCore + 1, adjustLastValue=True
-        )
+        rings = checkLastValueInList(self.radialMesh, "rings", self._numRingsInCore + 1, adjustLastValue=True)
         maxAssemsInOuterRing = core.getMaxAssembliesInHexRing(self._numRingsInCore)
-        assemsInOuterRing = len(
-            core.getAssembliesInSquareOrHexRing(self._numRingsInCore)
-        )
+        assemsInOuterRing = len(core.getAssembliesInSquareOrHexRing(self._numRingsInCore))
         if (maxAssemsInOuterRing - assemsInOuterRing) > 0 and len(self.thetaMesh) > 1:
             self._combineLastTwoRadialBins()
         checkListBounds(rings, "rings", minRingNum, self._numRingsInCore + 1)
@@ -198,12 +182,8 @@ class RZThetaReactorMeshConverter(MeshConverter):
         minAxialCoordInReactor = self._coreAxialMeshCoords[0]
         maxAxialCoordInReactor = self._coreAxialMeshCoords[-1]
         self.axialMesh = sorted(set(self.axialMesh))
-        checkListBounds(
-            self.axialMesh, "axialMesh", minAxialCoordInReactor, maxAxialCoordInReactor
-        )
-        self.axialMesh = checkLastValueInList(
-            self.axialMesh, "axialMesh", maxAxialCoordInReactor, adjustLastValue=True
-        )
+        checkListBounds(self.axialMesh, "axialMesh", minAxialCoordInReactor, maxAxialCoordInReactor)
+        self.axialMesh = checkLastValueInList(self.axialMesh, "axialMesh", maxAxialCoordInReactor, adjustLastValue=True)
 
     def _checkThetaMeshList(self):
         """Check for errors in the theta mesh coordinates."""
@@ -248,9 +228,7 @@ class _RZThetaReactorMeshConverterByAxialBins(RZThetaReactorMeshConverter):
     def _mergeAxialMeshByAxialSegsPerBin(self):
         axialStartNum = 0
         totalAxialSegsInCore = len(self._coreAxialMeshCoords) - 1
-        axialMeshIndices = generateBins(
-            totalAxialSegsInCore, self._axialSegsPerBin, axialStartNum
-        )
+        axialMeshIndices = generateBins(totalAxialSegsInCore, self._axialSegsPerBin, axialStartNum)
         self.axialMesh = [0] * len(axialMeshIndices)
         for axialMeshIndex, locIndex in enumerate(axialMeshIndices):
             self.axialMesh[axialMeshIndex] = self._coreAxialMeshCoords[locIndex]
@@ -275,7 +253,7 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
             blockFlags = set([(b.p.flags, b.getMicroSuffix()) for b in a])
             for flags, xsID in blockFlags:
                 meshes = []
-                for b in a.getBlocks(flags):
+                for b in a.iterBlocks(flags):
                     # Skip this block if it has a different XS ID than the
                     # current target.
                     if b.getMicroSuffix() != xsID:
@@ -283,9 +261,7 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
 
                     # Neglect any zero mesh points as zero points are implicit
                     if b.p.zbottom != 0.0:
-                        meshes.append(
-                            round(b.p.zbottom, units.FLOAT_DIMENSION_DECIMALS)
-                        )
+                        meshes.append(round(b.p.zbottom, units.FLOAT_DIMENSION_DECIMALS))
                     if b.p.ztop != 0.0:
                         meshes.append(round(b.p.ztop, units.FLOAT_DIMENSION_DECIMALS))
                 axialMeshCoordinates[a].add(min(meshes))
@@ -327,9 +303,7 @@ class _RZThetaReactorMeshConverterByRingComposition(RZThetaReactorMeshConverter)
         """Check for initialization errors in the radial ring list provided by the user."""
         minRingNum = 1
         self.radialMesh = sorted(self.radialMesh)
-        rings = checkLastValueInList(
-            self.radialMesh, "rings", self._numRingsInCore + 1, adjustLastValue=True
-        )
+        rings = checkLastValueInList(self.radialMesh, "rings", self._numRingsInCore + 1, adjustLastValue=True)
         checkListBounds(rings, "rings", minRingNum, self._numRingsInCore + 1)
 
     def _writeMeshLogData(self):
@@ -389,21 +363,15 @@ class RZThetaReactorMeshConverterByRingCompositionAxialFlags(
     pass
 
 
-def checkLastValueInList(
-    inputList, listName, expectedValue, eps=0.001, adjustLastValue=False
-):
+def checkLastValueInList(inputList, listName, expectedValue, eps=0.001, adjustLastValue=False):
     """Check that the last value in the list is equal to the expected value within +/- eps."""
-    msg = "The last value in {} is {} and should be {}".format(
-        listName, inputList[-1], expectedValue
-    )
+    msg = "The last value in {} is {} and should be {}".format(listName, inputList[-1], expectedValue)
     if not np.isclose(inputList[-1], expectedValue, eps):
         if adjustLastValue:
             del inputList[-1]
             inputList.append(expectedValue)
             runLog.extra(msg)
-            runLog.extra(
-                "Updating {} in {} to {}".format(inputList[-1], listName, expectedValue)
-            )
+            runLog.extra("Updating {} in {} to {}".format(inputList[-1], listName, expectedValue))
         else:
             raise ValueError(msg)
     return inputList
@@ -416,9 +384,7 @@ def checkListBounds(inputList, listName, minVal, maxVal, eps=0.001):
         maxDiff = value - maxVal
         if minDiff < -eps or maxDiff > eps:
             raise ValueError(
-                "Invalid values {} out of expected bounds {} to {}".format(
-                    listName, minVal - eps, maxVal + eps
-                )
+                "Invalid values {} out of expected bounds {} to {}".format(listName, minVal - eps, maxVal + eps)
             )
 
 

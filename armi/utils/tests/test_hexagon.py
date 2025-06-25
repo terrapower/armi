@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test hexagon tools."""
+
 import math
 import random
 import unittest
@@ -24,25 +25,13 @@ class TestHexagon(unittest.TestCase):
     """Number of random draws to use in some fuzzy testing"""
 
     def test_hexagon_area(self):
-        """
-        Area of a hexagon.
-
-        .. test:: Hexagonal area is retrievable.
-            :id: T_ARMI_UTIL_HEXAGON0
-            :tests: R_ARMI_UTIL_HEXAGON
-        """
+        """Area of a hexagon."""
         # Calculate area given a pitch
         self.assertEqual(hexagon.area(1), math.sqrt(3.0) / 2)
         self.assertEqual(hexagon.area(2), 4 * math.sqrt(3.0) / 2)
 
     def test_numPositionsInRing(self):
-        """
-        Calculate number of positions in a ring of hexagons.
-
-        .. test:: Compute number of positions in ring.
-            :id: T_ARMI_UTIL_HEXAGON1
-            :tests: R_ARMI_UTIL_HEXAGON
-        """
+        """Calculate number of positions in a ring of hexagons."""
         self.assertEqual(hexagon.numPositionsInRing(1), 1)
         self.assertEqual(hexagon.numPositionsInRing(2), 6)
         self.assertEqual(hexagon.numPositionsInRing(3), 12)
@@ -62,9 +51,7 @@ class TestHexagon(unittest.TestCase):
                 actual = hexagon.getIndexOfRotatedCell(initialPosition, rot)
                 newIndex = (locIndex + rot) % 6
                 expectedPosition = locations[newIndex]
-                self.assertEqual(
-                    actual, expectedPosition, msg=f"{initialPosition=}, {rot=}"
-                )
+                self.assertEqual(actual, expectedPosition, msg=f"{initialPosition=}, {rot=}")
 
     def test_rotateFuzzy(self):
         """Select some position number and rotation and check for consistency."""
@@ -97,9 +84,7 @@ class TestHexagon(unittest.TestCase):
         for ring in range(4, 30):
             posInThisRing = hexagon.numPositionsInRing(ring)
             totalPositions += posInThisRing
-            self.assertEqual(
-                hexagon.totalPositionsUpToRing(ring), totalPositions, msg=f"{ring=}"
-            )
+            self.assertEqual(hexagon.totalPositionsUpToRing(ring), totalPositions, msg=f"{ring=}")
 
     def test_rotatedCellIndexErrors(self):
         """Test errors for non-positive initial cell indices during rotation."""
@@ -121,12 +106,8 @@ class TestHexagon(unittest.TestCase):
             self._testRotOrientation(lower)
 
     def _testRotOrientation(self, orientation: int):
-        with self.assertRaisesRegex(
-            ValueError, "Orientation number", msg=f"{orientation=}"
-        ):
-            hexagon.getIndexOfRotatedCell(
-                initialCellIndex=1, orientationNumber=orientation
-            )
+        with self.assertRaisesRegex(ValueError, "Orientation number", msg=f"{orientation=}"):
+            hexagon.getIndexOfRotatedCell(initialCellIndex=1, orientationNumber=orientation)
 
     def test_indexWithNoRotation(self):
         """Test that the initial cell location is returned if not rotated."""

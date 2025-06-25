@@ -17,7 +17,6 @@
 from armi.settings import setting
 from armi.settings.settingsValidation import Query
 
-
 CONF_AXIAL_EXPANSION = "axialExpansion"
 CONF_BOND_REMOVAL = "bondRemoval"
 CONF_CLADDING_STRAIN = "claddingStrain"
@@ -45,8 +44,7 @@ def defineSettings():
             default=0.25,
             label="Fission Gas Yield Fraction",
             description=(
-                "The fraction of gaseous atoms produced per fission event, assuming a "
-                "fission product yield of 2.0"
+                "The fraction of gaseous atoms produced per fission event, assuming a fission product yield of 2.0"
             ),
         ),
         setting.Setting(

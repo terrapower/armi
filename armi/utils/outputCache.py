@@ -36,17 +36,16 @@ Storing a file to the cache::
 
 Notes
 -----
-Could probably be, like, a decorate on subprocess but we call subprocess a bunch of
-different ways.
+Could probably be, like, a decorate on subprocess but we call subprocess a bunch of different ways.
 """
 
 import hashlib
 import json
 import os
-import shutil
 import subprocess
 
 from armi import runLog
+from armi.utils import safeCopy
 from armi.utils.pathTools import cleanPath
 
 MANIFEST_NAME = "CRC-manifest.json"
@@ -73,8 +72,7 @@ def retrieveOutput(exePath, inputPaths, cacheDir, locToRetrieveTo=None):
         else:
             # outputs didn't match manifest. Just delete to save checking next time.
             runLog.warning(
-                "Outputs in {} were inconsistent with manifest. "
-                "Deleting and reproducing".format(cachedFolder)
+                "Outputs in {} were inconsistent with manifest. Deleting and reproducing".format(cachedFolder)
             )
             try:
                 deleteCache(cachedFolder)
@@ -106,7 +104,7 @@ def _copyOutputs(cachedFolder, locToRetrieveTo):
 
     for copy in copies:
         storedOutputPath, copyPath = copy
-        shutil.copy(storedOutputPath, copyPath)
+        safeCopy(storedOutputPath, copyPath)
 
     return True
 
@@ -153,9 +151,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
     This function should be supplied with a greedy list of outputs.
     """
     # outputFilePaths is a greedy list and they might not all be produced
-    outputsThatExist = [
-        outputFile for outputFile in outputFiles if os.path.exists(outputFile)
-    ]
+    outputsThatExist = [outputFile for outputFile in outputFiles if os.path.exists(outputFile)]
 
     folderLoc = _getCachedFolder(exePath, inputPaths, cacheDir)
     if os.path.exists(folderLoc):
@@ -166,7 +162,7 @@ def store(exePath, inputPaths, outputFiles, cacheDir):
     for outputFile in outputsThatExist:
         baseName = os.path.basename(outputFile)
         cachedLoc = os.path.join(folderLoc, baseName)
-        shutil.copy(outputFile, cachedLoc)
+        safeCopy(outputFile, cachedLoc)
 
     runLog.info("Added outputs for {} to the cache.".format(exePath))
 
@@ -175,17 +171,15 @@ def deleteCache(cachedFolder):
     """
     Remove this folder.
 
-    Requires safeword because this is potentially extremely destructive.
+    Requires keyword because this is potentially extremely destructive.
     """
-    if "Output_Cache" not in cachedFolder:
-        raise RuntimeError("Cache location must contain safeword: `Output_Cache`.")
+    if "cache" not in str(cachedFolder).lower():
+        raise RuntimeError("Cache location must contain keyword: `cache`.")
 
     cleanPath(cachedFolder)
 
 
-def cacheCall(
-    cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None
-):
+def cacheCall(cacheDir, executablePath, inputPaths, outputFileNames, execute=None, tearDown=None):
     """
     Checks the cache to see if there are outputs for the run and returns them, otherwise calls the execute command.
 
@@ -210,8 +204,7 @@ def cacheCall(
             return
     except Exception as e:
         runLog.warning(
-            "Outputs existed in cache, but failed to retrieve outputs from: "
-            "{} \nerror: {}".format(
+            "Outputs existed in cache, but failed to retrieve outputs from: {} \nerror: {}".format(
                 _getCachedFolder(executablePath, inputPaths, cacheDir), e
             )
         )

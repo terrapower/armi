@@ -12,29 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for new settings system with plugin import."""
+
 import copy
 import io
 import logging
 import os
 import unittest
 
-from ruamel.yaml import YAML
 import voluptuous as vol
+from ruamel.yaml import YAML
 
-from armi import configure
-from armi import getApp
-from armi import getPluginManagerOrFail
-from armi import plugins
-from armi import settings
+from armi import configure, getApp, getPluginManagerOrFail, plugins, settings
 from armi.physics.fuelCycle import FuelHandlerPlugin
-from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER
-from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
+from armi.physics.fuelCycle.settings import CONF_CIRCULAR_RING_ORDER, CONF_SHUFFLE_LOGIC
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_KERNEL
 from armi.reactor.flags import Flags
-from armi.settings import caseSettings
-from armi.settings import setting
+from armi.settings import caseSettings, setting
 from armi.settings.settingsValidation import Inspector, validateVersion
-from armi.tests import TEST_ROOT, ARMI_RUN_PATH
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import NonexistentSetting
 
@@ -139,15 +134,15 @@ class TestAddingOptions(unittest.TestCase):
     def setUp(self):
         self.dc = directoryChangers.TemporaryDirectoryChanger()
         self.dc.__enter__()
+        # load in the plugin with extra, added options
+        self.pm = getPluginManagerOrFail()
+        self.pm.register(PluginAddsOptions)
 
     def tearDown(self):
         self.dc.__exit__(None, None, None)
+        self.pm.unregister(PluginAddsOptions)
 
     def test_addingOptions(self):
-        # load in the plugin with extra, added options
-        pm = getPluginManagerOrFail()
-        pm.register(PluginAddsOptions)
-
         # modify the default/text settings YAML file to include neutronicsKernel
         fin = os.path.join(TEST_ROOT, "armiRun.yaml")
         txt = open(fin, "r").read()
@@ -177,9 +172,7 @@ class TestSettings2(unittest.TestCase):
             """
 assemblyRotationAlgorithm: buReducingAssemblyRotation
 shuffleLogic: {}
-""".format(
-                __file__
-            )
+""".format(__file__)
         )
 
         bad_input = io.StringIO(
@@ -202,9 +195,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
                 settin.schema(inputVal)
 
     def test_listsMutable(self):
-        listSetting = setting.Setting(
-            "aList", default=[], label="Dummy list", description="whatever"
-        )
+        listSetting = setting.Setting("aList", default=[], label="Dummy list", description="whatever")
 
         listSetting.value = [1, 2, 3]
         self.assertEqual([1, 2, 3], listSetting.value)
@@ -214,9 +205,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
     def test_listCoercion(self):
         """Make sure list setting values get coerced right."""
-        listSetting = setting.Setting(
-            "aList", default=[0.2, 5], label="Dummy list", description="whatever"
-        )
+        listSetting = setting.Setting("aList", default=[0.2, 5], label="Dummy list", description="whatever")
         listSetting.value = [1, 2, 3]
         self.assertEqual(listSetting.value, [1.0, 2.0, 3.0])
         self.assertTrue(isinstance(listSetting.value[0], float))
@@ -257,14 +246,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         )
 
         inspector = Inspector(cs)
-        self.assertTrue(
-            any(
-                [
-                    "Shuffling will not occur" in query.statement
-                    for query in inspector.queries
-                ]
-            )
-        )
+        self.assertTrue(any(["Shuffling will not occur" in query.statement for query in inspector.queries]))
 
     def test_pluginSettings(self):
         """Test settings change depending on what plugins are registered.
@@ -297,7 +279,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         pm.unregister(DummySettingPlugin1)
 
         # Now try the same, but adding the plugins in a different order. This is to make
-        # sure that it doesnt matter if the Setting or its Options come first
+        # sure that it doesn't matter if the Setting or its Options come first
         pm.register(DummySettingPlugin2)
         pm.register(DummySettingPlugin1)
         cs = caseSettings.Settings()
@@ -324,7 +306,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
         # some default settings values
         for sett in ["availabilityFactor", "db"]:
             self.assertIn(sett, settingsList)
-        self.assertNotIn("numProcessors", settingsList)
+        self.assertNotIn("nTasks", settingsList)
 
     def test_setModuleVerbosities(self):
         # init settings and use them to set module-level logging levels
@@ -395,7 +377,7 @@ assemblyRotationAlgorithm: buReducingAssemblyRotatoin
 
         Notes
         -----
-        In particuar, self.schema and self._customSchema on a Setting object are
+        In particular, self.schema and self._customSchema on a Setting object are
         removed by Setting.__getstate__, and that has been a problem in the past.
         """
         # get a baseline: show how the Setting object looks to start
@@ -450,7 +432,7 @@ class TestSettingsUtils(unittest.TestCase):
         cs.writeToYamlFile("settings1.yaml")
         cs.writeToYamlFile("settings2.yaml")
         with open("notSettings.yaml", "w") as f:
-            f.write("some: other\n" "yaml: file\n")
+            f.write("some: other\nyaml: file\n")
         os.mkdir("subdir")
         cs.writeToYamlFile("subdir/settings3.yaml")
         cs.writeToYamlFile("subdir/skipSettings.yaml")
@@ -459,9 +441,7 @@ class TestSettingsUtils(unittest.TestCase):
         self.dc.__exit__(None, None, None)
 
     def test_recursiveScan(self):
-        loadedSettings = settings.recursivelyLoadSettingsFiles(
-            ".", ["*.yaml"], ignorePatterns=["skip*"]
-        )
+        loadedSettings = settings.recursivelyLoadSettingsFiles(".", ["*.yaml"], ignorePatterns=["skip*"])
         names = {cs.caseTitle for cs in loadedSettings}
         self.assertIn("settings1", names)
         self.assertIn("settings2", names)
@@ -487,9 +467,7 @@ class TestFlagListSetting(unittest.TestCase):
         flagsAsStringList = ["DUCT", "FUEL", "CLAD"]
         flagsAsFlagList = [Flags.DUCT, Flags.FUEL, Flags.CLAD]
 
-        fs = setting.FlagListSetting(
-            name="testFlagSetting", default=[], description="whatever"
-        )
+        fs = setting.FlagListSetting(name="testFlagSetting", default=[], description="whatever")
         # Set the value as a list of strings first
         fs.value = flagsAsStringList
         self.assertEqual(fs.value, flagsAsFlagList)
@@ -502,9 +480,7 @@ class TestFlagListSetting(unittest.TestCase):
 
     def test_invalidFlagListTypeError(self):
         """Test raising a TypeError when a list is not provided."""
-        fs = setting.FlagListSetting(
-            name="testFlagSetting", default=[], description="whatever"
-        )
+        fs = setting.FlagListSetting(name="testFlagSetting", default=[], description="whatever")
         with self.assertRaises(TypeError):
             fs.value = "DUCT"
 

@@ -13,9 +13,10 @@
 # limitations under the License.
 
 """Test GAMISO reading and writing."""
-from copy import deepcopy
+
 import os
 import unittest
+from copy import deepcopy
 
 from armi.nuclearDataIO import xsLibraries
 from armi.nuclearDataIO.cccc import gamiso

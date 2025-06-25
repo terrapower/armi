@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests nuclide directory."""
+
 import unittest
 
 from armi.nucDirectory import nucDir, nuclideBases
@@ -43,7 +44,7 @@ class TestNucDirectory(unittest.TestCase):
         for oldName in oldNames:
             self.assertIsNotNone(nucDir.getNuclideFromName(oldName))
 
-    def test_nucDir_getNuclideFromNuclidesNameReturnsNuclide(self):
+    def test_nucDir_getNucFromNucNameReturnsNuc(self):
         for nuc in nuclideBases.instances:
             self.assertEqual(nuc, nucDir.getNuclideFromName(nuc.name))
 

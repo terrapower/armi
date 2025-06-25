@@ -14,22 +14,20 @@
 
 import copy
 import pickle
-from typing import Any, Optional, List, Set, Iterator, Callable
 import sys
+from typing import Any, Callable, Iterator, List, Optional, Set
 
 import numpy as np
-import six
 
 from armi import runLog
-from armi.reactor.parameters import parameterDefinitions, exceptions
+from armi.reactor.parameters import exceptions, parameterDefinitions
 from armi.reactor.parameters.parameterDefinitions import (
-    SINCE_LAST_DISTRIBUTE_STATE,
-    SINCE_BACKUP,
-    SINCE_ANYTHING,
     NEVER,
+    SINCE_ANYTHING,
+    SINCE_BACKUP,
+    SINCE_LAST_DISTRIBUTE_STATE,
 )
 from armi.utils import units
-
 
 GLOBAL_SERIAL_NUM = -1
 """
@@ -38,10 +36,10 @@ The serial number for all ParameterCollections
 This is a counter of the number of instances of all types. They are useful for tracking items
 through the history of a database.
 
-.. warning::
-
-    This is not MPI safe. We also have not done anything to make it thread safe,
-    except that the GIL exists.
+Warning
+-------
+This is not MPI safe. We also have not done anything to make it thread safe, except that the GIL
+exists.
 """
 
 
@@ -114,9 +112,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     armi.reactors.parameters
     """
 
-    pDefs: parameterDefinitions.ParameterDefinitionCollection = (
-        _getBaseParameterDefinitions()
-    )
+    pDefs: parameterDefinitions.ParameterDefinitionCollection = _getBaseParameterDefinitions()
     _allFields: List[str] = []
 
     _ArmiObject = None
@@ -146,6 +142,10 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             should come from a call to __getstate__(). This should only be used
             internally to this model.
         """
+        # add a hook to make this readOnly
+        self._slots.add("readOnly")
+        self.readOnly = False
+
         if self.pDefs is None or not self.pDefs.locked:
             type(self).applyParameters()
 
@@ -174,11 +174,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         self.serialNum = GLOBAL_SERIAL_NUM = GLOBAL_SERIAL_NUM + 1
 
         if self.serialNum > sys.maxsize:
-            runLog.warning(
-                "Created serial number larger than an integer. Current serial: {}".format(
-                    GLOBAL_SERIAL_NUM
-                )
-            )
+            runLog.warning("Created serial number larger than an integer. Current serial: {}".format(GLOBAL_SERIAL_NUM))
 
     @classmethod
     def applyParameters(cls):
@@ -217,9 +213,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         # ComponentParameterCollection.
         if not cls.pDefs.locked:
             basePDefs = parameterDefinitions.ParameterDefinitionCollection()
-            for base in [
-                b for b in cls.__bases__ if issubclass(b, ParameterCollection)
-            ]:
+            for base in [b for b in cls.__bases__ if issubclass(b, ParameterCollection)]:
                 base.applyParameters()
                 if base.pDefs is not None:
                     basePDefs.extend(base.pDefs)
@@ -233,13 +227,9 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
                 seen.add(name)
             if duplicates:
                 raise exceptions.ParameterDefinitionError(
-                    "The following parameters were multiply-defined:\n    {}".format(
-                        duplicates
-                    )
+                    "The following parameters were multiply-defined:\n    {}".format(duplicates)
                 )
-            overriddenParameters = set(cls.pDefs.names).intersection(
-                set(basePDefs.names)
-            )
+            overriddenParameters = set(cls.pDefs.names).intersection(set(basePDefs.names))
             if overriddenParameters:
                 raise exceptions.ParameterDefinitionError(
                     "The following parameters "
@@ -259,11 +249,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         # prevent the addition of new parameter definitions. This will lead to errors
         # early, rather than mysterious attribute access errors later.
         cls.pDefs.lock()
-        cls._allFields = list(
-            sorted(
-                ["_backup", "_hist", "assigned"] + [pd.fieldName for pd in cls.pDefs]
-            )
-        )
+        cls._allFields = list(sorted(["_backup", "_hist", "assigned"] + [pd.fieldName for pd in cls.pDefs]))
 
         cls._slots = set(cls._allFields).union({pd.name for pd in cls.pDefs})
 
@@ -271,10 +257,13 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         return "<{} assigned:{}>".format(self.__class__.__name__, self.assigned)
 
     def __setattr__(self, key, value):
-        assert key in self._slots, (
-            "Trying to set undefined attribute `{}` on "
-            "a ParameterCollection!".format(key)
-        )
+        assert key in self._slots, "Trying to set undefined attribute `{}` on a ParameterCollection!".format(key)
+
+        if getattr(self, "readOnly", False):
+            if key == "readOnly":
+                raise RuntimeError("A read-only Parameter Collection cannot be made writeable.")
+            else:
+                raise RuntimeError(f"Cannot set a read-only parameter {key}.")
 
         object.__setattr__(self, key, value)
 
@@ -316,10 +305,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
     def __getstate__(self):
         # reduce data to one giant list, ordered by _allFields (sorted). Use NoDefault
         # when a value is missing
-        data = [
-            getattr(self, fieldName, parameterDefinitions.NoDefault)
-            for fieldName in self._allFields
-        ]
+        data = [getattr(self, fieldName, parameterDefinitions.NoDefault) for fieldName in self._allFields]
         return data
 
     def __setstate__(self, state):
@@ -333,9 +319,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         except TypeError:  # allows for history parameter tuples
             return self._hist[name]
         except AttributeError:
-            raise exceptions.UnknownParameterError(
-                "Parameter {} is not defined for {}".format(name, type(self))
-            )
+            raise exceptions.UnknownParameterError("Parameter {} is not defined for {}".format(name, type(self)))
 
     def __setitem__(self, name, value):
         try:
@@ -347,13 +331,11 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
                 raise
         except AttributeError:  # for clarity
             raise exceptions.UnknownParameterError(
-                "Cannot locate definition for parameter {} in {}".format(
-                    name, type(self)
-                )
+                "Cannot locate definition for parameter {} in {}".format(name, type(self))
             )
 
     def __delitem__(self, name):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             pd = self.paramDefs[name]
             if hasattr(self, pd.fieldName):
                 pd.assigned = SINCE_ANYTHING
@@ -362,7 +344,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             del self._hist[name]
 
     def __contains__(self, name):
-        if isinstance(name, six.string_types):
+        if isinstance(name, str):
             return hasattr(self, "_p_" + name)
         else:
             return name in self._hist
@@ -387,8 +369,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         return (
             pd.name
             for pd in self.paramDefs
-            if pd.assigned != NEVER
-            and getattr(self, pd.fieldName) is not parameterDefinitions.NoDefault
+            if pd.assigned != NEVER and getattr(self, pd.fieldName) is not parameterDefinitions.NoDefault
         )
 
     def items(self):
@@ -414,11 +395,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
         return list(iter(self)) + list(self._hist.keys())
 
     def values(self):
-        paramVals = list(
-            getattr(self, pd.fieldName)
-            for pd in self.paramDefs
-            if hasattr(self, pd.fieldName)
-        )
+        paramVals = list(getattr(self, pd.fieldName) for pd in self.paramDefs if hasattr(self, pd.fieldName))
         return paramVals + list(self._hist.values())
 
     def update(self, someDict):
@@ -451,8 +428,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
             syncData = {
                 paramDef.name: getattr(self, paramDef.fieldName)
                 for paramDef in self.paramDefs
-                if paramDef.assigned & SINCE_LAST_DISTRIBUTE_STATE
-                and paramDef.name in self
+                if paramDef.assigned & SINCE_LAST_DISTRIBUTE_STATE and paramDef.name in self
             }
             return syncData
         return None
@@ -479,20 +455,14 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
 
         if self.assigned & SINCE_BACKUP:
             compParams = (pd for pd in paramsToApply.intersection(set(self.paramDefs)))
-            currentData = {
-                pd: getattr(self, pd.fieldName)
-                for pd in compParams
-                if hasattr(self, pd.fieldName)
-            }
+            currentData = {pd: getattr(self, pd.fieldName) for pd in compParams if hasattr(self, pd.fieldName)}
 
         self.__setstate__(pickle.loads(self._backup))
 
         for pd, currentValue in currentData.items():
             # correct for global paramDef.assigned assumption
             retainedValue = getattr(self, pd.fieldName)
-            if isinstance(retainedValue, np.ndarray) or isinstance(
-                currentValue, np.ndarray
-            ):
+            if isinstance(retainedValue, np.ndarray) or isinstance(currentValue, np.ndarray):
                 if (retainedValue != currentValue).any():
                     setattr(self, pd.fieldName, currentValue)
                     pd.assigned = SINCE_ANYTHING
@@ -502,9 +472,7 @@ class ParameterCollection(metaclass=_ParameterCollectionType):
                 pd.assigned = SINCE_ANYTHING
                 self.assigned = SINCE_ANYTHING
 
-    def where(
-        self, f: Callable[[parameterDefinitions.Parameter], bool]
-    ) -> Iterator[parameterDefinitions.Parameter]:
+    def where(self, f: Callable[[parameterDefinitions.Parameter], bool]) -> Iterator[parameterDefinitions.Parameter]:
         """Produce an iterator over parameters that meet some criteria.
 
         Parameters

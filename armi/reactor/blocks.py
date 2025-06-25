@@ -18,35 +18,33 @@ including power, flux, and homogenized number densities.
 
 Assemblies are made of blocks. Blocks are made of components.
 """
-from typing import Optional, Type, Tuple, ClassVar
+
 import collections
 import copy
+import functools
 import math
+from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases
-from armi import runLog
+from armi import nuclideBases, runLog
 from armi.bookkeeping import report
-from armi.nucDirectory import elements
 from armi.nuclearDataIO import xsCollections
-from armi.physics.neutronics import GAMMA
-from armi.physics.neutronics import NEUTRON
-from armi.reactor import blockParameters
-from armi.reactor import components
-from armi.reactor import composites
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor import parameters
+from armi.physics.neutronics import GAMMA, NEUTRON
+from armi.reactor import (
+    blockParameters,
+    components,
+    composites,
+    geometry,
+    grids,
+    parameters,
+)
 from armi.reactor.components import basicShapes
-from armi.reactor.components.basicShapes import Hexagon, Circle
+from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
-from armi.utils import densityTools
-from armi.utils import hexagon
-from armi.utils import iterables
-from armi.utils import units
+from armi.utils import densityTools, hexagon, iterables, units
 from armi.utils.plotting import plotBlockFlux
 from armi.utils.units import TRACE_NUMBER_DENSITY
 
@@ -65,9 +63,10 @@ _PitchDefiningComponent = Optional[Tuple[Type[components.Component], ...]]
 
 class Block(composites.Composite):
     """
-    A homogenized axial slab of material.
+    An axial slice of an assembly.
 
-    Blocks are stacked together to form assemblies.
+    Blocks are Composite objects with extra parameter bindings, and utility methods that let them
+    play nicely with their containing Assembly.
     """
 
     uniqID = 0
@@ -86,14 +85,12 @@ class Block(composites.Composite):
 
         name : str
             The name of this block
-
         height : float, optional
             The height of the block in cm. Defaults to 1.0 so that ``getVolume`` assumes unit height.
         """
         composites.Composite.__init__(self, name)
         self.p.height = height
         self.p.heightBOL = height
-
         self.p.orientation = np.array((0.0, 0.0, 0.0))
 
         self.points = []
@@ -105,32 +102,17 @@ class Block(composites.Composite):
         # which component to use to determine block pitch, along with its 'op'
         self._pitchDefiningComponent = (None, 0.0)
 
-        # TODO: what's causing these to have wrong values at BOL?
+        # Manually set some parameters at BOL
         for problemParam in ["THcornTemp", "THedgeTemp"]:
             self.p[problemParam] = []
 
-        for problemParam in [
-            "residence",
-            "bondRemoved",
-            "fluence",
-            "fastFluence",
-            "fastFluencePeak",
-            "displacementX",
-            "displacementY",
-            "fluxAdj",
-            "buRate",
-            "eqRegion",
-            "fissileFraction",
-        ]:
-            self.p[problemParam] = 0.0
-
     def __repr__(self):
         # be warned, changing this might break unit tests on input file generations
-        return "<{type} {name} at {loc} XS: {xs} BU GP: {bu}>".format(
+        return "<{type} {name} at {loc} XS: {xs} ENV GP: {env}>".format(
             type=self.getType(),
             name=self.getName(),
             xs=self.p.xsType,
-            bu=self.p.buGroup,
+            env=self.p.envGroup,
             loc=self.getLocation(),
         )
 
@@ -205,9 +187,10 @@ class Block(composites.Composite):
         all the area is fuel, it has 100% smear density. Lower smear density allows more room for
         swelling.
 
-        .. warning:: This requires circular fuel and circular cladding. Designs that vary
-            from this will be wrong. It may make sense in the future to put this somewhere a
-            bit more design specific.
+        Warning
+        -------
+        This requires circular fuel and circular cladding. Designs that vary from this will be
+        wrong. It may make sense in the future to put this somewhere a bit more design specific.
 
         Notes
         -----
@@ -225,33 +208,27 @@ class Block(composites.Composite):
 
         Returns
         -------
-        smearDensity : float
-            The smear density as a fraction
+        float
+            The smear density as a fraction.
         """
         fuels = self.getComponents(Flags.FUEL)
         if not fuels:
-            return 0.0  # Smear density is not computed for non-fuel blocks
+            # smear density is not computed for non-fuel blocks
+            return 0.0
+        elif not self.getNumPins():
+            # smear density is only defined for pinned blocks
+            return 0.0
 
         circles = self.getComponentsOfShape(components.Circle)
         if not circles:
-            raise ValueError(
-                "Cannot get smear density of {}. There are no circular components.".format(
-                    self
-                )
-            )
+            raise ValueError(f"Cannot get smear density of {self}. There are no circular components.")
         clads = set(self.getComponents(Flags.CLAD)).intersection(set(circles))
         if not clads:
-            raise ValueError(
-                "Cannot get smear density of {}. There are no clad components.".format(
-                    self
-                )
-            )
+            raise ValueError(f"Cannot get smear density of {self}. There are no clad components.")
 
         # Compute component areas
         cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
-        innerCladdingArea = (
-            math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
-        )
+        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
         negativeArea = 0.0
@@ -259,7 +236,7 @@ class Block(composites.Composite):
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
-            elif c.hasFlags(Flags.SLUG):
+            elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
                 # this flag designates that this clad/slug combination isn't fuel and shouldn't be
                 # counted in the average
                 pass
@@ -278,8 +255,8 @@ class Block(composites.Composite):
                     negativeArea += abs(componentArea)
         if cold and negativeArea:
             raise ValueError(
-                "Negative component areas exist on {}. Check that the cold dimensions are properly aligned "
-                "and no components overlap.".format(self)
+                f"Negative component areas exist on {self}. Check that the cold dimensions are "
+                "properly aligned and no components overlap."
             )
         innerCladdingArea += negativeArea  # See note 2
         totalMovableArea = innerCladdingArea - unmovableComponentArea
@@ -287,14 +264,19 @@ class Block(composites.Composite):
 
         return smearDensity
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Creates a spatialGrid for a Block.
 
-        Blocks do not always have a spatialGrid from Blueprints, but, some Blocks can have their
-        spatialGrids inferred based on the multiplicty of their components.
-        This would add the ability to create a spatialGrid for a Block and give its children
-        the corresponding spatialLocators if certain conditions are met.
+        Blocks do not always have a spatialGrid from Blueprints, but some Blocks can have their
+        spatialGrids inferred based on the multiplicity of their components. This would add the
+        ability to create a spatialGrid for a Block and give its children the corresponding
+        spatialLocators if certain conditions are met.
+
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Raises
         ------
@@ -302,7 +284,8 @@ class Block(composites.Composite):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        raise NotImplementedError()
+        if self.spatialGrid is None:
+            self.spatialGrid = systemSpatialGrid
 
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
@@ -333,9 +316,7 @@ class Block(composites.Composite):
         -------
         flux : multigroup neutron flux in [n/cm^2/s]
         """
-        flux = composites.ArmiObject.getMgFlux(
-            self, adjoint=adjoint, average=False, volume=volume, gamma=gamma
-        )
+        flux = composites.ArmiObject.getMgFlux(self, adjoint=adjoint, average=False, volume=volume, gamma=gamma)
         if average and np.any(self.p.lastMgFlux):
             volume = volume or self.getVolume()
             lastFlux = self.p.lastMgFlux / volume
@@ -346,13 +327,10 @@ class Block(composites.Composite):
         """
         Store the pin-detailed multi-group neutron flux.
 
-        The [g][i] indexing is transposed to be a list of lists, one for each pin. This makes it
-        simple to do depletion for each pin, etc.
-
         Parameters
         ----------
-        fluxes : 2-D list of floats
-            The block-level pin multigroup fluxes. fluxes[g][i] represents the flux in group g for
+        fluxes : np.ndarray
+            The block-level pin multigroup fluxes. fluxes[i, g] represents the flux in group g for
             pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         adjoint : bool, optional
@@ -362,28 +340,16 @@ class Block(composites.Composite):
 
         Outputs
         -------
-        self.p.pinMgFluxes : 2-D array of floats
-            The block-level pin multigroup fluxes. pinMgFluxes[g][i] represents the flux in group g
+        self.p.pinMgFluxes : np.ndarray
+            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
             for pin i. Flux units are the standard n/cm^2/s.
             The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
-        pinFluxes = []
+        if self.hasFlags(Flags.FUEL):
+            pinFluxes = fluxes[(np.array(self.p.pinLocation) - 1)]
+        else:
+            pinFluxes = fluxes[:]
 
-        G, nPins = fluxes.shape
-
-        for pinNum in range(1, nPins + 1):
-            thisPinFlux = []
-
-            if self.hasFlags(Flags.FUEL):
-                pinLoc = self.p.pinLocation[pinNum - 1]
-            else:
-                pinLoc = pinNum
-
-            for g in range(G):
-                thisPinFlux.append(fluxes[g][pinLoc - 1])
-            pinFluxes.append(thisPinFlux)
-
-        pinFluxes = np.array(pinFluxes)
         if gamma:
             if adjoint:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
@@ -399,33 +365,33 @@ class Block(composites.Composite):
         """
         Returns the microscopic library suffix (e.g. 'AB') for this block.
 
-        DIF3D and MC2 are limited to 6 character nuclide labels. ARMI by convention uses
-        the first 4 for nuclide name (e.g. U235, PU39, etc.) and then uses the 5th
-        character for cross-section type and the 6th for burnup group. This allows a
-        variety of XS sets to be built modeling substantially different blocks.
+        DIF3D and MC2 are limited to 6 character nuclide labels. ARMI by convention uses the first 4
+        for nuclide name (e.g. U235, PU39, etc.) and then uses the 5th character for cross-section
+        type and the 6th for burnup group. This allows a variety of XS sets to be built modeling
+        substantially different blocks.
 
         Notes
         -----
-        The single-letter use for xsType and buGroup limit users to 26 groups of each.
-        ARMI will allow 2-letter xsType designations if and only if the `buGroups`
-        setting has length 1 (i.e. no burnup groups are defined). This is useful for
-        high-fidelity XS modeling of V&V models such as the ZPPRs.
+        The single-letter use for xsType and envGroup limit users to 52 groups of each. ARMI will
+        allow 2-letter xsType designations if and only if the `envGroup` setting has length 1 (i.e.
+        no burnup/temp groups are defined). This is useful for high-fidelity XS modeling.
         """
-        bu = self.p.buGroup
-        if not bu:
+        env = self.p.envGroup
+        if not env:
             raise RuntimeError(
-                "Cannot get MicroXS suffix because {0} in {1} does not have a burnup group"
-                "".format(self, self.parent)
+                "Cannot get MicroXS suffix because {0} in {1} does not have a environment(env) group".format(
+                    self, self.parent
+                )
             )
 
         xsType = self.p.xsType
         if len(xsType) == 1:
-            return xsType + bu
-        elif len(xsType) == 2 and ord(bu) > ord("A"):
-            raise ValueError(
-                "Use of multiple burnup groups is not allowed with multi-character xs groups!"
-            )
+            return xsType + env
+        elif len(xsType) == 2 and ord(env) != ord("A"):
+            # default is "A" so if we got an off default 2 char, there is no way to resolve.
+            raise ValueError("Use of non-default env groups is not allowed with multi-character xs groups!")
         else:
+            # ignore env group, multi Char XS type to support assigning 2 chars in blueprints
             return xsType
 
     def getHeight(self):
@@ -445,21 +411,15 @@ class Block(composites.Composite):
             Conserve mass of nuclides in ``adjustList``.
 
         adjustList : list, optional
-            Nuclides that will be conserved in conserving mass in the block. It is recommended to pass a list of
-            all nuclides in the block.
+            Nuclides that will be conserved in conserving mass in the block. It is recommended to
+            pass a list of all nuclides in the block.
 
         Notes
         -----
-        There is a coupling between block heights, the parent assembly axial mesh,
-        and the ztop/zbottom/z params of the sibling blocks. When you set a height,
-        all those things are invalidated. Thus, this method has to go through and
-        update them via ``parent.calculateZCoords``. This could be inefficient
-        though it has not been identified as a bottleneck. Possible improvements
-        include deriving z/ztop/zbottom on the fly and invalidating the parent mesh
-        with some kind of flag, signaling it to recompute itself on demand.
-        Developers can get around some of the O(N^2) scaling of this by setting
-        ``p.height`` directly but they must know to update the dependent objects
-        after they do that. Use with care.
+        There is a coupling between block heights, the parent assembly axial mesh, and the
+        ztop/zbottom/z params of the sibling blocks. When you set a height, all those things are
+        invalidated. Thus, this method has to go through and update them via
+        ``parent.calculateZCoords``.
 
         See Also
         --------
@@ -470,19 +430,13 @@ class Block(composites.Composite):
         """
         originalHeight = self.getHeight()  # get before modifying
         if modifiedHeight < 0.0:
-            raise ValueError(
-                "Cannot set height of block {} to height of {} cm".format(
-                    self, modifiedHeight
-                )
-            )
+            raise ValueError(f"Cannot set height of block {self} to height of {modifiedHeight} cm")
         self.p.height = modifiedHeight
         self.clearCache()
         if conserveMass:
             if originalHeight != modifiedHeight:
                 if not adjustList:
-                    raise ValueError(
-                        "Nuclides in ``adjustList`` must be provided to conserve mass."
-                    )
+                    raise ValueError("Nuclides in ``adjustList`` must be provided to conserve mass.")
                 self.adjustDensity(originalHeight / modifiedHeight, adjustList)
         if self.parent:
             self.parent.calculateZCoords()
@@ -506,8 +460,8 @@ class Block(composites.Composite):
             return self.getComponent(Flags.COOLANT, exact=True).getArea() / numPins
         except ZeroDivisionError:
             raise ZeroDivisionError(
-                "Block {} has 0 pins (fuel, clad, control, shield, etc.). Thus, its flow area "
-                "per pin is undefined.".format(self)
+                f"Block {self} has 0 pins (fuel, clad, control, shield, etc.). Thus, its flow area "
+                "per pin is undefined."
             )
 
     def getHydraulicDiameter(self):
@@ -524,8 +478,8 @@ class Block(composites.Composite):
 
         Notes
         -----
-        completeInitialLoading must be run because adjusting the enrichment actually
-        changes the mass slightly and you can get negative burnups, which you do not want.
+        completeInitialLoading must be run because adjusting the enrichment actually changes the
+        mass slightly and you can get negative burnups, which you do not want.
         """
         fuels = self.getChildrenWithFlags(Flags.FUEL)
 
@@ -548,21 +502,18 @@ class Block(composites.Composite):
             :id: I_ARMI_BLOCK_POSI0
             :implements: R_ARMI_BLOCK_POSI
 
-            If the block does not have its ``core`` attribute set, if the block's
-            parent does not have a ``spatialGrid`` attribute, or if the block
-            does not have its location defined by its ``spatialLocator`` attribute,
-            return a string indicating that it is outside of the core.
+            If the block does not have its ``core`` attribute set, if the block's parent does not
+            have a ``spatialGrid`` attribute, or if the block does not have its location defined by
+            its ``spatialLocator`` attribute, return a string indicating that it is outside of the
+            core.
 
-            Otherwise, use the :py:class:`~armi.reactor.grids.Grid.getLabel` static
-            method to convert the block's indices into a string like "XXX-YYY-ZZZ".
-            For hexagonal geometry, "XXX" is the zero-padded hexagonal core ring,
-            "YYY" is the zero-padded position in that ring, and "ZZZ" is the zero-padded
-            block axial index from the bottom of the core.
+            Otherwise, use the :py:class:`~armi.reactor.grids.Grid.getLabel` static method to
+            convert the block's indices into a string like "XXX-YYY-ZZZ". For hexagonal geometry,
+            "XXX" is the zero-padded hexagonal core ring, "YYY" is the zero-padded position in that
+            ring, and "ZZZ" is the zero-padded block axial index from the bottom of the core.
         """
         if self.core and self.parent.spatialGrid and self.spatialLocator:
-            return self.core.spatialGrid.getLabel(
-                self.spatialLocator.getCompleteIndices()
-            )
+            return self.core.spatialGrid.getLabel(self.spatialLocator.getCompleteIndices())
         else:
             return "ExCore"
 
@@ -575,9 +526,9 @@ class Block(composites.Composite):
             :implements: R_ARMI_BLOCK_POSI
 
             Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
-            method of the block's ``spatialLocator`` attribute, which recursively
-            calls itself on all parents of the block to get the coordinates of the
-            block's centroid in 3D cartesian space.
+            method of the block's ``spatialLocator`` attribute, which recursively calls itself on
+            all parents of the block to get the coordinates of the block's centroid in 3D cartesian
+            space.
         """
         return self.spatialLocator.getGlobalCoordinates()
 
@@ -587,9 +538,7 @@ class Block(composites.Composite):
             # might be cycle 1 or a non-burning block
             self.p.timeToLimit = 0.0
         else:
-            timeLimit = (
-                self.p.buLimit - self.p.percentBu
-            ) / self.p.buRate + self.p.residence
+            timeLimit = (self.p.buLimit - self.p.percentBu) / self.p.buRate + self.p.residence
             self.p.timeToLimit = (timeLimit - self.p.residence) / units.DAYS_PER_YEAR
 
     def getMaxArea(self):
@@ -599,11 +548,10 @@ class Block(composites.Composite):
         """
         Return the area of a block for a full core or a 1/3 core model.
 
-        Area is consistent with the area in the model, so if you have a central
-        assembly in a 1/3 symmetric model, this will return 1/3 of the total
-        area of the physical assembly. This way, if you take the sum
-        of the areas in the core (or count the atoms in the core, etc.),
-        you will have the proper number after multiplying by the model symmetry.
+        Area is consistent with the area in the model, so if you have a central assembly in a 1/3
+        symmetric model, this will return 1/3 of the total area of the physical assembly. This way,
+        if you take the sum of the areas in the core (or count the atoms in the core, etc.), you
+        will have the proper number after multiplying by the model symmetry.
 
         Parameters
         ----------
@@ -623,20 +571,20 @@ class Block(composites.Composite):
         armi.reactor.blocks.Block.getMaxArea
             return the full area of the physical assembly disregarding model symmetry
         """
-        # this caching requires that you clear the cache every time you adjust anything
-        # including temperature and dimensions.
+        # this caching requires that you clear the cache every time you adjust anything including
+        # temperature and dimensions.
         area = self._getCached("area")
         if area:
             return area
 
         a = 0.0
-        for c in self.getChildren():
+        for c in self:
             myArea = c.getArea(cold=cold)
             a += myArea
         fullArea = a
 
-        # correct the fullHexArea by the symmetry factor
-        # this factor determines if the hex has been clipped by symmetry lines
+        # correct the fullHexArea by the symmetry factor this factor determines if the hex has been
+        # clipped by symmetry lines
         area = fullArea / self.getSymmetryFactor()
 
         self._setCache("area", area)
@@ -645,16 +593,6 @@ class Block(composites.Composite):
     def getVolume(self):
         """
         Return the volume of a block.
-
-        .. impl:: Volume of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS0
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Loops over all the components in the block, calling
-            :py:meth:`~armi.reactor.components.component.Component.getVolume` on
-            each and summing the result. The summed value is then divided by
-            the symmetry factor of the block to account for reduced volumes of
-            blocks in certain symmetric representations.
 
         Returns
         -------
@@ -671,10 +609,9 @@ class Block(composites.Composite):
 
         Takes into account assemblies that are bisected or trisected by symmetry lines
 
-        In 1/3 symmetric cases, the central assembly is 1/3 a full area.
-        If edge assemblies are included in a model, the symmetry factor along
-        both edges for overhanging assemblies should be 2.0. However,
-        ARMI runs in most scenarios with those assemblies on the 120-edge removed,
+        In 1/3 symmetric cases, the central assembly is 1/3 a full area. If edge assemblies are
+        included in a model, the symmetry factor along both edges for overhanging assemblies should
+        be 2.0. However, ARMI runs in most scenarios with those assemblies on the 120-edge removed,
         so the symmetry factor should generally be just 1.0.
 
         See Also
@@ -685,7 +622,7 @@ class Block(composites.Composite):
 
     def adjustDensity(self, frac, adjustList, returnMass=False):
         """
-        adjusts the total density of each nuclide in adjustList by frac.
+        Adjusts the total density of each nuclide in adjustList by frac.
 
         Parameters
         ----------
@@ -735,29 +672,27 @@ class Block(composites.Composite):
         is perturbed, all of htem are perturbed.
         """
         if self.p.detailedNDens is None:
-            # BOL assems get expanded to a reference so the first check is needed so it
-            # won't call .blueprints on None since BOL assems don't have a core/r
+            # BOL assems get expanded to a reference so the first check is needed so it won't call
+            # .blueprints on None since BOL assems don't have a core/r
             return
         if any(nuc in self.core.r.blueprints.activeNuclides for nuc in adjustList):
             self.p.detailedNDens *= frac
-            # Other power densities do not need to be updated as they are calculated in
-            # the global flux interface, which occurs after axial expansion from crucible
-            # on the interface stack.
+            # Other power densities do not need to be updated as they are calculated in the global
+            # flux interface, which occurs after axial expansion on the interface stack.
             self.p.pdensDecay *= frac
 
     def completeInitialLoading(self, bolBlock=None):
         """
         Does some BOL bookkeeping to track things like BOL HM density for burnup tracking.
 
-        This should run after this block is loaded up at BOC (called from
-        Reactor.initialLoading).
+        This should run after this block is loaded up at BOC (called from Reactor.initialLoading).
 
-        The original purpose of this was to get the moles HM at BOC for the moles
-        Pu/moles HM at BOL calculation.
+        The original purpose of this was to get the moles HM at BOC for the moles Pu/moles HM at BOL
+        calculation.
 
-        This also must be called after modifying something like the smear density or zr
-        fraction in an optimization case. In ECPT cases, a BOL block must be passed or
-        else the burnup will try to get based on a pre-burned value.
+        This also must be called after modifying something like the smear density or zr fraction in
+        an optimization case. In ECPT cases, a BOL block must be passed or else the burnup will try
+        to get based on a pre-burned value.
 
         Parameters
         ----------
@@ -781,9 +716,7 @@ class Block(composites.Composite):
         hmDens = bolBlock.getHMDens()  # total homogenized heavy metal number density
         self.p.nHMAtBOL = hmDens
         self.p.molesHmBOL = self.getHMMoles()
-        self.p.puFrac = (
-            self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
-        )
+        self.p.puFrac = self.getPuMoles() / self.p.molesHmBOL if self.p.molesHmBOL > 0.0 else 0.0
 
         try:
             # non-pinned reactors (or ones without cladding) will not use smear density
@@ -793,13 +726,15 @@ class Block(composites.Composite):
 
         self.p.enrichmentBOL = self.getFissileMassEnrich()
         massHmBOL = 0.0
-        sf = self.getSymmetryFactor()
         for child in self:
-            hmMass = child.getHMMass() * sf
+            hmMass = child.getHMMass()
             massHmBOL += hmMass
-            # Components have a massHmBOL parameter but not every composite will
+            # Components have the following parameters but not every composite will massHmBOL,
+            # molesHmBOL, puFrac
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
+                child.p.molesHmBOL = child.getHMMoles()
+                child.p.puFrac = self.getPuMoles() / child.p.molesHmBOL if child.p.molesHmBOL > 0.0 else 0.0
 
         self.p.massHmBOL = massHmBOL
 
@@ -820,23 +755,20 @@ class Block(composites.Composite):
         if not b10Comps:
             return
 
-        # get the highest density comp dont want to sum all because some
-        # comps might have very small impurities of boron and adding this
-        # volume wont be conservative for captures per cc.
+        # get the highest density comp dont want to sum all because some comps might have very small
+        # impurities of boron and adding this volume won't be conservative for captures per cc.
         b10Comp = sorted(b10Comps, key=lambda x: x.getNumberDensity("B10"))[-1]
 
         if len(b10Comps) > 1:
             runLog.warning(
-                f"More than one boron10-containing component found  in {self.name}. "
-                f"Only {b10Comp} will be considered for calculation of initialB10ComponentVol "
-                "Since adding multiple volumes is not conservative for captures/cc."
-                f"All compos found {b10Comps}",
+                f"More than one boron10-containing component found in {self.name}. Only {b10Comp} "
+                f"will be considered for calculation of initialB10ComponentVol Since adding "
+                f"multiple volumes is not conservative for captures. All compos found {b10Comps}",
                 single=True,
             )
         if self.isFuel():
             runLog.warning(
-                f"{self.name} has both fuel and initial b10. "
-                "b10 volume may not be conserved with axial expansion.",
+                f"{self.name} has both fuel and initial b10. b10 volume may not be conserved with axial expansion.",
                 single=True,
             )
 
@@ -852,9 +784,7 @@ class Block(composites.Composite):
 
         Typically used in the insertion of control rods.
         """
-        paramsToSkip = set(
-            self.p.paramDefs.inCategory(parameters.Category.retainOnReplacement).names
-        )
+        paramsToSkip = set(self.p.paramDefs.inCategory(parameters.Category.retainOnReplacement).names)
 
         tempBlock = copy.deepcopy(bReplacement)
         oldParams = self.p
@@ -874,12 +804,10 @@ class Block(composites.Composite):
 
     @staticmethod
     def plotFlux(core, fName=None, bList=None, peak=False, adjoint=False, bList2=[]):
-        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a
-        # better fit.
-        # We don't want to remove the plotFlux function in the Block namespace yet
-        # in case client code is depending on this function existing here. This is just
-        # a simple pass-through function that passes the arguments along to the actual
-        # implementation in its new location.
+        # Block.plotFlux has been moved to utils.plotting as plotBlockFlux, which is a better fit.
+        # We don't want to remove the plotFlux function in the Block namespace yet in case client
+        # code is depending on this function existing here. This is just a simple pass-through
+        # function that passes the arguments along to the actual implementation in its new location.
         plotBlockFlux(core, fName, bList, peak, adjoint, bList2)
 
     def _updatePitchComponent(self, c):
@@ -887,9 +815,8 @@ class Block(composites.Composite):
         Update the component that defines the pitch.
 
         Given a Component, compare it to the current component that defines the pitch of the Block.
-        If bigger, replace it.
-        We need different implementations of this to support different logic for determining the
-        form of pitch and the concept of "larger".
+        If bigger, replace it. We need different implementations of this to support different logic
+        for determining the form of pitch and the concept of "larger".
 
         See Also
         --------
@@ -927,7 +854,7 @@ class Block(composites.Composite):
         self._updatePitchComponent(c)
 
     def removeAll(self, recomputeAreaFractions=True):
-        for c in self.getChildren():
+        for c in list(self):
             self.remove(c, recomputeAreaFractions=False)
         if recomputeAreaFractions:  # only do this once
             self.getVolumeFractions()
@@ -947,10 +874,11 @@ class Block(composites.Composite):
 
     def getComponentsThatAreLinkedTo(self, comp, dim):
         """
-        Determine which dimensions of which components are linked to a specific dimension of a particular component.
+        Determine which dimensions of which components are linked to a specific dimension of a
+        particular component.
 
-        Useful for breaking fuel components up into individuals and making sure
-        anything that was linked to the fuel mult (like the cladding mult) stays correct.
+        Useful for breaking fuel components up into individuals and making sure anything that was
+        linked to the fuel mult (like the cladding mult) stays correct.
 
         Parameters
         ----------
@@ -1033,11 +961,10 @@ class Block(composites.Composite):
 
         Notes
         -----
-        If you just want sorted components in this block, use ``sorted(self)``.
-        This will never include any ``DerivedShape`` objects. Since they have a derived
-        area they don't have a well-defined dimension. For now we just ignore them.
-        If they are desired in the future some knowledge of their dimension will be
-        required while they are being derived.
+        If you just want sorted components in this block, use ``sorted(self)``. This will never
+        include any ``DerivedShape`` objects. Since they have a derived area they don't have a well-
+        defined dimension. For now we just ignore them. If they are desired in the future some
+        knowledge of their dimension will be required while they are being derived.
         """
         sortedComponents = sorted(self)
         componentIndex = sortedComponents.index(component)
@@ -1053,24 +980,18 @@ class Block(composites.Composite):
 
             Uses some simple criteria to infer the number of pins in the block.
 
-            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`,
-            loop over all components of that type in the block. If the component
-            is an instance of :py:class:`~armi.reactor.components.basicShapes.Circle`,
-            add its multiplicity to a list, and sum that list over all components
-            with each given flag.
+            For every flag in the module list :py:data:`~armi.reactor.blocks.PIN_COMPONENTS`, loop
+            over all components of that type in the block. If the component is an instance of
+            :py:class:`~armi.reactor.components.basicShapes.Circle`, add its multiplicity to a list,
+            and sum that list over all components with each given flag.
 
-            After looping over all possibilities, return the maximum value returned
-            from the process above, or if no compatible components were found,
-            return zero.
+            After looping over all possibilities, return the maximum value returned from the process
+            above, or if no compatible components were found, return zero.
         """
         nPins = [
             sum(
                 [
-                    (
-                        int(c.getDimension("mult"))
-                        if isinstance(c, basicShapes.Circle)
-                        else 0
-                    )
+                    (int(c.getDimension("mult")) if isinstance(c, basicShapes.Circle) else 0)
                     for c in self.iterComponents(compType)
                 ]
             )
@@ -1096,7 +1017,7 @@ class Block(composites.Composite):
         This merges on a high level (using number densities). Components will not be merged.
 
         This is used e.g. for inserting a control block partially to get a very tight criticality
-        control.  In this case, a control block would be merged with a duct block. It is also used
+        control. In this case, a control block would be merged with a duct block. It is also used
         when a control rod is specified as a certain length but that length does not fit exactly
         into a full block.
         """
@@ -1137,11 +1058,9 @@ class Block(composites.Composite):
             return tFrac
         else:
             runLog.warning(
-                "No component {0} exists on {1}, so area fraction is zero.".format(
-                    typeSpec, self
-                ),
+                f"No component {typeSpec} exists on {self}, so area fraction is zero.",
                 single=True,
-                label="{0} areaFrac is zero".format(typeSpec),
+                label=f"{typeSpec} areaFrac is zero",
             )
             return 0.0
 
@@ -1175,16 +1094,14 @@ class Block(composites.Composite):
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
 
-        raise ValueError(
-            "Cannot get Dimension because Flag not found: {0}".format(typeSpec)
-        )
+        raise ValueError(f"Cannot get Dimension because Flag not found: {typeSpec}")
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
         raise NotImplementedError  # no geometry can be assumed
 
     def getWireWrapCladGap(self, cold=False):
-        """Return the gap betwen the wire wrap and the clad."""
+        """Return the gap between the wire wrap and the clad."""
         clad = self.getComponent(Flags.CLAD)
         wire = self.getComponent(Flags.WIRE)
         wireOuterRadius = wire.getBoundingCircleOuterDiameter(cold=cold) / 2.0
@@ -1204,31 +1121,12 @@ class Block(composites.Composite):
         # This assumes that anything with the GAP flag will have a valid 'id' dimension. If that
         # were not the case, then we would need to protect the call to getDimension with a
         # try/except
-        cIsCenterGapGap = (
-            isinstance(c, components.Component)
-            and c.hasFlags(Flags.GAP)
-            and c.getDimension("id") == 0
-        )
+        cIsCenterGapGap = isinstance(c, components.Component) and c.hasFlags(Flags.GAP) and c.getDimension("id") == 0
         return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
     def getPitch(self, returnComp=False):
         """
         Return the center-to-center hex pitch of this block.
-
-        .. impl:: Pitch of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS1
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Uses the block's ``_pitchDefiningComponent`` to identify the component
-            in the block that defines the pitch. Then uses the
-            :py:meth:`~armi.reactor.components.component.Component.getPitchData`
-            method of that component to return the pitch for the block, accounting
-            for the component's current temperature.
-
-            The ``_pitchDefiningComponent`` attribute can be set by
-            :py:meth:`~armi.reactor.blocks.Block.setPitch`, but is typically
-            set via a calls to :py:meth:`~armi.reactor.blocks.Block._updatePitchComponent`
-            as components are added to the block with :py:meth:`~armi.reactor.blocks.Block.add`.
 
         Parameters
         ----------
@@ -1260,8 +1158,7 @@ class Block(composites.Composite):
         if c is None:
             raise ValueError("{} has no valid pitch defining component".format(self))
 
-        # ask component for dimensions, since they could have changed,
-        # due to temperature, for example.
+        # ask component for dimensions, since they could have changed due to temperature
         p = c.getPitchData()
         return (p, c) if returnComp else p
 
@@ -1280,7 +1177,7 @@ class Block(composites.Composite):
     def getDimensions(self, dimension):
         """Return dimensional values of the specified dimension."""
         dimVals = set()
-        for c in self.getChildren():
+        for c in self:
             try:
                 dimVal = c.getDimension(dimension)
             except parameters.ParameterError:
@@ -1321,16 +1218,15 @@ class Block(composites.Composite):
 
         This sets the settingPitch and actually sets the dimension of the outer hexagon.
 
-        During a load (importGeom), the setDimension doesn't usually do anything except
-        set the setting See Issue 034
+        During a load (importGeom), the setDimension doesn't usually do anything except set the
+        setting See Issue 034
 
-        But during a actual case modification (e.g. in an optimization sweep, then the dimension
-        has to be set as well.
+        But during a actual case modification (e.g. in an optimization sweep, then the dimension has
+        to be set as well.
 
         See Also
         --------
         getPitch : gets the pitch
-
         """
         c, _p = self._pitchDefiningComponent
         if c:
@@ -1368,7 +1264,6 @@ class Block(composites.Composite):
 
         numDensities = self.getNumberDensities()
 
-        # vol = self.getVolume()
         for nucName, nDen in numDensities.items():
             nucMc = nuclideBases.byName[nucName].label + self.getMicroSuffix()
             if gamma:
@@ -1403,10 +1298,9 @@ class Block(composites.Composite):
 
     def getBlocks(self):
         """
-        This method returns all the block(s) included in this block
-        its implemented so that methods could iterate over reactors, assemblies
-        or single blocks without checking to see what the type of the
-        reactor-family object is.
+        This method returns all the block(s) included in this block its implemented so that methods
+        could iterate over reactors, assemblies or single blocks without checking to see what the
+        type of the reactor-family object is.
         """
         return [self]
 
@@ -1416,10 +1310,9 @@ class Block(composites.Composite):
 
         Notes
         -----
-        This is VERY useful for defining a ThRZ core out of
-        differentialRadialSegements whose dimensions are connected together
-        some of these dimensions are derivative and can be updated by changing
-        dimensions in a Parameter Component or other linked components
+        This is VERY useful for defining a ThRZ core out of differentialRadialSegements whose
+        dimensions are connected together some of these dimensions are derivative and can be updated
+        by changing dimensions in a Parameter Component or other linked components
 
         See Also
         --------
@@ -1433,69 +1326,12 @@ class Block(composites.Composite):
             except NotImplementedError:
                 runLog.warning("{0} has no updatedDims method -- skipping".format(c))
 
-    def breakFuelComponentsIntoIndividuals(self):
-        """
-        Split block-level components (in fuel blocks) into pin-level components.
-
-        The fuel component will be broken up according to its multiplicity.
-
-        Order matters! The first pin component will be located at a particular (x, y), which
-        will be used in the fluxRecon module to determine the interpolated flux.
-
-        The fuel will become fuel001 through fuel169 if there are 169 pins.
-        """
-        fuels = self.getChildrenWithFlags(Flags.FUEL)
-        if len(fuels) != 1:
-            runLog.error(
-                "This block contains {0} fuel components: {1}".format(len(fuels), fuels)
-            )
-            raise RuntimeError(
-                "Cannot break {0} into multiple fuel components b/c there is not a single fuel"
-                " component.".format(self)
-            )
-
-        fuel = fuels[0]
-        fuelFlags = fuel.p.flags
-        nPins = self.getNumPins()
-        runLog.info(
-            "Creating {} individual {} components on {}".format(nPins, fuel, self)
-        )
-
-        # Handle all other components that may be linked to the fuel multiplicity
-        # by unlinking them and setting them directly.
-        # TODO: What about other (actual) dimensions? This is a limitation in that only fuel
-        # compuents are duplicated, and not the entire pin. It is also a reasonable assumption with
-        # current/historical usage of ARMI.
-        for comp, dim in self.getComponentsThatAreLinkedTo(fuel, "mult"):
-            comp.setDimension(dim, nPins)
-
-        # finish the first pin as a single pin
-        fuel.setDimension("mult", 1)
-        fuel.setName("fuel001")
-        fuel.p.pinNum = 1
-
-        # create all the new pin components and add them to the block with 'fuel001' names
-        for i in range(nPins - 1):
-            # wow, only use of a non-deepcopy
-            newC = copy.copy(fuel)
-            newC.setName("fuel{0:03d}".format(i + 2))  # start with 002.
-            newC.p.pinNum = i + 2
-            self.add(newC)
-
-        # update moles at BOL for each pin
-        self.p.molesHmBOLByPin = []
-        for pin in self.iterComponents(Flags.FUEL):
-            # Update the fuel component flags to be the same as before the split (i.e., DEPLETABLE)
-            pin.p.flags = fuelFlags
-            self.p.molesHmBOLByPin.append(pin.getHMMoles())
-            pin.p.massHmBOL /= nPins
-
     def getIntegratedMgFlux(self, adjoint=False, gamma=False):
         """
         Return the volume integrated multigroup neutron tracklength in [n-cm/s].
 
-        The first entry is the first energy group (fastest neutrons). Each additional
-        group is the next energy group, as set in the ISOTXS library.
+        The first entry is the first energy group (fastest neutrons). Each additional group is the
+        next energy group, as set in the ISOTXS library.
 
         Parameters
         ----------
@@ -1569,7 +1405,31 @@ class Block(composites.Composite):
         """
         self.p.axialExpTargetComponent = targetComponent.name
 
-    def getPinCoordinates(self):
+    def getPinLocations(self) -> list[grids.IndexLocation]:
+        """Produce all the index locations for pins in the block.
+
+        Returns
+        -------
+        list[grids.IndexLocation]
+            Integer locations where pins can be found in the block.
+
+        Notes
+        -----
+        Only components with ``Flags.CLAD`` are considered to define a pin's location.
+
+        See Also
+        --------
+        :meth:`getPinCoordinates` - companion for this method.
+        """
+        items = []
+        for clad in self.iterChildrenWithFlags(Flags.CLAD):
+            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
+                items.extend(clad.spatialLocator)
+            else:
+                items.append(clad.spatialLocator)
+        return items
+
+    def getPinCoordinates(self) -> np.ndarray:
         """
         Compute the local centroid coordinates of any pins in this block.
 
@@ -1577,23 +1437,17 @@ class Block(composites.Composite):
 
         Returns
         -------
-        localCoordinates : list
-            list of (x,y,z) pairs representing each pin in the order they are listed as children
+        localCoords : numpy.ndarray
+            ``(N, 3)`` array of coordinates for pins locations. ``localCoords[i]`` contains a triplet of
+            the x, y, z location for pin ``i``. Ordered according to how they are listed as children
 
-        Notes
-        -----
-        This assumes hexagonal pin lattice and needs to be upgraded once more generic geometry
-        options are needed. Only works if pins have clad.
+        See Also
+        --------
+        :meth:`getPinLocations` - companion for this method
         """
-        coords = []
-        for clad in self.getChildrenWithFlags(Flags.CLAD):
-            if isinstance(clad.spatialLocator, grids.MultiIndexLocation):
-                coords.extend(
-                    [locator.getLocalCoordinates() for locator in clad.spatialLocator]
-                )
-            else:
-                coords.append(clad.spatialLocator.getLocalCoordinates())
-        return coords
+        indices = self.getPinLocations()
+        coords = [location.getLocalCoordinates() for location in indices]
+        return np.array(coords)
 
     def getTotalEnergyGenerationConstants(self):
         """
@@ -1606,17 +1460,13 @@ class Block(composites.Composite):
         totalEnergyGenConstant: np.ndarray
             Total (fission + capture) energy generation group constants (Joules/cm)
         """
-        return (
-            self.getFissionEnergyGenerationConstants()
-            + self.getCaptureEnergyGenerationConstants()
-        )
+        return self.getFissionEnergyGenerationConstants() + self.getCaptureEnergyGenerationConstants()
 
     def getFissionEnergyGenerationConstants(self):
         """
         Get the fission energy generation group constants for a block.
 
-        Gives the fission energy generation rates when multiplied by the multigroup
-        flux.
+        Gives the fission energy generation rates when multiplied by the multigroup flux.
 
         Returns
         -------
@@ -1630,8 +1480,7 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
+                "Cannot compute energy generation group constants without a library. Please ensure a library exists."
             )
 
         return xsCollections.computeFissionEnergyGenerationConstants(
@@ -1642,8 +1491,7 @@ class Block(composites.Composite):
         """
         Get the capture energy generation group constants for a block.
 
-        Gives the capture energy generation rates when multiplied by the multigroup
-        flux.
+        Gives the capture energy generation rates when multiplied by the multigroup flux.
 
         Returns
         -------
@@ -1657,8 +1505,7 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot compute energy generation group constants without a library"
-                ". Please ensure a library exists."
+                "Cannot compute energy generation group constants without a library. Please ensure a library exists."
             )
 
         return xsCollections.computeCaptureEnergyGenerationConstants(
@@ -1705,8 +1552,7 @@ class Block(composites.Composite):
         """
         if not self.core.lib:
             raise RuntimeError(
-                "Cannot get gamma energy deposition group constants without "
-                "a library. Please ensure a library exists."
+                "Cannot get gamma energy deposition group constants without a library. Please ensure a library exists."
             )
 
         return xsCollections.computeGammaEnergyDepositionConstants(
@@ -1722,18 +1568,6 @@ class Block(composites.Composite):
             return 0.0
         return b10 / total
 
-    def getPuMoles(self):
-        """Returns total number of moles of Pu isotopes."""
-        nucNames = [nuc.name for nuc in elements.byZ[94].nuclides]
-        puN = sum(self.getNuclideNumberDensities(nucNames))
-
-        return (
-            puN
-            / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
-            * self.getVolume()
-            * self.getSymmetryFactor()
-        )
-
     def getUraniumMassEnrich(self):
         """Returns U-235 mass fraction assuming U-235 and U-238 only."""
         u5 = self.getMass("U235")
@@ -1742,10 +1576,36 @@ class Block(composites.Composite):
         u8 = self.getMass("U238")
         return u5 / (u8 + u5)
 
+    def getInputHeight(self) -> float:
+        """Determine the input height from blueprints.
+
+        Returns
+        -------
+        float
+            Height for this block pulled from the blueprints.
+
+        Raises
+        ------
+        AttributeError
+            If no ancestor of this block contains the input blueprints. Blueprints are usually
+            stored on the reactor object, which is typically an ancestor of the block
+            (block -> assembly -> core -> reactor). However, this may be the case when creating
+            blocks from scratch in testing where the entire composite tree may not exist.
+        """
+        ancestorWithBp = self.getAncestor(lambda o: getattr(o, "blueprints", None) is not None)
+        if ancestorWithBp is not None:
+            bp = ancestorWithBp.blueprints
+            assemDesign = bp.assemDesigns[self.parent.getType()]
+            heights = assemDesign.height
+            myIndex = self.parent.index(self)
+            return heights[myIndex]
+
+        raise AttributeError(f"No ancestor of {self} has blueprints")
+
 
 class HexBlock(Block):
     """
-    Defines a HexBlock.
+    Defines a Block shaped like a hexagon.
 
     .. impl:: ARMI has the ability to create hex shaped blocks.
         :id: I_ARMI_BLOCK_HEX
@@ -1770,12 +1630,12 @@ class HexBlock(Block):
             :implements: R_ARMI_BLOCK_POSI
 
             Calls to the :py:meth:`~armi.reactor.grids.locations.IndexLocation.getGlobalCoordinates`
-            method of the block's ``spatialLocator`` attribute, which recursively
-            calls itself on all parents of the block to get the coordinates of the
-            block's centroid in 3D cartesian space.
+            method of the block's ``spatialLocator`` attribute, which recursively calls itself on
+            all parents of the block to get the coordinates of the block's centroid in 3D cartesian
+            space.
 
-            Will additionally adjust the x and y coordinates based on the block
-            parameters ``displacementX`` and ``displacementY``.
+            Will additionally adjust the x and y coordinates based on the block parameters
+            ``displacementX`` and ``displacementY``.
         """
         x, y, _z = self.spatialLocator.getGlobalCoordinates()
         x += self.p.displacementX * 100.0
@@ -1793,44 +1653,42 @@ class HexBlock(Block):
             :id: I_ARMI_BLOCK_HOMOG
             :implements: R_ARMI_BLOCK_HOMOG
 
-            This method creates and returns a homogenized representation of itself in the form of a new Block.
-            The homogenization occurs in the following manner. A single Hexagon Component is created
-            and added to the new Block. This Hexagon Component is given the
+            This method creates and returns a homogenized representation of itself in the form of a
+            new Block. The homogenization occurs in the following manner. A single Hexagon Component
+            is created and added to the new Block. This Hexagon Component is given the
             :py:class:`armi.materials.mixture._Mixture` material and a volume averaged temperature
             (``getAverageTempInC``). The number densities of the original Block are also stored on
-            this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original block
-            are copied onto the homogenized block (e.g., macros, lumped fission products, burnup group,
-            number of pins, and spatial grid).
+            this new Component (:need:`I_ARMI_CMP_GET_NDENS`). Several parameters from the original
+            block are copied onto the homogenized block (e.g., macros, lumped fission products,
+            burnup group, number of pins, and spatial grid).
 
         Notes
         -----
-        This can be used to improve performance when a new copy of a reactor needs to be
-        built, but the full detail of the block (including component geometry, material,
-        number density, etc.) is not required for the targeted physics solver being applied
-        to the new reactor model.
+        This can be used to improve performance when a new copy of a reactor needs to be built, but
+        the full detail of the block (including component geometry, material, number density, etc.)
+        is not required for the targeted physics solver being applied to the new reactor model.
 
         The main use case is for the uniform mesh converter (UMC). Frequently, a deterministic
-        neutronics solver will require a uniform mesh reactor, which is produced by the UMC.
-        Many deterministic solvers for fast spectrum reactors will also treat the individual
-        blocks as homogenized mixtures. Since the neutronics solver does not need to know about
-        the geometric and material details of the individual child components within a block,
-        we can save significant effort while building the uniform mesh reactor with the UMC
-        by omitting this detailed data and only providing the necessary level of detail for
-        the uniform mesh reactor: number densities on each block.
+        neutronics solver will require a uniform mesh reactor, which is produced by the UMC. Many
+        deterministic solvers for fast spectrum reactors will also treat the individual blocks as
+        homogenized mixtures. Since the neutronics solver does not need to know about the geometric
+        and material details of the individual child components within a block, we can save
+        significant effort while building the uniform mesh reactor with the UMC by omitting this
+        detailed data and only providing the necessary level of detail for the uniform mesh reactor:
+        number densities on each block.
 
-        Individual components within a block can have different temperatures, and this
-        can affect cross sections. This temperature variation is captured by the lattice physics
-        module. As long as temperature distribution is correctly captured during cross section
-        generation, it doesn't need to be transferred to the neutronics solver directly through
-        this copy operation.
+        Individual components within a block can have different temperatures, and this can affect
+        cross sections. This temperature variation is captured by the lattice physics module. As
+        long as temperature distribution is correctly captured during cross section generation, it
+        does not need to be transferred to the neutronics solver directly through this copy
+        operation.
 
         If you make a new block, you must add it to an assembly and a reactor.
 
         Returns
         -------
-        b
-            A homogenized block containing a single Hexagon Component that contains an
-            average temperature and the number densities from the original block.
+        b : A homogenized block containing a single Hexagon Component that contains an average
+            temperature and the number densities from the original block.
 
         See Also
         --------
@@ -1842,7 +1700,7 @@ class HexBlock(Block):
         # assign macros and LFP
         b.macros = self.macros
         b._lumpedFissionProducts = self._lumpedFissionProducts
-        b.p.buGroup = self.p.buGroup
+        b.p.envGroup = self.p.envGroup
 
         hexComponent = Hexagon(
             "homogenizedHex",
@@ -1870,12 +1728,8 @@ class HexBlock(Block):
                     )
                     pinComponent.setType("pin", Flags.CLAD)
                     pinComponent.spatialLocator = copy.deepcopy(clad.spatialLocator)
-                    if isinstance(
-                        pinComponent.spatialLocator, grids.MultiIndexLocation
-                    ):
-                        for i1, i2 in zip(
-                            list(pinComponent.spatialLocator), list(clad.spatialLocator)
-                        ):
+                    if isinstance(pinComponent.spatialLocator, grids.MultiIndexLocation):
+                        for i1, i2 in zip(list(pinComponent.spatialLocator), list(clad.spatialLocator)):
                             i1.associate(i2.grid)
                     pinComponent.setDimension("mult", clad.getDimension("mult"))
                     b.add(pinComponent)
@@ -1886,50 +1740,19 @@ class HexBlock(Block):
         return b
 
     def getMaxArea(self):
-        """
-        Compute the max area of this block if it was totally full.
-
-        .. impl:: Area of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS2
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method first retrieves the pitch of the hexagonal Block
-            (:need:`I_ARMI_UTIL_HEXAGON0`) and then leverages the
-            area calculation via :need:`I_ARMI_UTIL_HEXAGON0`.
-
-        """
+        """Compute the max area of this block if it was totally full."""
         pitch = self.getPitch()
         if not pitch:
             return 0.0
         return hexagon.area(pitch)
 
     def getDuctIP(self):
-        """
-        Returns the duct IP dimension.
-
-        .. impl:: IP dimension is retrievable.
-            :id: I_ARMI_BLOCK_DIMS3
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method retrieves the duct Component and quieries
-            it's inner pitch directly. If the duct is missing or if there
-            are multiple duct Components, an error will be raised.
-        """
+        """Returns the duct IP dimension."""
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("ip")
 
     def getDuctOP(self):
-        """
-        Returns the duct OP dimension.
-
-        .. impl:: OP dimension is retrievable.
-            :id: I_ARMI_BLOCK_DIMS4
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This method retrieves the duct Component and quieries
-            its outer pitch directly. If the duct is missing or if there
-            are multiple duct Components, an error will be raised.
-        """
+        """Returns the duct OP dimension."""
         duct = self.getComponent(Flags.DUCT, exact=True)
         return duct.getDimension("op")
 
@@ -1943,26 +1766,24 @@ class HexBlock(Block):
         Updates the pin linear power densities of this block for the current rotation.
         The linear densities are represented by the *linPowByPin* parameter.
 
-        It is assumed that :py:meth:`.initializePinLocations` has already been executed
-        for fueled blocks in order to access the *pinLocation* parameter. The
-        *pinLocation* parameter is not accessed for non-fueled blocks.
+        It is assumed that :py:meth:`.initializePinLocations` has already been executed for fueled
+        blocks in order to access the *pinLocation* parameter. The *pinLocation* parameter is not
+        accessed for non-fueled blocks.
 
-        The *linPowByPin* parameter can be directly assigned to instead of using this
-        method if the multiplicity of the pins in the block is equal to the number of
-        pins in the block.
+        The *linPowByPin* parameter can be directly assigned to instead of using this method if the
+        multiplicity of the pins in the block is equal to the number of pins in the block.
 
         Parameters
         ----------
         powers : list of floats, required
-            The block-level pin linear power densities. powers[i] represents the average
-            linear power density of pin i. The units of linear power density is watts/cm
-            (i.e., watts produced per cm of pin length). The "ARMI pin ordering" must be
-            be used, which is counter-clockwise from 3 o'clock.
+            The block-level pin linear power densities. powers[i] represents the average linear
+            power density of pin i. The units of linear power density is watts/cm (i.e., watts
+            produced per cm of pin length). The "ARMI pin ordering" must be be used, which is
+            counter-clockwise from 3 o'clock.
 
         powerKeySuffix: str, optional
             Must be either an empty string, :py:const:`NEUTRON <armi.physics.neutronics.const.NEUTRON>`,
-            or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty
-            string.
+            or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty string.
 
         Notes
         -----
@@ -1971,15 +1792,14 @@ class HexBlock(Block):
         numPins = self.getNumPins()
         if not numPins or numPins != len(powers):
             raise ValueError(
-                f"Invalid power data for {self} with {numPins} pins."
-                f" Got {len(powers)} entries in powers: {powers}"
+                f"Invalid power data for {self} with {numPins} pins. Got {len(powers)} entries in powers: {powers}"
             )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
         self.p[powerKey] = np.zeros(numPins)
 
-        # Loop through rings. The *pinLocation* parameter is only accessed for fueled
-        # blocks; it is assumed that non-fueled blocks do not use a rotation map.
+        # Loop through rings. The *pinLocation* parameter is only accessed for fueled blocks; it is
+        # assumed that non-fueled blocks do not use a rotation map.
         for pinNum in range(numPins):
             if self.hasFlags(Flags.FUEL):
                 # -1 is needed in order to map from pinLocations to list index
@@ -1989,44 +1809,72 @@ class HexBlock(Block):
             pinLinPow = powers[pinLoc]
             self.p[powerKey][pinNum] = pinLinPow
 
-        # If using the *powerKeySuffix* parameter, we also need to set total power, which
-        # is sum of neutron and gamma powers. We assume that a solo gamma calculation
-        # to set total power does not make sense.
+        # If using the *powerKeySuffix* parameter, we also need to set total power, which is sum of
+        # neutron and gamma powers. We assume that a solo gamma calculation to set total power does
+        # not make sense.
         if powerKeySuffix:
             if powerKeySuffix == GAMMA:
                 if self.p[f"linPowByPin{NEUTRON}"] is None:
-                    msg = (
-                        "Neutron power has not been set yet. Cannot set total power for "
-                        f"{self}."
-                    )
+                    msg = f"Neutron power has not been set yet. Cannot set total power for {self}."
                     raise UnboundLocalError(msg)
                 self.p.linPowByPin = self.p[f"linPowByPin{NEUTRON}"] + self.p[powerKey]
             else:
                 self.p.linPowByPin = self.p[powerKey]
 
-    def rotate(self, rad):
+    def rotate(self, rad: float):
         """
-        Rotates a block's spatially varying parameters by a specified angle in the
-        counter-clockwise direction.
+        Rotates a block's spatially varying parameters by a specified angle in the counter-clockwise
+        direction.
 
-        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a
-        Python list of length 6 in order to be eligible for rotation; all parameters that
-        do not meet these two criteria are not rotated.
+        The parameters must have a ParamLocation of either CORNERS or EDGES and must be a Python
+        list of length 6 in order to be eligible for rotation; all parameters that do not meet these
+        two criteria are not rotated.
 
-        The pin indexing, as stored on the ``pinLocation`` parameter, is also updated.
+        .. impl:: Rotating a hex block updates parameters on the boundary, the orientation
+            parameter, and the spatial coordinates on contained objects.
+            :id: I_ARMI_ROTATE_HEX_BLOCK
+            :implements: R_ARMI_ROTATE_HEX
 
         Parameters
         ----------
         rad: float, required
-            Angle of counter-clockwise rotation in units of radians. Rotations must be
-            in 60-degree increments (i.e., PI/6, PI/3, PI, 2 * PI/3, 5 * PI/6,
-            and 2 * PI)
-
+            Angle of counter-clockwise rotation in units of radians. Rotations must be in 60-degree
+            increments (i.e., PI/3, 2 * PI/3, PI, 4 * PI/3, 5 * PI/3, and 2 * PI).
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
-        self._rotatePins(rotNum)
+        self._rotateChildLocations(rad, rotNum)
+        self.p.orientation[2] += rotNum * 60
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
+
+    def _rotateChildLocations(self, radians: float, rotNum: int):
+        """Update spatial locators for children."""
+        if self.spatialGrid is None:
+            return
+
+        locationRotator = functools.partial(self.spatialGrid.rotateIndex, rotations=rotNum)
+        rotationMatrix = np.array(
+            [
+                [math.cos(radians), -math.sin(radians)],
+                [math.sin(radians), math.cos(radians)],
+            ]
+        )
+        for c in self:
+            if isinstance(c.spatialLocator, grids.MultiIndexLocation):
+                newLocations = list(map(locationRotator, c.spatialLocator))
+                c.spatialLocator = grids.MultiIndexLocation(self.spatialGrid)
+                c.spatialLocator.extend(newLocations)
+            elif isinstance(c.spatialLocator, grids.CoordinateLocation):
+                oldCoords = c.spatialLocator.getLocalCoordinates()
+                newXY = rotationMatrix.dot(oldCoords[:2])
+                newLocation = grids.CoordinateLocation(newXY[0], newXY[1], oldCoords[2], self.spatialGrid)
+                c.spatialLocator = newLocation
+            elif isinstance(c.spatialLocator, grids.IndexLocation):
+                c.spatialLocator = locationRotator(c.spatialLocator)
+            elif c.spatialLocator is not None:
+                msg = f"{c} on {self} has an invalid spatial locator for rotation: {c.spatialLocator}"
+                runLog.error(msg)
+                raise TypeError(msg)
 
     def _rotateBoundaryParameters(self, rotNum: int):
         """Rotate any parameters defined on the corners or edge of bounding hexagon.
@@ -2034,9 +1882,8 @@ class HexBlock(Block):
         Parameters
         ----------
         rotNum : int
-            Rotation number between zero and five, inclusive, specifying how many
-            rotations have taken place.
-
+            Rotation number between zero and five, inclusive, specifying how many rotations have
+            taken place.
         """
         names = self.p.paramDefs.atLocation(ParamLocation.CORNERS).names
         names += self.p.paramDefs.atLocation(ParamLocation.EDGES).names
@@ -2069,140 +1916,40 @@ class HexBlock(Block):
                 )
 
     def _rotateDisplacement(self, rad: float):
-        # This specifically uses the .get() functionality to avoid an error if this
-        # parameter does not exist.
+        # This specifically uses the .get() functionality to avoid an error if this parameter does
+        # not exist.
         dispx = self.p.get("displacementX")
         dispy = self.p.get("displacementY")
         if (dispx is not None) and (dispy is not None):
             self.p.displacementX = dispx * math.cos(rad) - dispy * math.sin(rad)
             self.p.displacementY = dispx * math.sin(rad) + dispy * math.cos(rad)
 
-    def _rotatePins(self, rotNum, justCompute=False):
-        """
-        Rotate the pins of a block, which means rotating the indexing of pins. Note that this does
-        not rotate all block quantities, just the pins.
-
-        Parameters
-        ----------
-        rotNum : int, required
-            An integer from 0 to 5, indicating the number of counterclockwise 60-degree rotations
-            from the CURRENT orientation. Degrees of counter-clockwise rotation = 60*rot
-
-        justCompute : boolean, optional
-            If True, rotateIndexLookup will be returned but NOT assigned to the object parameter
-            self.p.pinLocation. If False, rotateIndexLookup will be returned AND assigned to the
-            object variable self.p.pinLocation.  Useful for figuring out which rotation is best
-            to minimize burnup, etc.
-
-        Returns
-        -------
-        rotateIndexLookup : dict of ints
-            This is an index lookup (or mapping) between pin ids and pin locations. The pin
-            indexing is 1-D (not ring,pos or GEODST). The "ARMI pin ordering" is used for location,
-            which is counter-clockwise from 1 o'clock. Pin ids are always consecutively
-            ordered starting at 1, while pin locations are not once a rotation has been
-            applied.
-
-        Notes
-        -----
-        Changing (x,y) positions of pins does NOT constitute rotation, because the indexing of pin
-        atom densities must be re-ordered.  Re-order indexing of pin-level quantities, NOT (x,y)
-        locations of pins.  Otherwise, subchannel input will be in wrong order.
-
-        How rotations works is like this. There are pins with unique pin numbers in each block.
-        These pin numbers will not change no matter what happens to a block, so if you have pin 1,
-        you always have pin 1. However, these pins are all in pinLocations, and these are what
-        change with rotations. At BOL, a pin's pinLocation is equal to its pin number, but after
-        a rotation, this will no longer be so.
-
-        So, all params that don't care about exactly where in space the pin is (such as depletion)
-        can just use the pin number, but anything that needs to know the spatial location (such as
-        fluxRecon, which interpolates the flux spatially, or subchannel codes, which needs to know where the
-        power is) need to map through the pinLocation parameters.
-
-        This method rotates the pins by changing the pinLocation parameter.
-
-        See Also
-        --------
-        armi.reactor.blocks.HexBlock.rotate
-            Rotates the entire block (pins, ducts, and spatial quantities).
-
-        Examples
-        --------
-            rotateIndexLookup[i_after_rotation-1] = i_before_rotation-1
-        """
-        if not 0 <= rotNum <= 5:
-            raise ValueError(
-                "Cannot rotate {0} to rotNum {1}. Must be 0-5. ".format(self, rotNum)
-            )
-
-        numPins = self.getNumPins()
-        hexRings = hexagon.numRingsToHoldNumCells(numPins)
-        fullNumPins = hexagon.totalPositionsUpToRing(hexRings)
-        rotateIndexLookup = dict(
-            zip(range(1, fullNumPins + 1), range(1, fullNumPins + 1))
-        )
-
-        # Look up the current orientation and add this to it. The math below just rotates
-        # from the reference point so we need a total rotation.
-        rotNum = int((self.getRotationNum() + rotNum) % 6)
-
-        # non-trivial rotation requested
-        # start at 2 because pin 1 never changes (it's in the center!)
-        for pinNum in range(2, fullNumPins + 1):
-            if rotNum == 0:
-                # Rotation to reference orientation. Pin locations are pin IDs.
-                pass
-            else:
-                newPinLocation = hexagon.getIndexOfRotatedCell(pinNum, rotNum)
-                # Assign "before" and "after" pin indices to the index lookup
-                rotateIndexLookup[pinNum] = newPinLocation
-
-        # Because the above math creates indices based on the absolute rotation number,
-        # the old values of pinLocation (if they've been set in the past) can be overwritten
-        # with new numbers
-        if not justCompute:
-            self.setRotationNum(rotNum)
-            self.p["pinLocation"] = [
-                rotateIndexLookup[pinNum] for pinNum in range(1, fullNumPins + 1)
-            ]
-
-        return rotateIndexLookup
-
     def verifyBlockDims(self):
         """Perform some checks on this type of block before it is assembled."""
         try:
-            wireComp = self.getComponent(Flags.WIRE)
+            wireComp = self.getComponent(Flags.WIRE, quiet=True)  # Quiet because None case is checked for below
             ductComps = self.getComponents(Flags.DUCT)
-            cladComp = self.getComponent(Flags.CLAD)
+            cladComp = self.getComponent(Flags.CLAD, quiet=True)  # Quiet because None case is checked for below
         except ValueError:
             # there are probably more that one clad/wire, so we really dont know what this block looks like
-            runLog.info(
-                "Block design {} is too complicated to verify dimensions. Make sure they "
-                "are correct!".format(self)
-            )
+            runLog.info(f"Block design {self} is too complicated to verify dimensions. Make sure they are correct!")
             return
+
         # check wire wrap in contact with clad
-        if (
-            self.getComponent(Flags.CLAD) is not None
-            and self.getComponent(Flags.WIRE) is not None
-        ):
+        if cladComp is not None and wireComp is not None:
             wwCladGap = self.getWireWrapCladGap(cold=True)
             if round(wwCladGap, 6) != 0.0:
                 runLog.warning(
-                    "The gap between wire wrap and clad in block {} was {} cm. Expected 0.0."
-                    "".format(self, wwCladGap),
+                    "The gap between wire wrap and clad in block {} was {} cm. Expected 0.0.".format(self, wwCladGap),
                     single=True,
                 )
+
         # check clad duct overlap
         pinToDuctGap = self.getPinToDuctGap(cold=True)
-        # Allow for some tolerance; user input precision may lead to slight negative
-        # gaps
+        # Allow for some tolerance; user input precision may lead to slight negative gaps
         if pinToDuctGap is not None and pinToDuctGap < -0.005:
             raise ValueError(
-                "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(
-                    pinToDuctGap, self
-                )
+                "Gap between pins and duct is {0:.4f} cm in {1}. Make more room.".format(pinToDuctGap, self)
             )
         elif pinToDuctGap is None:
             # only produce a warning if pin or clad are found, but not all of pin, clad and duct. We
@@ -2211,26 +1958,11 @@ class HexBlock(Block):
             if (cladComp is not None or wireComp is not None) and any(
                 [c is None for c in (wireComp, cladComp, ductComp)]
             ):
-                runLog.warning(
-                    "Some component was missing in {} so pin-to-duct gap not calculated"
-                    "".format(self)
-                )
+                runLog.warning("Some component was missing in {} so pin-to-duct gap not calculated".format(self))
 
     def getPinToDuctGap(self, cold=False):
         """
         Returns the distance in cm between the outer most pin and the duct in a block.
-
-        .. impl:: Pin to duct gap of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS5
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Requires that the outer most duct be Hexagonal and wire and clad Components
-            be present. The flat-to-flat distance between the radial exterior of opposing
-            pins in the outermost ring is computed by computing the distance between
-            pin centers (``getPinCenterFlatToFlat``) and adding the outer diameter of
-            the clad Component and the outer diameter of the wire Component twice. The
-            total margin between the inner pitch of the duct Component and the wire is then
-            computed. The pin to duct gap is then half this distance.
 
         Parameters
         ----------
@@ -2243,7 +1975,7 @@ class HexBlock(Block):
             Returns the diameteral gap between the outer most pins in a hex pack to the duct inner
             face to face in cm.
         """
-        wire = self.getComponent(Flags.WIRE)
+        wire = self.getComponent(Flags.WIRE, quiet=True)  # Quiet because None case is checked for below
         ducts = sorted(self.getChildrenWithFlags(Flags.DUCT))
         duct = None
         if any(ducts):
@@ -2256,30 +1988,27 @@ class HexBlock(Block):
                 # has no ip and is circular on inside so following
                 # code will not work
                 duct = None
-        clad = self.getComponent(Flags.CLAD)
+        clad = self.getComponent(Flags.CLAD, quiet=True)  # Quiet because None case is checked for below
         if any(c is None for c in (duct, wire, clad)):
             return None
 
-        # note, if nRings was a None, this could be for a non-hex packed fuel assembly
-        # see thermal hydraulic design basis for description of equation
+        # NOTE: If nRings was a None, this could be for a non-hex packed fuel assembly see thermal
+        # hydraulic design basis for description of equation
         pinCenterFlatToFlat = self.getPinCenterFlatToFlat(cold=cold)
         pinOuterFlatToFlat = (
-            pinCenterFlatToFlat
-            + clad.getDimension("od", cold=cold)
-            + 2.0 * wire.getDimension("od", cold=cold)
+            pinCenterFlatToFlat + clad.getDimension("od", cold=cold) + 2.0 * wire.getDimension("od", cold=cold)
         )
         ductMarginToContact = duct.getDimension("ip", cold=cold) - pinOuterFlatToFlat
         pinToDuctGap = ductMarginToContact / 2.0
 
         return pinToDuctGap
 
-    def getRotationNum(self):
+    def getRotationNum(self) -> int:
         """Get index 0 through 5 indicating number of rotations counterclockwise around the z-axis."""
-        return (
-            np.rint(self.p.orientation[2] / 360.0 * 6) % 6
-        )  # assume rotation only in Z
+        # assume rotation only in Z
+        return np.rint(self.p.orientation[2] / 360.0 * 6) % 6
 
-    def setRotationNum(self, rotNum):
+    def setRotationNum(self, rotNum: int):
         """
         Set orientation based on a number 0 through 5 indicating number of rotations
         counterclockwise around the z-axis.
@@ -2305,10 +2034,7 @@ class HexBlock(Block):
             symmetry = self.parent.spatialLocator.grid.symmetry
         except Exception:
             return 1.0
-        if (
-            symmetry.domain == geometry.DomainType.THIRD_CORE
-            and symmetry.boundary == geometry.BoundaryType.PERIODIC
-        ):
+        if symmetry.domain == geometry.DomainType.THIRD_CORE and symmetry.boundary == geometry.BoundaryType.PERIODIC:
             indices = self.spatialLocator.getCompleteIndices()
             if indices[0] == 0 and indices[1] == 0:
                 # central location
@@ -2316,9 +2042,9 @@ class HexBlock(Block):
             else:
                 symmetryLine = self.core.spatialGrid.overlapsWhichSymmetryLine(indices)
                 # detect if upper edge assemblies are included. Doing this is the only way to know
-                # definitively whether or not the edge assemblies are half-assems or full.
-                # seeing the first one is the easiest way to detect them.
-                # Check it last in the and statement so we don't waste time doing it.
+                # definitively whether or not the edge assemblies are half-assems or full. Seeing
+                # the first one is the easiest way to detect them. Check it last in the and
+                # statement so we don't waste time doing it.
                 upperEdgeLoc = self.core.spatialGrid[-1, 2, 0]
                 if symmetryLine in [
                     grids.BOUNDARY_0_DEGREES,
@@ -2327,21 +2053,28 @@ class HexBlock(Block):
                     return 2.0
         return 1.0
 
-    def autoCreateSpatialGrids(self):
+    def autoCreateSpatialGrids(self, systemSpatialGrid=None):
         """
         Given a block without a spatialGrid, create a spatialGrid and give its children the
         corresponding spatialLocators (if it is a simple block).
 
         In this case, a simple block would be one that has either multiplicity of components equal
         to 1 or N but no other multiplicities. Also, this should only happen when N fits exactly
-        into a given number of hex rings.  Otherwise, do not create a grid for this block.
+        into a given number of hex rings. Otherwise, do not create a grid for this block.
+
+        Parameters
+        ----------
+        systemSpatialGrid : Grid, optional
+            Spatial Grid of the system-level parent of this Assembly that contains this Block.
 
         Notes
         -----
-        If the Block meets all the conditions, we gather all components to either be a
-        multiIndexLocation containing all of the pin positions, or the locator is the center (0,0).
+        When a hex grid has another hex grid nested inside it, the nested grid has the opposite
+        orientation (corners vs flats up). This method takes care of that.
 
-        Also, this only works on blocks that have 'flat side up'.
+        If components inside this block are multiplicity 1, they get a single locator at the center
+        of the grid cell. If the multiplicity is greater than 1, all the components are added to a
+        multiIndexLocation on the hex grid.
 
         Raises
         ------
@@ -2349,39 +2082,62 @@ class HexBlock(Block):
             If the multiplicities of the block are not only 1 or N or if generated ringNumber leads
             to more positions than necessary.
         """
-        # Check multiplicities...
+        # not necessary
+        if self.spatialGrid is not None:
+            return
+
+        # Check multiplicities
         mults = {c.getDimension("mult") for c in self.iterComponents()}
 
-        if len(mults) != 2 or 1 not in mults:
-            raise ValueError(
-                "Could not create a spatialGrid for block {}, multiplicities are not 1 or N they are {}".format(
-                    self.p.type, mults
-                )
+        # Do some validation: Should we try to create a spatial grid?
+        multz = {float(m) for m in mults}
+        if len(multz) == 1 and 1.0 in multz:
+            runLog.extra(
+                f"Block {self.p.type} does not need a spatial grid: multiplicities are all 1.",
+                single=True,
             )
+            return
+        elif len(multz) != 2 or 1.0 not in multz:
+            runLog.extra(
+                f"Could not create a spatialGrid for block {self.p.type}, multiplicities are not {{1, N}} "
+                f"they are {mults}",
+                single=True,
+            )
+            return
+
+        # build the grid, from pitch and orientation
+        if isinstance(systemSpatialGrid, grids.HexGrid):
+            cornersUp = not systemSpatialGrid.cornersUp
+        else:
+            cornersUp = False
+
+        grid = grids.HexGrid.fromPitch(
+            self.getPinPitch(cold=True),
+            numRings=0,
+            armiObject=self,
+            cornersUp=cornersUp,
+        )
 
         ringNumber = hexagon.numRingsToHoldNumCells(self.getNumPins())
-        # For the below to work, there must not be multiple wire or multiple clad types.
-        # note that it's the pointed end of the cell hexes that are up (but the
-        # macro shape of the pins forms a hex with a flat top fitting in the assembly)
-        grid = grids.HexGrid.fromPitch(
-            self.getPinPitch(cold=True), numRings=0, cornersUp=True
-        )
-        spatialLocators = grids.MultiIndexLocation(grid=self.spatialGrid)
         numLocations = 0
         for ring in range(ringNumber):
             numLocations = numLocations + hexagon.numPositionsInRing(ring + 1)
+
         if numLocations != self.getNumPins():
             raise ValueError(
-                "Cannot create spatialGrid, number of locations in rings{} not equal to pin number{}".format(
+                "Cannot create spatialGrid, number of locations in rings {} not equal to pin number {}".format(
                     numLocations, self.getNumPins()
                 )
             )
 
-        i = 0
+        # set the spatial position of the sub-block components
+        spatialLocators = grids.MultiIndexLocation(grid=grid)
         for ring in range(ringNumber):
             for pos in range(grid.getPositionsInRing(ring + 1)):
                 i, j = grid.getIndicesFromRingAndPos(ring + 1, pos + 1)
                 spatialLocators.append(grid[i, j, 0])
+
+        # finally, fill the spatial grid, and put the sub-block components on it
         if self.spatialGrid is None:
             self.spatialGrid = grid
             for c in self:
@@ -2401,8 +2157,8 @@ class HexBlock(Block):
 
     def hasPinPitch(self):
         """Return True if the block has enough information to calculate pin pitch."""
-        return (self.getComponent(Flags.CLAD) is not None) and (
-            self.getComponent(Flags.WIRE) is not None
+        return (self.getComponent(Flags.CLAD, quiet=True) is not None) and (
+            self.getComponent(Flags.WIRE, quiet=True) is not None
         )
 
     def getPinPitch(self, cold=False):
@@ -2411,15 +2167,6 @@ class HexBlock(Block):
 
         Assumes that the pin pitch is defined entirely by contacting cladding tubes and wire wraps.
         Grid spacers not yet supported.
-
-        .. impl:: Pin pitch within block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS6
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This implementation requires that clad and wire Components are present.
-            If not, an error is raised. If present, the pin pitch is calculated
-            as the sum of the outer diameter of the clad and outer diameter of
-            the wire.
 
         Parameters
         ----------
@@ -2432,78 +2179,43 @@ class HexBlock(Block):
             pin pitch in cm
         """
         try:
-            clad = self.getComponent(Flags.CLAD)
-            wire = self.getComponent(Flags.WIRE)
+            clad = self.getComponent(Flags.CLAD, quiet=True)  # Quiet because None case is checked for below
+            wire = self.getComponent(Flags.WIRE, quiet=True)  # Quiet because None case is checked for below
         except ValueError:
-            raise ValueError(
-                "Block {} has multiple clad and wire components,"
-                " so pin pitch is not well-defined.".format(self)
-            )
+            raise ValueError(f"Block {self} has multiple clad and wire components, so pin pitch is not well-defined.")
 
         if wire and clad:
-            return clad.getDimension("od", cold=cold) + wire.getDimension(
-                "od", cold=cold
-            )
+            return clad.getDimension("od", cold=cold) + wire.getDimension("od", cold=cold)
         else:
-            raise ValueError(
-                "Cannot get pin pitch in {} because it does not have a wire and a clad".format(
-                    self
-                )
-            )
+            raise ValueError(f"Cannot get pin pitch in {self} because it does not have a wire and a clad")
 
     def getWettedPerimeter(self):
-        r"""Return the total wetted perimeter of the block in cm.
-
-        .. impl:: Wetted perimeter of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS7
-            :implements: R_ARMI_BLOCK_DIMS
-
-            This implementation computes wetted perimeters for specific Components, as specified
-            by their Flags (:need:`R_ARMI_FLAG_DEFINE`). Hollow hexagons and circular pin Components
-            are supported. The latter supports both instances where the exterior is wetted
-            (e.g., clad, wire) as well as when the interior and exterior are wetted (hollow circle).
-
-            Hollow hexagons are calculated via,
-
-            .. math::
-
-                \frac{6 \times \text{ip}}{\sqrt{3}},
-
-            where :math:`\text{ip}` is the inner pitch of the hollow hexagon. Circular pin Components
-            where the exterior is wetted is calculated via,
-
-            .. math::
-
-                N \pi \left( \text{OD}_c + \text{OD}_w \right),
-
-            where :math:`N` is the total number of pins, :math:`\text{OD}_c` is the outer diameter
-            of the clad, and :math:`\text{OD}_w` is the outer diameter of the wire, respectively.
-            When both the interior and exterior are wetted, the wetted perimeter is calculated as
-
-            .. math::
-
-                \pi \left( \text{OD} + \text{ID} \right),
-
-            where :math:`\text{OD}` and :math:`\text{ID}` are the outer and inner diameters of the pin
-            Component, respectively.
-
-        """
+        """Return the total wetted perimeter of the block in cm."""
         # flags pertaining to hexagon components where the interior of the hexagon is wetted
         wettedHollowHexagonComponentFlags = (
             Flags.DUCT,
             Flags.GRID_PLATE,
             Flags.INLET_NOZZLE,
             Flags.HANDLING_SOCKET,
+            Flags.DUCT | Flags.DEPLETABLE,
+            Flags.GRID_PLATE | Flags.DEPLETABLE,
+            Flags.INLET_NOZZLE | Flags.DEPLETABLE,
+            Flags.HANDLING_SOCKET | Flags.DEPLETABLE,
         )
 
         # flags pertaining to circular pin components where the exterior of the circle is wetted
         wettedPinComponentFlags = (
             Flags.CLAD,
             Flags.WIRE,
+            Flags.CLAD | Flags.DEPLETABLE,
+            Flags.WIRE | Flags.DEPLETABLE,
         )
 
-        # flags pertaining to circular components where both the interior and exterior of the circle are wetted
-        wettedHollowCircleComponentFlags = (Flags.DUCT | Flags.INNER,)
+        # flags pertaining to components where both the interior and exterior are wetted
+        wettedHollowComponentFlags = (
+            Flags.DUCT | Flags.INNER,
+            Flags.DUCT | Flags.INNER | Flags.DEPLETABLE,
+        )
 
         # obtain all wetted components based on type
         wettedHollowHexagonComponents = []
@@ -2517,18 +2229,20 @@ class HexBlock(Block):
             wettedPinComponents.append(c) if c else None
 
         wettedHollowCircleComponents = []
-        for flag in wettedHollowCircleComponentFlags:
+        wettedHollowHexComponents = []
+        for flag in wettedHollowComponentFlags:
             c = self.getComponent(flag, exact=True)
-            wettedHollowCircleComponents.append(c) if c else None
+            if isinstance(c, Hexagon):
+                wettedHollowHexComponents.append(c) if c else None
+            else:
+                wettedHollowCircleComponents.append(c) if c else None
 
         # calculate wetted perimeters according to their geometries
 
         # hollow hexagon = 6 * ip / sqrt(3)
         wettedHollowHexagonPerimeter = 0.0
         for c in wettedHollowHexagonComponents:
-            wettedHollowHexagonPerimeter += (
-                6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
-            )
+            wettedHollowHexagonPerimeter += 6 * c.getDimension("ip") / math.sqrt(3) if c else 0.0
 
         # solid circle = NumPins * pi * (Comp Diam + Wire Diam)
         wettedPinPerimeter = 0.0
@@ -2538,9 +2252,7 @@ class HexBlock(Block):
                 # account for the helical wire wrap
                 correctionFactor = np.hypot(
                     1.0,
-                    math.pi
-                    * c.getDimension("helixDiameter")
-                    / c.getDimension("axialPitch"),
+                    math.pi * c.getDimension("helixDiameter") / c.getDimension("axialPitch"),
                 )
             wettedPinPerimeter += c.getDimension("od") * correctionFactor
         wettedPinPerimeter *= self.getNumPins() * math.pi
@@ -2548,50 +2260,34 @@ class HexBlock(Block):
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
         for c in wettedHollowCircleComponents:
-            wettedHollowCirclePerimeter += (
-                c.getDimension("id") + c.getDimension("od") if c else 0.0
-            )
+            wettedHollowCirclePerimeter += c.getDimension("id") + c.getDimension("od") if c else 0.0
         wettedHollowCirclePerimeter *= math.pi
 
+        # hollow hexagon = 6 * (ip + op) / sqrt(3)
+        wettedHollowHexPerimeter = 0.0
+        for c in wettedHollowHexComponents:
+            wettedHollowHexPerimeter += c.getDimension("ip") + c.getDimension("op") if c else 0.0
+        wettedHollowHexPerimeter *= 6 / math.sqrt(3)
+
         return (
-            wettedHollowHexagonPerimeter
-            + wettedPinPerimeter
-            + wettedHollowCirclePerimeter
+            wettedHollowHexagonPerimeter + wettedPinPerimeter + wettedHollowCirclePerimeter + wettedHollowHexPerimeter
         )
 
     def getFlowArea(self):
-        """Return the total flowing coolant area of the block in cm^2.
+        """Return the total flowing coolant area of the block in cm^2."""
+        area = self.getComponent(Flags.COOLANT, exact=True).getArea()
+        for c in self.getComponents(Flags.INTERDUCTCOOLANT, exact=True):
+            area += c.getArea()
 
-        .. impl:: Flow area of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS8
-            :implements: R_ARMI_BLOCK_DIMS
-
-            Retrieving the flow area requires that there be a single coolant Component.
-            If available, the area is calculated (:need:`I_ARMI_COMP_VOL0`).
-        """
-        return self.getComponent(Flags.COOLANT, exact=True).getArea()
+        return area
 
     def getHydraulicDiameter(self):
-        r"""
+        """
         Return the hydraulic diameter in this block in cm.
 
-        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter.
-        In a hex assembly, the wetted perimeter includes the cladding, the wire wrap, and the
-        inside of the duct. The flow area is the inner area of the duct minus the area of the
-        pins and the wire.
-
-        .. impl:: Hydraulic diameter of block is retrievable.
-            :id: I_ARMI_BLOCK_DIMS9
-            :implements: R_ARMI_BLOCK_DIMS
-
-            The hydraulic diamter is calculated via
-
-            .. math::
-
-                4\frac{A}{P},
-
-            where :math:`A` is the flow area (:need:`I_ARMI_BLOCK_DIMS8`) and :math:`P` is the
-            wetted perimeter (:need:`I_ARMI_BLOCK_DIMS7`).
+        Hydraulic diameter is 4A/P where A is the flow area and P is the wetted perimeter. In a hex
+        assembly, the wetted perimeter includes the cladding, the wire wrap, and the inside of the
+        duct. The flow area is the inner area of the duct minus the area of the pins and the wire.
         """
         return 4.0 * self.getFlowArea() / self.getWettedPerimeter()
 
@@ -2606,9 +2302,7 @@ class CartesianBlock(Block):
         return xw * yw
 
     def setPitch(self, val, updateBolParams=False):
-        raise NotImplementedError(
-            "Directly setting the pitch of a cartesian block is currently not supported."
-        )
+        raise NotImplementedError("Directly setting the pitch of a cartesian block is currently not supported.")
 
     def getSymmetryFactor(self):
         """
@@ -2624,6 +2318,7 @@ class CartesianBlock(Block):
                 elif indices[0] == 0 or indices[1] == 0:
                     # edge location
                     return 2.0
+
         return 1.0
 
     def getPinCenterFlatToFlat(self, cold=False):
@@ -2635,13 +2330,9 @@ class CartesianBlock(Block):
 
 
 class ThRZBlock(Block):
-    # be sure to fill ThRZ blocks with only 3D components - components with explicit getVolume methods
-
     def getMaxArea(self):
         """Return the area of the Theta-R-Z block if it was totally full."""
-        raise NotImplementedError(
-            "Cannot get max area of a TRZ block. Fully specify your geometry."
-        )
+        raise NotImplementedError("Cannot get max area of a TRZ block. Fully specify your geometry.")
 
     def radialInner(self):
         """Return a smallest radius of all the components."""

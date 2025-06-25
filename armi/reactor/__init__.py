@@ -16,48 +16,17 @@ r"""
 The reactor package houses the data model used in ARMI to represent the reactor during its
 simulation. It contains definitions of the reactor, assemblies, blocks, components, etc.
 
-The key classes of the reactor package are shown below:
-
-.. _reactor-class-diagram:
-
-.. pyreverse:: armi.reactor -A -k --ignore=
-               assemblyLists.py,
-               assemblyParameters.py,
-               basicShapes.py,
-               batch.py,
-               batchParameters.py,
-               blockParameters.py,
-               blueprints,
-               complexShapes.py,
-               componentParameters.py,
-               converters,
-               dodecaShapes.py,
-               flags.py,
-               geometry.py,
-               grids.py,
-               parameters,
-               plugins.py,
-               reactorParameters.py,
-               shapes.py,
-               tests,
-               volumetricShapes.py,
-               zones.py
-    :align: center
-    :alt: Reactor class diagram
-    :width: 90%
-
-    Class inheritance diagram for :py:mod:`armi.reactor`.
-
 See :doc:`/developer/index`.
 """
 
-from typing import Dict, Callable, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Dict, Union
 
-from armi import plugins
+from armi import materials, plugins
 
 if TYPE_CHECKING:
+    from armi.reactor.excoreStructure import ExcoreStructure
     from armi.reactor.reactors import Core
-    from armi.reactor.assemblyLists import SpentFuelPool
+    from armi.reactor.spentFuelPool import SpentFuelPool
 
 
 class ReactorPlugin(plugins.ArmiPlugin):
@@ -65,10 +34,23 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL
+    def beforeReactorConstruction(cs) -> None:
+        """Just before reactor construction, update the material "registry" with user settings,
+        if it is set. Often it is set by the application.
+        """
+        from armi.settings.fwSettings.globalSettings import (
+            CONF_MATERIAL_NAMESPACE_ORDER,
+        )
+
+        if cs[CONF_MATERIAL_NAMESPACE_ORDER]:
+            materials.setMaterialNamespaceOrder(cs[CONF_MATERIAL_NAMESPACE_ORDER])
+
+    @staticmethod
+    @plugins.HOOKIMPL
     def defineBlockTypes():
-        from armi.reactor.components.basicShapes import Rectangle, Hexagon
-        from armi.reactor.components.volumetricShapes import RadialSegment
         from armi.reactor import blocks
+        from armi.reactor.components.basicShapes import Hexagon, Rectangle
+        from armi.reactor.components.volumetricShapes import RadialSegment
 
         return [
             (Rectangle, blocks.CartesianBlock),
@@ -79,8 +61,8 @@ class ReactorPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def defineAssemblyTypes():
-        from armi.reactor.blocks import HexBlock, CartesianBlock, ThRZBlock
-        from armi.reactor.assemblies import HexAssembly, CartesianAssembly, ThRZAssembly
+        from armi.reactor.assemblies import CartesianAssembly, HexAssembly, ThRZAssembly
+        from armi.reactor.blocks import CartesianBlock, HexBlock, ThRZBlock
 
         return [
             (HexBlock, HexAssembly),
@@ -90,14 +72,14 @@ class ReactorPlugin(plugins.ArmiPlugin):
 
     @staticmethod
     @plugins.HOOKIMPL(trylast=True)
-    def defineSystemBuilders() -> (
-        Dict[str, Callable[[str], Union["Core", "SpentFuelPool"]]]
-    ):
+    def defineSystemBuilders() -> Dict[str, Callable[[str], Union["Core", "ExcoreStructure", "SpentFuelPool"]]]:
+        from armi.reactor.excoreStructure import ExcoreStructure
         from armi.reactor.reactors import Core
-        from armi.reactor.assemblyLists import SpentFuelPool
+        from armi.reactor.spentFuelPool import SpentFuelPool
 
         return {
             "core": Core,
+            "excore": ExcoreStructure,
             "sfp": SpentFuelPool,
         }
 

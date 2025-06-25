@@ -20,20 +20,22 @@ modeling approximations to apply and how many cycles to run and at what power an
 availability fraction and things like that. The ARMI Framework itself has many settings
 of its own, and plugins typically register some of their own settings as well.
 """
-from typing import List
+
 import fnmatch
 import glob
 import os
+from typing import List
 
 from ruamel import yaml
 
 from armi import runLog
 from armi.settings.caseSettings import Settings
-from armi.settings.setting import Default  # noqa: F401
-from armi.settings.setting import Option  # noqa: F401
-from armi.settings.setting import Setting
+from armi.settings.setting import (
+    Default,  # noqa: F401
+    Option,  # noqa: F401
+    Setting,
+)
 from armi.utils.customExceptions import InvalidSettingsFileError
-
 
 NOT_ENABLED = ""  # An empty setting value implies that the feature
 
@@ -72,13 +74,9 @@ def recursivelyLoadSettingsFiles(
     csFiles : list
         list of :py:class:`~armi.settings.caseSettings.Settings` objects.
     """
-    assert not isinstance(
-        ignorePatterns, str
-    ), "Bare string passed as ignorePatterns. Make sure to pass a list"
+    assert not isinstance(ignorePatterns, str), "Bare string passed as ignorePatterns. Make sure to pass a list"
 
-    assert not isinstance(
-        patterns, str
-    ), "Bare string passed as patterns. Make sure to pass a list"
+    assert not isinstance(patterns, str), "Bare string passed as patterns. Make sure to pass a list"
 
     possibleSettings = []
     runLog.info("Finding potential settings files matching {}.".format(patterns))
@@ -90,9 +88,7 @@ def recursivelyLoadSettingsFiles(
             if ignorePatterns is not None:
                 for ignorePattern in ignorePatterns:
                     matches -= set(fnmatch.filter(files, ignorePattern))
-            possibleSettings.extend(
-                [os.path.join(directory, fname) for fname in matches]
-            )
+            possibleSettings.extend([os.path.join(directory, fname) for fname in matches])
     else:
         for pattern in patterns:
             possibleSettings.extend(glob.glob(pattern))
@@ -112,9 +108,7 @@ def recursivelyLoadSettingsFiles(
             runLog.info("skipping {}\n    {}".format(possibleSettingsFile, ee))
         except yaml.composer.ComposerError as ee:
             runLog.info(
-                "skipping {}; it appears to be an incomplete YAML snippet\n    {}".format(
-                    possibleSettingsFile, ee
-                )
+                "skipping {}; it appears to be an incomplete YAML snippet\n    {}".format(possibleSettingsFile, ee)
             )
         except Exception as ee:
             runLog.error(
@@ -140,9 +134,7 @@ def promptForSettingsFile(choice=None):
     runLog.info("Scanning for ARMI settings files...")
     files = sorted(glob.glob("*.yaml"))
     if not files:
-        runLog.info(
-            "No eligible settings files found. Creating settings without choice"
-        )
+        runLog.info("No eligible settings files found. Creating settings without choice")
         return None
 
     if choice is None:

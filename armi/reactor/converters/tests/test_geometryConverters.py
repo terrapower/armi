@@ -13,22 +13,20 @@
 # limitations under the License.
 
 """Module to test geometry converters."""
+
 import math
 import os
 import unittest
+
 from numpy.testing import assert_allclose
 
 from armi import runLog
-from armi.reactor import blocks
-from armi.reactor import geometry
-from armi.reactor import grids
-from armi.reactor.converters import geometryConverters
-from armi.reactor.converters import uniformMesh
+from armi.reactor import blocks, geometry, grids
+from armi.reactor.converters import geometryConverters, uniformMesh
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
+from armi.testing import loadTestReactor, reduceTestReactorRings
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers
-
 
 THIS_DIR = os.path.dirname(__file__)
 
@@ -46,22 +44,16 @@ class TestGeometryConverters(unittest.TestCase):
         converter.convert(self.r)
 
         numAssems = len(self.r.core.getAssemblies())
-        self.assertEqual(
-            numAssems, 13
-        )  # should end up with 6 reflector assemblies per 1/3rd Core
+        self.assertEqual(numAssems, 13)  # should end up with 6 reflector assemblies per 1/3rd Core
         locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(4, 1)
         shieldtype = self.r.core.childrenByLocator[locator].getType()
-        self.assertEqual(
-            shieldtype, "radial shield"
-        )  # check that the right thing was added
+        self.assertEqual(shieldtype, "radial shield")  # check that the right thing was added
 
         # one more test with an uneven number of rings
         converter.numFuelAssems = 8
         converter.convert(self.r)
         numAssems = len(self.r.core.getAssemblies())
-        self.assertEqual(
-            numAssems, 19
-        )  # should wind up with 11 reflector assemblies per 1/3rd core
+        self.assertEqual(numAssems, 19)  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
         """Tests that ``setNumberOfFuelAssems`` properly changes the number of fuel assemblies."""
@@ -106,20 +98,12 @@ class TestGeometryConverters(unittest.TestCase):
 
     def test_getAssembliesInSector(self):
         allAssems = self.r.core.getAssemblies()
-        fullSector = geometryConverters.HexToRZConverter._getAssembliesInSector(
-            self.r.core, 0, 360
-        )
-        self.assertGreaterEqual(
-            len(fullSector), len(allAssems)
-        )  # could be > due to edge assems
-        third = geometryConverters.HexToRZConverter._getAssembliesInSector(
-            self.r.core, 0, 30
-        )
+        fullSector = geometryConverters.HexToRZConverter._getAssembliesInSector(self.r.core, 0, 360)
+        self.assertGreaterEqual(len(fullSector), len(allAssems))  # could be > due to edge assems
+        third = geometryConverters.HexToRZConverter._getAssembliesInSector(self.r.core, 0, 30)
         # could solve this analytically based on test core size
         self.assertAlmostEqual(25, len(third))
-        oneLine = geometryConverters.HexToRZConverter._getAssembliesInSector(
-            self.r.core, 0, 0.001
-        )
+        oneLine = geometryConverters.HexToRZConverter._getAssembliesInSector(self.r.core, 0, 0.001)
         self.assertAlmostEqual(5, len(oneLine))  # same here
 
 
@@ -168,9 +152,7 @@ class TestHexToRZConverter(unittest.TestCase):
         }
 
         expectedMassDict, expectedNuclideList = self._getExpectedData()
-        geomConv = geometryConverters.HexToRZConverter(
-            self.cs, converterSettings, expandReactor=self._expandReactor
-        )
+        geomConv = geometryConverters.HexToRZConverter(self.cs, converterSettings, expandReactor=self._expandReactor)
         geomConv.convert(self.r)
         newR = geomConv.convReactor
 
@@ -216,13 +198,9 @@ class TestHexToRZConverter(unittest.TestCase):
         return expectedMassDict, expectedNuclideList
 
     def _checkBlockComponents(self, newR):
-        for b in newR.core.getBlocks():
+        for b in newR.core.iterBlocks():
             if len(b) != 1:
-                raise ValueError(
-                    "Block {} has {} components and should only have 1".format(
-                        b, len(b)
-                    )
-                )
+                raise ValueError("Block {} has {} components and should only have 1".format(b, len(b)))
 
     def _checkNuclidesMatch(self, expectedNuclideList, newR):
         """Check that the nuclide lists match before and after conversion."""
@@ -232,9 +210,7 @@ class TestHexToRZConverter(unittest.TestCase):
             diffList += sorted(set(actualNuclideList).difference(expectedNuclideList))
             runLog.warning(diffList)
             raise ValueError(
-                "{0} nuclides do not match between the original and converted reactor".format(
-                    len(diffList)
-                )
+                "{0} nuclides do not match between the original and converted reactor".format(len(diffList))
             )
 
     def _checkNuclideMasses(self, expectedMassDict, newR):
@@ -244,26 +220,20 @@ class TestHexToRZConverter(unittest.TestCase):
             expectedMass = expectedMassDict[nuclide]
             actualMass = newR.core.getMass(nuclide) / self._massScaleFactor
             if round(abs(expectedMass - actualMass), 7) != 0.0:
-                print(
-                    "{:6s} {:10.2f} {:10.2f}".format(nuclide, expectedMass, actualMass)
-                )
+                print("{:6s} {:10.2f} {:10.2f}".format(nuclide, expectedMass, actualMass))
                 massMismatchCount += 1
 
         # Raise error if there are any inconsistent masses
         if massMismatchCount > 0:
             raise ValueError(
-                "{0} nuclides have masses that are not consistent after the conversion".format(
-                    massMismatchCount
-                )
+                "{0} nuclides have masses that are not consistent after the conversion".format(massMismatchCount)
             )
 
     def test_createHomogenizedRZTBlock(self):
         newBlock = blocks.ThRZBlock("testBlock", self.cs)
         a = self.r.core[0]
         converterSettings = {}
-        geomConv = geometryConverters.HexToRZConverter(
-            self.cs, converterSettings, expandReactor=self._expandReactor
-        )
+        geomConv = geometryConverters.HexToRZConverter(self.cs, converterSettings, expandReactor=self._expandReactor)
         volumeExpected = a.getVolume()
         (
             _atoms,
@@ -318,9 +288,9 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
             self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core.getAssemblies()))
 
         # must be added after geom transform
-        for b in self.o.r.core.getBlocks():
+        for b in self.o.r.core.iterBlocks():
             b.p.power = 1.0
-        converter.scaleParamsRelatedToSymmetry(self.r)
+        converter.scaleParamsRelatedToSymmetry(self.r.core)
         a = self.r.core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES)[0]
         self.assertTrue(all(b.p.power == 2.0 for b in a), "Powers were not scaled")
 
@@ -377,18 +347,14 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
         initialNumBlocks = len(self.r.core.getBlocks())
         assems = getLTAAssems()
         expectedLoc = [(3, 2)]
         for i, a in enumerate(assems):
             self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
-        self.assertAlmostEqual(
-            self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
-        )
+        self.assertAlmostEqual(self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5)
         self.assertGreater(
             self.r.core.getTotalBlockParam("power", calcBasedOnFullObj=True),
             self.o.cs["power"] / 3,
@@ -408,9 +374,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
             self.assertEqual(a.spatialLocator.getRingPos(), expectedLoc[i])
 
         # ensure that block power is handled correctly
-        self.assertAlmostEqual(
-            self.r.core.getTotalBlockParam("power"), self.o.cs["power"], places=5
-        )
+        self.assertAlmostEqual(self.r.core.getTotalBlockParam("power"), self.o.cs["power"], places=5)
         self.assertAlmostEqual(
             self.r.core.getTotalBlockParam("power", calcBasedOnFullObj=True),
             self.o.cs["power"],
@@ -422,14 +386,10 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(initialNumBlocks, len(self.r.core.getBlocks()))
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
         self.assertFalse(self.r.core.isFullCore)
-        self.assertAlmostEqual(
-            self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5
-        )
+        self.assertAlmostEqual(self.r.core.getTotalBlockParam("power"), self.o.cs["power"] / 3, places=5)
         assems = getLTAAssems()
         expectedLoc = [(3, 2)]
         for i, a in enumerate(assems):
@@ -461,9 +421,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertFalse(self.r.core.isFullCore)
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )
         numBlocksThirdCore = len(self.r.core.getBlocks())
         # convert the third core to full core
@@ -489,7 +447,5 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
         self.assertEqual(numBlocksThirdCore, len(self.r.core.getBlocks()))
         self.assertEqual(
             self.r.core.symmetry,
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            ),
+            geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC),
         )

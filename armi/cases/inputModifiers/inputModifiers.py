@@ -22,38 +22,34 @@ class InputModifier:
         :id: I_ARMI_CASE_MOD1
         :implements: R_ARMI_CASE_MOD
 
-        This class serves as an abstract base class for modifying the inputs of
-        a case, typically case settings. Child classes must implement a
-        ``__call__`` method accepting a
-        :py:class:`~armi.settings.caseSettings.Settings`,
-        :py:class:`~armi.reactor.blueprints.Blueprints`, and
-        :py:class:`~armi.reactor.systemLayoutInput.SystemLayoutInput` and return
-        the appropriately modified version of these objects. The class attribute
-        ``FAIL_IF_AFTER`` should be a tuple defining what, if any, modifications
-        this should fail if performed after. For example, one should not adjust
-        the smear density (a function of Cladding ID) before adjusting the
-        Cladding ID. Some generic child classes are provided in this module, but
-        it is expected that design-specific modifiers are built individually.
+        This class serves as an abstract base class for modifying the inputs of a case, typically
+        case settings. Child classes must implement a ``__call__`` method accepting a
+        :py:class:`~armi.settings.caseSettings.Settings` and
+        :py:class:`~armi.reactor.blueprints.Blueprints` and return the appropriately modified
+        version of these objects. The class attribute ``FAIL_IF_AFTER`` should be a tuple defining
+        what, if any, modifications this should fail if performed after. For example, one should not
+        adjust the smear density (a function of Cladding ID) before adjusting the Cladding ID. Some
+        generic child classes are provided in this module, but it is expected that design-specific
+        modifiers are built individually.
     """
 
     FAIL_IF_AFTER = ()
 
     def __init__(self, independentVariable=None):
         """
-        Constuctor.
+        Constructor.
 
         Parameters
         ----------
         independentVariable : dict or None, optional
-            Name/value pairs to associate with the independent variable being modified
-            by this object.  Will be analyzed and plotted against other modifiers with
-            the same name.
+            Name/value pairs to associate with the independent variable being modified by this
+            object. Will be analyzed and plotted against other modifiers with the same name.
         """
         if independentVariable is None:
             independentVariable = {}
         self.independentVariable = independentVariable
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         """Perform the desired modifications to input objects."""
         raise NotImplementedError
 
@@ -67,17 +63,13 @@ class SamplingInputModifier(InputModifier):
     Subclasses must implement a ``__call__`` method accepting a ``Settings``,
     ``Blueprints``, and ``SystemLayoutInput``.
 
-    This is a modified version of the InputModifier abstract class that imposes
-    structure for parameters in a design space that will be sampled by a
-    quasi-random sampling algorithm. These algorithms require input modifiers
-    to specify if the parameter is continuous or discrete and have the bounds
-    specified.
-
+    This is a modified version of the InputModifier abstract class that imposes structure for
+    parameters in a design space that will be sampled by a quasi-random sampling algorithm. These
+    algorithms require input modifiers to specify if the parameter is continuous or discrete and
+    have the bounds specified.
     """
 
-    def __init__(
-        self, name: str, paramType: str, bounds: list, independentVariable=None
-    ):
+    def __init__(self, name: str, paramType: str, bounds: list, independentVariable=None):
         """Constructor for the Sampling input modifier.
 
         Parameters
@@ -87,7 +79,7 @@ class SamplingInputModifier(InputModifier):
         paramType : str
             specify if parameter is 'continuous' or 'discrete'
         bounds : list
-            If continuous, provide floating points [a, b] specifing the inclusive bounds.
+            If continuous, provide floating points [a, b] specifying the inclusive bounds.
             If discrete, provide a list of potential values [a, b, c, ...]
         independentVariable : [type], optional
             Name/value pairs to associate with the independent variable being modified
@@ -99,7 +91,7 @@ class SamplingInputModifier(InputModifier):
         self.paramType = paramType
         self.bounds = bounds
 
-    def __call__(self, cs, blueprints, geom):
+    def __call__(self, cs, blueprints):
         """Perform the desired modifications to input objects."""
         raise NotImplementedError
 
@@ -110,24 +102,18 @@ class FullCoreModifier(InputModifier):
 
     Notes
     -----
-    Besides the Core, other grids may also be of interest for expansion, like
-    a grid that defines fuel management. However, the expansion of a fuel
-    management schedule to full core is less trivial than just expanding
-    the core itself. Thus, this modifier currently does not attempt
-    to update fuel management grids, but an expanded implementation could
-    do so in the future if needed. For now, users must expand fuel management
-    grids to full core themself.
+    Besides the Core, other grids may also be of interest for expansion, like a grid that defines
+    fuel management. However, the expansion of a fuel management schedule to full core is less
+    trivial than just expanding the core itself. Thus, this modifier currently does not attempt to
+    update fuel management grids, but an expanded implementation could do so in the future if
+    needed. For now, users must expand fuel management grids to full core themself.
     """
 
-    def __call__(self, cs, bp, geom):
-        """Core might be on a geom object or a grid blueprint."""
-        if geom:
-            geom.growToFullCore()
-        else:
-            coreBp = bp.gridDesigns["core"]
-            coreBp.expandToFull()
+    def __call__(self, cs, bp):
+        coreBp = bp.gridDesigns["core"]
+        coreBp.expandToFull()
 
-        return cs, bp, geom
+        return cs, bp
 
 
 class SettingsModifier(InputModifier):
@@ -138,9 +124,9 @@ class SettingsModifier(InputModifier):
         self.settingName = settingName
         self.value = value
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         cs = cs.modified(newSettings={self.settingName: self.value})
-        return cs, bp, geom
+        return cs, bp
 
 
 class MultiSettingModifier(InputModifier):
@@ -159,13 +145,13 @@ class MultiSettingModifier(InputModifier):
         InputModifier.__init__(self, independentVariable=settingVals)
         self.settings = settingVals
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         newSettings = {}
         for name, val in self.settings.items():
             newSettings[name] = val
 
         cs = cs.modified(newSettings=newSettings)
-        return cs, bp, geom
+        return cs, bp
 
 
 class BluePrintBlockModifier(InputModifier):
@@ -178,7 +164,7 @@ class BluePrintBlockModifier(InputModifier):
         self.dimension = dimension
         self.value = value
 
-    def __call__(self, cs, bp, geom):
+    def __call__(self, cs, bp):
         # parse block
         for blockDesign in bp.blockDesigns:
             if blockDesign.name == self.block:
@@ -187,6 +173,6 @@ class BluePrintBlockModifier(InputModifier):
                     if componentDesign.name == self.component:
                         # set new value
                         setattr(componentDesign, self.dimension, self.value)
-                        return cs, bp, geom
+                        return cs, bp
 
-        return cs, bp, geom
+        return cs, bp

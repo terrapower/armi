@@ -32,12 +32,6 @@ def area(pitch):
     """
     Area of a hex given the flat-to-flat pitch.
 
-    .. impl:: Compute hexagonal area
-        :id: I_ARMI_UTIL_HEXAGON0
-        :implements: R_ARMI_UTIL_HEXAGON
-
-        Computes the area of a hexagon given the flat-to-flat ``pitch``.
-
     Notes
     -----
     The pitch is the distance between the center of the hexagons in the lattice.
@@ -82,7 +76,6 @@ def corners(rotation=0):
     )
 
     rotation = rotation / 180.0 * math.pi
-
     rotation = np.array(
         [
             [math.cos(rotation), -math.sin(rotation)],
@@ -135,15 +128,7 @@ def numRingsToHoldNumCells(numCells):
 
 
 def numPositionsInRing(ring):
-    """Number of positions in ring (starting at 1) of a hex lattice.
-
-    .. impl:: Compute number of positions in a ring of a hex lattice
-        :id: I_ARMI_UTIL_HEXAGON1
-        :implements: R_ARMI_UTIL_HEXAGON
-
-        In a hexagonal lattice, calculate the number of positions in a given ``ring``. The number of
-        rings is indexed to 1, i.e. the centermost position in the lattice is ``ring=1``.
-    """
+    """Number of positions in ring (starting at 1) of a hex lattice."""
     return (ring - 1) * 6 if ring != 1 else 1
 
 
@@ -160,9 +145,8 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
     initialCellIndex : int
         Positive number for this cell's position in a hexagonal lattice.
     orientationNumber :
-        Orientation in number of 60 degree, counter clockwise rotations. An orientation
-        of zero means the first cell in each ring of a flags up hexagon is in the upper
-        right corner.
+        Orientation in number of 60 degree, counter clockwise rotations. An orientation of zero
+        means the first cell in each ring of a flags up hexagon is in the upper right corner.
 
     Returns
     -------
@@ -176,9 +160,7 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
         If ``orientationNumber`` is less than zero or greater than five.
     """
     if orientationNumber < 0 or orientationNumber > 5:
-        raise ValueError(
-            f"Orientation number must be in [0:5], got {orientationNumber}"
-        )
+        raise ValueError(f"Orientation number must be in [0:5], got {orientationNumber}")
     if initialCellIndex > 1:
         if orientationNumber == 0:
             return initialCellIndex
@@ -190,4 +172,5 @@ def getIndexOfRotatedCell(initialCellIndex: int, orientationNumber: int) -> int:
         return newPinLocation
     elif initialCellIndex == 1:
         return initialCellIndex
+
     raise ValueError(f"Cell number must be positive, got {initialCellIndex}")

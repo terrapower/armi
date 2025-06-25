@@ -12,17 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Unit tests for pin type block converters."""
+
 import copy
 import unittest
 
-from armi.reactor.flags import Flags
-
-from armi.reactor.tests.test_blocks import loadTestBlock, buildSimpleFuelBlock
 from armi.reactor.converters.pinTypeBlockConverters import (
-    adjustCladThicknessByOD,
     adjustCladThicknessByID,
+    adjustCladThicknessByOD,
     adjustSmearDensity,
 )
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_blocks import buildSimpleFuelBlock, loadTestBlock
 
 
 class TestPinTypeConverters(unittest.TestCase):
@@ -35,9 +35,7 @@ class TestPinTypeConverters(unittest.TestCase):
         ref = clad.getDimension("id", cold=True) + 2.0 * thickness
         adjustCladThicknessByOD(self.block, thickness)
         cur = clad.getDimension("od", cold=True)
-        curThickness = (
-            clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)
-        ) / 2.0
+        curThickness = (clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)) / 2.0
         self.assertAlmostEqual(cur, ref)
         self.assertAlmostEqual(curThickness, thickness)
 
@@ -47,9 +45,7 @@ class TestPinTypeConverters(unittest.TestCase):
         ref = clad.getDimension("od", cold=True) - 2.0 * thickness
         adjustCladThicknessByID(self.block, thickness)
         cur = clad.getDimension("id", cold=True)
-        curThickness = (
-            clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)
-        ) / 2.0
+        curThickness = (clad.getDimension("od", cold=True) - clad.getDimension("id", cold=True)) / 2.0
         self.assertAlmostEqual(cur, ref)
         self.assertAlmostEqual(curThickness, thickness)
 
@@ -69,9 +65,7 @@ class MassConservationTests(unittest.TestCase):
         fuel = self.b.getComponent(Flags.FUEL)
         clad = self.b.getComponent(Flags.CLAD)
 
-        self.assertAlmostEqual(
-            s, (fuel.getDimension("od") ** 2) / clad.getDimension("id") ** 2, 8
-        )
+        self.assertAlmostEqual(s, (fuel.getDimension("od") ** 2) / clad.getDimension("id") ** 2, 8)
 
         adjustSmearDensity(self.b, self.b.getSmearDensity(), bolBlock=bolBlock)
 

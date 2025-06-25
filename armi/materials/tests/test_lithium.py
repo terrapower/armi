@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for lithium."""
+
 import unittest
 
 from armi.materials.lithium import Lithium
@@ -38,12 +39,8 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
 
     def test_Lithium_material_modifications(self):
         self.assertEqual(self.mat.getMassFrac("LI6"), self.defaultMassFrac)
-        self.assertAlmostEqual(
-            self.Lithium_LI_wt_frac.getMassFrac("LI6"), 0.5, places=10
-        )
-        self.assertAlmostEqual(
-            self.Lithium_LI6_wt_frac.getMassFrac("LI6"), 0.6, places=10
-        )
+        self.assertAlmostEqual(self.Lithium_LI_wt_frac.getMassFrac("LI6"), 0.5, places=10)
+        self.assertAlmostEqual(self.Lithium_LI6_wt_frac.getMassFrac("LI6"), 0.6, places=10)
         self.assertAlmostEqual(self.Lithium_both.getMassFrac("LI6"), 0.8, places=10)
 
     def test_pseudoDensity(self):

@@ -19,6 +19,7 @@ assumes each cell is a test. To prevent inadvertent breaking
 of the ipynbs, we imply run them here and show during unit
 testing that a failure was introduced.
 """
+
 import os
 import unittest
 
@@ -28,6 +29,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from armi.tests import TEST_ROOT
 
 TUTORIALS = os.path.join(TEST_ROOT, "tutorials")
+ANL_ACFI_177 = os.path.join(TEST_ROOT, "anl-afci-177")
 
 
 class NotebookTests(unittest.TestCase):

@@ -18,8 +18,9 @@ Validating the package-data in the pyproject.toml.
 Validate that we aren't trying to include files that don't exist.
 """
 
-from glob import glob
 import os
+from glob import glob
+
 import toml
 
 # CONSTANTS
@@ -48,7 +49,7 @@ def main():
 
     # If there were any missing files, raise an Error.
     if errors:
-        for (i, line) in errors:
+        for i, line in errors:
             print("Nonexistant file on line {}: {}".format(i, line))
         raise ValueError("Package-data file is incorrect: includes non-existant files.")
 

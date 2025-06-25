@@ -13,18 +13,21 @@
 # limitations under the License.
 
 """Tests for the App class."""
+
 import copy
 import unittest
 
-from armi import configure
-from armi import context
-from armi import getApp
-from armi import getDefaultPluginManager
-from armi import isStableReleaseVersion
-from armi import meta
-from armi import plugins
-from armi.reactor.flags import Flags
+from armi import (
+    configure,
+    context,
+    getApp,
+    getDefaultPluginManager,
+    isStableReleaseVersion,
+    meta,
+    plugins,
+)
 from armi.__main__ import main
+from armi.reactor.flags import Flags
 
 
 class TestPlugin1(plugins.ArmiPlugin):
@@ -114,9 +117,7 @@ class TestApps(unittest.TestCase):
         app.pluginManager.unregister(TestPlugin2)
 
         app.pluginManager.register(TestPlugin3)
-        with self.assertRaisesRegex(
-            plugins.PluginError, ".*currently-defined parameters.*"
-        ):
+        with self.assertRaisesRegex(plugins.PluginError, ".*currently-defined parameters.*"):
             app.getParamRenames()
 
     def test_registerPluginFlags(self):
@@ -165,7 +166,7 @@ class TestApps(unittest.TestCase):
         settings = app.getSettings()
 
         self.assertGreater(len(settings), 100)
-        self.assertEqual(settings["numProcessors"].value, 1)
+        self.assertEqual(settings["nTasks"].value, 1)
         self.assertEqual(settings["nCycles"].value, 1)
 
     def test_splashText(self):

@@ -130,8 +130,8 @@ Retrieve elements that are classified as actinides:
 """
 
 import os
-from typing import List
 from enum import Enum
+from typing import List
 
 from armi import context
 from armi.utils.units import HEAVY_METAL_CUTOFF_Z
@@ -212,9 +212,7 @@ class Element:
         return f"<Element {self.symbol:>3s} (Z={self.z}), {self.name}, {self.group}, {self.phase}>"
 
     def __hash__(self):
-        return hash(
-            (self.name, self.z, self.symbol, self.phase, self.group, len(self.nuclides))
-        )
+        return hash((self.name, self.z, self.symbol, self.phase, self.group, len(self.nuclides)))
 
     def __lt__(self, other):
         return self.z < other.z

@@ -24,9 +24,9 @@ support extension. We also considered the ``aenum`` package, which permits exten
 make our own. This is a much simplified version of what comes with ``aenum``, but still
 provides most of the safety and functionality.
 """
-import math
 
-from typing import Dict, Union, Sequence, List, Tuple
+import math
+from typing import Dict, List, Sequence, Tuple, Union
 
 
 class auto:  # noqa: N801
@@ -50,8 +50,7 @@ class auto:  # noqa: N801
         know that the metaclass consumes the autos.
         """
         raise NotImplementedError(
-            "__iter__() is not actually implemented on "
-            "{}; it is only defined to appease mypy.".format(type(self))
+            "__iter__() is not actually implemented on {}; it is only defined to appease mypy.".format(type(self))
         )
 
 
@@ -71,9 +70,7 @@ class _FlagMeta(type):
 
     def __new__(cls, name, bases, attrs):
         autoAt = 1
-        explicitFields = [
-            (attr, val) for attr, val in attrs.items() if isinstance(val, int)
-        ]
+        explicitFields = [(attr, val) for attr, val in attrs.items() if isinstance(val, int)]
         explicitValues = set(val for name, val in explicitFields)
 
         flagClass = type.__new__(cls, name, bases, attrs)
@@ -91,6 +88,7 @@ class _FlagMeta(type):
 
         # Auto fields have been resolved, so now collect all ints
         allFields = {name: val for name, val in attrs.items() if isinstance(val, int)}
+        allFields = {n: v for n, v in allFields.items() if not _FlagMeta.isdunder(n)}
         flagClass._nameToValue = allFields
         flagClass._valuesTaken = set(val for _, val in allFields.items())
         flagClass._autoAt = autoAt
@@ -103,6 +101,10 @@ class _FlagMeta(type):
             setattr(flagClass, name, instance)
 
         return flagClass
+
+    @staticmethod
+    def isdunder(s):
+        return s.startswith("__") and s.endswith("__")
 
     def __getitem__(cls, key):
         """
@@ -162,9 +164,7 @@ class Flag(metaclass=_FlagMeta):
         return flagsOn
 
     def __repr__(self):
-        return "<{}.{}: {}>".format(
-            type(self).__name__, "|".join(self._flagsOn()), self._value
-        )
+        return "<{}.{}: {}>".format(type(self).__name__, "|".join(self._flagsOn()), self._value)
 
     def __str__(self):
         return "{}.{}".format(type(self).__name__, "|".join(self._flagsOn()))
@@ -193,7 +193,7 @@ class Flag(metaclass=_FlagMeta):
     @classmethod
     def _resolveAutos(cls, fields: Sequence[str]) -> List[Tuple[str, int]]:
         """Assign values to autos, based on the current state of the class."""
-        # There is some opportunity for code re-use between this and the metaclass...
+        # There is some opportunity for code reuse between this and the metaclass...
         resolved = []
         for field in fields:
             while cls._autoAt in cls._valuesTaken:
@@ -216,9 +216,7 @@ class Flag(metaclass=_FlagMeta):
     @classmethod
     def sortedFields(cls):
         """Return a list of all field names, sorted by increasing integer value."""
-        return [
-            i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])
-        ]
+        return [i[0] for i in sorted(cls._nameToValue.items(), key=lambda item: item[1])]
 
     @classmethod
     def extend(cls, fields: Dict[str, Union[int, auto]]):

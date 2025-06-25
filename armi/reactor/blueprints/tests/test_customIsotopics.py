@@ -13,18 +13,25 @@
 # limitations under the License.
 
 """Unit test custom isotopics."""
+
 import unittest
 from logging import DEBUG
 
 import yamlize
 
-from armi import settings
-from armi.physics.neutronics.settings import CONF_XS_KERNEL
+from armi import runLog, settings
+from armi.materials import Fluid, Sodium
+from armi.physics.neutronics.settings import (
+    CONF_MCNP_LIB_BASE,
+    CONF_NEUTRONICS_KERNEL,
+    CONF_XS_KERNEL,
+)
 from armi.reactor import blueprints
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.flags import Flags
-from armi import runLog
 from armi.tests import mockRunLogs
+from armi.utils.customExceptions import InputError
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestCustomIsotopics(unittest.TestCase):
@@ -37,6 +44,7 @@ nuclide flags:
     AL: {burn: false, xs: true}
     FE: {burn: false, xs: true}
     C: {burn: false, xs: true}
+    NA: {burn: false, xs: true}
     DUMP2: {burn: true, xs: true}
     DUMP1: {burn: true, xs: true}
     LFP35: {burn: true, xs: true}
@@ -113,6 +121,11 @@ custom isotopics:
         C: 0.3
         density: 7.0
 
+    sodium custom isotopics:
+        input format: mass fractions
+        NA: 1
+        density: 666
+
 """
 
     yamlGoodBlocks = r"""
@@ -135,6 +148,25 @@ blocks:
             id: 0.0
             mult: 1.0
             od: 10.0
+
+        sodium1:
+            shape: Circle
+            material: Sodium
+            Tinput: 25
+            Thot: 600
+            id: 0
+            mult: 1
+            od: 1
+
+        sodium2:
+            shape: Circle
+            material: Sodium
+            isotopics: sodium custom isotopics
+            Tinput: 25
+            Thot: 600
+            id: 0
+            mult: 1
+            od: 1
 
     uranium fuel from isotopic mass fractions : &block_1
         fuel:
@@ -305,14 +337,17 @@ assemblies:
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        cs = cs.modified(newSettings={CONF_XS_KERNEL: "MC2v2"})
+        cs = cs.modified(
+            newSettings={
+                CONF_XS_KERNEL: "MC2v2",
+                "inputHeightsConsideredHot": False,
+            }
+        )
 
         cls.bp = blueprints.Blueprints.load(cls.yamlString)
         cls.a = cls.bp.constructAssem(cs, name="fuel a")
         cls.numUZrNuclides = 29  # Number of nuclides defined `nuclide flags`
-        cls.numCustomNuclides = (
-            28  # Number of nuclides defined in `nuclide flags` without Zr
-        )
+        cls.numCustomNuclides = 28  # Number of nuclides defined in `nuclide flags` without Zr
 
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
@@ -337,9 +372,7 @@ assemblies:
         self.assertEqual(self.numCustomNuclides, len(fuel1.p.numberDensities))
         self.assertAlmostEqual(19.1, fuel1.density())
 
-        self.assertEqual(
-            set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys())
-        )  # keys are same
+        self.assertEqual(set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys()))  # keys are same
 
     def test_densitiesAppliedToNonCustomMaterials(self):
         """Ensure that a density can be set in custom isotopics for components using library materials."""
@@ -352,19 +385,51 @@ assemblies:
         # A block with custom density set via number density
         fuel8 = self.a[8].getComponent(Flags.FUEL)
 
+        dLL = fuel2.material.linearExpansionFactor(Tc=600, T0=25)
+        # the exponent here is 3 because inputHeightsConsideredHot = False.
+        # if inputHeightsConsideredHot were True, then we would use a factor of 2 instead
+        f = 1 / ((1 + dLL) ** 3)
+
         # Check that the density is set correctly on the custom density block,
         # and that it is not the same as the original
-        self.assertAlmostEqual(19.1, fuel2.density())
+        self.assertAlmostEqual(19.1 * f, fuel2.density())
         self.assertNotAlmostEqual(fuel0.density(), fuel2.density(), places=2)
         # Check that the custom density block has the correct material
         self.assertEqual("UZr", fuel2.material.name)
         # Check that the block with only number densities set has a new density
-        self.assertAlmostEqual(19.1, fuel8.density())
+        self.assertAlmostEqual(19.1 * f, fuel8.density())
         # original material density should not be changed after setting a custom density component,
         # so a new block without custom isotopics and density should have the same density as the original
         self.assertAlmostEqual(fuel6.density(), fuel0.density())
         self.assertEqual(fuel6.material.name, fuel0.material.name)
         self.assertEqual("UZr", fuel0.material.name)
+
+    def test_densitiesAppliedToNonCustomMaterialsFluid(self):
+        """
+        Ensure that a density can be set in custom isotopics for components using library materials,
+        specifically in the case of a fluid component. In this case, inputHeightsConsideredHot
+        does not matter, and the material has a zero dLL value.
+        """
+        # The template block
+        sodium1 = self.a[0].getComponentByName("sodium1")
+        sodium2 = self.a[0].getComponentByName("sodium2")
+
+        self.assertEqual(sodium1.material.name, "Sodium")
+        self.assertEqual(sodium2.material.name, "Sodium")
+        self.assertTrue(isinstance(sodium1.material, Fluid))
+        self.assertTrue(isinstance(sodium2.material, Fluid))
+        self.assertEqual(sodium1.p.customIsotopicsName, "")
+        self.assertEqual(sodium2.p.customIsotopicsName, "sodium custom isotopics")
+
+        # show that, even though the two components have the same material class
+        # and the same temperatures, their densities are different
+        self.assertNotEqual(sodium1.density(), sodium2.density())
+
+        # show that sodium1 has a density from the material class, while sodium2
+        # has a density from the blueprint and adjusted from Tinput -> Thot
+        s = Sodium()
+        self.assertAlmostEqual(sodium1.density(), s.density(Tc=600))
+        self.assertAlmostEqual(sodium2.density(), s.density(Tc=600) * (666 / s.density(Tc=25)))
 
     def test_customDensityLogsAndErrors(self):
         """Test that the right warning messages and errors are emitted when applying custom densities."""
@@ -383,12 +448,14 @@ assemblies:
 
             # Check for log messages
             streamVal = mockLog.getStdout()
-            self.assertIn("Both TD_frac and a custom density", streamVal, msg=streamVal)
             self.assertIn(
-                "A custom material density was specified", streamVal, msg=streamVal
+                "Both TD_frac and a custom isotopic with density",
+                streamVal,
+                msg=streamVal,
             )
+            self.assertIn("A custom material density was specified", streamVal, msg=streamVal)
             self.assertIn(
-                "A custom density or number densities has been specified",
+                "A custom isotopic with associated density has been specified for non-`Custom`",
                 streamVal,
                 msg=streamVal,
             )
@@ -428,9 +495,7 @@ assemblies:
         self.assertAlmostEqual(fuel2.density(), fuel4.density())
 
         for nuc in fuel2.p.numberDensities.keys():
-            self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc]
-            )
+            self.assertAlmostEqual(fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc])
 
     def test_numberDensities(self):
         """Ensure that the custom isotopics can be specified via number densities.
@@ -445,9 +510,7 @@ assemblies:
         self.assertAlmostEqual(fuel2.density(), fuel5.density())
 
         for nuc in fuel2.p.numberDensities.keys():
-            self.assertAlmostEqual(
-                fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
-            )
+            self.assertAlmostEqual(fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc])
 
     def test_numberDensitiesAnchor(self):
         fuel4 = self.a[4].getComponent(Flags.FUEL)
@@ -455,9 +518,7 @@ assemblies:
         self.assertAlmostEqual(fuel4.density(), fuel5.density())
 
         for nuc in fuel4.p.numberDensities.keys():
-            self.assertAlmostEqual(
-                fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc]
-            )
+            self.assertAlmostEqual(fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc])
 
     def test_expandedNatural(self):
         cs = settings.Settings()
@@ -471,7 +532,7 @@ assemblies:
         self.assertNotIn("FE51", c.getNumberDensities())  # un-natural
         self.assertNotIn("FE", c.getNumberDensities())
 
-    def test_unrepresentedAreOnlyNatural(self):
+    def test_infDiluteAreOnlyNatural(self):
         """Make sure nuclides specified as In-Problem but not actually in any material are only natural isotopics."""
         self.assertIn("AL27", self.bp.allNuclidesInProblem)
         self.assertNotIn("AL26", self.bp.allNuclidesInProblem)
@@ -529,6 +590,8 @@ nuclide flags:
     SI: {burn: true, xs: true}
     MO: {burn: true, xs: true}
     W: {burn: true, xs: true}
+    ZN: {burn: true, xs: true}
+    O: {burn: true, xs: true}
 blocks:
     uzr fuel: &block_0
         fuel:
@@ -541,6 +604,14 @@ blocks:
         clad:
             shape: Circle
             material: HT9
+            Tinput: 25.0
+            Thot: 600.0
+            id: 0.0
+            mult: 1.0
+            od: 10.0
+        dummy:
+            shape: Circle
+            material: ZnO
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
@@ -568,3 +639,44 @@ assemblies:
         self.assertNotIn("FE56", nd)  # natural isotopic not requested
         self.assertNotIn("FE51", nd)  # un-natural
         self.assertNotIn("FE", nd)
+
+    def test_eleExpandInfoBasedOnCodeENDF(self):
+        with TemporaryDirectoryChanger():
+            # Reference elements to expand by library
+            ref_E70_elem = ["C", "V", "ZN"]
+            ref_E71_elem = ["C"]
+            ref_E80_elem = []
+
+            # Load settings and set neutronics kernel to MCNP
+            cs = settings.Settings()
+            cs = cs.modified(newSettings={CONF_NEUTRONICS_KERNEL: "MCNP"})
+
+            # Set ENDF/B-VII.0 as MCNP cross section library base
+            cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: "ENDF/B-VII.0"})
+            eleToKeep, expansions = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+            E70_elem = [x.label for x in eleToKeep]
+
+            # Set ENDF/B-VII.1 as MCNP cross section library base
+            cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: "ENDF/B-VII.1"})
+            eleToKeep, expansions = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+            E71_elem = [x.label for x in eleToKeep]
+
+            # Set ENDF/B-VIII.0 as MCNP cross section library base
+            cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: "ENDF/B-VIII.0"})
+            eleToKeep, expansions = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+            E80_elem = [x.label for x in eleToKeep]
+
+            # Assert equality of returned elements to reference elements
+            self.assertEqual(sorted(E70_elem), sorted(ref_E70_elem))
+            self.assertEqual(sorted(E71_elem), sorted(ref_E71_elem))
+            self.assertEqual(sorted(E80_elem), sorted(ref_E80_elem))
+
+            # Disallowed inputs
+            not_allowed = ["ENDF/B-VIIII.0", "ENDF/B-VI.0", "JEFF-3.3"]
+            # Assert raise InputError in case of invalid library setting
+            for x in not_allowed:
+                with self.assertRaises(InputError) as context:
+                    cs = cs.modified(newSettings={CONF_MCNP_LIB_BASE: x})
+                    _ = isotopicOptions.eleExpandInfoBasedOnCodeENDF(cs)
+
+                self.assertTrue("Failed to determine nuclides for modeling" in str(context.exception))

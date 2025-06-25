@@ -20,15 +20,13 @@ constructing ``Assembly`` objects. An attempt has been made to decouple ``Assemb
 from the rest of ARMI as much as possible. For example, an assembly does not require a reactor to be
 constructed, or a geometry file (but uses contained Block geometry type as a surrogate).
 """
+
 import yamlize
 
-from armi import getPluginManagerOrFail
-from armi import runLog
-from armi.reactor import assemblies
-from armi.reactor.flags import Flags
-from armi.reactor import parameters
+from armi import getPluginManagerOrFail, runLog
+from armi.reactor import assemblies, grids, parameters
 from armi.reactor.blueprints import blockBlueprint
-from armi.reactor import grids
+from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
@@ -139,12 +137,8 @@ class AssemblyBlueprint(yamlize.Object):
     blocks = yamlize.Attribute(type=blockBlueprint.BlockList)
     height = yamlize.Attribute(type=yamlize.FloatList)
     axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList)
-    radialMeshPoints = yamlize.Attribute(
-        key="radial mesh points", type=int, default=None
-    )
-    azimuthalMeshPoints = yamlize.Attribute(
-        key="azimuthal mesh points", type=int, default=None
-    )
+    radialMeshPoints = yamlize.Attribute(key="radial mesh points", type=int, default=None)
+    azimuthalMeshPoints = yamlize.Attribute(key="azimuthal mesh points", type=int, default=None)
     materialModifications = yamlize.Attribute(
         key="material modifications",
         type=MaterialModifications,
@@ -169,9 +163,7 @@ class AssemblyBlueprint(yamlize.Object):
         for bType, aType in cls._assemTypes.items():
             if bType in blockClasses:
                 return aType
-        raise ValueError(
-            'Unsupported block geometries in {}: "{}"'.format(cls.name, blocks)
-        )
+        raise ValueError('Unsupported block geometries in {}: "{}"'.format(cls.name, blocks))
 
     def construct(self, cs, blueprint):
         """
@@ -208,23 +200,19 @@ class AssemblyBlueprint(yamlize.Object):
         a.spatialGrid = grids.AxialGrid.fromNCells(len(blocks))
         a.spatialGrid.armiObject = a
 
-        # TODO: Remove mesh points from blueprints entirely. Submeshing should be
-        # handled by specific physics interfaces
+        # init submeshes
         radMeshPoints = self.radialMeshPoints or 1
         a.p.RadMesh = radMeshPoints
         aziMeshPoints = self.azimuthalMeshPoints or 1
         a.p.AziMesh = aziMeshPoints
 
-        # loop a second time because we needed all the blocks before choosing the
-        # assembly class.
+        # Loop a second time because we needed all the blocks before choosing the assembly class.
         for axialIndex, b in enumerate(blocks):
             b.name = b.makeName(a.p.assemNum, axialIndex)
             a.add(b)
 
         # Assign values for the parameters if they are defined on the blueprints
-        for paramDef in a.p.paramDefs.inCategory(
-            parameters.Category.assignInBlueprints
-        ):
+        for paramDef in a.p.paramDefs.inCategory(parameters.Category.assignInBlueprints):
             val = getattr(self, paramDef.name)
             if val is not None:
                 a.p[paramDef.name] = val
@@ -247,8 +235,7 @@ class AssemblyBlueprint(yamlize.Object):
 
         Returns
         -------
-        bool
-            Result of the check
+        bool: Result of the check
         """
         return bool(value != "" and value is not None)
 
@@ -270,9 +257,7 @@ class AssemblyBlueprint(yamlize.Object):
                 if self._shouldMaterialModiferBeApplied(modList[axialIndex])
             }
 
-        b = bDesign.construct(
-            cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput
-        )
+        b = bDesign.construct(cs, blueprint, axialIndex, meshPoints, height, xsType, materialInput)
 
         b.completeInitialLoading()
 
@@ -280,34 +265,38 @@ class AssemblyBlueprint(yamlize.Object):
         b.setB10VolParam(cs[CONF_INPUT_HEIGHTS_HOT])
         return b
 
-    def _checkParamConsistency(self):
+    def _checkParamConsistency(self) -> None:
         """Check that the number of block params specified is equal to the number of blocks specified."""
+        # general things to check
         paramsToCheck = {
             "mesh points": self.axialMeshPoints,
             "heights": self.height,
             "xs types": self.xsTypes,
         }
 
-        for mod in [self.materialModifications] + list(
-            self.materialModifications.byComponent.values()
-        ):
-            for modName, modList in mod.items():
-                paramName = "material modifications for {}".format(modName)
+        # check by-block mat mods
+        for modName, modList in self.materialModifications.items():
+            paramName = f"mat mod for {modName}"
+            paramsToCheck[paramName] = modList
+
+        # check by-component mat mods
+        for comp in self.materialModifications.byComponent.values():
+            for modName, modList in comp.items():
+                paramName = f"material modifications for {modName}"
                 paramsToCheck[paramName] = modList
 
+        # perform the check
         for paramName, blockVals in paramsToCheck.items():
             if len(self.blocks) != len(blockVals):
-                raise ValueError(
-                    "Assembly {} had {} blocks, but {} {}. These numbers should be equal. "
-                    "Check input for errors.".format(
-                        self.name, len(self.blocks), len(blockVals), paramName
-                    )
+                msg = (
+                    f"Assembly {self.name} had {len(self.blocks)} block(s), but {len(blockVals)} "
+                    f"'{paramName}'. These numbers should be equal. Check input for errors."
                 )
+                runLog.error(msg)
+                raise ValueError(msg)
 
 
-for paramDef in parameters.forType(assemblies.Assembly).inCategory(
-    parameters.Category.assignInBlueprints
-):
+for paramDef in parameters.forType(assemblies.Assembly).inCategory(parameters.Category.assignInBlueprints):
     setattr(
         AssemblyBlueprint,
         paramDef.name,
@@ -325,13 +314,11 @@ class AssemblyKeyedList(yamlize.KeyedList):
     item_type = AssemblyBlueprint
     key_attr = AssemblyBlueprint.name
     heights = yamlize.Attribute(type=yamlize.FloatList, default=None)
-    axialMeshPoints = yamlize.Attribute(
-        key="axial mesh points", type=yamlize.IntList, default=None
-    )
+    axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList, default=None)
 
     # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
 
     @property
     def bySpecifier(self):
-        """Used by the reactor to ``_loadAssembliesIntoCore`` later, specifiers are two character strings."""
+        """Used by the reactor to ``_loadComposites`` later, specifiers are two character strings."""
         return {aDesign.specifier: aDesign for aDesign in self}

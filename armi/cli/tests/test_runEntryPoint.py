@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test for run cli entry point."""
-from glob import glob
-from shutil import copyfile
+
 import logging
 import os
 import sys
 import unittest
+from shutil import copyfile
 
 from armi import runLog
 from armi.__main__ import main
@@ -34,8 +34,8 @@ from armi.cli.reportsEntryPoint import ReportsEntryPoint
 from armi.cli.run import RunEntryPoint
 from armi.cli.runSuite import RunSuiteCommand
 from armi.physics.neutronics.diffIsotxs import CompareIsotxsLibraries
-from armi.reactor.tests.test_reactors import loadTestReactor, reduceTestReactorRings
-from armi.tests import mockRunLogs, TEST_ROOT, ARMI_RUN_PATH
+from armi.testing import loadTestReactor, reduceTestReactorRings
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.dynamicImporter import getEntireFamilyTree
 
@@ -125,7 +125,6 @@ class TestCheckInputEntryPoint(unittest.TestCase):
         self.assertEqual(ci.name, "check-input")
         self.assertEqual(ci.args.patterns, ["/path/to/fake.yaml"])
         self.assertEqual(ci.args.skip_checks, True)
-        self.assertEqual(ci.args.generate_design_summary, False)
 
     def test_checkInputEntryPointInvoke(self):
         """Test the "check inputs" entry point.
@@ -271,9 +270,7 @@ class TestExtractInputs(unittest.TestCase):
     def test_extractInputsBasics(self):
         with TemporaryDirectoryChanger() as newDir:
             # build test DB
-            o, r = loadTestReactor(
-                inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-            )
+            o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
             dbi = DatabaseInterface(r, o.cs)
             dbPath = os.path.join(newDir.destination, f"{self._testMethodName}.h5")
             dbi.initDB(fName=dbPath)
@@ -351,9 +348,7 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
     def test_modifyCaseSettingsCommandBasics(self):
         mcs = ModifyCaseSettingsCommand()
         mcs.addOptions()
-        mcs.parse_args(
-            ["--rootDir", "/path/to/", "--settingsWriteStyle", "medium", "fake.yaml"]
-        )
+        mcs.parse_args(["--rootDir", "/path/to/", "--settingsWriteStyle", "medium", "fake.yaml"])
 
         self.assertEqual(mcs.name, "modify")
         self.assertEqual(mcs.args.rootDir, "/path/to/")
@@ -369,97 +364,36 @@ class TestModifyCaseSettingsCommand(unittest.TestCase):
             for fileName in ["armiRun.yaml", "refSmallReactor.yaml"]:
                 copyfile(os.path.join(TEST_ROOT, fileName), fileName)
 
-            # pass in --numProcessors=333
-            mcs.parse_args(["--numProcessors=333", "--rootDir", ".", "armiRun.yaml"])
+            # pass in --nTasks=333
+            mcs.parse_args(["--nTasks=333", "--rootDir", ".", "armiRun.yaml"])
 
             # invoke the CLI
             mcs.invoke()
 
-            # validate the change to numProcessors was made
+            # validate the change to nTasks was made
             txt = open("armiRun.yaml", "r").read()
-            self.assertIn("numProcessors: 333", txt)
+            self.assertIn("nTasks: 333", txt)
+
+
+class MockFakeReportsEntryPoint(ReportsEntryPoint):
+    name = "MockFakeReport"
+
+    def invoke(self):
+        return "mock fake"
 
 
 class TestReportsEntryPoint(unittest.TestCase):
-    def test_toTwoTuple(self):
-        result = ReportsEntryPoint.toTwoTuple("(1,2)")
-        self.assertEqual(result, (1, 2))
-
-        result = ReportsEntryPoint.toTwoTuple("(-931,223)")
-        self.assertEqual(result, (-931, 223))
-
-        result = ReportsEntryPoint.toTwoTuple("(-7,7")
-        self.assertEqual(result, (-7, 7))
-
-        # here is a funny edge case
-        result = ReportsEntryPoint.toTwoTuple("(1,2,3)")
-        self.assertEqual(result, (1, 2))
-
-        # test some cases that SHOULD fail
-        with self.assertRaises(ValueError):
-            ReportsEntryPoint.toTwoTuple("(1,)")
-
-        with self.assertRaises(ValueError):
-            ReportsEntryPoint.toTwoTuple("()")
-
-        with self.assertRaises(ValueError):
-            ReportsEntryPoint.toTwoTuple("[1,5]")
-
     def test_cleanArgs(self):
-        rep = ReportsEntryPoint()
-        rep.addOptions()
-
-        node0 = "(0,0)"
-        node3 = "(3,3)"
-        nodesStr = "(0,2)(1,3)(2,9)"
-
-        rep.parse_args(["--nodes", nodesStr])
-        self.assertEqual(rep.args.nodes, nodesStr)
-        rep._cleanArgs()
-        self.assertEqual(rep.args.nodes[0], (0, 2))
-        self.assertEqual(rep.args.nodes[1], (1, 3))
-        self.assertEqual(rep.args.nodes[2], (2, 9))
-
-        rep.parse_args(["--min-node", node0])
-        self.assertEqual(rep.args.min_node, node0)
-        rep._cleanArgs()
-        self.assertEqual(rep.args.min_node, (0, 0))
-
-        rep.parse_args(["--max-node", node3])
-        self.assertEqual(rep.args.max_node, node3)
-        rep._cleanArgs()
-        self.assertEqual(rep.args.max_node, (3, 3))
-
-    def test_reportsEntryPointBasics(self):
-        with TemporaryDirectoryChanger() as newDir:
-            # set up output names
-            fileNameDB = buildTestDB(self._testMethodName, 1, 1)
-            outputFile = f"{self._testMethodName}.txt"
-            outDir = os.path.join(newDir.destination, "reportsOutputFiles")
-
-            # define report
-            rep = ReportsEntryPoint()
-            rep.addOptions()
-            rep.parse_args(["-h5db", fileNameDB, "-o", outputFile])
-
-            # validate report options
-            self.assertEqual(rep.name, "report")
-            self.assertEqual(rep.settingsArgument, "optional")
-
-            # Run report, and make sure there are output files
-            rep.invoke()
-            self.assertTrue(os.path.exists(os.path.join(outDir, "index.html")))
-            outFiles = glob(os.path.join(outDir, f"*{self._testMethodName}*"))
-            self.assertGreater(len(outFiles), 2)
+        rep = MockFakeReportsEntryPoint()
+        result = rep.invoke()
+        self.assertEqual(result, "mock fake")
 
 
 class TestCompareIsotxsLibsEntryPoint(unittest.TestCase):
     def test_compareIsotxsLibsBasics(self):
         com = CompareIsotxsLibraries()
         com.addOptions()
-        com.parse_args(
-            ["--fluxFile", "/path/to/fluxfile.txt", "reference", "comparisonFiles"]
-        )
+        com.parse_args(["--fluxFile", "/path/to/fluxfile.txt", "reference", "comparisonFiles"])
 
         self.assertEqual(com.name, "diff-isotxs")
         self.assertIsNone(com.settingsArgument)

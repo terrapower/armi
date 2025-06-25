@@ -24,24 +24,21 @@ mpiexec -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 or
 mpiexec.exe -n 2 python -m pytest armi/tests/test_mpiFeatures.py
 """
-from unittest.mock import patch
+
 import os
 import shutil
 import unittest
+from unittest.mock import patch
 
-from armi import context
-from armi import mpiActions
-from armi import settings
+from armi import context, mpiActions, settings
 from armi.interfaces import Interface
 from armi.mpiActions import DistributeStateAction
 from armi.operators import OperatorMPI
 from armi.physics.neutronics.const import CONF_CROSS_SECTION
-from armi.reactor import blueprints
-from armi.reactor import reactors
+from armi.reactor import blueprints, reactors
 from armi.reactor.parameters import parameterDefinitions
 from armi.reactor.tests import test_reactors
-from armi.tests import ARMI_RUN_PATH, TEST_ROOT
-from armi.tests import mockRunLogs
+from armi.tests import ARMI_RUN_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -164,14 +161,8 @@ class MpiOperatorTests(unittest.TestCase):
             else:
                 self.o.workerOperate()
 
-            logMessage = (
-                "Workers have been reset."
-                if context.MPI_RANK == 0
-                else "Workers are being reset."
-            )
-            numCalls = len(
-                [line for line in mock.getStdout().splitlines() if logMessage in line]
-            )
+            logMessage = "Workers have been reset." if context.MPI_RANK == 0 else "Workers are being reset."
+            numCalls = len([line for line in mock.getStdout().splitlines() if logMessage in line])
             self.assertGreaterEqual(numCalls, 1)
 
 
@@ -287,9 +278,7 @@ class MpiDistributeStateTests(unittest.TestCase):
             self.assertEqual(original_lib, self.o.r.core.lib)
 
         for pDef in parameterDefinitions.ALL_DEFINITIONS:
-            self.assertFalse(
-                pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE
-            )
+            self.assertFalse(pDef.assigned & parameterDefinitions.SINCE_LAST_DISTRIBUTE_STATE)
 
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_compileResults(self):
@@ -306,7 +295,7 @@ class MpiDistributeStateTests(unittest.TestCase):
 class MpiPathToolsTests(unittest.TestCase):
     @unittest.skipIf(context.MPI_SIZE <= 1 or MPI_EXE is None, "Parallel test only")
     def test_cleanPathMpi(self):
-        # """Simple tests of cleanPath(), in the MPI scenario"""
+        """Simple tests of cleanPath(), in the MPI scenario."""
         with TemporaryDirectoryChanger():
             # TEST 0: File is not safe to delete, due to name pathing
             filePath0 = "test0_cleanPathNoMpi"

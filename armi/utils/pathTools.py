@@ -16,14 +16,15 @@
 This module contains commonly used functions relating to directories, files and path
 manipulations.
 """
-from time import sleep
+
 import importlib
 import os
 import pathlib
 import shutil
+from time import sleep
 
-from armi import context
-from armi import runLog
+from armi import context, runLog
+from armi.utils import safeCopy
 
 DO_NOT_CLEAN_PATHS = [
     "armiruns",
@@ -37,47 +38,33 @@ DO_NOT_CLEAN_PATHS = [
 
 
 def armiAbsPath(*pathParts):
-    """
-    Convert a list of path components to an absolute path, without drive letters if possible.
-
-    This is mostly useful on Windows systems, where drive letters are not well defined
-    across systems. In these cases, it is useful to try to convert to a UNC path if
-    possible.
-    """
-    # imported here to prevent cluster failures, unsure why this causes an error
-    result = os.path.abspath(os.path.join(*pathParts))
-    try:
-        from ccl import common_operations
-
-        return common_operations.convert_to_unc_path(result)
-    except Exception:
-        return result
+    """Convert a list of path components to an absolute path, without drive letters if possible."""
+    return os.path.abspath(os.path.join(*pathParts))
 
 
-def copyOrWarn(fileDescription, sourcePath, destinationPath):
-    """Copy a file, or warn if the file doesn't exist.
+def copyOrWarn(filepathDescription, sourcePath, destinationPath):
+    """Copy a file or directory, or warn if the filepath doesn't exist.
 
     Parameters
     ----------
-    fileDescription : str
+    filepathDescription : str
         a description of the file and/or operation being performed.
     sourcePath : str
-        Path of the file to be copied.
+        Filepath to be copied.
     destinationPath : str
-        Path for the copied file.
+        Copied filepath.
     """
     try:
-        shutil.copy(sourcePath, destinationPath)
-        runLog.debug(
-            "Copied {}: {} -> {}".format(fileDescription, sourcePath, destinationPath)
-        )
+        if os.path.isdir(sourcePath):
+            shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
+        else:
+            safeCopy(sourcePath, destinationPath)
+        runLog.debug("Copied {}: {} -> {}".format(filepathDescription, sourcePath, destinationPath))
     except shutil.SameFileError:
         pass
     except Exception as e:
         runLog.warning(
-            "Could not copy {} from {} to {}\nError was: {}".format(
-                fileDescription, sourcePath, destinationPath, e
-            )
+            "Could not copy {} from {} to {}\nError was: {}".format(filepathDescription, sourcePath, destinationPath, e)
         )
 
 
@@ -230,9 +217,7 @@ def cleanPath(path, mpiRank=0):
         valid = True
 
     if not valid:
-        raise Exception(
-            "You tried to delete {0}, but it does not seem safe to do so.".format(path)
-        )
+        raise Exception("You tried to delete {0}, but it does not seem safe to do so.".format(path))
 
     # delete the file/directory from only one process
     if mpiRank == context.MPI_RANK:

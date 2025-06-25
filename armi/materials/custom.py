@@ -16,11 +16,12 @@
 Custom materials are ones that you can specify all the number densities yourself.
 
 Useful for benchmarking when you have a particular specified material density.
-Use the isotopic input described in :doc:`/user/inputs/blueprints`.
+Use the isotopic input described in :ref:`bp-input-file`.
 
 The density function gets applied from custom isotopics by
 :py:meth:`armi.reactor.blueprints.isotopicOptions.CustomIsotopic.apply`.
 """
+
 from armi.materials.material import Material
 
 
@@ -51,8 +52,5 @@ class Custom(Material):
 
     def setMassFrac(self, *args, **kwargs):
         if self.customDensity == 1.0:
-            raise ValueError(
-                "Cannot set mass fractions on Custom materials unless a density "
-                "is defined."
-            )
+            raise ValueError("Cannot set mass fractions on Custom materials unless a density is defined.")
         Material.setMassFrac(self, *args, **kwargs)

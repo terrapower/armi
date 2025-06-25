@@ -30,7 +30,7 @@ operating temperature of 450 °C. Lastly, since there are 271 pins in the
 assembly, we'll set the ``mult`` (short for *multiplicity*) to 271:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: start-block-clad
     :end-before: end-block-clad
@@ -54,7 +54,7 @@ follows.
 
 .. note:: The wire axial pitch isn't specified in the table so we just use a typical value of 30 cm.
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-clad
     :end-before: end-block-wire
@@ -80,7 +80,7 @@ fuel. Thus, the fuel outer diameter is given by solving:
 which gives :math:`d = 0.6029`, our fuel outer diameter. Now we can enter our
 fuel slug component into blueprints:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-wire
     :end-before: end-block-fuel
@@ -95,7 +95,7 @@ set, we will use **linked dimensions**. Thus, no numbers (beyond temperatures)
 are needed!
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-fuel
     :end-before: end-block-bond
@@ -108,7 +108,7 @@ diameters. The outer pitch is given as ``15.710``, and we can calculate the
 inner pitch from that and the duct thickness. It ends up looking like this:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-bond
     :end-before: end-block-duct
@@ -119,7 +119,7 @@ pitch, also defined in Table 4.3), and we define this by defining a special
 ``Hexagon`` full of interstitial coolant outside the duct:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-duct
     :end-before: end-block-intercoolant
@@ -134,7 +134,7 @@ conditions (e.g. when the rest of the assembly is filled and only one
 shape automatically. And that's just what we'll do with the coolant:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-intercoolant
     :end-before: end-block-coolant
@@ -159,7 +159,7 @@ Radial Shields
 Here is a very simplified radial shield:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-coolant
     :end-before: end-block-radialshield
@@ -171,7 +171,7 @@ Here is a reflector block definition. We can use this for radial reflectors and
 axial reflectors. We include wire wrap so the axial reflector will work with
 our basic thermal hydraulic solver:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-radialshield
     :end-before: end-block-reflector
@@ -182,7 +182,7 @@ Control
 Here is a big empty sodium duct (what you'd find below a control absorber bundle):
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-reflector
     :end-before: end-block-control
@@ -194,7 +194,7 @@ We also need to define empty cladding tubes above the fuel for the fission
 gasses to accumulate in. This just has a ``gap`` component made of the ``Void``
 material, which is just empty space:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-control
     :end-before: end-block-plenum
@@ -221,7 +221,7 @@ specify a roughly even neutronic/transport mesh, with slightly larger neutronic
 mesh points in the very tall single-block plenum:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-block-plenum
     :end-before: end-assemblies-common
@@ -238,7 +238,7 @@ from the paper. Specifying more details is possible via the **custom
 isotopics** input fields.:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-common
     :end-before: end-assemblies-ic
@@ -263,7 +263,7 @@ is a trade-off, since more cross section types means more lattice physics
 calculations, which can require either more time or more processors:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-ic
     :end-before: end-assemblies-mc
@@ -275,7 +275,7 @@ Same deal for the outer core.
         is highly recommended to make sure you know how to column edit.
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-mc
     :end-before: end-assemblies-oc
@@ -289,18 +289,18 @@ some requirements of axial mesh boundaries at least lining up between
 assemblies, but there are some ARMI features that can automatically adjust the
 mesh if you have very complicated assemblies:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-oc
     :end-before: end-assemblies-rr
 
 
-.. note:: Here we just re-use the fuel block cross sections. In more precise models, a different approach
+.. note:: Here we just reuse the fuel block cross sections. In more precise models, a different approach
 	may be used.
 
 Here is the radial shield:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-rr
     :end-before: end-assemblies-sh
@@ -308,7 +308,7 @@ Here is the radial shield:
 
 Here are the control blocks:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-sh
     :end-before: end-assemblies-section
@@ -331,7 +331,7 @@ can be input as follows (see Figure 4.3 in the reference). First, we refer to a
 geometry file from the ``systems`` section of the ``blueprints`` file:
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-blueprints.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml
     :language: yaml
     :start-after: end-assemblies-section
     :end-before: end-systems-section
@@ -339,7 +339,7 @@ geometry file from the ``systems`` section of the ``blueprints`` file:
 
 And then, in the core map file (``anl-afci-177-coreMap.yaml``):
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-coreMap.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-coreMap.yaml
     :language: yaml
 
 
@@ -360,7 +360,7 @@ specified, so let's assume 0.38. From Table 4.8, the cycle length is 370 EFPD.
 Let's also assume a 0.90 capacity factor which will gives full cycles of 411.1
 days.
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177.yaml
     :language: yaml
     :start-after: begin-settings
     :end-before: end-section-1
@@ -369,21 +369,21 @@ We need to tell the system which other input files to load by bringing in the
 blueprints and geometry (the shuffling and fuel handler info will be described
 momentarily):
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177.yaml
     :language: yaml
     :start-after: end-section-1
     :end-before: end-section-2
 
 In terms of our simulation parameters, let's run it for 10 cycles, with 2 depletion time steps per cycle:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177.yaml
     :language: yaml
     :start-after: end-section-2
     :end-before: end-section-3
 
 Set some physics kernel and environment options:
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177.yaml
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177.yaml
     :language: yaml
     :start-after: end-section-3
 
@@ -410,7 +410,7 @@ stated fluence limit will be violated in the next cycle. If it will be, the
 fuel assembly will be replaced with a fresh one of the same kind.
 
 
-.. literalinclude:: ../../armi/tests/tutorials/anl-afci-177-fuelManagement.py
+.. literalinclude:: ../../armi/tests/anl-afci-177/anl-afci-177-fuelManagement.py
     :language: python
 
 
@@ -424,9 +424,9 @@ errors to help identify common mistakes.
 
 Here are the full files used in this example:
 
-* :download:`Blueprints <../../armi/tests/tutorials/anl-afci-177-blueprints.yaml>`
-* :download:`Settings <../../armi/tests/tutorials/anl-afci-177.yaml>`
-* :download:`Core map <../../armi/tests/tutorials/anl-afci-177-coreMap.yaml>`
-* :download:`Fuel management <../../armi/tests/tutorials/anl-afci-177-fuelManagement.py>`
+* :download:`Blueprints <../../armi/tests/anl-afci-177/anl-afci-177-blueprints.yaml>`
+* :download:`Settings <../../armi/tests/anl-afci-177/anl-afci-177.yaml>`
+* :download:`Core map <../../armi/tests/anl-afci-177/anl-afci-177-coreMap.yaml>`
+* :download:`Fuel management <../../armi/tests/anl-afci-177/anl-afci-177-fuelManagement.py>`
 
 The next tutorial will guide you through inputs for a classic LWR benchmark problem (C5G7).

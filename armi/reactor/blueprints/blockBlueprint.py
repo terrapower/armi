@@ -13,22 +13,22 @@
 # limitations under the License.
 
 """This module defines the ARMI input for a block definition, and code for constructing an ARMI ``Block``."""
+
 import collections
 from inspect import signature
-from typing import Iterable, Set, Iterator
+from typing import Iterable, Iterator, Set
 
 import yamlize
 
 from armi import getPluginManagerOrFail, runLog
 from armi.materials.material import Material
-from armi.reactor import blocks
-from armi.reactor.composites import Composite
-from armi.reactor import parameters
-from armi.reactor.flags import Flags
+from armi.reactor import blocks, parameters
 from armi.reactor.blueprints import componentBlueprint
 from armi.reactor.components.component import Component
+from armi.reactor.composites import Composite
 from armi.reactor.converters import blockConverters
-from armi.settings.fwSettings import globalSettings
+from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_INPUT_HEIGHTS_HOT
 
 
 def _configureGeomOptions():
@@ -73,9 +73,7 @@ class BlockBlueprint(yamlize.KeyedList):
     name = yamlize.Attribute(key="name", type=str)
     gridName = yamlize.Attribute(key="grid name", type=str, default=None)
     flags = yamlize.Attribute(type=str, default=None)
-    axialExpTargetComponent = yamlize.Attribute(
-        key="axial expansion target component", type=str, default=None
-    )
+    axialExpTargetComponent = yamlize.Attribute(key="axial expansion target component", type=str, default=None)
     _geomOptions = _configureGeomOptions()
 
     def _getBlockClass(self, outerComponent):
@@ -97,9 +95,7 @@ class BlockBlueprint(yamlize.KeyedList):
             "".format(self.name, outerComponent)
         )
 
-    def construct(
-        self, cs, blueprint, axialIndex, axialMeshPoints, height, xsType, materialInput
-    ):
+    def construct(self, cs, blueprint, axialIndex, axialMeshPoints, height, xsType, materialInput):
         """
         Construct an ARMI ``Block`` to be placed in an ``Assembly``.
 
@@ -141,11 +137,14 @@ class BlockBlueprint(yamlize.KeyedList):
 
         self._checkByComponentMaterialInput(materialInput)
 
+        allLatticeIds = set()
         for componentDesign in self:
-            filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(
-                materialInput, componentDesign
+            filteredMaterialInput, byComponentMatModKeys = self._filterMaterialInput(materialInput, componentDesign)
+            c = componentDesign.construct(
+                blueprint,
+                filteredMaterialInput,
+                cs[CONF_INPUT_HEIGHTS_HOT],
             )
-            c = componentDesign.construct(blueprint, filteredMaterialInput)
             components[c.name] = c
 
             # check that the mat mods for this component are valid options
@@ -156,14 +155,10 @@ class BlockBlueprint(yamlize.KeyedList):
                 validMatModOptions = self._getMaterialModsFromBlockChildren(c)
                 for key in byComponentMatModKeys:
                     if key not in validMatModOptions:
-                        raise ValueError(
-                            f"{c} in block {self.name} has invalid material modification: {key}"
-                        )
+                        raise ValueError(f"{c} in block {self.name} has invalid material modification: {key}")
 
             if spatialGrid:
-                componentLocators = gridDesign.getMultiLocator(
-                    spatialGrid, componentDesign.latticeIDs
-                )
+                componentLocators = gridDesign.getMultiLocator(spatialGrid, componentDesign.latticeIDs)
                 if componentLocators:
                     # this component is defined in the block grid
                     # We can infer the multiplicity from the grid.
@@ -181,18 +176,38 @@ class BlockBlueprint(yamlize.KeyedList):
                         # learn mult from grid definition
                         c.setDimension("mult", len(c.spatialLocator))
 
+                idsInGrid = list(gridDesign.gridContents.values())
+                if componentDesign.latticeIDs:
+                    for latticeID in componentDesign.latticeIDs:
+                        allLatticeIds.add(str(latticeID))
+                        # the user has given this component latticeIDs. check that
+                        # each of the ids appears in the grid, otherwise
+                        # their blueprints are probably wrong
+                        if len([i for i in idsInGrid if i == str(latticeID)]) == 0:
+                            raise ValueError(
+                                f"latticeID {latticeID} in block blueprint '{self.name}' is expected "
+                                "to be present in the associated block grid. "
+                                "Check that the component's latticeIDs align with the block's grid."
+                            )
+
+        # for every id in grid, confirm that at least one component had it
+        if gridDesign:
+            idsInGrid = list(gridDesign.gridContents.values())
+            for idInGrid in idsInGrid:
+                if str(idInGrid) not in allLatticeIds:
+                    raise ValueError(
+                        f"ID {idInGrid} in grid {gridDesign.name} is not in any components of block {self.name}. "
+                        "All IDs in the grid must appear in at least one component."
+                    )
+
         # check that the block level mat mods use valid options in the same way
         # as we did for the by-component mods above
-        validMatModOptions = self._getBlockwiseMaterialModifierOptions(
-            components.values()
-        )
+        validMatModOptions = self._getBlockwiseMaterialModifierOptions(components.values())
 
         if "byBlock" in materialInput:
             for key in materialInput["byBlock"]:
                 if key not in validMatModOptions:
-                    raise ValueError(
-                        f"Block {self.name} has invalid material modification key: {key}"
-                    )
+                    raise ValueError(f"Block {self.name} has invalid material modification key: {key}")
 
         # Resolve linked dims after all components in the block are created
         for c in components.values():
@@ -202,9 +217,7 @@ class BlockBlueprint(yamlize.KeyedList):
         # give a temporary name (will be updated by b.makeName as real blocks populate systems)
         b = self._getBlockClass(boundingComp)(name=f"block-bol-{axialIndex:03d}")
 
-        for paramDef in b.p.paramDefs.inCategory(
-            parameters.Category.assignInBlueprints
-        ):
+        for paramDef in b.p.paramDefs.inCategory(parameters.Category.assignInBlueprints):
             val = getattr(self, paramDef.name)
             if val is not None:
                 b.p[paramDef.name] = val
@@ -229,9 +242,7 @@ class BlockBlueprint(yamlize.KeyedList):
         for c in components.values():
             b.add(c)
         b.p.nPins = b.getNumPins()
-        b.p.axMesh = _setBlueprintNumberOfAxialMeshes(
-            axialMeshPoints, cs["axialMeshRefinementFactor"]
-        )
+        b.p.axMesh = _setBlueprintNumberOfAxialMeshes(axialMeshPoints, cs["axialMeshRefinementFactor"])
         b.p.height = height
         b.p.heightBOL = height  # for fuel performance
         b.p.xsType = xsType
@@ -240,16 +251,9 @@ class BlockBlueprint(yamlize.KeyedList):
         b.verifyBlockDims()
         b.spatialGrid = spatialGrid
 
-        if b.spatialGrid is None and cs[globalSettings.CONF_BLOCK_AUTO_GRID]:
-            try:
-                b.autoCreateSpatialGrids()
-            except (ValueError, NotImplementedError) as e:
-                runLog.warning(str(e), single=True)
         return b
 
-    def _getBlockwiseMaterialModifierOptions(
-        self, children: Iterable[Composite]
-    ) -> Set[str]:
+    def _getBlockwiseMaterialModifierOptions(self, children: Iterable[Composite]) -> Set[str]:
         """Collect all the material modifiers that exist on a block."""
         validMatModOptions = set()
         for c in children:
@@ -265,11 +269,7 @@ class BlockBlueprint(yamlize.KeyedList):
                 # we must loop over parents as well, since applyInputParams
                 # could call to Parent.applyInputParams()
                 if issubclass(materialParentClass, Material):
-                    perChildModifiers.update(
-                        signature(
-                            materialParentClass.applyInputParams
-                        ).parameters.keys()
-                    )
+                    perChildModifiers.update(signature(materialParentClass.applyInputParams).parameters.keys())
         # self is a parameter to methods, so it gets picked up here
         # but that's obviously not a real material modifier
         perChildModifiers.discard("self")
@@ -336,17 +336,14 @@ class BlockBlueprint(yamlize.KeyedList):
         if self.gridName:
             if self.gridName not in blueprint.gridDesigns:
                 raise KeyError(
-                    f"Lattice {self.gridName} defined on {self} is not "
-                    "defined in the blueprints `lattices` section."
+                    f"Lattice {self.gridName} defined on {self} is not defined in the blueprints `lattices` section."
                 )
             return blueprint.gridDesigns[self.gridName]
         return None
 
     @staticmethod
     def _mergeComponents(b):
-        solventNamesToMergeInto = set(
-            c.p.mergeWith for c in b.iterComponents() if c.p.mergeWith
-        )
+        solventNamesToMergeInto = set(c.p.mergeWith for c in b.iterComponents() if c.p.mergeWith)
 
         if solventNamesToMergeInto:
             runLog.warning(
@@ -367,17 +364,13 @@ class BlockBlueprint(yamlize.KeyedList):
                 if c.p.mergeWith == solventName:
                     soluteNames.append(c.name)
 
-            converter = blockConverters.MultipleComponentMerger(
-                b, soluteNames, solventName
-            )
+            converter = blockConverters.MultipleComponentMerger(b, soluteNames, solventName)
             b = converter.convert()
 
         return b
 
 
-for paramDef in parameters.forType(blocks.Block).inCategory(
-    parameters.Category.assignInBlueprints
-):
+for paramDef in parameters.forType(blocks.Block).inCategory(parameters.Category.assignInBlueprints):
     setattr(
         BlockBlueprint,
         paramDef.name,
@@ -388,15 +381,13 @@ for paramDef in parameters.forType(blocks.Block).inCategory(
 def _setBlueprintNumberOfAxialMeshes(meshPoints, factor):
     """Set the blueprint number of axial mesh based on the axial mesh refinement factor."""
     if factor <= 0:
-        raise ValueError(
-            "A positive axial mesh refinement factor "
-            f"must be provided. A value of {factor} is invalid."
-        )
+        raise ValueError(f"A positive axial mesh refinement factor must be provided. A value of {factor} is invalid.")
 
     if factor != 1:
         runLog.important(
-            "An axial mesh refinement factor of {} is applied "
-            "to blueprint based on setting specification.".format(factor),
+            "An axial mesh refinement factor of {} is applied to blueprint based on setting specification.".format(
+                factor
+            ),
             single=True,
         )
     return int(meshPoints) * factor

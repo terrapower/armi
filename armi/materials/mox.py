@@ -22,9 +22,10 @@ A definitive source for these properties is [#ornltm20002]_.
     ORNL/TM-2000/351 https://rsicc.ornl.gov/fmdp/tm2000-351.pdf
 
 """
+
 from armi import runLog
-from armi.materials.uraniumOxide import UraniumOxide
 from armi.materials import material
+from armi.materials.uraniumOxide import UraniumOxide
 from armi.nucDirectory import nucDir
 
 
@@ -43,9 +44,7 @@ class MOX(UraniumOxide):
     def __init__(self):
         UraniumOxide.__init__(self)
 
-    def applyInputParams(
-        self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None, *args, **kwargs
-    ):
+    def applyInputParams(self, U235_wt_frac=None, TD_frac=None, mass_frac_PU02=None, *args, **kwargs):
         if U235_wt_frac is not None:
             self.adjustMassEnrichment(U235_wt_frac)
 
@@ -53,8 +52,7 @@ class MOX(UraniumOxide):
         if td is not None:
             if td > 1.0:
                 runLog.warning(
-                    "Theoretical density frac for {0} is {1}, which is >1"
-                    "".format(self, td),
+                    "Theoretical density frac for {0} is {1}, which is >1".format(self, td),
                     single=True,
                     label="Large theoretical density",
                 )
@@ -71,40 +69,24 @@ class MOX(UraniumOxide):
         material.FuelMaterial.applyInputParams(self, *args, **kwargs)
 
     def getMassFracPuO2(self):
-        massFracPu = sum(
-            [self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="PU")]
-        )
-        massFracU = sum(
-            [self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="U")]
-        )
+        massFracPu = sum([self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="PU")])
+        massFracU = sum([self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="U")])
         return massFracPu / (massFracPu + massFracU)
 
     def setMassFracPuO2(self, massFracPuO2):
-        massFracPu = sum(
-            [self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="PU")]
-        )
-        massFracU = sum(
-            [self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="U")]
-        )
+        massFracPu = sum([self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="PU")])
+        massFracU = sum([self.getMassFrac(n) for n in nucDir.getNuclideNames(elementSymbol="U")])
         total = massFracU + massFracPu
 
         for Pu in nucDir.getNuclideNames("PU"):
-            self.setMassFrac(
-                Pu, self.getMassFrac(Pu) / massFracPu * massFracPuO2 * total
-            )
+            self.setMassFrac(Pu, self.getMassFrac(Pu) / massFracPu * massFracPuO2 * total)
 
         for U in nucDir.getNuclideNames("PU"):
-            self.setMassFrac(
-                U, self.getMassFrac(U) / massFracU * (1 - massFracPuO2) * total
-            )
+            self.setMassFrac(U, self.getMassFrac(U) / massFracU * (1 - massFracPuO2) * total)
 
     def getMolFracPuO2(self):
-        molweightUO2 = (
-            270.02771  # Approximation, does not include variance due to isotopes
-        )
-        molweightPuO2 = (
-            275.9988  # Approximation, does not include variance due to isotopes
-        )
+        molweightUO2 = 270.02771  # Approximation, does not include variance due to isotopes
+        molweightPuO2 = 275.9988  # Approximation, does not include variance due to isotopes
 
         massFracPuO2 = self.getMassFracPuO2()
         massFracUO2 = 1 - massFracPuO2
@@ -177,9 +159,4 @@ class MOX(UraniumOxide):
         Does not take into account changes in the melting temp due to burnup.
         """
         molFracPuO2 = self.getMolFracPuO2()
-        return (
-            3120.0
-            - 655.3 * molFracPuO2
-            + 336.4 * molFracPuO2**2
-            - 99.9 * molFracPuO2**3
-        )
+        return 3120.0 - 655.3 * molFracPuO2 + 336.4 * molFracPuO2**2 - 99.9 * molFracPuO2**3

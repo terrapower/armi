@@ -19,6 +19,7 @@ This should contain Settings definitions for general-purpose "framework"
 settings. These should only include settings that are not related to any
 particular physics or plugins.
 """
+
 import os
 from typing import List
 
@@ -29,7 +30,6 @@ from armi.settings import setting
 from armi.settings.fwSettings import tightCouplingSettings
 from armi.utils.mathematics import isMonotonic
 
-
 # Framework settings
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP = "assemFlagsToSkipAxialExpansion"
@@ -38,9 +38,9 @@ CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_BETA = "beta"
-CONF_BLOCK_AUTO_GRID = "autoGenerateBlockGrids"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
+CONF_TEMP_GROUPS = "tempGroups"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_BURN_STEPS = "burnSteps"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -69,21 +69,18 @@ CONF_EQ_DIRECT = "eqDirect"  # fuelCycle/equilibrium coupling
 CONF_EXPLICIT_REPEAT_SHUFFLES = "explicitRepeatShuffles"
 CONF_FLUX_RECON = "fluxRecon"  # strange coupling in fuel handlers
 CONF_FRESH_FEED_TYPE = "freshFeedType"
-CONF_GEOM_FILE = "geomFile"
 CONF_GROW_TO_FULL_CORE_AFTER_LOAD = "growToFullCoreAfterLoad"
 CONF_INDEPENDENT_VARIABLES = "independentVariables"
 CONF_INITIALIZE_BURN_CHAIN = "initializeBurnChain"
 CONF_INPUT_HEIGHTS_HOT = "inputHeightsConsideredHot"
 CONF_LOAD_STYLE = "loadStyle"
 CONF_LOADING_FILE = "loadingFile"
-CONF_LOW_POWER_REGION_FRACTION = "lowPowerRegionFraction"  # reports
 CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
-CONF_MPI_TASKS_PER_NODE = "mpiTasksPerNode"
 CONF_N_CYCLES = "nCycles"
 CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
-CONF_NUM_PROCESSORS = "numProcessors"
+CONF_N_TASKS = "nTasks"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
@@ -93,11 +90,11 @@ CONF_POWER = "power"
 CONF_POWER_DENSITY = "powerDensity"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
-CONF_REALLY_SMALL_RUN = "reallySmallRun"
+CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_REMOVE_PER_CYCLE = "removePerCycle"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
-CONF_SMALL_RUN = "smallRun"
+CONF_SMALL_RUN = "rmExternalFilesAtEOL"
 CONF_SORT_REACTOR = "sortReactor"
 CONF_START_CYCLE = "startCycle"
 CONF_START_NODE = "startNode"
@@ -154,11 +151,12 @@ def defineSettings() -> List[setting.Setting]:
     """
     settings = [
         setting.Setting(
-            CONF_NUM_PROCESSORS,
+            CONF_N_TASKS,
             default=1,
-            label="CPUs",
-            description="Number of CPUs to request on the cluster",
+            label="parallel tasks",
+            description="Number of parallel tasks to request on the cluster",
             schema=vol.All(vol.Coerce(int), vol.Range(min=1)),
+            oldNames=[("numProcessors", None)],
         ),
         setting.Setting(
             CONF_INITIALIZE_BURN_CHAIN,
@@ -229,8 +227,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_AUTOMATIC_VARIABLE_MESH,
             default=False,
             label="Automatic Neutronics Variable Mesh",
-            description="Flag to let ARMI add additional mesh points if the "
-            "neutronics mesh is too irregular",
+            description="Flag to let ARMI add additional mesh points if the neutronics mesh is too irregular",
         ),
         setting.Setting(
             CONF_TRACE,
@@ -406,17 +403,29 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_BU_GROUPS,
-            default=[10, 20, 30, 100],
-            label="Burnup Groups",
+            default=[10, 20, 30],
+            label="Burnup XS Groups",
             description="The range of burnups where cross-sections will be the same "
-            "for a given assembly type (units of %FIMA)",
+            "for a given cross section type (units of %FIMA)",
             schema=vol.Schema(
                 [
                     vol.All(
-                        vol.Coerce(int), vol.Range(min=0, min_included=False, max=100)
+                        vol.Coerce(int),
+                        vol.Range(
+                            min=0,
+                            min_included=False,
+                        ),
                     )
                 ]
             ),
+        ),
+        setting.Setting(
+            CONF_TEMP_GROUPS,
+            default=[],
+            label="Temperature XS Groups",
+            description="The range of fuel temperatures where cross-sections will be the same "
+            "for a given cross section type (units of degrees C)",
+            schema=vol.Schema([vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False))]),
         ),
         setting.Setting(
             CONF_BURNUP_PEAKING_FACTOR,
@@ -430,8 +439,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CIRCULAR_RING_PITCH,
             default=1.0,
             label="Circular Ring Relative Pitch",
-            description="The relative pitch to be used to define a single circular "
-            "ring in circular shuffling",
+            description="The relative pitch to be used to define a single circular ring in circular shuffling",
         ),
         setting.Setting(
             CONF_COMMENT,
@@ -531,12 +539,6 @@ def defineSettings() -> List[setting.Setting]:
             options=["feed fuel", "igniter fuel", "inner driver fuel"],
         ),
         setting.Setting(
-            CONF_GEOM_FILE,
-            default="",
-            label="Core Map Input File",
-            description="Input file containing BOL core map",
-        ),
-        setting.Setting(
             CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
             default=False,
             label="Expand to Full Core on Snapshot Load",
@@ -559,14 +561,13 @@ def defineSettings() -> List[setting.Setting]:
             CONF_LOADING_FILE,
             default="",
             label="Blueprints File",
-            description="The blueprints/loading input file path containing "
-            "component dimensions, materials, etc.",
+            description="The blueprints/loading input file path containing component dimensions, materials, etc.",
         ),
         setting.Setting(
             CONF_START_NODE,
             default=0,
             label="Start Node",
-            description="Timenode number (0 for BOC, etc.) to continue calulation from. "
+            description="Timenode number (0 for BOC, etc.) to continue calculation from. "
             "Database will load from the time step just before.",
             oldNames=[
                 ("loadNode", None),
@@ -579,21 +580,6 @@ def defineSettings() -> List[setting.Setting]:
             label="Load Style",
             description="Description of how the ARMI case will be initialized",
             options=["fromInput", "fromDB"],
-        ),
-        setting.Setting(
-            CONF_LOW_POWER_REGION_FRACTION,
-            default=0.05,
-            label="Low-power Region Fraction",
-            description="Description needed",
-            schema=vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
-        ),
-        setting.Setting(
-            CONF_MPI_TASKS_PER_NODE,
-            default=0,
-            label="MPI Tasks per Node",
-            description="Number of independent processes that are allocated to each "
-            "cluster node. 0 means 1 process per CPU.",
-            schema=vol.All(vol.Coerce(int), vol.Range(min=0)),
         ),
         setting.Setting(
             CONF_N_CYCLES,
@@ -633,8 +619,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_OPERATOR_LOCATION,
             default="",
             label="Operator Location",
-            description="The path to the operator code to execute for this run (for "
-            "custom behavior)",
+            description="The path to the operator code to execute for this run (for custom behavior)",
         ),
         setting.Setting(
             CONF_OUTPUT_FILE_EXTENSION,
@@ -653,8 +638,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_POWER,
             default=0.0,
             label="Reactor Thermal Power (W)",
-            description="Nameplate thermal power of the reactor. Can be varied by "
-            "setting the powerFractions setting.",
+            description="Nameplate thermal power of the reactor. Can be varied by setting the powerFractions setting.",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -683,8 +667,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_EXPLICIT_REPEAT_SHUFFLES,
             default="",
             label="Explicit Shuffles File",
-            description="Path to file that contains a detailed shuffling history that "
-            "is to be repeated exactly.",
+            description="Path to file that contains a detailed shuffling history that is to be repeated exactly.",
             oldNames=[("movesFile", None), ("shuffleFileName", None)],
         ),
         setting.Setting(
@@ -709,7 +692,7 @@ def defineSettings() -> List[setting.Setting]:
             description="Deprecation Warning! This setting will be remove by 2024.",
         ),
         setting.Setting(
-            CONF_REALLY_SMALL_RUN,
+            CONF_RM_EXT_FILES_AT_BOC,
             default=False,
             label="Clean Up Files at BOC",
             description="Clean up files at the beginning of each cycle (BOC)",
@@ -718,15 +701,13 @@ def defineSettings() -> List[setting.Setting]:
             CONF_STATIONARY_BLOCK_FLAGS,
             default=["GRID_PLATE"],
             label="stationary Block Flags",
-            description="Blocks with these flags will not move in moves. "
-            "Used for fuel management.",
+            description="Blocks with these flags will not move in moves. Used for fuel management.",
         ),
         setting.Setting(
             CONF_TARGET_K,
             default=1.005,
             label="Criticality Search Target (k-effective)",
-            description="Target criticality (k-effective) for cycle length, branch, "
-            "and equilibrium search",
+            description="Target criticality (k-effective) for cycle length, branch, and equilibrium search",
             schema=vol.All(vol.Coerce(float), vol.Range(min=0)),
         ),
         setting.Setting(
@@ -775,8 +756,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_INDEPENDENT_VARIABLES,
             default=[],
             label="Independent Variables",
-            description="List of (independentVarName, value) tuples to inform "
-            "optimization post-processing",
+            description="List of (independentVarName, value) tuples to inform optimization post-processing",
         ),
         setting.Setting(
             CONF_T_IN,
@@ -803,8 +783,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_DEFERRED_INTERFACE_NAMES,
             default=[],
             label="Deferred Interface Names",
-            description="Interfaces to delay the normal operations of for special "
-            "circumstance problem avoidance",
+            description="Interfaces to delay the normal operations of for special circumstance problem avoidance",
         ),
         setting.Setting(
             CONF_OUTPUT_CACHE_LOCATION,
@@ -828,41 +807,25 @@ def defineSettings() -> List[setting.Setting]:
                 "than from the framework."
             ),
         ),
-        # It may make sense to remove this setting when MILs become more stable.
-        setting.Setting(
-            CONF_BLOCK_AUTO_GRID,
-            default=True,
-            label="Auto-generate Block grids",
-            description="Should block blueprints attempt to auto-generate a spatial "
-            "grid upon construction? This feature makes heavy use of multi-index "
-            "locations, which are not yet universally supported.",
-        ),
         setting.Setting(
             CONF_CYCLES,
             default=[],
             label="Cycle information",
-            description="YAML list defining the cycle history of the case. Options"
-            " at each cycle include: `name`, `cumulative days`, `step days`, `availability"
-            " factor`, `cycle length`, `burn steps`, and `power fractions`."
-            " If specified, do not use any of the case settings `cycleLength(s)`,"
-            " `availabilityFactor(s)`, `powerFractions`, or `burnSteps`. Must also"
-            " specify `nCycles` and `power`.",
+            description="YAML dict defining the cycle history of the case. Options at each cycle "
+            "include: `name`, `cumulative days`, `step days`, `availability factor`, "
+            "`cycle length`, `burn steps`, and `power fractions`. If specified, do not use any of "
+            "the case settings `cycleLength(s)`, `availabilityFactor(s)`, `powerFractions`, or "
+            "`burnSteps`. Must also specify `nCycles` and `power`.",
             schema=vol.Schema(
                 [
                     vol.All(
                         {
                             "name": str,
-                            "cumulative days": vol.All(
-                                [vol.Any(float, int)], _isMonotonicIncreasing
-                            ),
+                            "cumulative days": vol.All([vol.Any(float, int)], _isMonotonicIncreasing),
                             "step days": [vol.Coerce(str)],
                             "power fractions": [vol.Coerce(str)],
-                            "availability factor": vol.All(
-                                vol.Coerce(float), vol.Range(min=0, max=1)
-                            ),
-                            "cycle length": vol.All(
-                                vol.Coerce(float), vol.Range(min=0)
-                            ),
+                            "availability factor": vol.All(vol.Coerce(float), vol.Range(min=0, max=1)),
+                            "cycle length": vol.All(vol.Coerce(float), vol.Range(min=0)),
                             "burn steps": vol.All(vol.Coerce(int), vol.Range(min=0)),
                         },
                         _mutuallyExclusiveCyclesInputs,
@@ -874,18 +837,16 @@ def defineSettings() -> List[setting.Setting]:
             CONF_USER_PLUGINS,
             default=[],
             label=CONF_USER_PLUGINS,
-            description="YAML list defining the locations of UserPlugin subclasses. "
-            "You can enter the full armi import path: armi.test.test_what.MyPlugin, "
-            "or you can enter the full file path: /path/to/my/pluginz.py:MyPlugin ",
+            description="YAML list defining the locations of UserPlugin subclasses. You can enter "
+            "the full ARMI import path: armi.test.test_what.MyPlugin, or you can enter the full "
+            "file path: /path/to/my/pluginz.py:MyPlugin ",
             schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
             CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
             default=[],
             label="Assembly Flags to Skip Axial Expansion",
-            description=(
-                "Assemblies that match a flag on this list will not be axially expanded."
-            ),
+            description=("Assemblies that match a flag on this list will not be axially expanded."),
         ),
     ]
     return settings
@@ -899,6 +860,11 @@ def _isMonotonicIncreasing(inputList):
 
 
 def _mutuallyExclusiveCyclesInputs(cycle):
+    """Helper for `cycles` setting.
+
+    There are multiple different ways to define the time nodes of the simulation, but they are
+    exclusive, and you have to pick one. Here we verify it was done correcty.
+    """
     cycleKeys = cycle.keys()
     if (
         sum(
@@ -911,13 +877,10 @@ def _mutuallyExclusiveCyclesInputs(cycle):
         != 1
     ):
         baseErrMsg = (
-            "Must have exactly one of either 'cumulative days', 'step days', or"
-            " 'cycle length' + 'burn steps' in each cycle definition."
+            "Must have exactly one of either 'cumulative days', 'step days', or 'cycle length' + "
+            "'burn steps' in each cycle definition."
         )
 
-        raise vol.Invalid(
-            (baseErrMsg + " Check cycle {}.".format(cycle["name"]))
-            if "name" in cycleKeys
-            else baseErrMsg
-        )
+        raise vol.Invalid((baseErrMsg + f" Check cycle {cycle['name']}.") if "name" in cycleKeys else baseErrMsg)
+
     return cycle

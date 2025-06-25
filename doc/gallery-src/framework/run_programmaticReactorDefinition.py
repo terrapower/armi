@@ -27,6 +27,7 @@ programmatically (e.g. for parameter sweeps).
 This example shows how to make Blueprints objects programmatically completely
 from scratch.
 """
+
 # ruff: noqa: E402
 import matplotlib.pyplot as plt
 
@@ -37,12 +38,14 @@ configure(permissive=True)
 
 from armi import cases
 from armi.reactor import blueprints
-from armi.reactor.blueprints import assemblyBlueprint
-from armi.reactor.blueprints import blockBlueprint
-from armi.reactor.blueprints import componentBlueprint
-from armi.reactor.blueprints import gridBlueprint
-from armi.reactor.blueprints import isotopicOptions
-from armi.reactor.blueprints import reactorBlueprint
+from armi.reactor.blueprints import (
+    assemblyBlueprint,
+    blockBlueprint,
+    componentBlueprint,
+    gridBlueprint,
+    isotopicOptions,
+    reactorBlueprint,
+)
 from armi.settings import caseSettings
 from armi.utils import plotting
 
@@ -138,9 +141,7 @@ def buildComponents():
     coolant.Tinput = ISOTHERMAL_TEMPERATURE_IN_C
     coolant.Thot = ISOTHERMAL_TEMPERATURE_IN_C
 
-    componentBlueprints = {
-        c.name: c for c in [fuel, gap, clad, wire, duct, intercoolant, coolant]
-    }
+    componentBlueprints = {c.name: c for c in [fuel, gap, clad, wire, duct, intercoolant, coolant]}
 
     return componentBlueprints
 
@@ -174,9 +175,7 @@ def buildAssemblies(blockDesigns):
     fuelAssem.specifier = "IC"
 
     fuelAssem.blocks = blockBlueprint.BlockList()
-    fuelAssem.blocks.extend(
-        [reflectorBlock, fuelBock, fuelBock, fuelBock, reflectorBlock]
-    )
+    fuelAssem.blocks.extend([reflectorBlock, fuelBock, fuelBock, fuelBock, reflectorBlock])
     fuelAssem.height = [10, 20, 20, 20, 10]
     fuelAssem.xsTypes = ["A"] * 5
     fuelAssem.axialMeshPoints = [1] * 5
@@ -226,7 +225,7 @@ if __name__ == "__main__":
     # build ARMI objects
     o = case.initializeOperator()
     fig = plotting.plotAssemblyTypes(
-        case.bp,
+        list(case.bp.assemblies.values()),
         None,
         showBlockAxMesh=True,
     )

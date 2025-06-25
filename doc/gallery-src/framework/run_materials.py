@@ -22,8 +22,9 @@ your own proprietary material properties via a plugin.
 
 More info about the materials here: :py:mod:`armi.materials`.
 """
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 
 from armi import configure, materials
 from armi.nucDirectory import nuclideBases

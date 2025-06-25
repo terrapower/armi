@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """The bookkeeping package handles data persistence, reporting, and some debugging."""
+
 from armi import plugins
 
 
@@ -20,11 +21,13 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
     @staticmethod
     @plugins.HOOKIMPL
     def exposeInterfaces(cs):
+        from armi.bookkeeping import (
+            historyTracker,
+            mainInterface,
+            memoryProfiler,
+            snapshotInterface,
+        )
         from armi.bookkeeping.db import databaseInterface
-        from armi.bookkeeping import historyTracker
-        from armi.bookkeeping import memoryProfiler
-        from armi.bookkeeping import mainInterface
-        from armi.bookkeeping import snapshotInterface
         from armi.bookkeeping.report import reportInterface
 
         interfaceInfo = []
@@ -75,8 +78,8 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
         --------
         armi.operators.operatorMPI.OperatorMPI.workerOperate
         """
-        from armi.bookkeeping import memoryProfiler
         from armi import mpiActions
+        from armi.bookkeeping import memoryProfiler
 
         if isinstance(cmd, mpiActions.MpiAction):
             for donotReset in (
@@ -89,23 +92,3 @@ class BookkeepingPlugin(plugins.ArmiPlugin):
                     return False
 
         return True
-
-    @staticmethod
-    @plugins.HOOKIMPL
-    def getReportContents(r, cs, report, stage, blueprint):
-        """
-        Generate general report content. Where diagrams/tables
-        not specific to additional plugins comes together.
-
-        Currently only happening at End and Begin stage because no content gathered
-        in these sections is used to create a graph across time.
-        """
-        from armi.bookkeeping.report import newReports as reports
-        from armi.bookkeeping.report import newReportUtils
-
-        if stage == reports.ReportStage.Begin:
-            newReportUtils.insertGeneralReportContent(cs, r, report, stage)
-            if blueprint is not None:
-                newReportUtils.insertBlueprintContent(r, cs, report, blueprint)
-        elif stage == reports.ReportStage.End:
-            newReportUtils.insertEndOfLifeContent(r, report)

@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Cleans up blueprints."""
+
 import io
 import re
 
-from armi.migration.base import BlueprintsMigration
 from armi import runLog
+from armi.migration.base import BlueprintsMigration
 
 
 class RemoveCentersFromBlueprints(BlueprintsMigration):

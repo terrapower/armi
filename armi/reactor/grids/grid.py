@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from abc import ABC, abstractmethod
-from typing import Union, Optional, Hashable, TYPE_CHECKING, Dict, Iterable, Tuple, List
+from typing import TYPE_CHECKING, Dict, Hashable, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 
 from armi.reactor import geometry
-from armi.reactor.grids.locations import LocationBase, IndexLocation, IJType, IJKType
+from armi.reactor.grids.locations import IJKType, IJType, IndexLocation, LocationBase
 
 if TYPE_CHECKING:
     from armi.reactor.composites import ArmiObject
@@ -98,7 +98,7 @@ class Grid(ABC):
     def symmetry(self) -> str:
         """Symmetry applied to the grid.
 
-        .. impl:: Grids shall be able to repesent 1/3 and full core symmetries.
+        .. impl:: Grids shall be able to represent 1/3 and full core symmetries.
             :id: I_ARMI_GRID_SYMMETRY0
             :implements: R_ARMI_GRID_SYMMETRY
 
@@ -167,9 +167,7 @@ class Grid(ABC):
         """Return list of ((i, j, k), IndexLocation) tuples."""
 
     @abstractmethod
-    def locatorInDomain(
-        self, locator: LocationBase, symmetryOverlap: Optional[bool] = False
-    ) -> bool:
+    def locatorInDomain(self, locator: LocationBase, symmetryOverlap: Optional[bool] = False) -> bool:
         """
         Return whether the passed locator is in the domain represented by the Grid.
 

@@ -17,22 +17,12 @@ Void material.
 
 Use this to fill empty spaces while maintaining proper volume fractions.
 """
+
 from armi.materials import material
 
 
 class Void(material.Fluid):
-    """A Void material is a bookkeeping material with zero density.
-
-    .. impl:: Define a void material with zero density.
-        :id: I_ARMI_MAT_VOID
-        :implements: R_ARMI_MAT_VOID
-
-        To help with expansion, it is sometimes useful to put a small section of void
-        material into the reactor model. This is not meant to represent a true void,
-        that would cause negative pressure in a system, but just as a bookkeeping tool.
-        Sometimes this helps users define the geometry of an expanding and conctracting
-        reactor. It is called a "void" because it has zero density at all temperatures.
-    """
+    """A Void material is a bookkeeping material with zero density."""
 
     def pseudoDensity(self, Tk: float = None, Tc: float = None) -> float:
         return 0.0

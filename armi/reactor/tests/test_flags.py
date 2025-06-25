@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Tests for flags."""
+
 import pickle
 import unittest
 
@@ -25,6 +26,41 @@ class TestFlags(unittest.TestCase):
     def test_fromString(self):
         self._help_fromString(flags.Flags.fromStringIgnoreErrors)
         self.assertEqual(flags.Flags.fromStringIgnoreErrors("invalid"), flags.Flags(0))
+
+    def test_fromStringWithNumbers(self):
+        # testing pure numbers
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("1"), flags.Flags(0))
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("7"), flags.Flags(0))
+
+        # testing fuel naming logic
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("Fuel1"), flags.Flags.FUEL)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("Fuel123"), flags.Flags.FUEL)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("fuel 1"), flags.Flags.FUEL)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("fuel 123"), flags.Flags.FUEL)
+
+    def test_flagsDefinedWithNumbers(self):
+        """Test that if we DEFINE flags with numbers in them, those are treated as exceptions."""
+        # define flags TYPE1 and TYPE1B (arbitrary example)
+        flags.Flags.extend({"TYPE1": flags.auto(), "TYPE1B": flags.auto()})
+
+        # verify that these flags are correctly found
+        self.assertEqual(flags.Flags["TYPE1"], flags.Flags.TYPE1)
+        self.assertEqual(flags.Flags["TYPE1B"], flags.Flags.TYPE1B)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("type1"), flags.Flags.TYPE1)
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("Type1b"), flags.Flags.TYPE1B)
+
+        # the more complicated situation where our exceptions are mixed with the usual flag logic
+        self.assertEqual(flags.Flags.fromString("type1 fuel"), flags.Flags.TYPE1 | flags.Flags.FUEL)
+
+        self.assertEqual(
+            flags.Flags.fromString("type1 fuel 123 bond"),
+            flags.Flags.TYPE1 | flags.Flags.FUEL | flags.Flags.BOND,
+        )
+
+        self.assertEqual(
+            flags.Flags.fromString("type1 fuel123 bond"),
+            flags.Flags.TYPE1 | flags.Flags.FUEL | flags.Flags.BOND,
+        )
 
     def test_flagsToAndFromString(self):
         """
@@ -58,27 +94,18 @@ class TestFlags(unittest.TestCase):
         self.assertEqual(method("bond1"), flags.Flags.BOND)
         self.assertEqual(method("bond 2"), flags.Flags.BOND)
         self.assertEqual(method("fuel test"), flags.Flags.FUEL | flags.Flags.TEST)
-        # test the more strict GRID conversion, which can cause collisions with
-        # GRID_PLATE
-        self.assertEqual(
-            flags.Flags.fromStringIgnoreErrors("grid_plate"), flags.Flags.GRID_PLATE
-        )
+        # test the more strict GRID conversion, which can cause collisions with GRID_PLATE
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("grid_plate"), flags.Flags.GRID_PLATE)
         # test that "nozzle" is not consumed in the conversion, leaving behind "inlet_"
         # and leading to an error. Interesting thing here is that if the IgnoreErrors
         # variant is used, this works out fine since the "inlet_" is ignored and
         # "nozzle" -> INLET_NOZZLE.
-        self.assertEqual(
-            flags.Flags.fromString("inlet_nozzle"), flags.Flags.INLET_NOZZLE
-        )
+        self.assertEqual(flags.Flags.fromString("inlet_nozzle"), flags.Flags.INLET_NOZZLE)
 
     def test_lookup(self):
         """Make sure lookup table is working."""
-        self.assertEqual(
-            flags.Flags.fromString("GAP1"), flags.Flags.GAP | flags.Flags.A
-        )
-        self.assertEqual(
-            flags.Flags.fromString("handLing sOcket"), flags.Flags.HANDLING_SOCKET
-        )
+        self.assertEqual(flags.Flags.fromString("GAP1"), flags.Flags.GAP | flags.Flags.A)
+        self.assertEqual(flags.Flags.fromString("handLing sOcket"), flags.Flags.HANDLING_SOCKET)
         # order in CONVERSIONS can matter for multi word flags.
         # tests that order is good.
         for conv, flag in flags._CONVERSIONS.items():
@@ -95,10 +122,8 @@ class TestFlags(unittest.TestCase):
             self.assertEqual(flags.Flags.fromString(exampleInput), flag)
 
     def test_convertsStringsWithNonFlags(self):
-        # Useful for varifying block / assembly names convert to Flags.
-        self.assertEqual(
-            flags.Flags.fromStringIgnoreErrors("banana bond banana"), flags.Flags.BOND
-        )
+        # Useful for verifying block / assembly names convert to Flags.
+        self.assertEqual(flags.Flags.fromStringIgnoreErrors("banana bond banana"), flags.Flags.BOND)
         self.assertEqual(
             flags.Flags.fromStringIgnoreErrors("banana socket"),
             flags.Flags.HANDLING_SOCKET,

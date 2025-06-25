@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Generic ARMI utilities."""
+
 # ruff: noqa: F405
 import collections
 import getpass
@@ -24,7 +25,6 @@ import re
 import shutil
 import sys
 import tempfile
-import threading
 import time
 
 from armi import runLog
@@ -38,37 +38,33 @@ _HASH_BUFFER_SIZE = 1024 * 1024
 
 def getFileSHA1Hash(filePath, digits=40):
     """
-    Generate a SHA-1 hash of the input file.
+    Generate a SHA-1 hash of input files.
 
     Parameters
     ----------
     filePath : str
-        Path to file to obtain the SHA-1 hash
+        Path to file or directory to obtain the SHA-1 hash
     digits : int, optional
         Number of digits to include in the hash (40 digit maximum for SHA-1)
     """
     sha1 = hashlib.sha1()
-    with open(filePath, "rb") as f:
-        while True:
-            data = f.read(_HASH_BUFFER_SIZE)
-            if not data:
-                break
-            sha1.update(data)
+    filesToHash = []
+    if os.path.isdir(filePath):
+        for root, _, files in os.walk(filePath):
+            for file in sorted(files):
+                filesToHash.append(os.path.join(root, file))
+    else:
+        filesToHash.append(filePath)
+
+    for file in filesToHash:
+        with open(file, "rb") as f:
+            while True:
+                data = f.read(_HASH_BUFFER_SIZE)
+                if not data:
+                    break
+                sha1.update(data)
 
     return sha1.hexdigest()[:digits]
-
-
-def copyWithoutBlocking(src, dest):
-    """
-    Copy a file in a separate thread to avoid blocking while IO completes.
-
-    Useful for copying large files while ARMI moves along.
-    """
-    files = "{} to {}".format(src, dest)
-    runLog.extra("Copying (without blocking) {}".format(files))
-    t = threading.Thread(target=shutil.copy, args=(src, dest))
-    t.start()
-    return t
 
 
 def getPowerFractions(cs):
@@ -94,9 +90,7 @@ def getPowerFractions(cs):
     if cs["cycles"] != []:
         return [
             expandRepeatedFloats(
-                (cycle["power fractions"])
-                if "power fractions" in cycle.keys()
-                else [1] * getBurnSteps(cs)[cycleIdx]
+                (cycle["power fractions"]) if "power fractions" in cycle.keys() else [1] * getBurnSteps(cs)[cycleIdx]
             )
             for (cycleIdx, cycle) in enumerate(cs["cycles"])
         ]
@@ -107,10 +101,7 @@ def getPowerFractions(cs):
             else [1.0] * cs["nCycles"]
         )
 
-        return [
-            [value] * (cs["burnSteps"] if cs["burnSteps"] is not None else 0)
-            for value in valuePerCycle
-        ]
+        return [[value] * (cs["burnSteps"] if cs["burnSteps"] is not None else 0) for value in valuePerCycle]
 
 
 def getCycleNames(cs):
@@ -133,10 +124,7 @@ def getCycleNames(cs):
     of restart runs).
     """
     if cs["cycles"] != []:
-        return [
-            (cycle["name"] if "name" in cycle.keys() else None)
-            for cycle in cs["cycles"]
-        ]
+        return [(cycle["name"] if "name" in cycle.keys() else None) for cycle in cs["cycles"]]
     else:
         return [None] * cs["nCycles"]
 
@@ -172,11 +160,7 @@ def getAvailabilityFactors(cs):
         return (
             expandRepeatedFloats(cs["availabilityFactors"])
             if cs["availabilityFactors"] not in [None, []]
-            else (
-                [cs["availabilityFactor"]] * cs["nCycles"]
-                if cs["availabilityFactor"] is not None
-                else [1]
-            )
+            else ([cs["availabilityFactor"]] * cs["nCycles"] if cs["availabilityFactor"] is not None else [1])
         )
 
 
@@ -186,7 +170,7 @@ def _getStepAndCycleLengths(cs):
 
     Notes
     -----
-    Using this method directly is more effecient than calling `getStepLengths`
+    Using this method directly is more efficient than calling `getStepLengths`
     and `getCycleLengths` separately, but it is probably more clear to the user
     to call each of them separately.
     """
@@ -203,43 +187,25 @@ def _getStepAndCycleLengths(cs):
                 stepLengths.append(getStepsFromValues(cumulativeDays))
             elif "burn steps" in cycleKeys and "cycle length" in cycleKeys:
                 stepLengths.append(
-                    [
-                        cycle["cycle length"]
-                        * availabilityFactors[cycleIdx]
-                        / cycle["burn steps"]
-                    ]
-                    * cycle["burn steps"]
+                    [cycle["cycle length"] * availabilityFactors[cycleIdx] / cycle["burn steps"]] * cycle["burn steps"]
                 )
             else:
-                raise ValueError(
-                    f"No cycle time history is given in the detailed cycles history for cycle {cycleIdx}"
-                )
+                raise ValueError(f"No cycle time history is given in the detailed cycles history for cycle {cycleIdx}")
 
         cycleLengths = [sum(cycleStepLengths) for cycleStepLengths in stepLengths]
-        cycleLengths = [
-            cycleLength / aFactor
-            for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)
-        ]
+        cycleLengths = [cycleLength / aFactor for (cycleLength, aFactor) in zip(cycleLengths, availabilityFactors)]
 
     else:
         cycleLengths = (
             expandRepeatedFloats(cs["cycleLengths"])
             if cs["cycleLengths"] not in [None, []]
-            else (
-                [cs["cycleLength"]] * cs["nCycles"]
-                if cs["cycleLength"] is not None
-                else [0]
-            )
+            else ([cs["cycleLength"]] * cs["nCycles"] if cs["cycleLength"] is not None else [0])
         )
         cycleLengthsModifiedByAvailability = [
-            length * availability
-            for (length, availability) in zip(cycleLengths, availabilityFactors)
+            length * availability for (length, availability) in zip(cycleLengths, availabilityFactors)
         ]
         stepLengths = (
-            [
-                [length / cs["burnSteps"]] * cs["burnSteps"]
-                for length in cycleLengthsModifiedByAvailability
-            ]
+            [[length / cs["burnSteps"]] * cs["burnSteps"] for length in cycleLengthsModifiedByAvailability]
             if cs["burnSteps"] not in [0, None]
             else [[]]
         )
@@ -471,9 +437,7 @@ def tryPickleOnAllContents(obj, ignore=None, verbose=False):
             try:
                 pickle.dumps(ob)  # dump as a string
             except Exception:
-                print(
-                    "{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob)
-                )
+                print("{0} in {1} cannot be pickled. It is: {2}. ".format(name, obj, ob))
 
 
 def doTestPickleOnAllContents2(obj, ignore=None):
@@ -499,11 +463,9 @@ def doTestPickleOnAllContents2(obj, ignore=None):
                 pickle.dumps(ob)  # dump as a string
             except Exception:
                 unpickleable.append(name)
-                print("Cant pickle {0}".format(name))
+                print("Can't pickle {0}".format(name))
                 # recursive call.
-                unpickleable.extend(
-                    doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore)
-                )
+                unpickleable.extend(doTestPickleOnAllContents2(ob, ignore=unpickleable + ignore))
 
     return unpickleable
 
@@ -542,11 +504,9 @@ def tryPickleOnAllContents3(obj):
 
 
 def classesInHierarchy(obj, classCounts, visited=None):
-    """Count the number of instances of each class contained in an objects heirarchy."""
+    """Count the number of instances of each class contained in an objects hierarchy."""
     if not isinstance(classCounts, collections.defaultdict):
-        raise TypeError(
-            "Need to pass in a default dict for classCounts (it's an out param)"
-        )
+        raise TypeError("Need to pass in a default dict for classCounts (it's an out param)")
 
     if visited is None:
         classCounts[type(obj)] += 1
@@ -586,7 +546,7 @@ def slantSplit(val, ratio, nodes, order="low first"):
 
 def prependToList(originalList, listToPrepend):
     """
-    Add a new list to the beginnning of an original list.
+    Add a new list to the beginning of an original list.
 
     Parameters
     ----------
@@ -670,9 +630,7 @@ def list2str(strings, width=None, preStrings=None, fmt=None):
     return "".join(preStrings)
 
 
-def createFormattedStrWithDelimiter(
-    dataList, maxNumberOfValuesBeforeDelimiter=9, delimiter="\n"
-):
+def createFormattedStrWithDelimiter(dataList, maxNumberOfValuesBeforeDelimiter=9, delimiter="\n"):
     r"""
     Return a formatted string with delimiters from a list of data.
 
@@ -700,14 +658,7 @@ def createFormattedStrWithDelimiter(
     if not maxNumberOfValuesBeforeDelimiter:
         numRows = 1
     else:
-        numRows = (
-            int(
-                math.ceil(
-                    float(len(dataList)) / float(maxNumberOfValuesBeforeDelimiter)
-                )
-            )
-            or 1
-        )
+        numRows = int(math.ceil(float(len(dataList)) / float(maxNumberOfValuesBeforeDelimiter))) or 1
 
     # Create a list of string delimiters to use when joining the strings
     commaList = ["," for d in dataList]
@@ -805,24 +756,24 @@ class MergeableDict(dict):
 
 
 def safeCopy(src: str, dst: str) -> None:
-    """This copy overwrites ``shutil.copy`` and checks that copy operation is truly completed before continuing."""
+    """Check that copy operation is truly completed before continuing."""
     # Convert files to OS-independence
     src = os.path.abspath(src)
     dst = os.path.abspath(dst)
     if os.path.isdir(dst):
         dst = os.path.join(dst, os.path.basename(src))
+
     srcSize = os.path.getsize(src)
     if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
         shutil.copyfile(src, dst)
         shutil.copymode(src, dst)
     elif "linux" in sys.platform:
         cmd = f'cp "{src}" "{dst}"'
         os.system(cmd)
     else:
-        raise OSError(
-            "Cannot perform ``safeCopy`` on files because ARMI only supports "
-            + "Linux and Windows."
-        )
+        raise OSError("Cannot perform ``safeCopy`` on files because ARMI only supports " + "Linux, MacOs, and Windows.")
+
     waitTime = 0.01  # 10 ms
     maxWaitTime = 300  # 5 min
     totalWaitTime = 0
@@ -835,13 +786,49 @@ def safeCopy(src: str, dst: str) -> None:
         if totalWaitTime > maxWaitTime:
             runLog.warning(
                 f"File copy from {dst} to {src} has failed due to exceeding "
-                + f"a maximum wait time of {maxWaitTime/60} minutes."
+                + f"a maximum wait time of {maxWaitTime / 60} minutes."
             )
-            break
+            return
 
     runLog.extra("Copied {} -> {}".format(src, dst))
 
 
-# Allow us to check the copy operation is complete before continuing
-shutil_copy = shutil.copy
-shutil.copy = safeCopy
+def safeMove(src: str, dst: str) -> None:
+    """Check that a file has been successfully moved before continuing."""
+    # Convert files to OS-independence
+    src = os.path.abspath(src)
+    dst = os.path.abspath(dst)
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(src))
+
+    srcSize = os.path.getsize(src)
+    if "win" in sys.platform:
+        # this covers Windows ("win32") and MacOS ("darwin")
+        shutil.move(src, dst)
+    elif "linux" in sys.platform:
+        cmd = f'mv "{src}" "{dst}"'
+        os.system(cmd)
+    else:
+        raise OSError("Cannot perform ``safeMove`` on files because ARMI only supports " + "Linux, MacOS, and Windows.")
+
+    waitTime = 0.01  # 10 ms
+    maxWaitTime = 6000  # 1 min
+    totalWaitTime = 0
+    while True:
+        try:
+            dstSize = os.path.getsize(dst)
+            if srcSize == dstSize:
+                break
+        except FileNotFoundError:
+            pass
+        time.sleep(waitTime)
+        totalWaitTime += waitTime
+        if totalWaitTime > maxWaitTime:
+            runLog.warning(
+                f"File move from {dst} to {src} has failed due to exceeding "
+                + f"a maximum wait time of {maxWaitTime / 60} minutes."
+            )
+            return
+
+    runLog.extra("Moved {} -> {}".format(src, dst))
+    return dst

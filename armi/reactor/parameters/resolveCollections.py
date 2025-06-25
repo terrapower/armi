@@ -90,33 +90,16 @@ class ResolveParametersMeta(type):
     ``Block.paramCollectionType``. The ``BlockParameterCollection`` class will itself be
     a subclass of ``ArmiObjectParameterCollection``, which it would have found from the
     ``Composite`` class from which the ``Block`` class inherits. The ``Composite``
-    calss, on the other hand, would have obtained the ``ArmiObjectParameterCollection``
+    class, on the other hand, would have obtained the ``ArmiObjectParameterCollection``
     from it's parent (``ArmiObject``), since it does not have a ``pDefs`` attribute of
     its own.
     """
 
     def __new__(mcl, name, bases, attrs):
-        assert (
-            attrs.get("paramCollectionType") is None
-        ), "{} already has paramter collection".format(name)
-        baseCollections = [
-            b.paramCollectionType for b in bases if hasattr(b, "paramCollectionType")
-        ]
+        assert attrs.get("paramCollectionType") is None, "{} already has parameter collection".format(name)
+        baseCollections = [b.paramCollectionType for b in bases if hasattr(b, "paramCollectionType")]
         # Make sure that these are what we expect them to be
-        assert all(
-            [
-                issubclass(c, ParameterCollection)
-                for c in baseCollections
-                if c is not None
-            ]
-        )
-
-        # Make sure that we aren't doing some sort of multiple inheritance. We may
-        # wish to support this in the future, but at this point we don't need it and
-        # there are probably lots of snakes in that grass.
-        # Turning this off to support multiple-inheritance materials/matprops material.
-        # But we should still be careful.
-        # assert len(baseCollections) <= 1, "Multiple inheritance is not yet supported in the ARMI composite pattern"
+        assert all([issubclass(c, ParameterCollection) for c in baseCollections if c is not None])
 
         # Pull out the one element of the list if it exists
         inferredBaseCollection = next(iter(baseCollections), None)

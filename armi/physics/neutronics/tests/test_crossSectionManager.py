@@ -17,13 +17,14 @@ Test the cross section manager.
 
 :py:mod:`armi.physics.neutronics.crossSectionGroupManager`
 """
+
 import copy
 import os
+import pickle
+import sys
 import unittest
 from io import BytesIO
 from unittest.mock import MagicMock
-
-from six.moves import cPickle
 
 from armi import settings
 from armi.physics.neutronics import crossSectionGroupManager
@@ -54,9 +55,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 class TestBlockCollection(unittest.TestCase):
     def setUp(self):
         self.blockList = makeBlocks()
-        self.bc = BlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        self.bc = BlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         self.bc.extend(self.blockList)
 
     def test_add(self):
@@ -73,9 +72,9 @@ class TestBlockCollection(unittest.TestCase):
     def test_is_pickleable(self):
         self.bc.weightingParam = "test"
         buf = BytesIO()
-        cPickle.dump(self.bc, buf)
+        pickle.dump(self.bc, buf)
         buf.seek(0)
-        newBc = cPickle.load(buf)
+        newBc = pickle.load(buf)
         self.assertEqual(self.bc.weightingParam, newBc.weightingParam)
 
 
@@ -85,15 +84,28 @@ class TestBlockCollectionMedian(unittest.TestCase):
         for bi, b in enumerate(self.blockList):
             b.setType("fuel")
             b.p.percentBu = bi / 4.0 * 100
+
         self.blockList[0], self.blockList[2] = self.blockList[2], self.blockList[0]
-        self.bc = MedianBlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        self.bc = MedianBlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         self.bc.extend(self.blockList)
 
     def test_createRepresentativeBlock(self):
         avgB = self.bc.createRepresentativeBlock()
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
+
+    def test_getBlockNuclideTemperature(self):
+        # doesn't have to be in median block tests, but this is a simpler test
+        nuc = "U235"
+        testBlock = self.blockList[0]
+        amt, amtWeightedTemp = 0, 0
+        for c in testBlock:
+            dens = c.getNumberDensity(nuc)
+            if dens > 0:
+                thisAmt = dens * c.getVolume()
+                amt += thisAmt
+                amtWeightedTemp += thisAmt * c.temperatureInC
+        avgTemp = amtWeightedTemp / amt
+        self.assertAlmostEqual(avgTemp, crossSectionGroupManager.getBlockNuclideTemperature(testBlock, nuc))
 
 
 class TestBlockCollectionAverage(unittest.TestCase):
@@ -123,9 +135,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
                     c.temperatureInC = 400.0 + bi
 
     def setUp(self):
-        self.bc = AverageBlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        self.bc = AverageBlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         self.bc.extend(self.blockList)
         self.bc.averageByComponent = True
 
@@ -158,9 +168,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
         # check that a new block collection of the representative block has right temperatures
         # this is required for Doppler coefficient calculations
-        newBc = AverageBlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        newBc = AverageBlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
         self.assertAlmostEqual(newBc.avgNucTemperatures["U235"], 603.0)
@@ -186,9 +194,7 @@ class TestBlockCollectionAverage(unittest.TestCase):
 
         with mockRunLogs.BufferLog() as mock:
             avgB = self.bc.createRepresentativeBlock()
-            self.assertIn(
-                "Non-matching block in AverageBlockCollection", mock.getStdout()
-            )
+            self.assertIn("Non-matching block in AverageBlockCollection", mock.getStdout())
 
         self.assertNotIn(avgB, self.bc)
         # (0 + 1 + 2 + 3 + 4 + 2) / 6.0 = 12/6 = 2.0
@@ -197,29 +203,17 @@ class TestBlockCollectionAverage(unittest.TestCase):
         self.assertAlmostEqual(avgB.p.percentBu, 50.0)
 
         # U35 has different average temperature because blocks have different U235 content
-        newBc = AverageBlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        newBc = AverageBlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         newBc.append(avgB)
         newBc.calcAvgNuclideTemperatures()
         # temps expected to be proportional to volume-fraction weighted temperature
         # this is a non-physical result, but it demonstrates a problem that exists in the code
         # when dissimilar blocks are put together in a BlockCollection
-        structureVolume = sum(
-            c.getVolume()
-            for c in avgB.getComponents([Flags.CLAD, Flags.DUCT, Flags.WIRE])
-        )
+        structureVolume = sum(c.getVolume() for c in avgB.getComponents([Flags.CLAD, Flags.DUCT, Flags.WIRE]))
         fuelVolume = avgB.getComponent(Flags.FUEL).getVolume()
-        coolantVolume = sum(
-            c.getVolume()
-            for c in avgB.getComponents([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT])
-        )
-        expectedIronTemp = (structureVolume * 500.0 + fuelVolume * 600.0) / (
-            structureVolume + fuelVolume
-        )
-        expectedSodiumTemp = (coolantVolume * 400.0 + fuelVolume * 600.0) / (
-            coolantVolume + fuelVolume
-        )
+        coolantVolume = sum(c.getVolume() for c in avgB.getComponents([Flags.BOND, Flags.COOLANT, Flags.INTERCOOLANT]))
+        expectedIronTemp = (structureVolume * 500.0 + fuelVolume * 600.0) / (structureVolume + fuelVolume)
+        expectedSodiumTemp = (coolantVolume * 400.0 + fuelVolume * 600.0) / (coolantVolume + fuelVolume)
         self.assertAlmostEqual(newBc.avgNucTemperatures["U235"], 600.0)
         self.assertAlmostEqual(newBc.avgNucTemperatures["FE56"], expectedIronTemp)
         self.assertAlmostEqual(newBc.avgNucTemperatures["NA23"], expectedSodiumTemp)
@@ -249,15 +243,13 @@ class TestComponentAveraging(unittest.TestCase):
                     c.temperatureInC = 400.0 + bi
 
     def setUp(self):
-        self.bc = AverageBlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        self.bc = AverageBlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         blockCopies = [copy.deepcopy(b) for b in self.blockList]
         self.bc.extend(blockCopies)
 
     def test_getAverageComponentNumberDensities(self):
         """Test component number density averaging."""
-        # becaue of the way densities are set up, the middle block (index 1 of 0-2) component
+        # because of the way densities are set up, the middle block (index 1 of 0-2) component
         # densities are equivalent to the average
         b = self.bc[1]
         for compIndex, c in enumerate(b.getComponents()):
@@ -328,9 +320,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         Second part of setup builds lists/dictionaries of expected values to compare to.
         has expected values for component isotopic atom density and component area.
         """
-        self.o, self.r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="zpprTest.yaml"
-        )
+        self.o, self.r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="zpprTest.yaml")
 
         #                    ndrawer1  lenFuelTypeD1  ndrawer2  lenFuelTypeD2
         EuWeight = float(1 * 60 + 3 * 15)
@@ -381,9 +371,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         # Check that the correct defaults are propagated after the interactBOL
         # from the cross section group manager is called.
         for _xsID, xsOpt in self.o.cs[CONF_CROSS_SECTION].items():
-            self.assertEqual(
-                xsOpt.blockRepresentation, self.o.cs[CONF_XS_BLOCK_REPRESENTATION]
-            )
+            self.assertEqual(xsOpt.blockRepresentation, self.o.cs[CONF_XS_BLOCK_REPRESENTATION])
 
         xsgm.createRepresentativeBlocks()
         representativeBlockList = list(xsgm.representativeBlocks.values())
@@ -402,8 +390,7 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
                     self.assertAlmostEqual(c.getNumberDensity(nuc), compDensity[nuc])
 
         assert "AC" in xsgm.representativeBlocks, (
-            "Assemblies not in the core should still have XS groups"
-            "see getUnrepresentedBlocks()"
+            "Assemblies not in the core should still have XS groupssee _getMissingBlueprintBlocks()"
         )
 
 
@@ -421,7 +408,8 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
         sodiumDensity = {"NA23": 0.022166571826233578}
         steelDensity = {
             "C": 0.0007685664978992269,
-            "V": 0.0002718224847461385,
+            "V50": 6.795562118653462e-07,
+            "V51": 0.0002711429285342731,
             "SI28": 0.0003789374369638149,
             "SI29": 1.924063709833714e-05,
             "SI30": 1.268328992580968e-05,
@@ -452,9 +440,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             "W186": 3.9304414603061506e-05,
         }
         linerAdjustment = 1.014188527784268
-        cladDensity = {
-            nuc: dens * linerAdjustment for nuc, dens in steelDensity.items()
-        }
+        cladDensity = {nuc: dens * linerAdjustment for nuc, dens in steelDensity.items()}
         fuelDensity = {
             "AM241": 2.3605999999999997e-05,
             "PU238": 3.7387e-06,
@@ -514,15 +500,11 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
 
         refTemps = {"fuel": 600.0, "coolant": 450.0, "structure": 462.4565}
 
-        for c, compDensity, compArea in zip(
-            reprBlock, self.expectedComponentDensities, self.expectedComponentAreas
-        ):
+        for c, compDensity, compArea in zip(reprBlock, self.expectedComponentDensities, self.expectedComponentAreas):
             self.assertEqual(compArea, c.getArea())
             cNucs = c.getNuclides()
             for nuc in cNucs:
-                self.assertAlmostEqual(
-                    c.getNumberDensity(nuc), compDensity.get(nuc, 0.0)
-                )
+                self.assertAlmostEqual(c.getNumberDensity(nuc), compDensity.get(nuc, 0.0))
                 if "fuel" in c.getType():
                     compTemp = refTemps["fuel"]
                 elif any(sodium in c.getType() for sodium in ["bond", "coolant"]):
@@ -536,6 +518,64 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
                     f"{nuc} temperature does not match expected value of {compTemp}",
                 )
 
+    def test_ComponentAverageDuctHet1DCylinder(self):
+        """
+        Tests that the cross-section group manager calculates the expected component atom density,
+        component area, and average nuclide temperature correctly for a duct heterogeneous cylindrical
+        block collection.
+        """
+        self.o.cs[CONF_CROSS_SECTION]["ZA"].ductHeterogeneous = True
+        xsgm = self.o.getInterface("xsGroups")
+
+        xsgm.interactBOL()
+
+        # Check that the correct defaults are propagated after the interactBOL
+        # from the cross section group manager is called.
+        xsOpt = self.o.cs[CONF_CROSS_SECTION]["ZA"]
+        self.assertEqual(xsOpt.blockRepresentation, "ComponentAverage1DCylinder")
+
+        xsgm.createRepresentativeBlocks()
+        xsgm.updateNuclideTemperatures()
+
+        representativeBlockList = list(xsgm.representativeBlocks.values())
+        representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
+        reprBlock = xsgm.representativeBlocks["ZA"]
+        self.assertEqual(reprBlock.name, "1D_CYL_DUCT_HET_AVG_ZA")
+        self.assertEqual(reprBlock.p.percentBu, 0.0)
+
+        refTemps = {"fuel": 600.0, "coolant": 450.0, "structure": 462.4565}
+
+        for c, compDensity, compArea in zip(reprBlock, self.expectedComponentDensities, self.expectedComponentAreas):
+            self.assertEqual(compArea, c.getArea())
+            cNucs = c.getNuclides()
+            for nuc in cNucs:
+                self.assertAlmostEqual(c.getNumberDensity(nuc), compDensity.get(nuc, 0.0))
+                if "fuel" in c.getType():
+                    compTemp = refTemps["fuel"]
+                elif any(sodium in c.getType() for sodium in ["bond", "coolant"]):
+                    compTemp = refTemps["coolant"]
+                else:
+                    compTemp = refTemps["structure"]
+
+                if any(comp in c.getType() for comp in ["fuel", "bond", "coolant"]):
+                    # only 1 fuel component, and bond and coolant are both at same temperature
+                    # the component temp should match the avg nuc temp
+                    self.assertAlmostEqual(
+                        compTemp,
+                        xsgm.avgNucTemperatures["ZA"][nuc],
+                        2,
+                        f"{nuc} temperature does not match expected value of {compTemp} for component {c}",
+                    )
+                else:
+                    # steel components are at different temperatures
+                    # the temperatures should be different
+                    diff = abs(compTemp - xsgm.avgNucTemperatures["ZA"][nuc])
+                    self.assertGreater(
+                        diff,
+                        1.0,
+                        f"{nuc} temperature should be different from {compTemp} for component {c}",
+                    )
+
     def test_checkComponentConsistency(self):
         xsgm = self.o.getInterface("xsGroups")
         xsgm.interactBOL()
@@ -548,9 +588,7 @@ class TestBlockCollectionComponentAverage1DCylinder(unittest.TestCase):
             "clad": baseComponents[2].getNumberDensities(),
             "coolant": baseComponents[4].getNumberDensities(),
         }
-        controlComponent, cladComponent, coolantComponent = self._makeComponents(
-            7, densities
-        )
+        controlComponent, cladComponent, coolantComponent = self._makeComponents(7, densities)
 
         # reference block
         refBlock = HexBlock("refBlock")
@@ -673,9 +711,7 @@ class TestBlockCollectionFluxWeightedAverage(unittest.TestCase):
             b.p.flux = bi + 1
 
     def setUp(self):
-        self.bc = FluxWeightedAverageBlockCollection(
-            self.blockList[0].core.r.blueprints.allNuclidesInProblem
-        )
+        self.bc = FluxWeightedAverageBlockCollection(self.blockList[0].core.r.blueprints.allNuclidesInProblem)
         self.bc.extend(self.blockList)
 
     def test_createRepresentativeBlock(self):
@@ -701,29 +737,36 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.csm._setBuGroupBounds([3, 10, 30, 100])
         self.csm.interactBOL()
 
-    def test_enableBuGroupUpdates(self):
-        self.csm._buGroupUpdatesEnabled = False
-        self.csm.enableBuGroupUpdates()
-        self.assertTrue(self.csm.enableBuGroupUpdates)
+    def test_enableEnvGroupUpdates(self):
+        self.csm._envGroupUpdatesEnabled = False
+        self.csm.enableEnvGroupUpdates()
+        self.assertTrue(self.csm._envGroupUpdatesEnabled)
+        # test flipping again keeps true
+        self.csm.enableEnvGroupUpdates()
+        self.assertTrue(self.csm._envGroupUpdatesEnabled)
 
-    def test_disableBuGroupUpdates(self):
-        self.csm._buGroupUpdatesEnabled = False
-        res = self.csm.disableBuGroupUpdates()
-        self.assertFalse(res)
+    def test_disableEnvGroupUpdates(self):
+        self.csm._envGroupUpdatesEnabled = True
+        wasEnabled = self.csm.disableEnvGroupUpdates()
+        self.assertTrue(wasEnabled)
+        self.assertFalse(self.csm._envGroupUpdatesEnabled)
+        wasEnabled = self.csm.disableEnvGroupUpdates()
+        self.assertFalse(wasEnabled)
+        self.assertFalse(self.csm._envGroupUpdatesEnabled)
 
     def test_updateBurnupGroups(self):
         self.blockList[1].p.percentBu = 3.1
         self.blockList[2].p.percentBu = 10.0
 
-        self.csm._updateBurnupGroups(self.blockList)
+        self.csm._updateEnvironmentGroups(self.blockList)
 
-        self.assertEqual(self.blockList[0].p.buGroup, "A")
-        self.assertEqual(self.blockList[1].p.buGroup, "B")
-        self.assertEqual(self.blockList[2].p.buGroup, "B")
-        self.assertEqual(self.blockList[-1].p.buGroup, "D")
+        self.assertEqual(self.blockList[0].p.envGroup, "A")
+        self.assertEqual(self.blockList[1].p.envGroup, "B")
+        self.assertEqual(self.blockList[2].p.envGroup, "B")
+        self.assertEqual(self.blockList[-1].p.envGroup, "D")
 
     def test_setBuGroupBounds(self):
-        self.assertAlmostEqual(self.csm._upperBuGroupBounds[2], 30.0)
+        self.assertAlmostEqual(self.csm._buGroupBounds[2], 30.0)
 
         with self.assertRaises(ValueError):
             self.csm._setBuGroupBounds([3, 10, 300])
@@ -734,11 +777,17 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.csm._setBuGroupBounds([1, 5, 3])
 
+    def test_setTempGroupBounds(self):
+        # negative temps in C are allowed
+        self.csm._setTempGroupBounds([-5, 3, 10, 300])
+        self.assertAlmostEqual(self.csm._tempGroupBounds[2], 10.0)
+
+        with self.assertRaises(ValueError):
+            self.csm._setTempGroupBounds([1, 5, 3])
+
     def test_addXsGroupsFromBlocks(self):
         blockCollectionsByXsGroup = {}
-        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
-            blockCollectionsByXsGroup, self.blockList
-        )
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         self.assertEqual(len(blockCollectionsByXsGroup), 4)
         self.assertIn("AB", blockCollectionsByXsGroup)
 
@@ -748,15 +797,11 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.blockList[3].p.percentBu = 1.5
         for b in self.blockList[4:]:
             b.p.percentBu = 0.0
-        self.csm._updateBurnupGroups(self.blockList)
+        self.csm._updateEnvironmentGroups(self.blockList)
         blockCollectionsByXsGroup = {}
-        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
-            blockCollectionsByXsGroup, self.blockList
-        )
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         ABcollection = blockCollectionsByXsGroup["AB"]
-        self.assertEqual(
-            blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0
-        )
+        self.assertEqual(blockCollectionsByXsGroup["AA"]._calcWeightedBurnup(), 1 / 12.0)
         self.assertEqual(
             ABcollection.getWeight(self.blockList[1]),
             ABcollection.getWeight(self.blockList[2]),
@@ -766,13 +811,24 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
     def test_getNextAvailableXsType(self):
         blockCollectionsByXsGroup = {}
-        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(
-            blockCollectionsByXsGroup, self.blockList
-        )
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         xsType1, xsType2, xsType3 = self.csm.getNextAvailableXsTypes(3)
         self.assertEqual("B", xsType1)
         self.assertEqual("C", xsType2)
         self.assertEqual("D", xsType3)
+
+        # verify that we can get lowercase letters
+        xsTypes = self.csm.getNextAvailableXsTypes(27)
+        self.assertEqual("Y", xsTypes[-4])
+        self.assertEqual("a", xsTypes[-3])
+        self.assertEqual("b", xsTypes[-2])
+        self.assertEqual("c", xsTypes[-1])
+
+        # verify that we can get lowercase letters
+        if sys.platform.startswith("win"):
+            with mockRunLogs.BufferLog() as mock:
+                xsTypes = self.csm.getNextAvailableXsTypes(27)
+                self.assertIn("Mixing upper and lower-case XS", mock.getStdout())
 
     def test_getRepresentativeBlocks(self):
         """Test that we can create the representative blocks for a reactor.
@@ -828,9 +884,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
     def _createRepresentativeBlocksUsingExistingBlocks(self, validBlockTypes):
         """Reusable code used in multiple unit tests."""
-        o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         # set a few random non-default settings on AA to be copied to the new BA group
         o.cs[CONF_CROSS_SECTION].update(
             {
@@ -844,9 +898,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
                 )
             }
         )
-        o.cs[CONF_CROSS_SECTION].setDefaults(
-            crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, validBlockTypes
-        )
+        o.cs[CONF_CROSS_SECTION].setDefaults(crossSectionGroupManager.AVERAGE_BLOCK_COLLECTION, validBlockTypes)
         aaSettings = o.cs[CONF_CROSS_SECTION]["AA"]
         self.csm.cs = copy.deepcopy(o.cs)
         self.csm.createRepresentativeBlocks()
@@ -859,16 +911,12 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             _bCollect,
             newRepresentativeBlocks,
             origXSIDsFromNew,
-        ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(
-            blockList, unperturbedReprBlocks
-        )
+        ) = self.csm.createRepresentativeBlocksUsingExistingBlocks(blockList, unperturbedReprBlocks)
         self.assertIn("BA", newRepresentativeBlocks)
         oldReprBlock = unperturbedReprBlocks[blockXSID]
         newReprBlock = newRepresentativeBlocks["BA"]
         self.assertEqual(newReprBlock.getMicroSuffix(), "BA")
-        self.assertEqual(
-            newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities()
-        )
+        self.assertEqual(newReprBlock.getNumberDensities(), oldReprBlock.getNumberDensities())
         self.assertEqual(origXSIDsFromNew["BA"], "AA")
 
         # check that settings were copied correctly
@@ -879,7 +927,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
                 continue
             self.assertEqual(baSettingValue, aaSettings.__dict__[setting])
 
-    def test_createRepresentativeBlocksUsingExistingBlocks(self):
+    def test_createRepBlocksUsingExistingBlocks(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block.
@@ -891,7 +939,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         """
         self._createRepresentativeBlocksUsingExistingBlocks(["fuel"])
 
-    def test_createRepresentativeBlocksUsingExistingBlocksDisableValidBlockTypes(self):
+    def test_createRepBlocksFromDisableValidBlockTypes(self):
         """
         Demonstrates that a new representative block can be generated from an existing
         representative block with the setting `disableBlockTypeExclusionInXsGeneration: true`.
@@ -996,16 +1044,10 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         Tests copying pre-generated cross section and flux files using reactor that is built from a
         case settings file.
         """
-        o, r = test_reactors.loadTestReactor(
-            TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        o, r = test_reactors.loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         # Need to overwrite the relative paths with absolute
-        o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [
-            os.path.join(THIS_DIR, "ISOXA")
-        ]
-        o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(
-            THIS_DIR, "rzmflxYA"
-        )
+        o.cs[CONF_CROSS_SECTION]["XA"].xsFileLocation = [os.path.join(THIS_DIR, "ISOXA")]
+        o.cs[CONF_CROSS_SECTION]["YA"].fluxFileLocation = os.path.join(THIS_DIR, "rzmflxYA")
         csm = CrossSectionGroupManager(r, o.cs)
 
         with TemporaryDirectoryChanger(root=THIS_DIR):
@@ -1013,6 +1055,83 @@ class TestCrossSectionGroupManager(unittest.TestCase):
             csm._copyPregeneratedFluxSolutionFile("YA")
             self.assertTrue(os.path.exists("ISOXA"))
             self.assertTrue(os.path.exists("rzmflxYA"))
+
+
+class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
+    def setUp(self):
+        cs = settings.Settings()
+        cs["tempGroups"] = [300, 400, 500]
+        self.blockList = makeBlocks(11)
+        buAndTemps = (
+            (1, 340),
+            (2, 150),
+            (6, 410),
+            (10.5, 290),
+            (2.5, 360),
+            (4, 460),
+            (15, 370),
+            (16, 340),
+            (15, 700),
+            (14, 720),
+        )
+        for b, env in zip(self.blockList, buAndTemps):
+            bu, temp = env
+            comps = b.getComponents(Flags.FUEL)
+            assert len(comps) == 1
+            c = next(iter(comps))
+            c.setTemperature(temp)
+            b.p.percentBu = bu
+        core = self.blockList[0].core
+
+        def getBlocks(includeAll=True):
+            return self.blockList
+
+        # this sets XSGM to only analyze the blocks in the block list.
+        core.getBlocks = getBlocks
+
+        self.csm = CrossSectionGroupManager(self.blockList[0].core.r, cs)
+        self.csm._setBuGroupBounds([3, 10, 30, 100])
+        self.csm.interactBOL()
+
+    def test_updateEnvironmentGroups(self):
+        self.csm.createRepresentativeBlocks()
+        BL = self.blockList
+        loners = [BL[1], BL[3]]
+
+        self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
+        sameGroups = [(BL[0], BL[4]), (BL[2], BL[5]), (BL[6], BL[7]), (BL[8], BL[9])]
+
+        # check that likes have like and different are different
+        for group in sameGroups:
+            b1, b2 = group
+            xsSuffix = b1.getMicroSuffix()
+            self.assertEqual(xsSuffix, b2.getMicroSuffix())
+            for group in sameGroups:
+                newb1, newb2 = group
+                if b1 is newb1:
+                    continue
+                self.assertNotEqual(xsSuffix, newb1.getMicroSuffix())
+                self.assertNotEqual(xsSuffix, newb2.getMicroSuffix())
+            for lone in loners:
+                self.assertNotEqual(xsSuffix, lone.getMicroSuffix())
+        self.assertNotEqual(loners[0].getMicroSuffix(), loners[1].getMicroSuffix())
+
+        # calculated based on the average of buAndTemps
+        expectedIDs = ["AF", "AA", "AL", "AC", "AH", "AR"]
+        expectedTemps = [
+            (340 + 360) / 2,
+            150,
+            (410 + 460) / 2,
+            290,
+            (370 + 340) / 2,
+            (700 + 720) / 2,
+        ]
+        expectedBurnups = (1.75, 2, 5, 10.5, 15.5, 14.5)
+        for xsID, expectedTemp, expectedBurnup in zip(expectedIDs, expectedTemps, expectedBurnups):
+            b = self.csm.representativeBlocks[xsID]
+            thisTemp = self.csm.avgNucTemperatures[xsID]["U238"]
+            self.assertAlmostEqual(thisTemp, expectedTemp)
+            self.assertAlmostEqual(b.p.percentBu, expectedBurnup)
 
 
 class TestXSNumberConverters(unittest.TestCase):

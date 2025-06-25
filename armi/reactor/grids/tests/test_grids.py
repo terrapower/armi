@@ -13,16 +13,18 @@
 # limitations under the License.
 
 """Tests for grids."""
-from io import BytesIO
+
 import math
-import unittest
 import pickle
+import unittest
+from io import BytesIO
+from random import randint
 
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
 
-from armi.reactor import geometry
-from armi.reactor import grids
+from armi.reactor import geometry, grids
+from armi.utils import hexagon
 
 
 class MockLocator(grids.IndexLocation):
@@ -114,12 +116,8 @@ class TestSpatialLocator(unittest.TestCase):
         assert_allclose(blockLoc.getGlobalCellTop(), (2.5, 3.5, 4))
 
         # check coordinates of pins in block
-        assert_allclose(
-            pinFree.getGlobalCoordinates(), (2.0 + 1.0, 3.0 + 2.0, 3.5 + 3.0)
-        )  # epic
-        assert_allclose(
-            pinIndexLoc.getGlobalCoordinates(), (2.0 + 0.1, 3.0 + 0.5, 3.5)
-        )  # wow
+        assert_allclose(pinFree.getGlobalCoordinates(), (2.0 + 1.0, 3.0 + 2.0, 3.5 + 3.0))  # epic
+        assert_allclose(pinIndexLoc.getGlobalCoordinates(), (2.0 + 0.1, 3.0 + 0.5, 3.5))  # wow
 
         # pin indices should not combine with the parent indices.
         assert_allclose(pinIndexLoc.getCompleteIndices(), (1, 5, 0))
@@ -160,25 +158,19 @@ class TestGrid(unittest.TestCase):
 
         Full core Cartesian meshes will want to be shifted to bottom left of 0th cell.
         """
-        grid = MockStructuredGrid(
-            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
-        )
+        grid = MockStructuredGrid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1, 1, 1))
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
         assert_allclose(grid.getCoordinates((0, 0, -1)), (0, 0, -1))
         assert_allclose(grid.getCoordinates((1, 0, 0)), (1, 0, 0))
 
     def test_neighbors(self):
-        grid = MockStructuredGrid(
-            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
-        )
+        grid = MockStructuredGrid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
         neighbs = grid.getNeighboringCellIndices(0, 0, 0)
         self.assertEqual(len(neighbs), 4)
 
     def test_label(self):
-        grid = MockStructuredGrid(
-            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
-        )
+        grid = MockStructuredGrid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
         self.assertEqual(grid.getLabel((1, 1, 2)), "001-001-002")
 
     def test_isAxialOnly(self):
@@ -226,9 +218,7 @@ class TestGrid(unittest.TestCase):
 
     def test_ringPosFromIndicesIncorrect(self):
         """Test the getRingPos fails if there is no armiObect or parent."""
-        grid = MockStructuredGrid(
-            unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
-        )
+        grid = MockStructuredGrid(unitSteps=((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)))
 
         grid.armiObject = None
         with self.assertRaises(ValueError):
@@ -238,8 +228,9 @@ class TestGrid(unittest.TestCase):
 class TestHexGrid(unittest.TestCase):
     """A set of tests for the Hexagonal Grid."""
 
-    def test_positions(self):
-        grid = grids.HexGrid.fromPitch(1.0)
+    def test_getCoordinatesFlatsUp(self):
+        """Test getCoordinates() for flats up hex grids."""
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
         self.assertAlmostEqual(grid.pitch, 1.0)
         side = 1.0 / math.sqrt(3)
         assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
@@ -255,11 +246,91 @@ class TestHexGrid(unittest.TestCase):
             self.assertAlmostEqual(
                 (sum(val**2 for val in directionVector)) ** 0.5,
                 1.0,
-                msg=f"Direction vector {directionVector} should have "
-                "magnitude 1 for pitch 1.",
+                msg=f"Direction vector {directionVector} should have magnitude 1 for pitch 1.",
             )
         assert_allclose(grid.getCoordinates((1, 0, 0)), iDirection)
         assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
+
+    def test_getCoordinatesCornersUp(self):
+        """Test getCoordinates() for corners up hex grids."""
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        self.assertAlmostEqual(grid.pitch, 1.0)
+        side = 1.0 / math.sqrt(3)
+        assert_allclose(grid.getCoordinates((0, 0, 0)), (0.0, 0.0, 0.0))
+        assert_allclose(grid.getCoordinates((1, 0, 0)), (0.5, 1.5 * side, 0.0))
+        assert_allclose(grid.getCoordinates((-1, 0, 0)), (-0.5, -1.5 * side, 0.0))
+        assert_allclose(grid.getCoordinates((0, 1, 0)), (-0.5, 1.5 * side, 0.0))
+        assert_allclose(grid.getCoordinates((1, -1, 0)), (1, 0.0, 0.0))
+
+        unitSteps = grid.reduce()[0]
+        iDirection = tuple(direction[0] for direction in unitSteps)
+        jDirection = tuple(direction[1] for direction in unitSteps)
+        for directionVector in (iDirection, jDirection):
+            self.assertAlmostEqual(
+                (sum(val**2 for val in directionVector)) ** 0.5,
+                1.0,
+                msg=f"Direction vector {directionVector} should have magnitude 1 for pitch 1.",
+            )
+        assert_allclose(grid.getCoordinates((1, 0, 0)), iDirection)
+        assert_allclose(grid.getCoordinates((0, 1, 0)), jDirection)
+
+    def test_getLocalCoordinatesHex(self):
+        """Test getLocalCoordinates() is different for corners up vs flats up hex grids."""
+        grid0 = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        grid1 = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        for i in range(3):
+            for j in range(3):
+                if i == 0 and j == 0:
+                    continue
+                coords0 = grid0[i, j, 0].getLocalCoordinates()
+                coords1 = grid1[i, j, 0].getLocalCoordinates()
+                self.assertNotEqual(coords0[0], coords1[0], msg=f"X @ ({i}, {j})")
+                self.assertNotEqual(coords0[1], coords1[1], msg=f"Y @ ({i}, {j})")
+                self.assertEqual(coords0[2], coords1[2], msg=f"Z @ ({i}, {j})")
+
+    def test_getLocalCoordinatesCornersUp(self):
+        """Test getLocalCoordinates() for corners up hex grids."""
+        # validate the first ring of a corners-up hex grid
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=True)
+        vals = []
+        for pos in range(grid.getPositionsInRing(2)):
+            i, j = grid.getIndicesFromRingAndPos(2, pos + 1)
+            vals.append(grid[i, j, 0].getLocalCoordinates())
+
+        # short in Y
+        maxY = max(v[1] for v in vals)
+        minY = min(v[1] for v in vals)
+        val = math.sqrt(3) / 2
+        self.assertAlmostEqual(maxY, val, delta=0.0001)
+        self.assertAlmostEqual(minY, -val, delta=0.0001)
+
+        # long in X
+        maxX = max(v[0] for v in vals)
+        minX = min(v[0] for v in vals)
+        self.assertAlmostEqual(maxX, 1)
+        self.assertAlmostEqual(minX, -1)
+
+    def test_getLocalCoordinatesFlatsUp(self):
+        """Test getLocalCoordinates() for flats up hex grids."""
+        # validate the first ring of a flats-up hex grid
+        grid = grids.HexGrid.fromPitch(1.0, cornersUp=False)
+        vals = []
+        for pos in range(grid.getPositionsInRing(2)):
+            i, j = grid.getIndicesFromRingAndPos(2, pos + 1)
+            vals.append(grid[i, j, 0].getLocalCoordinates())
+
+        # long in Y
+        maxY = max(v[1] for v in vals)
+        minY = min(v[1] for v in vals)
+        self.assertAlmostEqual(maxY, 1)
+        self.assertAlmostEqual(minY, -1)
+
+        # short in X
+        maxX = max(v[0] for v in vals)
+        minX = min(v[0] for v in vals)
+        val = math.sqrt(3) / 2
+        self.assertAlmostEqual(maxX, val, delta=0.0001)
+        self.assertAlmostEqual(minX, -val, delta=0.0001)
 
     def test_neighbors(self):
         grid = grids.HexGrid.fromPitch(1.0)
@@ -323,18 +394,12 @@ class TestHexGrid(unittest.TestCase):
             :tests: R_ARMI_GRID_EQUIVALENTS
         """
         g = grids.HexGrid.fromPitch(1.0)
-        g.symmetry = str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        )
+        g.symmetry = str(geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC))
         self.assertEqual(g.getSymmetricEquivalents((3, -2)), [(-1, 3), (-2, -1)])
         self.assertEqual(g.getSymmetricEquivalents((2, 1)), [(-3, 2), (1, -3)])
 
         symmetrics = g.getSymmetricEquivalents(g.getIndicesFromRingAndPos(5, 3))
-        self.assertEqual(
-            [(5, 11), (5, 19)], [g.getRingPos(indices) for indices in symmetrics]
-        )
+        self.assertEqual([(5, 11), (5, 19)], [g.getRingPos(indices) for indices in symmetrics])
 
     def test_thirdAndFullSymmetry(self):
         """Test that we can construct a full and a 1/3 core grid.
@@ -415,9 +480,7 @@ class TestHexGrid(unittest.TestCase):
         numRings = 5
         g = grids.HexGrid.fromPitch(1.0, numRings=numRings)
         boundsIJK = g.getIndexBounds()
-        self.assertEqual(
-            boundsIJK, ((-numRings, numRings), (-numRings, numRings), (0, 1))
-        )
+        self.assertEqual(boundsIJK, ((-numRings, numRings), (-numRings, numRings), (0, 1)))
 
     def test_getAllIndices(self):
         grid = grids.HexGrid.fromPitch(1.0, numRings=3)
@@ -592,30 +655,121 @@ class TestHexGrid(unittest.TestCase):
         with self.assertRaises(ValueError):
             _ = grids.HexGrid._indicesAndEdgeFromRingAndPos(1, 3)
 
+    def test_rotatedIndices(self):
+        """Test that a hex grid can produce a rotated cell location."""
+        g = grids.HexGrid.fromPitch(1.0, numRings=3)
+        center: grids.IndexLocation = g[(0, 0, 0)]
+        notRotated = self._rotateAndCheckAngle(g, center, 0)
+        self.assertEqual(notRotated, center)
+
+        # One rotation for a trivial check
+        northEast: grids.IndexLocation = g[(1, 0, 0)]
+        dueNorth: grids.IndexLocation = g[(0, 1, 0)]
+        northWest: grids.IndexLocation = g[(-1, 1, 0)]
+        actual = self._rotateAndCheckAngle(g, northEast, 1)
+        self.assertEqual(actual, dueNorth)
+        np.testing.assert_allclose(dueNorth.getLocalCoordinates(), [0.0, 1.0, 0.0])
+
+        actual = self._rotateAndCheckAngle(g, dueNorth, 1)
+        self.assertEqual(actual, northWest)
+        np.testing.assert_allclose(northWest.getLocalCoordinates(), [-hexagon.SQRT3 / 2, 0.5, 0])
+
+        # Two rotations from the "first" object in the first full ring
+        actual = self._rotateAndCheckAngle(g, northEast, 2)
+        self.assertEqual(actual, northWest)
+
+        # Fuzzy rotation: if we rotate an location, and then rotate it back, we get the same location
+        for _ in range(10):
+            startI = randint(-10, 10)
+            startJ = randint(-10, 10)
+            start = g[(startI, startJ, 0)]
+            rotations = randint(-10, 10)
+            postRotate = self._rotateAndCheckAngle(g, start, rotations)
+            if startI == 0 and startJ == 0:
+                self.assertEqual(postRotate, start)
+                continue
+            if rotations % 6:
+                self.assertNotEqual(postRotate, start, msg=rotations)
+            else:
+                self.assertEqual(postRotate, start, msg=rotations)
+            reversed = self._rotateAndCheckAngle(g, postRotate, -rotations)
+            self.assertEqual(reversed, start)
+
+    def _rotateAndCheckAngle(self, g: grids.HexGrid, start: grids.IndexLocation, rotations: int) -> grids.IndexLocation:
+        """Rotate a location and verify it lands where we expected."""
+        finish = g.rotateIndex(start, rotations)
+        self._checkAngle(start, finish, rotations)
+        return finish
+
+    def _checkAngle(self, start: grids.IndexLocation, finish: grids.IndexLocation, rotations: int):
+        """Compare two locations that should be some number of 60 degree CCW rotations apart."""
+        startXY = start.getLocalCoordinates()[:2]
+        theta = math.pi / 3 * rotations
+        rotationMatrix = np.array(
+            [
+                [math.cos(theta), -math.sin(theta)],
+                [math.sin(theta), math.cos(theta)],
+            ]
+        )
+        expected = rotationMatrix.dot(startXY)
+        finishXY = finish.getLocalCoordinates()[:2]
+        np.testing.assert_allclose(finishXY, expected, atol=1e-8)
+
+    def test_inconsistentRotationGrids(self):
+        """Test that only locations in consistent grids are rotatable."""
+        base = grids.HexGrid.fromPitch(1, cornersUp=False)
+        larger = grids.HexGrid.fromPitch(base.pitch * 2, cornersUp=base.cornersUp)
+        fromLarger = larger[1, 0, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromLarger)
+
+        differentOrientation = grids.HexGrid.fromPitch(base.pitch, cornersUp=not base.cornersUp)
+        fromDiffOrientation = differentOrientation[0, 1, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromDiffOrientation)
+
+        axialGrid = grids.AxialGrid.fromNCells(5)
+        fromAxial = axialGrid[2, 0, 0]
+        with self.assertRaises(TypeError):
+            base.rotateIndex(fromAxial)
+
+    def test_rotatedIndexGridAssignment(self):
+        """Test that the grid of the rotated index is identical through rotation."""
+        base = grids.HexGrid.fromPitch(1)
+        other = grids.HexGrid.fromPitch(base.pitch, cornersUp=base.cornersUp)
+
+        for i, j in ((0, 0), (1, 1), (2, 1), (-1, 3)):
+            loc = grids.IndexLocation(i, j, k=0, grid=other)
+            postRotate = base.rotateIndex(loc, rotations=2)
+            self.assertIs(postRotate.grid, loc.grid)
+
+    def test_rotatedIndexRoughEqualPitch(self):
+        """Test indices can be rotated in close but not exactly equal grids."""
+        base = grids.HexGrid.fromPitch(1.345)
+        other = grids.HexGrid.fromPitch(base.pitch * 1.00001)
+
+        for i, j in ((0, 0), (1, 1), (2, 1), (-1, 3)):
+            loc = grids.IndexLocation(i, j, k=0, grid=base)
+            fromBase = base.rotateIndex(loc, rotations=2)
+            fromOther = other.rotateIndex(loc, rotations=2)
+            self.assertEqual((fromBase.i, fromBase.j), (fromOther.i, fromOther.j))
+
 
 class TestBoundsDefinedGrid(unittest.TestCase):
     def test_positions(self):
-        grid = MockStructuredGrid(
-            bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90])
-        )
+        grid = MockStructuredGrid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1.5, 15.0, 40.0))
 
     def test_base(self):
-        grid = MockStructuredGrid(
-            bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90])
-        )
+        grid = MockStructuredGrid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
         assert_allclose(grid.getCellBase((1, 1, 1)), (1.0, 10.0, 20.0))
 
     def test_positionsMixedDefinition(self):
-        grid = MockStructuredGrid(
-            unitSteps=((1.0, 0.0), (0.0, 1.0)), bounds=(None, None, [0, 20, 60, 90])
-        )
+        grid = MockStructuredGrid(unitSteps=((1.0, 0.0), (0.0, 1.0)), bounds=(None, None, [0, 20, 60, 90]))
         assert_allclose(grid.getCoordinates((1, 1, 1)), (1, 1, 40.0))
 
     def test_getIndexBounds(self):
-        grid = MockStructuredGrid(
-            bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90])
-        )
+        grid = MockStructuredGrid(bounds=([0, 1, 2, 3, 4], [0, 10, 20, 50], [0, 20, 60, 90]))
         boundsIJK = grid.getIndexBounds()
         self.assertEqual(boundsIJK, ((0, 5), (0, 4), (0, 4)))
 
@@ -624,12 +778,8 @@ class TestThetaRZGrid(unittest.TestCase):
     """A set of tests for the RZTheta Grid."""
 
     def test_positions(self):
-        grid = grids.ThetaRZGrid(
-            bounds=(np.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30])
-        )
-        assert_allclose(
-            grid.getCoordinates((1, 0, 1)), (math.sqrt(2) / 2, math.sqrt(2) / 2, 15.0)
-        )
+        grid = grids.ThetaRZGrid(bounds=(np.linspace(0, 2 * math.pi, 13), [0, 2, 2.5, 3], [0, 10, 20, 30]))
+        assert_allclose(grid.getCoordinates((1, 0, 1)), (math.sqrt(2) / 2, math.sqrt(2) / 2, 15.0))
 
         # test round trip ring position
         ringPos = (1, 1)
@@ -708,11 +858,7 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=str(
-                geometry.SymmetryType(
-                    geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.PERIODIC
-                )
-            ),
+            symmetry=str(geometry.SymmetryType(geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.PERIODIC)),
         )
 
         expected = {
@@ -758,9 +904,7 @@ class TestCartesianGrid(unittest.TestCase):
         grid = grids.CartesianGrid.fromRectangle(
             1.0,
             1.0,
-            symmetry=geometry.SymmetryType(
-                geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE
-            ),
+            symmetry=geometry.SymmetryType(geometry.DomainType.QUARTER_CORE, geometry.BoundaryType.REFLECTIVE),
         )
 
         expected = {
@@ -837,8 +981,3 @@ class TestAxialGrid(unittest.TestCase):
             self.assertEqual(x, 0.0)
             self.assertEqual(y, 0.0)
             self.assertEqual(z, count + 0.5)
-
-
-if __name__ == "__main__":
-    # import sys;sys.argv = ["", "TestHexGrid.testPositions"]
-    unittest.main()

@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for cross section table for depletion."""
+
 import unittest
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.isotopicDepletion import (
     crossSectionTable,
+)
+from armi.physics.neutronics.isotopicDepletion import (
     isotopicDepletionInterface as idi,
 )
 from armi.physics.neutronics.latticePhysics import ORDER
 from armi.reactor.tests.test_blocks import loadTestBlock
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import ISOAA_PATH
 
 
@@ -59,9 +62,7 @@ class TestCrossSectionTable(unittest.TestCase):
             :id: T_ARMI_DEPL_ABC
             :tests: R_ARMI_DEPL_ABC
         """
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         cs = Settings()
 
         aid = idi.AbstractIsotopicDepleter(r, cs)

@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test Locationlabel migration."""
+
 import io
 import unittest
 
 from armi.migration.m0_1_6 import ConvertAlphanumLocationSettingsToNum
 from armi.settings import caseSettings
-from armi.settings.settingsIO import SettingsWriter, SettingsReader
+from armi.settings.settingsIO import SettingsReader, SettingsWriter
 
 
 class TestMigration(unittest.TestCase):

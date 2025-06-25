@@ -16,19 +16,18 @@
 :py:class:`~armi.settings.caseSettings.Settings`, and the contained
 :py:class:`~armi.settings.setting.Setting`.
 """
-from typing import Dict, Tuple, Set
+
 import collections
 import datetime
-import enum
 import os
 import sys
+from typing import Dict, Set, Tuple
 
-from ruamel.yaml import YAML
 import ruamel.yaml.comments
+from ruamel.yaml import YAML
 
-from armi import runLog
+from armi import context, runLog
 from armi.meta import __version__ as version
-from armi import context
 from armi.settings.setting import Setting
 from armi.utils.customExceptions import (
     InvalidSettingsFileError,
@@ -53,10 +52,10 @@ class SettingRenamer:
     """
     Utility class to help with setting rename migrations.
 
-    This class stores a cache of renaming maps, derived from the ``Setting.oldNames``
-    values of the passed ``settings``. Expired renames are retained, so that meaningful
-    warning messages can be generated if one attempts to use one of them. The renaming
-    logic follows the rules described in :py:meth:`renameSetting`.
+    This class stores a cache of renaming maps, derived from the ``Setting.oldNames`` values of the
+    passed ``settings``. Expired renames are retained, so that meaningful warning messages can be
+    generated if one attempts to use one of them. The renaming logic follows the rules described in
+    :py:meth:`renameSetting`.
     """
 
     def __init__(self, settings: Dict[str, Setting]):
@@ -78,8 +77,7 @@ class SettingRenamer:
                 else:
                     if oldName in self._activeRenames:
                         raise SettingException(
-                            "The setting rename from {0}->{1} collides with another "
-                            "rename {0}->{2}".format(
+                            "The setting rename from {0}->{1} collides with another rename {0}->{2}".format(
                                 oldName, name, self._activeRenames[oldName]
                             )
                         )
@@ -90,12 +88,11 @@ class SettingRenamer:
         Attempt to rename a candidate setting.
 
         Renaming follows these rules:
-         - If the ``name`` corresponds to a current setting name, do not attempt to
-           rename it.
-         - If the ``name`` does not correspond to a current setting name, but is one of
-           the active renames, return the corresponding active rename.
-         - If the ``name`` does not correspond to a current setting name, but is one of
-           the expired renames, produce a warning and do not rename it.
+         - If the ``name`` corresponds to a current setting name, do not attempt to rename it.
+         - If the ``name`` does not correspond to a current setting name, but is one of the active
+           renames, return the corresponding active rename.
+         - If the ``name`` does not correspond to a current setting name, but is one of the expired
+           renames, produce a warning and do not rename it.
 
         Parameters
         ----------
@@ -114,25 +111,17 @@ class SettingRenamer:
 
         activeRename = self._activeRenames.get(name, None)
         if activeRename is not None:
-            runLog.warning(
-                "Invalid setting {} found. Renaming to {}.".format(name, activeRename)
-            )
+            runLog.warning(f"Invalid setting {name} found. Renaming to {activeRename}.")
             return activeRename, True
 
-        expiredCandidates = {
-            val[1]: val[2] for val in self._expiredRenames if val[0] == name
-        }
+        expiredCandidates = {val[1]: val[2] for val in self._expiredRenames if val[0] == name}
 
         if expiredCandidates:
             msg = "\n".join(
-                [
-                    "   {}: {}".format(expiredRename, date)
-                    for expiredRename, date in expiredCandidates.items()
-                ]
+                ["   {}: {}".format(expiredRename, date) for expiredRename, date in expiredCandidates.items()]
             )
             runLog.warning(
-                "Encountered an invalid setting `{}`. There are expired "
-                "renames to newer setting names:\n{}".format(name, msg)
+                f"Encountered an invalid setting `{name}`. There are expired renames to newer setting names:\n{msg}"
             )
 
         return name, False
@@ -145,9 +134,9 @@ class SettingsReader:
         :id: I_ARMI_SETTINGS_IO_TXT
         :implements: R_ARMI_SETTINGS_IO_TXT
 
-        ARMI uses the YAML standard for settings files. ARMI uses industry-standard
-        ``ruamel.yaml`` Python libraray to read these files. ARMI does not bend or
-        change the YAML file format standard in any way.
+        ARMI uses the YAML standard for settings files. ARMI uses industry-standard ``ruamel.yaml``
+        Python library to read these files. ARMI does not bend or change the YAML file format
+        standard in any way.
 
     Parameters
     ----------
@@ -155,29 +144,17 @@ class SettingsReader:
         The settings object to read into
     """
 
-    class SettingsInputFormat(enum.Enum):
-        YAML = enum.auto()
-
-        # TODO: Is this method still necessary?
-        @classmethod
-        def fromExt(cls, ext):
-            return {".yaml": cls.YAML}[ext]
-
     def __init__(self, cs):
         self.cs = cs
-        self.format = self.SettingsInputFormat.YAML
         self.inputPath = "<stream>"
-
         self.invalidSettings = set()
         self.settingsAlreadyRead = set()
-        self.liveVersion = version
-        self.inputVersion = version
-
         self._renamer = SettingRenamer(dict(self.cs.items()))
 
-        # The input version will be overwritten if explicitly stated in input file.
-        # otherwise, it's assumed to precede the version inclusion change and should be
-        # treated as alright.
+        # The input version will be overwritten if explicitly stated in input file. Otherwise, it's
+        # assumed to precede the version inclusion change and should be treated as alright.
+        self.inputVersion = version
+        self.liveVersion = version
 
     def __getitem__(self, key):
         return self.cs[key]
@@ -186,27 +163,22 @@ class SettingsReader:
         return getattr(self.cs, attr)
 
     def __repr__(self):
-        return "<{} {}>".format(self.__class__.__name__, self.inputPath)
+        return f"<{self.__class__.__name__} {self.inputPath}>"
 
     def readFromFile(self, path, handleInvalids=True):
         """Load file and read it."""
         with open(path, "r") as f:
-            # make sure that we can actually open the file before trying to guess its
-            # format. This will yield better error messages when things go awry.
             ext = os.path.splitext(path)[1].lower()
-            self.format = self.SettingsInputFormat.fromExt(ext)
+            assert ext.lower() in (".yaml", ".yml"), f"{ext} is the wrong extension"
             self.inputPath = path
             try:
-                self.readFromStream(f, handleInvalids, self.format)
+                self.readFromStream(f, handleInvalids)
             except Exception as ee:
                 raise InvalidSettingsFileError(path, str(ee))
 
-    def readFromStream(self, stream, handleInvalids=True, fmt=SettingsInputFormat.YAML):
+    def readFromStream(self, stream, handleInvalids=True):
         """Read from a file-like stream."""
-        self.format = fmt
-        if self.format == self.SettingsInputFormat.YAML:
-            self._readYaml(stream)
-
+        self._readYaml(stream)
         if handleInvalids:
             self._checkInvalidSettings()
 
@@ -225,18 +197,14 @@ class SettingsReader:
             )
 
         if const.ORIFICE_SETTING_ZONE_MAP in tree:
-            raise InvalidSettingsFileError(
-                self.inputPath, "Appears to be an orifice_settings file"
-            )
+            raise InvalidSettingsFileError(self.inputPath, "Appears to be an orifice_settings file")
 
         caseSettings = tree[Roots.CUSTOM]
         setts = tree["settings"]
         if CONF_VERSIONS in setts and "armi" in setts[CONF_VERSIONS]:
             self.inputVersion = setts[CONF_VERSIONS]["armi"]
         else:
-            runLog.warning(
-                "Versions setting section not found. Continuing with uncontrolled versions."
-            )
+            runLog.warning("Versions setting section not found. Continuing with uncontrolled versions.")
             self.inputVersion = "uncontrolled"
 
         for settingName, settingVal in caseSettings.items():
@@ -260,7 +228,7 @@ class SettingsReader:
         if not proceed:
             raise InvalidSettingsStopProcess(self)
         else:
-            runLog.warning("Ignoring invalid settings: {}".format(invalidNames))
+            runLog.warning(f"Ignoring invalid settings: {invalidNames}")
 
     def _applySettings(self, name, val):
         """Add a setting, if it is valid. Capture invalid settings."""
@@ -272,8 +240,8 @@ class SettingsReader:
             # apply validations
             _settingObj = self.cs.getSetting(name)
 
-            # The val is automatically coerced into the expected type
-            # when set using either the default or user-defined schema
+            # The val is automatically coerced into the expected type when set using either the
+            # default or user-defined schema
             self.cs[name] = val
 
 
@@ -294,9 +262,9 @@ class SettingsWriter:
         self.cs = settings_instance
         self.style = style
         if style not in {WRITE_SHORT, WRITE_MEDIUM, WRITE_FULL}:
-            raise ValueError("Invalid supplied setting writing style {}".format(style))
-        # The writer should know about the old settings it is overwriting,
-        # but only sometimes (when the style is medium)
+            raise ValueError(f"Invalid supplied setting writing style {style}")
+        # The writer should know about the old settings it is overwriting, but only sometimes (when
+        # the style is medium)
         self.settingsSetByUser = settingsSetByUser
 
     @staticmethod
@@ -347,9 +315,7 @@ class SettingsWriter:
         This is general so it can be dumped to whatever file format.
         """
         settingData = collections.OrderedDict()
-        for settingName, settingObject in iter(
-            sorted(self.cs.items(), key=lambda name: name[0].lower())
-        ):
+        for settingName, settingObject in iter(sorted(self.cs.items(), key=lambda name: name[0].lower())):
             if self.style == WRITE_SHORT and not settingObject.offDefault:
                 continue
 
@@ -362,7 +328,7 @@ class SettingsWriter:
 
             attribs = settingObject.getCustomAttributes().items()
             settingDatum = {}
-            for (attribName, attribValue) in attribs:
+            for attribName, attribValue in attribs:
                 if isinstance(attribValue, type):
                     attribValue = attribValue.__name__
                 settingDatum[attribName] = attribValue
@@ -391,9 +357,7 @@ def prompt(statement, question, *options):
 
     elif context.CURRENT_MODE == context.Mode.INTERACTIVE:
         response = ""
-        responses = [
-            opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]
-        ]
+        responses = [opt for opt in options if opt in ["YES_NO", "YES", "NO", "CANCEL", "OK"]]
 
         if "YES_NO" in responses:
             index = responses.index("YES_NO")
@@ -401,7 +365,7 @@ def prompt(statement, question, *options):
             responses.insert(index, "YES")
 
         if not any(responses):
-            raise RuntimeError("No suitable responses in {}".format(responses))
+            raise RuntimeError(f"No suitable responses in {responses}")
 
         # highly requested shorthand responses
         if "YES" in responses:
@@ -421,9 +385,7 @@ def prompt(statement, question, *options):
         return response in ["YES", "Y", "OK"]
 
     else:
-        raise RunLogPromptUnresolvable(
-            "Incorrect CURRENT_MODE for prompting user: {}".format(context.CURRENT_MODE)
-        )
+        raise RunLogPromptUnresolvable(f"Incorrect CURRENT_MODE for prompting user: {context.CURRENT_MODE}")
 
 
 class RunLogPromptCancel(Exception):
@@ -434,8 +396,8 @@ class RunLogPromptCancel(Exception):
 
 class RunLogPromptUnresolvable(Exception):
     """
-    An error that occurs when the current mode enum in armi.__init__ suggests the user cannot be communicated with from
-    the current process.
+    An error that occurs when the current mode enum in armi.__init__ suggests the user cannot be
+    communicated with from the current process.
     """
 
     pass

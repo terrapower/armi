@@ -53,22 +53,17 @@ sends it to the workers, and then both the primary and the workers
 In order to create a new, custom MPI Action, inherit from :py:class:`~armi.mpiActions.MpiAction`,
 and override the :py:meth:`~armi.mpiActions.MpiAction.invokeHook` method.
 """
+
 import collections
 import gc
 import math
+import pickle
 import timeit
 
-from six.moves import cPickle
-
-from armi import context
-from armi import interfaces
-from armi import runLog
-from armi import settings
-from armi import utils
+from armi import context, interfaces, runLog, settings, utils
 from armi.reactor import reactors
 from armi.reactor.parameters import parameterDefinitions
-from armi.utils import iterables
-from armi.utils import tabulate
+from armi.utils import iterables, tabulate
 
 
 class MpiAction:
@@ -138,7 +133,7 @@ class MpiAction:
             self.o = self.r = self.cs = None
         try:
             return mpiFunction(obj, root=0)
-        except cPickle.PicklingError as error:
+        except pickle.PicklingError as error:
             runLog.error("Failed to {} {}.".format(mpiFunction.__name__, obj))
             runLog.error(error)
             raise
@@ -315,24 +310,16 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
             numThisNode[nodeName] += 1
 
     queue, numBatches = _makeQueue(actions, useForComputation)
-    runLog.extra(
-        "Running {} MPI actions in parallel over {} batches".format(
-            len(actions), numBatches
-        )
-    )
+    runLog.extra("Running {} MPI actions in parallel over {} batches".format(len(actions), numBatches))
     results = []
     batchNum = 0
     while queue:
         actionsThisRound = []
         for useRank in useForComputation:
             actionsThisRound.append(queue.pop(0) if useRank and queue else None)
-        useForComputation = _disableForExclusiveTasks(
-            actionsThisRound, useForComputation
-        )
+        useForComputation = _disableForExclusiveTasks(actionsThisRound, useForComputation)
         realActions = [
-            (context.MPI_NODENAMES[rank], rank, act)
-            for rank, act in enumerate(actionsThisRound)
-            if act is not None
+            (context.MPI_NODENAMES[rank], rank, act) for rank, act in enumerate(actionsThisRound) if act is not None
         ]
         batchNum += 1
         runLog.extra(
@@ -352,9 +339,7 @@ def runActions(o, r, cs, actions, numPerNode=None, serial=False):
 def _disableForExclusiveTasks(actionsThisRound, useForComputation):
     # disable processors that are exclusive for next
     indicesToDisable = [
-        i
-        for i, action in enumerate(actionsThisRound)
-        if action is not None and action.runActionExclusive
+        i for i, action in enumerate(actionsThisRound) if action is not None and action.runActionExclusive
     ]
     for i in indicesToDisable:
         useForComputation[i] = False
@@ -429,7 +414,7 @@ class DistributionAction(MpiAction):
     it possible for sub-tasks to manage their own communicators and spawn their own work within some
     sub-communicator.
 
-    This performs an MPI Split operation and takes over the context.MPI_COMM and associated varaibles.
+    This performs an MPI Split operation and takes over the context.MPI_COMM and associated variables.
     For this reason, it is possible that when someone thinks they have distributed information to all
     nodes, it may only be a subset that was necessary to perform the number of actions needed by this
     DsitributionAction.
@@ -466,16 +451,12 @@ class DistributionAction(MpiAction):
             for debugAction in self._actions:
                 utils.classesInHierarchy(debugAction, objectCountDict)
                 for objekt, count in objectCountDict.items():
-                    runLog.debug(
-                        "There are {} {} in MPI action {}".format(
-                            count, objekt, debugAction
-                        )
-                    )
+                    runLog.debug("There are {} {} in MPI action {}".format(count, objekt, debugAction))
 
         actionResult = None
         try:
             action = mpiComm.scatter(self._actions, root=0)
-            # create a new communicator that only has these specific dudes running
+            # create a new communicator that only has these specific processes running
             hasAction = action is not None
             context.MPI_COMM = mpiComm.Split(int(hasAction))
             context.MPI_RANK = context.MPI_COMM.Get_rank()
@@ -505,7 +486,7 @@ class DistributeStateAction(MpiAction):
         self._skipInterfaces = skipInterfaces
 
     def invokeHook(self):
-        r"""Sync up all nodes with the reactor, the cs, and the interfaces.
+        """Sync up all nodes with the reactor, the cs, and the interfaces.
 
         Notes
         -----
@@ -527,19 +508,16 @@ class DistributeStateAction(MpiAction):
             DistributeStateAction._distributeParamAssignments()
 
             if self._skipInterfaces:
-                self.o.reattach(self.r, cs)  # may be redundant?
+                self.o.reattach(self.r, cs)
             else:
                 self._distributeInterfaces()
 
-            # lastly, make sure the reactor knows it is up to date
-            # the operator/interface attachment may invalidate some of the cache, but since
-            # all the underlying data is the same, ultimately all state should be (initially) the
-            # same.
-            # TODO: this is an indication we need to revamp either how the operator attachment works
-            # or how the interfaces are distributed.
+            # Lastly, make sure the reactor knows it is up to date. The operator/interface
+            # attachment may invalidate some of the cache, but since all the underlying data is the
+            # same, ultimately all state should be (initially) the same.
             self.r._markSynchronized()
 
-        except (cPickle.PicklingError, TypeError) as error:
+        except (pickle.PicklingError, TypeError) as error:
             runLog.error("Failed to transmit on distribute state root MPI bcast")
             runLog.error(error)
             # workers are still waiting for a reactor object
@@ -574,9 +552,7 @@ class DistributeStateAction(MpiAction):
             runLog.debug("Sending the settings object")
         self.cs = cs = self.broadcast(self.o.cs)
         if isinstance(cs, settings.Settings):
-            runLog.setVerbosity(
-                cs["verbosity"] if context.MPI_RANK == 0 else cs["branchVerbosity"]
-            )
+            runLog.setVerbosity(cs["verbosity"] if context.MPI_RANK == 0 else cs["branchVerbosity"])
             runLog.debug("Received settings object")
         else:
             raise RuntimeError("Failed to transmit settings, received: {}".format(cs))
@@ -604,9 +580,7 @@ class DistributeStateAction(MpiAction):
 
         self.r.o = self.o
 
-        runLog.debug(
-            "The reactor has {} assemblies".format(len(self.r.core.getAssemblies()))
-        )
+        runLog.debug(f"The reactor has {len(self.r.core.getAssemblies())} assemblies")
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 
@@ -649,7 +623,7 @@ class DistributeStateAction(MpiAction):
         armi.interfaces.Interface.interactDistributeState : runs on workers after DS
         """
         if context.MPI_RANK == 0:
-            # These run on the primary node. (Worker nodes run sychronized code below)
+            # These run on the primary node. (Worker nodes run synchronized code below)
             toRestore = {}
             for i in self.o.getInterfaces():
                 if i.distributable() == interfaces.Interface.Distribute.DUPLICATE:
@@ -659,9 +633,7 @@ class DistributeStateAction(MpiAction):
 
             # Verify that the interface stacks are identical.
             runLog.debug("Sending the interface names and flags")
-            _dumIList = self.broadcast(
-                [(i.name, i.distributable()) for i in self.o.getInterfaces()]
-            )
+            _dumIList = self.broadcast([(i.name, i.distributable()) for i in self.o.getInterfaces()])
 
             # transmit interfaces
             for i in self.o.getInterfaces():
@@ -726,9 +698,7 @@ def _diagnosePickleError(o):
     runLog.info("-------- Pickle Error Detection -------")
     runLog.info(
         "For reference, the operator is {0} and the reactor is {1}\n"
-        "Watch for other reactors or operators, and think about where they came from.".format(
-            o, o.r
-        )
+        "Watch for other reactors or operators, and think about where they came from.".format(o, o.r)
     )
     runLog.info("Scanning the Reactor for pickle errors")
     checker(o.r)

@@ -59,19 +59,19 @@ Database revision changelog
        indices allows for more efficient means of extracting information based on
        location, without having to compose the full model.
 """
+
 import os
 
 from armi import runLog
+from armi.bookkeeping.db.compareDB3 import compareDatabases
 
 # re-export package components for easier import
-from armi.bookkeeping.db.database3 import Database3
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
-from armi.bookkeeping.db.compareDB3 import compareDatabases
 from armi.bookkeeping.db.factory import databaseFactory
 
-
 __all__ = [
-    "Database3",
+    "Database",
     "DatabaseInterface",
     "compareDatabases",
     "databaseFactory",
@@ -84,6 +84,8 @@ def loadOperator(
     loadNode,
     statePointName=None,
     allowMissing=False,
+    handleInvalids=True,
+    callReactorConstructionHook=False,
 ):
     """
     Return an operator given the path to a database.
@@ -98,10 +100,14 @@ def loadOperator(
         The time node to load the reactor from.
     statePointName: str
         State point name at the end, E.G. `EOC` or `EOL`.
-        Full name would be C0N2EOC, see database3.getH5GroupName
+        Full name would be C0N2EOC, see database.getH5GroupName
     allowMissing : bool
         Whether to emit a warning, rather than crash if reading a database
         with undefined parameters. Default False.
+    handleInvalids : bool
+        Whether to check for invalid settings. Default True.
+    callReactorConstructionHook : bool
+        Flag for whether the beforeReactorConstruction plugin hook should be executed. Default is False.
 
     See Also
     --------
@@ -138,19 +144,21 @@ def loadOperator(
             "of the database."
         )
 
-    db = Database3(pathToDb, "r")
+    db = Database(pathToDb, "r")
     with db:
         # init Case here as it keeps track of execution time and assigns a reactor
         # attribute. This attribute includes the time it takes to initialize the reactor
         # so creating a reactor from the database should be included.
-        cs = db.loadCS()
+        cs = db.loadCS(handleInvalids=handleInvalids)
         thisCase = cases.Case(cs)
-
         r = db.load(
             loadCycle,
             loadNode,
+            cs=cs,
             statePointName=statePointName,
             allowMissing=allowMissing,
+            handleInvalids=handleInvalids,
+            callReactorConstructionHook=callReactorConstructionHook,
         )
 
     o = thisCase.initializeOperator(r=r)
@@ -181,7 +189,7 @@ def _getH5File(db):
     All this being said, we are probably violating this already with genAuxiliaryData,
     but we have to start somewhere.
     """
-    if isinstance(db, Database3):
+    if isinstance(db, Database):
         return db.h5db
     else:
         raise TypeError("Unsupported Database type ({})!".format(type(db)))

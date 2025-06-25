@@ -16,12 +16,11 @@ You must have the following installed before proceeding:
 
   .. admonition:: The right Python command
 
-     Python 2 and Python 3 often co-exist on the same system. Whether the
-     ``python`` command refers to Python 2 or 3 depends on operating system and
-     configuration. Under some circumstances ``python3`` or ``pip3`` will need
-     to be used in place of ``python`` or ``pip`` to target the correct
-     version. You can verify your version by running ``python -VV``.  You can
-     also refer to the Python executable with a full path.
+     Python 2 and Python 3 often co-exist on the same system. Whether the ``python`` command refers
+     to Python 2 or 3 depends on operating system and configuration. Under some circumstances
+     ``python3`` or ``pip3`` will need to be used in place of ``python`` or ``pip`` to target the
+     correct version. You can verify your version by running ``python -VV``. You can also refer to
+     the Python executable with a full path.
 
 You also likely need the following for interacting with the source code repository:
 
@@ -29,22 +28,21 @@ You also likely need the following for interacting with the source code reposito
 
 Preparing a Virtual Environment
 ===============================
-While not *technically* required, we highly recommend installing ARMI into a `virtual
-environment <https://docs.python.org/3/library/venv.html>`_  to assist in dependency
-management.  In short, virtual environments are a mechanism by which a Python user can
-maintain separate sets of Python packages for various applications on the same machine.
-This prevents dependencies from various tools conflicting with one another. ARMI has a lot
-of requirements and may conflict with other libraries on your system unless you do this
-step.
+While not *technically* required, we highly recommend installing ARMI into a `virtual environment
+<https://docs.python.org/3/library/venv.html>`_  to assist in dependency management. In short,
+virtual environments are a mechanism by which a Python user can maintain separate sets of Python
+packages for various applications on the same machine. This prevents dependencies from various tools
+conflicting with one another. ARMI has a lot of requirements and may conflict with other libraries
+on your system unless you do this step.
 
-Start a terminal and navigate to the directory you'd like to install ARMI into.
-To create a new virtual environment, use a command like::
+Start a terminal and navigate to the directory you'd like to install ARMI into. To create a new
+virtual environment, use a command like::
 
     $ python -m venv armi-venv
 
-The result is a folder named ``armi-venv``, which contains a minimal set of Python
-packages, and a set of scripts for activating and deactivating that environment.
-To activate the environment, invoke the appropriate script. On Windows::
+The result is a folder named ``armi-venv``, which contains a minimal set of Python packages, and a
+set of scripts for activating and deactivating that environment. To activate the environment, invoke
+the appropriate script. On Windows::
 
     $ armi-venv\Scripts\activate.bat
 

@@ -16,8 +16,7 @@
 
 import math
 
-from armi.reactor.components import componentParameters
-from armi.reactor.components import ShapedComponent
+from armi.reactor.components import ShapedComponent, componentParameters
 
 
 class Sphere(ShapedComponent):
@@ -55,21 +54,20 @@ class Sphere(ShapedComponent):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(
-            components, od=od, id=id, mult=mult, modArea=modArea
-        )
+        self._linkAndStoreDimensions(components, od=od, id=id, mult=mult, modArea=modArea)
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
         """Abstract bounding circle method that should be overwritten by each shape subclass."""
         return self.getDimension("od")
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         """Compute an average area over the height."""
         from armi.reactor.blocks import Block  # avoid circular import
 
+        if Tc is not None:
+            raise NotImplementedError(f"Cannot calculate area at specified temperature: {Tc}")
         block = self.getAncestor(lambda c: isinstance(c, Block))
         return self.getComponentVolume(cold) / block.getHeight()
-        # raise NotImplementedError("Cannot compute area of a sphere component.")
 
     def getComponentVolume(self, cold=False):
         """Computes the volume of the sphere in cm^3."""
@@ -132,7 +130,7 @@ class Cube(ShapedComponent):
             modArea=modArea,
         )
 
-    def getComponentArea(self, cold=False):
+    def getComponentArea(self, cold=False, Tc=None):
         raise NotImplementedError("Cannot compute area of a cube component.")
 
     def getComponentVolume(self):
@@ -212,7 +210,9 @@ class RadialSegment(ShapedComponent):
             outer_theta=outer_theta,
         )
 
-    def getComponentArea(self, refVolume=None, refHeight=None, cold=False):
+    def getComponentArea(self, refVolume=None, refHeight=None, cold=False, Tc=None):
+        if Tc is not None:
+            raise NotImplementedError(f"Cannot calculate area at specified temperature: {Tc}")
         if refHeight:
             return (
                 (self.getDimension("height", cold=cold) / refHeight)
@@ -224,10 +224,7 @@ class RadialSegment(ShapedComponent):
                         - self.getDimension("inner_radius", cold=cold) ** 2
                     )
                     * (
-                        (
-                            self.getDimension("outer_theta", cold=cold)
-                            - self.getDimension("inner_theta", cold=cold)
-                        )
+                        (self.getDimension("outer_theta", cold=cold) - self.getDimension("inner_theta", cold=cold))
                         / (math.pi * 2.0)
                     )
                 )
@@ -250,7 +247,10 @@ class RadialSegment(ShapedComponent):
         return vol
 
     def getBoundingCircleOuterDiameter(self, Tc=None, cold=False):
-        return self.getDimension("outer_radius", Tc, cold)
+        return 2.0 * self.getDimension("outer_radius", Tc, cold)
+
+    def getCircleInnerDiameter(self, Tc=None, cold=False):
+        return 2.0 * self.getDimension("inner_radius", Tc, cold)
 
 
 class DifferentialRadialSegment(RadialSegment):
@@ -331,8 +331,7 @@ class DifferentialRadialSegment(RadialSegment):
         self.setDimension(key, val)
         self.setDimension(
             "outer_radius",
-            self.getDimension("inner_radius")
-            + self.getDimension("radius_differential"),
+            self.getDimension("inner_radius") + self.getDimension("radius_differential"),
         )
         self.setDimension(
             "outer_axial",
@@ -340,15 +339,14 @@ class DifferentialRadialSegment(RadialSegment):
         )
         self.setDimension(
             "outer_theta",
-            self.getDimension("inner_theta")
-            + self.getDimension("azimuthal_differential"),
+            self.getDimension("inner_theta") + self.getDimension("azimuthal_differential"),
         )
 
-    def getComponentArea(self, refVolume=None, refHeight=None, cold=False):
+    def getComponentArea(self, refVolume=None, refHeight=None, cold=False, Tc=None):
+        if Tc is not None:
+            raise NotImplementedError(f"Cannot calculate area at specified temperature: {Tc}")
         self.updateDims()
-        return RadialSegment.getComponentArea(
-            self, refVolume=None, refHeight=None, cold=False
-        )
+        return RadialSegment.getComponentArea(self, refVolume=None, refHeight=None, cold=False)
 
     def getComponentVolume(self):
         self.updateDims()

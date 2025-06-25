@@ -13,43 +13,64 @@
 # limitations under the License.
 
 """Testing some utility functions."""
-from collections import defaultdict
+
 import os
 import unittest
+from collections import defaultdict
 
 import numpy as np
 
 from armi import utils
-from armi.reactor.tests.test_reactors import loadTestReactor
 from armi.settings.caseSettings import Settings
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 from armi.utils import (
+    codeTiming,
     directoryChangers,
-    getPowerFractions,
-    getCycleNames,
     getAvailabilityFactors,
-    getStepLengths,
-    getCycleLengths,
     getBurnSteps,
+    getCumulativeNodeNum,
+    getCycleLengths,
+    getCycleNames,
+    getCycleNodeFromCumulativeNode,
+    getCycleNodeFromCumulativeStep,
+    getFileSHA1Hash,
     getMaxBurnSteps,
     getNodesPerCycle,
-    getCycleNodeFromCumulativeStep,
-    getCycleNodeFromCumulativeNode,
+    getPowerFractions,
     getPreviousTimeNode,
-    getCumulativeNodeNum,
+    getStepLengths,
     hasBurnup,
-    codeTiming,
     safeCopy,
+    safeMove,
 )
 
 
 class TestGeneralUtils(unittest.TestCase):
+    def test_getFileSHA1Hash(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            path = "test.txt"
+            with open(path, "w") as f1:
+                f1.write("test")
+            sha = getFileSHA1Hash(path)
+            self.assertIn("a94a8", sha)
+
+    def test_getFileSHA1HashDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            pathDir = "testDir"
+            path1 = os.path.join(pathDir, "test1.txt")
+            path2 = os.path.join(pathDir, "test2.txt")
+            os.mkdir(pathDir)
+            for i, path in enumerate([path1, path2]):
+                with open(path, "w") as f1:
+                    f1.write(f"test{i}")
+            sha = getFileSHA1Hash(pathDir)
+            self.assertIn("ccd13", sha)
+
     def test_mergeableDictionary(self):
         mergeableDict = utils.MergeableDict()
         normalDict = {"luna": "thehusky", "isbegging": "fortreats", "right": "now"}
-        mergeableDict.merge(
-            {"luna": "thehusky"}, {"isbegging": "fortreats"}, {"right": "now"}
-        )
+        mergeableDict.merge({"luna": "thehusky"}, {"isbegging": "fortreats"}, {"right": "now"})
         self.assertEqual(mergeableDict, normalDict)
 
     def test_createFormattedStrWithDelimiter(self):
@@ -136,16 +157,14 @@ class TestGeneralUtils(unittest.TestCase):
         ytick = ([0, 1], ["1", "2"])
         fname = "test_plotMatrix_testfile"
         with directoryChangers.TemporaryDirectoryChanger():
-            utils.plotMatrix(matrix, fname, show=True, title="plot")
-            utils.plotMatrix(matrix, fname, minV=0, maxV=5, figsize=[3, 4])
-            utils.plotMatrix(matrix, fname, xticks=xtick, yticks=ytick)
+            utils.plotMatrix(matrix, fname, show=False, title="plot")
+            utils.plotMatrix(matrix, fname, show=False, minV=0, maxV=5, figsize=[3, 4])
+            utils.plotMatrix(matrix, fname, show=False, xticks=xtick, yticks=ytick)
 
     def test_classesInHierarchy(self):
         """Tests the classesInHierarchy utility."""
         # load the test reactor
-        _o, r = loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
         # call the `classesInHierarchy` function
         classCounts = defaultdict(lambda: 0)
@@ -156,7 +175,7 @@ class TestGeneralUtils(unittest.TestCase):
         self.assertEqual(classCounts[type(r)], 1)
         self.assertEqual(classCounts[type(r.core)], 1)
 
-        # further validate the Reactor heirarchy is in place
+        # further validate the Reactor hierarchy is in place
         self.assertEqual(len(r.core.getAssemblies()), 1)
         self.assertEqual(len(r.core.getBlocks()), 1)
 
@@ -197,6 +216,53 @@ class TestGeneralUtils(unittest.TestCase):
                 self.assertIn("Copied", mock.getStdout())
                 self.assertIn("file2", mock.getStdout())
                 self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMove(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            os.mkdir("dir2")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                # Test Linuxy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file1, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file1", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+                # Clean up for next safeCopy
+                mock.emptyStdout()
+                # Test Windowsy file path
+                self.assertEqual("", mock.getStdout())
+                safeMove(file2, "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("file2", mock.getStdout())
+                self.assertIn("->", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
+
+    def test_safeMoveDir(self):
+        with directoryChangers.TemporaryDirectoryChanger():
+            os.mkdir("dir1")
+            file1 = "dir1/file1.txt"
+            with open(file1, "w") as f:
+                f.write("Hello")
+            file2 = "dir1\\file2.txt"
+            with open(file2, "w") as f:
+                f.write("Hello2")
+
+            with mockRunLogs.BufferLog() as mock:
+                self.assertEqual("", mock.getStdout())
+                safeMove("dir1", "dir2")
+                self.assertIn("Moved", mock.getStdout())
+                self.assertIn("dir1", mock.getStdout())
+                self.assertIn("dir2", mock.getStdout())
+            self.assertTrue(os.path.exists(os.path.join("dir2", "file1.txt")))
 
 
 class CyclesSettingsTests(unittest.TestCase):
@@ -286,13 +352,9 @@ settings:
         )
 
     def test_getCycleNames(self):
-        self.assertEqual(
-            getCycleNames(self.standaloneDetailedCS), self.cycleNamesDetailedSolution
-        )
+        self.assertEqual(getCycleNames(self.standaloneDetailedCS), self.cycleNamesDetailedSolution)
 
-        self.assertEqual(
-            getCycleNames(self.standaloneSimpleCS), self.cycleNamesSimpleSolution
-        )
+        self.assertEqual(getCycleNames(self.standaloneSimpleCS), self.cycleNamesSimpleSolution)
 
     def test_getAvailabilityFactors(self):
         self.assertEqual(
@@ -322,18 +384,12 @@ settings:
             self.cycleLengthsDetailedSolution,
         )
 
-        self.assertEqual(
-            getCycleLengths(self.standaloneSimpleCS), self.cycleLengthsSimpleSolution
-        )
+        self.assertEqual(getCycleLengths(self.standaloneSimpleCS), self.cycleLengthsSimpleSolution)
 
     def test_getBurnSteps(self):
-        self.assertEqual(
-            getBurnSteps(self.standaloneDetailedCS), self.burnStepsDetailedSolution
-        )
+        self.assertEqual(getBurnSteps(self.standaloneDetailedCS), self.burnStepsDetailedSolution)
 
-        self.assertEqual(
-            getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution
-        )
+        self.assertEqual(getBurnSteps(self.standaloneSimpleCS), self.burnStepsSimpleSolution)
 
     def test_hasBurnup(self):
         self.assertTrue(hasBurnup(self.standaloneDetailedCS))
@@ -344,9 +400,7 @@ settings:
             self.maxBurnStepsDetailedSolution,
         )
 
-        self.assertEqual(
-            getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution
-        )
+        self.assertEqual(getMaxBurnSteps(self.standaloneSimpleCS), self.maxBurnStepsSimpleSolution)
 
     def test_getNodesPerCycle(self):
         self.assertEqual(
@@ -354,39 +408,21 @@ settings:
             self.nodesPerCycleDetailedSolution,
         )
 
-        self.assertEqual(
-            getNodesPerCycle(self.standaloneSimpleCS), self.nodesPerCycleSimpleSolution
-        )
+        self.assertEqual(getNodesPerCycle(self.standaloneSimpleCS), self.nodesPerCycleSimpleSolution)
 
     def test_getCycleNodeFromCumulativeStep(self):
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(8, self.standaloneDetailedCS), (1, 4)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(12, self.standaloneDetailedCS), (2, 3)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeStep(8, self.standaloneDetailedCS), (1, 4))
+        self.assertEqual(getCycleNodeFromCumulativeStep(12, self.standaloneDetailedCS), (2, 3))
 
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(4, self.standaloneSimpleCS), (1, 0)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeStep(8, self.standaloneSimpleCS), (2, 1)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeStep(4, self.standaloneSimpleCS), (1, 0))
+        self.assertEqual(getCycleNodeFromCumulativeStep(8, self.standaloneSimpleCS), (2, 1))
 
     def test_getCycleNodeFromCumulativeNode(self):
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(8, self.standaloneDetailedCS), (1, 4)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(12, self.standaloneDetailedCS), (2, 2)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeNode(8, self.standaloneDetailedCS), (1, 4))
+        self.assertEqual(getCycleNodeFromCumulativeNode(12, self.standaloneDetailedCS), (2, 2))
 
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(3, self.standaloneSimpleCS), (0, 3)
-        )
-        self.assertEqual(
-            getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0)
-        )
+        self.assertEqual(getCycleNodeFromCumulativeNode(3, self.standaloneSimpleCS), (0, 3))
+        self.assertEqual(getCycleNodeFromCumulativeNode(8, self.standaloneSimpleCS), (2, 0))
 
         with self.assertRaises(ValueError):
             getCycleNodeFromCumulativeNode(-1, self.standaloneSimpleCS)

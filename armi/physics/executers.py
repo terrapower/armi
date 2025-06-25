@@ -17,11 +17,12 @@ Executors are useful for having a standard way to run physics calculations.
 They may involve external codes (with inputs/execution/output) or in-memory
 data pathways.
 """
+
 import hashlib
 import os
 
 from armi import runLog
-from armi.context import getFastPath, MPI_RANK
+from armi.context import MPI_RANK, getFastPath
 from armi.utils import directoryChangers, pathTools
 
 
@@ -35,7 +36,7 @@ class ExecutionOptions:
 
         Implements a basic container to hold and report options to be used in
         the execution of an external code (see :need:`I_ARMI_EX1`).
-        Options are stored as instance attibutes and can be dumped as a string
+        Options are stored as instance attributes and can be dumped as a string
         using :py:meth:`~armi.physics.executers.ExecutionOptions.describe`, which
         will include the name and value of all public attributes of the instance.
 
@@ -218,12 +219,8 @@ class DefaultExecuter(Executer):
         """
         self.options.resolveDerivedOptions()
         runLog.debug(self.options.describe())
-        if self.options.executablePath and not os.path.exists(
-            self.options.executablePath
-        ):
-            raise IOError(
-                f"Required executable `{self.options.executablePath}` not found for {self}"
-            )
+        if self.options.executablePath and not os.path.exists(self.options.executablePath):
+            raise IOError(f"Required executable `{self.options.executablePath}` not found for {self}")
         self._performGeometryTransformations()
         inputs, outputs = self._collectInputsAndOutputs()
         state = f"c{self.r.p.cycle}n{self.r.p.timeNode}"

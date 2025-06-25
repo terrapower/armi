@@ -13,12 +13,14 @@
 # limitations under the License.
 
 """Unit tests for pathTools."""
+
 import os
 import time
 import types
 import unittest
 
 from armi import context
+from armi.tests import mockRunLogs
 from armi.utils import pathTools
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -26,10 +28,41 @@ THIS_DIR = os.path.dirname(__file__)
 
 
 class PathToolsTests(unittest.TestCase):
+    def test_copyOrWarnFile(self):
+        with TemporaryDirectoryChanger():
+            # Test a successful copy
+            path = "test.txt"
+            pathCopy = "testcopy.txt"
+            with open(path, "w") as f1:
+                f1.write("test")
+            pathTools.copyOrWarn("Test File", path, pathCopy)
+            self.assertTrue(os.path.exists(pathCopy))
+
+            # Test a non-existent file
+            with mockRunLogs.BufferLog() as mock:
+                pathTools.copyOrWarn("Test File", "FileDoesntExist.txt", pathCopy)
+                self.assertIn("Could not copy", mock.getStdout())
+
+    def test_copyOrWarnDir(self):
+        with TemporaryDirectoryChanger():
+            # Test a successful copy
+            pathDir = "testDir"
+            path = os.path.join(pathDir, "test.txt")
+            pathDirCopy = "testcopy"
+            os.mkdir(pathDir)
+            with open(path, "w") as f1:
+                f1.write("test")
+            pathTools.copyOrWarn("Test File", pathDir, pathDirCopy)
+            self.assertTrue(os.path.exists(pathDirCopy))
+            self.assertTrue(os.path.exists(os.path.join(pathDirCopy, "test.txt")))
+
+            # Test a non-existent file
+            with mockRunLogs.BufferLog() as mock:
+                pathTools.copyOrWarn("Test File", "DirDoesntExist", pathDirCopy)
+                self.assertIn("Could not copy", mock.getStdout())
+
     def test_separateModuleAndAttribute(self):
-        self.assertRaises(
-            ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon"
-        )
+        self.assertRaises(ValueError, pathTools.separateModuleAndAttribute, r"path/with/no/colon")
         self.assertEqual(
             (r"aPath/file.py", "MyClass"),
             pathTools.separateModuleAndAttribute(r"aPath/file.py:MyClass"),
@@ -59,9 +92,7 @@ class PathToolsTests(unittest.TestCase):
         # test that no `:` doesn't raise an exception
         self.assertFalse(pathTools.moduleAndAttributeExist(r"path/that/not/exist.py"))
         # test that multiple `:` doesn't raise an exception
-        self.assertFalse(
-            pathTools.moduleAndAttributeExist(r"c:/path/that/not/exist.py:MyClass")
-        )
+        self.assertFalse(pathTools.moduleAndAttributeExist(r"c:/path/that/not/exist.py:MyClass"))
         thisFile = os.path.join(THIS_DIR, __file__)
         # no module attribute specified
         self.assertFalse(pathTools.moduleAndAttributeExist(thisFile))

@@ -16,8 +16,9 @@
 This module contains constants and enumerations that are useful for describing system
 geometry.
 """
+
 import enum
-from typing import Union, Optional
+from typing import Optional, Union
 
 
 class GeomType(enum.Enum):
@@ -88,9 +89,7 @@ class GeomType(enum.Enum):
 
         # use the original geomStr with preserved capitalization for better
         # error-finding.
-        errorMsg = "Unrecognized geometry type {}. Valid geometry options are: ".format(
-            geomStr
-        )
+        errorMsg = "Unrecognized geometry type {}. Valid geometry options are: ".format(geomStr)
         errorMsg += ", ".join([f"{geom}" for geom in geomTypes])
         raise ValueError(errorMsg)
 
@@ -154,9 +153,7 @@ class DomainType(enum.Enum):
         elif canonical == "":
             return cls.NULL
 
-        errorMsg = "{} is not a valid domain option. Valid domain options are:".format(
-            str(canonical)
-        )
+        errorMsg = "{} is not a valid domain option. Valid domain options are:".format(str(canonical))
         errorMsg += ", ".join([f"{sym}" for sym in domainTypes])
         raise ValueError(errorMsg)
 
@@ -205,11 +202,7 @@ class DomainType(enum.Enum):
         elif self == self.SIXTEENTH_CORE:
             return 16.0
         else:
-            raise ValueError(
-                "Could not calculate symmetry factor for domain size {}. update logic.".format(
-                    self.label
-                )
-            )
+            raise ValueError("Could not calculate symmetry factor for domain size {}. update logic.".format(self.label))
 
 
 class BoundaryType(enum.Enum):
@@ -239,11 +232,7 @@ class BoundaryType(enum.Enum):
         elif canonical == REFLECTIVE:
             return cls.REFLECTIVE
 
-        errorMsg = (
-            "{} is not a valid boundary option. Valid boundary options are:".format(
-                str(canonical)
-            )
-        )
+        errorMsg = "{} is not a valid boundary option. Valid boundary options are:".format(str(canonical))
         errorMsg += ", ".join([f"{sym}" for sym in boundaryTypes])
         raise ValueError(errorMsg)
 
@@ -311,21 +300,14 @@ class SymmetryType:
         self.isThroughCenterAssembly = throughCenterAssembly
 
         if not self.checkValidSymmetry():
-            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are: ".format(
-                str(self)
-            )
-            errorMsg += ", ".join(
-                [f"{sym}" for sym in self.createValidSymmetryStrings()]
-            )
+            errorMsg = "{} is not a valid symmetry option. Valid symmetry options are: ".format(str(self))
+            errorMsg += ", ".join([f"{sym}" for sym in self.createValidSymmetryStrings()])
             raise ValueError(errorMsg)
 
     @classmethod
     def createValidSymmetryStrings(cls):
         """Create a list of valid symmetry strings based on the set of tuples in VALID_SYMMETRY."""
-        return [
-            cls(domain, boundary, isThroughCenter)
-            for domain, boundary, isThroughCenter in cls.VALID_SYMMETRY
-        ]
+        return [cls(domain, boundary, isThroughCenter) for domain, boundary, isThroughCenter in cls.VALID_SYMMETRY]
 
     @classmethod
     def fromStr(cls, symmetryString: str) -> "SymmetryType":
@@ -352,9 +334,7 @@ class SymmetryType:
             errorMsg = "{} [{}] is not a valid symmetry option. Valid symmetry options are:".format(
                 symmetryString, trimmedString
             )
-            errorMsg += ", ".join(
-                [f"{sym}" for sym in cls.createValidSymmetryStrings()]
-            )
+            errorMsg += ", ".join([f"{sym}" for sym in cls.createValidSymmetryStrings()])
             raise ValueError(errorMsg)
         return cls(domain, boundary, isThroughCenter)
 
@@ -419,15 +399,11 @@ def checkValidGeomSymmetryCombo(
     Return a boolean indicating the outcome of the check.
     """
     symmetry = SymmetryType.fromAny(symmetryInput)
-    if (symmetry.domain, symmetry.boundary) in VALID_GEOM_SYMMETRY[
-        GeomType.fromAny(geomType)
-    ]:
+    if (symmetry.domain, symmetry.boundary) in VALID_GEOM_SYMMETRY[GeomType.fromAny(geomType)]:
         return True
     else:
         raise ValueError(
-            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(
-                str(geomType), str(symmetry)
-            )
+            "GeomType: {} and SymmetryType: {} is not a valid combination!".format(str(geomType), str(symmetry))
         )
 
 

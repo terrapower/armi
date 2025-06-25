@@ -22,7 +22,7 @@ custom material properties or basic structures like the assemblies in use.
 This is essentially a wrapper for a yaml loader.
 The given yaml file is expected to rigidly adhere to given key:value pairings.
 
-See the :doc:`blueprints documentation </user/inputs/blueprints>` for more details.
+See the :ref:`blueprints documentation <bp-input-file>` for more details.
 
 The file structure is expectation is::
 
@@ -63,46 +63,47 @@ Notes
 The blueprints system was built to enable round trip translations between
 text representations of input and objects in the code.
 """
+
 import copy
-import os
 import pathlib
 import traceback
 import typing
 
-from ruamel.yaml import CLoader, RoundTripLoader
 import ordered_set
 import yamlize
 import yamlize.objects
+from ruamel.yaml import CLoader, RoundTripLoader
 
-from armi import context
-from armi import getPluginManager, getPluginManagerOrFail
-from armi import migration
-from armi import plugins
-from armi import runLog
+from armi import (
+    context,
+    getPluginManager,
+    getPluginManagerOrFail,
+    migration,
+    plugins,
+    runLog,
+)
 from armi.nucDirectory import nuclideBases
 from armi.physics.neutronics.settings import CONF_LOADING_FILE
 from armi.reactor import assemblies
-from armi.reactor import geometry
-from armi.reactor import systemLayoutInput
 from armi.reactor.blueprints import isotopicOptions
 from armi.reactor.blueprints.assemblyBlueprint import AssemblyKeyedList
 from armi.reactor.blueprints.blockBlueprint import BlockKeyedList
-from armi.reactor.blueprints.componentBlueprint import ComponentGroups
-from armi.reactor.blueprints.componentBlueprint import ComponentKeyedList
+from armi.reactor.blueprints.componentBlueprint import (
+    ComponentGroups,
+    ComponentKeyedList,
+)
 from armi.reactor.blueprints.gridBlueprint import Grids, Triplet
-from armi.reactor.blueprints.reactorBlueprint import Systems, SystemBlueprint
+from armi.reactor.blueprints.reactorBlueprint import SystemBlueprint, Systems
 from armi.reactor.converters import axialExpansionChanger
 from armi.reactor.flags import Flags
 from armi.settings.fwSettings.globalSettings import (
-    CONF_DETAILED_AXIAL_EXPANSION,
+    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
     CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP,
+    CONF_DETAILED_AXIAL_EXPANSION,
     CONF_INPUT_HEIGHTS_HOT,
     CONF_NON_UNIFORM_ASSEM_FLAGS,
-    CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
-    CONF_GEOM_FILE,
 )
-from armi.utils import tabulate
-from armi.utils import textProcessors
+from armi.utils import tabulate, textProcessors
 from armi.utils.customExceptions import InputError
 
 context.BLUEPRINTS_IMPORTED = True
@@ -155,8 +156,7 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
                     assert isinstance(section, yamlize.Attribute)
                     if attrName in attrs:
                         raise plugins.PluginError(
-                            "There is already a section called '{}' in the reactor "
-                            "blueprints".format(attrName)
+                            "There is already a section called '{}' in the reactor blueprints".format(attrName)
                         )
                     attrs[attrName] = section
                     attrs["_resolveFunctions"].append(resolver)
@@ -169,24 +169,14 @@ class _BlueprintsPluginCollector(yamlize.objects.ObjectType):
 class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
     """Base Blueprintsobject representing all the subsections in the input file."""
 
-    nuclideFlags = yamlize.Attribute(
-        key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None
-    )
-    customIsotopics = yamlize.Attribute(
-        key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None
-    )
+    nuclideFlags = yamlize.Attribute(key="nuclide flags", type=isotopicOptions.NuclideFlags, default=None)
+    customIsotopics = yamlize.Attribute(key="custom isotopics", type=isotopicOptions.CustomIsotopics, default=None)
     blockDesigns = yamlize.Attribute(key="blocks", type=BlockKeyedList, default=None)
-    assemDesigns = yamlize.Attribute(
-        key="assemblies", type=AssemblyKeyedList, default=None
-    )
+    assemDesigns = yamlize.Attribute(key="assemblies", type=AssemblyKeyedList, default=None)
     systemDesigns = yamlize.Attribute(key="systems", type=Systems, default=None)
     gridDesigns = yamlize.Attribute(key="grids", type=Grids, default=None)
-    componentDesigns = yamlize.Attribute(
-        key="components", type=ComponentKeyedList, default=None
-    )
-    componentGroups = yamlize.Attribute(
-        key="component groups", type=ComponentGroups, default=None
-    )
+    componentDesigns = yamlize.Attribute(key="components", type=ComponentKeyedList, default=None)
+    componentGroups = yamlize.Attribute(key="component groups", type=ComponentGroups, default=None)
 
     # These are used to set up new attributes that come from plugins.
     _resolveFunctions = []
@@ -260,7 +250,6 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
         """
         self._prepConstruction(cs)
 
-        # TODO: this should be migrated assembly designs instead of assemblies
         if name is not None:
             assem = self.assemblies[name]
         elif specifier is not None:
@@ -305,26 +294,19 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             if not cs[CONF_DETAILED_AXIAL_EXPANSION]:
                 # this is required to set up assemblies so they know how to snap
-                # to the reference mesh. They wont know the mesh to conform to
+                # to the reference mesh. They won't know the mesh to conform to
                 # otherwise....
                 axialExpansionChanger.makeAssemsAbleToSnapToUniformMesh(
                     self.assemblies.values(), cs[CONF_NON_UNIFORM_ASSEM_FLAGS]
                 )
 
             if not cs[CONF_INPUT_HEIGHTS_HOT]:
-                runLog.header(
-                    "=========== Axially expanding all assemblies from Tinput to Thot ==========="
-                )
+                runLog.header("=========== Axially expanding all assemblies from Tinput to Thot ===========")
                 # expand axial heights from cold to hot so dims and masses are consistent
                 # with specified component hot temperatures.
-                assemsToSkip = [
-                    Flags.fromStringIgnoreErrors(t)
-                    for t in cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]
-                ]
+                assemsToSkip = [Flags.fromStringIgnoreErrors(t) for t in cs[CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP]]
                 assemsToExpand = list(
-                    a
-                    for a in list(self.assemblies.values())
-                    if not any(a.hasFlags(f) for f in assemsToSkip)
+                    a for a in list(self.assemblies.values()) if not any(a.hasFlags(f) for f in assemsToSkip)
                 )
                 axialExpander = getPluginManagerOrFail().hook.getAxialExpansionChanger()
                 if axialExpander is not None:
@@ -333,9 +315,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                         cs[CONF_DETAILED_AXIAL_EXPANSION],
                     )
 
-            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(
-                assemblies=self.assemblies.values(), cs=cs
-            )
+            getPluginManagerOrFail().hook.afterConstructionOfAssemblies(assemblies=self.assemblies.values(), cs=cs)
 
         self._prepped = True
 
@@ -415,30 +395,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             self.elementsToExpand.append(elemental.element)
 
-            if (
-                elemental.name in nuclideFlags
-                and nuclideFlags[elemental.element.symbol].expandTo
-            ):
+            if elemental.name in nuclideFlags and nuclideFlags[elemental.element.symbol].expandTo:
                 # user-input expandTo has precedence
-                newNuclides = [
-                    nuclideBases.byName[nn]
-                    for nn in nuclideFlags[elemental.element.symbol].expandTo
-                ]
+                newNuclides = [nuclideBases.byName[nn] for nn in nuclideFlags[elemental.element.symbol].expandTo]
             elif elemental in eleExpand and elemental.element.symbol in nuclideFlags:
                 # code-specific expansion required based on code and ENDF
                 newNuclides = eleExpand[elemental]
-                # overlay code details onto nuclideFlags for other parts of the code
-                # that will use them.
-                # TODO: would be better if nuclideFlags did this upon reading s.t.
-                # order didn't matter. On the other hand, this is the only place in
-                # the code where NuclideFlags get built and have user settings around
-                # (hence "resolve").
-                # This must be updated because the operative expansion code just uses the flags
-                #
-                # Also, if this element is not in nuclideFlags at all, we just don't add it
-                nuclideFlags[elemental.element.symbol].expandTo = [
-                    nb.name for nb in newNuclides
-                ]
+                # Overlay code details onto nuclideFlags for other parts of the code that use them.
+                # Also, if this element is not in nuclideFlags at all, we just don't add it.
+                nuclideFlags[elemental.element.symbol].expandTo = [nb.name for nb in newNuclides]
             else:
                 # expand to all possible natural isotopics
                 newNuclides = elemental.element.getNaturalIsotopics()
@@ -464,9 +429,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
         self.activeNuclides = ordered_set.OrderedSet(sorted(actives))
         self.inertNuclides = ordered_set.OrderedSet(sorted(inerts))
-        self.allNuclidesInProblem = ordered_set.OrderedSet(
-            sorted(actives.union(inerts))
-        )
+        self.allNuclidesInProblem = ordered_set.OrderedSet(sorted(actives.union(inerts)))
         self.nucsToForceInXsGen = ordered_set.OrderedSet(sorted(nucsToForceInXsGen))
 
         # Inform user which nuclides are truncating the burn chain.
@@ -476,9 +439,7 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                     [
                         [
                             "Nuclides truncating the burn-chain:",
-                            utils.createFormattedStrWithDelimiter(
-                                list(undefBurnChainActiveNuclides)
-                            ),
+                            utils.createFormattedStrWithDelimiter(list(undefBurnChainActiveNuclides)),
                         ]
                     ],
                     tableFmt="plain",
@@ -510,19 +471,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
 
             blockArea = a[0].getArea()
             for b in a[1:]:
-                if (
-                    abs(b.getArea() - blockArea) / blockArea
-                    > cs[CONF_ACCEPTABLE_BLOCK_AREA_ERROR]
-                ):
+                if abs(b.getArea() - blockArea) / blockArea > cs[CONF_ACCEPTABLE_BLOCK_AREA_ERROR]:
                     runLog.error("REFERENCE COMPARISON BLOCK:")
                     a[0].printContents(includeNuclides=False)
                     runLog.error("CURRENT COMPARISON BLOCK:")
                     b.printContents(includeNuclides=False)
 
-                    for c in b.getChildren():
+                    for c in b:
                         runLog.error(
-                            "{0} area {1} effective area {2}"
-                            "".format(c, c.getArea(), c.getVolume() / b.getHeight())
+                            "{0} area {1} effective area {2}".format(c, c.getArea(), c.getVolume() / b.getHeight())
                         )
 
                     raise InputError(
@@ -565,29 +522,15 @@ class Blueprints(yamlize.Object, metaclass=_BlueprintsPluginCollector):
                 sfp.typ = "sfp"
                 self.systemDesigns["Spent Fuel Pool"] = sfp
         else:
-            runLog.warning(
-                f"Can't add default SFP to {self}, there are no systemDesigns!"
-            )
+            runLog.warning(f"Can't add default SFP to {self}, there are no systemDesigns!")
 
 
 def migrate(bp: Blueprints, cs):
     """
     Apply migrations to the input structure.
 
-    This is a good place to perform migrations that address changes to the system design
-    description (settings, blueprints, geom file). We have access to all three here, so
-    we can even move stuff between files. Namely, this:
-
-     * creates a grid blueprint to represent the core layout from the old ``geomFile``
-       setting, and applies that grid to a ``core`` system.
-     * moves the radial and azimuthal submesh values from the ``geomFile`` to the
-       assembly designs, but only if they are uniform (this is limiting, but could be
-       made more sophisticated in the future, if there is need)
-
-    This allows settings-driven core map to still be used for backwards compatibility.
-    At some point once the input stabilizes, we may wish to move this out to the
-    dedicated migration portion of the code, and not perform the migration so
-    implicitly.
+    This is a good place to perform migrations that address changes to the system design description
+    (settings, blueprints). We have access both here, so we can even move stuff between files.
     """
     from armi.reactor.blueprints import gridBlueprint
 
@@ -599,37 +542,7 @@ def migrate(bp: Blueprints, cs):
     if "core" in [rd.name for rd in bp.gridDesigns]:
         raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
 
-    geom = systemLayoutInput.SystemLayoutInput()
-    geom.readGeomFromFile(os.path.join(cs.inputDirectory, cs[CONF_GEOM_FILE]))
-    gridDesigns = geom.toGridBlueprints("core")
-    for design in gridDesigns:
-        bp.gridDesigns[design.name] = design
-
     if "core" in [rd.name for rd in bp.systemDesigns]:
-        raise ValueError(
-            "Core map is defined in both the ``geometry`` setting and in "
-            "the blueprints file. Only one definition may exist. "
-            "Update inputs."
-        )
+        raise ValueError("Cannot auto-create a 2nd `core` grid. Adjust input.")
+
     bp.systemDesigns["core"] = SystemBlueprint("core", "core", Triplet())
-
-    if geom.geomType in (geometry.GeomType.RZT, geometry.GeomType.RZ):
-        aziMeshes = {indices[4] for indices, _ in geom.assemTypeByIndices.items()}
-        radMeshes = {indices[5] for indices, _ in geom.assemTypeByIndices.items()}
-
-        if len(aziMeshes) > 1 or len(radMeshes) > 1:
-            raise ValueError(
-                "The system layout described in {} has non-uniform "
-                "azimuthal and/or radial submeshing. This migration is currently "
-                "only smart enough to handle a single radial and single azimuthal "
-                "submesh for all assemblies.".format(cs[CONF_GEOM_FILE])
-            )
-        radMesh = next(iter(radMeshes))
-        aziMesh = next(iter(aziMeshes))
-
-        for _, aDesign in bp.assemDesigns.items():
-            aDesign.radialMeshPoints = radMesh
-            aDesign.azimuthalMeshPoints = aziMesh
-
-    # TODO: write out the migrated file. At the moment this messes up the case
-    # title and doesn't yet have the other systems in place so this isn't the right place.

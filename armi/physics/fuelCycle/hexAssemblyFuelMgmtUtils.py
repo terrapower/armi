@@ -19,110 +19,112 @@ Notes
 -----
 We are keeping these in ARMI even if they appear unused internally.
 """
+
 import math
+import typing
 
 import numpy as np
 
 from armi import runLog
-from armi.utils.hexagon import getIndexOfRotatedCell
-from armi.reactor.flags import Flags
+from armi.physics.fuelCycle.utils import maxBurnupBlock, maxBurnupLocator
 from armi.utils.mathematics import findClosest
 
+if typing.TYPE_CHECKING:
+    from armi.reactor.assemblies import HexAssembly
 
-def getOptimalAssemblyOrientation(a, aPrev):
+
+def getOptimalAssemblyOrientation(a: "HexAssembly", aPrev: "HexAssembly") -> int:
     """
-    Get optimal assembly orientation/rotation to minimize peak burnup.
+    Get optimal hex assembly orientation/rotation to minimize peak burnup.
 
-    Notes
-    -----
-    Works by placing the highest-BU pin in the location (of 6 possible locations) with lowest
+    Works by placing the highest-burnup pin in the location (of 6 possible locations) with lowest
     expected pin power. We evaluated "expected pin power" based on the power distribution in
-    aPrev, which is the previous assembly located here. If aPrev has no pin detail, then we must use its
-    corner fast fluxes to make an estimate.
+    ``aPrev``, the previous assembly located where ``a`` is going. The algorithm goes as follows.
+
+    1. Get all the pin powers and ``IndexLocation`` s from the block at the previous location/timenode.
+    2. Obtain the ``IndexLocation`` of the pin with the highest burnup in the current assembly.
+    3. For each possible rotation,
+
+        - Find the new location with ``HexGrid.rotateIndex``
+        - Find the index where that location occurs in previous locations
+        - Find the previous power at that location
+
+    4. Return the rotation with the lowest previous power
+
+    This algorithm assumes a few things.
+
+    1. ``len(HexBlock.getPinCoordinates()) == len(HexBlock.p.linPowByPin)`` and,
+       by extension, ``linPowByPin[i]`` is found at ``getPinCoordinates()[i]``.
+    2. Your assembly has at least 60 degree symmetry of fuel pins and
+       powers. This means if we find a fuel pin and rotate it 60 degrees, there should
+       be another fuel pin at that lattice site. This is mostly a safe assumption
+       since many hexagonal reactors have at least 60 degree symmetry of fuel pin layout.
+       This assumption holds if you have a full hexagonal lattice of fuel pins as well.
+    3. Fuel pins in ``a`` have similar locations in ``aPrev``. This is mostly a safe
+       assumption in that most fuel assemblies have similar layouts so it's plausible
+       that if ``a`` has a fuel pin at ``(1, 0, 0)``, so does ``aPrev``.
+
+    .. impl:: Provide an algorithm for rotating hexagonal assemblies to equalize burnup
+        :id: I_ARMI_ROTATE_HEX_BURNUP
+        :implements: R_ARMI_ROTATE_HEX_BURNUP
 
     Parameters
     ----------
     a : Assembly object
         The assembly that is being rotated.
-
     aPrev : Assembly object
         The assembly that previously occupied this location (before the last shuffle).
-
-        If the assembly "a" was not shuffled, then "aPrev" = "a".
-
-        If "aPrev" has pin detail, then we will determine the orientation of "a" based on
-        the pin powers of "aPrev" when it was located here.
-
-        If "aPrev" does NOT have pin detail, then we will determine the orientation of "a" based on
-        the corner fast fluxes in "aPrev" when it was located here.
+        If the assembly "a" was not shuffled, it's sufficient to pass ``a``.
 
     Returns
     -------
-    rot : int
-        An integer from 0 to 5 representing the "orientation" of the assembly.
-        This orientation is relative to the current assembly orientation.
-        rot = 0 corresponds to no rotation.
-        rot represents the number of pi/3 counterclockwise rotations for the default orientation.
+    int
+        An integer from 0 to 5 representing the number of pi/3 (60 degree) counterclockwise
+        rotations from where ``a`` is currently oriented to the "optimal" orientation
 
-    Examples
-    --------
-    >>> getOptimalAssemblyOrientation(a, aPrev)
-    4
-
-    See Also
-    --------
-    rotateAssemblies : calls this to figure out how to rotate
+    Raises
+    ------
+    ValueError
+        If there is insufficient information to determine the rotation of ``a``. This could
+        be due to a lack of fuel blocks or parameters like ``linPowByPin``.
     """
-    # determine whether or not aPrev had pin details
-    fuelPrev = aPrev.getFirstBlock(Flags.FUEL)
-    if fuelPrev:
-        aPrevDetailFlag = fuelPrev.p.pinLocation[4] is not None
+    maxBuBlock = maxBurnupBlock(a)
+    if maxBuBlock.spatialGrid is None:
+        msg = f"Block {maxBuBlock} in {a} does not have a spatial grid. Cannot rotate."
+        runLog.error(msg)
+        raise ValueError(msg)
+    maxBuPinLocation = maxBurnupLocator(maxBuBlock)
+    # No need to rotate if max burnup pin is the center
+    if maxBuPinLocation.i == 0 and maxBuPinLocation.j == 0:
+        return 0
+
+    if aPrev is not a:
+        blockAtPreviousLocation = aPrev[a.index(maxBuBlock)]
     else:
-        aPrevDetailFlag = False
+        blockAtPreviousLocation = maxBuBlock
 
-    rot = 0  # default: no rotation
-    # First get pin index of maximum BU in this assembly.
-    _maxBuAssem, maxBuBlock = a.getMaxParam("percentBuMax", returnObj=True)
-    if maxBuBlock is None:
-        # no max block. They're all probably zero
-        return rot
+    previousLocations = blockAtPreviousLocation.getPinLocations()
+    previousPowers = blockAtPreviousLocation.p.linPowByPin
+    if len(previousLocations) != len(previousPowers):
+        msg = (
+            f"Inconsistent pin powers and number of pins in {blockAtPreviousLocation}. "
+            f"Found {len(previousLocations)} locations but {len(previousPowers)} powers."
+        )
+        runLog.error(msg)
+        raise ValueError(msg)
 
-    # start at 0 instead of 1
-    maxBuPinIndexAssem = int(maxBuBlock.p.percentBuMaxPinLocation - 1)
-    bIndexMaxBu = a.index(maxBuBlock)
+    ringPowers = {(loc.i, loc.j): p for loc, p in zip(previousLocations, previousPowers)}
 
-    if maxBuPinIndexAssem == 0:
-        # Don't bother rotating if the highest-BU pin is the central pin. End this method.
-        return rot
-    else:
-        # transfer percentBuMax rotated pin index to non-rotated pin index
-        if aPrevDetailFlag:
-            # aPrev has pin detail
-            # Determine which of 6 possible rotated pin indices had the lowest power when aPrev was here.
-            prevAssemPowHereMIN = float("inf")
-
-            for possibleRotation in range(6):
-                index = getIndexOfRotatedCell(maxBuPinIndexAssem, possibleRotation)
-                # get pin power at this index in the previously assembly located here
-                # power previously at rotated index
-                prevAssemPowHere = aPrev[bIndexMaxBu].p.linPowByPin[index - 1]
-
-                if prevAssemPowHere is not None:
-                    runLog.debug(
-                        "Previous power in rotation {0} where pinLoc={1} is {2:.4E} W/cm"
-                        "".format(possibleRotation, index, prevAssemPowHere)
-                    )
-                    if prevAssemPowHere < prevAssemPowHereMIN:
-                        prevAssemPowHereMIN = prevAssemPowHere
-                        rot = possibleRotation
-        else:
-            raise ValueError(
-                "Cannot perform detailed rotation analysis without pin-level "
-                "flux information."
-            )
-
-        runLog.debug("Best relative rotation is {0}".format(rot))
-        return rot
+    targetGrid = blockAtPreviousLocation.spatialGrid
+    candidateRotation = 0
+    candidatePower = ringPowers.get((maxBuPinLocation.i, maxBuPinLocation.j), math.inf)
+    for rot in range(1, 6):
+        candidateLocation = targetGrid.rotateIndex(maxBuPinLocation, rot)
+        newPower = ringPowers.get((candidateLocation.i, candidateLocation.j), math.inf)
+        if newPower < candidatePower:
+            candidateRotation = rot
+            candidatePower = newPower
+    return candidateRotation
 
 
 def buildRingSchedule(
@@ -197,14 +199,12 @@ def buildRingSchedule(
     """
     if dischargeRing > maxRingInCore:
         runLog.warning(
-            f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). "
-            "Changing it to be the max ring"
+            f"Discharge ring {dischargeRing} is outside the core (max {maxRingInCore}). Changing it to be the max ring"
         )
         dischargeRing = maxRingInCore
     if chargeRing > maxRingInCore:
         runLog.warning(
-            f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). "
-            "Changing it to be the max ring."
+            f"Charge ring {chargeRing} is outside the core (max {maxRingInCore}). Changing it to be the max ring."
         )
         chargeRing = maxRingInCore
 
@@ -231,17 +231,9 @@ def buildRingSchedule(
         # divergent case. Disable jumpring by putting jumpring at periphery.
         jumpRingTo = maxRingInCore
 
-    if (
-        chargeRing > dischargeRing
-        and jumpRingFrom is not None
-        and jumpRingFrom < jumpRingTo
-    ):
+    if chargeRing > dischargeRing and jumpRingFrom is not None and jumpRingFrom < jumpRingTo:
         raise RuntimeError("Cannot have outward jumps in convergent cases.")
-    if (
-        chargeRing < dischargeRing
-        and jumpRingFrom is not None
-        and jumpRingFrom > jumpRingTo
-    ):
+    if chargeRing < dischargeRing and jumpRingFrom is not None and jumpRingFrom > jumpRingTo:
         raise RuntimeError("Cannot have inward jumps in divergent cases.")
 
     # step 1: build the base rings
@@ -267,9 +259,7 @@ def buildRingSchedule(
 
     # step 2: locate which rings should be reversed to give the jump-ring effect.
     if jumpRingFrom is not None:
-        _closestRingFrom, jumpRingFromIndex = findClosest(
-            baseRings, jumpRingFrom, indx=True
-        )
+        _closestRingFrom, jumpRingFromIndex = findClosest(baseRings, jumpRingFrom, indx=True)
         _closestRingTo, jumpRingToIndex = findClosest(baseRings, jumpRingTo, indx=True)
     else:
         jumpRingToIndex = 0
@@ -326,9 +316,7 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
     numSteps = int((chargeRing - dischargeRing + 1) * (1.0 - coarseFactor))
     # don't let it be smaller than 2 because linspace(1,5,1)= [1], linspace(1,5,2)= [1,5]
     numSteps = max(numSteps, 2)
-    convergent = [
-        int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)
-    ]
+    convergent = [int(ring) for ring in np.linspace(dischargeRing, chargeRing, numSteps)]
 
     # step 2. eliminate duplicates
     convergent = sorted(list(set(convergent)))
@@ -341,162 +329,3 @@ def buildConvergentRingSchedule(chargeRing, dischargeRing=1, coarseFactor=0.0):
 
     # step 4. assemble and return
     return convergent, conWidths
-
-
-def _buildEqRingScheduleHelper(ringSchedule, numRings):
-    r"""
-    turns ``ringScheduler`` into explicit list of rings.
-
-    Pulled out of buildEqRingSchedule for testing.
-
-    Parameters
-    ----------
-    ringSchedule : list
-        List of ring bounds that is required to be an even number of entries.  These
-        entries then are used in a from - to approach to add the rings.  The from ring will
-        always be included.
-
-    numRings : int
-        The number of rings in the hex assembly reactor.
-
-    Returns
-    -------
-    ringList : list
-        List of all rings in the order they should be shuffled.
-
-    Examples
-    --------
-    >>> _buildEqRingScheduleHelper([1,5])
-    [1,2,3,4,5]
-
-    >>> _buildEqRingScheduleHelper([1,5,9,6])
-    [1,2,3,4,5,9,8,7,6]
-
-    >>> _buildEqRingScheduleHelper([9,5,3,4,1,2])
-    [9,8,7,6,5,3,4,1,2]
-
-    >>> _buildEqRingScheduleHelper([2,5,1,1])
-    [2,3,4,5,1]
-    """
-    if len(ringSchedule) % 2 != 0:
-        runLog.error("Ring schedule: {}".format(ringSchedule))
-        raise RuntimeError("Ring schedule does not have an even number of entries.")
-
-    ringList = []
-    for i in range(0, len(ringSchedule), 2):
-        fromRing = ringSchedule[i]
-        toRing = ringSchedule[i + 1]
-        numRings = abs(toRing - fromRing) + 1
-
-        ringList.extend([int(j) for j in np.linspace(fromRing, toRing, numRings)])
-
-    # eliminate doubles (but allow a ring to show up multiple times)
-    newList = []
-    lastRing = None
-    for ring in ringList:
-        if ring != lastRing:
-            newList.append(ring)
-        if ring > numRings:
-            # error checking
-            runLog.warning(
-                "Ring {0} in eqRingSchedule larger than largest ring in reactor {1}. "
-                "Adjust shuffling.".format(ring, numRings),
-                single=True,
-                label="too many rings",
-            )
-        lastRing = ring
-
-    return newList
-
-
-def _squaredDistanceFromOrigin(a):
-    """Get the squared distance from the origin of an assembly.
-
-    Notes
-    -----
-    Just a helper for ``buildEqRingSchedule()``
-
-    Parameters
-    ----------
-    a: Assembly
-        Fully initialize Assembly object; already part of a reactor core.
-
-    Returns
-    -------
-    float: Distance from reactor center
-    """
-    origin = np.array([0.0, 0.0, 0.0])
-    p = np.array(a.spatialLocator.getLocalCoordinates())
-    return ((p - origin) ** 2).sum()
-
-
-def _assemAngle(a):
-    """Get the angle of the Assembly, in the reactor core.
-
-    Notes
-    -----
-    Just a helper for ``buildEqRingSchedule()``
-
-    Parameters
-    ----------
-    a: Assembly
-        Fully initialize Assembly object; already part of a reactor core.
-
-    Returns
-    -------
-    float: Angle position of assembly around the reactor core
-    """
-    x, y, _ = a.spatialLocator.getLocalCoordinates()
-    return math.atan2(y, x)
-
-
-def buildEqRingSchedule(core, ringSchedule, circularRingOrder):
-    r"""
-    Expands simple ``ringSchedule`` input into full-on location schedule.
-
-    Parameters
-    ----------
-    core : Core object
-        Fully initialized Core object, for a hex assembly reactor.
-
-    ringSchedule : list
-        List of ring bounds that is required to be an even number of entries.  These
-        entries then are used in a from - to approach to add the rings.  The from ring will
-        always be included.
-
-    circularRingOrder : str
-        From the circularRingOrder setting. Valid values include angle and distanceSmart,
-        anything else will
-
-    Returns
-    -------
-    list: location schedule
-    """
-    # start by expanding the user-input eqRingSchedule list into a list containing
-    # all the rings as it goes.
-    ringList = _buildEqRingScheduleHelper(ringSchedule, core.getNumRings())
-
-    # now build the locationSchedule ring by ring using this ringSchedule
-    lastRing = 0
-    locationSchedule = []
-    for ring in ringList:
-        assemsInRing = core.getAssembliesInRing(ring, typeSpec=Flags.FUEL)
-        if circularRingOrder == "angle":
-            sorter = lambda a: _assemAngle(a)
-        elif circularRingOrder == "distanceSmart":
-            if lastRing == ring + 1:
-                # converging. Put things on the outside first.
-                sorter = lambda a: -_squaredDistanceFromOrigin(a)
-            else:
-                # diverging. Put things on the inside first.
-                sorter = _squaredDistanceFromOrigin
-        else:
-            # purely based on distance. Can mix things up in convergent-divergent cases. Prefer distanceSmart
-            sorter = _squaredDistanceFromOrigin
-
-        assemsInRing = sorted(assemsInRing, key=sorter)
-        for a in assemsInRing:
-            locationSchedule.append(a.getLocation())
-        lastRing = ring
-
-    return locationSchedule

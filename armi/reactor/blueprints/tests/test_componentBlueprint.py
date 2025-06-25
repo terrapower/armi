@@ -13,6 +13,7 @@
 # limitations under the License.
 
 """Module for testing componentBlueprint."""
+
 import inspect
 import unittest
 
@@ -22,7 +23,6 @@ from armi.reactor.flags import Flags
 
 
 class TestComponentBlueprint(unittest.TestCase):
-
     componentString = r"""
 blocks:
     block: &block
@@ -45,7 +45,7 @@ assemblies:
         xs types: [A]
 """
 
-    def test_componentInitializationIncompleteBurnChain(self):
+    def test_componentInitIncompleteBurnChain(self):
         nuclideFlagsFuelWithBurn = (
             inspect.cleandoc(
                 r"""
@@ -58,14 +58,13 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlagsFuelWithBurn
-            + self.componentString.format(material="UZr", isotopics="", flags="")
+            nuclideFlagsFuelWithBurn + self.componentString.format(material="UZr", isotopics="", flags="")
         )
         cs = settings.Settings()
         with self.assertRaises(ValueError):
             bp.constructAssem(cs, "assembly")
 
-    def test_componentInitializationControlCustomIsotopics(self):
+    def test_componentInitControlCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 """
@@ -88,10 +87,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: B4C", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: B4C", flags="")
         )
         cs = settings.Settings()
         _ = bp.constructAssem(cs, "assembly")
@@ -119,10 +115,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: B4C", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: B4C", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -143,10 +136,7 @@ assemblies:
 
         # repeat the process with some flags set explicitly
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: B4C", flags="fuel test"
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: B4C", flags="fuel test")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -157,7 +147,7 @@ assemblies:
         # More robust test, but worse unittest.py output when it fails
         self.assertTrue(c.hasFlags(Flags.FUEL | Flags.TEST))
 
-    def test_componentInitializationAmericiumCustomIsotopics(self):
+    def test_componentInitAmericiumCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -206,10 +196,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: AM", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: AM", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -248,7 +235,7 @@ assemblies:
         for nuc in unexpectedNuclides:
             self.assertNotIn(nuc, a[0][0].getNuclides())
 
-    def test_componentInitializationThoriumBurnCustomIsotopics(self):
+    def test_componentInitThoriumBurnCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -296,10 +283,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: Thorium", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: Thorium", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")
@@ -307,7 +291,7 @@ assemblies:
         for nuc in expectedNuclides:
             self.assertIn(nuc, a[0][0].getNuclides())
 
-    def test_componentInitializationThoriumNoBurnCustomIsotopics(self):
+    def test_componentInitThoriumNoBurnCustomIsotopics(self):
         nuclideFlags = (
             inspect.cleandoc(
                 r"""
@@ -322,10 +306,7 @@ assemblies:
             + "\n"
         )
         bp = blueprints.Blueprints.load(
-            nuclideFlags
-            + self.componentString.format(
-                material="Custom", isotopics="isotopics: Thorium", flags=""
-            )
+            nuclideFlags + self.componentString.format(material="Custom", isotopics="isotopics: Thorium", flags="")
         )
         cs = settings.Settings()
         a = bp.constructAssem(cs, "assembly")

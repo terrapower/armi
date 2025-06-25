@@ -12,13 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Tests for generic global flux interface."""
-import logging
+
 import unittest
 from unittest.mock import patch
 
 import numpy as np
 
-from armi import runLog
 from armi import settings
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.globalFlux import globalFluxInterface
@@ -29,10 +28,8 @@ from armi.physics.neutronics.settings import (
 from armi.reactor import geometry
 from armi.reactor.blocks import HexBlock
 from armi.reactor.flags import Flags
-from armi.reactor.tests import test_blocks
-from armi.reactor.tests import test_reactors
+from armi.reactor.tests import test_blocks, test_reactors
 from armi.tests import ISOAA_PATH
-from armi.tests import mockRunLogs
 
 
 class MockReactorParams:
@@ -76,9 +73,7 @@ class MockGlobalFluxInterface(globalFluxInterface.GlobalFluxInterface):
         self.r.core.p.keff = 1.01
 
 
-class MockGlobalFluxWithExecuters(
-    globalFluxInterface.GlobalFluxInterfaceUsingExecuters
-):
+class MockGlobalFluxWithExecuters(globalFluxInterface.GlobalFluxInterfaceUsingExecuters):
     def getExecuterCls(self):
         return MockGlobalFluxExecuter
 
@@ -86,9 +81,7 @@ class MockGlobalFluxWithExecuters(
 class MockGlobalFluxWithExecutersNonUniform(MockGlobalFluxWithExecuters):
     def getExecuterOptions(self, label=None):
         """Return modified executerOptions."""
-        opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(
-            self, label=label
-        )
+        opts = globalFluxInterface.GlobalFluxInterfaceUsingExecuters.getExecuterOptions(self, label=label)
         opts.hasNonUniformAssems = True  # to increase test coverage
         return opts
 
@@ -172,9 +165,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
         """
         cs = settings.Settings()
         cs["burnSteps"] = 2
-        _o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         gfi = MockGlobalFluxInterface(r, cs)
         bocKeff = 1.1
         r.core.p.keffUnc = 1.1
@@ -216,9 +207,7 @@ class TestGlobalFluxInterface(unittest.TestCase):
             :tests: R_ARMI_FLUX_CHECK_POWER
         """
         cs = settings.Settings()
-        _o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         gfi = MockGlobalFluxInterface(r, cs)
         self.assertEqual(gfi.checkEnergyBalance(), None)
 
@@ -234,20 +223,14 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cs = settings.Settings()
-        cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )[1]
+        cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")[1]
 
     def setUp(self):
         self.r.core.p.keff = 1.0
         self.gfi = MockGlobalFluxWithExecuters(self.r, self.cs)
 
-    @patch(
-        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._execute"
-    )
-    @patch(
-        "armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._performGeometryTransformations"
-    )
+    @patch("armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._execute")
+    @patch("armi.physics.neutronics.globalFlux.globalFluxInterface.GlobalFluxExecuter._performGeometryTransformations")
     def test_executerInteraction(self, mockGeometryTransform, mockExecute):
         """Run the global flux interface and executer though one time now.
 
@@ -256,9 +239,7 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
             :tests: R_ARMI_FLUX_GEOM_TRANSFORM
         """
         call_order = []
-        mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(
-            mockGeometryTransform
-        )
+        mockGeometryTransform.side_effect = lambda *a, **kw: call_order.append(mockGeometryTransform)
         mockExecute.side_effect = lambda *a, **kw: call_order.append(mockExecute)
         gfi = self.gfi
         gfi.interactBOC()
@@ -280,16 +261,11 @@ class TestGlobalFluxInterfaceWithExecuters(unittest.TestCase):
         self._setTightCouplingFalse()
 
     def test_getTightCouplingValue(self):
-        """Test getTightCouplingValue returns the correct value for keff and type for power.
-
-        .. test:: Return k-eff or assembly-wise power for coupling interactions.
-            :id: T_ARMI_FLUX_COUPLING_VALUE
-            :tests: R_ARMI_FLUX_COUPLING_VALUE
-        """
+        """Test getTightCouplingValue returns the correct value for keff and type for power."""
         self._setTightCouplingTrue()
         self.assertEqual(self.gfi.getTightCouplingValue(), 1.0)  # set in setUp
         self.gfi.coupler.parameter = "power"
-        for a in self.r.core.getChildren():
+        for a in self.r.core:
             for b in a:
                 b.p.power = 10.0
         self.assertEqual(
@@ -321,9 +297,7 @@ class TestGlobalFluxInterfaceWithExecutersNonUniform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cs = settings.Settings()
-        _o, cls.r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
+        _o, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         cls.r.core.p.keff = 1.0
         cls.gfi = MockGlobalFluxWithExecutersNonUniform(cls.r, cs)
 
@@ -385,92 +359,9 @@ class TestGlobalFluxResultMapper(unittest.TestCase):
         block = r.core.getFirstBlock()
         self.assertGreater(block.p.detailedDpaRate, 0)
         self.assertEqual(block.p.detailedDpa, 0)
-        block.p.pointsEdgeDpa = np.array([0 for i in range(6)])
-        block.p.pointsCornerDpa = np.array([0 for i in range(6)])
-        block.p.pointsEdgeDpaRate = np.array([1.0e-5 for i in range(6)])
-        block.p.pointsCornerDpaRate = np.array([1.0e-5 for i in range(6)])
-
-        # Test DoseResultsMapper. Pass in full list of blocks to apply() in order
-        # to exercise blockList option (does not change behavior, since this is what
-        # apply() does anyway)
-        opts = globalFluxInterface.GlobalFluxOptions("test_mapper")
-        opts.fromUserSettings(o.cs)
-        dosemapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        dosemapper.apply(r, blockList=r.core.getBlocks())
-        self.assertGreater(block.p.detailedDpa, 0)
-        self.assertGreater(np.min(block.p.pointsCornerDpa), 0)
-        self.assertGreater(np.min(block.p.pointsEdgeDpa), 0)
 
         mapper.clearFlux()
         self.assertEqual(len(block.p.mgFlux), 0)
-
-    @patch("armi.reactor.composites.ArmiObject.getMaxParam")
-    def test_updateCycleDoseParams(self, mockGetMaxParam):
-        # set up situation
-        mockGetMaxParam.return_value = 1.23
-        o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
-        applyDummyFlux(r)
-        r.core.lib = isotxs.readBinary(ISOAA_PATH)
-        r.p.timeNode = 1
-        r.p.cycleLength = 365
-        opts = globalFluxInterface.GlobalFluxOptions("test_updateCycleDoseParams")
-        opts.fromUserSettings(o.cs)
-        opts.aclpDoseLimit = 100
-
-        # build the mapper
-        mapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        mapper.r = r
-
-        # test the starting position
-        self.assertEqual(mapper.r.core.p.elevationOfACLP3Cycles, 0)
-        self.assertEqual(mapper.r.core.p.elevationOfACLP7Cycles, 0)
-        self.assertEqual(mapper.r.core.p.dpaFullWidthHalfMax, 0)
-
-        # test the logs, as this case won't change the param values
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            runLog.LOG.startLog("test_updateCycleDoseParams")
-            runLog.LOG.setVerbosity(logging.INFO)
-            mapper.updateCycleDoseParams()
-            stdOut = mock.getStdout()
-            somethingStrange = "Something strange with detailedDpaThisCycle"
-            self.assertIn(somethingStrange, stdOut)
-            self.assertEqual(stdOut.count(somethingStrange), 3)
-
-        # test the ending position
-        self.assertEqual(mapper.r.core.p.elevationOfACLP3Cycles, 0)
-        self.assertEqual(mapper.r.core.p.elevationOfACLP7Cycles, 0)
-        self.assertEqual(mapper.r.core.p.dpaFullWidthHalfMax, 0)
-
-    def test_updateLoadpadDose(self):
-        # init test reactor
-        o, r = test_reactors.loadTestReactor(
-            inputFileName="smallestTestReactor/armiRunSmallest.yaml"
-        )
-
-        # init options
-        opts = globalFluxInterface.GlobalFluxOptions("test_updateLoadpadDose")
-        opts.fromUserSettings(o.cs)
-        opts.aclpDoseLimit = 100
-        opts.loadPadElevation = 12
-        opts.loadPadLength = 24
-
-        # init mapper
-        mapper = globalFluxInterface.DoseResultsMapper(1000, opts)
-        mapper.r = r
-
-        # test logging from updateLoadpadDose
-        with mockRunLogs.BufferLog() as mock:
-            self.assertEqual("", mock.getStdout())
-            runLog.LOG.startLog("test_updateLoadpadDose")
-            runLog.LOG.setVerbosity(logging.INFO)
-
-            mapper.updateLoadpadDose()
-            self.assertIn("Above-core load", mock.getStdout())
-            self.assertIn("The peak ACLP dose", mock.getStdout())
-            self.assertIn("The max avg", mock.getStdout())
 
     def test_getDpaXs(self):
         cs = settings.Settings()
@@ -541,6 +432,6 @@ class TestGlobalFluxUtils(unittest.TestCase):
 
 def applyDummyFlux(r, ng=33):
     """Set arbitrary flux distribution on a Reactor."""
-    for b in r.core.getBlocks():
+    for b in r.core.iterBlocks():
         b.p.power = 1.0
         b.p.mgFlux = np.arange(ng, dtype=np.float64)

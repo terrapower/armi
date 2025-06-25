@@ -13,24 +13,25 @@
 # limitations under the License.
 
 """Tests for lumpedFissionProduce module."""
-import unittest
+
 import io
 import math
 import os
+import unittest
 
-from armi.physics.neutronics.fissionProductModel import (
-    lumpedFissionProduct,
-    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
-)
 from armi.context import RES
-from armi.settings import Settings
-from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
-from armi.reactor.flags import Flags
 from armi.nucDirectory import nuclideBases
+from armi.physics.neutronics.fissionProductModel import (
+    REFERENCE_LUMPED_FISSION_PRODUCT_FILE,
+    lumpedFissionProduct,
+)
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
     CONF_FP_MODEL,
     CONF_LFP_COMPOSITION_FILE_PATH,
 )
+from armi.reactor.flags import Flags
+from armi.reactor.tests.test_reactors import buildOperatorOfEmptyHexBlocks
+from armi.settings import Settings
 
 LFP_TEXT = """LFP35 GE73   5.9000E-06
 LFP35 GE74    1.4000E-05
@@ -99,9 +100,7 @@ class TestLumpedFissionProduct(unittest.TestCase):
     """Test of the lumped fission product yields."""
 
     def setUp(self):
-        self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(
-            io.StringIO(LFP_TEXT)
-        )
+        self.fpd = lumpedFissionProduct.FissionProductDefinitionFile(io.StringIO(LFP_TEXT))
 
     def test_getYield(self):
         """Test of the yield of a fission product."""
@@ -171,9 +170,7 @@ class TestLumpedFissionProductCollection(unittest.TestCase):
 
     def test_getNumberDensities(self):
         o = buildOperatorOfEmptyHexBlocks()
-        assems = o.r.core.getAssemblies(Flags.FUEL)
-        blocks = assems[0].getBlocks(Flags.FUEL)
-        b = blocks[0]
+        b = next(o.r.core.iterBlocks(Flags.FUEL))
         fpDensities = self.lfps.getNumberDensities(objectWithParentDensities=b)
         for fp in ["GE73", "GE74", "GE76", "AS75", "KR85", "MO99", "SM150", "XE135"]:
             self.assertEqual(fpDensities[fp], 0.0)
@@ -209,9 +206,7 @@ class TestLumpedFissionProductsFromReferenceFile(unittest.TestCase):
         """Test that the fission product yields for the lumped fission products sums to 2.0."""
         cs = Settings()
         cs[CONF_FP_MODEL] = "infinitelyDilute"
-        cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(
-            RES, "referenceFissionProducts.dat"
-        )
+        cs[CONF_LFP_COMPOSITION_FILE_PATH] = os.path.join(RES, "referenceFissionProducts.dat")
         self.lfps = lumpedFissionProduct.lumpedFissionProductFactory(cs)
         for lfp in self.lfps.values():
             self.assertAlmostEqual(lfp.getTotalYield(), 2.0, places=3)

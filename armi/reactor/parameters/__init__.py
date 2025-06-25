@@ -196,37 +196,33 @@ Design Considerations
 .. _thefreedictionary: http://www.thefreedictionary.com/parameter
 .. _Meriam-Webster: http://www.merriam-webster.com/dictionary/parameter
 """
+
 # ruff: noqa: F401
-from armi.reactor.parameters.parameterCollections import (
-    ParameterCollection,
-    collectPluginParameters,
-)
-from armi.reactor.parameters.parameterCollections import applyAllParameters
-from armi.reactor.parameters.parameterDefinitions import (
-    ParameterDefinitionCollection,
-    Parameter,
-)
-
-from armi.reactor.parameters.parameterDefinitions import (
-    SINCE_INITIALIZATION,
-    SINCE_LAST_DISTRIBUTE_STATE,
-    SINCE_LAST_GEOMETRY_TRANSFORMATION,
-    SINCE_BACKUP,
-    SINCE_ANYTHING,
-    NEVER,
-    Serializer,
-    Category,
-    ParamLocation,
-    NoDefault,
-    ALL_DEFINITIONS,
-)
-
 from armi.reactor.parameters.exceptions import (
     ParameterDefinitionError,
     ParameterError,
     UnknownParameterError,
 )
-
+from armi.reactor.parameters.parameterCollections import (
+    ParameterCollection,
+    applyAllParameters,
+    collectPluginParameters,
+)
+from armi.reactor.parameters.parameterDefinitions import (
+    ALL_DEFINITIONS,
+    NEVER,
+    SINCE_ANYTHING,
+    SINCE_BACKUP,
+    SINCE_INITIALIZATION,
+    SINCE_LAST_DISTRIBUTE_STATE,
+    SINCE_LAST_GEOMETRY_TRANSFORMATION,
+    Category,
+    NoDefault,
+    Parameter,
+    ParameterDefinitionCollection,
+    ParamLocation,
+    Serializer,
+)
 
 forType = ALL_DEFINITIONS.forType
 inCategory = ALL_DEFINITIONS.inCategory
@@ -236,7 +232,7 @@ since = ALL_DEFINITIONS.since
 
 
 def reset():
-    """Reset the status of all parameter definintions.
+    """Reset the status of all parameter definitions.
 
     This may become necessary when the state of the global parameter definitions becomes
     invalid.  Typically this happens when running multiple cases for the same import of

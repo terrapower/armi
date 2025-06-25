@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Test base migration classes."""
+
 import os
 import unittest
 
-from armi.migration.base import Migration
-from armi.migration.base import SettingsMigration
+from armi.migration.base import Migration, SettingsMigration
 from armi.tests import TEST_ROOT
 
 

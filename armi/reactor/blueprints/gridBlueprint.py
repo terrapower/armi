@@ -100,18 +100,18 @@ Examples
                          IC   IC   MC   PC   RR   SH
 
 """
-from io import StringIO
-from typing import Tuple
+
 import copy
 import itertools
+from io import StringIO
+from typing import Tuple
 
 import numpy as np
 import yamlize
 from ruamel.yaml import scalarstring
 
 from armi import runLog
-from armi.reactor import blueprints
-from armi.reactor import geometry, grids
+from armi.reactor import blueprints, geometry, grids
 from armi.utils import asciimaps
 from armi.utils.customExceptions import InputError
 from armi.utils.mathematics import isMonotonic
@@ -202,7 +202,7 @@ class GridBlueprint(yamlize.Object):
         Includes a ``construct`` method, which instantiates an instance of one of the subclasses of
         :py:class:`~armi.reactor.grids.structuredgrid.StructuredGrid`. This is typically called from
         within :py:meth:`~armi.reactor.blueprints.blockBlueprint.BlockBlueprint.construct`, which
-        then also associates the individual components in the block with locations specifed in the
+        then also associates the individual components in the block with locations specified in the
         grid.
 
     Attributes
@@ -234,11 +234,7 @@ class GridBlueprint(yamlize.Object):
     symmetry = yamlize.Attribute(
         key="symmetry",
         type=str,
-        default=str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        ),
+        default=str(geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)),
     )
     # gridContents is the final form of grid contents information; it is set regardless of how the
     # input is read. When writing, we attempt to preserve the input mode and write ascii map if that
@@ -250,9 +246,7 @@ class GridBlueprint(yamlize.Object):
         if value is None:
             return True
         if not all(isinstance(key, tuple) for key in value.keys()):
-            raise InputError(
-                "Keys need to be presented as [i, j]. Check the blueprints."
-            )
+            raise InputError("Keys need to be presented as [i, j]. Check the blueprints.")
 
         return True
 
@@ -261,11 +255,7 @@ class GridBlueprint(yamlize.Object):
         name=None,
         geom=geometry.HEX,
         latticeMap=None,
-        symmetry=str(
-            geometry.SymmetryType(
-                geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC
-            )
-        ),
+        symmetry=str(geometry.SymmetryType(geometry.DomainType.THIRD_CORE, geometry.BoundaryType.PERIODIC)),
         gridContents=None,
         gridBounds=None,
     ):
@@ -315,9 +305,7 @@ class GridBlueprint(yamlize.Object):
         If you do not enter ``latticeDimensions``, a unit grid will be produced which must be adjusted
         to the proper dimensions (often by inspection of children) at a later time.
         """
-        symmetry = (
-            geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
-        )
+        symmetry = geometry.SymmetryType.fromStr(self.symmetry) if self.symmetry else None
         geom = self.geom
         maxIndex = self._getMaxIndex()
         runLog.extra("Creating the spatial grid")
@@ -326,16 +314,11 @@ class GridBlueprint(yamlize.Object):
                 # This check is regrettably late. It would be nice if we could validate
                 # that bounds are provided if R-Theta mesh is being used.
                 raise InputError(
-                    "Grid bounds must be provided for `{}` to specify a grid with "
-                    "r-theta components.".format(self.name)
+                    f"Grid bounds must be provided for `{self.name}` to specify a grid with r-theta components."
                 )
             for key in ("theta", "r"):
                 if key not in self.gridBounds:
-                    raise InputError(
-                        "{} grid bounds were not provided for `{}`.".format(
-                            key, self.name
-                        )
-                    )
+                    raise InputError(f"{key} grid bounds were not provided for `{self.name}`.")
 
             # convert to list, otherwise it is a CommentedSeq
             theta = np.array(self.gridBounds["theta"])
@@ -343,8 +326,7 @@ class GridBlueprint(yamlize.Object):
             for lst, name in ((theta, "theta"), (radii, "radii")):
                 if not isMonotonic(lst, "<"):
                     raise InputError(
-                        "Grid bounds for {}:{} is not sorted or contains "
-                        "duplicates. Check blueprints.".format(self.name, name)
+                        f"Grid bounds for {self.name}:{name} is not sorted or contains duplicates. Check blueprints."
                     )
             spatialGrid = grids.ThetaRZGrid(bounds=(theta, radii, (0.0, 0.0)))
         if geom in (geometry.HEX, geometry.HEX_CORNERS_UP):
@@ -372,11 +354,7 @@ class GridBlueprint(yamlize.Object):
         elif geom == geometry.CARTESIAN:
             # if full core or not cut-off, bump the first assembly from the center of
             # the mesh into the positive values.
-            xw, yw = (
-                (self.latticeDimensions.x, self.latticeDimensions.y)
-                if self.latticeDimensions
-                else (1.0, 1.0)
-            )
+            xw, yw = (self.latticeDimensions.x, self.latticeDimensions.y) if self.latticeDimensions else (1.0, 1.0)
 
             # Specifically in the case of grid blueprints, where we have grid contents
             # available, we can also infer "through center" based on the contents.
@@ -389,9 +367,7 @@ class GridBlueprint(yamlize.Object):
 
             isOffset = symmetry is not None and not symmetry.isThroughCenterAssembly
 
-            spatialGrid = grids.CartesianGrid.fromRectangle(
-                xw, yw, numRings=maxIndex + 1, isOffset=isOffset
-            )
+            spatialGrid = grids.CartesianGrid.fromRectangle(xw, yw, numRings=maxIndex + 1, isOffset=isOffset)
         runLog.debug("Built grid: {}".format(spatialGrid))
         # set geometric metadata on spatialGrid. This information is needed in various
         # parts of the code and is best encapsulated on the grid itself rather than on
@@ -405,8 +381,7 @@ class GridBlueprint(yamlize.Object):
         """
         Find the max index in the grid contents.
 
-        Used to limit the size of the spatialGrid. Used to be
-        called maxNumRings.
+        Used to limit the size of the spatialGrid. Used to be called maxNumRings.
         """
         if self.gridContents:
             return max(itertools.chain(*zip(*self.gridContents.keys())))
@@ -424,10 +399,7 @@ class GridBlueprint(yamlize.Object):
         for some scenarios, such as when expanding fuel shuffling paths or the like. Future work may
         make this more sophisticated.
         """
-        if (
-            geometry.SymmetryType.fromAny(self.symmetry).domain
-            == geometry.DomainType.FULL_CORE
-        ):
+        if geometry.SymmetryType.fromAny(self.symmetry).domain == geometry.DomainType.FULL_CORE:
             # No need!
             return
 
@@ -485,10 +457,7 @@ class GridBlueprint(yamlize.Object):
 
         iOffset = 0
         jOffset = 0
-        if (
-            geom == geometry.GeomType.CARTESIAN
-            and symmetry.domain == geometry.DomainType.FULL_CORE
-        ):
+        if geom == geometry.GeomType.CARTESIAN and symmetry.domain == geometry.DomainType.FULL_CORE:
             # asciimaps is not smart about where the center should be, so we need to
             # offset appropriately to get (0,0) in the middle
             nx, ny = _getGridSize(asciimap.keys())
@@ -543,7 +512,7 @@ def _getGridSize(idx) -> Tuple[int, int]:
     Return the number of spaces between the min and max of a collection of (int, int)
     tuples, inclusive.
 
-    This essentially returns the number of grid locations along the i, and j dimesions,
+    This essentially returns the number of grid locations along the i, and j dimensions,
     given the (i,j) indices of each occupied location. This is useful for determining
     certain grid offset behavior.
     """
@@ -652,12 +621,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
         if gridDesign.readFromLatticeMap or tryMap:
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
-            aMap = asciimaps.asciiMapFromGeomAndDomain(
-                gridDesign.geom, symmetry.domain
-            )()
-            aMap.asciiLabelByIndices = {
-                (key[0], key[1]): val for key, val in gridDesign.gridContents.items()
-            }
+            aMap = asciimaps.asciiMapFromGeomAndDomain(gridDesign.geom, symmetry.domain)()
+            aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
             try:
                 aMap.gridContentsToAscii()
             except Exception as e:
@@ -670,21 +635,17 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             if aMap is not None:
                 # If there is an ascii map available then use it to fill out
                 # the contents of the lattice map section of the grid design.
-                # This also clears out the grid contents so there is not duplicate
-                # data.
+                # This also clears out the grid contents so there is not duplicate data.
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)
-                gridDesign.latticeMap = scalarstring.LiteralScalarString(
-                    mapString.getvalue()
-                )
+                gridDesign.latticeMap = scalarstring.LiteralScalarString(mapString.getvalue())
             else:
                 gridDesign.latticeMap = None
 
         else:
-            # grid contents were supplied as a dictionary, so we shouldnt even have a
-            # latticeMap, unless it was set explicitly in code somewhere. Discard if
-            # there is one.
+            # grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap,
+            # unless it was set explicitly in code somewhere. Discard if there is one.
             gridDesign.latticeMap = None
 
     toSave = bp if full else gridDesigns

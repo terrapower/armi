@@ -18,15 +18,14 @@ them from files.
 These are generally managed by the
 :py:mod:`~armi.physics.neutronics.fissionProductModel.fissionProductModel.FissionProductModel`
 """
+
 import os
 
-from armi.nucDirectory import nuclideBases
 from armi import runLog
-from armi.nucDirectory import elements
-
+from armi.nucDirectory import elements, nuclideBases
 from armi.physics.neutronics.fissionProductModel.fissionProductModelSettings import (
-    CONF_LFP_COMPOSITION_FILE_PATH,
     CONF_FP_MODEL,
+    CONF_LFP_COMPOSITION_FILE_PATH,
 )
 
 
@@ -93,14 +92,10 @@ class LumpedFissionProduct:
         )
 
         if val < 0.0:
-            raise ValueError(
-                f"Cannot set the yield of {key} in {self} to be "
-                "less than zero as this is non-physical."
-            )
+            raise ValueError(f"Cannot set the yield of {key} in {self} to be less than zero as this is non-physical.")
         if val > NUM_FISSION_PRODUCTS_PER_LFP:
             raise ValueError(
-                f"Cannot set the yield of {key} in {self} to be "
-                f"greater than {NUM_FISSION_PRODUCTS_PER_LFP}."
+                f"Cannot set the yield of {key} in {self} to be greater than {NUM_FISSION_PRODUCTS_PER_LFP}."
             )
 
         self.yld[key] = val
@@ -233,9 +228,7 @@ class LumpedFissionProductCollection(dict):
             keys are fp names, vals are fission product number density in atoms/bn-cm.
         """
         if not densFunc:
-            densFunc = lambda lfpName: objectWithParentDensities.getNumberDensity(
-                lfpName
-            )
+            densFunc = lambda lfpName: objectWithParentDensities.getNumberDensity(lfpName)
         fpDensities = {}
         for lfpName, lfp in self.items():
             lfpDens = densFunc(lfpName)
@@ -355,10 +348,7 @@ class FissionProductDefinitionFile:
             totalYield += yld
 
         lfp.name = parent  # e.g. LFP38
-        runLog.debug(
-            "Loaded {0} {1} nuclides for a total yield of {2}"
-            "".format(len(lfp.yld), lfp.name, totalYield)
-        )
+        runLog.debug("Loaded {0} {1} nuclides for a total yield of {2}".format(len(lfp.yld), lfp.name, totalYield))
         return lfp
 
 
@@ -373,8 +363,7 @@ def lumpedFissionProductFactory(cs):
     lfpPath = cs[CONF_LFP_COMPOSITION_FILE_PATH]
     if not lfpPath or not os.path.exists(lfpPath):
         raise ValueError(
-            "The fission product reference file does "
-            f"not exist or is not a valid path. Path provided: {lfpPath}"
+            f"The fission product reference file does not exist or is not a valid path. Path provided: {lfpPath}"
         )
 
     runLog.extra(f"Loading global lumped fission products (LFPs) from {lfpPath}")
@@ -393,9 +382,7 @@ def _buildMo99LumpedFissionProduct():
     """
     mo99 = nuclideBases.byName["MO99"]
     mo99LFPs = LumpedFissionProductCollection()
-    for lfp in nuclideBases.where(
-        lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)
-    ):
+    for lfp in nuclideBases.where(lambda nb: isinstance(nb, nuclideBases.LumpNuclideBase)):
         # Not all lump nuclides bases defined are fission products, so ensure that only fission
         # products are considered.
         if not ("FP" in lfp.name or "REGN" in lfp.name):

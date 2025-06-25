@@ -21,24 +21,19 @@ These then pop up during initialization of a run, either on the command line or 
 dialogues in the GUI. They say things like: "Your ___ setting has the value ___, which
 is impossible. Would you like to switch to ___?"
 """
+
 import itertools
 import os
 import re
-import shutil
 
-from armi import context
-from armi import getPluginManagerOrFail
-from armi import runLog
+from armi import context, getPluginManagerOrFail, runLog
 from armi.physics import neutronics
-from armi.reactor import geometry
-from armi.reactor import systemLayoutInput
 from armi.settings.settingsIO import (
-    prompt,
     RunLogPromptCancel,
     RunLogPromptUnresolvable,
+    prompt,
 )
-from armi.utils import directoryChangers
-from armi.utils import pathTools
+from armi.utils import pathTools, safeCopy
 from armi.utils.mathematics import expandRepeatedFloats
 
 
@@ -96,9 +91,7 @@ class Query:
         try:
             return bool(self.condition())
         except TypeError:
-            runLog.error(
-                f"Invalid setting validation query. Update validator for: {self})"
-            )
+            runLog.error(f"Invalid setting validation query. Update validator for: {self})")
             raise
 
     def isCorrective(self):
@@ -175,14 +168,11 @@ class Inspector:
         self.geomType = None
         self.coreSymmetry = None
         self._inspectBlueprints()
-        self._setGeomType()
         self._inspectSettings()
 
         # Gather and attach validators from all plugins
         # This runs on all registered plugins, not just active ones.
-        pluginQueries = getPluginManagerOrFail().hook.defineSettingsValidators(
-            inspector=self
-        )
+        pluginQueries = getPluginManagerOrFail().hook.defineSettingsValidators(inspector=self)
         for queries in pluginQueries:
             self.queries.extend(queries)
 
@@ -208,21 +198,13 @@ class Inspector:
         self.cs = cs or self.cs
         runLog.debug("{} executing queries.".format(self.__class__.__name__))
         if not any(self.queries):
-            runLog.debug(
-                "{} found no problems with the current state.".format(
-                    self.__class__.__name__
-                )
-            )
+            runLog.debug("{} found no problems with the current state.".format(self.__class__.__name__))
         else:
             for query in self.queries:
                 query.resolve()
                 if query.corrected:
                     correctionsMade = True
-            issues = [
-                query
-                for query in self.queries
-                if query and (query.isCorrective() and not query._passed)
-            ]
+            issues = [query for query in self.queries if query and (query.isCorrective() and not query._passed)]
             if any(issues):
                 # something isn't resolved or was unresolved by changes
                 raise RuntimeError(
@@ -242,10 +224,8 @@ class Inspector:
                 if not self._csRelativePathExists(renamePath):
                     break
             # preserve old file before saving settings file
-            runLog.important(
-                f"Preserving original settings file by renaming `{renamePath}`"
-            )
-            shutil.copy(self.cs.path, renamePath)
+            runLog.important(f"Preserving original settings file by renaming `{renamePath}`")
+            safeCopy(self.cs.path, renamePath)
             # save settings file
             self.cs.writeToYamlFile(self.cs.path)
 
@@ -254,9 +234,7 @@ class Inspector:
     def addQuery(self, condition, statement, question, correction):
         """Convenience method, query must be resolved, else run fails."""
         if not callable(correction):
-            raise ValueError(
-                'Query for "{}" malformed. Expecting callable.'.format(statement)
-            )
+            raise ValueError('Query for "{}" malformed. Expecting callable.'.format(statement))
         self.queries.append(Query(condition, statement, question, correction))
 
     def addQueryBadLocationWillLikelyFail(self, settingName):
@@ -281,9 +259,7 @@ class Inspector:
                 self.cs.getSetting(settingName).default,
             ),
             "Revert to default location?",
-            lambda: self._assignCS(
-                settingName, self.cs.getSetting(settingName).default
-            ),
+            lambda: self._assignCS(settingName, self.cs.getSetting(settingName).default),
         )
 
     def _assignCS(self, key, value):
@@ -313,9 +289,7 @@ class Inspector:
 
         self.addQuery(
             lambda: not self._csRelativePathExists(self.cs[CONF_LOADING_FILE]),
-            "Blueprints file {} not found. Run will fail.".format(
-                self.cs[CONF_LOADING_FILE]
-            ),
+            "Blueprints file {} not found. Run will fail.".format(self.cs[CONF_LOADING_FILE]),
             "",
             self.NO_ACTION,
         )
@@ -326,16 +300,6 @@ class Inspector:
 
     def _csRelativePath(self, filename):
         return os.path.join(self.cs.inputDirectory, filename)
-
-    def _setGeomType(self):
-        if self.cs["geomFile"]:
-            with directoryChangers.DirectoryChanger(
-                self.cs.inputDirectory, dumpOnException=False
-            ):
-                geom = systemLayoutInput.SystemLayoutInput()
-                geom.readGeomFromFile(self.cs["geomFile"])
-
-            self.geomType, self.coreSymmetry = geom.geomType, geom.symmetry
 
     def _correctCyclesToZeroBurnup(self):
         self._assignCS("nCycles", 1)
@@ -348,27 +312,21 @@ class Inspector:
 
     def _checkForBothSimpleAndDetailedCyclesInputs(self):
         """
-        Because the only way to check if a setting has been "entered" is to check
-        against the default, if the user specifies all the simple cycle settings
-        _exactly_ as the defaults, this won't be caught. But, it would be very
-        coincidental for the user to _specify_ all the default values when
-        performing any real analysis.
+        Because the only way to check if a setting has been "entered" is to check against the
+        default, if the user specifies all the simple cycle settings exactly as the defaults, this
+        won't be caught. But, it would be very coincidental for the user to _specify_ all the
+        default values when performing any real analysis.
 
-        Also, we must bypass the `Settings` getter and reach directly
-        into the underlying `__settings` dict to avoid triggering an error
-        at this stage in the run. Otherwise an error will inherently be raised
-        if the detailed cycles input is used because the simple cycles inputs
-        have defaults. We don't care that those defaults are there, we only
-        have a problem with those defaults being _used_, which will be caught
-        later on.
+        Also, we must bypass the `Settings` getter and reach directly into the underlying
+        `__settings` dict to avoid triggering an error at this stage in the run. Otherwise an error
+        will inherently be raised if the detailed cycles input is used because the simple cycles
+        inputs have defaults. We don't care that those defaults are there, we only have a problem
+        with those defaults being _used_, which will be caught later on.
         """
         bothCyclesInputTypesPresent = (
-            self.cs._Settings__settings["cycleLength"].value
-            != self.cs._Settings__settings["cycleLength"].default
-            or self.cs._Settings__settings["cycleLengths"].value
-            != self.cs._Settings__settings["cycleLengths"].default
-            or self.cs._Settings__settings["burnSteps"].value
-            != self.cs._Settings__settings["burnSteps"].default
+            self.cs._Settings__settings["cycleLength"].value != self.cs._Settings__settings["cycleLength"].default
+            or self.cs._Settings__settings["cycleLengths"].value != self.cs._Settings__settings["cycleLengths"].default
+            or self.cs._Settings__settings["burnSteps"].value != self.cs._Settings__settings["burnSteps"].default
             or self.cs._Settings__settings["availabilityFactor"].value
             != self.cs._Settings__settings["availabilityFactor"].default
             or self.cs._Settings__settings["availabilityFactors"].value
@@ -399,20 +357,17 @@ class Inspector:
             lambda: self._assignCS("outputFileExtension", "png"),
         )
 
-        self.addQuery(
-            lambda: (
-                (
-                    self.cs["beta"]
-                    and isinstance(self.cs["beta"], list)
-                    and not self.cs["decayConstants"]
-                )
-                or (self.cs["decayConstants"] and not self.cs["beta"])
+        (
+            self.addQuery(
+                lambda: (
+                    (self.cs["beta"] and isinstance(self.cs["beta"], list) and not self.cs["decayConstants"])
+                    or (self.cs["decayConstants"] and not self.cs["beta"])
+                ),
+                "Both beta components and decay constants should be provided if either are being supplied.",
+                "",
+                self.NO_ACTION,
             ),
-            "Both beta components and decay constants should be provided if either are "
-            "being supplied.",
-            "",
-            self.NO_ACTION,
-        ),
+        )
 
         self.addQuery(
             lambda: self.cs["skipCycles"] > 0 and not self.cs["reloadDBName"],
@@ -446,19 +401,15 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs.caseTitle.lower()
-            == os.path.splitext(os.path.basename(self.cs["reloadDBName"].lower()))[0],
+            lambda: self.cs.caseTitle.lower() == os.path.splitext(os.path.basename(self.cs["reloadDBName"].lower()))[0],
             "Snapshot DB ({0}) and main DB ({1}) cannot have the same name."
-            "Change name of settings file and resubmit.".format(
-                self.cs["reloadDBName"], self.cs.caseTitle
-            ),
+            "Change name of settings file and resubmit.".format(self.cs["reloadDBName"], self.cs.caseTitle),
             "",
             self.NO_ACTION,
         )
 
         self.addQuery(
-            lambda: self.cs["reloadDBName"] != ""
-            and not os.path.exists(self.cs["reloadDBName"]),
+            lambda: self.cs["reloadDBName"] != "" and not os.path.exists(self.cs["reloadDBName"]),
             "Reload database {} does not exist. \nPlease point to an existing DB, "
             "or set to empty and load from input.".format(self.cs["reloadDBName"]),
             "",
@@ -466,17 +417,15 @@ class Inspector:
         )
 
         def _willBeCopiedFrom(fName):
-            return any(
-                fName == os.path.split(copyFile)[1]
-                for copyFile in self.cs["copyFilesFrom"]
-            )
+            return any(fName == os.path.split(copyFile)[1] for copyFile in self.cs["copyFilesFrom"])
 
         self.addQuery(
             lambda: self.cs["explicitRepeatShuffles"]
             and not self._csRelativePathExists(self.cs["explicitRepeatShuffles"])
             and not _willBeCopiedFrom(self.cs["explicitRepeatShuffles"]),
-            "The specified repeat shuffle file `{0}` does not exist, and won't be copied. "
-            "Run will crash.".format(self.cs["explicitRepeatShuffles"]),
+            "The specified repeat shuffle file `{0}` does not exist, and won't be copied. Run will crash.".format(
+                self.cs["explicitRepeatShuffles"]
+            ),
             "",
             self.NO_ACTION,
         )
@@ -511,8 +460,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["outputCacheLocation"]
-            and not os.path.exists(self.cs["outputCacheLocation"]),
+            lambda: self.cs["outputCacheLocation"] and not os.path.exists(self.cs["outputCacheLocation"]),
             "`outputCacheLocation` path {} does not exist. Please specify a location that exists.".format(
                 self.cs["outputCacheLocation"]
             ),
@@ -521,10 +469,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: (
-                not self.cs["tightCoupling"]
-                and self.cs["tightCouplingMaxNumIters"] != 4
-            ),
+            lambda: (not self.cs["tightCoupling"] and self.cs["tightCouplingMaxNumIters"] != 4),
             "You've requested a non default number of tight coupling iterations but left tightCoupling: False."
             "Do you want to set tightCoupling to True?",
             "",
@@ -540,8 +485,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["startCycle"]
-            and self.cs["nCycles"] < self.cs["startCycle"],
+            lambda: self.cs["startCycle"] and self.cs["nCycles"] < self.cs["startCycle"],
             "nCycles must be greater than or equal to startCycle in restart cases. nCycles"
             " is the _total_ number of cycles in the completed run (i.e. restarted +"
             " continued cycles). Please update the case settings.",
@@ -571,17 +515,11 @@ class Inspector:
                 expandedList = expandRepeatedFloats(factors)
             except (ValueError, IndexError):
                 return False
-            return (
-                all(0.0 <= val <= maxVal for val in expandedList)
-                and len(expandedList) == self.cs["nCycles"]
-            )
+            return all(0.0 <= val <= maxVal for val in expandedList) and len(expandedList) == self.cs["nCycles"]
 
         if self.cs["cycles"] == []:
             self.addQuery(
-                lambda: (
-                    self.cs["availabilityFactors"]
-                    and not _factorsAreValid(self.cs["availabilityFactors"])
-                ),
+                lambda: (self.cs["availabilityFactors"] and not _factorsAreValid(self.cs["availabilityFactors"])),
                 "`availabilityFactors` was not set to a list compatible with the number of cycles. "
                 "Please update input or use constant duration.",
                 "Use constant availability factor specified in `availabilityFactor` setting?",
@@ -589,10 +527,7 @@ class Inspector:
             )
 
             self.addQuery(
-                lambda: (
-                    self.cs["powerFractions"]
-                    and not _factorsAreValid(self.cs["powerFractions"])
-                ),
+                lambda: (self.cs["powerFractions"] and not _factorsAreValid(self.cs["powerFractions"])),
                 "`powerFractions` was not set to a compatible list. "
                 "Please update input or use full power at all cycles.",
                 "Use full power for all cycles?",
@@ -600,10 +535,7 @@ class Inspector:
             )
 
             self.addQuery(
-                lambda: (
-                    self.cs["cycleLengths"]
-                    and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)
-                ),
+                lambda: (self.cs["cycleLengths"] and not _factorsAreValid(self.cs["cycleLengths"], maxVal=1e10)),
                 "`cycleLengths` was not set to a list compatible with the number of cycles."
                 " Please update input or use constant duration.",
                 "Use constant cycle length specified in `cycleLength` setting?",
@@ -615,11 +547,7 @@ class Inspector:
                     self.cs["runType"] == operators.RunTypes.STANDARD
                     and self.cs["burnSteps"] == 0
                     and (
-                        (
-                            len(self.cs["cycleLengths"]) > 1
-                            if self.cs["cycleLengths"] is not None
-                            else False
-                        )
+                        (len(self.cs["cycleLengths"]) > 1 if self.cs["cycleLengths"] is not None else False)
                         or self.cs["nCycles"] > 1
                     )
                 ),
@@ -632,16 +560,14 @@ class Inspector:
                 """Check if there is any decay-related input that will be ignored."""
                 try:
                     powerFracs = expandRepeatedFloats(self.cs["powerFractions"])
-                    availabilities = expandRepeatedFloats(
-                        self.cs["availabilityFactors"]
-                    ) or ([self.cs["availabilityFactor"]] * self.cs["nCycles"])
+                    availabilities = expandRepeatedFloats(self.cs["availabilityFactors"]) or (
+                        [self.cs["availabilityFactor"]] * self.cs["nCycles"]
+                    )
                 except Exception:
                     return True
 
                 # This will be a full decay step and any power fraction will be ignored. May be ok.
-                return any(
-                    pf > 0.0 and af == 0.0 for pf, af in zip(powerFracs, availabilities)
-                )
+                return any(pf > 0.0 and af == 0.0 for pf, af in zip(powerFracs, availabilities))
 
             self.addQuery(
                 lambda: (
@@ -657,8 +583,7 @@ class Inspector:
             )
 
         self.addQuery(
-            lambda: self.cs["operatorLocation"]
-            and self.cs["runType"] != operators.RunTypes.STANDARD,
+            lambda: self.cs["operatorLocation"] and self.cs["runType"] != operators.RunTypes.STANDARD,
             "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
                 self.cs["runType"]
             ),
@@ -667,8 +592,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["operatorLocation"]
-            and self.cs["runType"] != operators.RunTypes.STANDARD,
+            lambda: self.cs["operatorLocation"] and self.cs["runType"] != operators.RunTypes.STANDARD,
             "The `runType` setting is set to `{0}` but there is a `custom operator location` defined".format(
                 self.cs["runType"]
             ),
@@ -677,8 +601,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs["skipCycles"] > 0
-            and not os.path.exists(self.cs.caseTitle + ".restart.dat"),
+            lambda: self.cs["skipCycles"] > 0 and not os.path.exists(self.cs.caseTitle + ".restart.dat"),
             "This is a restart case, but the required restart file {0}.restart.dat is not found".format(
                 self.cs.caseTitle
             ),
@@ -695,36 +618,9 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: (
-                self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC
-                and self.cs[CONF_BC_COEFFICIENT]
-            ),
+            lambda: (self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC and self.cs[CONF_BC_COEFFICIENT]),
             f"General neutronic boundary condition was not selected, but `{CONF_BC_COEFFICIENT}` was defined. "
             f"Please enable `Generalized` neutronic boundary condition or disable `{CONF_BC_COEFFICIENT}`.",
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
-            lambda: self.cs["geomFile"]
-            and str(self.geomType) not in geometry.VALID_GEOMETRY_TYPE,
-            "{} is not a valid geometry Please update geom type on the geom file. "
-            "Valid (case insensitive) geom types are: {}".format(
-                self.geomType, geometry.VALID_GEOMETRY_TYPE
-            ),
-            "",
-            self.NO_ACTION,
-        )
-
-        self.addQuery(
-            lambda: self.cs["geomFile"]
-            and not geometry.checkValidGeomSymmetryCombo(
-                self.geomType, self.coreSymmetry
-            ),
-            "{}, {} is not a valid geometry and symmetry combination. Please update "
-            "either geometry or symmetry on the geom file.".format(
-                str(self.geomType), str(self.coreSymmetry)
-            ),
             "",
             self.NO_ACTION,
         )
@@ -742,7 +638,8 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
         name of the setting to inspect
     initialLambda: None or callable function
         If ``None``, the callable argument for :py:meth:`addQuery` is does the setting's path exist.
-        If more complicated callable arguments are needed, they can be passed in as the ``initialLambda`` setting.
+        If more complicated callable arguments are needed, they can be passed in as the
+        ``initialLambda`` setting.
     """
     if initialLambda is None:
         initialLambda = lambda: (
@@ -752,9 +649,7 @@ def createQueryRevertBadPathToDefault(inspector, settingName, initialLambda=None
 
     query = Query(
         initialLambda,
-        "Setting {} points to a nonexistent location:\n{}".format(
-            settingName, inspector.cs[settingName]
-        ),
+        "Setting {} points to a nonexistent location:\n{}".format(settingName, inspector.cs[settingName]),
         "Revert to default location?",
         inspector.cs.getSetting(settingName).revertToDefault,
     )
@@ -768,29 +663,25 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     ----------
     versionThis: str
         The version of this ARMI, App, or Plugin.
-        This MUST be in the form: 1.2.3
+        This MUST be in the form: 1.2.3.
     versionRequired: str
         The version to compare against, say in a Settings file.
-        This must be in one of the forms: 1.2.3, 1.2, or 1
+        This must be in one of the forms: 1.2.3, 1.2, or 1.
 
     Returns
     -------
     bool
         Does this version match the version in the Settings file/object?
     """
-    fullV = "\d+\.\d+\.\d+"
-    medV = "\d+\.\d+"
-    minV = "\d+"
+    fullV = r"\d+\.\d+\.\d+"
+    medV = r"\d+\.\d+"
+    minV = r"\d+"
 
     if versionRequired == "uncontrolled":
         # This default flag means we don't want to check the version.
         return True
     elif re.search(fullV, versionThis) is None:
-        raise ValueError(
-            "The input version ({0}) does not match the required format: {1}".format(
-                versionThis, fullV
-            )
-        )
+        raise ValueError("The input version ({0}) does not match the required format: {1}".format(versionThis, fullV))
     elif re.search(fullV, versionRequired) is not None:
         return versionThis == versionRequired
     elif re.search(medV, versionRequired) is not None:
@@ -798,6 +689,4 @@ def validateVersion(versionThis: str, versionRequired: str) -> bool:
     elif re.search(minV, versionRequired) is not None:
         return versionThis.split(".")[0] == versionRequired
     else:
-        raise ValueError(
-            "The required version is not a valid format: {}".format(versionRequired)
-        )
+        raise ValueError("The required version is not a valid format: {}".format(versionRequired))

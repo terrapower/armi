@@ -23,7 +23,7 @@ automatically converted to a 2-D or 3-D RZ case with conserved mass.
     consider these an example and starting point and build your own converters as
     appropriate.
 """
-# sphinx_gallery_thumbnail_number=2
+
 import math
 
 import matplotlib.pyplot as plt
@@ -55,4 +55,3 @@ converter.convert(r)
 figs = converter.plotConvertedReactor()
 
 plt.show()
-plt.close()

@@ -13,9 +13,11 @@
 # limitations under the License.
 
 """Test the reading and writing of the DIF3D FIXSRC file format."""
-import numpy as np
+
 import os
 import unittest
+
+import numpy as np
 
 from armi.nuclearDataIO.cccc import fixsrc
 from armi.utils.directoryChangers import TemporaryDirectoryChanger

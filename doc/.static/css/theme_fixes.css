@@ -11,3 +11,61 @@
       overflow: visible !important;
    }
 }
+
+img {
+   max-width: 100% !important;
+}
+
+/* sphinx-needs */
+table.need.need.need > tbody > tr > td {
+    padding: 0.5em .5em !important;
+}
+
+.rst-content .line-block {
+    line-height: 1em !important;
+}
+
+/* log files and raw data dumps */
+.rst-content .linenodiv pre, .rst-content div[class^=highlight] pre, .rst-content pre.literal-block {
+    line-height: 12px !important;
+    font-size: 10pt !important;
+}
+
+/* long tables */
+.rst-content table.docutils {
+    margin: 0;
+    padding: 0;
+    font-size: 10pt !important;
+}
+
+.rst-content table.docutils td, .rst-content table.docutils th, .rst-content table.field-list td, .rst-content table.field-list th, .wy-table td, .wy-table th {
+    margin: 0;
+    padding: 1px;
+}
+
+html.writer-html5 .rst-content table.docutils td>p, html.writer-html5 .rst-content table.docutils th>p {
+    font-size: 10px !important;
+}
+
+/* code snippets */
+.rst-content .linenodiv pre, .rst-content div[class^=highlight] pre, .rst-content pre.literal-block {
+    ssp-tiny !important;
+}
+
+/* move equation numbers to right side of the equation */
+span.eqno {
+    float: right;
+}
+
+/* Style test needs by their result */
+tr.needs_passed td {
+    background-color: rgba(0,250,0,0.2) !important;
+}
+
+tr.needs_failure td {
+    background-color: rgba(250,0,0,0.2) !important;
+}
+
+tr.needs_skipped td {
+    background-color: rgba(0,0,0,0.1) !important;
+}

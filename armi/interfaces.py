@@ -23,17 +23,14 @@ See Also
 armi.operators : Schedule calls to various interfaces
 armi.plugins : Register various interfaces
 """
+
 import copy
-from typing import Union
-from typing import NamedTuple
-from typing import List
-from typing import Dict
+from typing import Dict, List, NamedTuple, Union
 
 import numpy as np
 from numpy.linalg import norm
 
-from armi import getPluginManagerOrFail, settings, utils
-from armi import runLog
+from armi import getPluginManagerOrFail, runLog, settings, utils
 from armi.reactor import parameters
 from armi.utils import textProcessors
 
@@ -49,7 +46,7 @@ class STACK_ORDER:  # noqa: N801
         :id: I_ARMI_OPERATOR_INTERFACES0
         :implements: R_ARMI_OPERATOR_INTERFACES
 
-        At each time node during a simulation, an ordered colletion of Interfaces are run (referred
+        At each time node during a simulation, an ordered collection of Interfaces are run (referred
         to as the interface stack). But ARMI does not force the order upon the analyst. Instead,
         each Interface registers where in that ordered list it belongs by giving itself an order
         number (which can be an integer or a decimal). This class defines a set of constants which
@@ -164,7 +161,7 @@ class TightCoupler:
         Parameters
         ----------
         val : _SUPPORTED_TYPES
-            The most recent value for computing convergence critera. Is commonly equal to
+            The most recent value for computing convergence criteria. Is commonly equal to
             interface.getTightCouplingValue()
 
         Returns
@@ -211,9 +208,7 @@ class TightCoupler:
                     epsVec.append(norm(np.subtract(old, new), ord=2))
                 self.eps = norm(epsVec, ord=np.inf)
             else:
-                raise RuntimeError(
-                    "Currently only support up to 2D arrays for calculating convergence of arrays."
-                )
+                raise RuntimeError("Currently only support up to 2D arrays for calculating convergence of arrays.")
 
         # Check if convergence is satisfied. If so, or if reached max number of iters, then reset
         # the number of iterations
@@ -292,7 +287,6 @@ class Interface:
     concrete class that extends this one.
     """
 
-    # TODO: This is a terrible name.
     function = None
     """
     The function performed by an Interface. This is not required be be defined by implementations of
@@ -327,8 +321,7 @@ class Interface:
         """
         if self.name is None:
             raise RuntimeError(
-                "Interfaces derived from Interface must define "
-                "their name ({}).".format(type(self).__name__)
+                "Interfaces derived from Interface must define their name ({}).".format(type(self).__name__)
             )
         self._enabled = True
         self.reverseAtEOL = False
@@ -623,7 +616,6 @@ class Interface:
         paths, or glob patterns that will be interpolated relative to the input directory. Absolute
         paths will not be copied anywhere.
 
-
         The returned dictionary will enable the source Settings object to be updated to the new file
         location. While the dictionary keys are recommended to be Setting objects, the name of the
         setting as a string, e.g., "shuffleLogic", is still interpreted. If the string name does not
@@ -737,9 +729,7 @@ def _setTightCouplerByInterfaceFunction(interfaceClass, cs):
     if interfaceClass.function is None:
         return None
 
-    if not cs["tightCoupling"] or (
-        interfaceClass.function not in cs["tightCouplingSettings"]
-    ):
+    if not cs["tightCoupling"] or (interfaceClass.function not in cs["tightCouplingSettings"]):
         return None
 
     parameter = cs["tightCouplingSettings"][interfaceClass.function]["parameter"]
@@ -769,10 +759,7 @@ def getActiveInterfaceInfo(cs):
     for info in getPluginManagerOrFail().hook.exposeInterfaces(cs=cs):
         interfaceInfo += info
 
-    interfaceInfo = [
-        (iInfo.interfaceCls, iInfo.kwargs)
-        for iInfo in sorted(interfaceInfo, key=lambda x: x.order)
-    ]
+    interfaceInfo = [(iInfo.interfaceCls, iInfo.kwargs) for iInfo in sorted(interfaceInfo, key=lambda x: x.order)]
 
     return interfaceInfo
 

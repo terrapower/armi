@@ -11,19 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from math import sqrt
-from typing import Tuple, List, Optional
+from collections import deque
+from math import isclose, sqrt
+from typing import List, Optional, Tuple
 
 import numpy as np
 
 from armi.reactor import geometry
 from armi.reactor.grids.constants import (
     BOUNDARY_0_DEGREES,
-    BOUNDARY_120_DEGREES,
     BOUNDARY_60_DEGREES,
+    BOUNDARY_120_DEGREES,
     BOUNDARY_CENTER,
 )
-from armi.reactor.grids.locations import IJKType, IJType
+from armi.reactor.grids.locations import IJKType, IJType, IndexLocation
 from armi.reactor.grids.structuredGrid import StructuredGrid
 from armi.utils import hexagon
 
@@ -221,7 +222,8 @@ class HexGrid(StructuredGrid):
         positionBase = 1 + edge * (ring - 1)
         return ring, positionBase + offset
 
-    def getMinimumRings(self, n: int) -> int:
+    @staticmethod
+    def getMinimumRings(n: int) -> int:
         """
         Return the minimum number of rings needed to fit ``n`` objects.
 
@@ -232,13 +234,12 @@ class HexGrid(StructuredGrid):
         """
         return hexagon.numRingsToHoldNumCells(n)
 
-    def getPositionsInRing(self, ring: int) -> int:
+    @staticmethod
+    def getPositionsInRing(ring: int) -> int:
         """Return the number of positions within a ring."""
         return hexagon.numPositionsInRing(ring)
 
-    def getNeighboringCellIndices(
-        self, i: int, j: int = 0, k: int = 0
-    ) -> List[IJKType]:
+    def getNeighboringCellIndices(self, i: int, j: int = 0, k: int = 0) -> List[IJKType]:
         """
         Return the indices of the immediate neighbors of a mesh point in the plane.
 
@@ -440,11 +441,7 @@ class HexGrid(StructuredGrid):
         elif self.symmetry.domain == geometry.DomainType.FULL_CORE:
             return []
         else:
-            raise NotImplementedError(
-                "Unhandled symmetry condition for HexGrid: {}".format(
-                    str(self.symmetry)
-                )
-            )
+            raise NotImplementedError("Unhandled symmetry condition for HexGrid: {}".format(str(self.symmetry)))
 
     @staticmethod
     def _getSymmetricIdenticalsThird(indices) -> List[IJType]:
@@ -572,3 +569,67 @@ class HexGrid(StructuredGrid):
         )
 
         return locList[:nLocs]
+
+    def rotateIndex(self, loc: IndexLocation, rotations: int) -> IndexLocation:
+        """Find the new location of an index after some number of CCW rotations.
+
+        Parameters
+        ----------
+        loc : IndexLocation
+            Starting index
+        rotations : int
+            Number of counter clockwise rotations
+
+        Returns
+        -------
+        IndexLocation
+            Index in the grid after rotation
+
+        Notes
+        -----
+        Rotation uses a three-dimensional index in what can be known elsewhere
+        by the confusing name of "cubic" coordinate system for a hexagon. Cubic stems
+        from the notion of using three dimensions, ``(q, r, s)`` to describe a point in the
+        hexagonal grid. The conversion from the indexing used in the ARMI framework follows::
+
+            q = i
+            r = j
+            # s = - q - r = - (q + r)
+            s = -(i + j)
+
+        The motivation for the cubic notation is rotation is far simpler: a clockwise
+        rotation by 60 degrees results in a shifting and negating of the coordinates. So
+        the first rotation of ``(q, r, s)`` would produce a new coordinate
+        ``(-r, -s, -q)``. Another rotation would produce ``(s, q, r)``, and so on.
+
+        Raises
+        ------
+        TypeError
+            If ``loc.grid`` is populated and not consistent with this grid. For example,
+            it doesn't make sense to rotate an index from a Cartesian grid in a hexagonal coordinate
+            system, nor hexagonal grid with different orientation (flats up vs. corners up)
+        """
+        if self._roughlyEqual(loc.grid) or loc.grid is None:
+            i, j, k = loc[:3]
+            buffer = deque((i, j, -(i + j)))
+            buffer.rotate(-rotations)
+            newI = buffer[0]
+            newJ = buffer[1]
+            if rotations % 2:
+                newI *= -1
+                newJ *= -1
+            return IndexLocation(newI, newJ, k, loc.grid)
+        raise TypeError(f"Refusing to rotate an index {loc} from a grid {loc.grid} that is not consistent with {self}")
+
+    def _roughlyEqual(self, other) -> bool:
+        """Check that two hex grids are nearly identical.
+
+        Would the same ``(i, j, k)`` index in ``self`` be the same location in ``other``?
+        """
+        if other is self:
+            return True
+        return (
+            isinstance(other, HexGrid)
+            and isclose(self.pitch, other.pitch, rel_tol=1e-4)
+            and other.cornersUp == self.cornersUp
+        )

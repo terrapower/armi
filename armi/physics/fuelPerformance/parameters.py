@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Parameter definitions for fuel performance plugins."""
+
 from armi.reactor import parameters
-from armi.reactor.parameters import ParamLocation
 from armi.reactor.blocks import Block
+from armi.reactor.parameters import ParamLocation
 from armi.utils import units
 
 
@@ -26,7 +27,6 @@ def getFuelPerformanceParameterDefinitions():
 def _getFuelPerformanceBlockParams():
     pDefs = parameters.ParameterDefinitionCollection()
     with pDefs.createBuilder(default=0.0, location=ParamLocation.AVERAGE) as pb:
-
         pb.defParam(
             "fuelCladLocked",
             units=units.UNITLESS,
@@ -38,10 +38,7 @@ def _getFuelPerformanceBlockParams():
 
         def gasReleaseFraction(self, value):
             if value < 0.0 or value > 1.0:
-                raise ValueError(
-                    "Cannot set a gas release fraction "
-                    f"of {value} outside of the bounds of [0.0, 1.0]"
-                )
+                raise ValueError(f"Cannot set a gas release fraction of {value} outside of the bounds of [0.0, 1.0]")
             self._p_gasReleaseFraction = value
 
         pb.defParam(
@@ -54,10 +51,7 @@ def _getFuelPerformanceBlockParams():
 
         def bondRemoved(self, value):
             if value < 0.0 or value > 1.0:
-                raise ValueError(
-                    "Cannot set a bond removed "
-                    f"of {value} outside of the bounds of [0.0, 1.0]"
-                )
+                raise ValueError(f"Cannot set a bond removed of {value} outside of the bounds of [0.0, 1.0]")
             self._p_bondRemoved = value
 
         pb.defParam(

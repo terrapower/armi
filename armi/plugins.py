@@ -118,7 +118,8 @@ the Plugin-based architecture, and as the need arise may be migrated to here.
       replaced with plugin-based fuel handler logic.
 
 """
-from typing import Callable, Dict, List, Union, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 import pluggy
 
@@ -200,7 +201,7 @@ class ArmiPlugin:
             of the reactor they want to calculate, track, and store to the database.
 
         .. impl:: Define an arbitrary physical parameter.
-            :id: I_ARMI_PARAM
+            :id: I_ARMI_PARAM0
             :implements: R_ARMI_PARAM
 
             Through this method, plugin developers can create new Parameters. A
@@ -215,9 +216,8 @@ class ArmiPlugin:
         Returns
         -------
         dict
-            Keys should be subclasses of ArmiObject, values being a
-            ParameterDefinitionCollection should be added to the key's parameter
-            definitions.
+            Keys should be subclasses of ArmiObject, values being a ParameterDefinitionCollection
+            should be added to the key's parameter definitions.
 
         Example
         -------
@@ -266,6 +266,11 @@ class ArmiPlugin:
         This is usually used to set initial parameter values from inputs, either after
         constructing a Core from Blueprints, or after loading it from a database.
         """
+
+    @staticmethod
+    @HOOKSPEC
+    def beforeReactorConstruction(cs) -> None:
+        """Function to call before the reactor is constructed."""
 
     @staticmethod
     @HOOKSPEC
@@ -326,14 +331,9 @@ class ArmiPlugin:
         the corresponding ``Block`` subclass that, if present in the assembly, should
         trigger it to be of the corresponding ``assemType``.
 
-        .. warning::
-
-            The utility of subclassing Assembly is suspect, and may soon cease to be
-            supported. In practice, Assembly subclasses provide very little
-            functionality beyond that on the base class, and even that functionality can
-            probably be better suited elsewhere. Moving this code around would let us
-            eliminate the specialized Assembly subclasses altogether. In such a case,
-            this API will be removed from the framework.
+        Warning
+        -------
+        There is no guarantee that you will find subclassing ``Assembly`` useful.
 
         Example
         -------
@@ -357,8 +357,7 @@ class ArmiPlugin:
         """
         Return new sections for the blueprints input method.
 
-        This hook allows plugins to extend the blueprints functionality with their own
-        sections.
+        This hook allows plugins to extend the blueprints functionality with their own sections.
 
         Returns
         -------
@@ -383,8 +382,7 @@ class ArmiPlugin:
         blueprints mainly because the schema is more flexible, allowing namespaces and
         hierarchical collections of settings. Perhaps in the near future it would make
         sense to enhance the settings system to support these features, moving the
-        blueprints extensions out into settings. This is discussed in more detail in
-        T1671.
+        blueprints extensions out into settings. This is discussed in more detail in T1671.
         """
 
     @staticmethod
@@ -457,7 +455,7 @@ class ArmiPlugin:
         complex cross-plugin info.
 
         We'd prefer to not manipulate objects passed in directly, but
-        rather have the inspection happen in a measureable hook. This
+        rather have the inspection happen in a measurable hook. This
         would help find misbehaving plugins.
 
         See Also
@@ -654,7 +652,8 @@ class ArmiPlugin:
 
                 {
                     "core": armi.reactor.reactors.Core,
-                    "sfp": armi.reactor.assemblyLists.SpentFuelPool,
+                    "excore": armi.reactor.excoreStructure.ExcoreStructure,
+                    "sfp": armi.reactor.spentFuelPool.SpentFuelPool,
                 }
 
         Notes
@@ -730,15 +729,15 @@ class UserPlugin(ArmiPlugin):
         corral their side effects during a run.
         """
         if issubclass(self.__class__, UserPlugin):
-            assert (
-                len(self.__class__.defineParameters()) == 0
-            ), "UserPlugins cannot define parameters, consider using an ArmiPlugin."
-            assert (
-                len(self.__class__.defineParameterRenames()) == 0
-            ), "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
-            assert (
-                len(self.__class__.defineSettings()) == 0
-            ), "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
+            assert len(self.__class__.defineParameters()) == 0, (
+                "UserPlugins cannot define parameters, consider using an ArmiPlugin."
+            )
+            assert len(self.__class__.defineParameterRenames()) == 0, (
+                "UserPlugins cannot define parameter renames, consider using an ArmiPlugin."
+            )
+            assert len(self.__class__.defineSettings()) == 0, (
+                "UserPlugins cannot define new Settings, consider using an ArmiPlugin."
+            )
             # NOTE: These are the methods that we are staunchly _not_ allowing people
             # to change in this class. If you need these, please use a regular ArmiPlugin.
             self.defineParameterRenames = lambda: {}
@@ -833,9 +832,7 @@ def collectInterfaceDescriptions(mod, cs):
     if val is None:
         return []
     if isinstance(val, list):
-        return [
-            interfaces.InterfaceInfo(mod.ORDER, klass, kwargs) for klass, kwargs in val
-        ]
+        return [interfaces.InterfaceInfo(mod.ORDER, klass, kwargs) for klass, kwargs in val]
 
     klass, kwargs = val
     return [interfaces.InterfaceInfo(mod.ORDER, klass, kwargs)]
