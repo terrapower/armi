@@ -32,7 +32,7 @@ from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.testing import loadTestReactor
-from armi.tests import ISOAA_PATH, mockRunLogs
+from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
 
 
 class MockBP:
@@ -95,11 +95,18 @@ class TestCompositePattern(unittest.TestCase):
     def setUp(self):
         self.cs = settings.Settings()
         runLog.setVerbosity("error")
-        container = DummyComposite("inner test fuel", 99)
+        self.container = DummyComposite("inner test fuel", 99)
+
+        # Make sure the Composite is within the Reactor
+        _o, r = loadTestReactor(TEST_ROOT, inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        r.core.getFirstBlock().add(self.container)
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        r.core.lib = lib
+
         for i in range(5):
             leaf = DummyLeaf("duct {}".format(i), i + 100)
             leaf.setType("duct")
-            container.add(leaf)
+            self.container.add(leaf)
         nested = DummyComposite("clad", 98)
         nested.setType("clad")
         self.cladChild = nested
@@ -107,8 +114,7 @@ class TestCompositePattern(unittest.TestCase):
         self.thirdGen = DummyLeaf("pin 77", 33)
         self.secondGen.add(self.thirdGen)
         nested.add(self.secondGen)
-        container.add(nested)
-        self.container = container
+        self.container.add(nested)
         # Composite tree structure in list of lists for testing
         # tree[i] contains the children at "generation" or "depth" i
         self.tree: list[list[composites.Composite]] = [
@@ -125,13 +131,11 @@ class TestCompositePattern(unittest.TestCase):
             :id: T_ARMI_CMP0
             :tests: R_ARMI_CMP
         """
-        container = self.container
-
-        children = container.getChildren()
+        children = self.container.getChildren()
         for child in children:
-            self.assertEqual(child.parent, container)
+            self.assertEqual(child.parent, self.container)
 
-        allChildren = container.getChildren(deep=True)
+        allChildren = self.container.getChildren(deep=True)
         self.assertEqual(len(allChildren), 8)
 
     def test_iterComponents(self):

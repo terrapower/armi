@@ -1319,7 +1319,7 @@ class ArmiObject(metaclass=CompositeModelType):
             lfpMass = sum(
                 dens
                 for name, dens in numberDensities.items()
-                if isinstance(nuclideBases.byName[name], nuclideBases.LumpNuclideBase)
+                if isinstance(self.nuclideBases.byName[name], nuclideBases.LumpNuclideBase)
             )
             if lfpMass:
                 raise RuntimeError(
@@ -1957,7 +1957,7 @@ class ArmiObject(metaclass=CompositeModelType):
         numDensities = self.getNumberDensities()
 
         for nucName, nDen in numDensities.items():
-            atomicWeight = nuclideBases.byName[nucName].weight
+            atomicWeight = self.nuclideBases.byName[nucName].weight
             numerator += atomicWeight * nDen
             denominator += nDen
         return numerator / denominator
@@ -2272,7 +2272,7 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def expandAllElementalsToIsotopics(self):
         reactorNucs = self.getNuclides()
-        for elemental in nuclideBases.where(
+        for elemental in self.nuclideBases.where(
             lambda nb: isinstance(nb, nuclideBases.NaturalNuclideBase) and nb.name in reactorNucs
         ):
             self.expandElementalToIsotopics(elemental)
@@ -2900,7 +2900,7 @@ class Composite(ArmiObject):
 
         # ruff: noqa: SIM110
         for nucName in nuclides:
-            if isinstance(nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
+            if isinstance(self.nuclideBases.byName[nucName], nuclideBases.LumpNuclideBase):
                 return True
 
         return False
@@ -3170,6 +3170,7 @@ def getDominantMaterial(objects: List[ArmiObject], typeSpec: TypeSpec = None, ex
     return None
 
 
+# TODO: JOHN: This needs to be moved inside of Composite.
 def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
     """
     Parameters
