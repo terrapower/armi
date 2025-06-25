@@ -52,26 +52,6 @@ _NICE_DIM_NAMES = {
 }
 
 
-def componentTypeIsValid(component, name):
-    """
-    Checks that the component assigned component type is valid.
-
-    Notes
-    -----
-    - `Coolant` components are can no longer be defined as a general `Component` and should be specified as a
-      `DerivedShape` if the coolant dimensions are not provided.
-    """
-    from armi.reactor.components import NullComponent
-
-    if name.lower() == "coolant":
-        invalidComponentTypes = [Component, NullComponent]
-        if component.__class__ in invalidComponentTypes:
-            raise ValueError(
-                "Coolant components cannot be defined as a `Component`. Either define coolant as a "
-                "`DerivedShape` or specify its dimensions explicitly using another component type."
-            )
-
-
 class _DimensionLink(tuple):
     """
     A linked dimension, where one component uses a dimension from another.
@@ -232,7 +212,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             raise ValueError(f"Non-unique component name {name} repeated in same block.")
 
         composites.Composite.__init__(self, str(name))
-        componentTypeIsValid(self, str(name))
         self.p.area = area
         self.inputTemperatureInC = Tinput
         self.temperatureInC = Thot

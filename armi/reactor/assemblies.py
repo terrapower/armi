@@ -327,10 +327,8 @@ class Assembly(composites.Composite):
         for i, b in enumerate(self):
             refB = refA[i + newBlocks]  # pick the block that is "supposed to" line up with refB.
 
-            # runLog.important('Dealing with {0}, ref b {1}'.format(b,refB))
             if refB.getHeight() == b.getHeight():
                 # these blocks line up
-                # runLog.important('They are the same.')
                 newBlockStack.append(b)
                 continue
             elif refB.getHeight() > b.getHeight():

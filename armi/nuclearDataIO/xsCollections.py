@@ -510,9 +510,7 @@ class MacroscopicCrossSectionCreator:
         within-group n2n is accounted for by simply not including n2n in the removal xs.
         """
         self.macros.removal = self.macros.absorption - self.macros.n2n
-        # columnSum = self.macros.totalScatter.columnSum(self.ng) # convert to ndarray
         columnSum = self.macros.totalScatter.sum(axis=0).getA1()  # convert to ndarray
-        # diags = self.macros.totalScatter.diagonal(self.ng)
         diags = self.macros.totalScatter.diagonal()
         self.macros.removal += columnSum - diags
 

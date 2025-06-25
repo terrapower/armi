@@ -166,12 +166,6 @@ class TestComponentFactory(unittest.TestCase):
         with self.assertRaises(ValueError):
             components.factory("turtle", [], badDict)
 
-    def test_invalidCoolantComponentAssignment(self):
-        invalidComponentTypes = [Component, NullComponent]
-        for CompType in invalidComponentTypes:
-            with self.assertRaises(ValueError):
-                _c = CompType("coolant", "Sodium", 0, 0)
-
 
 class TestGeneralComponents(unittest.TestCase):
     """Base test for all individual component tests."""

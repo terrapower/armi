@@ -187,7 +187,6 @@ class PyReverse(Directive):
                 new_content.append("    " + line)
 
             para = nodes.container()
-            # tab_width = self.options.get('tab-width', self.state.document.settings.tab_width)
             lines = statemachine.StringList(new_content)
             self.state.nested_parse(lines, self.content_offset, para)
             return [para]

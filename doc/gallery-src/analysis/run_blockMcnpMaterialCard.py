@@ -22,7 +22,6 @@ Normally, code-specific utility code would belong in a code-specific ARMI
 plugin. But in this case, the need for MCNP materials cards is so pervasive
 that it made it into the framework
 """
-# sphinx_gallery_thumbnail_path = '.static/armi-logo.png'
 
 from armi import configure
 from armi.nucDirectory import nuclideBases as nb
