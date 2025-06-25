@@ -1264,7 +1264,6 @@ class Block(composites.Composite):
 
         numDensities = self.getNumberDensities()
 
-        # vol = self.getVolume()
         for nucName, nDen in numDensities.items():
             nucMc = nuclideBases.byName[nucName].label + self.getMicroSuffix()
             if gamma:

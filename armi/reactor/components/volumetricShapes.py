@@ -68,7 +68,6 @@ class Sphere(ShapedComponent):
             raise NotImplementedError(f"Cannot calculate area at specified temperature: {Tc}")
         block = self.getAncestor(lambda c: isinstance(c, Block))
         return self.getComponentVolume(cold) / block.getHeight()
-        # raise NotImplementedError("Cannot compute area of a sphere component.")
 
     def getComponentVolume(self, cold=False):
         """Computes the volume of the sphere in cm^3."""

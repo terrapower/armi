@@ -912,7 +912,7 @@ def _alignHeader(header, alignment, width, visibleWidth, isMultiline=False, widt
         headerLines = re.split(_multilineCodes, header)
         paddedLines = [_alignHeader(h, alignment, width, widthFn(h)) for h in headerLines]
         return "\n".join(paddedLines)
-    # else: not multiline
+
     ninvisible = len(header) - visibleWidth
     width += ninvisible
     if alignment == "left":

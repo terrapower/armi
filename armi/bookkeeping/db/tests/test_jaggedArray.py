@@ -141,7 +141,7 @@ class TestJaggedArray(unittest.TestCase):
         - Empty lists become `None`
 
         """
-        # self.assertEqual(type(src), JaggedArray)
+        self.assertEqual(type(src), JaggedArray)
         if isinstance(ref, np.ndarray):
             ref = ref.tolist()
             src = src.tolist()
