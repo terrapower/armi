@@ -27,7 +27,7 @@ from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
 
-from armi import nuclideBases, runLog
+from armi import runLog
 from armi.bookkeeping import report
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
@@ -1266,7 +1266,7 @@ class Block(composites.Composite):
 
         # vol = self.getVolume()
         for nucName, nDen in numDensities.items():
-            nucMc = nuclideBases.byName[nucName].label + self.getMicroSuffix()
+            nucMc = self.nuclideBases.byName[nucName].label + self.getMicroSuffix()
             if gamma:
                 micros = lib[nucMc].gammaXS
             else:
