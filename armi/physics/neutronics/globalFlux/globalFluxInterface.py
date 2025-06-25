@@ -828,7 +828,6 @@ class GlobalFluxResultMapper(interfaces.OutputReader):
             a.p.timeToLimit = a.getMinParam("timeToLimit", Flags.FUEL)
             a.p.buLimit = a.getMaxParam("buLimit")
 
-            # self.p.kgFis = self.getFissileMass()
             if totalAbs > 0:
                 a.p.kInf = totalSrc / totalAbs  # assembly average k-inf.
 
@@ -985,7 +984,6 @@ def calcReactionRates(obj, keff, lib):
         mgFlux = obj.getMgFlux()
         for name in RX_ABS_MICRO_LABELS:
             for g, (groupFlux, xs) in enumerate(zip(mgFlux, micros[name])):
-                # dE = flux_e*dE
                 dphi = numberDensity * groupFlux
                 nucrate["rateAbs"] += dphi * xs
 

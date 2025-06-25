@@ -454,7 +454,6 @@ def newtonsMethod(func, goal, guess, maxIterations=None, cs=None, positiveGuesse
     if (maxIterations is None) and (cs is not None):
         maxIterations = cs["maxNewtonsIterations"]
 
-    # try:
     ans = float(
         sciopt.newton(
             goalFunc,
