@@ -159,14 +159,10 @@ class Pitch(yamlize.Object):
             * If no non-zero value is provided for any parameter.
         """
         if hex and (x or y):
-            raise InputError(
-                "Cannot mix `hex` with `x` and `y` attributes of `latticePitch`."
-            )
+            raise InputError("Cannot mix `hex` with `x` and `y` attributes of `latticePitch`.")
 
         if not any(hex, x, y, z):
-            raise InputError(
-                "`lattice pitch` must have at least one non-zero attribute! Check the blueprints."
-            )
+            raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
 
         self.hex = hex or x
         self.x = x
@@ -335,14 +331,10 @@ class GridBlueprint(yamlize.Object):
             else:
                 ld = self.latticeDimensions
                 if ld.hex and (ld.x or ld.y):
-                    raise InputError(
-                        "Cannot mix `hex` with `x` and `y` attributes of `latticePitch`."
-                    )
+                    raise InputError("Cannot mix `hex` with `x` and `y` attributes of `latticePitch`.")
 
                 if not any([ld.hex, ld.x, ld.y, ld.z]):
-                    raise InputError(
-                        "`lattice pitch` must have at least one non-zero attribute! Check the blueprints."
-                    )
+                    raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
 
                 pitch = ld.hex or ld.x
             # add 2 for potential dummy assems
