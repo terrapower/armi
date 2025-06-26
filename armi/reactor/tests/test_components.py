@@ -1851,14 +1851,14 @@ class TestMaterialAdjustments(unittest.TestCase):
         dims = {"Tinput": 25.0, "Thot": 600.0, "od": 10.0, "id": 5.0, "mult": 1.0}
         self.fuel = Circle("fuel", "UZr", **dims)
 
-        class fakeBlock:
+        class FakeBlock:
             def getHeight(self):  # unit height
                 return 1.0
 
             def getSymmetryFactor(self):
                 return 1.0
 
-        self.fuel.parent = fakeBlock()
+        self.fuel.parent = FakeBlock()
 
     def test_setMassFrac(self):
         """Make sure we can set a mass fraction properly."""
@@ -1957,14 +1957,23 @@ class TestMaterialAdjustments(unittest.TestCase):
         self.assertAlmostEqual(self.fuel.getMassFrac("ZR"), zrFrac)
 
     def test_adjustMassEnrichment(self):
-        self.fuel.adjustMassEnrichment(0.2)
-        self.assertAlmostEqual(self.fuel.getMassFrac("U235"), 0.18)
-        self.assertAlmostEqual(self.fuel.getMassFrac("U238"), 0.72)
-        self.assertAlmostEqual(self.fuel.getMassFrac("ZR"), 0.1)
+        r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")[1]
+        b = r.core.getFirstBlock(flags.Flags.FUEL)
+        c = b.getChildren(predicate=lambda o: isinstance(o, Circle))[0]
+        self.assertAlmostEqual(c.getMassFrac("U235"), 0.1034)
+        self.assertAlmostEqual(c.getMassFrac("U238"), 0.8366)
+        self.assertAlmostEqual(c.getMassFrac("ZR"), 0.06)
+        c.adjustMassEnrichment(0.2)
+        self.assertAlmostEqual(c.getMassFrac("U235"), 0.188)
+        self.assertAlmostEqual(c.getMassFrac("U238"), 0.752)
+        self.assertAlmostEqual(c.getMassFrac("ZR"), 0.06)
 
     def test_getEnrichment(self):
-        self.fuel.adjustMassEnrichment(0.3)
-        self.assertAlmostEqual(self.fuel.getEnrichment(), 0.3)
+        r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")[1]
+        b = r.core.getFirstBlock(flags.Flags.FUEL)
+        c = b.getChildren(predicate=lambda o: isinstance(o, Circle))[0]
+        c.adjustMassEnrichment(0.3)
+        self.assertAlmostEqual(c.getEnrichment(), 0.3)
 
     def test_finalizeLoadDBAdjustsTD(self):
         """Ensure component is fully loaded through finalize methods."""

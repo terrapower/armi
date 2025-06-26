@@ -44,7 +44,7 @@ from armi.reactor.assemblies import (
     runLog,
 )
 from armi.reactor.tests import test_reactors
-from armi.tests import TEST_ROOT, mockRunLogs
+from armi.tests import TEST_ROOT, getEmptyHexReactor, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
 
 NUM_BLOCKS = 3
@@ -167,6 +167,13 @@ class MaterialInAssembly_TestCase(unittest.TestCase):
 
     def test_UThZrMaterial(self):
         """Test the ternary UThZr material."""
+        # put the assemblies into a Reactor
+        r = getEmptyHexReactor()
+        r.core.add(self.assembly)
+        r.core.add(self.assembly2)
+        r.core.add(self.assembly3)
+        r.core.add(self.assembly4)
+
         b2 = self.assembly2[0]
         uThZrFuel = b2.getComponent(Flags.FUEL | Flags.B)
         mat = uThZrFuel.getProperties()

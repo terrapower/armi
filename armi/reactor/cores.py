@@ -1609,7 +1609,7 @@ class Core(composites.Composite):
         ----------
         assemType : str
             The assembly type to create
-        enrichList : list
+        enrichList : list or float
             weight percent enrichments of each block
         cs : Settings
             Global settings for the case
@@ -1633,6 +1633,7 @@ class Core(composites.Composite):
         armi.fuelHandler.doRepeatShuffle : uses this to repeat shuffling
         """
         a = self.parent.blueprints.constructAssem(cs, name=assemType)
+        self.add(a)
 
         # check to see if a default bol assembly is being used or we are adding more information
         if enrichList:
@@ -1641,7 +1642,7 @@ class Core(composites.Composite):
                 # make endlessly iterable if float was passed in
                 enrichList = itertools.cycle([enrichList])
             elif len(a) != len(enrichList):
-                raise RuntimeError("{0} and enrichment list do not have the same number of blocks.".format(a))
+                raise RuntimeError("{a} and enrichment list do not have the same number of blocks.")
 
             for b, enrich in zip(a, enrichList):
                 if enrich == 0.0:
@@ -1657,6 +1658,7 @@ class Core(composites.Composite):
             # if detailedAxialExpansion: False, make sure that the assembly being created has the correct core mesh
             a.setBlockMesh(self.p.referenceBlockAxialMesh[1:], conserveMassFlag="auto")  # pass [1:] to skip 0.0
 
+        self.remove(a)
         return a
 
     def saveAllFlux(self, fName="allFlux.txt"):
