@@ -815,7 +815,8 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def changeNDensByFactor(self, factor):
         """Change the number density of all nuclides within the object by a multiplicative factor."""
-        self.p.numberDensities *= factor
+        if self.p.numberDensities is not None:
+            self.p.numberDensities *= factor
         self._changeOtherDensParamsByFactor(factor)
 
     def _changeOtherDensParamsByFactor(self, factor):
