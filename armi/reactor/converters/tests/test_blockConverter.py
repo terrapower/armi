@@ -26,7 +26,7 @@ from armi.physics.neutronics.isotopicDepletion.isotopicDepletionInterface import
 from armi.reactor import blocks, components, grids
 from armi.reactor.converters import blockConverters
 from armi.reactor.flags import Flags
-from armi.reactor.tests.test_blocks import loadTestBlock
+from armi.reactor.tests.test_blocks import buildLinkedFuelBlock, loadTestBlock
 from armi.testing import TEST_ROOT, loadTestReactor
 from armi.utils import hexagon
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -115,6 +115,16 @@ class TestBlockConverter(unittest.TestCase):
         hotBlock = self._perturbTemps(hotBlock, "outer liner", 127, 800)
         self._test_dissolve(hotBlock, "outer liner", "clad")
 
+    def test_dissolveBondIntoClad(self):
+        """
+        Test dissolving linked bond into coolant.
+
+        .. test:: Homogenize a linked component into another.
+            :id: T_ARMI_BLOCKCONV2
+            :tests: R_ARMI_BLOCKCONV
+        """
+        self._test_dissolve(buildLinkedFuelBlock(), "bond", "clad")
+
     def _perturbTemps(self, block, cName, tCold, tHot):
         """Give the component different ref and hot temperatures than in test_Blocks."""
         c = block.getComponent(Flags.fromString(cName))
@@ -144,8 +154,7 @@ class TestBlockConverter(unittest.TestCase):
 
     def test_dissolveNegativeArea(self):
         """Test dissolving a zero-area component into another."""
-        with self.assertRaises(ValueError):
-            self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
+        self._test_dissolve(buildSimpleFuelBlockNegativeArea(), "gap", "clad")
 
     def test_dissolveIntoNegativeArea(self):
         """Test dissolving a zero-area component into another."""
