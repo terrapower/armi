@@ -1195,6 +1195,12 @@ class Assembly(composites.Composite):
         rad : float
             number (in radians) specifying the angle of counter clockwise rotation
         """
+        # handle the orientation parameter
+        if self.p.orientation is None:
+            self.p.orientation = np.array([0.0, 0.0, 0.0])
+
+        self.p.orientation[2] += math.degrees(rad)
+
         for b in self:
             b.rotate(rad)
 
@@ -1230,9 +1236,9 @@ class HexAssembly(Assembly):
             :id: I_ARMI_ROTATE_HEX_ASSEM
             :implements: R_ARMI_ROTATE_HEX
 
-            This method loops through every ``Block`` in this ``HexAssembly`` and rotates
-            it by a given angle (in radians). The rotation angle is positive in the
-            counter-clockwise direction. To perform the ``Block`` rotation, the
+            This method loops through every ``Block`` in this ``HexAssembly`` and rotates it by a
+            given angle (in radians). The rotation angle is positive in the counter-clockwise
+            direction. To perform the ``Block`` rotation, the
             :meth:`armi.reactor.blocks.HexBlock.rotate` method is called.
 
         Parameters
