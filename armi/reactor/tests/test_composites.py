@@ -28,7 +28,6 @@ from armi.physics.neutronics.fissionProductModel.tests.test_lumpedFissionProduct
 from armi.reactor import assemblies, components, composites, grids, parameters
 from armi.reactor.blueprints import assemblyBlueprint
 from armi.reactor.components import basicShapes
-from armi.reactor.composites import getReactionRateDict
 from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.tests.test_blocks import loadTestBlock
 from armi.testing import loadTestReactor
@@ -478,6 +477,11 @@ class TestCompositePattern(unittest.TestCase):
             self.assertAlmostEqual(rRatesAssem[key], val)
             self.assertAlmostEqual(rRatesCore[key], val)
             self.assertAlmostEqual(rRatesReactor[key], val)
+
+    def test_getReactionRateDict(self):
+        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
+        rxRatesDict = self.container._getReactionRateDict(nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1)
+        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))
 
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
@@ -965,10 +969,3 @@ class TestMiscMethods(unittest.TestCase):
         obj2.p.percentBu = 15.2
         self.obj.copyParamsFrom(obj2)
         self.assertEqual(obj2.p.percentBu, self.obj.p.percentBu)
-
-
-class TestGetReactionRateDict(unittest.TestCase):
-    def test_getReactionRateDict(self):
-        lib = nuclearDataIO.isotxs.readBinary(ISOAA_PATH)
-        rxRatesDict = getReactionRateDict(nucName="PU239", lib=lib, xsSuffix="AA", mgFlux=1, nDens=1)
-        self.assertEqual(rxRatesDict["nG"], sum(lib["PU39AA"].micros.nGamma))

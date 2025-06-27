@@ -2962,7 +2962,7 @@ class Composite(ArmiObject):
             nDensity = self.getNumberDensity(nucName)
 
         try:
-            return getReactionRateDict(
+            return self._getReactionRateDict(
                 nucName,
                 self.getAncestor(lambda c: isinstance(c, Core)).lib,
                 self.getAncestor(lambda x: isinstance(x, Block)).getMicroSuffix(),
@@ -2981,6 +2981,47 @@ class Composite(ArmiObject):
                 single=True,
             )
             return {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0}
+
+    def _getReactionRateDict(self, nucName, lib, xsSuffix, mgFlux, nDens):
+        """
+        Parameters
+        ----------
+        nucName : str
+            nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
+            the nucDirectory module for a description of the difference.
+        lib : isotxs
+            cross section library
+        xsSuffix : str
+            cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
+            second burnup group of type A
+        mgFlux : np.ndarray
+            integrated mgFlux (n-cm/s)
+        nDens : float
+            number density (atom/bn-cm)
+
+        Returns
+        -------
+        rxnRates - dict
+            dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
+
+        Notes
+        -----
+        Assume there is no n3n cross section in ISOTXS
+        """
+        nucLabel = self.nuclideBases.byName[nucName].label
+        key = f"{nucLabel}{xsSuffix}"
+        libNuc = lib[key]
+        rxnRates = {"n3n": 0}
+        for rxName, mgXSs in [
+            ("nG", libNuc.micros.nGamma),
+            ("nF", libNuc.micros.fission),
+            ("n2n", libNuc.micros.n2n),
+            ("nA", libNuc.micros.nalph),
+            ("nP", libNuc.micros.np),
+        ]:
+            rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
+
+        return rxnRates
 
     def getReactionRates(self, nucName, nDensity=None):
         """
@@ -3168,46 +3209,3 @@ def getDominantMaterial(objects: List[ArmiObject], typeSpec: TypeSpec = None, ex
         return samples[maxMatName]
 
     return None
-
-
-# TODO: JOHN: This needs to be moved inside of Composite.
-def getReactionRateDict(nucName, lib, xsSuffix, mgFlux, nDens):
-    """
-    Parameters
-    ----------
-    nucName : str
-        nuclide name -- e.g. 'U235', 'PU239', etc. Not to be confused with the nuclide _label_, see
-        the nucDirectory module for a description of the difference.
-    lib : isotxs
-        cross section library
-    xsSuffix : str
-        cross section suffix, consisting of the type followed by the burnup group, e.g. 'AB' for the
-        second burnup group of type A
-    mgFlux : np.ndarray
-        integrated mgFlux (n-cm/s)
-    nDens : float
-        number density (atom/bn-cm)
-
-    Returns
-    -------
-    rxnRates - dict
-        dictionary of reaction rates (rxn/s) for nG, nF, n2n, nA and nP
-
-    Notes
-    -----
-    Assume there is no n3n cross section in ISOTXS
-    """
-    nucLabel = nuclideBases.byName[nucName].label
-    key = f"{nucLabel}{xsSuffix}"
-    libNuc = lib[key]
-    rxnRates = {"n3n": 0}
-    for rxName, mgXSs in [
-        ("nG", libNuc.micros.nGamma),
-        ("nF", libNuc.micros.fission),
-        ("n2n", libNuc.micros.n2n),
-        ("nA", libNuc.micros.nalph),
-        ("nP", libNuc.micros.np),
-    ]:
-        rxnRates[rxName] = nDens * sum(mgXSs * mgFlux)
-
-    return rxnRates
