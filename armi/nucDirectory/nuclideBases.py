@@ -1451,8 +1451,8 @@ class NuclideBases:
         self.byMcnpId = {}
         self.byAAAZZZSId = {}
         self.byNbAndCompound = {}
-        self.nuclidesFile = os.path.join(context.RES, "nuclides.dat")
-        self.mccNuclidesFile = os.path.join(context.RES, "mcc-nuclides.yaml")
+        self.defaultNuclidesFile = os.path.join(context.RES, "nuclides.dat")
+        self.defaultMccNuclidesFile = os.path.join(context.RES, "mcc-nuclides.yaml")
         self.factory()
 
     def clear(self):
@@ -1489,8 +1489,7 @@ class NuclideBases:
         if not isinstance(nuclide, (NaturalNuclideBase, LumpNuclideBase, DummyNuclideBase)):
             self.byAAAZZZSId[nuclide.getAAAZZZSId()] = nuclide
 
-    # TODO: This could take optional nuclides.dat files paths
-    def factory(self):
+    def factory(self, nuclidesFile: str = None, mccNuclidesFile: str = None, elementsFile: str = None):
         """
         Reads data files to instantiate the :py:class:`INuclides <INuclide>`.
 
@@ -1511,17 +1510,24 @@ class NuclideBases:
                 "first."
             )
 
+        # grab the default data files, if none were provided
+        if nuclidesFile is None:
+            nuclidesFile = self.defaultNuclidesFile
+
+        if mccNuclidesFile is None:
+            mccNuclidesFile = self.defaultMccNuclidesFile
+
         # load the fundamental elements library
         self.elements = elements.Elements()
-        self.elements.factory()
+        self.elements.factory(elementsFile)
 
         # load the isotopes and isomers library
-        self.addNuclideBases()
+        self.addNuclideBases(nuclidesFile)
         self.__addNaturalNuclideBases()
         self.__addDummyNuclideBases()
         self.__addLumpedFissionProductNuclideBases()
         self.updateNuclideBasesForSpecialCases()
-        self.readMCCNuclideData()
+        self.readMCCNuclideData(mccNuclidesFile)
         self.__renormalizeNuclideToElementRelationship()
         self.__deriveElementalWeightsByNaturalNuclideAbundances()
 
@@ -1723,7 +1729,7 @@ class NuclideBases:
             # think of this protected stuff as "module level protection" rather than class.
             nuclide._processBurnData(burnInfo)
 
-    def addNuclideBases(self):
+    def addNuclideBases(self, nuclidesFile):
         """
         Read natural abundances of any natural nuclides.
 
@@ -1735,11 +1741,11 @@ class NuclideBases:
 
             This function reads the ``nuclides.dat`` file from the ARMI resources folder. This file contains metadata
             for 4,614 nuclides, including number of protons, number of neutrons, atomic number, excited state, element
-            symbol, atomic mass, natural abundance, half-life, and spontaneous fission yield. The data in
+            symbol, atomic mass, natural abundance, half-life, and spontaneous fission yield. The data in the default
             ``nuclides.dat`` have been collected from multiple different sources; the references are given in comments
             at the top of that file.
         """
-        with open(self.nuclidesFile, "r") as f:
+        with open(nuclidesFile, "r") as f:
             for line in f:
                 # Skip header lines
                 if line.startswith("#") or line.startswith("Z"):
@@ -1819,7 +1825,7 @@ class NuclideBases:
             )
         )
 
-    def readMCCNuclideData(self):
+    def readMCCNuclideData(self, mccNuclidesFile):
         r"""Read in the label data for the MC2-2 and MC2-3 cross section codes to the nuclide bases.
 
         .. impl:: Separating MCC data from code.
@@ -1833,7 +1839,7 @@ class NuclideBases:
             read, and the global dictionaries ``byMcc2Id`` ``byMcc3IdEndfVII0`` and ``byMcc3IdEndfVII1`` are populated
             with the nuclide bases keyed by their corresponding ID for each code.
         """
-        with open(self.mccNuclidesFile, "r") as f:
+        with open(mccNuclidesFile, "r") as f:
             yaml = YAML(typ="rt")
             nuclides = yaml.load(f)
 
@@ -1874,6 +1880,9 @@ class NuclideBases:
         `AM242M` by default. `AM242M` is most common isomer of `AM242` and is typically the desired isomer when being
         requested rather than than the ground state (i.e., S=0) of `AM242`.
         """
+        if "AM242" not in self.byName:
+            return
+
         # Change the name of `AM242` to specific represent its ground state.
         am242g = self.byName["AM242"]
         am242g.name = "AM242G"

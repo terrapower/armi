@@ -15,8 +15,9 @@
 
 import unittest
 
-from armi.nucDirectory.elements import ChemicalGroup, ChemicalPhase, Element
+from armi.nucDirectory.elements import ChemicalGroup, ChemicalPhase, Element, Elements
 from armi.nucDirectory.nuclideBases import NuclideBases
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 
 class TestElements(unittest.TestCase):
@@ -199,3 +200,29 @@ class TestElements(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             self.elements.getElementZ(name="Boring")
+
+    def test_factory(self):
+        e = Elements()
+        self.assertEqual(len(e.byZ), 0)
+        self.assertEqual(len(e.byName), 0)
+        self.assertEqual(len(e.bySymbol), 0)
+
+        # test the default data files produce numbers in the right range (they may change a little over time)
+        e.factory()
+        self.assertEqual(len(e.byZ), 120)
+        self.assertEqual(len(e.byName), 120)
+        self.assertEqual(len(e.bySymbol), 120)
+
+        # build a simple, Hydrogen-only file, and test that
+        with TemporaryDirectoryChanger():
+            elementsFile = "test-elements.dat"
+            with open(elementsFile, "w") as f:
+                f.write("""# dummy test file
+Z   E   Name                        Phase    Chemical Group           Standard Atomic Weight
+1   H   Hydrogen                    GAS      NONMETAL                 Derived""")
+
+            e.clear()
+            e.factory(elementsFile=elementsFile)
+            self.assertEqual(len(e.byZ), 1)
+            self.assertEqual(len(e.byName), 1)
+            self.assertEqual(len(e.bySymbol), 1)

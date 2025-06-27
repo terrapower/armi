@@ -29,6 +29,7 @@ from armi.nucDirectory.nuclideBases import (
     NuclideBases,
 )
 from armi.nucDirectory.tests import NUCDIRECTORY_TESTS_DEFAULT_DIR_PATH
+from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import AVOGADROS_NUMBER, CURIE_PER_BECQUEREL, SECONDS_PER_HOUR
 
 
@@ -432,6 +433,57 @@ class TestNuclideBases(unittest.TestCase):
 
         # Subtract 1 nuclide due to DUMP2
         self.assertEqual(len(self.nuclideBases.byMcc3IdEndfbVII1), len(expectedNuclides) - 1)
+
+    def test_factory(self):
+        # build an empty nuclide collection
+        nb = NuclideBases()
+        nb.clear()
+        self.assertEqual(len(nb.instances), 0)
+        self.assertEqual(len(nb.byName), 0)
+        self.assertEqual(len(nb.byMcc2Id), 0)
+        self.assertEqual(len(nb.byMcnpId), 0)
+
+        # test the default data files produce numbers in the right range (they may change a little over time)
+        nb.factory()
+        self.assertTrue(4500 < len(nb.instances) < 5000)
+        self.assertTrue(4500 < len(nb.byName) < 5000)
+        self.assertTrue(250 < len(nb.byMcc2Id) < 350)
+        self.assertTrue(4500 < len(nb.byMcnpId) < 5000)
+
+        # build some simple, Hydrogen-only files, and test those
+        with TemporaryDirectoryChanger():
+            nucsFile = "test-nucs.dat"
+            with open(nucsFile, "w") as f:
+                f.write("""# dummy test file
+Z   N   A   S   El    Mass, amu         Abundance, frac.  Half-life (sec)   Spontaneous Fission Yield (nu-bar)
+1   0   1   0   H     1.00782506296e+00 9.99850010000e-01 inf               0.000000
+1   1   2   0   H     2.01410207533e+00 1.50000000000e-04 inf               0.000000
+1   2   3   0   H     3.01604948433e+00 0.00000000000e+00 3.88781328007e+08 0.000000
+1   3   4   0   H     4.02780693934e+00 0.00000000000e+00 inf               0.000000""")
+
+            mccNucsFile = "test-mcc-nucs.dat"
+            with open(mccNucsFile, "w") as f:
+                f.write("""# dummy test file
+H1:
+  ENDF/B-V.2: HYDRGN
+  ENDF/B-VII.0: H1___7
+  ENDF/B-VII.1: H1___7
+H2:
+  ENDF/B-V.2: H-2  5
+  ENDF/B-VII.0: H2___7
+  ENDF/B-VII.1: H2___7
+H3:
+  ENDF/B-V.2: H-3  5
+  ENDF/B-VII.0: H3___7
+  ENDF/B-VII.1: H3___7""")
+
+            nb.clear()
+            nb.factory(nuclidesFile=nucsFile, mccNuclidesFile=mccNucsFile)
+            self.assertEqual(len(nb.instances), 13)
+            self.assertEqual(len(nb.byName), 13)
+            self.assertEqual(len(nb.byMcc2Id), 3)
+            self.assertEqual(len(nb.byMcnpId), 5)
+            self.assertEqual(len(nb.byNbAndCompound), 3)
 
 
 class TestAAAZZZSId(unittest.TestCase):

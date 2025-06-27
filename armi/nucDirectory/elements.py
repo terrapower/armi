@@ -460,7 +460,7 @@ class Elements:
         self.byZ = {}
         self.byName = {}
         self.bySymbol = {}
-        self.elementsFile = os.path.join(context.RES, "elements.dat")
+        self.defaultElementsFile = os.path.join(context.RES, "elements.dat")
 
     def clear(self):
         """Empty all the data in this collection."""
@@ -477,11 +477,15 @@ class Elements:
         self.byName[element.name] = element
         self.bySymbol[element.symbol] = element
 
-    # TODO: This could take an optional elements.dat file path
-    def factory(self):
+    def factory(self, elementsFile: str = None):
         """Generate the :class:`Elements <Element>` instances."""
         self.clear()
-        with open(self.elementsFile, "r") as f:
+
+        # if no input file is provided, use the default
+        if elementsFile is None:
+            elementsFile = self.defaultElementsFile
+
+        with open(elementsFile, "r") as f:
             for line in f:
                 # Skip header lines
                 if line.startswith("#") or line.startswith("Z"):

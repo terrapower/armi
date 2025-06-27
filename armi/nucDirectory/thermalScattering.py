@@ -198,59 +198,70 @@ def factory(byName):
     """
     Generate the :class:`ThermalScattering` instances.
 
-    The logic for these is a bit complex so we skip reading a text file and code
-    it up here.
-
-    This is called by the nuclideBases factory since it must ALWAYS be re-run when
-    the nuclideBases are rebuilt.
+    The logic for these is a bit complex so we skip reading a text file and code it up here.
 
     See Also
     --------
     armi.nucDirectory.nuclideBases.factory
         Calls this during ARMI initialization.
-
-    .. warning::
-        This gets called automatically during init, so don't call it
-        unless you know what you're doing.
     """
     global byNbAndCompound  # TODO: This can be removed when we get rid of globals
     byNbAndCompound.clear()
 
-    al27 = byName["AL27"]
-    fe56 = byName["FE56"]
-    be = byName["BE"]
-    c = byName["C"]
-    d = byName["H2"]
-    n = byName["N"]
-    o = byName["O"]
-    h = byName["H"]
-    u = byName["U"]
-    zr = byName["ZR"]
-    si = byName["SI"]
+    if "AL27" in byName:
+        al27 = byName["AL27"]
+        byNbAndCompound[al27, None] = ThermalScattering(al27)
 
-    for isotope in [al27, fe56]:
-        byNbAndCompound[isotope, None] = ThermalScattering(isotope)
+    if "BE" in byName:
+        be = byName["BE"]
+        byNbAndCompound[be, BE_METAL] = ThermalScattering(
+            be, BE_METAL, endf8Label=f"tsl-{BE_METAL}.endf", aceLabel="be-met"
+        )
+        byNbAndCompound[be, BEO] = ThermalScattering(be, BEO, endf8Label=BEO, aceLabel="be-beo")
 
-    byNbAndCompound[be, BE_METAL] = ThermalScattering(
-        be, BE_METAL, endf8Label=f"tsl-{BE_METAL}.endf", aceLabel="be-met"
-    )
-    byNbAndCompound[be, BEO] = ThermalScattering(be, BEO, endf8Label=BEO, aceLabel="be-beo")
-    byNbAndCompound[c, SIC] = ThermalScattering(c, SIC)
-    byNbAndCompound[d, D2O] = ThermalScattering(d, D2O, f"tsl-Din{D2O}.endf", "d-d2o")
-    byNbAndCompound[h, H2O] = ThermalScattering(h, H2O)
-    byNbAndCompound[h, ZRH] = ThermalScattering(h, ZRH)
-    byNbAndCompound[n, UN] = ThermalScattering(n, UN)
-    byNbAndCompound[o, BEO] = ThermalScattering(o, BEO)
-    byNbAndCompound[o, D2O] = ThermalScattering(o, D2O, f"tsl-Oin{D2O}.endf", "o-d2o")
-    byNbAndCompound[o, UO2] = ThermalScattering(o, UO2)
-    byNbAndCompound[u, UO2] = ThermalScattering(u, UO2)
-    byNbAndCompound[u, UN] = ThermalScattering(u, UN)
-    byNbAndCompound[zr, ZRH] = ThermalScattering(zr, ZRH)
-    byNbAndCompound[si, SIC] = ThermalScattering(si, SIC)
-    byNbAndCompound[c, CRYSTALLINE_GRAPHITE] = ThermalScattering(
-        c, CRYSTALLINE_GRAPHITE, f"tsl-{CRYSTALLINE_GRAPHITE}.endf", "grph"
-    )
-    byNbAndCompound[c, GRAPHITE_10P] = ThermalScattering(c, GRAPHITE_10P, f"tsl-{GRAPHITE_10P}.endf", "grph10")
-    byNbAndCompound[c, GRAPHITE_30P] = ThermalScattering(c, GRAPHITE_30P, f"tsl-{GRAPHITE_30P}.endf", "grph30")
+    if "C" in byName:
+        c = byName["C"]
+        byNbAndCompound[c, SIC] = ThermalScattering(c, SIC)
+        byNbAndCompound[c, GRAPHITE_10P] = ThermalScattering(c, GRAPHITE_10P, f"tsl-{GRAPHITE_10P}.endf", "grph10")
+        byNbAndCompound[c, GRAPHITE_30P] = ThermalScattering(c, GRAPHITE_30P, f"tsl-{GRAPHITE_30P}.endf", "grph30")
+        byNbAndCompound[c, CRYSTALLINE_GRAPHITE] = ThermalScattering(
+            c, CRYSTALLINE_GRAPHITE, f"tsl-{CRYSTALLINE_GRAPHITE}.endf", "grph"
+        )
+
+    if "FE56" in byName:
+        fe56 = byName["FE56"]
+        byNbAndCompound[fe56, None] = ThermalScattering(fe56)
+
+    if "H2" in byName:
+        h = byName["H"]
+
+    if "H2" in byName:
+        d = byName["H2"]
+        byNbAndCompound[d, D2O] = ThermalScattering(d, D2O, f"tsl-Din{D2O}.endf", "d-d2o")
+        byNbAndCompound[h, H2O] = ThermalScattering(h, H2O)
+        byNbAndCompound[h, ZRH] = ThermalScattering(h, ZRH)
+
+    if "N" in byName:
+        n = byName["N"]
+        byNbAndCompound[n, UN] = ThermalScattering(n, UN)
+
+    if "O" in byName:
+        o = byName["O"]
+        byNbAndCompound[o, BEO] = ThermalScattering(o, BEO)
+        byNbAndCompound[o, D2O] = ThermalScattering(o, D2O, f"tsl-Oin{D2O}.endf", "o-d2o")
+        byNbAndCompound[o, UO2] = ThermalScattering(o, UO2)
+
+    if "SI" in byName:
+        si = byName["SI"]
+        byNbAndCompound[si, SIC] = ThermalScattering(si, SIC)
+
+    if "U" in byName:
+        u = byName["U"]
+        byNbAndCompound[u, UO2] = ThermalScattering(u, UO2)
+        byNbAndCompound[u, UN] = ThermalScattering(u, UN)
+
+    if "ZR" in byName:
+        zr = byName["ZR"]
+        byNbAndCompound[zr, ZRH] = ThermalScattering(zr, ZRH)
 
     return byNbAndCompound
