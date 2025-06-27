@@ -77,6 +77,5 @@ class TestGamiso(unittest.TestCase):
         dummyNuc = XSNuclide(isoLib, "DMP1AA")
         dummyNuc.isotxsMetadata = isoLib.getNuclides("AA")[0].isotxsMetadata
         gamiso.addDummyNuclidesToLibrary(gamLib, [dummyNuc])
-        # Why doesn't  lib.getNuclide("DMP1", "AA") work?
-        self.assertEqual(gamLib.getNuclides("AA")[-1].nucLabel, "DMP1")
-        self.assertEqual(gamLib.getNuclides("AA")[-1].gamisoMetadata["jband"][(49, 3)], 1)
+        self.assertEqual(gamLib["DMP1AA"].nucLabel, "DMP1")
+        self.assertEqual(gamLib["DMP1AA"].gamisoMetadata["jband"][(49, 3)], 1)
