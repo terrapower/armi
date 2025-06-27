@@ -788,7 +788,7 @@ def safeCopy(src: str, dst: str) -> None:
                 f"File copy from {dst} to {src} has failed due to exceeding "
                 + f"a maximum wait time of {maxWaitTime / 60} minutes."
             )
-            Return
+            return
 
     runLog.extra("Copied {} -> {}".format(src, dst))
 

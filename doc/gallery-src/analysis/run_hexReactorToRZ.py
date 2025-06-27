@@ -24,7 +24,6 @@ automatically converted to a 2-D or 3-D RZ case with conserved mass.
     appropriate.
 """
 
-# sphinx_gallery_thumbnail_number=2
 import math
 
 import matplotlib.pyplot as plt

@@ -10,7 +10,6 @@ settings:
   comment: ZPPR test case
   cycleLength: 365.25
   loadingFile: zpprTestGeom.yaml
-  mpiTasksPerNode: 6
   nTasks: 12
   outputFileExtension: pdf
   power: 75000000.0

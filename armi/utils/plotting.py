@@ -1108,8 +1108,8 @@ def _makeBlockPinPatches(block, cold):
     cold : bool
         true for cold temps, hot = false
 
-    Return
-    ------
+    Returns
+    -------
     patches : list
         list of patches for block components
     data : list
@@ -1205,8 +1205,8 @@ def _makeComponentPatch(component, position, cold, cornersUp=False):
     cornersUp: bool, optional
         If this is a HexBlock, is it corners-up or flats-up?
 
-    Return
-    ------
+    Returns
+    -------
     blockPatch: list
         A list of Patch objects that together represent a component in the diagram.
 

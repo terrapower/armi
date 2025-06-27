@@ -451,5 +451,5 @@ class TestAsciiMaps(unittest.TestCase):
         bases = []
         for li in range(3):
             bases.append(asciimap._getIJBaseByAsciiLine(li))
-        # self.assertEqual(bases, [(0, -10), (-1, -9), (-2, -8)]) # unchopped
+
         self.assertEqual(bases, [(-2, -8), (-3, -7), (-4, -6)])  # chopped
