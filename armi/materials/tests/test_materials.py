@@ -22,9 +22,17 @@ from numpy import testing
 
 from armi import context, materials, settings
 from armi.materials import _MATERIAL_NAMESPACE_ORDER, setMaterialNamespaceOrder
+from armi.nucDirectory.nuclideBases import NuclideBases
 from armi.reactor import blueprints
 from armi.tests import mockRunLogs
 from armi.utils import units
+
+
+class FakeCompositeWithNucBases:
+    """Just for the purpose of testing, this is mock Composite class that has a NuclideBases object."""
+
+    def __init__(self):
+        self.nuclideBases = NuclideBases()
 
 
 class _Material_Test:
@@ -34,6 +42,7 @@ class _Material_Test:
 
     def setUp(self):
         self.mat = self.MAT_CLASS()
+        self.mat.parent = FakeCompositeWithNucBases()
 
     def test_isPicklable(self):
         """Test that all materials are picklable so we can do MPI communication of state."""

@@ -16,7 +16,7 @@
 import unittest
 
 from armi.materials.lithium import Lithium
-from armi.materials.tests.test_materials import _Material_Test
+from armi.materials.tests.test_materials import FakeCompositeWithNucBases, _Material_Test
 
 
 class Lithium_TestCase(_Material_Test, unittest.TestCase):
@@ -25,15 +25,17 @@ class Lithium_TestCase(_Material_Test, unittest.TestCase):
 
     def setUp(self):
         _Material_Test.setUp(self)
-        self.mat = Lithium()
 
         self.Lithium_LI_wt_frac = Lithium()
+        self.Lithium_LI_wt_frac.parent = FakeCompositeWithNucBases()
         self.Lithium_LI_wt_frac.applyInputParams(LI6_wt_frac=0.5)
 
         self.Lithium_LI6_wt_frac = Lithium()
+        self.Lithium_LI6_wt_frac.parent = FakeCompositeWithNucBases()
         self.Lithium_LI6_wt_frac.applyInputParams(LI6_wt_frac=0.6)
 
         self.Lithium_both = Lithium()
+        self.Lithium_both.parent = FakeCompositeWithNucBases()
         self.Lithium_both.applyInputParams(LI6_wt_frac=0.8)
 
     def test_Lithium_material_modifications(self):

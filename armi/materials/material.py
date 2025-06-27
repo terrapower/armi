@@ -26,7 +26,6 @@ import numpy as np
 from scipy.optimize import fsolve
 
 from armi import runLog
-from armi.nucDirectory import nuclideBases
 from armi.reactor.flags import TypeSpec
 from armi.utils import densityTools
 from armi.utils.units import getTc, getTk
@@ -351,10 +350,11 @@ class Material:
         """
         if massFraction > 1.0 or massFraction < 0.0:
             raise ValueError("Cannot enrich to massFraction of {}, must be between 0 and 1".format(massFraction))
+        elif self.parent is None:
+            raise ValueError(f"The materials {self} needs a parent to get nuclide information.")
 
         nucsNames = list(self.massFrac)
-
-        # TODO: This method is the only thing in `Material` that uses `NuclideBases`
+        nuclideBases = self.parent.nuclideBases
 
         # refDens could be zero, but cannot normalize to zero.
         density = self.refDens or 1.0
