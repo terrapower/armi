@@ -433,7 +433,11 @@ def insertDepletableNuclideKeys(c, blueprint):
     """
     if c.hasFlags(Flags.DEPLETABLE):
         # depletable components, whether auto-derived or explicitly flagged need expanded nucs
-        nuclideBases.initReachableActiveNuclidesThroughBurnChain(
+        (
+            c.p.nuclides,
+            c.p.numberDensities,
+        ) = nuclideBases.initReachableActiveNuclidesThroughBurnChain(
+            c.p.nuclides,
             c.p.numberDensities,
             blueprint.activeNuclides,
         )

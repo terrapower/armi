@@ -150,7 +150,10 @@ class TestComponentFactory(unittest.TestCase):
             component = components.factory(name, [], thisAttrs)
             duped = copy.deepcopy(component)
             for key, val in component.p.items():
-                if key not in ["area", "volume", "serialNum"]:
+                if key in ["numberDensities", "nuclides"]:
+                    for i in range(len(val)):
+                        self.assertEqual(val[i], duped.p[key][i])
+                elif key not in ["area", "volume", "serialNum"]:
                     # they get recomputed
                     self.assertEqual(
                         val,
@@ -173,9 +176,9 @@ class TestGeneralComponents(unittest.TestCase):
 
     def setUp(self, component=None):
         """
-        Most of the time nothing will be passed as `component` and the result will
-        be stored in self, but you can also pass a component object as `component`,
-        in which case the object will be returned with the `parent` attribute assigned.
+        Most of the time nothing will be passed as `component` and the result will be stored in
+        self, but you can also pass a component object as `component`, in which case the object will
+        be returned with the `parent` attribute assigned.
         """
 
         class _Parent:
@@ -811,12 +814,14 @@ class TestCircle(TestShapedComponent):
 
     def test_getNumberDensities(self):
         """Test that demonstrates that number densities can be retrieved on from component."""
-        self.component.p.numberDensities = {"NA23": 1.0}
+        self.component.p.numberDensities = np.ones(1, dtype=np.float64)
+        self.component.p.nuclides = np.array(["NA23"], dtype="S6")
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
 
     def test_changeNumberDensities(self):
         """Test that demonstrates that the number densities on a component can be modified."""
-        self.component.p.numberDensities = {"NA23": 1.0}
+        self.component.p.numberDensities = np.ones(1, dtype=np.float64)
+        self.component.p.nuclides = np.array(["NA23"], dtype="S6")
         self.component.p.detailedNDens = [1.0]
         self.component.p.pinNDens = [1.0]
         self.assertEqual(self.component.getNumberDensity("NA23"), 1.0)
@@ -895,12 +900,12 @@ class TestComponentExpansion(unittest.TestCase):
         # mass density is proportional to Fe number density and derived from
         # all the number densities and atomic masses
         self.assertAlmostEqual(
-            circle1.p.numberDensities[isotope] / circle2.p.numberDensities[isotope],
+            circle1.getNumberDensity(isotope) / circle2.getNumberDensity(isotope),
             circle1.density() / circle2.density(),
         )
 
-        # the colder one has more because it is the same cold outer diameter
-        # but it would be taller at the same temperature
+        # the colder one has more because it is the same cold outer diameter but it would be taller
+        # at the same temperature
         mass1 = circle1.density() * circle1.getArea() * hotHeight
         mass2 = circle2.density() * circle2.getArea() * hotHeight
         self.assertGreater(mass1, mass2)
@@ -954,10 +959,7 @@ class TestComponentExpansion(unittest.TestCase):
         circle1.setTemperature(self.tHot)
 
         # now its density is same as hot component
-        self.assertAlmostEqual(
-            circle1.density(),
-            circle2.density(),
-        )
+        self.assertAlmostEqual(circle1.density(), circle2.density())
 
         # show that mass is conserved after expansion
         circle1NewHotHeight = hotHeight * heightFactor
@@ -1003,8 +1005,7 @@ class TestComponentExpansion(unittest.TestCase):
                 circle.density(),
                 circle.material.density(Tc=circle.temperatureInC),
             )
-            # total mass consistent between hot and cold
-            # Hot height will be taller
+            # total mass consistent between hot and cold. Hot height will be taller
             hotHeight = coldHeight * circle.getThermalExpansionFactor()
             self.assertAlmostEqual(
                 coldHeight * circle.getArea(cold=True) * circle.material.density(Tc=circle.inputTemperatureInC),
