@@ -1046,7 +1046,7 @@ class Database:
                 raise ValueError(msg)
 
             if paramName == "numberDensities" and attrs.get("dict", False):
-                _applyComponentNumberDensitiesMigration(comps, unpackedData)
+                Database._applyComponentNumberDensitiesMigration(comps, unpackedData)
             else:
                 # iterating of np is not fast...
                 for c, val, linkedDim in itertools.zip_longest(comps, unpackedData, linkedDims, fillvalue=""):
@@ -1447,6 +1447,22 @@ class Database:
 
         return resolved
 
+    @staticmethod
+    def _applyComponentNumberDensitiesMigration(comps, unpackedData):
+        """
+        Special migration from <= v0.5.1 component numberDensities parameter data type.
+
+        old format: dict[str: float]
+        new format: two numpy arrays
+        - nuclides = np.array(dtype="S6")
+        - numberDensities = np.array(dtype=np.float64)
+        """
+        for c, ndensDict in zip(comps, unpackedData):
+            nuclides = np.array(list(ndensDict.keys()), dtype="S6")
+            numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
+            c.p["nuclides"] = nuclides
+            c.p["numberDensities"] = numberDensities
+
 
 def packSpecialData(
     arrayData: [np.ndarray, JaggedArray], paramName: str
@@ -1638,19 +1654,3 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
         dataDict[nb.getDatabaseName()] = nucDensityMatrix[:, ni]
 
     return dataDict
-
-
-def _applyComponentNumberDensitiesMigration(comps, unpackedData):
-    """
-    Special migration from <= v0.5.1 component numberDensities parameter data type.
-
-    old format: dict[str: float]
-    new format: two numpy arrays
-    - nuclides = np.array(dtype="S6")
-    - numberDensities = np.array(dtype=np.float64)
-    """
-    for c, ndensDict in zip(comps, unpackedData):
-        nuclides = np.array(list(ndensDict.keys()), dtype="S6")
-        numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
-        c.p["nuclides"] = nuclides
-        c.p["numberDensities"] = numberDensities

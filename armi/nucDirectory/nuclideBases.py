@@ -957,8 +957,10 @@ def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activ
 
     Parameters
     ----------
-    numberDensityDict : dict
-        Starting number densities.
+    nuclides : np.array, dtype="S6"
+        Starting array of nuclide names
+    numberDensities : np.array, dtype=np.float64
+        Starting array of number densities
     activeNuclides : OrderedSet
         Active nuclides defined on the reactor blueprints object. See: armi.reactor.blueprints.py
     """
@@ -981,7 +983,7 @@ def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activ
 
         for interaction in nuclideObj.trans + nuclideObj.decays:
             try:
-                # Interaction nuclides can only be added to the number density dictionary if they
+                # Interaction nuclides can only be added to the number density arrays if they
                 # are a part of the user-defined active nuclides
                 productNuclide = interaction.getPreferredProduct(activeNuclides)
                 if productNuclide not in nucNames:
@@ -990,6 +992,7 @@ def initReachableActiveNuclidesThroughBurnChain(nuclides, numberDensities, activ
                 # Keep track of the first production nuclide
                 missingActiveNuclides.add(interaction.productNuclides)
 
+        # add the new nuclides to the number density arrays
         newNDens = np.zeros(len(newNucs), dtype=np.float64)
         nuclides = np.append(nuclides, list(newNucs))
         numberDensities = np.append(numberDensities, newNDens)

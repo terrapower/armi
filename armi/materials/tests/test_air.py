@@ -244,6 +244,11 @@ class Test_Air(unittest.TestCase):
         error = abs(nDens[3] / sum(nDens) - refAR)
         self.assertLess(error, diff)
 
+        self.assertEqual(nuclides[0].decode(), "C")
+        self.assertEqual(nuclides[1].decode(), "N")
+        self.assertEqual(nuclides[2].decode(), "O")
+        self.assertEqual(nuclides[3].decode(), "AR")
+
     def test_validRanges(self):
         air = Air()
 
