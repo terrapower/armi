@@ -265,6 +265,7 @@ class Flags(Flag):
     GUIDE_TUBE = auto()
     FISSION_CHAMBER = auto()
     MODERATOR = auto()
+    COLLAR = auto()
 
     # more parts
     CORE_BARREL = auto()
