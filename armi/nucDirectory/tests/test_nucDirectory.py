@@ -61,3 +61,16 @@ class TestNucDirectory(unittest.TestCase):
 
         with self.assertRaises(KeyError):
             nucDir.getThresholdDisplacementEnergy("fail")
+
+    def test_getThresholdDisplacementEnergy(self):
+        val = nucDir.getThresholdDisplacementEnergy("H3")
+        self.assertEqual(val, 10.0)
+
+        val = nucDir.getThresholdDisplacementEnergy("W184")
+        self.assertEqual(val, 90.0)
+
+        val = nucDir.getThresholdDisplacementEnergy("FE54AA")
+        self.assertEqual(val, 40.0)
+
+        with self.assertRaises(KeyError):
+            _val = nucDir.getThresholdDisplacementEnergy("U238")

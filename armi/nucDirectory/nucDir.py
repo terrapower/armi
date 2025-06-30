@@ -279,7 +279,7 @@ def getAtomicWeight(lab=None, z=None, a=None):  # TODO: JOHN: Only used once out
         return nuclide.weight
 
 
-def getThresholdDisplacementEnergy(nuc):  # TODO: JOHN: Only used once outside ARMI
+def getThresholdDisplacementEnergy(nuc):
     """
     Return the Lindhard cutoff; the energy required to displace an atom.
 
@@ -290,23 +290,24 @@ def getThresholdDisplacementEnergy(nuc):  # TODO: JOHN: Only used once outside A
     Parameters
     ----------
     nuc : str
-        nuclide name
+        nuclide name: e.g. "U238", "H3", "FE54AA", etc...
 
     Returns
     -------
     Ed : float
         The cutoff energy in eV
     """
-    nuc = getNuclide(nuc)
-    el = elements.byZ[nuc.z]
+    maxIndex = len(nuc) * 2
+    for i in range(len(nuc)):
+        if nuc[i].isdigit():
+            maxIndex = i
+            break
+
+    el = nuc[:maxIndex]
     try:
-        ed = eDisplacement[el.symbol]
+        ed = eDisplacement[el]
     except KeyError:
-        print(
-            "The element {0} of nuclide {1} does not have a displacement energy in the library. Please add one.".format(
-                el, nuc
-            )
-        )
+        print("The element {el} of nuclide {nuc} does not have a displacement energy in the library. Please add one.")
         raise
 
     return ed
