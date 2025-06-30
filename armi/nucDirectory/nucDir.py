@@ -22,12 +22,9 @@ This may be deprecated. Consider using the appropriate instance methods availabl
 :py:mod:`armi.nucDirectory.nuclideBases` module.
 """
 
-import re
+# TODO: JOHN: I think this stuff can be moved to methods on `NuclideBases`, or just deleted if unused downstream.
 
 from armi.nucDirectory import elements, nuclideBases
-
-nuclidePattern = re.compile(r"([A-Za-z]+)-?(\d{0,3})(\d*)(\S*)")
-zaPat = re.compile(r"([A-Za-z]+)-?([0-9]+)")
 
 # Partially from table 2.2 in Was
 # See also: Table 2.4 in Primary Radiation Damage in Materials
@@ -56,7 +53,7 @@ eDisplacement = {
 }
 
 
-def getNuclideFromName(name):
+def getNuclideFromName(name):  # TODO: JOHN: Only used in ARMI
     actualName = name
     if "-" in name:
         actualName = name.replace("-", "")
@@ -108,46 +105,7 @@ def getNaturalMassIsotopics(elementSymbol=None, z=None):
     return massIso
 
 
-def getMc2Label(name):
-    """
-    Return a MC2 prefix label without a xstype suffix.
-
-    MC**2 has labels and library names. The labels are like
-    U235IA, ZIRCFB, etc. and the library names are references
-    to specific data sets on the MC**2 libraries (e.g. U-2355, etc.)
-
-    This method returns the labels without the xstype suffixes (IA, FB).
-    Rather than maintaining a lookup table, this simply converts
-    the ARMI nuclide names to MC**2 names.
-
-    Parameters
-    ----------
-    name : str
-        ARMI nuclide name of the nuclide
-
-    Returns
-    -------
-    mc2LibLabel : str
-        The MC**2 prefix for this nuclide.
-
-    Examples
-    --------
-    >>> nucDir.getMc2Label('U235')
-    'U235'
-    >> nucDir.getMc2Label('FE')
-    'FE'
-    >>> nucDir.getMc2Label('IRON')
-    'FE'
-    >>> nucDir.getMc2Label('AM242')
-    A242
-
-    """
-    # First translate to the proper nuclide. CARB->C
-    nuc = getNuclide(name)
-    return nuc.label
-
-
-def getElementName(z=None, symbol=None):
+def getElementName(z=None, symbol=None):  # TODO: JOHN: Only used in ARMI
     """
     Returns element name.
 
@@ -174,7 +132,7 @@ def getElementName(z=None, symbol=None):
     return element.name
 
 
-def getElementSymbol(z=None, name=None):
+def getElementSymbol(z=None, name=None):  # TODO: JOHN: Only used in ARMI
     """
     Returns element abbreviation given atomic number Z.
 
@@ -201,7 +159,7 @@ def getElementSymbol(z=None, name=None):
     return element.symbol
 
 
-def getNuclide(nucName):
+def getNuclide(nucName):  # TODO: JOHN: Only used in ARMI
     """
     Looks up the ARMI nuclide object that has this name.
 
@@ -223,7 +181,7 @@ def getNuclide(nucName):
     return nuc
 
 
-def getNuclides(nucName=None, elementSymbol=None):
+def getNuclides(nucName=None, elementSymbol=None):  # TODO: JOHN: Only used once outside ARMI
     """
     Returns a list of nuclide names in a particular nuclide or element.
 
@@ -250,7 +208,7 @@ def getNuclides(nucName=None, elementSymbol=None):
     return nucList
 
 
-def getNuclideNames(nucName=None, elementSymbol=None):
+def getNuclideNames(nucName=None, elementSymbol=None):  # TODO: JOHN: Only used in ARMI
     """
     Returns a list of nuclide names in a particular nuclide or element.
 
@@ -269,7 +227,7 @@ def getNuclideNames(nucName=None, elementSymbol=None):
     return [nn.name for nn in nucList]
 
 
-def getAtomicWeight(lab=None, z=None, a=None):
+def getAtomicWeight(lab=None, z=None, a=None):  # TODO: JOHN: Only used once outside ARMI
     """
     Returns atomic weight in g/mole.
 
@@ -321,21 +279,7 @@ def getAtomicWeight(lab=None, z=None, a=None):
         return nuclide.weight
 
 
-def isHeavyMetal(name):
-    try:
-        return getNuclide(name).isHeavyMetal()
-    except AttributeError:
-        raise AttributeError("The nuclide {0} is not found in the nuclide directory".format(name))
-
-
-def isFissile(name):
-    try:
-        return getNuclide(name).isFissile()
-    except AttributeError:
-        raise AttributeError("The nuclide {0} is not found in the nuclide directory".format(name))
-
-
-def getThresholdDisplacementEnergy(nuc):
+def getThresholdDisplacementEnergy(nuc):  # TODO: JOHN: Only used once outside ARMI
     """
     Return the Lindhard cutoff; the energy required to displace an atom.
 
