@@ -649,32 +649,42 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             byteNucs = [nucName.encode() for nucName in nucNames]
 
-        nDens = np.zeros(len(byteNucs), dtype=np.float64)
         if self.p.numberDensities is None:
-            return nDens
-
-        nuclideCopy = np.array(self.p.nuclides)
-        nDensCopy = np.array(self.p.numberDensities)
+            return np.zeros(len(byteNucs), dtype=np.float64)
 
         # trivial case where nucNames is the full set of nuclides in the same order
-        if np.array_equal(byteNucs, nuclideCopy):
-            return nDensCopy
+        if np.array_equal(byteNucs, self.p.nuclides):
+            return np.array(self.p.numberDensities)
 
-        if len(nDens) > len(nDensCopy) / 10:
-            # if there are a lot of indices to get densities for, use reverseIndex lookup
-            reverseIndex = {nuc: i for i, nuc in enumerate(self.p.nuclides)}
-            for i, nuc in enumerate(byteNucs):
-                j = reverseIndex.get(nuc, -1)
-                if j >= 0:
-                    nDens[i] = nDensCopy[j]
-        else:
-            # if it's just a small subset of nuclides, use np.where for direct index lookup
-            for i, nuc in enumerate(byteNucs):
-                j = np.where(nuclideCopy == nuc)[0]
-                if j.size > 0:
-                    nDens[i] = nDensCopy[j[0]]
+        if len(byteNucs) < len(self.p.nuclides) / 10:
+            return self._getNumberDensitiesArray(byteNucs)
 
-        return nDens
+        nDensDict = dict(zip(self.p.nuclides, self.p.numberDensities))
+        return [nDensDict.get(nuc, 0.0) for nuc in byteNucs]
+
+    def _getNumberDensitiesArray(self, byteNucs):
+        """
+        Get number densities using direct array lookup.
+
+        When only a small subset of nuclide number densities are requested, it is
+        likely faster to lookup the index for each nuclide than to recreate the
+        entire dictionary for a lookup.
+
+        Parameters
+        ----------
+        byteNucs : np.ndarray, dtype="S6"
+            List of nuclides for which to retrieve number densities, as encoded byte strings
+        """
+        ndens = np.zeros(len(byteNucs), dtype=np.float64)
+        nuclides = self.p.nuclides
+        numberDensities = self.p.numberDensities
+
+        # if it's just a small subset of nuclides, use np.where for direct index lookup
+        for i, nuc in enumerate(byteNucs):
+            j = np.where(nuclides == nuc)[0]
+            if j.size > 0:
+                ndens[i] = numberDensities[j[0]]
+        return ndens
 
     def _getNdensHelper(self):
         nucs = self.getNuclides()
@@ -782,17 +792,17 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             newNucs = []
             newNumDens = []
-            nucCopy = np.array(self.p.nuclides)
-            nDensCopy = np.array(self.p.numberDensities)
+            nucs = self.p.nuclides
+            ndens = self.p.numberDensities
             for nucName, dens in numberDensities.items():
-                i = np.where(nucCopy == nucName.encode())[0]
+                i = np.where(nucs == nucName.encode())[0]
                 if i.size > 0:
-                    nDensCopy[i[0]] = dens
+                    ndens[i[0]] = dens
                 else:
                     newNucs.append(nucName.encode())
                     newNumDens.append(dens)
-            self.p.nuclides = np.append(self.p.nuclides, newNucs)
-            self.p.numberDensities = np.append(nDensCopy, newNumDens)
+            self.p.nuclides = np.append(nucs, newNucs)
+            self.p.numberDensities = np.append(ndens, newNumDens)
 
         # check if thermal expansion changed
         dLLnew = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
