@@ -390,8 +390,7 @@ class Block_TestCase(unittest.TestCase):
         ref = (self.block.getDim(Flags.FUEL, "od") ** 2 - self.block.getDim(Flags.FUEL, "id") ** 2) / self.block.getDim(
             Flags.LINER, "id"
         ) ** 2
-        places = 10
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=10)
 
         # test with liner instead of clad
         ref = (self.block.getDim(Flags.FUEL, "od") ** 2 - self.block.getDim(Flags.FUEL, "id") ** 2) / self.block.getDim(
@@ -399,13 +398,10 @@ class Block_TestCase(unittest.TestCase):
         ) ** 2
         cur = self.block.getSmearDensity()
         self.assertAlmostEqual(
-            cur,
-            ref,
-            places=places,
-            msg="Incorrect getSmearDensity with liner. Got {0}. Should be {1}".format(cur, ref),
+            cur, ref, places=10, msg=f"Incorrect getSmearDensity with liner. Got {cur}. Should be {ref}"
         )
 
-        # test with annular fuel.
+        # test with annular fuel
         fuelDims = {
             "Tinput": 273.0,
             "Thot": 273.0,
@@ -420,10 +416,7 @@ class Block_TestCase(unittest.TestCase):
         ) ** 2
         cur = self.block.getSmearDensity()
         self.assertAlmostEqual(
-            cur,
-            ref,
-            places=places,
-            msg="Incorrect getSmearDensity with annular fuel. Got {0}. Should be {1}".format(cur, ref),
+            cur, ref, places=10, msg=f"Incorrect getSmearDensity with annular fuel. Got {cur}. Should be {ref}"
         )
 
     def test_getSmearDensityMultipleLiner(self):
@@ -509,18 +502,15 @@ class Block_TestCase(unittest.TestCase):
 
         ref = self.block.getMass()
         cur = Block2.getMass()
-        places = 6
-        self.assertAlmostEqual(ref, cur, places=places)
+        self.assertAlmostEqual(ref, cur, places=6)
 
         ref = self.block.getArea()
         cur = Block2.getArea()
-        places = 6
-        self.assertAlmostEqual(ref, cur, places=places)
+        self.assertAlmostEqual(ref, cur, places=6)
 
         ref = self.block.getHeight()
         cur = Block2.getHeight()
-        places = 6
-        self.assertAlmostEqual(ref, cur, places=places)
+        self.assertAlmostEqual(ref, cur, places=6)
 
         self.assertEqual(self.block.p.flags, Block2.p.flags)
 
@@ -567,13 +557,11 @@ class Block_TestCase(unittest.TestCase):
 
             ref = self.block.getArea()
             cur = homogBlock.getArea()
-            places = 6
-            self.assertAlmostEqual(ref, cur, places=places)
+            self.assertAlmostEqual(ref, cur, places=6)
 
             ref = self.block.getHeight()
             cur = homogBlock.getHeight()
-            places = 6
-            self.assertAlmostEqual(ref, cur, places=places)
+            self.assertAlmostEqual(ref, cur, places=6)
 
     def test_getXsType(self):
         self.cs = settings.Settings()
@@ -709,8 +697,7 @@ class Block_TestCase(unittest.TestCase):
         for nuc in self.block.getNuclides():
             cur = self.block.getNumberDensity(nuc)
             ref = 0.0
-            places = 5
-            self.assertAlmostEqual(cur, ref, places=places)
+            self.assertAlmostEqual(cur, ref, places=5)
 
     def test_getNumberDensity(self):
         refDict = {
@@ -723,13 +710,12 @@ class Block_TestCase(unittest.TestCase):
             "ZR": 0.00709003962772,
         }
 
-        self.block.setNumberDensities(refDict)
+        self.block.updateNumberDensities(refDict)
 
         for nucKey, nucItem in refDict.items():
             cur = self.block.getNumberDensity(nucKey)
             ref = nucItem
-            places = 6
-            self.assertAlmostEqual(ref, cur, places=places)
+            self.assertAlmostEqual(ref, cur, places=6)
 
     def test_getMasses(self):
         masses = sorted(self.block.getMasses())
@@ -749,37 +735,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.setNumberDensity("U235", ref)
 
         cur = self.block.getNumberDensity("U235")
-        places = 5
-        self.assertAlmostEqual(cur, ref, places=places)
-
-    def test_setNumberDensities(self):
-        """Make sure we can set multiple number densities at once."""
-        b = self.block
-        b.setNumberDensity("NA", 0.5)
-        refDict = {
-            "U235": 0.00275173784234,
-            "U238": 0.0217358415457,
-            "W": 1.09115150103e-05,
-            "ZR": 0.00709003962772,
-        }
-
-        b.setNumberDensities(refDict)
-
-        for nucKey, nucItem in refDict.items():
-            cur = self.block.getNumberDensity(nucKey)
-            ref = nucItem
-            places = 6
-            self.assertAlmostEqual(cur, ref, places=places)
-
-        # make sure U235 stayed fully contained in the fuel component
-        fuelC = b.getComponent(Flags.FUEL)
-        self.assertAlmostEqual(
-            b.getNumberDensity("U235"),
-            fuelC.getNumberDensity("U235") * fuelC.getVolumeFraction(),
-        )
-
-        # make sure other vals were zeroed out
-        self.assertAlmostEqual(b.getNumberDensity("NA23"), 0.0)
+        self.assertAlmostEqual(cur, ref, places=5)
 
     def test_getMass(self):
         self.block.setHeight(100.0)
@@ -792,8 +748,7 @@ class Block_TestCase(unittest.TestCase):
         ref = d * v * A / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
         cur = self.block.getMass(nucName)
 
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_setMass(self):
         self.block.setHeight(100.0)
@@ -804,16 +759,14 @@ class Block_TestCase(unittest.TestCase):
 
         cur = self.block.getMass(nuc)
         ref = mass
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
         cur = self.block.getNumberDensity(nuc)
         v = self.block.getVolume()
         A = nucDir.getAtomicWeight(nuc)
         ref = MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * mass / (v * A)
 
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getTotalMass(self):
         self.block.setHeight(100.0)
@@ -828,7 +781,7 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(refDict)
+        self.block.updateNumberDensities(refDict)
 
         cur = self.block.getMass()
 
@@ -841,8 +794,7 @@ class Block_TestCase(unittest.TestCase):
         v = self.block.getVolume()
         ref = tot * v / MOLES_PER_CC_TO_ATOMS_PER_BARN_CM
 
-        places = 9
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=9)
 
     def test_replaceBlockWithBlock(self):
         """Tests conservation of mass flag in replaceBlockWithBlock."""
@@ -1018,8 +970,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.adjustUEnrich(ref)
 
         cur = self.block.getComponent(Flags.FUEL).getEnrichment()
-        places = 5
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=5)
 
     def test_setLocation(self):
         """
@@ -1080,7 +1031,7 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(refDict)
+        self.block.updateNumberDensities(refDict)
 
         cur = self.block.getTotalNDens()
 
@@ -1090,8 +1041,7 @@ class Block_TestCase(unittest.TestCase):
             tot += ndens
 
         ref = tot
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getHMDens(self):
         self.block.setType("fuel")
@@ -1105,7 +1055,7 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(refDict)
+        self.block.updateNumberDensities(refDict)
 
         cur = self.block.getHMDens()
 
@@ -1117,8 +1067,7 @@ class Block_TestCase(unittest.TestCase):
 
         ref = hmDens
 
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getFissileMassEnrich(self):
         fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
@@ -1136,13 +1085,12 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(refDict)
+        self.block.updateNumberDensities(refDict)
 
         cur = self.block.getFissileMassEnrich()
 
         ref = self.block.getFissileMass() / self.block.getHMMass()
-        places = 4
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=4)
         self.block.remove(self.fuelComponent)
 
     def test_getMicroSuffix(self):
@@ -1163,12 +1111,10 @@ class Block_TestCase(unittest.TestCase):
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
-
         self.block.adjustUEnrich(ref)
         cur = self.block.getUraniumMassEnrich()
 
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_getUraniumNumEnrich(self):
         self.block.adjustUEnrich(0.25)
@@ -1197,7 +1143,7 @@ class Block_TestCase(unittest.TestCase):
             "W186": 1.17057432664e-05,
             "ZR": 0.00709003962772,
         }
-        self.block.setNumberDensities(refDict)
+        self.block.updateNumberDensities(refDict)
 
         nucName = "U238"
         moles = self.block.getNumberOfAtoms(nucName) / units.AVOGADROS_NUMBER  # about 158 moles
@@ -1218,7 +1164,7 @@ class Block_TestCase(unittest.TestCase):
             "PU241": 0.00011209296581262849,
             "PU242": 2.3078961257395204e-05,
         }
-        fuel.setNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
+        fuel.updateNumberDensities({nuc: v / vFrac for nuc, v in refDict.items()})
 
         # test moles
         cur = self.block.getPuMoles()
@@ -1301,11 +1247,12 @@ class Block_TestCase(unittest.TestCase):
 
         Notes
         -----
-        - When checking component-level BOL params, puFrac is skipped due to 1) there's no Pu in the block, and 2)
-          getPuMoles is functionally identical to getHMMoles (just limits nuclides from heavy metal to just Pu).
-        - getSymmetryFactor is mocked to return 3. This indicates that the block is in the center-most assembly.
-          Providing this mock ensures that symmetry factors are tested as well (otherwise it's just a factor of 1
-          and it is a less robust test).
+        - When checking component-level BOL params, puFrac is skipped due to 1) there's no Pu in the
+          block, and 2) getPuMoles is functionally identical to getHMMoles (just limits nuclides
+          from heavy metal to just Pu).
+        - getSymmetryFactor is mocked to return 3. This indicates that the block is in the center-
+          most assembly. Providing this mock ensures that symmetry factors are tested as well
+          (otherwise it's just a factor of 1 and it is a less robust test).
         """
         mock_sf.return_value = 3
         area = self.block.getArea()
@@ -1313,7 +1260,7 @@ class Block_TestCase(unittest.TestCase):
         self.block.setHeight(height)
 
         self.block.clearNumberDensities()
-        self.block.setNumberDensities(
+        self.block.updateNumberDensities(
             {
                 "U238": 0.018518936996911595,
                 "ZR": 0.006040713762820692,
@@ -1603,8 +1550,7 @@ class Block_TestCase(unittest.TestCase):
         fracs = self.block.getVolumeFractions()
 
         ref = calcFracManually(("bond", "coolant"))
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
         # allow inexact for things like fuel1, fuel2 or clad vs. cladding
         val = self.block.getComponentAreaFrac([Flags.COOLANT, Flags.INTERCOOLANT])
@@ -1618,8 +1564,7 @@ class Block_TestCase(unittest.TestCase):
     def test_100_getPinPitch(self):
         cur = self.block.getPinPitch()
         ref = self.block.getDim(Flags.CLAD, "od") + self.block.getDim(Flags.WIRE, "od")
-        places = 6
-        self.assertAlmostEqual(cur, ref, places=places)
+        self.assertAlmostEqual(cur, ref, places=6)
 
     def test_101_getPitch(self):
         cur = self.block.getPitch(returnComp=True)
@@ -1652,13 +1597,13 @@ class Block_TestCase(unittest.TestCase):
             a = c.getArea()
             tot += a
             areas.append((c, a))
+
         fracs = {}
         for c, a in areas:
             fracs[c.getName()] = a / tot
 
-        places = 6
         for c, a in cur:
-            self.assertAlmostEqual(a, fracs[c.getName()], places=places)
+            self.assertAlmostEqual(a, fracs[c.getName()], places=6)
 
         self.assertAlmostEqual(sum(fracs.values()), sum([a for c, a in cur]))
 

@@ -313,8 +313,7 @@ class AverageBlockCollection(BlockCollection):
     """
     Block collection that builds a new block based on others in collection.
 
-    Averages number densities, fission product yields, and fission gas
-    removal fractions.
+    Averages number densities, fission product yields, and fission gas removal fractions.
 
     .. impl:: Create representative blocks using volume-weighted averaging.
         :id: I_ARMI_XSGM_CREATE_REPR_BLOCKS0
@@ -341,7 +340,9 @@ class AverageBlockCollection(BlockCollection):
                 c.setNumberDensities(self._getAverageComponentNumberDensities(compIndex))
                 c.temperatureInC = self._getAverageComponentTemperature(compIndex)
         else:
-            newBlock.setNumberDensities(self._getAverageNumberDensities())
+            numberDensities = self._getAverageNumberDensities()
+            numberDensities.update({nuc: 0.0 for nuc in newBlock.getNuclides() if nuc not in numberDensities})
+            newBlock.updateNumberDensities(numberDensities)
 
         newBlock.p.percentBu = self._calcWeightedBurnup()
         self.calcAvgNuclideTemperatures()
@@ -601,8 +602,8 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
             diffNucs = theseNucs.symmetric_difference(thoseNucs).intersection(consistentNucs)
             if diffNucs:
                 raise ValueError(
-                    f"{compString} are in the same location, but nuclides "
-                    f"differ by {diffNucs}. \n{theseNucs} \n{thoseNucs}"
+                    f"{compString} are in the same location, but nuclides differ by {diffNucs}. \n"
+                    f"{theseNucs} \n{thoseNucs}"
                 )
 
     def _getAverageComponentNucs(self, components, bWeights):
@@ -665,9 +666,9 @@ class CylindricalComponentsDuctHetAverageBlockCollection(CylindricalComponentsAv
 
     Notes
     -----
-    The representative block for this collection is the same as the parent. The only difference between
-    the two collection types is that this collection calculates average nuclide temperatures based only
-    on the components that are inside of the duct.
+    The representative block for this collection is the same as the parent. The only difference
+    between the two collection types is that this collection calculates average nuclide temperatures
+    based only on the components that are inside of the duct.
     """
 
     def _getNewBlock(self):
@@ -688,8 +689,7 @@ class CylindricalComponentsDuctHetAverageBlockCollection(CylindricalComponentsAv
         nv = np.zeros(len(self.allNuclidesInProblem))
         for block in self.getCandidateBlocks():
             wt = self.getWeight(block)
-            # remove the duct and intercoolant from the block before
-            # calculating average nuclide temps
+            # remove the duct and intercoolant from the block before calculating avg nuclide temps
             newBlock, _mixtureFlags = stripComponents(block, Flags.DUCT)
             nvtBlock, nvBlock = getBlockNuclideTemperatureAvgTerms(newBlock, self.allNuclidesInProblem)
             nvt += nvtBlock * wt
@@ -873,8 +873,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     Notes
     -----
-    The representative blocks created in the CrossSectionGroupManager are ordered
-    alphabetically by key.
+    The representative blocks created in the CrossSectionGroupManager are ordered alphabetically by
+    key.
     """
 
     name = "xsGroups"
@@ -946,7 +946,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         Notes
         -----
-        The block list each each block collection cannot be emptied since it is used to derive nuclide temperatures.
+        The block list each each block collection cannot be emptied since it is used to derive
+        nuclide temperatures.
         """
         if self._latticePhysicsFrequency == LatticePhysicsFrequency.BOC:
             self.createRepresentativeBlocks()
@@ -1070,8 +1071,9 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         numBuGroups = len(self._buGroupBounds)
         if numBuGroups == 1 and len(self._tempGroupBounds) == 1:
-            # dont set block.p.envGroupNum since all 1 group and we want to support 2 char xsGroup
+            # do not set block.p.envGroupNum since all 1 group and we want to support 2 char xsGroup
             return
+
         runLog.debug("Updating env groups of {0} blocks".format(len(blockList)))
         for block in blockList:
             bu = block.p.percentBu
@@ -1087,6 +1089,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                             if tempC <= upperTemp:
                                 tempGroupVal = tempIndex
                                 break
+
                     # this ordering groups like-temperatures together in group number
                     block.p.envGroupNum = tempGroupVal * numBuGroups + buGroupVal
                     break
@@ -1111,6 +1114,7 @@ class CrossSectionGroupManager(interfaces.Interface):
             group = blockCollectionsByXsGroup.get(xsID, blockCollectionType)
             group.append(b)
             blockCollectionsByXsGroup[xsID] = group
+
         return blockCollectionsByXsGroup
 
     def _initializeXsID(self, xsID):
@@ -1165,8 +1169,8 @@ class CrossSectionGroupManager(interfaces.Interface):
 
         Notes
         -----
-        Multiple files can exist on the `file location` setting for a single XS ID. This checks that all files exist
-        and returns a list of tuples (file path, fileName).
+        Multiple files can exist on the `file location` setting for a single XS ID. This checks that
+        all files exist and returns a list of tuples (file path, fileName).
         """
         fileData = []
         filePaths = self.cs[CONF_CROSS_SECTION][xsID].xsFileLocation
@@ -1198,10 +1202,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             :id: I_ARMI_XSGM_CREATE_XS_GROUPS
             :implements: R_ARMI_XSGM_CREATE_XS_GROUPS
 
-            This method constructs the representative blocks and block burnups
-            for each cross-section ID in the reactor model. Starting with the making of cross-section groups, it will
-            find candidate blocks and create representative blocks from that selection.
-
+            This method constructs the representative blocks and block burnups for each cross-
+            section ID in the reactor model. Starting with the making of cross-section groups, it
+            will find candidate blocks and create representative blocks from that selection.
         """
         representativeBlocks = {}
         self.avgNucTemperatures = {}
@@ -1235,23 +1238,23 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         Create a new set of representative blocks using provided blocks.
 
-        This uses an input list of blocks and creates new representative blocks for these blocks based on the
-        compositions and temperatures of their original representative blocks.
+        This uses an input list of blocks and creates new representative blocks for these blocks
+        based on the compositions and temperatures of their original representative blocks.
 
         Notes
         -----
-        This is required for computing Doppler, Voided-Doppler, Temperature, and Voided-Temperature reactivity
-        coefficients, where the composition of the representative block must remain the same, but only the
-        temperatures within the representative blocks are to be modified.
+        This is required for computing Doppler, Voided-Doppler, Temperature, and Voided-Temperature
+        reactivity coefficients, where the composition of the representative block must remain the
+        same, but only the temperatures within the representative blocks are to be modified.
 
         Parameters
         ----------
         blockList : list
             A list of blocks defined within the core
         originalRepresentativeBlocks : dict
-            A dict of unperturbed representative blocks that the new representative blocks are formed from
-            keys: XS group ID (e.g., "AA")
-            values: representative block for the XS group
+            A dict of unperturbed representative blocks that the new representative blocks are
+            formed from: keys: XS group ID (e.g., "AA") and values: representative block for the XS
+            group
 
         Returns
         -------
@@ -1260,8 +1263,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         modifiedReprBlocks : dict
             Mapping between XS IDs and the new representative blocks
         origXSIDsFromNew : dict
-            Mapping of original XS IDs to new XS IDs. New XS IDs are created to
-            represent a modified state (e.g., a Doppler temperature perturbation).
+            Mapping of original XS IDs to new XS IDs. New XS IDs are created to represent a modified
+            state (e.g., a Doppler temperature perturbation).
 
         Raises
         ------
@@ -1280,6 +1283,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         modifiedReprBlocks, origXSIDsFromNew = self._getModifiedReprBlocks(blockList, originalRepresentativeBlocks)
         if not modifiedReprBlocks:
             return None
+
         for newXSID in modifiedReprBlocks:
             oldXSID = origXSIDsFromNew[newXSID]
             oldBlockCollection = blockCollectionByXsGroup[oldXSID]
@@ -1297,6 +1301,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                 averageByComponent=oldBlockCollection.averageByComponent,
             )
             newBlockCollectionsByXsGroup[newXSID] = newBlockCollection
+
         return newBlockCollectionsByXsGroup, modifiedReprBlocks, origXSIDsFromNew
 
     def _getModifiedReprBlocks(self, blockList, originalRepresentativeBlocks):
@@ -1308,7 +1313,8 @@ class CrossSectionGroupManager(interfaces.Interface):
         modifiedReprBlocks : dict
             Mapping between the new XS IDs and the new representative blocks
         origXSIDsFromNew : dict
-            Mapping between the new representative block XS IDs and the original representative block XS IDs
+            Mapping between the new representative block XS IDs and the original representative
+            block XS IDs
         """
         modifiedBlockXSTypes = collections.OrderedDict()
         modifiedReprBlocks = collections.OrderedDict()
@@ -1319,9 +1325,9 @@ class CrossSectionGroupManager(interfaces.Interface):
             if origXSID not in originalRepresentativeBlocks:
                 if self.xsTypeIsPregenerated(origXSID):
                     runLog.warning(
-                        "A modified representative block for XS ID `{}` cannot be created because it is "
-                        "mapped to a pre-generated cross section set. Please ensure that this "
-                        "approximation is valid for the analysis.".format(origXSID),
+                        f"A modified representative block for XS ID `{origXSID}` cannot be created "
+                        "because it is mapped to a pre-generated cross section set. Please ensure "
+                        "that this approximation is valid for the analysis.",
                         single=True,
                     )
             else:
@@ -1397,13 +1403,13 @@ class CrossSectionGroupManager(interfaces.Interface):
 
     def _getMissingBlueprintBlocks(self, blockCollectionsByXsGroup):
         """
-        Gets all blocks with suffixes not yet represented.
-        (for blocks in assemblies in the blueprints but not in the core).
+        Gets all blocks with suffixes not yet represented (for blocks in assemblies in the
+        blueprints but not in the core).
 
         Notes
         -----
-        Certain cases (ZPPR validation cases) need to run cross sections for assemblies not in
-        the core to get by region cross sections and flux factors.
+        Certain cases (ZPPR validation cases) need to run cross sections for assemblies not in the
+        core to get by region cross sections and flux factors.
         """
         missingBlueprintBlocks = []
         for a in self.r.blueprints.assemblies.values():
@@ -1434,9 +1440,9 @@ class CrossSectionGroupManager(interfaces.Interface):
         """
         Adjust the xsID of blocks in the groups that are not represented.
 
-        Try to just adjust the burnup group up to something that is represented
-        (can happen to structure in AA when only AB, AC, AD still remain,
-        but if some fresh AA happened to be added it might be needed).
+        Try to just adjust the burnup group up to something that is represented (can happen to
+        structure in AA when only AB, AC, AD still remain, but if some fresh AA happened to be added
+        it might be needed).
         """
         # No blocks in in this ID had a valid representative block flag (such as `fuel` for default),
         # so nothing valid to run lattice physics on...
@@ -1446,8 +1452,8 @@ class CrossSectionGroupManager(interfaces.Interface):
             if nonRepBlocks:
                 newEnvGroup = self._getAlternateEnvGroup(missingXsType)
                 if newEnvGroup:
-                    # there were no blocks flagged to xs gen even though there were some not suitable for
-                    # generation in the group so can't make XS and use different.
+                    # there were no blocks flagged to xs gen even though there were some not
+                    # suitable for generation in the group so can't make XS and use different.
                     runLog.warning(
                         "Changing XSID of {0} blocks from {1} to {2}".format(
                             len(nonRepBlocks), xsID, missingXsType[0] + newEnvGroup
@@ -1457,10 +1463,9 @@ class CrossSectionGroupManager(interfaces.Interface):
                         b.p.envGroup = newEnvGroup
                 else:
                     runLog.warning(
-                        "No representative blocks with XS type {0} exist in the core. "
-                        "There were also no similar blocks to use. "
-                        "These XS cannot be generated and must exist in the working "
-                        "directory or the run will fail.".format(xsID)
+                        f"No representative blocks with XS type {xsID} exist in the core. There "
+                        "were also no similar blocks to use. These XS cannot be generated and must "
+                        "exist in the working directory or the run will fail."
                     )
 
     def _summarizeGroups(self, blockCollectionsByXsGroup):
@@ -1468,7 +1473,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         from armi.physics.neutronics.settings import CONF_XS_BLOCK_REPRESENTATION
 
         runLog.extra("Cross section group manager summary")
-        runLog.extra("Averaging performed by `{0}`".format(self.cs[CONF_XS_BLOCK_REPRESENTATION]))
+        runLog.extra(f"Averaging performed by `{self.cs[CONF_XS_BLOCK_REPRESENTATION]}`")
         for xsID, blocks in blockCollectionsByXsGroup.items():
             if blocks:
                 xsIDGroup = self._getXsIDGroup(xsID)
@@ -1498,7 +1503,7 @@ class CrossSectionGroupManager(interfaces.Interface):
                         "XS ID {} contains {:4d} blocks, represented by: {}".format(xsID, len(blocks), xsFileNames)
                     )
                 else:
-                    raise ValueError("No valid group for XS ID {}".format(xsID))
+                    raise ValueError(f"No valid group for XS ID {xsID}")
 
     def _getXsIDGroup(self, xsID):
         if self.xsTypeIsPregenerated(xsID):
@@ -1555,14 +1560,15 @@ class CrossSectionGroupManager(interfaces.Interface):
         Parameters
         ----------
         blockCollectionByXsGroup : dict, optional
-            Mapping between the XS IDs in the core and the block collections. Note that providing this as
-            an argument will only update the average temperatures of these XS IDs/block collections and will
-            result in other XS ID average temperatures not included to be discarded.
+            Mapping between the XS IDs in the core and the block collections. Note that providing
+            this as an argument will only update the average temperatures of these XS IDs/block
+            collections and will result in other XS ID average temperatures not included to be
+            discarded.
 
         Notes
         -----
-        This method does not update any properties of the representative blocks.
-        Temperatures are obtained from the BlockCollection class rather than the representative block.
+        This method does not update any properties of the representative blocks. Temperatures are
+        obtained from the BlockCollection class rather than the representative block.
         """
         self.avgNucTemperatures = {}
         blockCollectionsByXsGroup = blockCollectionByXsGroup or self.makeCrossSectionGroups()
@@ -1602,6 +1608,7 @@ def blockCollectionFactory(xsSettings, allNuclidesInProblem):
     blockRepresentation = xsSettings.blockRepresentation
     if (blockRepresentation == CYLINDRICAL_COMPONENTS_BLOCK_COLLECTION) and xsSettings.ductHeterogeneous:
         blockRepresentation = CYLINDRICAL_COMPONENTS_DUCT_HET_BLOCK_COLLECTION
+
     validBlockTypes = xsSettings.validBlockTypes
     averageByComponent = xsSettings.averageByComponent
     return BLOCK_COLLECTIONS[blockRepresentation](
