@@ -101,16 +101,16 @@ def addDummyNuclidesToLibrary(lib, dummyNuclides):
 
         runLog.debug("Adding {} nuclide data to {}".format(dummyKey, lib))
         newDummy = xsNuclides.XSNuclide(lib, dummyKey)
-
         # Copy gamiso metadata from the isotxs metadata of the given dummy nuclide
         for kk, vv in dummyNuclide.isotxsMetadata.items():
             if kk in ["jj", "jband"]:
+                # clear out data here before populating with gamma groups
                 newDummy.gamisoMetadata[kk] = {}
-                for mm in vv:
-                    newDummy.gamisoMetadata[kk][mm] = 1
+                for gNum in range(lib.gamisoMetadata["numGroups"]):
+                    for bNum in range(lib.gamisoMetadata["maxScatteringBlocks"]):
+                        newDummy.gamisoMetadata[kk][(gNum, bNum)] = 1
             else:
                 newDummy.gamisoMetadata[kk] = vv
-
         lib[dummyKey] = newDummy
         dummyNuclideKeysAddedToLibrary.append(dummyKey)
 
