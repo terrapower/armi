@@ -242,9 +242,11 @@ class TestDatabaseWriter(unittest.TestCase):
         cs = cs.modified(newSettings={"power": 0.0, "powerDensity": 9e4})
         self.o, cs = getSimpleDBOperator(cs)
         self.r = self.o.r
+        self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
         self.td.__exit__(None, None, None)
+        self.stateRetainer.__exit__()
 
     def test_writeSystemAttributes(self):
         """Test the writeSystemAttributes method.
