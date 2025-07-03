@@ -16,12 +16,15 @@ import random
 import typing
 import unittest
 from unittest import mock
+from unittest.mock import patch
 
+from armi.nuclearDataIO.xsLibraries import IsotxsLibrary
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import Block
 from armi.reactor.cores import Core
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.tests import ISOAA_PATH
 from armi.utils import directoryChangers
 
 
@@ -124,3 +127,52 @@ class HexCoreTests(unittest.TestCase):
         expected = list(filter(checker, fuelBlocks))
         actual = self.core.iterBlocks(Flags.FUEL, predicate=checker)
         self.assertAllIs(actual, expected)
+
+    @patch("armi.nuclearDataIO.getExpectedISOTXSFileName")
+    def test_lib(self, mockFileName):
+        # the default case will look something like this
+        mockFileName.return_value = "ISOTXS-c0n0"
+        self.assertIsNone(self.core.lib)
+
+        # we can inject some mock data, and retrieve it
+        mockFileName.return_value = ISOAA_PATH
+        self.assertTrue(isinstance(self.core.lib, IsotxsLibrary))
+
+    def test_getAssembliesInRing(self):
+        assems = self.core.getAssembliesInRing(0)
+        self.assertEqual(len(assems), 0)
+
+        assems = self.core.getAssembliesInRing(1)
+        self.assertEqual(len(assems), 1)
+        self.assertIsInstance(assems[0], HexAssembly)
+
+    def test_getAssembliesInSquareOrHexRing(self):
+        assems = self.core.getAssembliesInSquareOrHexRing(0)
+        self.assertEqual(len(assems), 0)
+
+        assems = self.core.getAssembliesInSquareOrHexRing(1)
+        self.assertEqual(len(assems), 1)
+        self.assertIsInstance(assems[0], HexAssembly)
+
+    def test_getAssembliesInCircularRing(self):
+        assems = self.core.getAssembliesInCircularRing(0)
+        self.assertEqual(len(assems), 0)
+
+        assems = self.core.getAssembliesInCircularRing(1)
+        self.assertEqual(len(assems), 5)
+        self.assertIsInstance(assems[0], HexAssembly)
+
+    def test_getBlockByName(self):
+        with self.assertRaises(KeyError):
+            self.core.getBlockByName("badName")
+
+        b = self.core.getBlockByName("B0004-000")
+        self.assertIsInstance(b, Block)
+
+    def test_getFirstBlock(self):
+        b = self.core.getFirstBlock()
+        self.assertIsInstance(b, Block)
+
+    def test_getFirstAssembly(self):
+        a = self.core.getFirstAssembly()
+        self.assertIsInstance(a, HexAssembly)
