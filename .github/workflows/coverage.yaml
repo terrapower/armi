@@ -39,6 +39,7 @@ jobs:
           pip install -e .[memprof,mpi,test]
       - name: Run Coverage
         run: |
+          set -x
           coverage run --rcfile=pyproject.toml -m pytest -n 4 --cov=armi --cov-config=pyproject.toml --cov-report=lcov --ignore=venv armi
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiFeatures.py || true
           mpiexec -n 2 --use-hwthread-cpus coverage run --rcfile=pyproject.toml -m pytest --cov=armi --cov-config=pyproject.toml --cov-report=lcov --cov-append --ignore=venv armi/tests/test_mpiParameters.py || true
