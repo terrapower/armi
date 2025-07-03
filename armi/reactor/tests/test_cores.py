@@ -137,3 +137,42 @@ class HexCoreTests(unittest.TestCase):
         # we can inject some mock data, and retrieve it
         mockFileName.return_value = ISOAA_PATH
         self.assertTrue(isinstance(self.core.lib, IsotxsLibrary))
+
+    def test_getAssembliesInRing(self):
+        assems = self.core.getAssembliesInRing(0)
+        self.assertEqual(len(assems), 0)
+
+        assems = self.core.getAssembliesInRing(1)
+        self.assertEqual(len(assems), 1)
+        self.assertIsInstance(assems[0], HexAssembly)
+
+    def test_getAssembliesInSquareOrHexRing(self):
+        assems = self.core.getAssembliesInSquareOrHexRing(0)
+        self.assertEqual(len(assems), 0)
+
+        assems = self.core.getAssembliesInSquareOrHexRing(1)
+        self.assertEqual(len(assems), 1)
+        self.assertIsInstance(assems[0], HexAssembly)
+
+    def test_getAssembliesInCircularRing(self):
+        assems = self.core.getAssembliesInCircularRing(0)
+        self.assertEqual(len(assems), 0)
+
+        assems = self.core.getAssembliesInCircularRing(1)
+        self.assertEqual(len(assems), 5)
+        self.assertIsInstance(assems[0], HexAssembly)
+
+    def test_getBlockByName(self):
+        with self.assertRaises(KeyError):
+            self.core.getBlockByName("badName")
+
+        b = self.core.getBlockByName("B0004-000")
+        self.assertIsInstance(b, Block)
+
+    def test_getFirstBlock(self):
+        b = self.core.getFirstBlock()
+        self.assertIsInstance(b, Block)
+
+    def test_getFirstAssembly(self):
+        a = self.core.getFirstAssembly()
+        self.assertIsInstance(a, HexAssembly)
