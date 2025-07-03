@@ -16,12 +16,15 @@ import random
 import typing
 import unittest
 from unittest import mock
+from unittest.mock import patch
 
+from armi.nuclearDataIO.xsLibraries import IsotxsLibrary
 from armi.reactor.assemblies import HexAssembly
 from armi.reactor.blocks import Block
 from armi.reactor.cores import Core
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_reactors import TEST_ROOT, loadTestReactor
+from armi.tests import ISOAA_PATH
 from armi.utils import directoryChangers
 
 
@@ -124,3 +127,13 @@ class HexCoreTests(unittest.TestCase):
         expected = list(filter(checker, fuelBlocks))
         actual = self.core.iterBlocks(Flags.FUEL, predicate=checker)
         self.assertAllIs(actual, expected)
+
+    @patch("armi.nuclearDataIO.getExpectedISOTXSFileName")
+    def test_lib(self, mockFileName):
+        # the default case will look something like this
+        mockFileName.return_value = "ISOTXS-c0n0"
+        self.assertIsNone(self.core.lib)
+
+        # we can inject some mock data, and retrieve it
+        mockFileName.return_value = ISOAA_PATH
+        self.assertTrue(isinstance(self.core.lib, IsotxsLibrary))
