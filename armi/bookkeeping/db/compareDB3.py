@@ -360,6 +360,14 @@ def _diffSpecialData(
                 diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
                 return
 
+            if dSrc.dtype.type == np.bytes_ or dRef.dtype.type == np.bytes_:
+                # data is byte strings; can't be diffed like numbers
+                if np.array_equal(dSrc, dRef):
+                    diffResults.addDiff(name, name, 0.0, 0.0, 0.0)
+                else:
+                    diffResults.addDiff(name, name, np.inf, np.inf, np.inf)
+                return
+
             # Make sure not to try to compare empty arrays. Numpy is mediocre at these;
             # they are super degenerate and cannot participate in concatenation.
             if 0 not in dSrc.shape:

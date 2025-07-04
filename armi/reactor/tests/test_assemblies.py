@@ -461,6 +461,9 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(reactiveHeight, 20.0)
 
     def test_getFissileMass(self):
+        for b in self.assembly:
+            b.p.massHmBOL = b.getHMMass()
+            b.p.enrichmentBOL = b.getFissileMassEnrich()
         cur = self.assembly.getFissileMass()
         ref = sum(bi.getMass(["U235", "PU239"]) for bi in self.assembly)
         self.assertAlmostEqual(cur, ref)
