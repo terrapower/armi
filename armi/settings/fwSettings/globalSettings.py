@@ -689,7 +689,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_SORT_REACTOR,
             default=True,
             label="Do we want to automatically sort the Reactor?",
-            description="Deprecation Warning! This setting will be remove by 2024.",
+            description="If unsorted, ArmiObject IDs will be by the order they were added to the Reactor.",
         ),
         setting.Setting(
             CONF_RM_EXT_FILES_AT_BOC,
