@@ -87,4 +87,4 @@ similarly fully open-source and that make no onerous demands on ARMI's distribut
 ARMI makes use of a huge suite of unit tests to cover the codebase. The tests are run via Continuous
 Integration (CI) both internally and publicly. Every unit test must pass on every commit to the ARMI
 main branch. Also, as part of our rigorous quality system, ARMI enforces tight controls on code
-style using Black as our code formatter and Ruff as our linter.
+style using Ruff as our code formatter and linter.
