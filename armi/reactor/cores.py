@@ -227,10 +227,19 @@ class Core(composites.Composite):
             cycle = self.r.p.cycle
             node = self.r.p.timeNode
 
+        # if self._lib is None, try to find a local file
         isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
         if self._lib is None and os.path.exists(isotxsFileName):
-            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+            # try to find the file for this specific cycle/node
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}` at {cycle}/{node}")
             self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+        elif self._lib is None:
+            # try to find any local file, not labeled by cycle/node
+            isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+            if os.path.exists(isotxsFileName):
+                runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+                self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+
         return self._lib
 
     @lib.setter
