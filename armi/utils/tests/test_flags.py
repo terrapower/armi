@@ -155,27 +155,43 @@ class TestFlag(unittest.TestCase):
         self.assertEqual(ExampleFlag["FOO"], ExampleFlag.FOO)
 
     def test_duplicateFlags(self):
-        class F(Flag):
-            pass
+        """Show that duplicate flags can be added and silently ignored."""
 
-        for i in range(1, 100):
+        class F(Flag):
+            @classmethod
+            def len(cls):
+                return len(cls._nameToValue)
+
+        F.extend({"FLAG0": auto()})
+        for i in range(1, 12):
             F.extend({f"FLAG{i}": auto()})
+            num = F.len()
             F.extend({f"FLAG{i - 1}": auto()})
+            self.assertEqual(F.len(), num)
+
             ff = getattr(F, f"FLAG{i}")
-            ff.to_bytes()
             FlagSerializer._packImpl(
                 [
                     ff,
                 ],
                 F,
             )
+            self.assertEqual(F.len(), num)
 
     def test_soManyFlags(self):
-        class F(Flag):
-            pass
+        """Show that many flags can be added without issue."""
 
-        for i in range(1000):
+        class F(Flag):
+            @classmethod
+            def len(cls):
+                return len(cls._nameToValue)
+
+        for i in range(1, 100):
+            num = F.len()
             flagName = f"FLAG{i}"
             F.extend({flagName: auto()})
+            self.assertEqual(F.len(), num + 1)
+
             flag = getattr(F, flagName)
             flag.to_bytes()
+            self.assertEqual(F.len(), num + 1)

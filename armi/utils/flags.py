@@ -150,13 +150,14 @@ class Flag(metaclass=_FlagMeta):
         for k, v in self._nameToValue.items():
             if self._value & v:
                 flagsOn.add(k)
+
         return flagsOn
 
     def __repr__(self):
-        return "<{}.{}: {}>".format(type(self).__name__, "|".join(self._flagsOn()), self._value)
+        return f"<{type(self).__name__}.{'|'.join(self._flagsOn())}: {self._value}>"
 
     def __str__(self):
-        return "{}.{}".format(type(self).__name__, "|".join(self._flagsOn()))
+        return f"{type(self).__name__}.{'|'.join(self._flagsOn())}"
 
     def __getstate__(self):
         return self._value
