@@ -246,9 +246,8 @@ class Flag(metaclass=_FlagMeta):
         <MyFlags.SUPER: 8>
         """
         # add explicit values first, so that autos know about them
-        toAdd = {}
         for field, value in ((f, v) for f, v in fields.items() if isinstance(v, int)):
-            toAdd[field] = cls._registerField(field, value)
+            cls._registerField(field, value)
 
         # find auto values (ignore if they already exist)
         toResolve = [field for field, val in fields.items() if isinstance(val, auto)]
