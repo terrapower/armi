@@ -101,13 +101,6 @@ class ResolveParametersMeta(type):
         # Make sure that these are what we expect them to be
         assert all([issubclass(c, ParameterCollection) for c in baseCollections if c is not None])
 
-        # Make sure that we aren't doing some sort of multiple inheritance. We may
-        # wish to support this in the future, but at this point we don't need it and
-        # there are probably lots of snakes in that grass.
-        # Turning this off to support multiple-inheritance materials/matprops material.
-        # But we should still be careful.
-        # assert len(baseCollections) <= 1, "Multiple inheritance is not yet supported in the ARMI composite pattern"
-
         # Pull out the one element of the list if it exists
         inferredBaseCollection = next(iter(baseCollections), None)
 

@@ -68,7 +68,6 @@ class TestLatticePhysicsInterfaceBase(unittest.TestCase):
         cls.assembly.spatialGrid = grids.AxialGrid.fromNCells(1)
         cls.assembly.spatialGrid.armiObject = cls.assembly
         cls.assembly.add(buildSimpleFuelBlock())
-        # cls.o.r.core.add(assembly)
         # init and add interfaces
         cls.xsGroupInterface = CrossSectionGroupManager(cls.o.r, cls.o.cs)
         cls.o.addInterface(cls.xsGroupInterface)
