@@ -169,6 +169,8 @@ class TestFlag(unittest.TestCase):
             F.extend({f"FLAG{i - 1}": auto()})
             self.assertEqual(F.len(), num)
 
+            # While the next two lines do not assert anything, these lines used to raise an error.
+            # So these lines remain as proof against that error in the future.
             ff = getattr(F, f"FLAG{i}")
             FlagSerializer._packImpl(
                 [
