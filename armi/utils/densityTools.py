@@ -45,8 +45,10 @@ def getNDensFromMasses(rho, massFracs, normalize=False):
 
     Returns
     -------
-    numberDensities : dict
-        vector of number densities (#/bn-cm) keyed by their nuclide name
+    nuclides : np.ndarray[np.bytes_]
+        vector of nuclide names as byte strings
+    numberDensities : np.ndarray[np.float64]
+        vector of number densities (#/bn-cm) for each nuclide in nuclides
     """
     if normalize:
         massFracs = normalizeNuclideList(massFracs, normalization=normalize)
