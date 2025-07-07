@@ -15,42 +15,39 @@
 """
 A Flag class, similar to ``enum.Flag``.
 
-This is an alternate implementation of the standard-library ``enum.Flag`` class. We use
-this to implement :py:class:`armi.reactor.flags.Flags`. We used to use the
-standard-library implementation, but that became limiting when we wanted to make it
-possible for plugins to define their own flags; the standard implementation does not
-support extension. We also considered the ``aenum`` package, which permits extension of
-``Enum`` classes, but unfortunately does not support extension of ``Flags``. So, we had to
-make our own. This is a much simplified version of what comes with ``aenum``, but still
-provides most of the safety and functionality.
+This is an alternate implementation of the standard-library ``enum.Flag`` class. We use this to implement
+:py:class:`armi.reactor.flags.Flags`. We used to use the standard-library implementation, but that became limiting when
+we wanted to make it possible for plugins to define their own flags; the standard implementation does not support
+extension. We also considered the ``aenum`` package, which permits extension of ``Enum`` classes, but unfortunately does
+not support extension of ``Flags``. So, we had to make our own. This is a much simplified version of what comes with
+``aenum``, but still provides most of the safety and functionality.
 """
 
 import math
 from typing import Dict, List, Sequence, Tuple, Union
+
+from armi import runLog
 
 
 class auto:  # noqa: N801
     """
     Empty class for requesting a lazily-evaluated automatic field value.
 
-    This can be used to automatically provision a value for a field, when the specific
-    value does not matter.
+    This can be used to automatically provision a value for a field, when the specific value does not matter.
 
-    In the future, it would be nice to support some arithmetic for these so that
-    automatically-derived combinations of other automatically defined fields can be
-    specified as well.
+    In the future, it would be nice to support some arithmetic for these so that automatically-derived combinations of
+    other automatically defined fields can be specified as well.
     """
 
     def __iter__(self):
         """
         Dummy __iter__ implementation.
 
-        This is only needed to make mypy happy when it type checks things that have
-        FlagTypes in them, since these can normally be iterated over, but mypy doesn't
-        know that the metaclass consumes the autos.
+        This is only needed to make mypy happy when it type checks things that have FlagTypes in them, since these can
+        normally be iterated over, but mypy doesn't know that the metaclass consumes the autos.
         """
         raise NotImplementedError(
-            "__iter__() is not actually implemented on {}; it is only defined to appease mypy.".format(type(self))
+            f"__iter__() is not actually implemented on {type(self)}; it is only defined to appease mypy."
         )
 
 
@@ -58,14 +55,12 @@ class _FlagMeta(type):
     """
     Metaclass for defining new Flag classes.
 
-    This attempts to do the minimum required to make the Flag class and its subclasses
-    function properly. It mostly digests the class attributes, resolves automatic values
-    and creates instances of the class as it's own class attributes for each field. The
-    rest of the functionality lives in the base ``Flag`` class as plain-old code.
+    This attempts to do the minimum required to make the Flag class and its subclasses function properly. It mostly
+    digests the class attributes, resolves automatic values and creates instances of the class as it's own class
+    attributes for each field. The rest of the functionality lives in the base ``Flag`` class as plain-old code.
 
-    .. tip:: Because individual flags are defined as *class* attributes (as opposed to
-        instance attributes), we have to customize the way a Flag subclass itself is built,
-        which requires a metaclass.
+    .. tip:: Because individual flags are defined as *class* attributes (as opposed to instance attributes), we have to
+        customize the way a Flag subclass itself is built, which requires a metaclass.
     """
 
     def __new__(cls, name, bases, attrs):
@@ -110,9 +105,8 @@ class _FlagMeta(type):
         """
         Implement indexing at the class level.
 
-        This has to be done at the metaclass level, since the python interpreter looks
-        to ``type(klass).__getitem__(klass, key)``, which for an implementation of Flag
-        is this metaclass.
+        This has to be done at the metaclass level, since the python interpreter looks to
+        ``type(klass).__getitem__(klass, key)``, which for an implementation of Flag is this metaclass.
         """
         return cls(cls._nameToValue[key])
 
@@ -121,31 +115,26 @@ class Flag(metaclass=_FlagMeta):
     """
     A collection of bitwise flags.
 
-    This is intended to emulate ``enum.Flag``, except with the possibility of extension after the
-    class has been defined. Most docs for ``enum.Flag`` should be relevant here, but there are sure
-    to be occasional differences.
+    This is intended to emulate ``enum.Flag``, except with the possibility of extension after the class has been
+    defined. Most docs for ``enum.Flag`` should be relevant here, but there are sure to be occasional differences.
 
     .. impl:: No two flags have equivalence.
         :id: I_ARMI_FLAG_DEFINE
         :implements: R_ARMI_FLAG_DEFINE
 
-        A bitwise flag class intended to emulate the standard library's ``enum.Flag``, with the
-        added functionality that it allows for extension after the class has been defined. Each Flag
-        is unique; no two Flags are equivalent.
+        A bitwise flag class intended to emulate the standard library's ``enum.Flag``, with the added functionality that
+        it allows for extension after the class has been defined. Each Flag is unique; no two Flags are equivalent.
 
-        Note that while Python allows for arbitrary-width integers, exceeding the system-native
-        integer size can lead to challenges in storing data, e.g. in an HDF5 file. In this case, the
-        ``from_bytes()`` and ``to_bytes()`` methods are provided to represent a Flag's values in
-        smaller chunks so that writeability can be maintained.
+        Note that while Python allows for arbitrary-width integers, exceeding the system-native integer size can lead to
+        challenges in storing data, e.g. in an HDF5 file. In this case, the ``from_bytes()`` and ``to_bytes()`` methods
+        are provided to represent a Flag's values in smaller chunks so that writeability can be maintained.
 
     .. warning::
-        Python features arbitrary-width integers, allowing one to represent an
-        practically unlimited number of fields. *However*, including more flags than can
-        be represented in the system-native integer types may lead to strange behavior
-        when interfacing with non-pure Python code. For instance, exceeding 64 fields
-        makes the underlying value not trivially-storable in an HDF5 file. In such
-        circumstances, the ``from_bytes()`` and ``to_bytes()`` methods are available to
-        represent a Flag's values in smaller chunks.
+        Python features arbitrary-width integers, allowing one to represent an practically unlimited number of fields.
+        *However*, including more flags than can be represented in the system-native integer types may lead to strange
+        behavior when interfacing with non-pure Python code. For instance, exceeding 64 fields makes the underlying
+        value not trivially-storable in an HDF5 file. In such circumstances, the ``from_bytes()`` and ``to_bytes()``
+        methods are available to represent a Flag's values in smaller chunks.
     """
 
     _autoAt = None
@@ -180,10 +169,13 @@ class Flag(metaclass=_FlagMeta):
         """
         Plug a new field into the Flags.
 
-        This makes sure everything is consistent and does error/collision checks. Mostly
-        useful for extending an existing class with more fields.
+        This makes sure everything is consistent and does error/collision checks. Mostly useful for extending an
+        existing class with more fields.
         """
-        assert value not in cls._nameToValue
+        if name in cls._nameToValue:
+            runLog.debug(f"The flag {name} already exists and does not need to be recreated.")
+            return
+
         cls._valuesTaken.add(value)
         cls._nameToValue[name] = value
         cls._width = math.ceil(len(cls._nameToValue) / 8)
@@ -224,22 +216,21 @@ class Flag(metaclass=_FlagMeta):
         Extend the Flags object with new fields.
 
         .. warning::
-            This alters the class that it is called upon! Existing instances should see
-            the new data, since classes are mutable.
+            This alters the class that it is called upon! Existing instances should see the new data, since classes are
+            mutable.
 
         .. impl:: Set of flags are extensible without loss of uniqueness.
             :id: I_ARMI_FLAG_EXTEND0
             :implements: R_ARMI_FLAG_EXTEND
 
-            A class method to extend a ``Flag`` with a vector of provided additional ``fields``,
-            with field names as keys, without loss of uniqueness. Values for the additional
-            ``fields`` can be explicitly specified, or an instance of ``auto`` can be supplied.
+            A class method to extend a ``Flag`` with a vector of provided additional ``fields``, with field names as
+            keys, without loss of uniqueness. Values for the additional ``fields`` can be explicitly specified, or an
+            instance of ``auto`` can be supplied.
 
         Parameters
         ----------
         fields : dict
-            A dictionary containing field names as keys, and their desired values, or an instance of
-            ``auto`` as values.
+            A dictionary containing field names as keys, and their desired values, or an instance of ``auto`` as values.
 
         Example
         -------
@@ -254,9 +245,13 @@ class Flag(metaclass=_FlagMeta):
         <MyFlags.SUPER: 8>
         """
         # add explicit values first, so that autos know about them
+        toAdd = {}
         for field, value in ((f, v) for f, v in fields.items() if isinstance(v, int)):
-            cls._registerField(field, value)
+            toAdd[field] = cls._registerField(field, value)
+
+        # find auto values (ignore if they already exist)
         toResolve = [field for field, val in fields.items() if isinstance(val, auto)]
+        toResolve = [field for field in toResolve if field not in cls._nameToValue]
         resolved = cls._resolveAutos(toResolve)
         for field, value in resolved:
             cls._registerField(field, value)
@@ -265,13 +260,11 @@ class Flag(metaclass=_FlagMeta):
         """
         Return a byte stream representing the flag.
 
-        This is useful when storing Flags in a data type of limited size. Python ints
-        can be of arbitrary size, while most other systems can only represent integers
-        of 32 or 64 bits. For compatibility, this function allows to convert the flags
-        to a sequence of single-byte elements.
+        This is useful when storing Flags in a data type of limited size. Python ints can be of arbitrary size, while
+        most other systems can only represent integers of 32 or 64 bits. For compatibility, this function allows to
+        convert the flags to a sequence of single-byte elements.
 
-        Note that this uses snake_case to mimic the method on the Python-native int
-        type.
+        Note that this uses snake_case to mimic the method on the Python-native int type.
         """
         return self._value.to_bytes(self.width(), byteorder=byteorder)
 
@@ -298,15 +291,12 @@ class Flag(metaclass=_FlagMeta):
 
         Note
         ----
-        This is avoiding just ~ on the ``_value`` because it might not be safe.  Using
-        the int directly is slightly dangerous in that python ints are not of fixed
-        width, so the result of inverting one Flag might not be as wide as the result of
-        inverting another Flag. Typically, one would want to invert a Flag to create a
-        mask for unsetting a bit on another Flag, like ``f1 &= ~f2``. If ``f2`` is
-        narrower than ``f1`` the field of ones that you need to keep ``f1`` bits on
-        might not cover the width of ``f1``, erroneously turning off its upper bits. Not
-        sure if this was an issue before or not. Once things are working, might make
-        sense to play with this more.
+        This is avoiding just ~ on the ``_value`` because it might not be safe. Using the int directly is slightly
+        dangerous in that python ints are not of fixed width, so the result of inverting one Flag might not be as wide
+        as the result of inverting another Flag. Typically, one would want to invert a Flag to create a mask for
+        unsetting a bit on another Flag, like ``f1 &= ~f2``. If ``f2`` is narrower than ``f1`` the field of ones that
+        you need to keep ``f1`` bits on might not cover the width of ``f1``, erroneously turning off its upper bits. Not
+        sure if this was an issue before or not. Once things are working, might makes sense to play with this more.
         """
         new = self._value
         for _, val in self._nameToValue.items():
@@ -334,7 +324,6 @@ class Flag(metaclass=_FlagMeta):
         return hash(self._value)
 
 
-# Type alias to reliably check for a proper Flag type. This cannot just be `Flag`, since
-# mypy gets confused by `auto` because it doesn't go to the trouble of resolving them in
-# the metaclass.
+# Type alias to reliably check for a proper Flag type. This cannot just be `Flag`, since mypy gets confused by `auto`
+# because it doesn't go to the trouble of resolving them in the metaclass.
 FlagType = Union[Flag, auto]

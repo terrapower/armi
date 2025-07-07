@@ -15,6 +15,7 @@
 
 import unittest
 
+from armi.reactor.composites import FlagSerializer
 from armi.utils.flags import Flag, auto
 
 
@@ -152,3 +153,29 @@ class TestFlag(unittest.TestCase):
 
     def test_getitem(self):
         self.assertEqual(ExampleFlag["FOO"], ExampleFlag.FOO)
+
+    def test_duplicateFlags(self):
+        class F(Flag):
+            pass
+
+        for i in range(1, 100):
+            F.extend({f"FLAG{i}": auto()})
+            F.extend({f"FLAG{i - 1}": auto()})
+            ff = getattr(F, f"FLAG{i}")
+            ff.to_bytes()
+            FlagSerializer._packImpl(
+                [
+                    ff,
+                ],
+                F,
+            )
+
+    def test_soManyFlags(self):
+        class F(Flag):
+            pass
+
+        for i in range(1000):
+            flagName = f"FLAG{i}"
+            F.extend({flagName: auto()})
+            flag = getattr(F, flagName)
+            flag.to_bytes()
