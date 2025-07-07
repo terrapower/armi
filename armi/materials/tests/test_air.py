@@ -21,8 +21,8 @@ from armi.materials.air import Air
 from armi.utils import densityTools
 
 """
-Reference thermal physical properties from Table A.4 in Incropera, Frank P.,
-et al. Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
+Reference thermal physical properties from Table A.4 in Incropera, Frank P., et al. Fundamentals of
+heat and mass transfer. Vol. 5. New York: Wiley, 2002.
 """
 
 REFERENCE_Tk = [

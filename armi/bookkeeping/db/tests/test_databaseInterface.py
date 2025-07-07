@@ -400,9 +400,8 @@ class TestDatabaseReading(unittest.TestCase):
         cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
 
-        # The database writes the settings object to the DB rather
-        # than the original input file. This allows settings to be
-        # changed in memory like this and survive for testing.
+        # The database writes the settings object to the DB rather than the original input file.
+        # This allows settings to be changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
         cls.nCycles = 2
         newSettings["nCycles"] = cls.nCycles

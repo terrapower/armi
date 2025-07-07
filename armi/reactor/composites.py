@@ -430,10 +430,11 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Make a clean copy of this object.
 
-        .. warning:: Be careful with inter-object dependencies. If one object contains a
-            reference to another object which contains links to the entire hierarchical
-            tree, memory can fill up rather rapidly. Weak references are designed to help
-            with this problem.
+        Warning
+        -------
+        Be careful with inter-object dependencies. If one object contains a reference to another
+        object which contains links to the entire hierarchical tree, memory can fill up rather
+        rapidly. Weak references are designed to help with this problem.
         """
         raise NotImplementedError
 
@@ -447,10 +448,9 @@ class ArmiObject(metaclass=CompositeModelType):
         """
         Obtain a value from the cache.
 
-        Cached values can be used to temporarily store frequently read but
-        long-to-compute values. The practice is generally discouraged because it's
-        challenging to make sure to properly invalidate the cache when the state
-        changes.
+        Cached values can be used to temporarily store frequently read but long-to-compute values.
+        The practice is generally discouraged because it's challenging to make sure to properly
+        invalidate the cache when the state changes.
         """
         return self.cached.get(name, None)
 
