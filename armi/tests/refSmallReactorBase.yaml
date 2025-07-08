@@ -410,7 +410,7 @@ assemblies:
       ]
     height: *standard_heights
     axial mesh points: *standard_axial_mesh_points
-    xs types: *middle_fuel_xs_types
+    xs types: &annular_fuel_xs_types [U, U, U, U, U]
   lta fuel:
     specifier: LA
     blocks:

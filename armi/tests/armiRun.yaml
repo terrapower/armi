@@ -35,6 +35,22 @@ settings:
       useHomogenizedBlockComposition: false
       numInternalRings: 1
       numExternalRings: 1
+    UA:
+      geometry: 1D cylinder
+      blockRepresentation: ComponentAverage1DCylinder
+      validBlockTypes:
+        - fuel
+      externalDriver: false
+      mergeIntoClad:
+        - gap2
+        - inner liner
+        - gap3
+        - outer liner
+        - gap4
+      mergeIntoFuel:
+        - gap1
+      numInternalRings: 1
+      numExternalRings: 1
     XA:
       xsFileLocation:
         - ISOXA

@@ -823,7 +823,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("D", xsType3)
 
         # verify that we can get lowercase letters
-        xsTypes = self.csm.getNextAvailableXsTypes(27)
+        xsTypes = self.csm.getNextAvailableXsTypes(26)
         self.assertEqual("Y", xsTypes[-4])
         self.assertEqual("a", xsTypes[-3])
         self.assertEqual("b", xsTypes[-2])
