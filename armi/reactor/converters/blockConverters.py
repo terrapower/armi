@@ -114,16 +114,16 @@ class BlockConverter:
                     solvent.setDimension("id", minID, cold=False)
             else:
                 # can only merge a negative-area component if one of the dimensions is linked
-                matchedDimesion = False
+                matchedDimension = False
                 if solvent.getDimension("id", cold=False) == soluteOD:
                     runLog.debug("Increasing ID of {} to accommodate {}.".format(solvent, solute))
                     solvent.setDimension("id", soluteID, cold=False)
-                    matchedDimesion = True
+                    matchedDimension = True
                 if solvent.getDimension("od", cold=False) == soluteID:
                     runLog.debug("Decreasing OD of {} to accommodate {}.".format(solvent, solute))
                     solvent.setDimension("od", soluteOD, cold=False)
-                    matchedDimesion = True
-                if not matchedDimesion:
+                    matchedDimension = True
+                if not matchedDimension:
                     errorMsg = (
                         "Cannot merge negative-area component {solute} into {solvent} without the two being linked."
                     )
@@ -485,6 +485,22 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     and ``driverFuelBlock`` must be instances of HexBlocks.
     """
 
+    PIN_COMPONENT_FLAGS = (
+        Flags.FUEL,
+        Flags.ANNULAR | Flags.VOID,
+        Flags.GAP,
+        Flags.BOND,
+        Flags.LINER,
+        Flags.CLAD,
+        Flags.WIRE,
+        Flags.CONTROL,
+        Flags.REFLECTOR,
+        Flags.SHIELD,
+        Flags.SLUG,
+        Flags.PIN,
+        Flags.POISON,
+    )
+
     def __init__(
         self,
         sourceBlock,
@@ -593,22 +609,6 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
         """
         pinComponents, nonPins = [], []
 
-        pinComponentFlags = [
-            Flags.FUEL,
-            Flags.ANNULAR | Flags.VOID,
-            Flags.GAP,
-            Flags.BOND,
-            Flags.LINER,
-            Flags.CLAD,
-            Flags.WIRE,
-            Flags.CONTROL,
-            Flags.REFLECTOR,
-            Flags.SHIELD,
-            Flags.SLUG,
-            Flags.PIN,
-            Flags.POISON,
-        ]
-
         for c in self._sourceBlock:
             # If the area of the component is negative than this component should be skipped
             # altogether. If not skipped, the conversion process still works, but this would
@@ -617,7 +617,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             if c.getArea() < 0.0:
                 continue
 
-            if any(c.hasFlags(f) for f in pinComponentFlags):
+            if any(c.hasFlags(f) for f in self.PIN_COMPONENT_FLAGS):
                 pinComponents.append(c)
             elif c.name != "coolant":  #  coolant is addressed in self.interRingComponent
                 nonPins.append(c)
