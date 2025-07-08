@@ -158,9 +158,7 @@ class SettingsWriterTests(unittest.TestCase):
         self.assertNotIn("nTasks", txt)
 
     def test_writeMedium(self):
-        """Setting output as a sparse file that only includes defaults if they are
-        user-specified.
-        """
+        """Setting output as a sparse file that only includes defaults if they are user-specified."""
         with open(self.filepathYaml, "w") as stream:
             # Specify a setting that is also a default
             self.cs.writeToYamlStream(stream, "medium", ["nTasks"])
@@ -207,6 +205,15 @@ class SettingArgsTests(unittest.TestCase):
         ep.createOptionFromSetting("nCycles")
         ep.parse_args(["--nCycles", "5"])
         self.assertEqual(cs["nCycles"], 5)
+
+    def test_commandLineSettingBool(self):
+        ep = MockEntryPoint()
+        self.cs = cs = ep.cs
+
+        self.assertTrue(cs["genReports"])
+        ep.createOptionFromSetting("genReports")
+        ep.parse_args(["--no-genReports"])
+        self.assertFalse(cs["genReports"])
 
     def test_cannotLoadSettingsAfterParsingCLI(self):
         self.test_commandLineSetting()

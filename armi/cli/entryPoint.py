@@ -24,10 +24,7 @@ from armi import context, runLog, settings
 
 
 class _EntryPointEnforcer(type):
-    """
-    Simple metaclass used for the EntryPoint abstract base class to enforce class
-    attributes.
-    """
+    """Simple metaclass used for the EntryPoint abstract base class to enforce class attributes."""
 
     def __new__(mcs, name, bases, attrs):
         if "name" not in attrs:
@@ -44,51 +41,45 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
     """
     Generic command line entry point.
 
-    A valid subclass must provide at least a ``name`` class attribute, and may also specify the
-    other class attributes described below.
+    A valid subclass must provide at least a ``name`` class attribute, and may also specify the other class attributes
+    described below.
 
     .. impl:: Generic CLI base class for developers to use.
         :id: I_ARMI_CLI_GEN
         :implements: R_ARMI_CLI_GEN
 
-        Provides a base class for plugin developers to use in creating application-specific CLIs.
-        Valid subclasses must at least provide a ``name`` class attribute.
+        Provides a base class for plugin developers to use in creating application-specific CLIs. Valid subclasses must
+        at least provide a ``name`` class attribute.
 
-        Optional class attributes that a subclass may provide include ``description``, a string
-        describing the command's actions, ``splash``, a boolean specifying whether to display a
-        splash screen upon execution, and ``settingsArgument``. If ``settingsArgument`` is specified
-        as ``required``, then a settings files is a required positional argument. If
-        ``settingsArgument`` is set to ``optional``, then a settings file is an optional positional
-        argument. If None is specified for the ``settingsArgument``, then no settings file argument
-        is added.
+        Optional class attributes that a subclass may provide include ``description``, a string describing the command's
+        actions, ``splash``, a boolean specifying whether to display a splash screen upon execution, and
+        ``settingsArgument``. If ``settingsArgument`` is specified as ``required``, then a settings files is a required
+        positional argument. If ``settingsArgument`` is set to ``optional``, then a settings file is an optional
+        positional argument. If None is specified for the ``settingsArgument``, then no settings file argument is added.
     """
 
     #: The <command-name> that is used to call the command from the command line
     name: Optional[str] = None
 
     description: Optional[str] = None
-    """A string summarizing the command's actions. This is summary that is printed when
-    you run `python -m armi --list-commands` or `python -m armi <command-name>
-    --help`. If not provided, the docstring of the decorated class will be used
-    instead. In general, the docstring is probably sufficient but this argument allows
-    you to provide a short description of the command while retaining a long and
-    detailed docstring."""
+    """A string summarizing the command's actions. This is summary that is printed when you run
+    `python -m armi --list-commands` or `python -m armi <command-name> --help`. If not provided, the docstring of the
+    decorated class will be used instead. In general, the docstring is probably sufficient but this argument allows
+    you to provide a short description of the command while retaining a long and detailed docstring."""
 
     settingsArgument: Union[str, None] = None
     """
-    One of {'optional', 'required', None}, or unspecified.
-    Specifies whether a settings file argument is to be added to the
-    command's argument parser. If settingsArgument == 'required', then a settings
-    file is a required positional argument. If settingsArgument == 'optional',
-    then it is an optional positional argument. Finally, if settingsArgument is
-    None, then no settings file argument is added."""
+    One of {'optional', 'required', None}, or unspecified. Specifies whether a settings file argument is to be added to
+    the command's argument parser. If settingsArgument == 'required', then a settings file is a required positional
+    argument. If settingsArgument == 'optional', then it is an optional positional argument. Finally, if
+    settingsArgument is None, then no settings file argument is added."""
 
     splash = True
     """
     Whether running the entry point should produce a splash text upon executing.
 
-    Setting this to ``False`` is useful for utility commands that produce standard
-    output that would be needlessly cluttered by the splash text.
+    Setting this to ``False`` is useful for utility commands that produce standard output that would be needlessly
+    cluttered by the splash text.
     """
 
     #: One of {armi.Mode.BATCH, armi.Mode.INTERACTIVE, armi.Mode.GUI}, optional.
@@ -158,17 +149,15 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
         """
         Add additional command line options.
 
-        Values of options added to ``self.parser`` will be available
-        on ``self.args``. Values added with ``createOptionFromSetting``
-        will override the setting values in the settings input file.
+        Values of options added to ``self.parser`` will be available on ``self.args``. Values added with
+        ``createOptionFromSetting`` will override the setting values in the settings input file.
 
         See Also
         --------
-        createOptionFromSetting : A method often called from here to creat CLI options from
-            application settings.
+        createOptionFromSetting : A method often called from here to creat CLI options from application settings.
 
-        argparse.ArgumentParser.add_argument : Often called from here using
-            ``self.parser.add_argument`` to add custom argparse arguments.
+        argparse.ArgumentParser.add_argument : Often called from here using ``self.parser.add_argument`` to add custom
+            argparse arguments.
         """
 
     def parse_args(self, args):
@@ -189,8 +178,8 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
         Returns
         -------
         exitcode : int or None
-            Implementations should return an exit code, or ``None``, which is interpreted the
-            same as zero (successful completion).
+            Implementations should return an exit code, or ``None``, which is interpreted the same as zero (successful
+            completion).
         """
         raise NotImplementedError("Subclasses of EntryPoint must override the .invoke() method")
 
@@ -218,7 +207,6 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
         if settings.isBoolSetting(settingsInstance):
             helpMessage = argparse.SUPPRESS if suppressHelp else settingsInstance.description
             self._createToggleFromSetting(settingName, helpMessage, additionalAlias)
-
         else:
             choices = None
             if suppressHelp:
@@ -242,9 +230,10 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
                     choices=choices,
                     help=helpMessage,
                 )
-            # Capture an argument error here to prevent errors when duplicate options are attempting
-            # to be added. This may also be captured by exploring the parser's `_actions` list as well
-            # but this avoid accessing a private attribute.
+
+            # Capture an argument error here to prevent errors when duplicate options are attempting to be added. This
+            # may also be captured by exploring the parser's `_actions` list as well but this avoid accessing a private
+            # attribute.
             except argparse.ArgumentError:
                 pass
 
@@ -257,9 +246,8 @@ class EntryPoint(metaclass=_EntryPointEnforcer):
 
         group.add_argument(*aliases, action=storeBool(True, self), help=helpMessage)
 
-        # not really sure what to do about the help message here. Don't
-        # want to suppress it since it won't show up at all, but can't
-        # exactly "negate" the text automatically. Ideas?
+        # Not really sure what to do about the help message here. Don't want to suppress it since it won't show up at
+        # all, but can't exactly "negate" the text automatically. Ideas?
         if helpMessage is not argparse.SUPPRESS:
             helpMessage = ""
 
@@ -295,9 +283,7 @@ def storeBool(boolDefault, ep):
 
 def setSetting(ep):
     class _SetSettingAction(argparse.Action):
-        """This class loads the command line supplied setting values into the
-        :py:data:`armi.settings.cs`.
-        """
+        """This class loads the command line supplied setting values into the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, values, option_string=None):
             # correctly converts type
@@ -308,14 +294,11 @@ def setSetting(ep):
     return _SetSettingAction
 
 
-# Q: Why does this require special treatment? Why not treat it like the other
-#    case settings and use setSetting action?
+# Q: Why does this require special treatment? Why not treat it like the other case settings and use setSetting action?
 # A: Because caseTitle is no longer an actual cs setting. It's a instance attr.
 def setCaseTitle(cs):
     class _SetCaseTitleAction(argparse.Action):
-        """This class sets the case title to the supplied value of the
-        :py:data:`armi.settings.cs`.
-        """
+        """This class sets the case title to the supplied value of the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, value, option_string=None):
             cs.caseTitle = value
@@ -326,13 +309,10 @@ def setCaseTitle(cs):
 # Careful, this is used by physicalProgramming
 def loadSettings(cs):
     class LoadSettingsAction(argparse.Action):
-        """This class loads the command line supplied settings file into the
-        :py:data:`armi.settings.cs`.
-        """
+        """This class loads the command line supplied settings file into the :py:data:`armi.settings.cs`."""
 
         def __call__(self, parser, namespace, values, option_string=None):
-            # since this is a positional argument, it can be called with values is
-            # None (i.e. default)
+            # since this is a positional argument, it can be called with values is None (i.e. default)
             if values is not None:
                 cs.loadFromInputFile(values)
 
