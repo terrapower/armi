@@ -20,6 +20,7 @@ import unittest
 
 from armi import context, settings
 from armi.cli import entryPoint
+from armi.cli.run import RunEntryPoint
 from armi.settings import setting, settingsIO
 from armi.tests import TEST_ROOT
 from armi.utils import directoryChangers
@@ -194,12 +195,9 @@ class MockEntryPoint(entryPoint.EntryPoint):
 
 
 class SettingArgsTests(unittest.TestCase):
-    def setUp(self):
-        self.cs = None
-
     def test_commandLineSetting(self):
         ep = MockEntryPoint()
-        self.cs = cs = ep.cs
+        cs = ep.cs
 
         self.assertEqual(cs["nCycles"], 1)
         ep.createOptionFromSetting("nCycles")
@@ -208,15 +206,25 @@ class SettingArgsTests(unittest.TestCase):
 
     def test_commandLineSettingBool(self):
         ep = MockEntryPoint()
-        self.cs = cs = ep.cs
+        cs = ep.cs
 
         self.assertTrue(cs["genReports"])
         ep.createOptionFromSetting("genReports")
         ep.parse_args(["--no-genReports"])
         self.assertFalse(cs["genReports"])
 
-    def test_cannotLoadSettingsAfterParsingCLI(self):
-        self.test_commandLineSetting()
+    def test_runEntryPointSetting(self):
+        ep = RunEntryPoint()
+        ep.addOptions()
+        cs = ep.cs
 
-        with self.assertRaises(RuntimeError):
-            self.cs.loadFromInputFile("somefile.yaml")
+        self.assertFalse(cs["profile"])
+        ep.parse_args([os.path.join(TEST_ROOT, "armiRun.yaml"), "--profile"])
+        self.assertTrue(cs["profile"])
+
+    def test_cannotLoadSettingsAfterParsingCLI(self):
+        ep = MockEntryPoint()
+        cs = ep.cs
+
+        with self.assertRaises(FileNotFoundError):
+            cs.loadFromInputFile("somefile.yaml")
