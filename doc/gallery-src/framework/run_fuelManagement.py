@@ -28,8 +28,6 @@ ARMI to do fuel management. Thus, this example applies a dummy burnup distributi
 demonstration purposes.
 """
 
-# Tell the gallery to feature the 2nd image
-# sphinx_gallery_thumbnail_number = 2
 import math
 
 from armi import configure

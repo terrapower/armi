@@ -1058,9 +1058,9 @@ class Block(composites.Composite):
             return tFrac
         else:
             runLog.warning(
-                "No component {0} exists on {1}, so area fraction is zero.".format(typeSpec, self),
+                f"No component {typeSpec} exists on {self}, so area fraction is zero.",
                 single=True,
-                label="{0} areaFrac is zero".format(typeSpec),
+                label=f"{typeSpec} areaFrac is zero",
             )
             return 0.0
 
@@ -1094,7 +1094,7 @@ class Block(composites.Composite):
             if c.hasFlags(typeSpec):
                 return c.getDimension(dimName.lower())
 
-        raise ValueError("Cannot get Dimension because Flag not found: {0}".format(typeSpec))
+        raise ValueError(f"Cannot get Dimension because Flag not found: {typeSpec}")
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
@@ -1264,7 +1264,6 @@ class Block(composites.Composite):
 
         numDensities = self.getNumberDensities()
 
-        # vol = self.getVolume()
         for nucName, nDen in numDensities.items():
             nucMc = nuclideBases.byName[nucName].label + self.getMicroSuffix()
             if gamma:
@@ -1844,7 +1843,9 @@ class HexBlock(Block):
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
-        self.p.orientation[2] += rotNum * 60
+        if self.p.orientation is None:
+            self.p.orientation = np.array([0.0, 0.0, 0.0])
+        self.p.orientation[2] += rotNum * 60.0
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
 
@@ -1899,9 +1900,8 @@ class HexBlock(Block):
                     pass
                 else:
                     msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {name}"
+                        "No rotation method defined for spatial parameters that aren't defined "
+                        f"once per hex edge/corner. No rotation performed on {name}"
                     )
                     runLog.warning(msg)
             elif isinstance(original, (int, float)):

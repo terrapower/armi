@@ -194,7 +194,7 @@ class _RunLog:
         """Reset the list of de-duplicated warnings, so users can see those warnings again."""
         dupsFilter = self.getDuplicatesFilter()
         if dupsFilter:
-            dupsFilter.singleMessageCounts.clear()
+            dupsFilter.singleMessageLabels.clear()
 
     def warningReport(self):
         """Summarize all warnings for the run."""
@@ -393,19 +393,19 @@ def raw(msg):
 
 
 def extra(msg, single=False, label=None):
-    LOG.log("extra", msg, single=single)
+    LOG.log("extra", msg, single=single, label=label)
 
 
 def debug(msg, single=False, label=None):
-    LOG.log("debug", msg, single=single)
+    LOG.log("debug", msg, single=single, label=label)
 
 
 def info(msg, single=False, label=None):
-    LOG.log("info", msg, single=single)
+    LOG.log("info", msg, single=single, label=label)
 
 
 def important(msg, single=False, label=None):
-    LOG.log("important", msg, single=single)
+    LOG.log("important", msg, single=single, label=label)
 
 
 def warning(msg, single=False, label=None):
@@ -442,7 +442,7 @@ class DeduplicationFilter(logging.Filter):
 
     def __init__(self, *args, **kwargs):
         logging.Filter.__init__(self, *args, **kwargs)
-        self.singleMessageCounts = {}
+        self.singleMessageLabels = set()
         self.warningCounts = {}
 
     def filter(self, record):
@@ -450,27 +450,27 @@ class DeduplicationFilter(logging.Filter):
         msg = str(record.msg)
         single = getattr(record, "single", False)
 
-        # If the message is set to "do not duplicate" we may filter it out
-        if single:
-            # in sub-warning cases, hash the msg, for a faster label lookup
-            label = hash(msg)
-            if label not in self.singleMessageCounts:
-                self.singleMessageCounts[label] = 1
-            else:
-                self.singleMessageCounts[label] += 1
-                return False
+        # grab the label if it exist, otherwise use the message itself as the label
+        label = getattr(record, "label", msg)
+        label = msg if label is None else label
 
         # Track all warnings, for warning report
         if record.levelno in (logging.WARNING, logging.CRITICAL):
-            # if this is from the custom logger, it will have a "label"
-            label = getattr(record, "label", msg)
-            # if the "label" default is None, it needs to be replaced
-            label = msg if label is None else label
-
-            # add the warning to the tracker
             if label not in self.warningCounts:
-                self.warningCounts[label] = 0
-            self.warningCounts[label] += 1
+                self.warningCounts[label] = 1
+            else:
+                self.warningCounts[label] += 1
+                if single:
+                    return False
+
+        # If the message is set to "do not duplicate" we may filter it out
+        if single:
+            # in sub-warning cases, hash the label, for faster lookup
+            label = hash(label)
+            if label not in self.singleMessageLabels:
+                self.singleMessageLabels.add(label)
+            else:
+                return False
 
         # Handle some special string-mangling we want to do, for multi-line messages
         whiteSpace = _RunLog.getWhiteSpace(context.MPI_RANK)
