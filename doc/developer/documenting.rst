@@ -49,9 +49,27 @@ your source tree with:
     git submodule update --init
 
 
-To build the ARMI documentation as html, go to the ``doc`` folder and run:
+To build the ARMI documentation as HTML. The ARMI docs expect a bunch of custom unit test outputs to
+be present. You can either run these test commands:
 
 .. code-block:: bash
+
+    pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+    mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
+    mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
+    mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
+    python doc/.static/cleanup_test_results.py test_results.xml
+
+Or, if you just want to build the docs locally and aren't interested in building a full test report,
+you can just do this to inject placeholder test results files instead:
+
+.. code-block:: bash
+
+    python doc/skip_str.py
+
+Either way, you eventually go to the ``doc`` folder and type this to build the docs:
+
+ .. code-block:: bash
 
     make html
 
