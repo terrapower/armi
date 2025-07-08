@@ -56,6 +56,9 @@ core:
     grid contents:
       [0, 0]: IC
       [1, 1]: IC
+    orientationBOL:
+      [1, 1]: 60.0
+      [3, 2]: 120.0
 sfp:
     lattice pitch:
         x: 25.0
@@ -65,6 +68,9 @@ sfp:
     lattice map: |
       IC IC
       IC IC
+    orientationBOL:
+      [0, 0]: 60.0
+      [0, -1]: 120.0
 evst:
     lattice pitch:
         x: 32.0
@@ -213,3 +219,18 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertEqual(len(sfp.getChildren()), 4)
         sfp.add(evst.getChildren()[0])
         self.assertEqual(len(sfp.getChildren()), 5)
+
+    def test_orientationBOL(self):
+        core, sfp, _evst = self._setupReactor()
+
+        # test for hex core
+        a0 = core.getAssembly(locationString="001-001")
+        self.assertAlmostEqual(a0.p.orientation[2], 60.0, delta=1e-9)
+        a1 = core.getAssembly(locationString="003-002")
+        self.assertAlmostEqual(a1.p.orientation[2], 120.0, delta=1e-9)
+
+        # test cartesian, non-core
+        a0 = sfp.getAssembly("A0005")
+        self.assertAlmostEqual(a0.p.orientation[2], 60.0, delta=1e-9)
+        a1 = sfp.getAssembly("A0003")
+        self.assertAlmostEqual(a1.p.orientation[2], 120.0, delta=1e-9)

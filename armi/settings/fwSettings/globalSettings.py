@@ -689,7 +689,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_SORT_REACTOR,
             default=True,
             label="Do we want to automatically sort the Reactor?",
-            description="Deprecation Warning! This setting will be remove by 2024.",
+            description="If unsorted, ArmiObject IDs will be by the order they were added to the Reactor.",
         ),
         setting.Setting(
             CONF_RM_EXT_FILES_AT_BOC,
@@ -811,12 +811,11 @@ def defineSettings() -> List[setting.Setting]:
             CONF_CYCLES,
             default=[],
             label="Cycle information",
-            description="YAML list defining the cycle history of the case. Options"
-            " at each cycle include: `name`, `cumulative days`, `step days`, `availability"
-            " factor`, `cycle length`, `burn steps`, and `power fractions`."
-            " If specified, do not use any of the case settings `cycleLength(s)`,"
-            " `availabilityFactor(s)`, `powerFractions`, or `burnSteps`. Must also"
-            " specify `nCycles` and `power`.",
+            description="YAML dict defining the cycle history of the case. Options at each cycle "
+            "include: `name`, `cumulative days`, `step days`, `availability factor`, "
+            "`cycle length`, `burn steps`, and `power fractions`. If specified, do not use any of "
+            "the case settings `cycleLength(s)`, `availabilityFactor(s)`, `powerFractions`, or "
+            "`burnSteps`. Must also specify `nCycles` and `power`.",
             schema=vol.Schema(
                 [
                     vol.All(
@@ -838,9 +837,9 @@ def defineSettings() -> List[setting.Setting]:
             CONF_USER_PLUGINS,
             default=[],
             label=CONF_USER_PLUGINS,
-            description="YAML list defining the locations of UserPlugin subclasses. "
-            "You can enter the full armi import path: armi.test.test_what.MyPlugin, "
-            "or you can enter the full file path: /path/to/my/pluginz.py:MyPlugin ",
+            description="YAML list defining the locations of UserPlugin subclasses. You can enter "
+            "the full ARMI import path: armi.test.test_what.MyPlugin, or you can enter the full "
+            "file path: /path/to/my/pluginz.py:MyPlugin ",
             schema=vol.Any([vol.Coerce(str)], None),
         ),
         setting.Setting(
@@ -861,6 +860,11 @@ def _isMonotonicIncreasing(inputList):
 
 
 def _mutuallyExclusiveCyclesInputs(cycle):
+    """Helper for `cycles` setting.
+
+    There are multiple different ways to define the time nodes of the simulation, but they are
+    exclusive, and you have to pick one. Here we verify it was done correcty.
+    """
     cycleKeys = cycle.keys()
     if (
         sum(
@@ -873,11 +877,10 @@ def _mutuallyExclusiveCyclesInputs(cycle):
         != 1
     ):
         baseErrMsg = (
-            "Must have exactly one of either 'cumulative days', 'step days', or"
-            " 'cycle length' + 'burn steps' in each cycle definition."
+            "Must have exactly one of either 'cumulative days', 'step days', or 'cycle length' + "
+            "'burn steps' in each cycle definition."
         )
 
-        raise vol.Invalid(
-            (baseErrMsg + " Check cycle {}.".format(cycle["name"])) if "name" in cycleKeys else baseErrMsg
-        )
+        raise vol.Invalid((baseErrMsg + f" Check cycle {cycle['name']}.") if "name" in cycleKeys else baseErrMsg)
+
     return cycle

@@ -59,8 +59,16 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "numberDensities",
+            setter=isNumpyArray("numberDensities"),
             units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
+        )
+
+        pb.defParam(
+            "nuclides",
+            setter=isNumpyArray("nuclides"),
+            units=units.UNITLESS,
+            description="Nuclide names corresponding to numberDensities array.",
         )
 
         pb.defParam(

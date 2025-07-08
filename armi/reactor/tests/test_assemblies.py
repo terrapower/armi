@@ -220,24 +220,6 @@ class Assembly_TestCase(unittest.TestCase):
             "ztop": 111.80279999999999,
         }
 
-        self.blockSettings = {
-            "axMesh": 1,
-            "bondBOL": 0.0028698019026172574,
-            "envGroup": "A",
-            "height": 14.4507,
-            "molesHmAtBOL": 65.8572895758245,
-            "nHMAtBOL": 0.011241485251783766,
-            "nPins": 169.0,
-            "name": "B0011F",
-            "newDPA": 0.0,
-            "pitch": 16.79,
-            "regName": False,
-            "topIndex": 5,
-            "tsIndex": 0,
-            "type": "igniter fuel",
-            "xsType": "C",
-            "z": 104.57745,
-        }
         # add some blocks with a component
         self.blockList = []
         for i in range(NUM_BLOCKS):
@@ -479,6 +461,9 @@ class Assembly_TestCase(unittest.TestCase):
         self.assertEqual(reactiveHeight, 20.0)
 
     def test_getFissileMass(self):
+        for b in self.assembly:
+            b.p.massHmBOL = b.getHMMass()
+            b.p.enrichmentBOL = b.getFissileMassEnrich()
         cur = self.assembly.getFissileMass()
         ref = sum(bi.getMass(["U235", "PU239"]) for bi in self.assembly)
         self.assertAlmostEqual(cur, ref)

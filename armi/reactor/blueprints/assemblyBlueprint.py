@@ -106,8 +106,7 @@ class AssemblyBlueprint(yamlize.Object):
     """
     A data container for holding information needed to construct an ARMI assembly.
 
-    This class utilizes ``yamlize`` to enable serialization to and from the
-    blueprints YAML file.
+    This class utilizes ``yamlize`` to enable serialization to and from the blueprints YAML file.
 
     .. impl:: Create assembly from blueprint file.
         :id: I_ARMI_BP_ASSEM
@@ -316,7 +315,7 @@ class AssemblyKeyedList(yamlize.KeyedList):
     heights = yamlize.Attribute(type=yamlize.FloatList, default=None)
     axialMeshPoints = yamlize.Attribute(key="axial mesh points", type=yamlize.IntList, default=None)
 
-    # note: yamlize does not call an __init__ method, instead it uses __new__ and setattr
+    # NOTE: yamlize does not call an __init__ method, instead it uses __new__ and setattr
 
     @property
     def bySpecifier(self):

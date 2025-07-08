@@ -356,6 +356,26 @@ class TestRunLog(unittest.TestCase):
             self.assertIn("hi333", mock.getStdout())
             mock.emptyStdout()
 
+    def test_deduplicationFilter(self):
+        """Test that the logic to only print a log message once works correctly."""
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.startLog("test_deduplicationFilter")
+            runLog.LOG.setVerbosity(logging.INFO)
+
+            msgInfo = "singleInfoMessage"
+            for i in range(4):
+                runLog.info(f"{msgInfo}: {i}", single=True, label=msgInfo)
+
+            msgWarn = "singleWarnMessage"
+            for j in range(4):
+                runLog.warning(f"{msgWarn}: {j}", single=True, label=msgWarn)
+
+            logs = mock.getStdout()
+            self.assertEqual(logs.count(msgInfo), 1)
+            self.assertEqual(logs.count(msgWarn), 1)
+
     def test_concatenateLogs(self):
         """
         Simple test of the concat logs function.
