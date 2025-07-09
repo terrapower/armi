@@ -85,7 +85,7 @@ class FuelHandlerInterface(interfaces.Interface):
         """
         # if lattice physics is requested, compute it here instead of after fuel management.
         # This enables XS to exist for branch searching, etc.
-        mc2 = self.o.getInterface(function="latticePhysics")
+        mc2 = self.o.getInterface(purpose="latticePhysics")
         xsgm = self.o.getInterface("xsGroups")
         if mc2 and self.cs[CONF_RUN_LATTICE_BEFORE_SHUFFLING]:
             runLog.extra(
