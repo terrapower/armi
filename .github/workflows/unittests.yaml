@@ -36,6 +36,7 @@ jobs:
         run: sudo apt-get -y install libopenmpi-dev
       - name: Run Tests
         run: |
+          set -x
           pip install -e .[memprof,mpi,test]
           pytest -n 4 armi
           mpiexec -n 2 --use-hwthread-cpus pytest armi/tests/test_mpiFeatures.py

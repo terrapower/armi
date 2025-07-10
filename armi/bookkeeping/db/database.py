@@ -1021,7 +1021,8 @@ class Database:
 
                 data = np.array(pDef.serializer.unpack(data, dataSet.attrs[_SERIALIZER_VERSION], attrs))
 
-            if data.dtype.type is np.bytes_:
+            # nuclides are a special case where we want to keep in np.bytes_ format
+            if data.dtype.type is np.bytes_ and paramName != "nuclides":
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
@@ -1044,18 +1045,21 @@ class Database:
                 runLog.error(msg)
                 raise ValueError(msg)
 
-            # iterating of np is not fast...
-            for c, val, linkedDim in itertools.zip_longest(comps, unpackedData, linkedDims, fillvalue=""):
-                try:
-                    if linkedDim != "":
-                        c.p[paramName] = linkedDim
-                    else:
-                        c.p[paramName] = val
-                except AssertionError as ae:
-                    # happens when a param was deprecated but being loaded from old DB
-                    runLog.warning(
-                        f"{str(ae)}\nSkipping load of invalid param `{paramName}` (possibly loading from old DB)\n"
-                    )
+            if paramName == "numberDensities" and attrs.get("dict", False):
+                Database._applyComponentNumberDensitiesMigration(comps, unpackedData)
+            else:
+                # iterating of np is not fast...
+                for c, val, linkedDim in itertools.zip_longest(comps, unpackedData, linkedDims, fillvalue=""):
+                    try:
+                        if linkedDim != "":
+                            c.p[paramName] = linkedDim
+                        else:
+                            c.p[paramName] = val
+                    except AssertionError as ae:
+                        # happens when a param was deprecated but being loaded from old DB
+                        runLog.warning(
+                            f"{str(ae)}\nSkipping load of invalid param `{paramName}` (possibly loading from old DB)\n"
+                        )
 
     def getHistoryByLocation(
         self,
@@ -1442,6 +1446,22 @@ class Database:
                 raise
 
         return resolved
+
+    @staticmethod
+    def _applyComponentNumberDensitiesMigration(comps, unpackedData):
+        """
+        Special migration from <= v0.5.1 component numberDensities parameter data type.
+
+        old format: dict[str: float]
+        new format: two numpy arrays
+        - nuclides = np.array(dtype="S6")
+        - numberDensities = np.array(dtype=np.float64)
+        """
+        for c, ndensDict in zip(comps, unpackedData):
+            nuclides = np.array(list(ndensDict.keys()), dtype="S6")
+            numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
+            c.p["nuclides"] = nuclides
+            c.p["numberDensities"] = numberDensities
 
 
 def packSpecialData(

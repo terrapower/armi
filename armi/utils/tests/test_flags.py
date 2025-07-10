@@ -15,6 +15,7 @@
 
 import unittest
 
+from armi.reactor.composites import FlagSerializer
 from armi.utils.flags import Flag, auto
 
 
@@ -152,3 +153,47 @@ class TestFlag(unittest.TestCase):
 
     def test_getitem(self):
         self.assertEqual(ExampleFlag["FOO"], ExampleFlag.FOO)
+
+    def test_duplicateFlags(self):
+        """Show that duplicate flags can be added and silently ignored."""
+
+        class F(Flag):
+            @classmethod
+            def len(cls):
+                return len(cls._nameToValue)
+
+        F.extend({"FLAG0": auto()})
+        for i in range(1, 12):
+            F.extend({f"FLAG{i}": auto()})
+            num = F.len()
+            F.extend({f"FLAG{i - 1}": auto()})
+            self.assertEqual(F.len(), num)
+
+            # While the next two lines do not assert anything, these lines used to raise an error.
+            # So these lines remain as proof against that error in the future.
+            ff = getattr(F, f"FLAG{i}")
+            FlagSerializer._packImpl(
+                [
+                    ff,
+                ],
+                F,
+            )
+            self.assertEqual(F.len(), num)
+
+    def test_soManyFlags(self):
+        """Show that many flags can be added without issue."""
+
+        class F(Flag):
+            @classmethod
+            def len(cls):
+                return len(cls._nameToValue)
+
+        for i in range(1, 100):
+            num = F.len()
+            flagName = f"FLAG{i}"
+            F.extend({flagName: auto()})
+            self.assertEqual(F.len(), num + 1)
+
+            flag = getattr(F, flagName)
+            flag.to_bytes()
+            self.assertEqual(F.len(), num + 1)

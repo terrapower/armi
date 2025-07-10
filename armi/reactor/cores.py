@@ -213,17 +213,33 @@ class Core(composites.Composite):
     @property
     def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
         """
-        Return the microscopic cross section library if one exists.
+        Return the microscopic cross section library, if one exists.
 
-        - If there is a library currently associated with the core, it will be returned
-        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as
-          ``ISOTXS`` object and returned.
-        - Finally, if no ``ISOTXS`` file exists in the working directory, a None will be returned.
+        - If there is a library currently associated with the Core, it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as ``ISOTXS`` object and
+          returned. If possible, it will find the correct file for the current cycle and timeNode.
+        - Finally, if no ``ISOTXS`` file exists in the working directory, a None value will be returned.
         """
-        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+        # determine the current cycle and timeNode
+        cycle = None
+        node = None
+        if self.r is not None:
+            cycle = self.r.p.cycle
+            node = self.r.p.timeNode
+
+        # if self._lib is None, try to find a local file
+        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
         if self._lib is None and os.path.exists(isotxsFileName):
-            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+            # try to find the file for this specific cycle/node
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}` at {cycle}/{node}")
             self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+        elif self._lib is None:
+            # try to find any local file, not labeled by cycle/node
+            isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+            if os.path.exists(isotxsFileName):
+                runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+                self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+
         return self._lib
 
     @lib.setter
@@ -1173,15 +1189,20 @@ class Core(composites.Composite):
             fuelNuclides = set()
             structureNuclides = set()
             for c in self.iterComponents():
+                compNuclides = []
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                nuclides = [nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0]
+                if c.p.numberDensities is None:
+                    continue
+                for nuc, dens in zip(c.p.nuclides, c.p.numberDensities):
+                    if dens > 0.0:
+                        compNuclides.append(nuc.decode())
                 if c.getName() == "coolant":
-                    coolantNuclides.update(nuclides)
+                    coolantNuclides.update(compNuclides)
                 elif "fuel" in c.getName():
-                    fuelNuclides.update(nuclides)
+                    fuelNuclides.update(compNuclides)
                 else:
-                    structureNuclides.update(nuclides)
+                    structureNuclides.update(compNuclides)
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = set(self.parent.blueprints.allNuclidesInProblem) - structureNuclides - coolantNuclides

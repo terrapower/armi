@@ -20,6 +20,7 @@ jobs:
         run: sudo apt-get update
       - name: Run Linter
         run:  |
+          set -x
           pip install -e .[test]
           ruff format --check .
           ruff check .

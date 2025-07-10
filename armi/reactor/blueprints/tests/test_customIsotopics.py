@@ -17,6 +17,7 @@
 import unittest
 from logging import DEBUG
 
+import numpy as np
 import yamlize
 
 from armi import runLog, settings
@@ -352,12 +353,8 @@ assemblies:
     def test_unmodified(self):
         """Ensure that unmodified components have the correct isotopics."""
         fuel = self.a[0].getComponent(Flags.FUEL)
-        self.assertEqual(
-            self.numUZrNuclides,
-            len(fuel.p.numberDensities),
-            msg=fuel.p.numberDensities.keys(),
-        )
-        # Note this density does not come from the material but is based on number densities
+        self.assertEqual(self.numUZrNuclides, len(fuel.p.numberDensities))
+        # NOTE: This density does not come from the material but is based on number densities.
         self.assertAlmostEqual(15.5, fuel.density(), 0)  # i.e. it is not 19.1
 
     def test_massFractionsAreApplied(self):
@@ -372,7 +369,10 @@ assemblies:
         self.assertEqual(self.numCustomNuclides, len(fuel1.p.numberDensities))
         self.assertAlmostEqual(19.1, fuel1.density())
 
-        self.assertEqual(set(fuel2.p.numberDensities.keys()), set(fuel1.p.numberDensities.keys()))  # keys are same
+        # keys are same
+        keys1 = set([i for i, v in enumerate(fuel1.p.numberDensities) if v == 0.0])
+        keys2 = set([i for i, v in enumerate(fuel2.p.numberDensities) if v == 0.0])
+        self.assertEqual(keys1, keys2)
 
     def test_densitiesAppliedToNonCustomMaterials(self):
         """Ensure that a density can be set in custom isotopics for components using library materials."""
@@ -489,13 +489,16 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT4
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as number fractions
+        # fuel blocks 2 and 4 should be the same, one is defined as mass fractions, and the other as
+        # number fractions
         fuel2 = self.a[1].getComponent(Flags.FUEL)
         fuel4 = self.a[3].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel4.density())
 
-        for nuc in fuel2.p.numberDensities.keys():
-            self.assertAlmostEqual(fuel2.p.numberDensities[nuc], fuel4.p.numberDensities[nuc])
+        keys2 = set([i for i, v in enumerate(fuel2.p.numberDensities) if v == 0.0])
+        keys4 = set([i for i, v in enumerate(fuel4.p.numberDensities) if v == 0.0])
+        self.assertEqual(keys2, keys4)
+        np.testing.assert_almost_equal(fuel2.p.numberDensities, fuel4.p.numberDensities)
 
     def test_numberDensities(self):
         """Ensure that the custom isotopics can be specified via number densities.
@@ -504,21 +507,22 @@ assemblies:
             :id: T_ARMI_MAT_USER_INPUT5
             :tests: R_ARMI_MAT_USER_INPUT
         """
-        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as number densities
+        # fuel blocks 2 and 5 should be the same, one is defined as mass fractions, and the other as
+        # number densities
         fuel2 = self.a[1].getComponent(Flags.FUEL)
         fuel5 = self.a[4].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel2.density(), fuel5.density())
 
-        for nuc in fuel2.p.numberDensities.keys():
-            self.assertAlmostEqual(fuel2.p.numberDensities[nuc], fuel5.p.numberDensities[nuc])
+        for i, nuc in enumerate(fuel2.p.nuclides):
+            self.assertIn(nuc, fuel5.p.nuclides)
+            j = np.where(fuel5.p.nuclides == nuc)[0][0]
+            self.assertAlmostEqual(fuel2.p.numberDensities[i], fuel5.p.numberDensities[j])
 
     def test_numberDensitiesAnchor(self):
         fuel4 = self.a[4].getComponent(Flags.FUEL)
         fuel5 = self.a[5].getComponent(Flags.FUEL)
         self.assertAlmostEqual(fuel4.density(), fuel5.density())
-
-        for nuc in fuel4.p.numberDensities.keys():
-            self.assertAlmostEqual(fuel4.p.numberDensities[nuc], fuel5.p.numberDensities[nuc])
+        np.testing.assert_almost_equal(fuel4.p.numberDensities, fuel5.p.numberDensities)
 
     def test_expandedNatural(self):
         cs = settings.Settings()
