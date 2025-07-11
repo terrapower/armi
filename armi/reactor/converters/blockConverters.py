@@ -104,23 +104,23 @@ class BlockConverter:
             )
             if soluteArea >= 0.0:
                 if solvent.getDimension("id", cold=False) > soluteID:
-                    runLog.debug("Decreasing ID of {} to accommodate {}.".format(solvent, solute))
+                    runLog.debug(f"Decreasing ID of {solvent} to accommodate {solute}.")
                     solvent.setDimension("id", soluteID, cold=False)
                 if solvent.getDimension("od", cold=False) < soluteOD:
-                    runLog.debug("Increasing OD of {} to accommodate {}.".format(solvent, solute))
+                    runLog.debug(f"Increasing OD of {solvent} to accommodate {solute}.")
                     solvent.setDimension("od", soluteOD, cold=False)
                 if solvent.getDimension("id", cold=False) < minID:
-                    runLog.debug("Updating the ID of {} the the specified min ID: {}.".format(solvent, minID))
+                    runLog.debug(f"Updating the ID of {solvent} the the specified min ID: {minID}.")
                     solvent.setDimension("id", minID, cold=False)
             else:
                 # can only merge a negative-area component if one of the dimensions is linked
                 matchedDimension = False
                 if solvent.getDimension("id", cold=False) == soluteOD:
-                    runLog.debug("Increasing ID of {} to accommodate {}.".format(solvent, solute))
+                    runLog.debug(f"Increasing ID of {solvent} to accommodate {solute}.")
                     solvent.setDimension("id", soluteID, cold=False)
                     matchedDimension = True
                 if solvent.getDimension("od", cold=False) == soluteID:
-                    runLog.debug("Decreasing OD of {} to accommodate {}.".format(solvent, solute))
+                    runLog.debug(f"Decreasing OD of {solvent} to accommodate {solute}.")
                     solvent.setDimension("od", soluteOD, cold=False)
                     matchedDimension = True
                 if not matchedDimension:
