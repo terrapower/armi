@@ -108,9 +108,12 @@ class _Metadata:
             otherVal = other[key]
             mergedVal = None
             if not properties.numpyHackForEqual(selfVal, otherVal):
-                raise exceptionClass(
+                exceptionMsg = (
                     "{libType} {key} metadata differs between {lib1} and {lib2}; Cannot Merge\n"
-                    "{key} has values of {val1} and {val2}".format(
+                    "{key} has values of {val1} and {val2}"
+                )
+                raise exceptionClass(
+                    exceptionMsg.format(
                         libType=fileType,
                         lib1=selfContainer,
                         lib2=otherContainer,
