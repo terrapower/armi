@@ -151,7 +151,7 @@ class BlockConverter:
                 "Components are not of compatible shape to be merged solute: {}, solvent: {}".format(solute, solvent)
             )
         if solute.getArea() < 0:
-            # allow negative-area gap / void
+            # allow negative-area gap
             if not solute.hasFlags(Flags.GAP):
                 raise ValueError(
                     "Cannot merge solute with negative area into a solvent. {} area: {}".format(
