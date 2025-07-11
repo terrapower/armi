@@ -213,17 +213,33 @@ class Core(composites.Composite):
     @property
     def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
         """
-        Return the microscopic cross section library if one exists.
+        Return the microscopic cross section library, if one exists.
 
-        - If there is a library currently associated with the core, it will be returned
-        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as
-          ``ISOTXS`` object and returned.
-        - Finally, if no ``ISOTXS`` file exists in the working directory, a None will be returned.
+        - If there is a library currently associated with the Core, it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as ``ISOTXS`` object and
+          returned. If possible, it will find the correct file for the current cycle and timeNode.
+        - Finally, if no ``ISOTXS`` file exists in the working directory, a None value will be returned.
         """
-        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+        # determine the current cycle and timeNode
+        cycle = None
+        node = None
+        if self.r is not None:
+            cycle = self.r.p.cycle
+            node = self.r.p.timeNode
+
+        # if self._lib is None, try to find a local file
+        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
         if self._lib is None and os.path.exists(isotxsFileName):
-            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+            # try to find the file for this specific cycle/node
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}` at {cycle}/{node}")
             self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+        elif self._lib is None:
+            # try to find any local file, not labeled by cycle/node
+            isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+            if os.path.exists(isotxsFileName):
+                runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+                self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+
         return self._lib
 
     @lib.setter
