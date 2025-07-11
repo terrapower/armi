@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-This module contains commonly used functions relating to directories, files and path
-manipulations.
-"""
+"""This module contains commonly used functions relating to directories, files and path manipulations."""
 
 import importlib
 import os
@@ -59,20 +56,17 @@ def copyOrWarn(filepathDescription, sourcePath, destinationPath):
             shutil.copytree(sourcePath, destinationPath, dirs_exist_ok=True)
         else:
             safeCopy(sourcePath, destinationPath)
-        runLog.debug("Copied {}: {} -> {}".format(filepathDescription, sourcePath, destinationPath))
+        runLog.debug(f"Copied {filepathDescription}: {sourcePath} -> {destinationPath}")
     except shutil.SameFileError:
         pass
     except Exception as e:
-        runLog.warning(
-            "Could not copy {} from {} to {}\nError was: {}".format(filepathDescription, sourcePath, destinationPath, e)
-        )
+        runLog.warning(f"Could not copy {filepathDescription} from {sourcePath} to {destinationPath}\nError was: {e}")
 
 
 def isFilePathNewer(path1, path2):
     """Returns true if path1 is newer than path2.
 
-    Returns true if path1 is newer than path2, or if path1 exists and path2 does not, otherwise
-    raises an IOError.
+    Returns true if path1 is newer than path2, or if path1 exists and path2 does not, otherwise raises an IOError.
     """
     exist1 = os.path.exists(path1)
     exist2 = os.path.exists(path2)

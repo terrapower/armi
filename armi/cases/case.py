@@ -755,27 +755,27 @@ def _copyInputsHelper(fileDescription: str, sourcePath: str, destPath: str, orig
 
 def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -> Dict[str, Union[str, list]]:
     """
-    Ping active interfaces to determine which files are considered "input". This enables developers
-    to add new inputs in a plugin-dependent/ modular way.
+    Ping active interfaces to determine which files are considered "inputs". This enables developers to add new inputs
+    in a modular way.
 
-    This function should now be able to handle the updating of:
+    This function can handle:
 
-      - a single file (relative or absolute)
-      - a list of files (relative or absolute)
-      - a file entry that has a wildcard processing into multiple files. Glob is used to offer
-        support for wildcards.
+      - relative or absolute paths
+      - a single file
+      - a list of files
+      - a file entry that has a wildcard processing into multiple files. (Glob is used to offer support for wildcards.)
       - a directory and its contents
 
     If the file paths are absolute, do nothing. The case will be able to find the file.
 
-    In case suites or parameter sweeps, these files often have a sourceDir associated with them that
-    is different from the cs.inputDirectory. So, if relative or wildcard, update the file paths to
-    be absolute in the case settings and copy the file to the destination directory.
+    In case suites or parameter sweeps, these files often have a sourceDir associated with them that is different from
+    the cs.inputDirectory. So, if relative or wildcard, update the file paths to be absolute in the case settings and
+    copy the file to the destination directory.
 
     Parameters
     ----------
     cs : Settings
-        The source case settings to find input files
+        The source case settings used to find input files
     destination : str
         The target directory to copy input files to
     sourceDir : str, optional
@@ -784,15 +784,8 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
     Returns
     -------
     dict
-        A new settings object that contains settings for the keys and values that are either an
-        absolute file path, a list of absolute file paths, or the original file path if absolute
-        paths could not be resolved.
-
-    Notes
-    -----
-    Regarding the handling of relative file paths: In the future this could be simplified by adding
-    a concept for a suite root directory, below which it is safe to copy files without needing to
-    update settings that point with a relative path to files that are below it.
+        New settings, keys and values, that are either an absolute file path, a list of absolute file paths, or the
+        original file path if absolute paths could not be resolved.
     """
     activeInterfaces = interfaces.getActiveInterfaceInfo(cs)
     sourceDir = sourceDir or cs.inputDirectory
@@ -803,8 +796,12 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
     newSettings = {}
 
     for klass, _ in activeInterfaces:
+        print(f"\nTODO: JOHN: {klass}")
         interfaceFileNames = klass.specifyInputs(cs)
+
+        print(f"    TODO: JOHN: {interfaceFileNames}")
         for key, files in interfaceFileNames.items():
+            print(f"      TODO: JOHN: {key}: {files}")
             if not isinstance(key, settings.Setting):
                 try:
                     key = cs.getSetting(key)
@@ -820,17 +817,18 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
 
             newFiles = []
             for f in files:
+                print(f"         {f}")
+                if not f:
+                    runLog.debug(f"No input files for `{label}` could be resolved because no path was provided.")
+                    return
+
+                # determine some special cases
                 WILDCARD = False
-                EMPTY = False
                 ABSOLUTE = False
                 if "*" in f:
                     WILDCARD = True
-                if not f:
-                    # beware: pathlib.path("") returns "." which can be bad news, so we handle empty
-                    # strings as their own category
-                    EMPTY = True
                 path = pathlib.Path(f)
-                if not EMPTY and path.is_absolute():
+                if path.is_absolute():
                     ABSOLUTE = True
 
                 # Attempt to construct an absolute file path
@@ -845,8 +843,6 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
                         for gFile in globFilePaths:
                             destFilePath = _copyInputsHelper(label, gFile, destination, f)
                             newFiles.append(str(destFilePath))
-                elif EMPTY:
-                    pass
                 elif ABSOLUTE:
                     if path.exists():
                         # Path is absolute, no settings modification or filecopy needed
@@ -856,14 +852,14 @@ def copyInterfaceInputs(cs, destination: str, sourceDir: Optional[str] = None) -
                     destFilePath = _copyInputsHelper(label, srcFullPath, destination, f)
                     newFiles.append(str(destFilePath))
 
-                if destFilePath == f:
+                if destFilePath in (f, srcFullPath):
                     runLog.debug(
                         f"No input files for `{label}` could be resolved with the following path: "
                         f"`{srcFullPath}`. Will not update `{label}`."
                     )
 
-            # Some settings are a single filename. Others are lists of files. Make
-            # sure we are returning what the setting expects
+            # Some settings are a single filename. Others are lists of files. Make sure we are returning what the
+            # setting expects
             if isSetting and len(newFiles):
                 if len(files) == 1 and not WILDCARD and key.name in cs and not isinstance(cs[key.name], list):
                     newSettings[label] = newFiles[0]
