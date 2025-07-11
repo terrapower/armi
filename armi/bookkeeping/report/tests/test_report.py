@@ -32,6 +32,7 @@ from armi.bookkeeping.report.reportingUtils import (
     getNodeName,
     getSystemInfo,
     makeBlockDesignReport,
+    makeCoreAndAssemblyMaps,
     makeCoreDesignReport,
     setNeutronBalancesReport,
     summarizePinDesign,
@@ -116,8 +117,8 @@ Processor(s):    1 Processor(s) Installed.
     def test_getSystemInfo(self):
         """Basic sanity check of getSystemInfo() running in the wild.
 
-        This test should pass if it is run on Window or mainstream Linux distros. But we expect this
-        to fail if the test is run on some other OS.
+        This test should pass if it is run on Window or mainstream Linux distros. But we expect this to fail if the test
+        is run on some other OS.
         """
         if "darwin" in sys.platform:
             # too complicated to test MacOS in this method
@@ -134,11 +135,21 @@ Processor(s):    1 Processor(s) Installed.
     def test_getNodeName(self):
         """Test that the getNodeName() method returns a non-empty string.
 
-        It is hard to know what string SHOULD be return here, and it would depend on how the OS is
-        set up on your machine or cluster. But this simple test needs to pass as-is on Windows
-        and Linux.
+        It is hard to know what string SHOULD be return here, and it would depend on how the OS is set up on your
+        machine or cluster. But this simple test needs to pass as-is on Windows and Linux.
         """
         self.assertGreater(len(getNodeName()), 0)
+
+    def test_makeCoreAndAssemblyMaps(self):
+        #with TemporaryDirectoryChanger():
+        #o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        from armi.tests import TEST_ROOT
+        o, r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
+        r.core.growToFullCore(o.cs)
+        makeCoreAndAssemblyMaps(r, o.cs)
+        self.assertTrue(os.path.exists("armiRunSmallestRadialCoreMap.png"))
+        self.assertTrue(os.path.exists("coreAssemblyTypes1.png"))
+        assert False
 
 
 class TestReport(unittest.TestCase):

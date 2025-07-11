@@ -388,7 +388,7 @@ def getInterfaceStackSummary(o):
     for ii, i in enumerate(o.interfaces, start=1):
         data.append(
             (
-                "{:02d}".format(ii),
+                f"{ii:02d}",
                 i.__class__.__name__.replace("Interface", ""),
                 i.name,
                 i.function,
@@ -523,8 +523,8 @@ def _makeBOLAssemblyMassSummary(massSum):
     for val in dataLabels:
         line = ""
         for s in massSum:
-            line += "{0:<25.3f}".format(s[val])
-        str_.append("{0:12s}{1}".format(val, line))
+            line += f"{s[val]:<25.3f}"
+        str_.append(f"{val:12s}{line}")
 
     # print blocks in this assembly up to 10
     for i in range(10):
@@ -551,8 +551,9 @@ def _makeTotalAssemblyMassSummary(massSum):
         for assemSum in massSum:
             totals[label] += assemSum[label] * assemSum["count"]
             count += assemSum["count"]
-        str_.append("{0:12s} {1:.2f} MT".format(label, totals[label] / 1000.0))
-    str_.append("Total assembly count: {0}".format(count // len(massLabels)))
+        str_.append(f"{label:12s} {totals[label] / 1000.0:.2f} MT")
+
+    str_.append(f"Total assembly count: {count // len(massLabels)}")
     return "\n".join(str_)
 
 
@@ -567,10 +568,10 @@ def writeCycleSummary(core):
     # Would io be worth considering for this?
     cycle = core.r.p.cycle
     str_ = []
-    runLog.important("Cycle {0} Summary:".format(cycle))
+    runLog.important(f"Cycle {cycle} Summary:")
     avgBu = core.calcAvgParam("percentBu", typeSpec=Flags.FUEL, generationNum=2)
-    str_.append("Core Average Burnup: {0}".format(avgBu))
-    str_.append("End of Cycle {0:02d}. Timestamp: {1} ".format(cycle, time.ctime()))
+    str_.append(f"Core Average Burnup: {avgBu}")
+    str_.append(f"End of Cycle {cycle:02d}. Timestamp: {time.ctime()} ")
 
     runLog.info("\n".join(str_))
 
@@ -598,32 +599,32 @@ def setNeutronBalancesReport(core):
 
     report.setData(
         "Fission",
-        "{0:.5e} ({1:.2%})".format(fisProd, fisProd / (fisProd + n2nProd)),
+        f"{fisProd:.5e} ({fisProd / (fisProd + n2nProd):.2%})",
         report.NEUT_PROD,
     )
     report.setData(
         "n, 2n",
-        "{0:.5e} ({1:.2%})".format(n2nProd, n2nProd / (fisProd + n2nProd)),
+        f"{n2nProd:.5e} ({n2nProd / (fisProd + n2nProd):.2%})",
         report.NEUT_PROD,
     )
     report.setData(
         "Capture",
-        "{0:.5e} ({1:.2%})".format(cap, cap / (absorb + leak)),
+        f"{cap:.5e} ({cap / (absorb + leak):.2%})",
         report.NEUT_LOSS,
     )
     report.setData(
         "Fission",
-        "{0:.5e} ({1:.2%})".format(fis, fis / (absorb + leak)),
+        f"{fis:.5e} ({fis / (absorb + leak):.2%})",
         report.NEUT_LOSS,
     )
     report.setData(
         "Absorption",
-        "{0:.5e} ({1:.2%})".format(absorb, absorb / (absorb + leak)),
+        f"{absorb:.5e} ({absorb / (absorb + leak):.2%})",
         report.NEUT_LOSS,
     )
     report.setData(
         "Leakage",
-        "{0:.5e} ({1:.2%})".format(leak, leak / (absorb + leak)),
+        f"{leak:.5e} ({leak / (absorb + leak):.2%})",
         report.NEUT_LOSS,
     )
 
@@ -674,8 +675,8 @@ def summarizePinDesign(core):
 
         dimensionless = {"sd", "hot sd", "zrFrac", "nPins"}
         for key, average_value in designInfo.items():
-            dim = "{0:10s}".format(key)
-            val = "{0:.4f}".format(average_value)
+            dim = f"{key:10s}"
+            val = f"{average_value:.4f}"
             if key not in dimensionless:
                 val += " mm"
             report.setData(dim, val, report.PIN_ASSEM_DESIGN)
@@ -683,18 +684,18 @@ def summarizePinDesign(core):
         a = core.refAssem
         report.setData(
             "Fuel Height (cm):",
-            "{0:.2f}".format(a.getHeight(Flags.FUEL)),
+            f"{a.getHeight(Flags.FUEL):.2f}",
             report.PIN_ASSEM_DESIGN,
         )
         report.setData(
             "Plenum Height (cm):",
-            "{0:.2f}".format(a.getHeight(Flags.PLENUM)),
+            f"{a.getHeight(Flags.PLENUM):.2f}",
             report.PIN_ASSEM_DESIGN,
         )
         runLog.info(report.ALL[report.PIN_ASSEM_DESIGN])
 
         first_fuel_block = core.getFirstBlock(Flags.FUEL)
-        runLog.info("Design & component information for first fuel block {}".format(first_fuel_block))
+        runLog.info(f"Design & component information for first fuel block {first_fuel_block}")
 
         runLog.info(first_fuel_block.setAreaFractionsReport())
 
@@ -731,9 +732,7 @@ def summarizePowerPeaking(core):
     avgPow = power / (n + 1)
     radPeakF = maxPowAssem.calcTotalParam("power", typeSpec=Flags.FUEL) / avgPow
 
-    runLog.important(
-        "Power Peaking: Fz= {0:.3f} Fxy= {1:.3f} Fq= {2:.3f}".format(axPeakF, radPeakF, axPeakF * radPeakF)
-    )
+    runLog.important(f"Power Peaking: Fz= {axPeakF:.3f} Fxy= {radPeakF:.3f} Fq= {axPeakF * radPeakF:.3f}")
 
 
 def summarizePower(core):
@@ -754,7 +753,7 @@ def summarizePower(core):
 
     runLog.important("Power summary")
     for atype, val in sums.items():
-        runLog.important(" Power in {0:35s}: {1:0.3E} Watts, {2:0.5f}%".format(atype, val, val / tot * 100))
+        runLog.important(f" Power in {atype:35s}: {val:0.3E} Watts, {val / tot * 100:0.5f}%")
 
 
 def makeCoreDesignReport(core, cs):
@@ -765,7 +764,7 @@ def makeCoreDesignReport(core, cs):
     core: armi.reactor.reactors.Core
     cs: armi.settings.caseSettings.Settings
     """
-    coreDesignTable = report.data.Table("SUMMARY OF CORE: {}".format(cs.caseTitle.upper()))
+    coreDesignTable = report.data.Table(f"SUMMARY OF CORE: {cs.caseTitle.upper()}")
     coreDesignTable.header = ["", "Input Parameter"]
 
     # Change the ordering of the core design table in the report relative to the other data
@@ -781,42 +780,42 @@ def _setGeneralCoreDesignData(cs, coreDesignTable):
     from armi.physics.fuelCycle.settings import CONF_SHUFFLE_LOGIC
     from armi.physics.neutronics.settings import CONF_LOADING_FILE
 
-    report.setData("Case Title", "{}".format(cs.caseTitle), coreDesignTable, report.DESIGN)
-    report.setData("Run Type", "{}".format(cs["runType"]), coreDesignTable, report.DESIGN)
+    report.setData("Case Title", f"{cs.caseTitle}", coreDesignTable, report.DESIGN)
+    report.setData("Run Type", str(cs["runType"]), coreDesignTable, report.DESIGN)
     report.setData(
         "Loading File",
-        "{}".format(cs[CONF_LOADING_FILE]),
+        f"{cs[CONF_LOADING_FILE]}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Fuel Shuffling Logic File",
-        "{}".format(cs[CONF_SHUFFLE_LOGIC]),
+        f"{cs[CONF_SHUFFLE_LOGIC]}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Reactor State Loading",
-        "{}".format(cs["loadStyle"]),
+        str(cs["loadStyle"]),
         coreDesignTable,
         report.DESIGN,
     )
     if cs["loadStyle"] == "fromDB":
         report.setData(
             "Database File",
-            "{}".format(cs["reloadDBName"]),
+            str(cs["reloadDBName"]),
             coreDesignTable,
             report.DESIGN,
         )
         report.setData(
             "Starting Cycle",
-            "{}".format(cs["startCycle"]),
+            str(cs["startCycle"]),
             coreDesignTable,
             report.DESIGN,
         )
         report.setData(
             "Starting Node",
-            "{}".format(cs["startNode"]),
+            str(cs["startNode"]),
             coreDesignTable,
             report.DESIGN,
         )
@@ -837,81 +836,81 @@ def _setGeneralCoreParametersData(core, cs, coreDesignTable):
     )
     report.setData(
         "Base Capacity Factor",
-        "{}".format(cs["availabilityFactor"]),
+        str(cs["availabilityFactor"]),
         coreDesignTable,
         report.DESIGN,
     )  # note this doesn't consider availabilityFactors
     report.setData(
         "Cycle Length",
-        "{} days".format(cs["cycleLength"]),
+        str(cs["cycleLength"]),
         coreDesignTable,
         report.DESIGN,
     )  # note this doesn't consider cycleLengths
-    report.setData("Burnup Cycles", "{}".format(cs["nCycles"]), coreDesignTable, report.DESIGN)
+    report.setData("Burnup Cycles", str(cs["nCycles"]), coreDesignTable, report.DESIGN)
     report.setData(
         "Burnup Steps per Cycle",
-        "{}".format(cs["burnSteps"]),
+        str(cs["burnSteps"]),
         coreDesignTable,
         report.DESIGN,
     )  # note this doesn't consider the detailed cycle input option
     corePowerMult = int(core.powerMultiplier)
     report.setData(
         "Core Total Volume",
-        "{:.2f} cc".format(totalVolume * corePowerMult),
+        f"{totalVolume * corePowerMult:.2f} cc",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Core Fissile Mass",
-        "{:.2f} kg".format(fissileMass / units.G_PER_KG * corePowerMult),
+        f"{fissileMass / units.G_PER_KG * corePowerMult:.2f} kg",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Core Heavy Metal Mass",
-        "{:.2f} kg".format(heavyMetalMass / units.G_PER_KG * corePowerMult),
+        f"{heavyMetalMass / units.G_PER_KG * corePowerMult:.2f} kg",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Core Total Mass",
-        "{:.2f} kg".format(totalMass / units.G_PER_KG * corePowerMult),
+        f"{totalMass / units.G_PER_KG * corePowerMult:.2f} kg",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Number of Assembly Rings",
-        "{}".format(core.getNumRings()),
+        f"{core.getNumRings()}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Number of Assemblies",
-        "{}".format(len(core.getAssemblies() * corePowerMult)),
+        f"{len(core.getAssemblies() * corePowerMult)}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Number of Fuel Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.FUEL) * corePowerMult)),
+        f"{len(core.getAssemblies(Flags.FUEL) * corePowerMult)}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Number of Control Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.CONTROL) * corePowerMult)),
+        f"{len(core.getAssemblies(Flags.CONTROL) * corePowerMult)}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Number of Reflector Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.REFLECTOR) * corePowerMult)),
+        f"{len(core.getAssemblies(Flags.REFLECTOR) * corePowerMult)}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Number of Shield Assemblies",
-        "{}".format(len(core.getAssemblies(Flags.SHIELD) * corePowerMult)),
+        f"{len(core.getAssemblies(Flags.SHIELD) * corePowerMult)}",
         coreDesignTable,
         report.DESIGN,
     )
@@ -921,7 +920,7 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     from armi.physics.neutronics.settings import CONF_GEN_XS, CONF_GLOBAL_FLUX_ACTIVE
 
     report.setData("  ", "", coreDesignTable, report.DESIGN)
-    report.setData("Full Core Model", "{}".format(core.isFullCore), coreDesignTable, report.DESIGN)
+    report.setData("Full Core Model", f"{core.isFullCore}", coreDesignTable, report.DESIGN)
     report.setData(
         "Tight Physics Coupling Enabled",
         "{}".format(bool(cs["tightCoupling"])),
@@ -930,13 +929,13 @@ def _setGeneralSimulationData(core, cs, coreDesignTable):
     )
     report.setData(
         "Lattice Physics Enabled for",
-        "{}".format(cs[CONF_GEN_XS]),
+        f"{cs[CONF_GEN_XS]}",
         coreDesignTable,
         report.DESIGN,
     )
     report.setData(
         "Neutronics Enabled for",
-        "{}".format(cs[CONF_GLOBAL_FLUX_ACTIVE]),
+        f"{cs[CONF_GLOBAL_FLUX_ACTIVE]}",
         coreDesignTable,
         report.DESIGN,
     )
@@ -950,7 +949,7 @@ def makeBlockDesignReport(r):
     r : armi.reactor.reactors.Reactor
     """
     for bDesign in r.blueprints.blockDesigns:
-        loadingFileTable = report.data.Table("SUMMARY OF BLOCK: {}".format(bDesign.name))
+        loadingFileTable = report.data.Table(f"SUMMARY OF BLOCK: {bDesign.name}")
         loadingFileTable.header = ["", "Input Parameter"]
 
         # Change the ordering of the loading file table in the report relative to the other data
@@ -965,8 +964,8 @@ def makeBlockDesignReport(r):
             for label, values in dimensions.items():
                 value, unit = values
                 report.setData(
-                    "{} {}".format(cType, label),
-                    "{} {}".format(value, unit),
+                    f"{cType} {label}",
+                    f"{value} {unit}",
                     loadingFileTable,
                     report.DESIGN,
                 )
@@ -1007,19 +1006,17 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     blueprints = r.blueprints
     for aKey in blueprints.assemDesigns.keys():
         a = blueprints.constructAssem(cs, name=aKey)
-        # since we will be plotting cold input heights, we need to make sure that
-        # that these new assemblies have access to a blueprints somewhere up the
-        # composite chain. normally this would happen through an assembly's parent
-        # reactor, but because these newly created assemblies are in the load queue,
-        # they will not have a parent reactor. to get around this, we just attach
-        # the blueprints to the assembly directly.
+        # since we will be plotting cold input heights, we need to make sure that that these new assemblies have access
+        # to a blueprints somewhere up the composite chain. normally this would happen through an assembly's parent
+        # reactor, but because these newly created assemblies are in the load queue, they will not have a parent
+        # reactor. to get around this, we just attach the blueprints to the assembly directly.
         a.blueprints = blueprints
         assems.append(a)
 
     core = r.core
     for plotNum, assemBatch in enumerate(iterables.chunk(assems, MAX_ASSEMS_PER_ASSEM_PLOT), start=1):
         assemPlotImage = copy(report.ASSEM_TYPES)
-        assemPlotImage.title = assemPlotImage.title + " ({})".format(plotNum)
+        assemPlotImage.title = assemPlotImage.title + f" ({plotNum})"
         report.data.Report.groupsOrderFirst.insert(-1, assemPlotImage)
         report.data.Report.componentWellGroups.insert(-1, assemPlotImage)
         assemPlotName = os.path.abspath(f"{core.name}AssemblyTypes{plotNum}.png")
@@ -1046,7 +1043,7 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
         (
             ai,
             assemDesign.specifier,
-            "{} ({})".format(assemDesign.name, counts[assemDesign.name]),
+            f"{assemDesign.name} ({counts[assemDesign.name]})",
         )
         for ai, assemDesign in enumerate(r.blueprints.assemDesigns)
         if counts[assemDesign.name] > 0
@@ -1055,7 +1052,7 @@ def makeCoreAndAssemblyMaps(r, cs, generateFullCoreMap=False, showBlockAxMesh=Tr
     fName = "".join([cs.caseTitle, "RadialCoreMap.", cs["outputFileExtension"]])
     plotting.plotFaceMap(
         core,
-        title="{} Radial Core Map".format(cs.caseTitle),
+        title=f"{cs.caseTitle} Radial Core Map",
         fName=fName,
         cmapName="RdYlBu",
         data=data,

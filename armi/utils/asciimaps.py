@@ -181,11 +181,6 @@ class AsciiMap:
         """
         self._ijMax = max(sum(key) for key in self.asciiLabelByIndices)
 
-    @staticmethod
-    def fromReactor(reactor):
-        """Populate mapping from a reactor in preparation of writing out to ascii."""
-        raise NotImplementedError
-
     def _getLineNumsToWrite(self):
         """
         Get order of lines to write.
@@ -198,12 +193,11 @@ class AsciiMap:
         """
         Convert a prepared asciiLabelByIndices to ascii lines and offsets.
 
-        This is used when you have i,j/specifier data and want to create a ascii map from it
-        as opposed to reading a ascii map from a stream.
+        This is used when you have i,j/specifier data and want to create a ascii map from it as opposed to reading a
+        ascii map from a stream.
 
-        As long as the map knows how to convert lineNum and colNums into ij indices, this
-        is universal. In some implementations, this operation is in a different
-        method for efficiency.
+        As long as the map knows how to convert lineNum and colNums into ij indices, this is universal. In some
+        implementations, this operation is in a different method for efficiency.
         """
         self._updateDimensionsFromData()
         self.asciiLines = []
@@ -213,6 +207,7 @@ class AsciiMap:
                 ij = self._getIJFromColRow(colNum, lineNum)
                 # convert to string and strip any whitespace in thing we're representing
                 line.append(str(self.asciiLabelByIndices.get(ij, PLACEHOLDER)).replace(" ", ""))
+
             self.asciiLines.append(line)
 
         # clean data
@@ -227,9 +222,8 @@ class AsciiMap:
             if newLine:
                 newLines.append(newLine)
             else:
-                # if entire newline is wiped out, it's a full row of placeholders!
-                # but oops this actually still won't work. Needs more work when
-                # doing pure rows from data is made programmatically.
+                # if entire newline is wiped out, it's a full row of placeholders! but oops this actually still won't
+                # work. Needs more work when doing pure rows from data is made programmatically.
                 raise ValueError("Cannot write asciimaps with blank rows from pure data yet.")
 
         if not newLines:
@@ -248,6 +242,7 @@ class AsciiMap:
                 continue
             noDataYet = False
             newLine.append(col)
+
         newLine.reverse()
         return newLine
 
@@ -304,9 +299,7 @@ class AsciiMapCartesian(AsciiMap):
 
         if iMin > 0 or jMin > 0:
             raise ValueError(
-                "Asciimaps only supports sets of indices that start at less than or equal to zero, got {}, {}".format(
-                    iMin, jMin
-                )
+                f"Asciimaps only supports sets of indices that start at less than or equal to zero, got {iMin}, {jMin}"
             )
 
     def _getIJFromColRow(self, columnNum, lineNum):
@@ -369,7 +362,6 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         Looking graphically, there are basically 3 rays going up at 120 degrees.
         So we can find a consistent pattern for each ray and use a modulus to figure
         out which ray we're on.
-
         """
         if asciiLineNum == 0:
             return 0, 0
@@ -396,8 +388,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         Notes
         -----
-        Not used in reading from file b/c too many calls to base
-        but convenient for writing from ij data
+        Not used in reading from file b/c too many calls to base but convenient for writing from ij data
         """
         iBase, jBase = self._getIJBaseByAsciiLine(lineNum)
         return self._getIJFromColAndBase(columnNum, iBase, jBase)
@@ -408,6 +399,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         for li, _line in enumerate(self.asciiLines):
             iBase, _ = self._getIJBaseByAsciiLine(li)
             self.asciiOffsets.append(iBase - 1)
+
         self.asciiOffsets.reverse()  # since getIJ works from bottom to top
         newOffsets = []
 
@@ -422,7 +414,6 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
         Update some dimension metadata by looking at the ascii lines.
 
         In this case, asciiMaxCol actually represents the max i index.
-
         """
         self._ijMax = self._asciiMaxCol - 1
         self._asciiLinesOffCorner = len(self.asciiLines[-1]) - 1

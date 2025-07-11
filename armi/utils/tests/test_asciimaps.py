@@ -177,9 +177,73 @@ F F
  F
 """
 
+TMP = """
+-   -   -   -   -   -   SH  SH
+  -   -   -   -   SH  SH  SH  SH  SH
+-   -   -   -   SH  SH  SH  SH  SH  SH
+  -   -   -   SH  SH  SH  SH  SH  SH  SH
+-   -   -   SH  SH  RR  RR  RR  RR  SH  SH
+  -   -   SH  SH  RR  RR  RR  RR  RR  SH  SH
+-   -   SH  SH  RR  RR  RR  RR  RR  RR  SH  SH
+  -   -   SH  RR  RR  RR  RB  RR  RR  RR  SH
+-   -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
+  -   SH  RR  RR  RB  RB  OF  RB  RB  RR  RR  SH
+-   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  SH  SH
+  -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH
+-   SH  RR  RR  OF  OF  OF  OF  OF  OF  RR  RR  SH
+  SH  SH  RR  RB  OF  OF  PC  OF  OF  RB  RR  SH  SH
+-   SH  RR  RB  OF  US  OF  IF  PC  OF  RB  RR  SH
+  SH  RR  RR  OF  OF  OF  IF  IF  OF  OF  RR  RR  SH
+-   SH  RR  RB  OF  OF  IF  IF  IF  OF  RB  RR  SH
+  SH  RR  RB  OF  OF  IF  IF  IF  OF  OF  RB  RR  SH
+SH  RR  RR  OF  OF  OF  IF  RC  IF  OF  OF  RR  RR  SH
+  SH  RR  RB  OF  PC  IF  IF  IF  PC  OF  RB  RR  SH
+SH  RR  RB  OF  OF  IF  IF  IF  IF  OF  OF  RB  RR  SH
+  SH  RR  OF  OF  IF  IF  IF  IF  OF  OF  OF  RR  SH
+SH  RR  RB  OF  IF  IF  IF  IF  IF  OF  OF  RB  RR  SH
+  SH  RR  OF  PC  IF  IF  RC  IF  IF  DC  OF  RR  SH
+SH  RR  RB  OF  IF  RC  IF  IF  IF  OF  OF  RB  RR  SH
+  SH  RR  OF  OF  IF  IF  IF  IF  IF  OF  OF  RR  SH
+SH  RR  RB  OF  IF  IF  IF  IF  IF  OF  OF  RB  RR  SH
+  SH  RR  RB  OF  IF  IF  IF  RC  IF  OF  RB  RR  SH
+SH  RR  RR  OF  PC  IF  IF  IF  IF  PC  OF  RR  RR  SH
+  SH  RR  RB  OF  OF  IF  IF  IF  IF  OF  RB  RR  SH
+-   SH  RR  OF  OF  OF  OF  IF  IF  OF  OF  RR  SH
+  SH  RR  RB  OF  OF  OF  PC  IF  OF  OF  RB  RR  SH
+-   SH  RR  RB  OF  US  OF  OF  PC  OF  RB  RR  SH
+  SH  SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH  SH
+-   SH  RR  RR  OF  OF  OF  OF  OF  OF  RR  RR  SH
+  -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH
+-   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  SH  SH
+  -   SH  RR  RR  RB  RB  RB  RB  RB  RR  RR  SH
+    -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
+      -   SH  RR  RR  RR  RR  RR  RR  RR  SH
+        SH  SH  RR  RR  RR  RR  RR  RR  SH  SH
+          SH  SH  RR  RR  RR  RR  RR  SH  SH
+            SH  SH  RR  RR  RR  RR  SH  SH
+              SH  SH  SH  SH  SH  SH  SH
+                SH  SH  SH  SH  SH  SH
+                  SH  SH  SH  SH  SH
+                    -   SH  SH  -
+"""
+
 
 class TestAsciiMaps(unittest.TestCase):
     """Test ascii maps."""
+
+    def test_tmp(self):
+        asciimap = asciimaps.AsciiMapHexThirdFlatsUp()
+        with io.StringIO() as stream:
+            stream.write(TMP)
+            stream.seek(0)
+            asciimap.readAscii(stream.read())
+            asciimap.writeAscii(stream)
+
+            print(asciimap)
+            print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+            print(stream.read())
+            print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+        assert False
 
     def test_cartesian(self):
         """Make sure we can read Cartesian maps."""
