@@ -37,7 +37,7 @@ class OperatorSnapshots(operatorMPI.OperatorMPI):
         operatorMPI.OperatorMPI.createInterfaces(self)
 
         for toDisable in self.disabledInterfaces:
-            i = self.getInterface(name=toDisable, function=toDisable)
+            i = self.getInterface(name=toDisable, purpose=toDisable)
             if i:
                 i.enabled(False)
 

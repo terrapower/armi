@@ -21,7 +21,7 @@ from armi import interfaces, settings
 
 class DummyInterface(interfaces.Interface):
     name = "Dummy"
-    function = "dummyAction"
+    purpose = "dummyAction"
 
 
 class TestCodeInterface(unittest.TestCase):

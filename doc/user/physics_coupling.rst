@@ -33,7 +33,7 @@ The following settings are involved with enabling tight coupling in ARMI:
            convergence: 1.0e-2
 
 
-The ``tightCouplingSettings`` settings interact with the interfaces available in ARMI (or an ARMI app). The interface headers (i.e., "globalFlux" and "thermalHydraulics") must match the value prescribed for :py:attr:`Interface.function <armi.interfaces.interface.function>`. The option, ``parameter``, can be a registered parameter. The ``convergence`` option is expected to be any float value. In the current implementation, different interfaces may have different developer intended restrictions. For example, the global flux interface currently only allows the eigenvalue (i.e. :math:`k_{\text{eff}}`) or block-wise power to be valid ``parameter`` values.
+The ``tightCouplingSettings`` settings interact with the interfaces available in ARMI (or an ARMI app). The interface headers (i.e., "globalFlux" and "thermalHydraulics") must match the value prescribed for :py:attr:`Interface.purpose <armi.interfaces.interface.purpose>`. The option, ``parameter``, can be a registered parameter. The ``convergence`` option is expected to be any float value. In the current implementation, different interfaces may have different developer intended restrictions. For example, the global flux interface currently only allows the eigenvalue (i.e. :math:`k_{\text{eff}}`) or block-wise power to be valid ``parameter`` values.
 
 .. warning::
     The inherent limitations of the above interface-based tight coupling settings have been documented and a new and improved user-interface is currently being developed.

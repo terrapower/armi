@@ -287,9 +287,9 @@ class Interface:
     concrete class that extends this one.
     """
 
-    function = None
+    purpose = None
     """
-    The function performed by an Interface. This is not required be be defined by implementations of
+    The action performed by an Interface. This is not required be be defined by implementations of
     Interface, but is used to form categories of interfaces.
     """
 
@@ -725,15 +725,15 @@ def _setTightCouplerByInterfaceFunction(interfaceClass, cs):
         Case settings that are parsed to determine if tight coupling is enabled
         globally and if both a target parameter and convergence criteria defined.
     """
-    # No tight coupling if there is no function for the Interface defined.
-    if interfaceClass.function is None:
+    # No tight coupling if there is no purpose for the Interface defined.
+    if interfaceClass.purpose is None:
         return None
 
-    if not cs["tightCoupling"] or (interfaceClass.function not in cs["tightCouplingSettings"]):
+    if not cs["tightCoupling"] or (interfaceClass.purpose not in cs["tightCouplingSettings"]):
         return None
 
-    parameter = cs["tightCouplingSettings"][interfaceClass.function]["parameter"]
-    tolerance = cs["tightCouplingSettings"][interfaceClass.function]["convergence"]
+    parameter = cs["tightCouplingSettings"][interfaceClass.purpose]["parameter"]
+    tolerance = cs["tightCouplingSettings"][interfaceClass.purpose]["convergence"]
     maxIters = cs["tightCouplingMaxNumIters"]
 
     return TightCoupler(parameter, tolerance, maxIters)
