@@ -286,6 +286,65 @@ class TestConservation(AxialExpansionTestBase):
         self._checkNDens(origNDens, newNDens, 1.0)
         self._checkDetailedNDens(origDetailedNDens, newDetailedNDens, 1.0)
 
+    def test_thermExpansContractionConserv_multiPin(self):
+        """Thermally expand and then contract to ensure original state is recovered.
+
+        Notes
+        -----
+        Assemblies with liners are not supported and not considered for conservation testing.
+        """
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            customSettings={"inputHeightsConsideredHot": False},
+        )
+        axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
+        a = list(filter(lambda a: 'multi pin fuel' == a.getType(), rCold.blueprints.assemblies.values()))[0]
+        axialExpChngr.setAssembly(a)
+        origBHeight, origBMass, origFuelMass, origTestFuelMass, origCladMass, origWireMass, origDuctMass, origElseMass = self.getMassesForTest(a)
+
+        for b in filter(lambda b: b.hasFlags(Flags.FUEL), a):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+                print(f"updating temp for {c}")
+                axialExpChngr.expansionData.updateComponentTemp(c, c.temperatureInC + 200.0)
+
+        axialExpChngr.expansionData.computeThermalExpansionFactors()
+        axialExpChngr.axiallyExpandAssembly()
+
+        # check mass conservation / expected changes
+        newBHeight, newBMass, newFuelMass, newTestFuelMass, newCladMass, newWireMass, newDuctMass, newElseMass = self.getMassesForTest(a)
+
+        self.assertAlmostEqual(newFuelMass, origFuelMass, places=10)
+        self.assertAlmostEqual(newCladMass, origCladMass, places=10)
+        self.assertAlmostEqual(newWireMass, origWireMass, places=10)
+        self.assertAlmostEqual(newDuctMass, origDuctMass, places=10)
+        self.assertAlmostEqual(newTestFuelMass, origTestFuelMass, places=10)
+        self.assertAlmostEqual(newElseMass, origElseMass, places=10)
+
+    @staticmethod
+    def getMassesForTest(a):
+        FuelMass = TestFuelMass = CladMass = WireMass = DuctMass = Else = 0.0
+        blockHeights = {}
+        blockMass = {}
+        for b in a:
+            # collect mass and height information
+            blockHeights[b] = b.getHeight()
+            blockMass[b] = b.getMass()
+            for c in b:
+                if c.hasFlags(Flags.TEST) and c.hasFlags(Flags.FUEL):
+                    TestFuelMass += c.getMass()
+                elif c.hasFlags(Flags.FUEL):
+                    FuelMass += c.getMass()
+                elif c.hasFlags(Flags.CLAD):
+                    CladMass += c.getMass()
+                elif c.hasFlags(Flags.WIRE):
+                    WireMass += c.getMass()
+                elif c.hasFlags(Flags.DUCT):
+                    DuctMass += c.getMass()
+                else:
+                    Else += c.getMass()
+
+        return blockHeights, blockMass, FuelMass, TestFuelMass, CladMass, WireMass, DuctMass, Else
+
     def test_thermExpansContractionConserv_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.
 
