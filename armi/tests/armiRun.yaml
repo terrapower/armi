@@ -17,7 +17,7 @@ settings:
   nCycles: 6
   outputFileExtension: png
   power: 100000000.0
-  smallRun: true
+  rmExternalFilesAtEOL: true
   startCycle: 1
   startNode: 2
   targetK: 1.002
