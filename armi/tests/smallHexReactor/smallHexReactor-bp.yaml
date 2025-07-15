@@ -308,12 +308,6 @@ nuclide flags:
     - B11
 
 
-custom isotopics:
-    pu_vector:
-        input format: number densities
-        PU239: 1
-        U235: 1
-        ZR: 1
 blocks:
     fuel: &block_fuel
         clad1:
@@ -565,33 +559,6 @@ assemblies:
             - B
             - B
 # end-assemblies-mc
-    outer core fuel:
-        specifier: OC
-        blocks: *fuel_blocks
-        height: *heights
-        axial mesh points: *mesh
-        xs types:
-            - C
-            - C
-            - C
-            - C
-            - C
-            - C
-            - C
-# end-assemblies-oc
-    radial reflector:
-        specifier: RR
-        blocks: [*block_reflector]
-        height: [307.74]
-        axial mesh points: [1]
-        xs types: [A]
-# end-assemblies-rr
-    radial shield:
-        specifier: SH
-        blocks: [*block_shield]
-        height: [307.74]
-        axial mesh points: [1]
-        xs types: [A]
 # end-assemblies-section
 systems:
     core:
