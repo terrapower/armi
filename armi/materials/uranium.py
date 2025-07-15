@@ -243,7 +243,7 @@ class Uranium(FuelMaterial):
         if td is not None:
             if td > 1.0:
                 runLog.warning(
-                    "Theoretical density frac for {0} is {1}, which is >1".format(self, td),
+                    f"Theoretical density frac for {self} is {td}, which is >1",
                     single=True,
                     label="Large theoretical density",
                 )
