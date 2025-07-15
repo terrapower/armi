@@ -618,6 +618,15 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
                     mock.getStdout(),
                 )
 
+    def test_pseudoDensity(self):
+        cur = self.mat.pseudoDensity(Tc=500)
+        ref = 18.74504534852846
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+        cur = self.mat.pseudoDensity(Tc=1000)
+        ref = 18.1280492780791
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
 
 class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):
     MAT_CLASS = materials.UraniumOxide

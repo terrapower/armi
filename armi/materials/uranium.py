@@ -208,8 +208,6 @@ class Uranium(FuelMaterial):
         "linear expansion percent": ["Metallic Fuels Handbook, ANL-NSE-3, Table B.3.3-1"],
     }
 
-    refDens = 19.07  # the value corresponding to linearExpansionPercent = 0
-
     def thermalConductivity(self, Tk: float = None, Tc: float = None) -> float:
         """The thermal conductivity of pure U in W-m/K."""
         Tk = getTk(Tc, Tk)
@@ -234,6 +232,8 @@ class Uranium(FuelMaterial):
 
         self.setMassFrac("U235", u235.weight * u235.abundance / gramsIn1Mol)
         self.setMassFrac("U238", u238.weight * u238Abundance / gramsIn1Mol)
+
+        self.refDens = 19.07
 
     def applyInputParams(self, U235_wt_frac: float = None, TD_frac: float = None, *args, **kwargs):
         if U235_wt_frac is not None:
