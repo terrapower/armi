@@ -549,8 +549,8 @@ assemblies:
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:
-            U235_wt_frac: ['', '', 0.2, 0.2, 0.2, '', '', '', '', '']
-            ZR_wt_frac: ['', '', 0.07, 0.07, 0.06, '', '', '', '', '']
+            U235_wt_frac: ['', '', 0.2, 0.2, 0.2, 0.2, '', '', '', '']
+            ZR_wt_frac: ['', '', 0.07, 0.07, 0.07, 0.07, '', '', '', '']
         xs types: *igniter_fuel_xs_types
     control:
         specifier: PC
