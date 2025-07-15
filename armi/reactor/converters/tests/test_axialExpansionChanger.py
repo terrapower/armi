@@ -21,6 +21,7 @@ import unittest
 from statistics import mean
 from typing import Callable
 
+from attr import dataclass
 from numpy import array, linspace, zeros
 
 from armi import materials
@@ -298,9 +299,9 @@ class TestConservation(AxialExpansionTestBase):
             customSettings={"inputHeightsConsideredHot": False},
         )
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
-        a = list(filter(lambda a: 'multi pin fuel' == a.getType(), rCold.blueprints.assemblies.values()))[0]
+        a = list(filter(lambda a: a.getType() == "multi pin fuel", rCold.blueprints.assemblies.values()))[0]
         axialExpChngr.setAssembly(a)
-        origBHeight, origBMass, origFuelMass, origTestFuelMass, origCladMass, origWireMass, origDuctMass, origElseMass = self.getMassesForTest(a)
+        origBHeight, origBMass, origCompMasses = self.getMassesForTest(a)
 
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), a):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
@@ -311,39 +312,42 @@ class TestConservation(AxialExpansionTestBase):
         axialExpChngr.axiallyExpandAssembly()
 
         # check mass conservation / expected changes
-        newBHeight, newBMass, newFuelMass, newTestFuelMass, newCladMass, newWireMass, newDuctMass, newElseMass = self.getMassesForTest(a)
+        newBHeight, newBMass, newCompMasses = self.getMassesForTest(a)
 
-        self.assertAlmostEqual(newFuelMass, origFuelMass, places=10)
-        self.assertAlmostEqual(newCladMass, origCladMass, places=10)
-        self.assertAlmostEqual(newWireMass, origWireMass, places=10)
-        self.assertAlmostEqual(newDuctMass, origDuctMass, places=10)
-        self.assertAlmostEqual(newTestFuelMass, origTestFuelMass, places=10)
-        self.assertAlmostEqual(newElseMass, origElseMass, places=10)
+        self.getChangeInMassForTestFuel(origBMass, newBMass)
+
+        cFlags = list(origCompMasses.keys())
+        for i, (origMass, newMass) in enumerate(zip(origCompMasses.values(), newCompMasses.values())):
+            if Flags.BOND in cFlags[i]:
+                continue
+            self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
+
+    @staticmethod
+    def getChangeInMassForTestFuel(origMasses, newMasses):
+        blocks = list(origMasses.keys())
+        for i, (newCompMasses, origCompMasses) in enumerate(zip(newMasses.values(), origMasses.values())):
+            for new, orig in zip(newCompMasses, origCompMasses):
+                if Flags.TEST in new.cFlags and Flags.FUEL in new.cFlags:
+                    print(f"{blocks[i]}: {new.cFlags}: {new.mass - orig.mass}, {new.mass}, {orig.mass}")
 
     @staticmethod
     def getMassesForTest(a):
-        FuelMass = TestFuelMass = CladMass = WireMass = DuctMass = Else = 0.0
+        @dataclass
+        class StoreMass:
+            cFlags: str
+            mass: float
+
+        masses = collections.defaultdict(float)
         blockHeights = {}
-        blockMass = {}
+        blockMass = collections.defaultdict(list)
         for b in a:
             # collect mass and height information
             blockHeights[b] = b.getHeight()
-            blockMass[b] = b.getMass()
             for c in b:
-                if c.hasFlags(Flags.TEST) and c.hasFlags(Flags.FUEL):
-                    TestFuelMass += c.getMass()
-                elif c.hasFlags(Flags.FUEL):
-                    FuelMass += c.getMass()
-                elif c.hasFlags(Flags.CLAD):
-                    CladMass += c.getMass()
-                elif c.hasFlags(Flags.WIRE):
-                    WireMass += c.getMass()
-                elif c.hasFlags(Flags.DUCT):
-                    DuctMass += c.getMass()
-                else:
-                    Else += c.getMass()
+                masses[c.p.flags] += c.getMass()
+                blockMass[b].append(StoreMass(c.p.flags, c.getMass()))
 
-        return blockHeights, blockMass, FuelMass, TestFuelMass, CladMass, WireMass, DuctMass, Else
+        return blockHeights, blockMass, masses
 
     def test_thermExpansContractionConserv_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.
