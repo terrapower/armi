@@ -42,7 +42,7 @@ class GlobalFluxInterface(interfaces.Interface):
     """
 
     name = "GlobalFlux"  # make sure to set this in subclasses
-    function = "globalFlux"
+    purpose = "globalFlux"
     _ENERGY_BALANCE_REL_TOL = 1e-5
 
     def __init__(self, r, cs):
