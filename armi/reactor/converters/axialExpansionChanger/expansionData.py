@@ -355,3 +355,14 @@ class ExpansionData:
             Component to check target component status
         """
         return bool(c in self._componentDeterminesBlockHeight)
+
+    def getTargetComponent(self, b: "Block"):
+        """Returns the target component for a block.
+
+        Parameters
+        ----------
+        b
+            the block to query for the target component
+        """
+        c = filter(lambda c: self.isTargetComponent(c), iterSolidComponents(b))
+        return next(c)
