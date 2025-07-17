@@ -339,20 +339,26 @@ class AxialExpansionChanger:
             "Printing component expansion information (growth percentage and 'target component')"
             f"for each block in assembly {self.linked.a}."
         )
+        # expand all of the components
+        preExpCompMasses = {}
+        preExpCompVol = {}
         for ib, b in enumerate(self.linked.a):
-            print(b)
-            blockHeight = b.getHeight()
+            for c in iterSolidComponents(b):
+                growFrac = self.expansionData.getExpansionFactor(c)
+                preExpCompMasses[c] = c.getMass()
+                preExpCompVol[c] = c.getVolume()
+                c.changeNDensByFactor(1.0 / growFrac)
+                c.height = growFrac * b.getHeight()
+                c.ztop = b.p.zbottom + c.height
+
+        postExpCompVol = {}
+        postBlockAlignCompMass = {}
+        # align blocks on target components
+        for ib, b in enumerate(self.linked.a):
             isDummyBlock = ib == (numOfBlocks - 1)
-            if ib > 0:
-                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
             if not isDummyBlock:
-                # expand the target component
                 targetC = self.expansionData.getTargetComponent(b)
-                print(f"\t{targetC}")
                 blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
-                print(f"\t\t{targetC.getMass()}, {b.getVolume()}")
-                targetC.changeNDensByFactor(1.0 / blockGrowFrac)
-                targetC.height = blockGrowFrac * blockHeight
                 if ib == 0:
                     targetC.zbottom = 0.0
                 else:
@@ -361,10 +367,10 @@ class AxialExpansionChanger:
                 # redefine block bounds based on target component
                 b.p.zbottom = targetC.zbottom
                 b.p.ztop = targetC.ztop
-                print(f"\t\t{targetC.getMass()}, {b.getVolume()}")
                 b.p.height = b.p.ztop - b.p.zbottom
                 b.clearCache()
-                print(f"\t\t{targetC.getMass()}, {b.getVolume()}")
+                postExpCompVol[targetC] = targetC.getVolume()
+                postBlockAlignCompMass[targetC] = targetC.getMass()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
                 # align the target component linked above (for expansion, this shifts this component up)
                 targetCAbove = self.linked.linkedComponents[targetC].upper
@@ -372,24 +378,27 @@ class AxialExpansionChanger:
                     targetCAbove.zbottom = targetC.ztop
                     targetCAbove.ztop = targetCAbove.height + targetCAbove.zbottom
 
-                # deal with the non-target comps
+        # deal with the non-target comps
+        for ib, b in enumerate(self.linked.a):
+            isDummyBlock = ib == (numOfBlocks - 1)
+            if not isDummyBlock:
+                targetC = self.expansionData.getTargetComponent(b)
+                blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
                 for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
-                    print(f"\t{c}")
-                    growFrac = self.expansionData.getExpansionFactor(c)
-                    print(f"\t\t{c.getMass()}, {b.getVolume()}")
-                    c.changeNDensByFactor(1.0 / growFrac)
-                    print(f"\t\t{c.getMass()}, {b.getVolume()}")
-                    c.height = growFrac * blockHeight
-                    c.ztop = b.p.zbottom + c.height
+                    cAbove = self.linked.linkedComponents[c].upper
                     if blockGrowFrac > 1.0:
-                        fracToMove = (b.p.height - c.height) / c.height # equal to (blockGrowFrac - 1)
-                        self.redistributeMass(c, fracToMove)
+                        # fracToMove = (b.p.height - c.height) / c.height # equal to (blockGrowFrac - 1)
+                        ## the amount of the current block sticking into component
+                        fracToMove = (cAbove.ztop - b.p.ztop) / cAbove.height - 1.0
+                        print(f"Mass prior to redistribution = {c.getMass()} | {cAbove.getMass()}")
+                        self.redistributeMass(c, -fracToMove)
+                        print(f"Mass post redistribution = {c.getMass()} | {cAbove.getMass()}")
                     elif blockGrowFrac < 1.0:
                         raise RuntimeError("not ready for compression")
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
                     c.height = b.p.height
-                    cAbove = self.linked.linkedComponents[c].upper
+                    postBlockAlignCompMass[c] = c.getMass()
                     if cAbove is not None:
                         cAbove.zbottom = c.ztop
                         cAbove.height = cAbove.ztop - cAbove.zbottom
@@ -457,9 +466,6 @@ class AxialExpansionChanger:
                 ndensToMigrate = cAbove.p.numberDensities[i[0]] * fracToRedistribute
                 cAbove.p.numberDensities[i[0]] -= ndensToMigrate
                 c.p.numberDensities[i[0]] += ndensToMigrate
-
-        print(f"\t\t{c.getMass()}, {c.parent.getVolume()}")
-        print(f"\t\t{cAbove.getMass()}, {cAbove.parent.getVolume()}")
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
