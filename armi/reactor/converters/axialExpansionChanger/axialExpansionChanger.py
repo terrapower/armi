@@ -14,8 +14,7 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 import typing
-
-from numpy import array
+from numpy import array, where, array_equal
 
 from armi import runLog
 from armi.materials.material import Fluid
@@ -29,6 +28,10 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
 )
 from armi.reactor.flags import Flags
 from armi.utils.customExceptions import InputError
+
+if typing.TYPE_CHECKING:
+    from armi.reactor.components.component import Component
+    from armi.reactor.blocks import Block
 
 
 def getDefaultReferenceAssem(assems):
@@ -337,54 +340,126 @@ class AxialExpansionChanger:
             f"for each block in assembly {self.linked.a}."
         )
         for ib, b in enumerate(self.linked.a):
-            runLog.debug(msg=f"  Block {b}")
+            print(b)
             blockHeight = b.getHeight()
-            # set bottom of block equal to top of block below it
-            # if ib == 0, leave block bottom = 0.0
+            isDummyBlock = ib == (numOfBlocks - 1)
             if ib > 0:
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-            isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                for c in iterSolidComponents(b):
-                    growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    c.height = growFrac * blockHeight
-                    # align linked components
-                    if ib == 0:
-                        c.zbottom = 0.0
-                    else:
-                        if self.linked.linkedComponents[c].lower is not None:
-                            # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c].lower.ztop
-                        else:
-                            # otherwise there aren't any linked components
-                            # so just set the bottom of the component to
-                            # the top of the block below it
-                            c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-                    c.ztop = c.zbottom + c.height
-                    # update component number densities
-                    c.changeNDensByFactor(1.0 / growFrac)
-                    # redistribute block boundaries if on the target component
-                    if self.expansionData.isTargetComponent(c):
-                        b.p.ztop = c.ztop
-                        b.p.height = b.p.ztop - b.p.zbottom
-            else:
+                # expand the target component
+                targetC = self.expansionData.getTargetComponent(b)
+                print(f"\t{targetC}")
+                blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
+                print(f"\t\t{targetC.getMass()}, {b.getVolume()}")
+                targetC.changeNDensByFactor(1.0 / blockGrowFrac)
+                targetC.height = blockGrowFrac * blockHeight
+                if ib == 0:
+                    targetC.zbottom = 0.0
+                else:
+                    targetC.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
+                targetC.ztop = targetC.zbottom + targetC.height
+                # redefine block bounds based on target component
+                b.p.zbottom = targetC.zbottom
+                b.p.ztop = targetC.ztop
+                print(f"\t\t{targetC.getMass()}, {b.getVolume()}")
                 b.p.height = b.p.ztop - b.p.zbottom
+                b.clearCache()
+                print(f"\t\t{targetC.getMass()}, {b.getVolume()}")
+                b.p.z = b.p.zbottom + b.getHeight() / 2.0
+                # align the target component linked above (for expansion, this shifts this component up)
+                targetCAbove = self.linked.linkedComponents[targetC].upper
+                if targetCAbove is not None:
+                    targetCAbove.zbottom = targetC.ztop
+                    targetCAbove.ztop = targetCAbove.height + targetCAbove.zbottom
 
-            b.p.z = b.p.zbottom + b.getHeight() / 2.0
+                # deal with the non-target comps
+                for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
+                    print(f"\t{c}")
+                    growFrac = self.expansionData.getExpansionFactor(c)
+                    print(f"\t\t{c.getMass()}, {b.getVolume()}")
+                    c.changeNDensByFactor(1.0 / growFrac)
+                    print(f"\t\t{c.getMass()}, {b.getVolume()}")
+                    c.height = growFrac * blockHeight
+                    c.ztop = b.p.zbottom + c.height
+                    if blockGrowFrac > 1.0:
+                        fracToMove = (b.p.height - c.height) / c.height # equal to (blockGrowFrac - 1)
+                        self.redistributeMass(c, fracToMove)
+                    elif blockGrowFrac < 1.0:
+                        raise RuntimeError("not ready for compression")
+                    c.zbottom = b.p.zbottom
+                    c.ztop = b.p.ztop
+                    c.height = b.p.height
+                    cAbove = self.linked.linkedComponents[c].upper
+                    if cAbove is not None:
+                        cAbove.zbottom = c.ztop
+                        cAbove.height = cAbove.ztop - cAbove.zbottom
+
 
             _checkBlockHeight(b)
-            # Call Component.clearCache to update the Component volume, and therefore the masses,
-            # of all components.
-            for c in b:
-                c.clearCache()
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
+
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def alignLinkedComponents(self, c: "Component", ib: int, b: "Block"):
+        """Set the bottom elevation of a component and determine its new height."""
+        if ib == 0:
+            c.zbottom = 0.0
+        else:
+            if self.linked.linkedComponents[c].lower is not None:
+                # use linked components below
+                c.zbottom = self.linked.linkedComponents[c].lower.ztop
+            else:
+                # otherwise there aren't any linked components
+                # so just set the bottom of the component to
+                # the top of the block below it
+                c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
+        # update comp top based on alignment
+        c.ztop = c.height + c.zbottom
+        c.clearCache()
+
+    def redistributeMass(self, c: "Component", fracToRedistribute: float):
+        """Redistribute mass between axially linked components by updating number densities.
+
+        Parameters
+        ----------
+        c
+            Component undergoing mass redistribution
+        fracToRedistribute
+            value which is used to increment the number density
+
+        Notes
+        -----
+        - This is similar to Component.getNumberDensity and Component.setNumberDensity.
+          However, the latter does too much in regard to trying to account for thermal
+          expansion so it cannot be used.
+        - The axially linked components MUST have the same nuclides. They can (and usually will)
+          be different concentrations, but they need to be the same nuclide.
+
+        Raises
+        ------
+        RuntimeError if the component and its axially linked component do not have the same nuclides.
+
+        """
+        cAbove = self.linked.linkedComponents[c].upper
+        nucsAbove = cAbove.getNuclides()
+        nucs = c.getNuclides()
+        if not array_equal(nucsAbove, nucs):
+            raise RuntimeError("In order to redistribute mass between components, they must have the same nuclides.")
+
+        for nuc in nucs:
+            i = where(cAbove.p.nuclides == nuc.encode())[0]
+            if i.size > 0:
+                ndensToMigrate = cAbove.p.numberDensities[i[0]] * fracToRedistribute
+                cAbove.p.numberDensities[i[0]] -= ndensToMigrate
+                c.p.numberDensities[i[0]] += ndensToMigrate
+
+        print(f"\t\t{c.getMass()}, {c.parent.getVolume()}")
+        print(f"\t\t{cAbove.getMass()}, {cAbove.parent.getVolume()}")
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
