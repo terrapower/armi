@@ -341,57 +341,43 @@ class AxialExpansionChanger:
             f"for each block in assembly {self.linked.a}."
         )
         # expand all of the components
-        preExpCompMasses = {}
-        preExpCompVol = {}
         for ib, b in enumerate(self.linked.a):
             for c in iterSolidComponents(b):
                 growFrac = self.expansionData.getExpansionFactor(c)
-                preExpCompMasses[c] = c.getMass()
-                preExpCompVol[c] = c.getVolume()
                 c.changeNDensByFactor(1.0 / growFrac)
                 c.height = growFrac * b.getHeight()
                 c.ztop = b.p.zbottom + c.height
 
-        postExpCompVol = {}
-        postBlockAlignCompMass = {}
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                targetC = self.expansionData.getTargetComponent(b)
-                blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
-                if ib == 0:
-                    targetC.zbottom = 0.0
-                else:
-                    targetC.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-                targetC.ztop = targetC.zbottom + targetC.height
+                c = self.expansionData.getTargetComponent(b)
+                c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
+                c.height = c.ztop - c.zbottom
                 # redefine block bounds based on target component
-                b.p.zbottom = targetC.zbottom
-                b.p.ztop = targetC.ztop
+                b.p.zbottom = c.zbottom
+                b.p.ztop = c.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
-                postExpCompVol[targetC] = targetC.getVolume()
-                postBlockAlignCompMass[targetC] = targetC.getMass()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
-                # align the target component linked above (for expansion, this shifts this component up)
-                targetCAbove = self.linked.linkedComponents[targetC].upper
-                if targetCAbove is not None:
-                    targetCAbove.zbottom = targetC.ztop
-                    targetCAbove.ztop = targetCAbove.height + targetCAbove.zbottom
+                # if the above target component is linked to the current target component, align them
+                # e.g., for expansion, this shifts up the target component in the block above
+                if self.expansionData.isTargetComponent(self.linked.linkedComponents[c].upper):
+                    cAbove = self.linked.linkedComponents[c].upper
+                    cAbove.zbottom = c.ztop
+                    cAbove.ztop = cAbove.height + cAbove.zbottom
 
         # deal with the non-target comps
         for ib, b in enumerate(self.linked.a):
             isDummyBlock = ib == (numOfBlocks - 1)
             print(b)
             if not isDummyBlock:
-                # targetC = self.expansionData.getTargetComponent(b)
-                # blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
                 for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
-                        ## the amount of the current block sticking into component
+                        # the amount of the current block sticking into component
                         fracToMove = (cAbove.ztop - b.p.ztop) / cAbove.height - 1.0
                         if fracToMove:
-                            # fracToMove = (b.p.height - c.height) / c.height # equal to (blockGrowFrac - 1)
                             prior = [c.getMass(), cAbove.getMass()]
                             self.redistributeMass(c, -fracToMove)
                             post = [c.getMass(), cAbove.getMass()]
@@ -403,20 +389,16 @@ class AxialExpansionChanger:
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
                     c.height = b.p.height
-                    postBlockAlignCompMass[c] = c.getMass()
                     if cAbove:
                         cAbove.zbottom = c.ztop
                         cAbove.height = cAbove.ztop - cAbove.zbottom
-
-            b.clearCache()
-
 
             _checkBlockHeight(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-
+        self.linked.a.clearCache()
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
