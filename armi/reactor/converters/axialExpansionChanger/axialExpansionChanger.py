@@ -27,6 +27,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
+from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
 
 if typing.TYPE_CHECKING:
@@ -368,7 +369,6 @@ class AxialExpansionChanger:
                 b.p.zbottom = targetC.zbottom
                 b.p.ztop = targetC.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
-                b.clearCache()
                 postExpCompVol[targetC] = targetC.getVolume()
                 postBlockAlignCompMass[targetC] = targetC.getMass()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
@@ -381,27 +381,34 @@ class AxialExpansionChanger:
         # deal with the non-target comps
         for ib, b in enumerate(self.linked.a):
             isDummyBlock = ib == (numOfBlocks - 1)
+            print(b)
             if not isDummyBlock:
-                targetC = self.expansionData.getTargetComponent(b)
-                blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
+                # targetC = self.expansionData.getTargetComponent(b)
+                # blockGrowFrac = self.expansionData.getExpansionFactor(targetC)
                 for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
                     cAbove = self.linked.linkedComponents[c].upper
-                    if blockGrowFrac > 1.0:
-                        # fracToMove = (b.p.height - c.height) / c.height # equal to (blockGrowFrac - 1)
+                    if cAbove:
                         ## the amount of the current block sticking into component
                         fracToMove = (cAbove.ztop - b.p.ztop) / cAbove.height - 1.0
-                        print(f"Mass prior to redistribution = {c.getMass()} | {cAbove.getMass()}")
-                        self.redistributeMass(c, -fracToMove)
-                        print(f"Mass post redistribution = {c.getMass()} | {cAbove.getMass()}")
-                    elif blockGrowFrac < 1.0:
-                        raise RuntimeError("not ready for compression")
+                        if fracToMove:
+                            # fracToMove = (b.p.height - c.height) / c.height # equal to (blockGrowFrac - 1)
+                            prior = [c.getMass(), cAbove.getMass()]
+                            self.redistributeMass(c, -fracToMove)
+                            post = [c.getMass(), cAbove.getMass()]
+                            if c.getType() == 'clad':
+                                print(f"\tc      = {prior[0]} --> {post[0]}")
+                                print(f"\tcAbove = {prior[1]} --> {post[1]}")
+                        elif fracToMove > 0.0:
+                            raise RuntimeError("not ready for compression")
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
                     c.height = b.p.height
                     postBlockAlignCompMass[c] = c.getMass()
-                    if cAbove is not None:
+                    if cAbove:
                         cAbove.zbottom = c.ztop
                         cAbove.height = cAbove.ztop - cAbove.zbottom
+
+            b.clearCache()
 
 
             _checkBlockHeight(b)
@@ -460,12 +467,16 @@ class AxialExpansionChanger:
         if not array_equal(nucsAbove, nucs):
             raise RuntimeError("In order to redistribute mass between components, they must have the same nuclides.")
 
+        # origAbove = densityTools.calculateMassDensity(cAbove._getNdensHelper())
+        # orig = densityTools.calculateMassDensity(c._getNdensHelper())
         for nuc in nucs:
             i = where(cAbove.p.nuclides == nuc.encode())[0]
             if i.size > 0:
                 ndensToMigrate = cAbove.p.numberDensities[i[0]] * fracToRedistribute
                 cAbove.p.numberDensities[i[0]] -= ndensToMigrate
                 c.p.numberDensities[i[0]] += ndensToMigrate
+        # newAbove = densityTools.calculateMassDensity(cAbove._getNdensHelper())
+        # new = densityTools.calculateMassDensity(c._getNdensHelper())
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
