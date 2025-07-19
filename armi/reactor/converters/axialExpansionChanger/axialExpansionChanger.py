@@ -360,7 +360,7 @@ class AxialExpansionChanger:
                 b.p.ztop = c.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
-                # if the above target component is linked to the current target component, align them
+                # if the linked component above is the target component for the block above, align them
                 # e.g., for expansion, this shifts up the target component in the block above
                 if self.expansionData.isTargetComponent(self.linked.linkedComponents[c].upper):
                     cAbove = self.linked.linkedComponents[c].upper
@@ -375,8 +375,14 @@ class AxialExpansionChanger:
                 for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
+                        if self.expansionData.isTargetComponent(cAbove):
+                            # discrepancy != 0 when cAbove is a target component and c is not.
+                            # adding it recovers the original expanded height of c
+                            discrepancy = (cAbove.zbottom - c.ztop)
+                        else:
+                            discrepancy = 0.0
                         # the amount of the current block sticking into component
-                        fracToMove = (cAbove.ztop - b.p.ztop) / cAbove.height - 1.0
+                        fracToMove = (cAbove.ztop - b.p.ztop) / (cAbove.height + discrepancy) - 1.0
                         if fracToMove:
                             prior = [c.getMass(), cAbove.getMass()]
                             self.redistributeMass(c, -fracToMove)
@@ -389,7 +395,7 @@ class AxialExpansionChanger:
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
                     c.height = b.p.height
-                    if cAbove:
+                    if cAbove and not self.expansionData.isTargetComponent(cAbove):
                         cAbove.zbottom = c.ztop
                         cAbove.height = cAbove.ztop - cAbove.zbottom
 
