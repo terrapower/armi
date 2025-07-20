@@ -15,7 +15,7 @@
 
 from statistics import mean
 from textwrap import dedent
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Iterable, Optional, Union
 
 from armi.materials import material
 from armi.reactor.flags import Flags
@@ -346,7 +346,7 @@ class ExpansionData:
             raise RuntimeError(f"No fuel component within {b}!")
         self._setExpansionTarget(b, c)
 
-    def isTargetComponent(self, c: "Component") -> bool:
+    def isTargetComponent(self, c: Union["Component", None]) -> bool:
         """Returns bool if c is a target component.
 
         Parameters
