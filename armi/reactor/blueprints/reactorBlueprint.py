@@ -191,8 +191,9 @@ class SystemBlueprint(yamlize.Object):
             self._loadComposites(cs, bp, system, gridDesign.gridContents, gridDesign.orientationBOL)
 
             if isinstance(system, Core):
+                if not system.isFullCore:
+                    self._modifyGeometry(system, gridDesign)
                 summarizeMaterialData(system)
-                self._modifyGeometry(system, gridDesign)
                 system.processLoading(cs)
 
         return system
