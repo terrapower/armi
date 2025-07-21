@@ -344,21 +344,43 @@ class AxialExpansionChanger:
         for ib, b in enumerate(self.linked.a):
             for c in iterSolidComponents(b):
                 growFrac = self.expansionData.getExpansionFactor(c)
+                # component ndens and component heights are scaled to their respective growth factor
                 c.changeNDensByFactor(1.0 / growFrac)
+                c.zbottom = b.p.zbottom
                 c.height = growFrac * b.getHeight()
-                c.ztop = b.p.zbottom + c.height
+                c.ztop = c.zbottom + c.height
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 c = self.expansionData.getTargetComponent(b)
-                c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
+                if self.linked.linkedBlocks[b].lower:
+                    if c.zbottom != self.linked.linkedBlocks[b].lower.p.ztop:
+                        fracToMove = (c.ztop - self.linked.linkedBlocks[b].lower.p.ztop) / c.height - 1.0
+                        ## redistribute mass to comp below
+                        cBelow = self.linked.linkedComponents[c].lower
+                        nucsBelow = cBelow.getNuclides()
+                        nucs = c.getNuclides()
+                        if not array_equal(nucsBelow, nucs):
+                            raise RuntimeError(f"In order to redistribute mass between components, {c} and {cBelow} must have the same nuclides.")
+                        for nuc in nucs:
+                            i = where(cBelow.p.nuclides == nuc.encode())[0]
+                            if i.size > 0:
+                                ndensToMigrate = c.p.numberDensities[i[0]] * -fracToMove
+                                c.p.numberDensities[i[0]] -= ndensToMigrate
+                                cBelow.p.numberDensities[i[0]] += ndensToMigrate
+                        # set bounds to line up
+                        c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
+                        c.changeNDensByFactor(1.0 / (1.0 + fracToMove))
+                    else:
+                        c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
                 c.height = c.ztop - c.zbottom
                 # redefine block bounds based on target component
                 b.p.zbottom = c.zbottom
                 b.p.ztop = c.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
+                b.clearCache()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
                 # if the linked component above is the target component for the block above, align them
                 # e.g., for expansion, this shifts up the target component in the block above
@@ -366,6 +388,9 @@ class AxialExpansionChanger:
                     cAbove = self.linked.linkedComponents[c].upper
                     cAbove.zbottom = c.ztop
                     cAbove.ztop = cAbove.height + cAbove.zbottom
+                # make non-target component mass independent of block height
+                for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
+                    c.changeNDensByFactor(c.height / b.p.height)
 
         # deal with the non-target comps
         for ib, b in enumerate(self.linked.a):
