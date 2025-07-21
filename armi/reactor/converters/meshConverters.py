@@ -243,13 +243,12 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
 
         Notes
         -----
-        This approach is useful as it will create the largest material regions possible
-        to minimize number of axially regions within the converted reactor core. This
-        class not only looks at the block flags axially, but will add new mesh points for
-        regions where the blocks of the same flag differ by XSID.
+        This approach is useful as it will create the largest material regions possible to minimize number of axially
+        regions within the converted reactor core. This class not only looks at the block flags axially, but will add
+        new mesh points for regions where the blocks of the same flag differ by XSID.
         """
         axialMeshCoordinates = collections.defaultdict(set)
-        for a in core.getAssemblies():
+        for a in core:
             blockFlags = set([(b.p.flags, b.getMicroSuffix()) for b in a])
             for flags, xsID in blockFlags:
                 meshes = []

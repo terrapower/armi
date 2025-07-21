@@ -210,7 +210,7 @@ class FuelAssemNumModifier(GeometryChanger):
                 self._sourceReactor.core.removeAssembly(assem, discharge=False)
 
         # Remove all other assemblies from the core
-        for assem in self._sourceReactor.core.getAssemblies():
+        for assem in self._sourceReactor.core:
             if assem.spatialLocator not in assemOrderList:  # check if assembly is on the list
                 r.core.removeAssembly(assem, discharge=False)  # get rid of the old assembly
 
@@ -239,7 +239,7 @@ class FuelAssemNumModifier(GeometryChanger):
         r = self._sourceReactor
         # first look through the core and finds the one farthest from the center
         maxDist = 0.0
-        for assem in r.core.getAssemblies():
+        for assem in r.core:
             dist = np.linalg.norm(assem.spatialLocator.getGlobalCoordinates())  # get distance from origin
             dist = round(dist, 6)  # round dist to 6 places to avoid differences due to floating point math
             maxDist = max(maxDist, dist)
@@ -1185,7 +1185,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
 
-        for a in self._sourceReactor.core.getAssemblies():
+        for a in self._sourceReactor.core:
             # make extras and add them too. since the input is assumed to be 1/3 core.
             otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
             thisZone = (
