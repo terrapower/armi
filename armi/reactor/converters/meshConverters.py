@@ -248,7 +248,7 @@ class _RZThetaReactorMeshConverterByAxialFlags(RZThetaReactorMeshConverter):
         new mesh points for regions where the blocks of the same flag differ by XSID.
         """
         axialMeshCoordinates = collections.defaultdict(set)
-        for a in core:
+        for a in core.getAssemblies():
             blockFlags = set([(b.p.flags, b.getMicroSuffix()) for b in a])
             for flags, xsID in blockFlags:
                 meshes = []

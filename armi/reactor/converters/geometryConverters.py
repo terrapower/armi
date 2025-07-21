@@ -1185,7 +1185,7 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             geometry.DomainType.FULL_CORE, geometry.BoundaryType.NO_SYMMETRY
         )
 
-        for a in self._sourceReactor.core:
+        for a in self._sourceReactor.core.getAssemblies():
             # make extras and add them too. since the input is assumed to be 1/3 core.
             otherLocs = grid.getSymmetricEquivalents(a.spatialLocator.indices)
             thisZone = (
