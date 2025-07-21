@@ -210,7 +210,7 @@ class FuelAssemNumModifier(GeometryChanger):
                 self._sourceReactor.core.removeAssembly(assem, discharge=False)
 
         # Remove all other assemblies from the core
-        for assem in self._sourceReactor.core:
+        for assem in self._sourceReactor.core.getAssemblies():
             if assem.spatialLocator not in assemOrderList:  # check if assembly is on the list
                 r.core.removeAssembly(assem, discharge=False)  # get rid of the old assembly
 
@@ -239,7 +239,7 @@ class FuelAssemNumModifier(GeometryChanger):
         r = self._sourceReactor
         # first look through the core and finds the one farthest from the center
         maxDist = 0.0
-        for assem in r.core:
+        for assem in r.core.getAssemblies():
             dist = np.linalg.norm(assem.spatialLocator.getGlobalCoordinates())  # get distance from origin
             dist = round(dist, 6)  # round dist to 6 places to avoid differences due to floating point math
             maxDist = max(maxDist, dist)
