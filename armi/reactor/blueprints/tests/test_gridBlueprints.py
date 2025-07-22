@@ -235,7 +235,7 @@ TINY_GRID = """core:
        : IF
 """
 
-TMP = """core:
+BIG_FULL_HEX_CORE = """core:
   geom: hex
   symmetry: full
   lattice map: |
@@ -331,7 +331,6 @@ class TestGridBPRoundTrip(unittest.TestCase):
 
 
 class TestGridBPRoundTripFull(unittest.TestCase):
-
     def test_fullMap(self):
         """
         Test that a lattice map can be defined, written, and read in from blueprint file.
@@ -340,7 +339,7 @@ class TestGridBPRoundTripFull(unittest.TestCase):
             :id: T_ARMI_BP_GRID1
             :tests: R_ARMI_BP_GRID
         """
-        grid = Grids.load(TMP)
+        grid = Grids.load(BIG_FULL_HEX_CORE)
         gridDesign = grid["core"]
         _ = gridDesign.construct()
 
@@ -373,6 +372,7 @@ class TestGridBPRoundTripFull(unittest.TestCase):
         self.assertEqual(gridDesign.gridContents[1, -1], "ZZ")
         self.assertEqual(gridDesign.gridContents[-3, 1], "RC")
         self.assertEqual(gridDesign.gridContents[3, -1], "PC")
+
 
 class TestGridBlueprintsSection(unittest.TestCase):
     """Tests for lattice blueprint section."""

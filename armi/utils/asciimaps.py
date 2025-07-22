@@ -218,18 +218,20 @@ class AsciiMap:
         # clean data
         noDataLinesYet = True  # handle all-placeholder rows
         newLines = []
-        for line in self.asciiLines:
+        lastLine = len(self.asciiLines) - 1
+        for i, line in enumerate(self.asciiLines):
             if re.search(f"^[{PLACEHOLDER}]+$", "".join(line)) and noDataLinesYet:
                 continue
 
             noDataLinesYet = False
             newLine = self._removeTrailingPlaceholders(line)
             if newLine:
+                if i == lastLine and line[-1] == "-":
+                    newLine.append(PLACEHOLDER)
                 newLines.append(newLine)
             else:
-                # if entire newline is wiped out, it's a full row of placeholders!
-                # but oops this actually still won't work. Needs more work when
-                # doing pure rows from data is made programmatically.
+                # If entire newline is wiped out, it's a full row of placeholders! But oops this actually still won't
+                # work. Needs more work when doing pure rows from data is made programmatically.
                 raise ValueError("Cannot write asciimaps with blank rows from pure data yet.")
 
         if not newLines:
