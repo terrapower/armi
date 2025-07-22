@@ -235,6 +235,59 @@ TINY_GRID = """core:
        : IF
 """
 
+TMP = """core:
+  geom: hex
+  symmetry: full
+  lattice map: |
+    -   -   -   -   -   -   SH  SH
+      -   -   -   -   SH  SH  SH  SH  SH
+    -   -   -   -   SH  RR  RR  RR  RR  SH
+      -   -   -   SH  RR  RR  RR  RR  RR  SH
+    -   -   -   SH  RR  RR  RR  RR  RR  RR  SH
+      -   -   SH  RR  RR  RR  RR  RR  RR  RR  SH
+    -   -   SH  RR  RR  RR  RR  RR  RR  RR  RR  SH
+      -   -   SH  RR  RR  RR  RB  RR  RR  RR  SH
+    -   -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
+      -   SH  RR  RR  RB  RB  OF  RB  RB  RR  RR  SH
+    -   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  RR  SH
+      -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  RR
+    -   SH  RR  RR  OF  OF  PC  PC  PC  OF  RR  RR  SH
+      SH  SH  RR  RB  OF  IF  PC  OF  OF  RB  RR  RR  SH
+    -   SH  RR  RB  OF  US  IF  IF  PC  OF  RB  RR  RR
+      SH  RR  RR  OF  IF  IF  IF  IF  IF  OF  RR  RR  SH
+    -   SH  RR  RB  IF  IF  IF  IF  IF  IF  RB  RR  SH
+      SH  RR  RB  OF  RC  IF  SH  IF  IF  OF  RB  RR  SH
+    SH  RR  RR  OF  IF  IF  IF  RC  PC  IF  OF  RR  RR  SH
+      SH  RR  RB  IF  PC  IF  IF  IF  PC  IF  RB  RR  SH
+    SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
+      SH  RR  OF  IF  IF  WW  IF  IF  IF  IF  OF  RR  SH
+    SH  RR  RB  OF  IF  IF  WW  XX  PC  IF  OF  RB  RR  SH
+      SH  RR  OF  PC  IF  BB  AA  YY  SH  DC  OF  RR  SH
+    SH  RR  RB  OF  IF  RC  CC  ZZ  IF  IF  OF  RB  RR  SH
+      SH  RR  OF  IF  IF  IF  IF  IF  IF  IF  OF  RR  SH
+    SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
+      SH  RR  RB  IF  IF  IF  IF  RC  IF  IF  RB  RR  SH
+    SH  RR  RR  OF  PC  IF  SH  IF  IF  PC  OF  RR  RR  SH
+      SH  RR  RB  IF  IF  IF  IF  IF  IF  IF  RB  RR  SH
+    -   SH  RR  OF  IF  PC  IF  IF  IF  IF  OF  RR  SH
+      SH  RR  RB  OF  IF  IF  PC  IF  IF  OF  RB  RR  SH
+    -   SH  RR  RB  OF  US  IF  IF  PC  OF  RB  RR  SH
+      SH  SH  RR  RB  OF  IF  IF  IF  OF  RB  RR  SH  SH
+    -   SH  RR  RR  OF  OF  IF  IF  OF  OF  RR  RR  SH
+      -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH
+    -   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  SH  SH
+      -   SH  RR  RR  RB  RB  RB  RB  RB  RR  RR  SH
+        -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
+          -   SH  RR  RR  RR  RR  RR  RR  RR  SH
+            SH  RR  RR  RR  RR  RR  RR  RR  RR  SH
+              SH  RR  RR  RR  RR  RR  RR  RR  SH
+                SH  RR  RR  RR  RR  RR  RR  SH
+                  SH  RR  RR  RR  RR  RR  SH
+                    SH  RR  RR  RR  RR  SH
+                      SH  SH  SH  SH  SH
+                        -   SH  SH  -
+"""
+
 
 class TestGridBPRoundTrip(unittest.TestCase):
     def setUp(self):
@@ -276,6 +329,50 @@ class TestGridBPRoundTrip(unittest.TestCase):
         self.assertIn("full", gridBp["core"].symmetry)
         self.assertIn("IF", gridBp["core"].latticeMap)
 
+
+class TestGridBPRoundTripFull(unittest.TestCase):
+
+    def test_fullMap(self):
+        """
+        Test that a lattice map can be defined, written, and read in from blueprint file.
+
+        .. test:: Define a lattice map in reactor core.
+            :id: T_ARMI_BP_GRID1
+            :tests: R_ARMI_BP_GRID
+        """
+        grid = Grids.load(TMP)
+        gridDesign = grid["core"]
+        _ = gridDesign.construct()
+
+        # test before the round-trip
+        self.assertEqual(gridDesign.gridContents[0, 0], "AA")
+        self.assertEqual(gridDesign.gridContents[-2, 1], "BB")
+        self.assertEqual(gridDesign.gridContents[-1, 0], "CC")
+        self.assertEqual(gridDesign.gridContents[-1, 1], "WW")
+        self.assertEqual(gridDesign.gridContents[1, 0], "XX")
+        self.assertEqual(gridDesign.gridContents[2, -1], "YY")
+        self.assertEqual(gridDesign.gridContents[1, -1], "ZZ")
+        self.assertEqual(gridDesign.gridContents[-3, 1], "RC")
+        self.assertEqual(gridDesign.gridContents[3, -1], "PC")
+
+        # perform a roundtrip
+        stream = io.StringIO()
+        saveToStream(stream, grid, full=True, tryMap=True)
+        stream.seek(0)
+        gridBp = Grids.load(stream)
+        gridDesign = gridBp["core"]
+        _ = gridDesign.construct()
+
+        # test again after the round-trip
+        self.assertEqual(gridDesign.gridContents[0, 0], "AA")
+        self.assertEqual(gridDesign.gridContents[-2, 1], "BB")
+        self.assertEqual(gridDesign.gridContents[-1, 0], "CC")
+        self.assertEqual(gridDesign.gridContents[-1, 1], "WW")
+        self.assertEqual(gridDesign.gridContents[1, 0], "XX")
+        self.assertEqual(gridDesign.gridContents[2, -1], "YY")
+        self.assertEqual(gridDesign.gridContents[1, -1], "ZZ")
+        self.assertEqual(gridDesign.gridContents[-3, 1], "RC")
+        self.assertEqual(gridDesign.gridContents[3, -1], "PC")
 
 class TestGridBlueprintsSection(unittest.TestCase):
     """Tests for lattice blueprint section."""
