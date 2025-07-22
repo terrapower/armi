@@ -27,6 +27,7 @@ This module also handles repeat shuffles when doing a restart.
 
 # ruff: noqa: F401
 import inspect
+import math
 import os
 import re
 
@@ -59,6 +60,7 @@ class FuelHandler:
         # we need access to the operator to find the core, get settings, grab other interfaces, etc.
         self.o = operator
         self.moved = []
+        self.pendingRotations = []
 
     @property
     def cycle(self):
@@ -120,6 +122,15 @@ class FuelHandler:
                         CONF_ASSEMBLY_ROTATION_ALG,
                     )
                 )
+
+        for loc, deg in self.pendingRotations:
+            assem = self.r.core.getAssemblyWithStringLocation(loc)
+            if assem is None:
+                runLog.warning(f"No assembly found at {loc} for manual rotation")
+                continue
+            runLog.info(f"Rotating assembly {assem} in {loc} by {deg} degrees from shuffle file")
+            assem.rotate(math.radians(deg))
+        self.pendingRotations = []
 
         # inform the reactor of how many moves occurred so it can put the number in the database.
         if self.moved:
@@ -897,7 +908,10 @@ class FuelHandler:
         makeShuffleReport : Creates the file that is processed here
         """
         # read moves file
-        moves = self.readMoves(explicitRepeatShuffles)
+        if explicitRepeatShuffles.lower().endswith((".yaml", ".yml")):
+            moves = self.readMovesYaml(explicitRepeatShuffles)
+        else:
+            moves = self.readMoves(explicitRepeatShuffles)
         # get the correct cycle number
         # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
         cycle = self.r.p.cycle + 1
@@ -910,11 +924,13 @@ class FuelHandler:
             enriches,
             loadChargeTypes,
             loadNames,
+            rotations,
             _alreadyDone,
         ) = self.processMoveList(moveList)
 
         # Now have the move locations
         moved = self.doRepeatShuffle(loadChains, loopChains, enriches, loadChargeTypes, loadNames)
+        self.pendingRotations = rotations
 
         return moved
 
@@ -1005,6 +1021,56 @@ class FuelHandler:
         return moves
 
     @staticmethod
+    def readMovesYaml(fname):
+        """Read a shuffle file in YAML format."""
+        try:
+            from ruamel.yaml import YAML
+        except ImportError:
+            raise RuntimeError("ruamel.yaml is required to read YAML shuffle files")
+
+        try:
+            with open(fname, "r") as stream:
+                yaml = YAML(typ="safe")
+                data = yaml.load(stream)
+        except OSError:
+            raise RuntimeError(
+                "Could not find/open repeat shuffle file {} in working directory {}".format(
+                    fname, os.getcwd()
+                )
+            )
+
+        moves = {}
+        # sequence mapping of cycles
+        for cycleKey, actions in (data.get("sequence") or {}).items():
+            cycle = int(cycleKey)
+            moves[cycle] = []
+            for action in actions or []:
+                if "cascade" in action:
+                    chain = list(action["cascade"])
+                    if not chain:
+                        continue
+                    assemType = chain[0]
+                    locs = chain[1:]
+                    if not locs:
+                        continue
+                    enrich = [float(e) for e in action.get("fuelEnrichment", [])]
+                    # fresh load from LoadQueue
+                    moves[cycle].append(("LoadQueue", locs[0], enrich, assemType, None))
+                    for i in range(len(locs) - 1):
+                        moves[cycle].append((locs[i], locs[i + 1], [], None, None))
+                    moves[cycle].append((locs[-1], "SFP", [], None, None))
+
+                    for loc, angle in (action.get("rotations") or {}).items():
+                        moves[cycle].append((loc, loc, [], None, None, float(angle)))
+
+                if "misloadSwap" in action:
+                    loc1, loc2 = action["misloadSwap"]
+                    moves[cycle].append((loc1, loc2, [], None, None))
+                    moves[cycle].append((loc2, loc1, [], None, None))
+
+        return moves
+
+    @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
         r"""
         Builds a chain of locations based on starting location.
@@ -1051,7 +1117,11 @@ class FuelHandler:
         loadName = None
         assemType = None  # in case this is a load chain, prep for getting an assembly type
 
-        for fromLoc, toLoc, _enrichList, _assemblyType, _assemName in moveList:
+        for move in moveList:
+            if len(move) == 6:
+                fromLoc, toLoc, _enrichList, _assemblyType, _assemName, _rot = move
+            else:
+                fromLoc, toLoc, _enrichList, _assemblyType, _assemName = move
             if "SFP" in toLoc and "LoadQueue" in fromLoc:
                 # skip dummy moves
                 continue
@@ -1068,13 +1138,24 @@ class FuelHandler:
                 while chain[-1] not in ["LoadQueue", "ExCore", "SFP"] and not complete and safeCount < 100:
                     # look for something going to where the previous one is from
                     lookingFor = chain[-1]
-                    for (
-                        cFromLoc,
-                        cToLoc,
-                        cEnrichList,
-                        cAssemblyType,
-                        cAssemName,
-                    ) in moveList:
+                    for innerMove in moveList:
+                        if len(innerMove) == 6:
+                            (
+                                cFromLoc,
+                                cToLoc,
+                                cEnrichList,
+                                cAssemblyType,
+                                cAssemName,
+                                _rot,
+                            ) = innerMove
+                        else:
+                            (
+                                cFromLoc,
+                                cToLoc,
+                                cEnrichList,
+                                cAssemblyType,
+                                cAssemName,
+                            ) = innerMove
                         if cToLoc == lookingFor:
                             chain.append(cFromLoc)
                             if cFromLoc in ["LoadQueue", "ExCore", "SFP"]:
@@ -1140,6 +1221,8 @@ class FuelHandler:
         loadNames : list
             The assembly names of assemblies that get brought into the core from the SFP (useful for pulling out
             of SFP for round 2, etc.). Will be None for anything else.
+        rotations : list
+            Tuples of (location, degrees) indicating manual rotations to perform after shuffling.
         alreadyDone : list
             All the locations that were read.
 
@@ -1159,9 +1242,19 @@ class FuelHandler:
         loopChains = []  # moves that don't have discharges
         enriches = []  # enrichments of each loadChain
         loadNames = []  # assembly name of each load assembly (to read from SFP)
+        rotations = []
 
         # first handle all charge/discharge chains by looking for things going to SFP
-        for fromLoc, toLoc, _enrichList, _assemType, _movingAssemName in moveList:
+        for move in moveList:
+            if len(move) == 6:
+                fromLoc, toLoc, _enrichList, _assemType, _movingAssemName, rot = move
+            else:
+                fromLoc, toLoc, _enrichList, _assemType, _movingAssemName = move
+                rot = None
+            if fromLoc == toLoc:
+                if rot is not None:
+                    rotations.append((fromLoc, rot))
+                continue
             if toLoc in ["SFP", "ExCore"] and "LoadQueue" in fromLoc:
                 # skip dummy moves
                 continue
@@ -1180,7 +1273,15 @@ class FuelHandler:
 
         # go through again, looking for stuff that isn't in chains.
         # put them in loop type 3 moves (arbitrary order)
-        for fromLoc, toLoc, _enrichList, assemType, _movingAssemName in moveList:
+        for move in moveList:
+            if len(move) == 6:
+                fromLoc, toLoc, _enrichList, assemType, _movingAssemName, rot = move
+            else:
+                fromLoc, toLoc, _enrichList, assemType, _movingAssemName = move
+                rot = None
+            if fromLoc == toLoc:
+                # rotation or no-op
+                continue
             if toLoc in ["SFP", "ExCore"] or fromLoc in ["LoadQueue", "SFP", "ExCore"]:
                 # skip loads/discharges; they're already done.
                 continue
@@ -1195,7 +1296,7 @@ class FuelHandler:
 
                 runLog.extra("Loop Chain: {0}".format(chain))
 
-        return loadChains, loopChains, enriches, loadChargeTypes, loadNames, alreadyDone
+        return loadChains, loopChains, enriches, loadChargeTypes, loadNames, rotations, alreadyDone
 
     def doRepeatShuffle(self, loadChains, loopChains, enriches, loadChargeTypes, loadNames):
         r"""

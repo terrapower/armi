@@ -1,0 +1,14 @@
+sequence:
+  1: &cycle_1
+    - &shuffle_1_9_45
+      cascade: ["Type 1 outer fuel", "009-045", "008-004", "007-001", "006-005"]
+      fuelEnrichment: [0, 12, 14, 15, 0]
+      rotations: {"009-045": 60}
+    - cascade: ["Type 1 outer fuel", "010-046", "009-045", "008-004", "007-001"]
+      fuelEnrichment: [0, 12, 14, 15, 0]
+      rotations: {}
+  2: *cycle_1
+  3:
+    - *shuffle_1_9_45
+    - misloadSwap: ["009-045", "008-004"]
+    - misloadSwap: ["008-004", "009-045"]

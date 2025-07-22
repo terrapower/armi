@@ -547,6 +547,52 @@ class TestFuelHandler(FuelHandlerTestHelper):
         with self.assertRaises(RuntimeError):
             fh.readMoves("totall_fictional_file.txt")
 
+    def test_readMovesYaml(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        self.maxDiff = None
+        expected = {
+            1: [
+                ("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "Type 1 outer fuel", None),
+                ("009-045", "008-004", [], None, None),
+                ("008-004", "007-001", [], None, None),
+                ("007-001", "006-005", [], None, None),
+                ("006-005", "SFP", [], None, None),
+                ("009-045", "009-045", [], None, None, 60.0),
+                ("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "Type 1 outer fuel", None),
+                ("010-046", "009-045", [], None, None),
+                ("009-045", "008-004", [], None, None),
+                ("008-004", "007-001", [], None, None),
+                ("007-001", "SFP", [], None, None),
+            ],
+            2: [
+                ("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "Type 1 outer fuel", None),
+                ("009-045", "008-004", [], None, None),
+                ("008-004", "007-001", [], None, None),
+                ("007-001", "006-005", [], None, None),
+                ("006-005", "SFP", [], None, None),
+                ("009-045", "009-045", [], None, None, 60.0),
+                ("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "Type 1 outer fuel", None),
+                ("010-046", "009-045", [], None, None),
+                ("009-045", "008-004", [], None, None),
+                ("008-004", "007-001", [], None, None),
+                ("007-001", "SFP", [], None, None),
+            ],
+            3: [
+                ("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "Type 1 outer fuel", None),
+                ("009-045", "008-004", [], None, None),
+                ("008-004", "007-001", [], None, None),
+                ("007-001", "006-005", [], None, None),
+                ("006-005", "SFP", [], None, None),
+                ("009-045", "009-045", [], None, None, 60.0),
+                ("009-045", "008-004", [], None, None),
+                ("008-004", "009-045", [], None, None),
+                ("008-004", "009-045", [], None, None),
+                ("009-045", "008-004", [], None, None),
+            ],
+        }
+        self.assertEqual(moves, expected)
+
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
@@ -556,6 +602,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             _,
             _,
             loadNames,
+            rotations,
             _,
         ) = fh.processMoveList(moves[2])
         self.assertIn("A0073", loadNames)
@@ -563,6 +610,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertNotIn("SFP", loadChains)
         self.assertNotIn("LoadQueue", loadChains)
         self.assertFalse(loopChains)
+        self.assertFalse(rotations)
+
+    def test_processMoveList_yaml(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        loadChains, loopChains, enriches, loadTypes, loadNames, rotations, _ = fh.processMoveList(moves[1])
+        self.assertEqual(len(loadChains), 2)
+        self.assertTrue(any(enriches))
+        self.assertTrue(rotations)
 
     def test_getFactorList(self):
         fh = fuelHandlers.FuelHandler(self.o)

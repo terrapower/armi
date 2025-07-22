@@ -368,6 +368,24 @@ A few examples of restart cases:
 
 .. note:: The X-SHUFFLES.txt file is required to do explicit repeated fuel management.
 
+   The shuffling history can also be provided in a YAML file with the
+   ``*-SHUFFLES.yaml`` naming convention. The YAML format organizes
+   data by cycle in a ``sequence`` mapping. Each cycle contains a list of
+   high-level shuffle actions such as ``cascade`` chains, ``rotations``,
+   and ``misloadSwap`` entries. Cascades describe a new assembly type
+   moving through a series of locations until discharge. Optional
+   ``fuelEnrichment`` lists can specify the enrichment distribution for
+   the fresh assembly. ``rotations`` provide degrees of clockwise rotation
+   to apply after all moves in that cycle. For example::
+
+       sequence:
+        1:
+          - cascade: ["Type 1 outer fuel", "009-045", "008-004"]
+            fuelEnrichment: [0, 12, 14, 15, 0]
+            rotations: {"009-045": 60}
+        2: *1
+
+
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
 
 .. note:: The ISO binary cross section libraries are required to run cases that skip the lattice physics calculation (e.g. MC^2)
