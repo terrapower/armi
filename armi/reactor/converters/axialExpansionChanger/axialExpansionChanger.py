@@ -20,6 +20,7 @@ from numpy import array, where, array_equal
 from armi import runLog
 from armi.materials.material import Fluid
 from armi.reactor.assemblies import Assembly
+from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
@@ -403,15 +404,23 @@ class AxialExpansionChanger:
                         else:
                             discrepancy = 0.0
                         # the amount of the current block sticking into component
-                        fracToMove = (cAbove.ztop - b.p.ztop) / (cAbove.height + discrepancy) - 1.0
-                        if fracToMove:
+                        percentToMove = (cAbove.ztop - b.p.ztop) / (cAbove.height + discrepancy) - 1.0
+                        if percentToMove:
                             prior = [c.getMass(), cAbove.getMass()]
-                            self.redistributeMass(c, -fracToMove)
+                            ## this has to happen before the mass removal, OR newTotalToCompMass has to change to account
+                            #  for the removal from cAbove that's already happened
+                            self.addMassToComponent(
+                                fromComp = cAbove,
+                                toComp = c,
+                                percentToMove = abs(percentToMove),
+                                delta = b.getHeight() - c.height,
+                            )
+                            self.removeMassFromComponent(cAbove, percentToMove)
                             post = [c.getMass(), cAbove.getMass()]
                             if c.getType() == 'clad':
                                 print(f"\tc      = {prior[0]} --> {post[0]}")
                                 print(f"\tcAbove = {prior[1]} --> {post[1]}")
-                        elif fracToMove > 0.0:
+                        elif percentToMove > 0.0:
                             raise RuntimeError("not ready for compression")
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
@@ -433,7 +442,7 @@ class AxialExpansionChanger:
         for nuc in c.getNuclides():
             i = where(c.p.nuclides == nuc.encode())[0]
             if i.size > 0:
-                c.p.numberDensities[i[0]] *= percent
+                c.p.numberDensities[i[0]] *= (1.0 + percent)
 
     def addMassToComponent(self, fromComp: "Component", toComp: "Component", percentToMove: float, delta: float):
         """
@@ -470,18 +479,23 @@ class AxialExpansionChanger:
         for nuc in nucsFrom:
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc]*percentToMove + massByNucTo[nuc], newVolume)
 
+        ## Set newNDens on toComp
+        toComp.setNumberDensities(newNDens)
+
         ## calculate an average area for toComp
         newAveArea = (
             1.0/toComp.parent.getHeight() * ((toComp.ztop - toComp.parent.p.zbottom)*toComp.getArea() + delta*fromComp.getArea())
         )
-        # Note: getDimension returns the 'id' at c.temperatureInC so this new OD is at c.temperatureInC
-        newODforAveArea = sqrt(newAveArea * 4.0/(pi*toComp.getDimension('mult')) + toComp.getDimension('id')**2)
-
-        ## Set newNDens on toComp
-        toComp.setNumberDensities(newNDens)
-
-        ## Set newOD on toComp. newODforAveArea is at c.temperatureInC so setDimension must use cold=False
-        toComp.setDimension(key='od', val=newODforAveArea, cold=False)
+        if isinstance(toComp, Circle):
+            # Note: getDimension returns the 'id' at c.temperatureInC so this new OD is at c.temperatureInC
+            newODforAveArea = sqrt(newAveArea * 4.0/(pi*toComp.getDimension('mult')) + toComp.getDimension('id')**2)
+            ## Set newODforAveArea on toComp. newODforAveArea is at c.temperatureInC so setDimension must use cold=False
+            toComp.setDimension(key='od', val=newODforAveArea, cold=False)
+        elif isinstance(toComp, Hexagon):
+            # Note: getDimension returns the 'ip' at c.temperatureInC so this new OP is at c.temperatureInC
+            newOPforAveArea = sqrt(newAveArea / toComp.getDimension("mult") * 2.0 / sqrt(3.0) + toComp.getDimension('ip')**2)
+            ## Set newOPforAveArea on toComp. newOPforAveArea is at c.temperatureInC so setDimension must use cold=False
+            toComp.setDimension(key='op', val=newOPforAveArea, cold=False)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
