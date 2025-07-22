@@ -1034,9 +1034,7 @@ class FuelHandler:
                 data = yaml.load(stream)
         except OSError:
             raise RuntimeError(
-                "Could not find/open repeat shuffle file {} in working directory {}".format(
-                    fname, os.getcwd()
-                )
+                "Could not find/open repeat shuffle file {} in working directory {}".format(fname, os.getcwd())
             )
 
         moves = {}
