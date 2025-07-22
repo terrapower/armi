@@ -141,9 +141,10 @@ Processor(s):    1 Processor(s) Installed.
         self.assertGreater(len(getNodeName()), 0)
 
     def test_makeCoreAndAssemblyMaps(self):
-        #with TemporaryDirectoryChanger():
-        #o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+        # with TemporaryDirectoryChanger():
+        # o, r = loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
         from armi.tests import TEST_ROOT
+
         o, r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
         r.core.growToFullCore(o.cs)
         makeCoreAndAssemblyMaps(r, o.cs)

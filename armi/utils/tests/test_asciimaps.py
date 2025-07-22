@@ -180,49 +180,49 @@ F F
 TMP = """
 -   -   -   -   -   -   SH  SH
   -   -   -   -   SH  SH  SH  SH  SH
--   -   -   -   SH  SH  SH  SH  SH  SH
-  -   -   -   SH  SH  SH  SH  SH  SH  SH
--   -   -   SH  SH  RR  RR  RR  RR  SH  SH
-  -   -   SH  SH  RR  RR  RR  RR  RR  SH  SH
--   -   SH  SH  RR  RR  RR  RR  RR  RR  SH  SH
+-   -   -   -   SH  RR  RR  RR  RR  SH
+  -   -   -   SH  RR  RR  RR  RR  RR  SH
+-   -   -   SH  RR  RR  RR  RR  RR  RR  SH
+  -   -   SH  RR  RR  RR  RR  RR  RR  RR  SH
+-   -   SH  RR  RR  RR  RR  RR  RR  RR  RR  SH
   -   -   SH  RR  RR  RR  RB  RR  RR  RR  SH
 -   -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
   -   SH  RR  RR  RB  RB  OF  RB  RB  RR  RR  SH
--   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  SH  SH
-  -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH
--   SH  RR  RR  OF  OF  OF  OF  OF  OF  RR  RR  SH
-  SH  SH  RR  RB  OF  OF  PC  OF  OF  RB  RR  SH  SH
--   SH  RR  RB  OF  US  OF  IF  PC  OF  RB  RR  SH
-  SH  RR  RR  OF  OF  OF  IF  IF  OF  OF  RR  RR  SH
--   SH  RR  RB  OF  OF  IF  IF  IF  OF  RB  RR  SH
-  SH  RR  RB  OF  OF  IF  IF  IF  OF  OF  RB  RR  SH
-SH  RR  RR  OF  OF  OF  IF  RC  IF  OF  OF  RR  RR  SH
-  SH  RR  RB  OF  PC  IF  IF  IF  PC  OF  RB  RR  SH
-SH  RR  RB  OF  OF  IF  IF  IF  IF  OF  OF  RB  RR  SH
-  SH  RR  OF  OF  IF  IF  IF  IF  OF  OF  OF  RR  SH
-SH  RR  RB  OF  IF  IF  IF  IF  IF  OF  OF  RB  RR  SH
-  SH  RR  OF  PC  IF  IF  RC  IF  IF  DC  OF  RR  SH
-SH  RR  RB  OF  IF  RC  IF  IF  IF  OF  OF  RB  RR  SH
-  SH  RR  OF  OF  IF  IF  IF  IF  IF  OF  OF  RR  SH
-SH  RR  RB  OF  IF  IF  IF  IF  IF  OF  OF  RB  RR  SH
-  SH  RR  RB  OF  IF  IF  IF  RC  IF  OF  RB  RR  SH
-SH  RR  RR  OF  PC  IF  IF  IF  IF  PC  OF  RR  RR  SH
-  SH  RR  RB  OF  OF  IF  IF  IF  IF  OF  RB  RR  SH
--   SH  RR  OF  OF  OF  OF  IF  IF  OF  OF  RR  SH
-  SH  RR  RB  OF  OF  OF  PC  IF  OF  OF  RB  RR  SH
--   SH  RR  RB  OF  US  OF  OF  PC  OF  RB  RR  SH
-  SH  SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH  SH
--   SH  RR  RR  OF  OF  OF  OF  OF  OF  RR  RR  SH
+-   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  RR  SH
+  -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  RR
+-   SH  RR  RR  OF  OF  PC  PC  PC  OF  RR  RR  SH
+  SH  SH  RR  RB  OF  IF  PC  OF  OF  RB  RR  RR  SH
+-   SH  RR  RB  OF  US  IF  IF  PC  OF  RB  RR  RR
+  SH  RR  RR  OF  IF  IF  IF  IF  IF  OF  RR  RR  SH
+-   SH  RR  RB  IF  IF  IF  IF  IF  IF  RB  RR  SH
+  SH  RR  RB  OF  RC  IF  SH  IF  IF  OF  RB  RR  SH
+SH  RR  RR  OF  IF  IF  IF  RC  PC  IF  OF  RR  RR  SH
+  SH  RR  RB  IF  PC  IF  IF  IF  PC  IF  RB  RR  SH
+SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
+  SH  RR  OF  IF  IF  IF  IF  IF  IF  IF  OF  RR  SH
+SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
+  SH  RR  OF  PC  SH  IF  RC  PC  SH  DC  OF  RR  SH
+SH  RR  RB  OF  IF  RC  IF  IF  IF  IF  OF  RB  RR  SH
+  SH  RR  OF  IF  IF  IF  IF  IF  IF  IF  OF  RR  SH
+SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
+  SH  RR  RB  IF  IF  IF  IF  RC  IF  IF  RB  RR  SH
+SH  RR  RR  OF  PC  IF  SH  IF  IF  PC  OF  RR  RR  SH
+  SH  RR  RB  IF  IF  IF  IF  IF  IF  IF  RB  RR  SH
+-   SH  RR  OF  IF  PC  IF  IF  IF  IF  OF  RR  SH
+  SH  RR  RB  OF  IF  IF  PC  IF  IF  OF  RB  RR  SH
+-   SH  RR  RB  OF  US  IF  IF  PC  OF  RB  RR  SH
+  SH  SH  RR  RB  OF  IF  IF  IF  OF  RB  RR  SH  SH
+-   SH  RR  RR  OF  OF  IF  IF  OF  OF  RR  RR  SH
   -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH
 -   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  SH  SH
   -   SH  RR  RR  RB  RB  RB  RB  RB  RR  RR  SH
     -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
       -   SH  RR  RR  RR  RR  RR  RR  RR  SH
-        SH  SH  RR  RR  RR  RR  RR  RR  SH  SH
-          SH  SH  RR  RR  RR  RR  RR  SH  SH
-            SH  SH  RR  RR  RR  RR  SH  SH
-              SH  SH  SH  SH  SH  SH  SH
-                SH  SH  SH  SH  SH  SH
+        SH  RR  RR  RR  RR  RR  RR  RR  RR  SH
+          SH  RR  RR  RR  RR  RR  RR  RR  SH
+            SH  RR  RR  RR  RR  RR  RR  SH
+              SH  RR  RR  RR  RR  RR  SH
+                SH  RR  RR  RR  RR  SH
                   SH  SH  SH  SH  SH
                     -   SH  SH  -
 """
@@ -240,9 +240,9 @@ class TestAsciiMaps(unittest.TestCase):
             asciimap.writeAscii(stream)
 
             print(asciimap)
-            print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+            print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
             print(stream.read())
-            print('zzzzzzzzzzzzzzzzzzzzzzzzzzzzz')
+            print("zzzzzzzzzzzzzzzzzzzzzzzzzzzzz")
         assert False
 
     def test_cartesian(self):
