@@ -262,6 +262,7 @@ class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
             "ISOAA-n24",
             "ISOBA-ISO",
             "ISOBA-n2",
+            "ISOBA",
             "ISOTXS",
             "ISOTXS-c2",
             "dummyISOTXS",
