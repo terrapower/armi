@@ -239,53 +239,53 @@ BIG_FULL_HEX_CORE = """core:
   geom: hex
   symmetry: full
   lattice map: |
-    -   -   -   -   -   -   SH  SH
-      -   -   -   -   SH  SH  SH  SH  SH
-    -   -   -   -   SH  RR  RR  RR  RR  SH
-      -   -   -   SH  RR  RR  RR  RR  RR  SH
-    -   -   -   SH  RR  RR  RR  RR  RR  RR  SH
-      -   -   SH  RR  RR  RR  RR  RR  RR  RR  SH
-    -   -   SH  RR  RR  RR  RR  RR  RR  RR  RR  SH
-      -   -   SH  RR  RR  RR  RB  RR  RR  RR  SH
-    -   -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
-      -   SH  RR  RR  RB  RB  OF  RB  RB  RR  RR  SH
-    -   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  RR  SH
-      -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  RR
-    -   SH  RR  RR  OF  OF  PC  PC  PC  OF  RR  RR  SH
-      SH  SH  RR  RB  OF  IF  PC  OF  OF  RB  RR  RR  SH
-    -   SH  RR  RB  OF  US  IF  IF  PC  OF  RB  RR  RR
-      SH  RR  RR  OF  IF  IF  IF  IF  IF  OF  RR  RR  SH
-    -   SH  RR  RB  IF  IF  IF  IF  IF  IF  RB  RR  SH
-      SH  RR  RB  OF  RC  IF  SH  IF  IF  OF  RB  RR  SH
-    SH  RR  RR  OF  IF  IF  IF  RC  PC  IF  OF  RR  RR  SH
-      SH  RR  RB  IF  PC  IF  IF  IF  PC  IF  RB  RR  SH
-    SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
-      SH  RR  OF  IF  IF  WW  IF  IF  IF  IF  OF  RR  SH
-    SH  RR  RB  OF  IF  IF  WW  XX  PC  IF  OF  RB  RR  SH
-      SH  RR  OF  PC  IF  BB  AA  YY  SH  DC  OF  RR  SH
-    SH  RR  RB  OF  IF  RC  CC  ZZ  IF  IF  OF  RB  RR  SH
-      SH  RR  OF  IF  IF  IF  IF  IF  IF  IF  OF  RR  SH
-    SH  RR  RB  OF  IF  IF  IF  IF  IF  IF  OF  RB  RR  SH
-      SH  RR  RB  IF  IF  IF  IF  RC  IF  IF  RB  RR  SH
-    SH  RR  RR  OF  PC  IF  SH  IF  IF  PC  OF  RR  RR  SH
-      SH  RR  RB  IF  IF  IF  IF  IF  IF  IF  RB  RR  SH
-    -   SH  RR  OF  IF  PC  IF  IF  IF  IF  OF  RR  SH
-      SH  RR  RB  OF  IF  IF  PC  IF  IF  OF  RB  RR  SH
-    -   SH  RR  RB  OF  US  IF  IF  PC  OF  RB  RR  SH
-      SH  SH  RR  RB  OF  IF  IF  IF  OF  RB  RR  SH  SH
-    -   SH  RR  RR  OF  OF  IF  IF  OF  OF  RR  RR  SH
-      -   SH  RR  RB  OF  OF  OF  OF  OF  RB  RR  SH
-    -   SH  SH  RR  RB  OF  OF  OF  OF  RB  RR  SH  SH
-      -   SH  RR  RR  RB  RB  RB  RB  RB  RR  RR  SH
-        -   SH  RR  RR  RB  RB  RB  RB  RR  RR  SH
-          -   SH  RR  RR  RR  RR  RR  RR  RR  SH
-            SH  RR  RR  RR  RR  RR  RR  RR  RR  SH
-              SH  RR  RR  RR  RR  RR  RR  RR  SH
-                SH  RR  RR  RR  RR  RR  RR  SH
-                  SH  RR  RR  RR  RR  RR  SH
-                    SH  RR  RR  RR  RR  SH
-                      SH  SH  SH  SH  SH
-                        -   SH  SH  -
+    -   -   -   -   -   -   SS  SS
+      -   -   -   -   SS  SS  SS  SS  SS
+    -   -   -   -   SS  DD  DD  DD  DD  SS
+      -   -   -   SS  DD  DD  DD  DD  DD  SS
+    -   -   -   SS  DD  DD  DD  DD  DD  DD  SS
+      -   -   SS  DD  DD  DD  DD  DD  DD  DD  SS
+    -   -   SS  DD  DD  DD  DD  DD  DD  DD  DD  SS
+      -   -   SS  DD  DD  DD  RB  DD  DD  DD  SS
+    -   -   SS  DD  DD  RB  RB  RB  RB  DD  DD  SS
+      -   SS  DD  DD  RB  RB  FF  RB  RB  DD  DD  SS
+    -   SS  SS  DD  RB  FF  FF  FF  FF  RB  DD  DD  SS
+      -   SS  DD  RB  FF  FF  FF  FF  FF  RB  DD  RR
+    -   SS  DD  DD  FF  FF  PC  PC  PC  FF  DD  DD  SS
+      SS  SS  DD  RB  FF  II  PC  FF  FF  RB  DD  DD  SS
+    -   SS  DD  RB  FF  SS  II  II  PC  FF  RB  DD  RR
+      SS  DD  DD  FF  II  II  II  II  II  FF  DD  DD  SS
+    -   SS  DD  RB  II  II  II  II  II  II  RB  DD  SS
+      SS  DD  RB  FF  RC  II  SS  II  II  FF  RB  DD  SS
+    SS  DD  DD  FF  II  II  II  RC  PC  II  FF  DD  DD  SS
+      SS  DD  RB  II  PC  II  II  II  PC  II  RB  DD  SS
+    SS  DD  RB  FF  II  II  II  II  II  II  FF  RB  DD  SS
+      SS  DD  FF  II  II  WW  II  II  II  II  FF  DD  SS
+    SS  DD  RB  FF  II  II  WW  XX  PC  II  FF  RB  DD  SS
+      SS  DD  FF  PC  II  BB  AA  YY  SS  DC  FF  DD  SS
+    SS  DD  RB  FF  II  RC  CC  ZZ  II  II  FF  RB  DD  SS
+      SS  DD  FF  II  II  II  II  II  II  II  FF  DD  SS
+    SS  DD  RB  FF  II  II  II  II  II  II  FF  RB  DD  SS
+      SS  DD  RB  II  II  II  II  RC  II  II  RB  DD  SS
+    SS  DD  DD  FF  PC  II  SS  II  II  PC  FF  DD  DD  SS
+      SS  DD  RB  II  II  II  II  II  II  II  RB  DD  SS
+    -   SS  DD  FF  II  PC  II  II  II  II  FF  DD  SS
+      SS  DD  RB  FF  II  II  PC  II  II  FF  RB  DD  SS
+    -   SS  DD  RB  FF  SS  II  II  PC  FF  RB  DD  SS
+      SS  SS  DD  RB  FF  II  II  II  FF  RB  DD  SS  SS
+    -   SS  DD  DD  FF  FF  II  II  FF  FF  DD  DD  SS
+      -   SS  DD  RB  FF  FF  FF  FF  FF  RB  DD  SS
+    -   SS  SS  DD  RB  FF  FF  FF  FF  RB  DD  SS  SS
+      -   SS  DD  DD  RB  RB  RB  RB  RB  DD  DD  SS
+        -   SS  DD  DD  RB  RB  RB  RB  DD  DD  SS
+          -   SS  DD  DD  DD  DD  DD  DD  DD  SS
+            SS  DD  DD  DD  DD  DD  DD  DD  DD  SS
+              SS  DD  DD  DD  DD  DD  DD  DD  SS
+                SS  DD  DD  DD  DD  DD  DD  SS
+                  SS  DD  DD  DD  DD  DD  SS
+                    SS  DD  DD  DD  DD  SS
+                      SS  SS  SS  SS  SS
+                        -   SS  SS  -
 """
 
 
