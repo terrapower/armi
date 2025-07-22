@@ -750,7 +750,6 @@ class Core(composites.Composite):
         Notes
         -----
         Assumes that odd rings do not have an edge assembly in third core geometry.
-        These should be removed in: self._modifyGeometryAfterLoad during importGeom
         """
         numAssemsUpToOuterRing = self.getNumAssembliesWithAllRingsFilledOut(ring)
         numAssemsUpToInnerRing = self.getNumAssembliesWithAllRingsFilledOut(ring - 1)

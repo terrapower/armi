@@ -191,8 +191,7 @@ class SystemBlueprint(yamlize.Object):
             self._loadComposites(cs, bp, system, gridDesign.gridContents, gridDesign.orientationBOL)
 
             if isinstance(system, Core):
-                if not system.isFullCore:
-                    self._modifyGeometry(system, gridDesign)
+                self._modifyGeometry(system, gridDesign)
                 summarizeMaterialData(system)
                 system.processLoading(cs)
 
@@ -235,10 +234,11 @@ class SystemBlueprint(yamlize.Object):
         # all cases should have no edge assemblies. They are added ephemerally when needed
         from armi.reactor.converters import geometryConverters
 
-        runLog.header("=========== Applying Geometry Modifications ===========")
-        converter = geometryConverters.EdgeAssemblyChanger()
-        converter.scaleParamsRelatedToSymmetry(container)
-        converter.removeEdgeAssemblies(container)
+        if not container.isFullCore:
+            runLog.header("=========== Applying Geometry Modifications ===========")
+            converter = geometryConverters.EdgeAssemblyChanger()
+            converter.scaleParamsRelatedToSymmetry(container)
+            converter.removeEdgeAssemblies(container)
 
         # now update the spatial grid dimensions based on the populated children
         # (unless specified on input)
