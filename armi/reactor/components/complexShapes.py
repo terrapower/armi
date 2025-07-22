@@ -173,8 +173,6 @@ class FilletedHexagon(basicShapes.Hexagon):
             components=components,
         )
         self._linkAndStoreDimensions(components, op=op, ip=ip, iR=iR, oR=oR, mult=mult, modArea=modArea)
-        assert oR <= op / 2, f"The outer radius of curvature is too large: {oR} > {op / 2}."
-        assert iR <= ip / 2, f"The inner radius of curvature is too large: {iR} > {ip / 2}."
 
     @staticmethod
     def _area(D, r):

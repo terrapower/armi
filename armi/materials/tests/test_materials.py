@@ -545,18 +545,17 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
         U235_wt_frac_default = 0.0071136523
         self.mat.applyInputParams()
         self.assertAlmostEqual(self.mat.massFrac["U235"], U235_wt_frac_default)
-        densityTemp = self.mat.density(Tk=materials.Uranium._densityTableK[0])
+        densityTemp = materials.Uranium._densityTableK[0]
+        density0 = self.mat.density(Tk=materials.Uranium._densityTableK[0])
         expectedDensity = materials.Uranium._densityTable[0]
-        self.assertEqual(densityTemp, expectedDensity)
-
-        originalPseudoDensity = self.mat.pseudoDensity(Tk=densityTemp)
+        self.assertEqual(density0, expectedDensity)
 
         newWtFrac = 1.0
         newTDFrac = 0.5
         self.mat.applyInputParams(U235_wt_frac=newWtFrac, TD_frac=newTDFrac)
         self.assertEqual(self.mat.massFrac["U235"], newWtFrac)
         self.assertEqual(self.mat.density(Tk=densityTemp), expectedDensity * newTDFrac)
-        self.assertEqual(self.mat.pseudoDensity(Tk=densityTemp), originalPseudoDensity * newTDFrac)
+        self.assertAlmostEqual(self.mat.pseudoDensity(Tk=densityTemp), 9.415418593432646)
 
     def test_thermalConductivity(self):
         cur = self.mat.thermalConductivity(Tc=100)
@@ -617,6 +616,15 @@ class Uranium_TestCase(_Material_Test, unittest.TestCase):
                     f"to {upperBound}) for {self.mat.name} {propName}",
                     mock.getStdout(),
                 )
+
+    def test_pseudoDensity(self):
+        cur = self.mat.pseudoDensity(Tc=500)
+        ref = 18.74504534852846
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
+
+        cur = self.mat.pseudoDensity(Tc=1000)
+        ref = 18.1280492780791
+        self.assertAlmostEqual(cur, ref, delta=abs(ref * 0.001))
 
 
 class UraniumOxide_TestCase(_Material_Test, unittest.TestCase):

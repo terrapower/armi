@@ -1,0 +1,26 @@
+# A simple test reactor, not physicially functional
+#
+# * pin-type reactor with hex assemblies
+# * sodium-cooled, fast
+# * full core symmetry
+# * The core grid is corners up
+# * The symmetric core positions have different assembly types
+# * The different assembly types have different amounts of molesHmBOL because they had different TD_frac material modifications
+# * There are 3 rings (necessary for checking problems with symmetry because the assemblies in the 2nd ring don't actually fall along the symmetry line that is checked)
+settings:
+# global
+  availabilityFactor: 0.9
+  buGroups:
+    - 100
+  burnSteps: 2
+  comment: Small, full core test reactor.
+  cycleLength: 400.0
+  loadingFile: smallHexReactor-bp.yaml
+  nCycles: 1
+  nTasks: 1
+  power: 1000000000.0
+  verbosity: warning
+  versions:
+    armi: uncontrolled
+# neutronics
+  genXS: Neutron
