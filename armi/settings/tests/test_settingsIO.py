@@ -194,7 +194,7 @@ class MockEntryPoint(entryPoint.EntryPoint):
     name = "dummy"
 
 
-class SettingArgsTests(unittest.TestCase):
+class CliSettingTests(unittest.TestCase):
     def test_commandLineSetting(self):
         ep = MockEntryPoint()
         cs = ep.cs
