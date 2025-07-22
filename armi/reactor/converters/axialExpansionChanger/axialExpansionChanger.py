@@ -13,6 +13,7 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+from math import pi, sqrt
 import typing
 from numpy import array, where, array_equal
 
@@ -357,22 +358,17 @@ class AxialExpansionChanger:
                 c = self.expansionData.getTargetComponent(b)
                 if self.linked.linkedBlocks[b].lower:
                     if c.zbottom != self.linked.linkedBlocks[b].lower.p.ztop:
-                        fracToMove = (c.ztop - self.linked.linkedBlocks[b].lower.p.ztop) / c.height - 1.0
-                        ## redistribute mass to comp below
                         cBelow = self.linked.linkedComponents[c].lower
-                        nucsBelow = cBelow.getNuclides()
-                        nucs = c.getNuclides()
-                        if not array_equal(nucsBelow, nucs):
-                            raise RuntimeError(f"In order to redistribute mass between components, {c} and {cBelow} must have the same nuclides.")
-                        for nuc in nucs:
-                            i = where(cBelow.p.nuclides == nuc.encode())[0]
-                            if i.size > 0:
-                                ndensToMigrate = c.p.numberDensities[i[0]] * -fracToMove
-                                c.p.numberDensities[i[0]] -= ndensToMigrate
-                                cBelow.p.numberDensities[i[0]] += ndensToMigrate
+                        # call to self.removeMassFromComponent is not needed since the change in block height
+                        # accounts for the change in mass in c
+                        self.addMassToComponent(
+                            fromComp = c,
+                            toComp = cBelow,
+                            percentToMove = abs((c.ztop - self.linked.linkedBlocks[b].lower.p.ztop) / c.height - 1.0),
+                            delta = c.height - (c.ztop - self.linked.linkedBlocks[b].lower.p.ztop),
+                        )
                         # set bounds to line up
                         c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-                        c.changeNDensByFactor(1.0 / (1.0 + fracToMove))
                     else:
                         c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
                 c.height = c.ztop - c.zbottom
@@ -429,67 +425,63 @@ class AxialExpansionChanger:
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
 
-        self.linked.a.clearCache()
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
-    def alignLinkedComponents(self, c: "Component", ib: int, b: "Block"):
-        """Set the bottom elevation of a component and determine its new height."""
-        if ib == 0:
-            c.zbottom = 0.0
-        else:
-            if self.linked.linkedComponents[c].lower is not None:
-                # use linked components below
-                c.zbottom = self.linked.linkedComponents[c].lower.ztop
-            else:
-                # otherwise there aren't any linked components
-                # so just set the bottom of the component to
-                # the top of the block below it
-                c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-        # update comp top based on alignment
-        c.ztop = c.height + c.zbottom
-        c.clearCache()
+    def removeMassFromComponent(self, c: "Component", percent: float):
+        for nuc in c.getNuclides():
+            i = where(c.p.nuclides == nuc.encode())[0]
+            if i.size > 0:
+                c.p.numberDensities[i[0]] *= percent
 
-    def redistributeMass(self, c: "Component", fracToRedistribute: float):
-        """Redistribute mass between axially linked components by updating number densities.
-
+    def addMassToComponent(self, fromComp: "Component", toComp: "Component", percentToMove: float, delta: float):
+        """
         Parameters
         ----------
-        c
-            Component undergoing mass redistribution
-        fracToRedistribute
-            value which is used to increment the number density
-
-        Notes
-        -----
-        - This is similar to Component.getNumberDensity and Component.setNumberDensity.
-          However, the latter does too much in regard to trying to account for thermal
-          expansion so it cannot be used.
-        - The axially linked components MUST have the same nuclides. They can (and usually will)
-          be different concentrations, but they need to be the same nuclide.
-
-        Raises
-        ------
-        RuntimeError if the component and its axially linked component do not have the same nuclides.
-
+        fromComp
+            Component which is going to give mass to toComp
+        toComp
+            Component that is recieving mass from fromComp
+        percentToMove
+            The percent of mass fromComp is giving to toComp
+        delta
+            The length, in cm, of fromComp being given to toComp
         """
-        cAbove = self.linked.linkedComponents[c].upper
-        nucsAbove = cAbove.getNuclides()
-        nucs = c.getNuclides()
-        if not array_equal(nucsAbove, nucs):
-            raise RuntimeError("In order to redistribute mass between components, they must have the same nuclides.")
+        # limitation: fromComp and toComp **must** have the same isotopics.
+        nucsFrom = fromComp.getNuclides()
+        nucsTo = toComp.getNuclides()
+        if not array_equal(nucsFrom, nucsTo):
+            raise RuntimeError(f"In order to redistribute mass from {fromComp} to {toComp}, they must have the same nuclides.")
 
-        # origAbove = densityTools.calculateMassDensity(cAbove._getNdensHelper())
-        # orig = densityTools.calculateMassDensity(c._getNdensHelper())
-        for nuc in nucs:
-            i = where(cAbove.p.nuclides == nuc.encode())[0]
-            if i.size > 0:
-                ndensToMigrate = cAbove.p.numberDensities[i[0]] * fracToRedistribute
-                cAbove.p.numberDensities[i[0]] -= ndensToMigrate
-                c.p.numberDensities[i[0]] += ndensToMigrate
-        # newAbove = densityTools.calculateMassDensity(cAbove._getNdensHelper())
-        # new = densityTools.calculateMassDensity(c._getNdensHelper())
+        ## calculate new number densities for each isotope based on the expected total mass
+        toCompVolume = toComp.getArea() * (toComp.ztop - toComp.parent.p.zbottom)
+        newVolume = fromComp.getArea() * delta + toCompVolume
+
+        ## calculate the mass of each nuclide
+        massByNucFrom = {}
+        massByNucTo = {}
+        for nuc in nucsFrom:
+            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, fromComp.getVolume(), fromComp.getNumberDensity(nuc))
+            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, toComp.getVolume(), toComp.getNumberDensity(nuc))
+
+        ## calculate the ndens from the new mass
+        newNDens: dict[str, float] = {}
+        for nuc in nucsFrom:
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc]*percentToMove + massByNucTo[nuc], newVolume)
+
+        ## calculate an average area for toComp
+        newAveArea = (
+            1.0/toComp.parent.getHeight() * ((toComp.ztop - toComp.parent.p.zbottom)*toComp.getArea() + delta*fromComp.getArea())
+        )
+        # Note: getDimension returns the 'id' at c.temperatureInC so this new OD is at c.temperatureInC
+        newODforAveArea = sqrt(newAveArea * 4.0/(pi*toComp.getDimension('mult')) + toComp.getDimension('id')**2)
+
+        ## Set newNDens on toComp
+        toComp.setNumberDensities(newNDens)
+
+        ## Set newOD on toComp. newODforAveArea is at c.temperatureInC so setDimension must use cold=False
+        toComp.setDimension(key='od', val=newODforAveArea, cold=False)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
