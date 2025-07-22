@@ -14,10 +14,11 @@
 
 """Tests for reactor blueprints."""
 
+import logging
 import os
 import unittest
 
-from armi import settings
+from armi import runLog, settings
 from armi.reactor import blueprints, reactors
 from armi.reactor.blueprints import gridBlueprint, reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
@@ -240,12 +241,14 @@ class TestReactorBlueprints(unittest.TestCase):
     def test_fullCoreAreNotConverted(self):
         """Prove that geometries aren't being converted when reading in a full-core BP."""
         cs = Settings(os.path.join(TEST_ROOT, "smallHexReactor/smallHexReactor.yaml"))
+        runLog.setVerbosity(logging.INFO)
         with mockRunLogs.BufferLog() as log:
             self.assertEqual("", log.getStdout())
             r = loadFromCs(cs)
             # ensure that, for full core, only the correct parts of the geom modification are hit
+            self.assertIn("Applying Geometry Modifications", log.getStdout())
             self.assertIn("Updating spatial grid", log.getStdout())
-            self.assertNotIn("Applying Geometry Modifications", log.getStdout())
+            self.assertNotIn("Applying non-full core", log.getStdout())
 
         a = r.core.getAssemblyWithStringLocation("003-012")
         self.assertIn("fuel assembly", str(a).lower())
