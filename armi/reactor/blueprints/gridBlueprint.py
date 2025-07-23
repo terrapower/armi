@@ -514,6 +514,7 @@ def _filterOutsideDomain(gridBp):
                             gridBp.gridContents[symmetric],
                         )
                     )
+
         del gridBp.gridContents[idx]
 
 
@@ -555,7 +556,7 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     elif isinstance(bp, blueprints.Grids):
         gridDesigns = bp
     else:
-        raise TypeError("Expected Blueprints or Grids, got {}".format(type(bp)))
+        raise TypeError(f"Expected Blueprints or Grids, got {type(bp)}")
 
     for gridDesignType, gridDesign in gridDesigns.items():
         # The core equilibrium path should be put into the grid contents rather than a lattice map until we write a
@@ -572,9 +573,12 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
             aMap = asciimaps.asciiMapFromGeomAndDomain(gridDesign.geom, symmetry.domain)()
-            aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
             try:
-                aMap.gridContentsToAscii()
+                if gridDesign.latticeMap:
+                    aMap.readAscii(gridDesign.latticeMap)
+                else:
+                    aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
+                    aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
                     "The `lattice map` for the current assembly arrangement cannot be written. Defaulting to using the "

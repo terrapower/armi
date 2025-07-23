@@ -15,30 +15,26 @@
 """
 ASCII maps are little grids of letters/numbers that represent some kind of a lattice.
 
-These are commonly used in nuclear analysis to represent core maps, pin layouts, etc.
-in input files. This module reads various text and interprets them into meaningful
+These are commonly used in nuclear analysis to represent core maps, pin layouts, etc. in input files. This module reads
+various text and interprets them into meaningful
 data structures.
 
-We make classes for different geometries to share code. This will eventually be
-expanded for various symmetries that are applicable to cores, assemblies, etc.
+We make classes for different geometries to share code. This will eventually be expanded for various symmetries that are
+applicable to cores, assemblies, etc.
 
-This is as attempted reimplementation of AsciiMaps aiming for simplicity,
-though inherently this work is complex.
+This is as attempted reimplementation of AsciiMaps aiming for simplicity, though inherently this work is complex.
 
 Some vocabulary used here:
 
 column, line
-    column and line numbers in the actual ascii text representation. What
-    you would see in a text editor.
+    column and line numbers in the actual ascii text representation. What you would see in a text editor.
 
 offset
-    The number of spaces needed at the beginning a line to properly orient
-    the ascii representation.
+    The number of spaces needed at the beginning a line to properly orient the ascii representation.
 
 i, j
-    Indices in the grid itself. For Cartesian, j is like the line number,
-    but in other geometries (like hex), it is a totally different
-    coordinate system.
+    Indices in the grid itself. For Cartesian, j is like the line number, but in other geometries (like hex), it is a
+    totally different coordinate system.
 
 See Also
 --------
@@ -62,8 +58,7 @@ class AsciiMap:
     """
     Base class for maps.
 
-    These should be able to read and write ASCII maps loaded either from text
-    or programmatically with i,j / specifiers.
+    These should be able to read and write ASCII maps loaded either from text or programmatically with i,j / specifiers.
     """
 
     def __init__(self):
@@ -620,7 +615,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 def asciiMapFromGeomAndDomain(
     geomType: Union[str, geometry.GeomType], domain: Union[str, geometry.DomainType]
 ) -> "AsciiMap":
-    """Get a ascii map class from a geometry and domain type."""
+    """Get a ASCII map class from a geometry and domain type."""
     from armi.reactor import geometry
 
     if (
@@ -629,7 +624,7 @@ def asciiMapFromGeomAndDomain(
     ):
         return AsciiMapHexFullTipsUp
 
-    MAP_FROM_GEOM = {
+    mapFromGeom = {
         (
             geometry.GeomType.HEX,
             geometry.DomainType.THIRD_CORE,
@@ -643,7 +638,7 @@ def asciiMapFromGeomAndDomain(
         ): AsciiMapCartesian,
     }
 
-    return MAP_FROM_GEOM[
+    return mapFromGeom[
         (
             geometry.GeomType.fromAny(geomType),
             geometry.DomainType.fromAny(domain),
