@@ -574,7 +574,7 @@ class HexReactorTests(ReactorTests):
     def test_genAssembliesAddedThisCycle(self):
         allAssems = self.r.core.getAssemblies()
         self.assertTrue(all(a1 is a2 for a1, a2 in zip(allAssems, self.r.core.genAssembliesAddedThisCycle())))
-        a = self.r.core.getAssemblies()[0]
+        a = self.r.core.getFirstAssembly()
         newA = copy.deepcopy(a)
         newA.name = None
         self.r.p.cycle = 1

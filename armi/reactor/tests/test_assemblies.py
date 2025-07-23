@@ -1124,7 +1124,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         igniterPlenumMass = b.getMass() - coolMass
 
         # expand the core to the new reference mesh
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
         # 2. check igniter mass after expansion
@@ -1160,7 +1160,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(igniterPlenumMass, igniterPlenumMassAfterExpand * 75 / 67.0, 7)
 
         # Shrink the core back to the original mesh size to see if mass is conserved
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
         # 3. check igniter mass after shrink to original
@@ -1230,7 +1230,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         shieldPlenumMass = b.getMass() - coolMass
 
         # expand the core to the new reference mesh
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(refMesh, conserveMassFlag="auto")
 
         # 2. examine mass change in radial shield after expansion
@@ -1263,7 +1263,7 @@ class AssemblyInReactor_TestCase(unittest.TestCase):
         self.assertAlmostEqual(shieldPlenumMass, shieldPlenumMassAfterExpand * 75.0 / 67.0, 7)
 
         # Shrink the core back to the original mesh size to see if mass is conserved
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             a.setBlockMesh(originalMesh, conserveMassFlag="auto")
 
         # 3. examine mass change in radial shield after shrink to original
