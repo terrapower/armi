@@ -380,18 +380,21 @@ class AxialExpansionChanger:
                     if cAbove:
                         delta = b.getHeight() - c.height
                         if abs(delta) > 1e-12 and delta > 0.0:
-                            prior = c.getMass()
                             ## only move mass from the above comp to the current comp. mass removal from the
                             #  above comp happens when the lower bound of the above block shifts up
                             self.addMassToComponent(
                                 fromComp=cAbove,
                                 toComp=c,
-                                delta=delta,
+                                delta=abs(delta),
                             )
-                            post = c.getMass()
-                            if c.getType() == "clad":
-                                print(f"\tc      = {prior} --> {post}")
                         elif abs(delta) > 1e-12 and delta < 0.0:
+                            ## only move mass from the comp to the comp above. mass removal from the
+                            #  current comp happens when the upper bound of the current block shifts down
+                            self.addMassToComponent(
+                                fromComp=c,
+                                toComp=cAbove,
+                                delta=abs(delta),
+                            )
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
                     c.height = b.p.height
