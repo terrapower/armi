@@ -226,7 +226,7 @@ class AsciiMap:
             noDataLinesYet = False
             newLine = self._removeTrailingPlaceholders(line)
             if newLine:
-                if i == lastLine and line[-1] == "-":
+                if i == lastLine and line[-1] == "-" and newLine[-1] != "-":
                     newLine.append(PLACEHOLDER)
                 newLines.append(newLine)
             else:
