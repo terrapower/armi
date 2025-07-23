@@ -354,24 +354,11 @@ class AxialExpansionChanger:
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
+            print(b)
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 c = self.expansionData.getTargetComponent(b)
-                if self.linked.linkedBlocks[b].lower:
-                    if c.zbottom != self.linked.linkedBlocks[b].lower.p.ztop:
-                        cBelow = self.linked.linkedComponents[c].lower
-                        # call to self.removeMassFromComponent is not needed since the change in block height
-                        # accounts for the change in mass in c
-                        self.addMassToComponent(
-                            fromComp = c,
-                            toComp = cBelow,
-                            percentToMove = abs((c.ztop - self.linked.linkedBlocks[b].lower.p.ztop) / c.height - 1.0),
-                            delta = c.height - (c.ztop - self.linked.linkedBlocks[b].lower.p.ztop),
-                        )
-                        # set bounds to line up
-                        c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-                    else:
-                        c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
+                c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
                 c.height = c.ztop - c.zbottom
                 # redefine block bounds based on target component
                 b.p.zbottom = c.zbottom
@@ -385,41 +372,27 @@ class AxialExpansionChanger:
                     cAbove = self.linked.linkedComponents[c].upper
                     cAbove.zbottom = c.ztop
                     cAbove.ztop = cAbove.height + cAbove.zbottom
-                # make non-target component mass independent of block height
-                for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
-                    c.changeNDensByFactor(c.height / b.p.height)
 
-        # deal with the non-target comps
-        for ib, b in enumerate(self.linked.a):
-            isDummyBlock = ib == (numOfBlocks - 1)
-            print(b)
-            if not isDummyBlock:
+                # deal with non-target components
                 for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
+                    # redistribute mass
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
-                        if self.expansionData.isTargetComponent(cAbove):
-                            # discrepancy != 0 when cAbove is a target component and c is not.
-                            # adding it recovers the original expanded height of c
-                            discrepancy = (cAbove.zbottom - c.ztop)
-                        else:
-                            discrepancy = 0.0
-                        # the amount of the current block sticking into component
-                        percentToMove = (cAbove.ztop - b.p.ztop) / (cAbove.height + discrepancy) - 1.0
+                        percentToMove = ((cAbove.ztop - b.p.ztop) / cAbove.height) - 1.0
                         if percentToMove:
-                            prior = [c.getMass(), cAbove.getMass()]
-                            ## this has to happen before the mass removal, OR newTotalToCompMass has to change to account
-                            #  for the removal from cAbove that's already happened
+                            c.changeNDensByFactor(c.height / b.p.height)
+                            prior = c.getMass()
+                            ## only move mass from the above comp down to the current comp. mass removal from the
+                            #  above comp happens elsewhere
                             self.addMassToComponent(
                                 fromComp = cAbove,
                                 toComp = c,
-                                percentToMove = abs(percentToMove),
+                                percentFromTo = abs(percentToMove),
                                 delta = b.getHeight() - c.height,
                             )
-                            self.removeMassFromComponent(cAbove, percentToMove)
-                            post = [c.getMass(), cAbove.getMass()]
+                            post = c.getMass()
                             if c.getType() == 'clad':
-                                print(f"\tc      = {prior[0]} --> {post[0]}")
-                                print(f"\tcAbove = {prior[1]} --> {post[1]}")
+                                print(f"\tc      = {prior} --> {post}")
                         elif percentToMove > 0.0:
                             raise RuntimeError("not ready for compression")
                     c.zbottom = b.p.zbottom
@@ -444,7 +417,7 @@ class AxialExpansionChanger:
             if i.size > 0:
                 c.p.numberDensities[i[0]] *= (1.0 + percent)
 
-    def addMassToComponent(self, fromComp: "Component", toComp: "Component", percentToMove: float, delta: float):
+    def addMassToComponent(self, fromComp: "Component", toComp: "Component", percentFromTo: float, delta: float):
         """
         Parameters
         ----------
@@ -464,7 +437,7 @@ class AxialExpansionChanger:
             raise RuntimeError(f"In order to redistribute mass from {fromComp} to {toComp}, they must have the same nuclides.")
 
         ## calculate new number densities for each isotope based on the expected total mass
-        toCompVolume = toComp.getArea() * (toComp.ztop - toComp.parent.p.zbottom)
+        toCompVolume = toComp.getArea() * toComp.height
         newVolume = fromComp.getArea() * delta + toCompVolume
 
         ## calculate the mass of each nuclide
@@ -477,7 +450,7 @@ class AxialExpansionChanger:
         ## calculate the ndens from the new mass
         newNDens: dict[str, float] = {}
         for nuc in nucsFrom:
-            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc]*percentToMove + massByNucTo[nuc], newVolume)
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc]*percentFromTo + massByNucTo[nuc], newVolume)
 
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
