@@ -602,9 +602,10 @@ class Core(composites.Composite):
     def getNumHexRings(self):
         """Return the number of hex rings in the core. Based on location so indexing starts at 1."""
         maxRing = 0
-        for a in self.getAssemblies():
+        for a in self:
             ring, _pos = self.spatialGrid.getRingPos(a.spatialLocator)
             maxRing = max(maxRing, ring)
+
         return maxRing
 
     def getNumAssembliesWithAllRingsFilledOut(self, nRings):
@@ -750,7 +751,6 @@ class Core(composites.Composite):
         Notes
         -----
         Assumes that odd rings do not have an edge assembly in third core geometry.
-        These should be removed in: self._modifyGeometryAfterLoad during importGeom
         """
         numAssemsUpToOuterRing = self.getNumAssembliesWithAllRingsFilledOut(ring)
         numAssemsUpToInnerRing = self.getNumAssembliesWithAllRingsFilledOut(ring - 1)

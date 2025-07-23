@@ -62,7 +62,7 @@ class TestGeometryConverters(unittest.TestCase):
         converter.numFuelAssems = 60
         converter.convert(self.r)
         numFuelAssems = 0
-        for assem in self.r.core.getAssemblies():
+        for assem in self.r.core:
             if assem.hasFlags(Flags.FUEL):
                 numFuelAssems += 1
         self.assertEqual(numFuelAssems, 60)
@@ -91,7 +91,7 @@ class TestGeometryConverters(unittest.TestCase):
         converter.numFuelAssems = 20
         converter.convert(self.r)
         numFuelAssems = 0
-        for assem in self.r.core.getAssemblies():
+        for assem in self.r.core:
             if assem.hasFlags(Flags.FUEL):
                 numFuelAssems += 1
         self.assertEqual(numFuelAssems, 20)
@@ -265,7 +265,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         """
 
         def getAssemByRingPos(ringPos: tuple):
-            for a in self.r.core.getAssemblies():
+            for a in self.r.core:
                 if a.spatialLocator.getRingPos() == ringPos:
                     return a
             return None
@@ -338,7 +338,7 @@ class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
 
         def getLTAAssems():
             aList = []
-            for a in self.r.core.getAssemblies():
+            for a in self.r.core:
                 if a.getType == "lta fuel":
                     aList.append(a)
             return aList
