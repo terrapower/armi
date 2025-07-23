@@ -378,23 +378,21 @@ class AxialExpansionChanger:
                     # redistribute mass
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
-                        percentToMove = ((cAbove.ztop - b.p.ztop) / cAbove.height) - 1.0
-                        if percentToMove:
+                        delta = b.getHeight() - c.height
+                        if abs(delta) > 1e-12 and delta > 0.0:
                             c.changeNDensByFactor(c.height / b.p.height)
                             prior = c.getMass()
-                            ## only move mass from the above comp down to the current comp. mass removal from the
-                            #  above comp happens elsewhere
+                            ## only move mass from the above comp to the current comp. mass removal from the
+                            #  above comp happens when the lower bound of the above block shifts up
                             self.addMassToComponent(
                                 fromComp=cAbove,
                                 toComp=c,
-                                percentFromTo=abs(percentToMove),
-                                delta=b.getHeight() - c.height,
+                                delta=delta,
                             )
                             post = c.getMass()
                             if c.getType() == "clad":
                                 print(f"\tc      = {prior} --> {post}")
-                        elif percentToMove > 0.0:
-                            raise RuntimeError("not ready for compression")
+                        elif abs(delta) > 1e-12 and delta < 0.0:
                     c.zbottom = b.p.zbottom
                     c.ztop = b.p.ztop
                     c.height = b.p.height
@@ -417,7 +415,7 @@ class AxialExpansionChanger:
             if i.size > 0:
                 c.p.numberDensities[i[0]] *= 1.0 + percent
 
-    def addMassToComponent(self, fromComp: "Component", toComp: "Component", percentFromTo: float, delta: float):
+    def addMassToComponent(self, fromComp: "Component", toComp: "Component", delta: float):
         """
         Parameters
         ----------
@@ -425,8 +423,6 @@ class AxialExpansionChanger:
             Component which is going to give mass to toComp
         toComp
             Component that is recieving mass from fromComp
-        percentToMove
-            The percent of mass fromComp is giving to toComp
         delta
             The length, in cm, of fromComp being given to toComp
         """
@@ -440,20 +436,21 @@ class AxialExpansionChanger:
 
         ## calculate new number densities for each isotope based on the expected total mass
         toCompVolume = toComp.getArea() * toComp.height
-        newVolume = fromComp.getArea() * delta + toCompVolume
+        fromCompVolume = fromComp.getArea() * delta
+        newVolume = fromCompVolume + toCompVolume
 
         ## calculate the mass of each nuclide
         massByNucFrom = {}
         massByNucTo = {}
         for nuc in nucsFrom:
-            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, fromComp.getVolume(), fromComp.getNumberDensity(nuc))
+            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
             massByNucTo[nuc] = densityTools.getMassInGrams(nuc, toComp.getVolume(), toComp.getNumberDensity(nuc))
 
         ## calculate the ndens from the new mass
         newNDens: dict[str, float] = {}
         for nuc in nucsFrom:
             newNDens[nuc] = densityTools.calculateNumberDensity(
-                nuc, massByNucFrom[nuc] * percentFromTo + massByNucTo[nuc], newVolume
+                nuc, massByNucFrom[nuc] + massByNucTo[nuc], newVolume
             )
 
         ## Set newNDens on toComp
