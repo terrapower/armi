@@ -380,7 +380,6 @@ class AxialExpansionChanger:
                     if cAbove:
                         delta = b.getHeight() - c.height
                         if abs(delta) > 1e-12 and delta > 0.0:
-                            c.changeNDensByFactor(c.height / b.p.height)
                             prior = c.getMass()
                             ## only move mass from the above comp to the current comp. mass removal from the
                             #  above comp happens when the lower bound of the above block shifts up
@@ -444,7 +443,7 @@ class AxialExpansionChanger:
         massByNucTo = {}
         for nuc in nucsFrom:
             massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
-            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, toComp.getVolume(), toComp.getNumberDensity(nuc))
+            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
 
         ## calculate the ndens from the new mass
         newNDens: dict[str, float] = {}
