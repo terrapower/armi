@@ -16,8 +16,7 @@
 ASCII maps are little grids of letters/numbers that represent some kind of a lattice.
 
 These are commonly used in nuclear analysis to represent core maps, pin layouts, etc. in input files. This module reads
-various text and interprets them into meaningful
-data structures.
+various text and interprets them into meaningful data structures.
 
 We make classes for different geometries to share code. This will eventually be expanded for various symmetries that are
 applicable to cores, assemblies, etc.
@@ -196,8 +195,8 @@ class AsciiMap:
         """
         Convert a prepared asciiLabelByIndices to ascii lines and offsets.
 
-        This is used when you have i,j/specifier data and want to create a ascii map from it
-        as opposed to reading a ascii map from a stream.
+        This is used when you have i,j/specifier data and want to create a ascii map from it as opposed to reading a
+        ascii map from a stream.
 
         As long as the map knows how to convert lineNum and colNums into ij indices, this is universal. In some
         implementations, this operation is in a different method for efficiency.
@@ -227,14 +226,13 @@ class AsciiMap:
                     newLine.append(PLACEHOLDER)
                 newLines.append(newLine)
             else:
-                # If entire newline is wiped out, it's a full row of placeholders! But oops this actually still won't
-                # work. Needs more work when doing pure rows from data is made programmatically.
-                raise ValueError("Cannot write asciimaps with blank rows from pure data yet.")
+                # If entire newline is wiped out, it's a full row of placeholders. That seems wrong.
+                raise ValueError("Cannot write asciimaps with blank rows from pure data.")
 
         if not newLines:
             raise ValueError("No data found")
-        self.asciiLines = newLines
 
+        self.asciiLines = newLines
         self._updateSlotSizeFromData()
         self._makeOffsets()
 
@@ -247,6 +245,7 @@ class AsciiMap:
                 continue
             noDataYet = False
             newLine.append(col)
+
         newLine.reverse()
         return newLine
 

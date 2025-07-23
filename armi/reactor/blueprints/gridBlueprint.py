@@ -575,8 +575,10 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             aMap = asciimaps.asciiMapFromGeomAndDomain(gridDesign.geom, symmetry.domain)()
             try:
                 if gridDesign.latticeMap:
+                    # Try to use the lattice map first, it was the original source of truth.
                     aMap.readAscii(gridDesign.latticeMap)
                 else:
+                    # If there is no original lattice map, use the current grid of data.
                     aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
                     aMap.gridContentsToAscii()
             except Exception as e:
