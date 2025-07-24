@@ -89,6 +89,8 @@ class BlockConverter:
         runLog.debug("removing {}".format(solute))
         # skip recomputation of area fractions because the blocks still have 0 height at this stage and derived
         # shape volume computations will fail
+        soluteArea = solute.getArea()
+        solute.mergeNuclidesInto(solvent)
         newBlock.remove(solute, recomputeAreaFractions=False)
         self._sourceBlock = newBlock
 
@@ -100,22 +102,39 @@ class BlockConverter:
                 solute.getDimension("id", cold=False),
                 solute.getDimension("od", cold=False),
             )
-            if solvent.getDimension("id", cold=False) > soluteID:
-                runLog.debug("Decreasing ID of {} to accommodate {}.".format(solvent, solute))
-                solvent.setDimension("id", soluteID, cold=False)
-            if solvent.getDimension("od", cold=False) < soluteOD:
-                runLog.debug("Increasing OD of {} to accommodate {}.".format(solvent, solute))
-                solvent.setDimension("od", soluteOD, cold=False)
-            if solvent.getDimension("id", cold=False) < minID:
-                runLog.debug("Updating the ID of {} the the specified min ID: {}.".format(solvent, minID))
-                solvent.setDimension("id", minID, cold=False)
+            if soluteArea >= 0.0:
+                if solvent.getDimension("id", cold=False) > soluteID:
+                    runLog.debug(f"Decreasing ID of {solvent} to accommodate {solute}.")
+                    solvent.setDimension("id", soluteID, cold=False)
+                if solvent.getDimension("od", cold=False) < soluteOD:
+                    runLog.debug(f"Increasing OD of {solvent} to accommodate {solute}.")
+                    solvent.setDimension("od", soluteOD, cold=False)
+                if solvent.getDimension("id", cold=False) < minID:
+                    runLog.debug(f"Updating the ID of {solvent} the the specified min ID: {minID}.")
+                    solvent.setDimension("id", minID, cold=False)
+            else:
+                # can only merge a negative-area component if one of the dimensions is linked
+                matchedDimension = False
+                if solvent.getDimension("id", cold=False) == soluteOD:
+                    runLog.debug(f"Increasing ID of {solvent} to accommodate {solute}.")
+                    solvent.setDimension("id", soluteID, cold=False)
+                    matchedDimension = True
+                if solvent.getDimension("od", cold=False) == soluteID:
+                    runLog.debug(f"Decreasing OD of {solvent} to accommodate {solute}.")
+                    solvent.setDimension("od", soluteOD, cold=False)
+                    matchedDimension = True
+                if not matchedDimension:
+                    errorMsg = (
+                        "Cannot merge negative-area component {solute} into {solvent} without the two being linked."
+                    )
+                    runLog.error(errorMsg)
+                    raise ValueError(errorMsg)
 
             if soluteLinks:
                 self.restablishLinks(solute, solvent, soluteLinks)
             self._verifyExpansion(solute, solvent)
 
         solvent.changeNDensByFactor(oldArea / solvent.getArea())
-        solute.mergeNuclidesInto(solvent)
 
     def _checkInputs(self, soluteName, solventName, solute, solvent):
         if solute is None or solvent is None:
@@ -132,9 +151,13 @@ class BlockConverter:
                 "Components are not of compatible shape to be merged solute: {}, solvent: {}".format(solute, solvent)
             )
         if solute.getArea() < 0:
-            raise ValueError(
-                "Cannot merge solute with negative area into a solvent. {} area: {}".format(solute, solute.getArea())
-            )
+            # allow negative-area gap
+            if not solute.hasFlags(Flags.GAP):
+                raise ValueError(
+                    "Cannot merge solute with negative area into a solvent. {} area: {}".format(
+                        solute, solute.getArea()
+                    )
+                )
         if solvent.getArea() <= 0:
             raise ValueError(
                 "Cannot merge into a solvent with negative or 0 area. {} area: {}".format(solvent, solvent.getArea())
@@ -462,6 +485,22 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
     and ``driverFuelBlock`` must be instances of HexBlocks.
     """
 
+    PIN_COMPONENT_FLAGS = (
+        Flags.FUEL,
+        Flags.ANNULAR | Flags.VOID,
+        Flags.GAP,
+        Flags.BOND,
+        Flags.LINER,
+        Flags.CLAD,
+        Flags.WIRE,
+        Flags.CONTROL,
+        Flags.REFLECTOR,
+        Flags.SHIELD,
+        Flags.SLUG,
+        Flags.PIN,
+        Flags.POISON,
+    )
+
     def __init__(
         self,
         sourceBlock,
@@ -578,7 +617,7 @@ class HexComponentsToCylConverter(BlockAvgToCylConverter):
             if c.getArea() < 0.0:
                 continue
 
-            if self._sourceBlock.getNumComponents(c.p.flags) == self._sourceBlock.getNumPins():
+            if any(c.hasFlags(f) for f in self.PIN_COMPONENT_FLAGS):
                 pinComponents.append(c)
             elif c.name != "coolant":  #  coolant is addressed in self.interRingComponent
                 nonPins.append(c)
