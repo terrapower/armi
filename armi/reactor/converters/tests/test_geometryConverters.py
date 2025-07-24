@@ -43,7 +43,7 @@ class TestGeometryConverters(unittest.TestCase):
         converter.ringsToAdd = 1 * ["radial shield"]
         converter.convert(self.r)
 
-        numAssems = len(self.r.core.getAssemblies())
+        numAssems = len(self.r.core)
         self.assertEqual(numAssems, 13)  # should end up with 6 reflector assemblies per 1/3rd Core
         locator = self.r.core.spatialGrid.getLocatorFromRingAndPos(4, 1)
         shieldtype = self.r.core.childrenByLocator[locator].getType()
@@ -52,7 +52,7 @@ class TestGeometryConverters(unittest.TestCase):
         # one more test with an uneven number of rings
         converter.numFuelAssems = 8
         converter.convert(self.r)
-        numAssems = len(self.r.core.getAssemblies())
+        numAssems = len(self.r.core)
         self.assertEqual(numAssems, 19)  # should wind up with 11 reflector assemblies per 1/3rd core
 
     def test_setNumberOfFuelAssems(self):
@@ -270,13 +270,13 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
                     return a
             return None
 
-        numAssemsOrig = len(self.r.core.getAssemblies())
+        numAssemsOrig = len(self.r.core)
         # assert that there is no assembly in the (3, 4) (ring, position).
         self.assertIsNone(getAssemByRingPos((3, 4)))
         # add the assembly
         converter = geometryConverters.EdgeAssemblyChanger()
         converter.addEdgeAssemblies(self.r.core)
-        numAssemsWithEdgeAssem = len(self.r.core.getAssemblies())
+        numAssemsWithEdgeAssem = len(self.r.core)
         # assert that there is an assembly in the (3, 4) (ring, position).
         self.assertIsNotNone(getAssemByRingPos((3, 4)))
         self.assertTrue(numAssemsWithEdgeAssem > numAssemsOrig)
@@ -285,7 +285,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         with mockRunLogs.BufferLog() as mock:
             converter.addEdgeAssemblies(self.r.core)
             self.assertIn("Skipping addition of edge assemblies", mock.getStdout())
-            self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core.getAssemblies()))
+            self.assertTrue(numAssemsWithEdgeAssem, len(self.r.core))
 
         # must be added after geom transform
         for b in self.o.r.core.iterBlocks():
@@ -297,7 +297,7 @@ class TestEdgeAssemblyChanger(unittest.TestCase):
         # remove the assembly that was added
         converter.removeEdgeAssemblies(self.r.core)
         self.assertIsNone(getAssemByRingPos((3, 4)))
-        self.assertEqual(numAssemsOrig, len(self.r.core.getAssemblies()))
+        self.assertEqual(numAssemsOrig, len(self.r.core))
 
 
 class TestThirdCoreHexToFullCoreChanger(unittest.TestCase):
