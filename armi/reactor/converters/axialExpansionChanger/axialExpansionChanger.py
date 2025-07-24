@@ -344,13 +344,15 @@ class AxialExpansionChanger:
         )
         # expand all of the components
         for ib, b in enumerate(self.linked.a):
-            for c in iterSolidComponents(b):
-                growFrac = self.expansionData.getExpansionFactor(c)
-                # component ndens and component heights are scaled to their respective growth factor
-                c.changeNDensByFactor(1.0 / growFrac)
-                c.zbottom = b.p.zbottom
-                c.height = growFrac * b.getHeight()
-                c.ztop = c.zbottom + c.height
+            isDummyBlock = ib == (numOfBlocks - 1)
+            if not isDummyBlock:
+                for c in iterSolidComponents(b):
+                    growFrac = self.expansionData.getExpansionFactor(c)
+                    # component ndens and component heights are scaled to their respective growth factor
+                    c.changeNDensByFactor(1.0 / growFrac)
+                    c.zbottom = b.p.zbottom
+                    c.height = growFrac * b.getHeight()
+                    c.ztop = c.zbottom + c.height
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
