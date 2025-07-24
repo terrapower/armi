@@ -395,12 +395,9 @@ class AxialExpansionChanger:
                                 toComp=cAbove,
                                 delta=abs(delta),
                             )
-                    c.zbottom = b.p.zbottom
-                    c.ztop = b.p.ztop
-                    c.height = b.p.height
-                    if cAbove and not self.expansionData.isTargetComponent(cAbove):
+                    if cAbove:
                         cAbove.zbottom = c.ztop
-                        cAbove.height = cAbove.ztop - cAbove.zbottom
+                        cAbove.ztop = cAbove.height + cAbove.zbottom
 
             _checkBlockHeight(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
@@ -457,27 +454,6 @@ class AxialExpansionChanger:
 
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
-
-        ## calculate an average area for toComp
-        newAveArea = (
-            1.0
-            / toComp.parent.getHeight()
-            * ((toComp.ztop - toComp.parent.p.zbottom) * toComp.getArea() + delta * fromComp.getArea())
-        )
-        if isinstance(toComp, Circle):
-            # Note: getDimension returns the 'id' at c.temperatureInC so this new OD is at c.temperatureInC
-            newODforAveArea = sqrt(
-                newAveArea * 4.0 / (pi * toComp.getDimension("mult")) + toComp.getDimension("id") ** 2
-            )
-            ## Set newODforAveArea on toComp. newODforAveArea is at c.temperatureInC so setDimension must use cold=False
-            toComp.setDimension(key="od", val=newODforAveArea, cold=False)
-        elif isinstance(toComp, Hexagon):
-            # Note: getDimension returns the 'ip' at c.temperatureInC so this new OP is at c.temperatureInC
-            newOPforAveArea = sqrt(
-                newAveArea / toComp.getDimension("mult") * 2.0 / sqrt(3.0) + toComp.getDimension("ip") ** 2
-            )
-            ## Set newOPforAveArea on toComp. newOPforAveArea is at c.temperatureInC so setDimension must use cold=False
-            toComp.setDimension(key="op", val=newOPforAveArea, cold=False)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
