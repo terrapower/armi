@@ -285,7 +285,7 @@ blocks:
             <<: *basic_fuel
             material: UraniumOxide
             isotopics: bad uranium isotopic mass fractions
-    
+
     no density uo2: &block_5
         fuel:
             <<: *basic_fuel
@@ -302,7 +302,7 @@ assemblies:
         xs types: [A, A, A]
         material modifications:
             TD_frac: ["", "", ""]
-    
+
     fuel b: &assembly_b
         specifier: IC
         blocks: [*block_0, *block_3, *block_2]
@@ -540,6 +540,17 @@ assemblies:
         """Make sure nuclides specified as In-Problem but not actually in any material are only natural isotopics."""
         self.assertIn("AL27", self.bp.allNuclidesInProblem)
         self.assertNotIn("AL26", self.bp.allNuclidesInProblem)
+
+    def test_getDefaultNuclideFlags(self):
+        # This is a bit of a silly test. We are checking what is essentially a hard coded dictionary
+        nucDict = isotopicOptions.getDefaultNuclideFlags()
+        entry = {"burn": True, "xs": True, "expandTo": None}
+        self.assertEqual(nucDict["DUMP1"], entry)
+        self.assertEqual(nucDict["CM244"], entry)
+        self.assertEqual(nucDict["LFP38"], entry)
+        entry = {"burn": False, "xs": True, "expandTo": None}
+        self.assertEqual(nucDict["B10"], entry)
+        self.assertEqual(nucDict["NI"], entry)
 
 
 class TestCustomIsotopics_ErrorConditions(unittest.TestCase):
