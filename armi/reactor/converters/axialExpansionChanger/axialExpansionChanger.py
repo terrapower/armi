@@ -399,6 +399,9 @@ class AxialExpansionChanger:
                     if cAbove:
                         cAbove.zbottom = c.ztop
                         cAbove.ztop = cAbove.height + cAbove.zbottom
+            else:
+                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
+                b.p.height = b.p.ztop - b.p.zbottom
 
             _checkBlockHeight(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
