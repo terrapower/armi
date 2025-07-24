@@ -159,8 +159,8 @@ class Temperature:
             for i in range(1, self.tempSteps):
                 self.tempField[i, :] = tmp[i]
 
-class TestMultiPinConservation(AxialExpansionTestBase):
 
+class TestMultiPinConservation(AxialExpansionTestBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -196,12 +196,12 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         return blockHeights, compMassByBlock, totalCMassByFlags
 
     def test_expandAndContractThermal(self):
-        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
                 if c.hasFlags(Flags.TEST):
-                    newTemp = c.temperatureInC + 150.0*i
+                    newTemp = c.temperatureInC + 150.0 * i
                 else:
-                    newTemp = c.temperatureInC + 50.0*i
+                    newTemp = c.temperatureInC + 50.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
@@ -213,26 +213,24 @@ class TestMultiPinConservation(AxialExpansionTestBase):
                 # since test_expandAndContractPrescribed can be checked to 10 places for the test fuel, setting this
                 # to be a larger allowable difference is getting chalked up to precision limitations with thermal exp.
                 self.assertLess(
-                    abs(newMass - origMass)/origMass * 100.0,
-                    0.04,
-                    msg=f"{cFlags[i]} is unacceptably different!"
+                    abs(newMass - origMass) / origMass * 100.0, 0.04, msg=f"{cFlags[i]} is unacceptably different!"
                 )
             else:
                 self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
 
     def test_expandThermal(self):
-        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
-                newTemp = c.temperatureInC + 100.0*i
+                newTemp = c.temperatureInC + 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
 
     def test_contractThermal(self):
-        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
-                newTemp = c.temperatureInC - 100.0*i
+                newTemp = c.temperatureInC - 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
@@ -276,7 +274,7 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
         cFlags = list(newTotalCMassByFlag.keys())
         for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
-                self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
+            self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
 
         ### THIS IS SUPPOSED TO HAVE CHANGES YOU DINGUS
         # blocks = list(self.origBHeight.keys())

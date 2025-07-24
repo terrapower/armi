@@ -14,14 +14,12 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 import typing
-from math import pi, sqrt
 
-from numpy import array, array_equal, where
+from numpy import array, array_equal
 
 from armi import runLog
 from armi.materials.material import Fluid
 from armi.reactor.assemblies import Assembly
-from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
 )
@@ -386,7 +384,7 @@ class AxialExpansionChanger:
                             self.addMassToComponent(
                                 fromComp=cAbove,
                                 toComp=c,
-                                delta=abs(delta),
+                                delta=delta,
                             )
                         elif abs(delta) > 1e-12 and delta < 0.0:
                             ## only move mass from the comp to the comp above. mass removal from the
@@ -394,7 +392,7 @@ class AxialExpansionChanger:
                             self.addMassToComponent(
                                 fromComp=c,
                                 toComp=cAbove,
-                                delta=abs(delta),
+                                delta=delta,
                             )
                     if cAbove:
                         cAbove.zbottom = c.ztop
@@ -427,10 +425,19 @@ class AxialExpansionChanger:
         nucsFrom = fromComp.getNuclides()
         nucsTo = toComp.getNuclides()
         if not array_equal(nucsFrom, nucsTo):
-            raise RuntimeError(
-                f"In order to redistribute mass from {fromComp} to {toComp}, they must have the same nuclides."
+            runLog.warning(
+                f"Cannot redistribute mass from {fromComp} to {toComp} as they do not have the same nuclides.\n"
+                f"Instead, {toComp} will have it's mass changed based on the difference between its ztop and the top"
+                "of its block."
             )
+            if delta > 0:
+                # expansion, add mass to toComp
+                return self._noRedistribution(toComp, delta)
+            else:
+                # contraction, add mass to fromComp
+                return self._noRedistribution(fromComp, delta)
 
+        delta = abs(delta)
         ## calculate new number densities for each isotope based on the expected total mass
         toCompVolume = toComp.getArea() * toComp.height
         fromCompVolume = fromComp.getArea() * delta
@@ -446,12 +453,33 @@ class AxialExpansionChanger:
         ## calculate the ndens from the new mass
         newNDens: dict[str, float] = {}
         for nuc in nucsFrom:
-            newNDens[nuc] = densityTools.calculateNumberDensity(
-                nuc, massByNucFrom[nuc] + massByNucTo[nuc], newVolume
-            )
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc] + massByNucTo[nuc], newVolume)
 
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
+
+    def _noRedistribution(self, c: "Component", delta: float):
+        """Calculate new number densities for each isotope based on the expected total mass.
+
+        Parameters
+        ----------
+        c
+            Component which is going to have mass increased by a length of delta
+        delta
+            The length, in cm, which corresponds to how much mass will increase by
+        """
+        # get new volume
+        newVolume = c.getArea() * (c.height + delta)
+        # get mass fractions per nuclide for the new volume
+        massByNucTo = {}
+        for nuc in c.getNuclides():
+            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, newVolume, c.getNumberDensity(nuc))
+        # calculate the number densities that generate the new mass per nuclide
+        newNDens: dict[str, float] = {}
+        for nuc in c.getNuclides():
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucTo[nuc], newVolume)
+        ## Set newNDens on toComp
+        c.setNumberDensities(newNDens)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
