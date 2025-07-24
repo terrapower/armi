@@ -739,8 +739,8 @@ class TestManageCoreMesh(unittest.TestCase):
     def test_manageCoreMesh(self):
         self.axialExpChngr.manageCoreMesh(self.r)
         newAxialMesh = self.r.core.p.axialMesh
-        # the top and bottom and top of the grid plate block are not expected to change
-        for old, new in zip(self.oldAxialMesh[2:-1], newAxialMesh[2:-1]):
+        # all solid components in fuel + plenum block expand so the first three points are not expected to change
+        for old, new in zip(self.oldAxialMesh[3:-1], newAxialMesh[3:-1]):
             self.assertLess(old, new)
 
     def test_componentConservation(self):
