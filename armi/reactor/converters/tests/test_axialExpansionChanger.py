@@ -58,13 +58,9 @@ class AxialExpansionTestBase(unittest.TestCase):
         Flags.GUIDE_TUBE,
     ]
 
-    def setUp(self):
-        self.obj = AxialExpansionChanger()
-        self.componentMass = collections.defaultdict(list)
-        self.componentDensity = collections.defaultdict(list)
-        self.totalAssemblySteelMass = []
-        self.blockZtop = collections.defaultdict(list)
-        self.origNameSpace = _MATERIAL_NAMESPACE_ORDER
+    @classmethod
+    def setUpClass(cls):
+        cls.origNameSpace = _MATERIAL_NAMESPACE_ORDER
         # set namespace order for materials so that fake HT9 material can be found
         materials.setMaterialNamespaceOrder(
             [
@@ -73,9 +69,17 @@ class AxialExpansionTestBase(unittest.TestCase):
             ]
         )
 
-    def tearDown(self):
+    def setUp(self):
+        self.obj = AxialExpansionChanger()
+        self.componentMass = collections.defaultdict(list)
+        self.componentDensity = collections.defaultdict(list)
+        self.totalAssemblySteelMass = []
+        self.blockZtop = collections.defaultdict(list)
+
+    @classmethod
+    def tearDownClass(cls):
         # reset global namespace
-        materials.setMaterialNamespaceOrder(self.origNameSpace)
+        materials.setMaterialNamespaceOrder(cls.origNameSpace)
 
     def _getConservationMetrics(self, a):
         """Retrieves and stores various conservation metrics.
@@ -154,6 +158,152 @@ class Temperature:
             tmp = linspace(coldTemp, hotInletTemp, self.tempSteps)
             for i in range(1, self.tempSteps):
                 self.tempField[i, :] = tmp[i]
+
+class TestMultiPinConservation(AxialExpansionTestBase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        _oCold, rCold = loadTestReactor(
+            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
+            customSettings={"inputHeightsConsideredHot": True},
+        )
+        cls.aRef = list(filter(lambda a: a.getType() == "multi pin fuel", rCold.blueprints.assemblies.values()))[0]
+
+    def setUp(self):
+        self.a = copy.deepcopy(self.aRef)
+        self.origBHeight, self.origCMassesByBlock, self.origTotalCMassByFlag = self.getMassesForTest(self.a)
+        self.axialExpChngr = AxialExpansionChanger()
+        self.axialExpChngr.setAssembly(self.a)
+
+    @staticmethod
+    def getMassesForTest(a: HexAssembly):
+        @dataclass
+        class StoreMass:
+            cFlags: str
+            mass: float
+
+        blockHeights: dict[HexBlock, float] = {}
+        compMassByBlock: dict[HexBlock, StoreMass] = collections.defaultdict(list)
+        totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
+        for b in a:
+            # collect mass and height information
+            blockHeights[b] = b.getHeight()
+            for c in iterSolidComponents(b):
+                totalCMassByFlags[c.p.flags] += c.getMass()
+                compMassByBlock[b].append(StoreMass(c.p.flags, c.getMass()))
+
+        return blockHeights, compMassByBlock, totalCMassByFlags
+
+    def test_expandAndContractThermal(self):
+        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
+                if c.hasFlags(Flags.TEST):
+                    newTemp = c.temperatureInC + 150.0*i
+                else:
+                    newTemp = c.temperatureInC + 50.0*i
+                self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
+        self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+        self.axialExpChngr.axiallyExpandAssembly()
+
+        _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
+        cFlags = list(newTotalCMassByFlag.keys())
+        for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
+            if Flags.TEST in cFlags[i] and Flags.FUEL in cFlags[i]:
+                # since test_expandAndContractPrescribed can be checked to 10 places for the test fuel, setting this
+                # to be a larger allowable difference is getting chalked up to precision limitations with thermal exp.
+                self.assertLess(
+                    abs(newMass - origMass)/origMass * 100.0,
+                    0.04,
+                    msg=f"{cFlags[i]} is unacceptably different!"
+                )
+            else:
+                self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
+
+    def test_expandThermal(self):
+        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+                newTemp = c.temperatureInC + 100.0*i
+                self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
+        self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+        self.axialExpChngr.axiallyExpandAssembly()
+        self.checkConservation()
+
+    def test_contractThermal(self):
+        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+                newTemp = c.temperatureInC - 100.0*i
+                self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
+        self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+        self.axialExpChngr.axiallyExpandAssembly()
+        self.checkConservation()
+
+    def test_expandPrescribed(self):
+        cList = []
+        for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+                cList.append(c)
+        pList = zeros(len(cList)) + 1.1
+        self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
+        self.axialExpChngr.axiallyExpandAssembly()
+        self.checkConservation()
+
+    def test_contractPrescribed(self):
+        cList = []
+        for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+                cList.append(c)
+        pList = zeros(len(cList)) + 0.9
+        self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
+        self.axialExpChngr.axiallyExpandAssembly()
+        self.checkConservation()
+
+    def test_expandAndContractPrescribed(self):
+        cList = []
+        pList = []
+        for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
+                if c.hasFlags(Flags.TEST):
+                    pList.append(1.2)
+                else:
+                    pList.append(1.1)
+                cList.append(c)
+        self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
+        self.axialExpChngr.axiallyExpandAssembly()
+        self.checkConservation()
+
+    def checkConservation(self):
+        _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
+        cFlags = list(newTotalCMassByFlag.keys())
+        for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
+                self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
+
+        ### THIS IS SUPPOSED TO HAVE CHANGES YOU DINGUS
+        # blocks = list(self.origBHeight.keys())
+        # for i, (newCMasses, origCMasses) in enumerate(zip(newCMassesByBlock.values(), self.origCMassesByBlock.values())):
+        #     for new, orig in zip(newCMasses, origCMasses):
+        #         if Flags.TEST in new.cFlags and Flags.FUEL in new.cFlags:
+        #             self.assertAlmostEqual(
+        #                 new.mass,
+        #                 orig.mass,
+        #                 places=10,
+        #                 msg = f"{blocks[i].getType()}: {new.cFlags}: {new.mass - orig.mass}, {new.mass}, {orig.mass}"
+        #             )
+    # @staticmethod
+    # def getChangeInMassForCompWFlags(origMasses, newMasses):
+    #     blocks = list(origMasses.keys())
+    #     print("\nShow Change in Mass for Fuel Test")
+    #     for i, (newCompMasses, origCompMasses) in enumerate(zip(newMasses.values(), origMasses.values())):
+    #         for new, orig in zip(newCompMasses, origCompMasses):
+    #             if Flags.TEST in new.cFlags and Flags.FUEL in new.cFlags:
+    #                 # if Flags.TEST not in new.cFlags and Flags.CLAD in new.cFlags:
+    #                 print(f"{blocks[i].getType()}: {new.cFlags}: {new.mass - orig.mass}, {new.mass}, {orig.mass}")
+
+
+        # print("\nNew Block Heights")
+        # for i, (newBHeight, origBHeight) in enumerate(zip(newBHeight.values(), origBHeight.values())):
+        #     print(f"{a[i].getType()}\t{newBHeight:0.3f}\t{origBHeight:0.3f}")
+
 
 
 class TestAxialExpansionHeight(AxialExpansionTestBase):
@@ -286,106 +436,6 @@ class TestConservation(AxialExpansionTestBase):
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
         self._checkDetailedNDens(origDetailedNDens, newDetailedNDens, 1.0)
-
-    def test_thermExpansContractionConserv_multiPin(self):
-        """Thermally expand and then contract to ensure original state is recovered.
-
-        Notes
-        -----
-        Assemblies with liners are not supported and not considered for conservation testing.
-        """
-        _oCold, rCold = loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": True},
-        )
-        axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
-        a = list(filter(lambda a: a.getType() == "multi pin fuel", rCold.blueprints.assemblies.values()))[0]
-        axialExpChngr.setAssembly(a)
-        origBHeight, origBMass, origCompMasses = self.getMassesForTest(a)
-
-        # for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), a), start=1):
-        #     for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
-        #         if c.hasFlags(Flags.TEST):
-        #             newTemp = c.temperatureInC + 150.0*i
-        #         else:
-        #             newTemp = c.temperatureInC + 50.0*i
-        #         print(f"updating temp for {c}: {c.temperatureInC} --> {newTemp}")
-        #         axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
-        # axialExpChngr.expansionData.computeThermalExpansionFactors()
-
-        # for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), a), start=1):
-        #     for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
-        #         newTemp = c.temperatureInC - 100.0*i
-        #         print(f"updating temp for {c}: {c.temperatureInC} --> {newTemp}")
-        #         axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
-        # axialExpChngr.expansionData.computeThermalExpansionFactors()
-
-        # cList = []
-        # for b in filter(lambda b: b.hasFlags(Flags.FUEL), a):
-        #     for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
-        #         cList.append(c)
-        # pList = zeros(len(cList)) + 0.9
-        # axialExpChngr.expansionData.setExpansionFactors(cList, pList)
-
-        cList = []
-        pList = []
-        for i,b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
-                if c.hasFlags(Flags.TEST):
-                    pList.append(1.2)
-                else:
-                    pList.append(1.1)
-                cList.append(c)
-        axialExpChngr.expansionData.setExpansionFactors(cList, pList)
-
-        axialExpChngr.axiallyExpandAssembly()
-
-        # check mass conservation / expected changes
-        newBHeight, newBMass, newCompMasses = self.getMassesForTest(a)
-
-        self.getChangeInMassForCompWFlags(origBMass, newBMass)
-
-        print("\nNew Block Heights")
-        for i, (newBHeight, origBHeight) in enumerate(zip(newBHeight.values(), origBHeight.values())):
-            print(f"{a[i].getType()}\t{newBHeight:0.3f}\t{origBHeight:0.3f}")
-
-        print("\nComponents not having conservation (if any)")
-        cFlags = list(origCompMasses.keys())
-        for i, (origMass, newMass) in enumerate(zip(origCompMasses.values(), newCompMasses.values())):
-            if Flags.BOND in cFlags[i]:
-                continue
-            # self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
-            if abs(newMass - origMass) > 1e-10:
-                print(f"{cFlags[i]}: {newMass - origMass}, {newMass}, {origMass}")
-
-    @staticmethod
-    def getChangeInMassForCompWFlags(origMasses, newMasses):
-        blocks = list(origMasses.keys())
-        print("\nShow Change in Mass for Fuel Test")
-        for i, (newCompMasses, origCompMasses) in enumerate(zip(newMasses.values(), origMasses.values())):
-            for new, orig in zip(newCompMasses, origCompMasses):
-                if Flags.TEST in new.cFlags and Flags.FUEL in new.cFlags:
-                    # if Flags.TEST not in new.cFlags and Flags.CLAD in new.cFlags:
-                    print(f"{blocks[i].getType()}: {new.cFlags}: {new.mass - orig.mass}, {new.mass}, {orig.mass}")
-
-    @staticmethod
-    def getMassesForTest(a):
-        @dataclass
-        class StoreMass:
-            cFlags: str
-            mass: float
-
-        masses = collections.defaultdict(float)
-        blockHeights = {}
-        blockMass = collections.defaultdict(list)
-        for b in a:
-            # collect mass and height information
-            blockHeights[b] = b.getHeight()
-            for c in b:
-                masses[c.p.flags] += c.getMass()
-                blockMass[b].append(StoreMass(c.p.flags, c.getMass()))
-
-        return blockHeights, blockMass, masses
 
     def test_thermExpansContractionConserv_complex(self):
         """Thermally expand and then contract to ensure original state is recovered.

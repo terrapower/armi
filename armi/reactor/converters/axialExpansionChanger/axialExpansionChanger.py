@@ -354,7 +354,6 @@ class AxialExpansionChanger:
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
-            print(b)
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 c = self.expansionData.getTargetComponent(b)
@@ -407,12 +406,6 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
-
-    def removeMassFromComponent(self, c: "Component", percent: float):
-        for nuc in c.getNuclides():
-            i = where(c.p.nuclides == nuc.encode())[0]
-            if i.size > 0:
-                c.p.numberDensities[i[0]] *= 1.0 + percent
 
     def addMassToComponent(self, fromComp: "Component", toComp: "Component", delta: float):
         """
