@@ -549,7 +549,6 @@ def eleExpandInfoBasedOnCodeENDF(cs):
 def genDefaultNucFlags():
     """Perform all the yamlize-required type conversions."""
     flagsDict = getDefaultNuclideFlags()
-
     flags = NuclideFlags()
     for nucName, nucFlags in flagsDict.items():
         flag = NuclideFlag(nucName, nucFlags["burn"], nucFlags["xs"], nucFlags["expandTo"])
