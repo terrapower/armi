@@ -24,12 +24,13 @@ the end of plant life.
 """
 
 import collections
+import math
 import os
 import re
 import time
 from typing import Tuple
 
-from armi import context, interfaces, runLog
+from armi import context, interfaces, runLog, units
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
@@ -379,6 +380,7 @@ class Operator:
         self.r.p.availabilityFactor = self.availabilityFactors[cycle]
         self.r.p.cycle = cycle
         self.r.core.p.coupledIteration = 0
+        # self.r.p.time += self.r.p.cycleLength * (1.0 - self.r.p.availabilityFactor) / units.DAYS_PER_YEAR  # TODO
         if cycle == startingCycle:
             startingNode = self.r.p.timeNode
         else:
@@ -415,6 +417,7 @@ class Operator:
     def _timeNodeLoop(self, cycle, timeNode):
         """Run the portion of the main loop that happens each subcycle."""
         self.r.p.timeNode = timeNode
+        self.r.p.time += self.r.o.stepLengths[cycle][timeNode - 1] / units.DAYS_PER_YEAR  # TODO: JOHN
         self.interactAllEveryNode(cycle, timeNode)
         self._performTightCoupling(cycle, timeNode)
 
@@ -622,6 +625,10 @@ class Operator:
 
     def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
+        # TODO: JOHN
+        if not math.isclose(self.r.p.availabilityFactor, 1):
+            self.r.p.time += self.r.p.cycleLength * (1 - self.r.p.availabilityFactor) / units.DAYS_PER_YEAR
+
         activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
 
