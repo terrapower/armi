@@ -364,5 +364,5 @@ class ExpansionData:
         b
             the block to query for the target component
         """
-        c = filter(lambda c: self.isTargetComponent(c), iterSolidComponents(b))
+        c = filter(self.isTargetComponent, iterSolidComponents(b))
         return next(c)
