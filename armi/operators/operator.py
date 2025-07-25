@@ -30,7 +30,7 @@ import re
 import time
 from typing import Tuple
 
-from armi import context, interfaces, runLog, units
+from armi import context, interfaces, runLog
 from armi.bookkeeping import memoryProfiler
 from armi.bookkeeping.report import reportingUtils
 from armi.operators.runTypes import RunTypes
@@ -56,6 +56,7 @@ from armi.utils import (
     getPowerFractions,
     getStepLengths,
     pathTools,
+    units,
 )
 
 
