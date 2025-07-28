@@ -372,7 +372,7 @@ blocks:
         intercoolant: *component_intercoolant
         axial expansion target component: clad test
 
-    mixed fuel 2pin: &block_mixed_multiPin
+    mixed fuel plenum 2pin: &block_mixed_multiPin
         grid name: twoPin
         gap: *component_plenummultiPin_gap1
         clad: *component_fuelmultiPin_clad1
