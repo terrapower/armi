@@ -2512,8 +2512,6 @@ class HexBlock_TestCase(unittest.TestCase):
 
     def test_assignPinIndicesToFullGrid(self):
         """Ensure we can assign pin indices to fuel if it occupies the entire spatial grid."""
-        # TODO Maybe this test is going away if we allow the use of None for pins where mult > 1
-        # NOTE Maybe a dimension link?
         b = blocks.HexBlock("fuel")
         fuel = components.Circle(
             "fuel",
@@ -2548,8 +2546,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertIsNotNone(b.spatialGrid)
 
         b.assignPinIndices()
-        self.assertIsNotNone(fuel.p.pinIndices)
-        np.testing.assert_allclose(fuel.p.pinIndices, np.arange(169, dtype=int))
+        self.assertIsNone(fuel.p.pinIndices)
 
 
 class MultiPinIndicesTests(unittest.TestCase):

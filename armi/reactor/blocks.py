@@ -2180,6 +2180,7 @@ class HexBlock(Block):
             return
         ijGetter = operator.attrgetter("i", "j")
         allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
+        fullIndices = np.arange(len(allIJ))
         # Flags for components that we want to set this parameter
         # Usually things are linked to one of these "primary" flags, like
         # a cladding component having linked dimensions to a fuel component
@@ -2193,8 +2194,10 @@ class HexBlock(Block):
             else:
                 continue
             localIndices = list(map(allIJ.index, localIJ))
-            # TODO Handle trivial case where one pin lives at all locations
-            c.p.pinIndices = localIndices
+            if fullIndices.size == len(localIndices) and (fullIndices == localIndices).all():
+                c.p.pinIndices = None
+            else:
+                c.p.pinIndices = localIndices
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
