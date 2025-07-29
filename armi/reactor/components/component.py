@@ -1454,4 +1454,15 @@ class Component(composites.Composite, metaclass=ComponentType):
 class ShapedComponent(Component):
     """A component with well-defined dimensions."""
 
-    pass
+    def getPinIndices(self) -> Optional[np.ndarray[tuple[int], int]]:
+        """Find the indices for the locations where this component can be found in the block.
+
+        Returns
+        -------
+        np.array[int] or None
+            None if this object is not a pin, or if this object is not the central component
+            in the pin. Otherwise, return the indices in various Block-level pin methods,
+            e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`, that correspond to
+            this component.
+        """
+        return None

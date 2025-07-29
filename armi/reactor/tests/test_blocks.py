@@ -2547,6 +2547,9 @@ class HexBlock_TestCase(unittest.TestCase):
 
         b.assignPinIndices()
         self.assertIsNone(fuel.p.pinIndices)
+        indices = fuel.getPinIndices()
+        self.assertIsNotNone(indices)
+        np.testing.assert_allclose(indices, np.arange(169, dtype=int))
 
 
 class MultiPinIndicesTests(unittest.TestCase):
@@ -2623,7 +2626,7 @@ nuclide flags:
         """Test pin indices are complete and non-overlapping."""
         foundIndices: set[int] = set()
         for fp in self.fuelPins:
-            actualIndices = fp.p.pinIndices
+            actualIndices = fp.getPinIndices()
             self.assertIsNotNone(actualIndices, fp)
             overlap = foundIndices.intersection(actualIndices)
             self.assertFalse(overlap, msg="Found overlapping indices on unique fuel pin")
@@ -2636,11 +2639,27 @@ nuclide flags:
         """Test values of pin indices on a component align with pin locations of that component within the block."""
         for fp in self.fuelPins:
             locations: list[grids.IndexLocation] = list(fp.spatialLocator)
-            indices = fp.p.pinIndices
+            indices = fp.getPinIndices()
             self.assertEqual(len(locations), len(indices), msg=fp)
             for loc, ix in zip(locations, indices):
                 indexInBlock = self.allLocations.index(loc)
                 self.assertEqual(ix, indexInBlock, msg=f"{loc=} in {fp}")
+
+    def test_noPinIndicesForHexes(self):
+        """Test we never get pin indices for hexagons."""
+        duct = self.block.getComponent(Flags.DUCT)
+        self.assertIsInstance(duct, basicShapes.Hexagon)
+        self.assertIsNone(duct.getPinIndices())
+
+    def test_noPinIndicesForClad(self):
+        """Even though they're part of pins, assert we don't have a pin indices for cladding.
+
+        The rationale is we currently only care about indices for the fuel or control component
+        because that's usually the most exciting thing.
+        """
+        clad = self.block.getComponents(Flags.CLAD)[0]
+        self.assertIsInstance(clad, basicShapes.Circle)
+        self.assertIsNone(clad.getPinIndices())
 
 
 class TestHexBlockOrientation(unittest.TestCase):
