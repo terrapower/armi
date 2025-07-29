@@ -193,9 +193,9 @@ def getCircleParameterDefinitions():
 
         def _validatePinIndices(self, val):
             if val is not None:
-                # unsigned "short" integer, typically 8 bytes
+                # unsigned short integer
                 # holds [0, 65_535] so at most, 65_535 pins per block
-                self._p_pinIndices = np.array(val, dtype=np.uint8)
+                self._p_pinIndices = np.array(val, dtype=np.ushort)
             else:
                 self._p_pinIndices = None
 
