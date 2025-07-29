@@ -35,6 +35,7 @@ from armi.physics.neutronics.settings import (
     CONF_XS_KERNEL,
 )
 from armi.reactor import blocks, blueprints, components, geometry, grids
+from armi.reactor.blueprints import blockBlueprint
 from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
@@ -2509,6 +2510,141 @@ class HexBlock_TestCase(unittest.TestCase):
         self.hexBlock.spatialGrid = None  # clear existing
         self.hexBlock.autoCreateSpatialGrids(self.r.core.spatialGrid)
         self.assertIsNone(self.hexBlock.spatialGrid)
+
+    def test_assignPinIndicesToFullGrid(self):
+        """Ensure we can assign pin indices to fuel if it occupies the entire spatial grid."""
+        # TODO Maybe this test is going away if we allow the use of None for pins where mult > 1
+        # NOTE Maybe a dimension link?
+        b = blocks.HexBlock("fuel")
+        fuel = components.Circle(
+            "fuel",
+            "UZr",
+            Tinput=25.0,
+            Thot=600.0,
+            od=0.76,
+            mult=169,
+        )
+        b.add(fuel)
+
+        clad = components.Circle(
+            "clad",
+            "HT9",
+            Tinput=25.0,
+            Thot=450.0,
+            id=0.77,
+            od=0.80,
+            mult=169,
+        )
+        b.add(clad)
+
+        wire = components.Helix(
+            "wire", "HT9", Tinput=25.0, Thot=600, id=0, od=0.1, axialPitch=30, helixDiameter=0.9, mult=169
+        )
+        b.add(wire)
+
+        duct = components.Hexagon("duct", "HT9", Tinput=25.0, Thot=400, ip=15.3, op=16, mult=1)
+        b.add(duct)
+
+        b.autoCreateSpatialGrids(self.r.core.spatialGrid)
+        self.assertIsNotNone(b.spatialGrid)
+
+        b.assignPinIndices()
+        self.assertIsNotNone(fuel.p.pinIndices)
+        np.testing.assert_allclose(fuel.p.pinIndices, np.arange(169, dtype=int))
+
+
+class MultiPinIndicesTests(unittest.TestCase):
+    BP_STR = """
+blocks:
+    fuel: &fuel_block
+        grid name: fuel grid
+        fuel 1: &fuel_def
+            shape: Circle
+            # Use void material because we don't need nuclides, just components with flags
+            material: Void
+            od: 0.68
+            Tinput: 25
+            Thot: 600
+            latticeIDs: [1]
+        clad 1: &clad_def
+            shape: Circle
+            material: Void
+            id: 0.7
+            od: 0.71
+            Tinput: 600
+            Thot: 450
+            latticeIDs: [1]
+        fuel 2:
+            <<: *fuel_def
+            latticeIDs: [2]
+        clad 2:
+            <<: *clad_def
+            latticeIDs: [2]
+        duct:
+            shape: Hexagon
+            material: Void
+            Tinput: 25
+            Thot: 450
+            ip: 15.3
+            op: 16
+assemblies:
+    fuel:
+        specifier: F
+        blocks: [*fuel_block]
+        height: [10]
+        axial mesh points: [1]
+        xs types: [A]
+grids:
+    fuel grid:
+        geom: hex_corners_up
+        symmetry: full
+        lattice map: |
+            - - -  1 1 1 1
+              - - 1 1 2 1 1
+               - 1 1 2 2 1 1
+                1 1 2 2 2 2 1
+                 1 1 2 2 1 1
+                  1 1 2 1 1
+                   1 1 1 1
+nuclide flags:
+
+"""
+
+    @classmethod
+    def setUpClass(cls):
+        cs = settings.Settings()
+        bp: blueprints.Blueprints = blueprints.Blueprints.load(cls.BP_STR)
+        bp._prepConstruction(cs)
+        cls._originalBlock: blocks.HexBlock = bp.blockDesigns["fuel"].construct(cs, bp, 0, 2, 10, "A", {})
+
+    def setUp(self):
+        self.block = copy.deepcopy(self._originalBlock)
+        self.block.assignPinIndices()
+        self.allLocations = self.block.getPinLocations()
+        self.fuelPins = self.block.getComponents(Flags.FUEL)
+
+    def test_nonOverlappingIndices(self):
+        """Test pin indices are complete and non-overlapping."""
+        foundIndices: set[int] = set()
+        for fp in self.fuelPins:
+            actualIndices = fp.p.pinIndices
+            self.assertIsNotNone(actualIndices, fp)
+            overlap = foundIndices.intersection(actualIndices)
+            self.assertFalse(overlap, msg="Found overlapping indices on unique fuel pin")
+            foundIndices.update(actualIndices)
+        # Make sure we have all the indices covered
+        for i in range(len(self.allLocations)):
+            self.assertIn(i, foundIndices)
+
+    def test_consistentPinOrdering(self):
+        """Test values of pin indices on a component align with pin locations of that component within the block."""
+        for fp in self.fuelPins:
+            locations: list[grids.IndexLocation] = list(fp.spatialLocator)
+            indices = fp.p.pinIndices
+            self.assertEqual(len(locations), len(indices), msg=fp)
+            for loc, ix in zip(locations, indices):
+                indexInBlock = self.allLocations.index(loc)
+                self.assertEqual(ix, indexInBlock, msg=f"{loc=} in {fp}")
 
 
 class TestHexBlockOrientation(unittest.TestCase):
