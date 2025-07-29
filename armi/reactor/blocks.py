@@ -23,6 +23,7 @@ import collections
 import copy
 import functools
 import math
+import operator
 from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
@@ -2166,6 +2167,31 @@ class HexBlock(Block):
                     c.spatialLocator = spatialLocators
                 elif c.getDimension("mult") == 1:
                     c.spatialLocator = grids.CoordinateLocation(0.0, 0.0, 0.0, grid)
+
+    def assignPinIndices(self):
+        """Assign pin indices for pin components on the block."""
+        if self.spatialGrid is None:
+            return
+        locations = self.getPinLocations()
+        if not locations:
+            return
+        ijGetter = operator.attrgetter("i", "j")
+        allIJ: tuple[tuple[int, int]] = tuple(map(ijGetter, locations))
+        # Flags for components that we want to set this parameter
+        # Usually things are linked to one of these "primary" flags, like
+        # a cladding component having linked dimensions to a fuel component
+        targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
+        for c in self.iterChildren(predicate=lambda c: c.hasFlags(targetFlags) and isinstance(c, Circle)):
+            localLocations = c.spatialLocator
+            if isinstance(localLocations, grids.MultiIndexLocation):
+                localIJ = list(map(ijGetter, localLocations))
+            elif isinstance(localLocations, grids.IndexLocation):
+                localIJ = [ijGetter(localLocations)]
+            else:
+                continue
+            localIndices = list(map(allIJ.index, localIJ))
+            # TODO Handle trivial case where one pin lives at all locations
+            c.p.pinIndices = localIndices
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
