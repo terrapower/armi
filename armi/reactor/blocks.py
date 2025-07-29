@@ -309,6 +309,9 @@ class Block(composites.Composite):
         if self.spatialGrid is None:
             self.spatialGrid = systemSpatialGrid
 
+    def assignPinIndices(self):
+        pass
+
     def getMgFlux(self, adjoint=False, average=False, volume=None, gamma=False):
         """
         Returns the multigroup neutron flux in [n/cm^2/s].
