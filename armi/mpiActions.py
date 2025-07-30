@@ -580,7 +580,7 @@ class DistributeStateAction(MpiAction):
 
         self.r.o = self.o
 
-        runLog.debug(f"The reactor has {len(self.r.core.getAssemblies())} assemblies")
+        runLog.debug(f"The reactor has {len(self.r.core)} assemblies")
         # attach here so any interface actions use a properly-setup reactor.
         self.o.reattach(self.r, cs)  # sets r and cs
 

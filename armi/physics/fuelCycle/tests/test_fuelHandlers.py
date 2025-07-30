@@ -266,7 +266,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         """Tests the width capability of findAssembly."""
         fh = fuelHandlers.FuelHandler(self.o)
         assemsByRing = collections.defaultdict(list)
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             assemsByRing[a.spatialLocator.getRingPos()[0]].append(a)
 
         # instantiate reactor power. more power in more outer rings
@@ -488,7 +488,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # store locations of each assembly
         firstPassResults = {}
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             firstPassResults[a.getLocation()] = a.getName()
             self.assertNotIn(a.getLocation(), ["SFP", "LoadQueue", "ExCore"])
 
@@ -505,9 +505,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         self.runShuffling(fh)
 
-        # make sure the shuffle was repeated perfectly.
-        for a in self.r.core.getAssemblies():
+        # make sure the shuffle was repeated perfectly
+        for a in self.r.core:
             self.assertEqual(a.getName(), firstPassResults[a.getLocation()])
+
         for a in self.r.excore["sfp"]:
             self.assertEqual(a.getLocation(), "SFP")
 
@@ -812,7 +813,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         sBFList = self.r.core.stationaryBlockFlagsList
 
         # grab an arbitrary fuel assembly from the core and from the SFP
-        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a1 = self.r.core.getFirstAssembly(Flags.FUEL)
         a2 = self.r.excore["sfp"].getChildrenWithFlags(Flags.FUEL)[0]
 
         # grab the stationary blocks pre swap
@@ -852,7 +853,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         sBFList = self.r.core.stationaryBlockFlagsList
 
         # grab an arbitrary fuel assembly from the core and from the SFP
-        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a1 = self.r.core.getFirstAssembly(Flags.FUEL)
         a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
 
         # change a block in assembly 1 to be flagged as a stationary block
@@ -869,7 +870,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # re-initialize assemblies
         self.setUp()
-        a1 = self.r.core.getAssemblies(Flags.FUEL)[0]
+        a1 = self.r.core.getFirstAssembly(Flags.FUEL)
         a2 = self.r.excore["sfp"].getChildren(Flags.FUEL)[0]
 
         # move location of a stationary flag in assembly 1
