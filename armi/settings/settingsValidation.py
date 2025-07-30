@@ -434,7 +434,7 @@ class Inspector:
             lambda: self.cs.get("shuffleSequenceFile")
             and not self._csRelativePathExists(self.cs["shuffleSequenceFile"])
             and not _willBeCopiedFrom(self.cs["shuffleSequenceFile"]),
-            "The specified shuffle sequence file `{0}` does not exist, and won't be copied. Run will crash.".format(
+            "The specified shuffle sequence file `{0}` does not exist. Run will crash.".format(
                 self.cs["shuffleSequenceFile"]
             ),
             "",

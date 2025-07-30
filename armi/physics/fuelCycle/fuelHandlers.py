@@ -103,9 +103,7 @@ class FuelHandler:
                         self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
                     )
                 )
-            runLog.important(
-                "Applying shuffle sequence from {}".format(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])
-            )
+            runLog.important("Applying shuffle sequence from {}".format(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]))
             self.repeatShufflePattern(self.cs[CONF_SHUFFLE_SEQUENCE_FILE], yaml=True)
         elif self.cs["explicitRepeatShuffles"]:
             # repeated shuffle
