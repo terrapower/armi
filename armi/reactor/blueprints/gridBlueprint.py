@@ -514,6 +514,7 @@ def _filterOutsideDomain(gridBp):
                             gridBp.gridContents[symmetric],
                         )
                     )
+
         del gridBp.gridContents[idx]
 
 
@@ -521,21 +522,19 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     """
     Save the blueprints to the passed stream.
 
-    This can save either the entire blueprints, or just the `grids:` section of the blueprints,
-    based on the passed ``full`` argument. Saving just the grid blueprints can be useful when
-    cobbling blueprints together with !include flags.
+    This can save either the entire blueprints, or just the `grids:` section of the blueprints, based on the passed
+    ``full`` argument. Saving just the grid blueprints can be useful when cobbling blueprints together with !include
+    flags.
 
     .. impl:: Write a blueprint file from a blueprint object.
         :id: I_ARMI_BP_TO_DB
         :implements: R_ARMI_BP_TO_DB
 
-        First makes a copy of the blueprints that are passed in. Then modifies any grids specified
-        in the blueprints into a canonical lattice map style, if needed. Then uses the ``dump``
-        method that is inherent to all ``yamlize`` subclasses to write the blueprints to the given
-        ``stream`` object.
+        First makes a copy of the blueprints that are passed in. Then modifies any grids specified in the blueprints
+        into a canonical lattice map style, if needed. Then uses the ``dump`` method that is inherent to all ``yamlize``
+        subclasses to write the blueprints to the given ``stream`` object.
 
-        If called with the ``full`` argument, the entire blueprints is dumped. If not, only the
-        grids portion is dumped.
+        If called with the ``full`` argument, the entire blueprints is dumped. If not, only the grids portion is dumped.
 
     Parameters
     ----------
@@ -547,10 +546,9 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     tryMap : bool
         regardless of input form, attempt to output as a lattice map
     """
-    # To save, we want to try our best to output our grid blueprints in the lattice map style.
-    # However, we do not want to wreck the state that the current blueprints are in. So we make a
-    # copy and do some manipulations to try to canonicalize it and save that, leaving the original
-    # blueprints unmolested.
+    # To save, we want to try our best to output our grid blueprints in the lattice map style. However, we do not want
+    # to wreck the state that the current blueprints are in. So we make a copy and do some manipulations to try to
+    # canonicalize it and save that, leaving the original blueprints unmolested.
     bp = copy.deepcopy(bluep)
 
     if isinstance(bp, blueprints.Blueprints):
@@ -558,11 +556,11 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
     elif isinstance(bp, blueprints.Grids):
         gridDesigns = bp
     else:
-        raise TypeError("Expected Blueprints or Grids, got {}".format(type(bp)))
+        raise TypeError(f"Expected Blueprints or Grids, got {type(bp)}")
 
     for gridDesignType, gridDesign in gridDesigns.items():
-        # The core equilibrium path should be put into the grid contents rather than a lattice map
-        # until we write a string-> tuple parser for reading it back in. Skip this type of grid.
+        # The core equilibrium path should be put into the grid contents rather than a lattice map until we write a
+        # string-> tuple parser for reading it back in. Skip this type of grid.
         if gridDesignType == "coreEqPath":
             continue
         _filterOutsideDomain(gridDesign)
@@ -575,20 +573,24 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
             symmetry = geometry.SymmetryType.fromStr(gridDesign.symmetry)
 
             aMap = asciimaps.asciiMapFromGeomAndDomain(gridDesign.geom, symmetry.domain)()
-            aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
             try:
-                aMap.gridContentsToAscii()
+                if gridDesign.latticeMap:
+                    # Try to use the lattice map first, it was the original source of truth.
+                    aMap.readAscii(gridDesign.latticeMap)
+                else:
+                    # If there is no original lattice map, use the current grid of data.
+                    aMap.asciiLabelByIndices = {(key[0], key[1]): val for key, val in gridDesign.gridContents.items()}
+                    aMap.gridContentsToAscii()
             except Exception as e:
                 runLog.warning(
-                    "The `lattice map` for the current assembly arrangement cannot be written. "
-                    f"Defaulting to using the `grid contents` dictionary instead. Exception: {e}"
+                    "The `lattice map` for the current assembly arrangement cannot be written. Defaulting to using the "
+                    f"`grid contents` dictionary instead. Exception: {e}"
                 )
                 aMap = None
 
             if aMap is not None:
-                # If there is an ascii map available then use it to fill out the contents of the
-                # lattice map section of the grid design. This also clears out the grid contents so
-                # there is not duplicate data.
+                # If there is an ascii map available then use it to fill out the contents of the lattice map section of
+                # the grid design. This also clears out the grid contents so there is not duplicate data.
                 gridDesign.gridContents = None
                 mapString = StringIO()
                 aMap.writeAscii(mapString)
@@ -597,8 +599,8 @@ def saveToStream(stream, bluep, full=False, tryMap=False):
                 gridDesign.latticeMap = None
 
         else:
-            # grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap,
-            # unless it was set explicitly in code somewhere. Discard if there is one.
+            # Grid contents were supplied as a dictionary, so we shouldn't even have a latticeMap, unless it was set
+            # explicitly in code somewhere. Discard if there is one.
             gridDesign.latticeMap = None
 
     toSave = bp if full else gridDesigns
