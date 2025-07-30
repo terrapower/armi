@@ -18,6 +18,7 @@ import typing
 from numpy import array
 
 from armi import runLog
+from armi.materials.material import Fluid
 from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
@@ -27,6 +28,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
+from armi.utils.customExceptions import InputError
 
 
 def getDefaultReferenceAssem(assems):
@@ -258,7 +260,27 @@ class AxialExpansionChanger:
         """
         self.linked = AssemblyAxialLinkage(a)
         self.expansionData = ExpansionData(a, setFuel=setFuel, expandFromTinputToThot=expandFromTinputToThot)
+        self._checkAssemblyConstructionIsValid()
+
+    def _checkAssemblyConstructionIsValid(self):
         self._isTopDummyBlockPresent()
+        self._checkForBlocksWithoutSolids()
+
+    def _checkForBlocksWithoutSolids(self):
+        """
+        Makes sure that there aren't any blocks (other than the top-most dummy block)
+        that consist entirely of fluid components. The expansion changer doesn't know
+        what to do with such assemblies.
+        """
+        # skip top most dummy block since that is, by design, all fluid
+        for b in self.linked.a[:-1]:
+            if all(isinstance(c.material, Fluid) for c in b.iterComponents()):
+                raise InputError(
+                    f"Assembly {self.linked.a} is constructed improperly for use with the axial expansion changer "
+                    f"as block, {b}, consists of exclusively fluid component(s). If this is not a mistake, consider "
+                    "using the 'assemFlagsToSkipAxialExpansion' case setting to bypass performing axial expansion "
+                    "on this assembly."
+                )
 
     def applyColdHeightMassIncrease(self):
         """
@@ -271,7 +293,7 @@ class AxialExpansionChanger:
         called when the setting `inputHeightsConsideredHot` is used. This adjusts
         the expansion factor applied during applyMaterialMassFracsToNumberDensities.
         """
-        for c in self.linked.a.getComponents():
+        for c in self.linked.a.iterComponents():
             axialExpansionFactor = 1.0 + c.material.linearExpansionFactor(c.temperatureInC, c.inputTemperatureInC)
             c.changeNDensByFactor(axialExpansionFactor)
 
@@ -401,13 +423,7 @@ def _checkBlockHeight(b):
     3cm is a presumptive lower threshold for DIF3D
     """
     if b.getHeight() < 3.0:
-        runLog.debug(
-            "Block {0:s} ({1:s}) has a height less than 3.0 cm. ({2:.12e})".format(
-                b.name, str(b.p.flags), b.getHeight()
-            )
-        )
+        runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
 
     if b.getHeight() < 0.0:
-        raise ArithmeticError(
-            "Block {0:s} ({1:s}) has a negative height! ({2:.12e})".format(b.name, str(b.p.flags), b.getHeight())
-        )
+        raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")

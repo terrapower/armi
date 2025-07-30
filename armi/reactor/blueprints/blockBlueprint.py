@@ -168,8 +168,8 @@ class BlockBlueprint(yamlize.KeyedList):
                     mult = c.getDimension("mult")
                     if mult and mult != 1.0 and mult != len(c.spatialLocator):
                         raise ValueError(
-                            f"Conflicting ``mult`` input ({mult}) and number of "
-                            f"lattice positions ({len(c.spatialLocator)}) for {c}. "
+                            f"For {c} in {self.name} there is a conflicting ``mult`` input ({mult}) "
+                            f"and number of lattice positions ({len(c.spatialLocator)}). "
                             "Recommend leaving off ``mult`` input when using grids."
                         )
                     elif not mult or mult == 1.0:
