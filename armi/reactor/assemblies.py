@@ -31,7 +31,7 @@ from scipy import interpolate
 from armi import runLog
 from armi.materials.material import Fluid
 from armi.reactor import assemblyParameters, blocks, composites, grids
-from armi.reactor.flags import Flags
+from armi.reactor.flags import Flags, TypeSpec
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.spentFuelPool import SpentFuelPool
 
@@ -288,9 +288,9 @@ class Assembly(composites.Composite):
         """Calculate the total assembly volume in cm^3."""
         return self.getArea() * self.getTotalHeight()
 
-    def getPinPlenumVolumeInCubicMeters(self):
+    def getPinPlenumVolumeInCubicMeters(self) -> float:
         """
-        Return the volume of the plenum for a pin in an assembly.
+        Return the total volume of the plenum for an assembly in m^3.
 
         Notes
         -----
@@ -299,12 +299,19 @@ class Assembly(composites.Composite):
         Warning
         -------
         This is a bit design-specific for pinned assemblies.
+
+        Returns
+        -------
+        float: Total plenum volume for an assembly.
         """
         plenumVolume = 0.0
         for b in self.iterChildrenWithFlags(Flags.PLENUM):
-            cladId = b.getComponent(Flags.CLAD).getDimension("id")
             length = b.getHeight()
-            plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length * 1e-6  # convert cm^3 to m^3
+            for c in b.iterChildrenWithFlags(Flags.CLAD):
+                cladId = c.getDimension("id")
+                plenumVolume += math.pi * (cladId / 2.0) ** 2.0 * length
+        # convert vol from cm^3 to m^3
+        plenumVolume *= 1e-6
         return plenumVolume
 
     def getAveragePlenumTemperature(self):
@@ -846,14 +853,14 @@ class Assembly(composites.Composite):
     def hasContinuousCoolantChannel(self):
         return all(b.containsAtLeastOneChildWithFlags(Flags.COOLANT) for b in self)
 
-    def getFirstBlock(self, typeSpec=None, exact=False):
+    def getFirstBlock(self, typeSpec: TypeSpec = None, exact: bool = False) -> Optional[blocks.Block]:
         """Find the first block that matches the spec.
 
         Parameters
         ----------
-        typeSpec : flag or list of flags, optional
+        typeSpec
             Specification to require on the returned block.
-        exact : bool, optional
+        exact
             Require block to exactly match ``typeSpec``
 
         Returns
@@ -872,7 +879,7 @@ class Assembly(composites.Composite):
             # No items found in the iteration -> no blocks match the request
             return None
 
-    def getFirstBlockByType(self, typeName):
+    def getFirstBlockByType(self, typeName: str) -> Optional[blocks.Block]:
         blocks = filter(lambda b: b.getType() == typeName, self)
         try:
             return next(blocks)
