@@ -168,12 +168,6 @@ class Case:
                     r"^(?P<dirName>.*[\/\\])?(?P<title>[^\/\\]+)-SHUFFLES\.txt$",
                 )
             )
-            dependencies.update(
-                self.getPotentialParentFromSettingValue(
-                    self.cs["explicitRepeatShuffles"],
-                    r"^(?P<dirName>.*[\/\\])?(?P<title>[^\/\\]+)-SHUFFLES\.ya?ml$",
-                )
-            )
         # ensure that a case doesn't appear to be its own dependency
         dependencies.update(self._dependencies)
         dependencies.discard(self)

@@ -20,6 +20,7 @@ CONF_ASSEMBLY_ROTATION_ALG = "assemblyRotationAlgorithm"
 CONF_CIRCULAR_RING_MODE = "circularRingMode"
 CONF_CIRCULAR_RING_ORDER = "circularRingOrder"
 CONF_FUEL_HANDLER_NAME = "fuelHandlerName"
+CONF_SHUFFLE_SEQUENCE_FILE = "shuffleSequenceFile"
 CONF_JUMP_RING_NUM = "jumpRingNum"
 CONF_LEVELS_PER_CASCADE = "levelsPerCascade"
 CONF_PLOT_SHUFFLE_ARROWS = "plotShuffleArrows"
@@ -78,6 +79,12 @@ def getFuelCycleSettings():
             ),
         ),
         setting.Setting(
+            CONF_SHUFFLE_SEQUENCE_FILE,
+            default="",
+            label="Shuffle Sequence File",
+            description="Path to a YAML file defining a custom shuffle sequence",
+        ),
+        setting.Setting(
             CONF_FUEL_HANDLER_NAME,
             default="",
             label="Fuel Handler Name",
@@ -127,6 +134,18 @@ def getFuelCycleSettingValidators(inspector):
             lambda: " " in inspector.cs[CONF_SHUFFLE_LOGIC],
             "Spaces are not allowed in shuffleLogic file location. You have specified {0}. "
             "Shuffling will not occur.".format(inspector.cs[CONF_SHUFFLE_LOGIC]),
+            "",
+            inspector.NO_ACTION,
+        )
+    )
+
+    queries.append(
+        settingsValidation.Query(
+            lambda: inspector.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            and not inspector._csRelativePathExists(inspector.cs[CONF_SHUFFLE_SEQUENCE_FILE]),
+            "The specified shuffle sequence file '{0}' cannot be found.".format(
+                inspector.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            ),
             "",
             inspector.NO_ACTION,
         )
