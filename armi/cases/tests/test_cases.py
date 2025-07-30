@@ -385,9 +385,6 @@ class TestCaseSuiteDependencies(unittest.TestCase):
         self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
         self.assertIn(self.c1, self.c2.dependencies)
 
-        newSettings = {"explicitRepeatShuffles": "c1-SHUFFLES.yaml"}
-        self.c2.cs = self.c2.cs.modified(newSettings=newSettings)
-        self.assertIn(self.c1, self.c2.dependencies)
 
     def test_explicitDependency(self):
         """

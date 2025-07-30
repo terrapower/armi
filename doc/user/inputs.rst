@@ -366,17 +366,17 @@ A few examples of restart cases:
 
 .. note:: The ``skipCycles`` setting is related to skipping the lattice physics calculation specifically, it is not required to do a restart run.
 
-.. note:: The X-SHUFFLES.txt file is required to do explicit repeated fuel management.
+.. note:: The ``explicitRepeatShuffles`` setting points to a ``*-SHUFFLES.txt``
+          file that records moves from a previous run for exact repetition.
 
-   The shuffling history can also be provided in a YAML file with the
-   ``*-SHUFFLES.yaml`` naming convention. The YAML format organizes
-   data by cycle in a ``sequence`` mapping. Each cycle contains a list of
-   high-level shuffle actions such as ``cascade`` chains, ``rotations``,
-   and ``misloadSwap`` entries. Cascades describe a new assembly type
-   moving through a series of locations until discharge. Optional
-   ``fuelEnrichment`` lists can specify the enrichment distribution for
-   the fresh assembly. ``rotations`` provide degrees of clockwise rotation
-   to apply after all moves in that cycle. For example::
+   Users may also define a custom shuffle plan in a YAML file referenced by the
+   ``shuffleSequenceFile`` setting. The YAML format organizes data by cycle in a
+   ``sequence`` mapping. Each cycle contains a list of high-level actions such as
+   ``cascade`` chains, ``rotations``, and ``misloadSwap`` entries. Cascades
+   describe a new assembly type moving through a series of locations until
+   discharge. Optional ``fuelEnrichment`` lists can specify enrichment for the
+   fresh assembly. ``rotations`` must be in multiples of 60° and are applied
+   after all moves in that cycle. For example::
 
        sequence:
         1:

@@ -20,6 +20,7 @@ from armi.physics.fuelCycle.settings import (
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
     CONF_SHUFFLE_LOGIC,
+    CONF_SHUFFLE_SEQUENCE_FILE,
 )
 from armi.utils import plotting
 
@@ -72,7 +73,7 @@ class FuelHandlerInterface(interfaces.Interface):
             cs.getSetting(settingName): [
                 cs[settingName],
             ]
-            for settingName in [CONF_SHUFFLE_LOGIC, "explicitRepeatShuffles"]
+            for settingName in [CONF_SHUFFLE_LOGIC, "explicitRepeatShuffles", CONF_SHUFFLE_SEQUENCE_FILE]
             if cs[settingName]
         }
         return files

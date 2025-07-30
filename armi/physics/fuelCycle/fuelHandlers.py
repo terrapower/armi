@@ -37,7 +37,10 @@ from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
 from armi.physics.fuelCycle.fuelHandlerFactory import fuelHandlerFactory
 from armi.physics.fuelCycle.fuelHandlerInterface import FuelHandlerInterface
-from armi.physics.fuelCycle.settings import CONF_ASSEMBLY_ROTATION_ALG
+from armi.physics.fuelCycle.settings import (
+    CONF_ASSEMBLY_ROTATION_ALG,
+    CONF_SHUFFLE_SEQUENCE_FILE,
+)
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils.customExceptions import InputError
@@ -93,7 +96,18 @@ class FuelHandler:
             raise ValueError("Cannot perform two outages with same FuelHandler instance.")
 
         # determine if a repeat shuffle is occurring or a new shuffle pattern
-        if self.cs["explicitRepeatShuffles"]:
+        if self.cs.get(CONF_SHUFFLE_SEQUENCE_FILE):
+            if not os.path.exists(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]):
+                raise RuntimeError(
+                    "Requested shuffle sequence file {0} does not exist. Cannot perform shuffling. ".format(
+                        self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+                    )
+                )
+            runLog.important(
+                "Applying shuffle sequence from {}".format(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])
+            )
+            self.repeatShufflePattern(self.cs[CONF_SHUFFLE_SEQUENCE_FILE], yaml=True)
+        elif self.cs["explicitRepeatShuffles"]:
             # repeated shuffle
             if not os.path.exists(self.cs["explicitRepeatShuffles"]):
                 raise RuntimeError(
@@ -883,14 +897,16 @@ class FuelHandler:
                 continue
             self.swapAssemblies(assemList[0], assemList[level + 1])
 
-    def repeatShufflePattern(self, explicitRepeatShuffles):
+    def repeatShufflePattern(self, shuffleFile, yaml=False):
         """
-        Repeats the fuel management from a previous ARMI run.
+        Repeats the fuel management from a previous ARMI run or processes a YAML shuffle file.
 
         Parameters
         ----------
-        explicitRepeatShuffles : str
-            The file name that contains the shuffling history from a previous run
+        shuffleFile : str
+            The file name that contains the shuffling history
+        yaml : bool, optional
+            If True, interpret ``shuffleFile`` as a YAML shuffle sequence.
 
         Returns
         -------
@@ -899,7 +915,7 @@ class FuelHandler:
 
         Notes
         -----
-        typically the explicitRepeatShuffles will be "caseName"+"-SHUFFLES.txt"
+        typically the shuffle file will be ``caseTitle``-"SHUFFLES.txt" for text files
 
         See Also
         --------
@@ -908,10 +924,10 @@ class FuelHandler:
         makeShuffleReport : Creates the file that is processed here
         """
         # read moves file
-        if explicitRepeatShuffles.lower().endswith((".yaml", ".yml")):
-            moves = self.readMovesYaml(explicitRepeatShuffles)
+        if yaml:
+            moves = self.readMovesYaml(shuffleFile)
         else:
-            moves = self.readMoves(explicitRepeatShuffles)
+            moves = self.readMoves(shuffleFile)
         # get the correct cycle number
         # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
         cycle = self.r.p.cycle + 1
@@ -1084,7 +1100,7 @@ class FuelHandler:
         Parameters
         ----------
         moveList : list
-            a list of (fromLoc,toLoc,enrichList,assemType,assemName) tuples that occurred at a single outage.
+            a list of (fromLoc,toLoc,enrichList,assemType,assemName,rotation) tuples that occurred at a single outage.
 
         startingAt : str
             A location label where the chain would start. This is important because the discharge
@@ -1204,6 +1220,8 @@ class FuelHandler:
                 the type of assembly that this is
             movingAssemName
                 the name of the assembly that is moving from to
+            rot
+                the rotation to apply to the assembly after the move (optional)
 
         Returns
         -------
