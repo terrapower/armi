@@ -461,7 +461,7 @@ class Material:
         dLL = self.linearExpansionPercent(Tk=Tk)
         if self.refDens is None:
             runLog.warning(
-                "{0} has no reference density".format(self),
+                f"{self} has no reference density",
                 single=True,
                 label="No refD " + self.getName(),
             )

@@ -1154,6 +1154,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # record pre-merged number densities and areas
         aMe = self.getArea()
+        # if negative-area gap, treat is as 0.0 and return
+        if aMe <= 0.0:
+            return
         aMerge = compToMergeWith.getArea()
         meNDens = {nucName: aMe / aMerge * self.getNumberDensity(nucName) for nucName in self.getNuclides()}
         mergeNDens = {nucName: compToMergeWith.getNumberDensity(nucName) for nucName in compToMergeWith.getNuclides()}
