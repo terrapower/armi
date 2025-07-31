@@ -276,34 +276,6 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
             self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
 
-        ### THIS IS SUPPOSED TO HAVE CHANGES YOU DINGUS
-        # blocks = list(self.origBHeight.keys())
-        # for i, (newCMasses, origCMasses) in enumerate(zip(newCMassesByBlock.values(), self.origCMassesByBlock.values())):
-        #     for new, orig in zip(newCMasses, origCMasses):
-        #         if Flags.TEST in new.cFlags and Flags.FUEL in new.cFlags:
-        #             self.assertAlmostEqual(
-        #                 new.mass,
-        #                 orig.mass,
-        #                 places=10,
-        #                 msg = f"{blocks[i].getType()}: {new.cFlags}: {new.mass - orig.mass}, {new.mass}, {orig.mass}"
-        #             )
-    # @staticmethod
-    # def getChangeInMassForCompWFlags(origMasses, newMasses):
-    #     blocks = list(origMasses.keys())
-    #     print("\nShow Change in Mass for Fuel Test")
-    #     for i, (newCompMasses, origCompMasses) in enumerate(zip(newMasses.values(), origMasses.values())):
-    #         for new, orig in zip(newCompMasses, origCompMasses):
-    #             if Flags.TEST in new.cFlags and Flags.FUEL in new.cFlags:
-    #                 # if Flags.TEST not in new.cFlags and Flags.CLAD in new.cFlags:
-    #                 print(f"{blocks[i].getType()}: {new.cFlags}: {new.mass - orig.mass}, {new.mass}, {orig.mass}")
-
-
-        # print("\nNew Block Heights")
-        # for i, (newBHeight, origBHeight) in enumerate(zip(newBHeight.values(), origBHeight.values())):
-        #     print(f"{a[i].getType()}\t{newBHeight:0.3f}\t{origBHeight:0.3f}")
-
-
-
 class TestAxialExpansionHeight(AxialExpansionTestBase):
     """Verify that test assembly is expanded correctly."""
 
