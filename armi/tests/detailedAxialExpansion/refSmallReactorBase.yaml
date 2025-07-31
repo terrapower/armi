@@ -51,9 +51,7 @@ blocks:
             Tinput: 25.0
             Thot: 450.0
             ip: 18.0
-            ip: 18.0
             mult: 1.0
-            op: 18.5
             op: 18.5
         intercoolant: &component_intercoolant
             shape: Hexagon
@@ -62,7 +60,6 @@ blocks:
             Thot: 450.0
             ip: duct.op
             mult: 1.0
-            op: 19.0
             op: 19.0
 
     SodiumBlock: &block_dummy
@@ -74,7 +71,6 @@ blocks:
             Thot: 450.0
             ip: 0.0
             mult: 1.0
-            op: 19.0
             op: 19.0
 
     ## ------------------------------------------------------------------------------------
@@ -278,7 +274,6 @@ blocks:
         grid name: twoPin
         fuel: &component_fuelmultiPin
             shape: Circle
-            material: UZr
             material: UZr
             Tinput: 25.0
             Thot: 600.0
@@ -537,8 +532,6 @@ assemblies:
         material modifications:
             U235_wt_frac: ['', '', 0.11, 0.11, 0.11, '', '', '', '', '']
             ZR_wt_frac: ['', '', 0.06, 0.06, 0.06, '', '', '', '', '']
-            U235_wt_frac: ['', '', 0.11, 0.11, 0.11, '', '', '', '', '']
-            ZR_wt_frac: ['', '', 0.06, 0.06, 0.06, '', '', '', '', '']
         xs types: &igniter_fuel_xs_types [A, A, B, C, C, D, A, A, A, A]
     middle fuel:
         specifier: MC
@@ -549,11 +542,9 @@ assemblies:
     annular fuel:
         specifier: AF
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_fuelAnnular_linedClad, *block_fuelAnnular_linedClad, *block_fuelAnnular_linedClad, *block_plenum, *block_aclp, *block_plenum, *block_duct, *block_dummy]
-        blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_fuelAnnular_linedClad, *block_fuelAnnular_linedClad, *block_fuelAnnular_linedClad, *block_plenum, *block_aclp, *block_plenum, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
-    multi pin fuel:
     multi pin fuel:
         specifier: LA
         blocks: [*block_grid_plate, *block_fuel_multiPin_axial_shield, *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin, *block_mixed_multiPin, *block_aclp_multiPin, *block_plenum_multiPin, *block_duct, *block_dummy]
