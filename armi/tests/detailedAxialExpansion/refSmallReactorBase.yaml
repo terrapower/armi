@@ -41,7 +41,6 @@ blocks:
             ip: grid.op
             mult: 1.0
             op: 19.0
-            op: 19.0
 
     duct: &block_duct
         coolant: *component_coolant
