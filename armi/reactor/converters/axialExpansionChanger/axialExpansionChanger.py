@@ -15,7 +15,7 @@
 
 import typing
 
-from numpy import array
+from numpy import array, array_equal
 
 from armi import runLog
 from armi.materials.material import Fluid
@@ -28,7 +28,11 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
+from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
+
+if typing.TYPE_CHECKING:
+    from armi.reactor.components.component import Component
 
 
 def getDefaultReferenceAssem(assems):
@@ -336,48 +340,68 @@ class AxialExpansionChanger:
             "Printing component expansion information (growth percentage and 'target component')"
             f"for each block in assembly {self.linked.a}."
         )
+        # expand all of the components
         for ib, b in enumerate(self.linked.a):
-            runLog.debug(msg=f"  Block {b}")
-            blockHeight = b.getHeight()
-            # set bottom of block equal to top of block below it
-            # if ib == 0, leave block bottom = 0.0
-            if ib > 0:
-                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 for c in iterSolidComponents(b):
                     growFrac = self.expansionData.getExpansionFactor(c)
-                    runLog.debug(msg=f"      Component {c}, growFrac = {growFrac:.4e}")
-                    c.height = growFrac * blockHeight
-                    # align linked components
-                    if ib == 0:
-                        c.zbottom = 0.0
-                    else:
-                        if self.linked.linkedComponents[c].lower is not None:
-                            # use linked components below
-                            c.zbottom = self.linked.linkedComponents[c].lower.ztop
-                        else:
-                            # otherwise there aren't any linked components
-                            # so just set the bottom of the component to
-                            # the top of the block below it
-                            c.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
-                    c.ztop = c.zbottom + c.height
-                    # update component number densities
+                    # component ndens and component heights are scaled to their respective growth factor
                     c.changeNDensByFactor(1.0 / growFrac)
-                    # redistribute block boundaries if on the target component
-                    if self.expansionData.isTargetComponent(c):
-                        b.p.ztop = c.ztop
-                        b.p.height = b.p.ztop - b.p.zbottom
+                    c.zbottom = b.p.zbottom
+                    c.height = growFrac * b.getHeight()
+                    c.ztop = c.zbottom + c.height
+
+        # align blocks on target components
+        for ib, b in enumerate(self.linked.a):
+            isDummyBlock = ib == (numOfBlocks - 1)
+            if not isDummyBlock:
+                c = self.expansionData.getTargetComponent(b)
+                c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
+                c.height = c.ztop - c.zbottom
+                # redefine block bounds based on target component
+                b.p.zbottom = c.zbottom
+                b.p.ztop = c.ztop
+                b.p.height = b.p.ztop - b.p.zbottom
+                b.clearCache()
+                b.p.z = b.p.zbottom + b.getHeight() / 2.0
+                # if the linked component above is the target component for the block above, align them
+                # e.g., for expansion, this shifts up the target component in the block above
+                if self.expansionData.isTargetComponent(self.linked.linkedComponents[c].upper):
+                    cAbove = self.linked.linkedComponents[c].upper
+                    cAbove.zbottom = c.ztop
+                    cAbove.ztop = cAbove.height + cAbove.zbottom
+
+                # deal with non-target components
+                for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
+                    # redistribute mass
+                    cAbove = self.linked.linkedComponents[c].upper
+                    if cAbove:
+                        delta = b.getHeight() - c.height
+                        if abs(delta) > 1e-12 and delta > 0.0:
+                            ## only move mass from the above comp to the current comp. mass removal from the
+                            #  above comp happens when the lower bound of the above block shifts up
+                            self.addMassToComponent(
+                                fromComp=cAbove,
+                                toComp=c,
+                                delta=delta,
+                            )
+                        elif abs(delta) > 1e-12 and delta < 0.0:
+                            ## only move mass from the comp to the comp above. mass removal from the
+                            #  current comp happens when the upper bound of the current block shifts down
+                            self.addMassToComponent(
+                                fromComp=c,
+                                toComp=cAbove,
+                                delta=delta,
+                            )
+                    if cAbove:
+                        cAbove.zbottom = c.ztop
+                        cAbove.ztop = cAbove.height + cAbove.zbottom
             else:
+                b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
 
-            b.p.z = b.p.zbottom + b.getHeight() / 2.0
-
             _checkBlockHeight(b)
-            # Call Component.clearCache to update the Component volume, and therefore the masses,
-            # of all components.
-            for c in b:
-                c.clearCache()
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -385,6 +409,77 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def addMassToComponent(self, fromComp: "Component", toComp: "Component", delta: float):
+        """
+        Parameters
+        ----------
+        fromComp
+            Component which is going to give mass to toComp
+        toComp
+            Component that is recieving mass from fromComp
+        delta
+            The length, in cm, of fromComp being given to toComp
+        """
+        # limitation: fromComp and toComp **must** have the same isotopics.
+        nucsFrom = fromComp.getNuclides()
+        nucsTo = toComp.getNuclides()
+        if not array_equal(nucsFrom, nucsTo):
+            runLog.warning(
+                f"Cannot redistribute mass from {fromComp} to {toComp} as they do not have the same nuclides.\n"
+                f"Instead, {toComp} will have it's mass changed based on the difference between its ztop and the top"
+                "of its block."
+            )
+            if delta > 0:
+                # expansion, add mass to toComp
+                return self._noRedistribution(toComp, delta)
+            else:
+                # contraction, add mass to fromComp
+                return self._noRedistribution(fromComp, delta)
+
+        delta = abs(delta)
+        ## calculate new number densities for each isotope based on the expected total mass
+        toCompVolume = toComp.getArea() * toComp.height
+        fromCompVolume = fromComp.getArea() * delta
+        newVolume = fromCompVolume + toCompVolume
+
+        ## calculate the mass of each nuclide
+        massByNucFrom = {}
+        massByNucTo = {}
+        for nuc in nucsFrom:
+            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
+            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
+
+        ## calculate the ndens from the new mass
+        newNDens: dict[str, float] = {}
+        for nuc in nucsFrom:
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc] + massByNucTo[nuc], newVolume)
+
+        ## Set newNDens on toComp
+        toComp.setNumberDensities(newNDens)
+
+    def _noRedistribution(self, c: "Component", delta: float):
+        """Calculate new number densities for each isotope based on the expected total mass.
+
+        Parameters
+        ----------
+        c
+            Component which is going to have mass increased by a length of delta
+        delta
+            The length, in cm, which corresponds to how much mass will increase by
+        """
+        # get new volume
+        newVolume = c.getArea() * (c.height + delta)
+        # get mass fractions per nuclide for the new volume
+        massByNucTo = {}
+        for nuc in c.getNuclides():
+            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, newVolume, c.getNumberDensity(nuc))
+        # calculate the number densities that generate the new mass per nuclide
+        newNDens: dict[str, float] = {}
+        for nuc in c.getNuclides():
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucTo[nuc], newVolume)
+        ## Set newNDens on toComp
+        c.setNumberDensities(newNDens)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.

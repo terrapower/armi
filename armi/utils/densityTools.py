@@ -14,7 +14,7 @@
 
 """Assorted utilities to help with basic density calculations."""
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
@@ -149,22 +149,22 @@ def calculateNumberDensity(nucName, mass, volume):
         )
 
 
-def getMassInGrams(nucName, volume, numberDensity=None):
+def getMassInGrams(nucName: str, volume: float, numberDensity: Union[float, None] = None) -> float:
     """
     Gets mass of a nuclide of a known volume and know number density.
 
     Parameters
     ----------
-    nucName : str
+    nucName
         name of nuclide -- e.g. 'U235'
-    volume : float
+    volume
         volume in (cm3)
-    numberDensity : float
+    numberDensity
         number density in (at/bn-cm)
 
     Returns
     -------
-    mass : float
+    mass
         mass of nuclide (g)
     """
     if not numberDensity:
