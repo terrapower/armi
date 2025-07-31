@@ -258,7 +258,6 @@ blocks:
             material: Void
             Tinput: 25.0
             Thot: 600.0
-            Thot: 600.0
             id: fuel.od
             mult: fuel.mult
             od: liner.id
