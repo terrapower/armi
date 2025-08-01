@@ -18,6 +18,9 @@ import copy
 import os
 import random
 import unittest
+from unittest.mock import Mock
+
+import numpy as np
 
 from armi.nuclearDataIO.cccc import isotxs
 from armi.physics.neutronics.settings import CONF_XS_KERNEL
@@ -714,3 +717,49 @@ class TestUniformMeshNonUniformAssemFlags(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateCap)
                 self.assertTrue(b.p.rateAbs)
+
+
+class TestParamMapper(unittest.TestCase):
+    """Test how the ParamMapper maps params."""
+
+    def setUp(self):
+        sourceAssem, destinationAssem = test_assemblies.buildTestAssemblies()[2:]
+        self.sourceBlock = sourceAssem.getBlocks()[0]
+        self.destinationBlock = destinationAssem.getBlocks()[0]
+
+        # volume integrated parameters
+        self.sourceBlock.p.power = 2.0
+        self.sourceBlock.p.mgFlux = np.array([2.0, 2.0, 2.0])
+        self.volumeIntegratedParameterNames = ["power", "mgFlux"]
+        # non-volume integrated parameters
+        self.sourceBlock.p.rateFis = 2.0
+        self.sourceBlock.p.linPowByPin = np.array([2.0, 2.0, 2.0])
+        self.regularParameterNames = ["rateFis", "linPowByPin"]
+        self.allParameterNames = self.volumeIntegratedParameterNames + self.regularParameterNames
+
+        self.sourceBlock.getSymmetryFactor = Mock()
+        self.destinationBlock.getSymmetryFactor = Mock()
+
+    def _mappingTestHelper(self, sourceBlock, destinationBlock, expectedRatioVolumeIntegrated):
+        """Test helper to run block comparison when mapping parameters."""
+        paramMapper = uniformMesh.ParamMapper([], self.allParameterNames, sourceBlock)
+        sourceValues = paramMapper.paramGetter(sourceBlock, self.allParameterNames)
+        paramMapper.paramSetter(destinationBlock, sourceValues, self.allParameterNames)
+        for paramName in self.volumeIntegratedParameterNames:
+            ratio = destinationBlock.p[paramName] / sourceBlock.p[paramName]
+            np.testing.assert_equal(ratio, expectedRatioVolumeIntegrated)
+        for paramName in self.regularParameterNames:
+            ratio = destinationBlock.p[paramName] / sourceBlock.p[paramName]
+            np.testing.assert_equal(ratio, 1)
+
+    def test_mappingSameSymmetry(self):
+        """Test mapping parameters between blocks with similar and dissimilar symmetry factors."""
+        self.sourceBlock.getSymmetryFactor.return_value = 3
+        self.destinationBlock.getSymmetryFactor.return_value = 3
+        self._mappingTestHelper(self.sourceBlock, self.destinationBlock, 1)
+
+    def test_mappingDifferentSymmetry(self):
+        """Test mapping parameters between blocks with similar and dissimilar symmetry factors."""
+        self.sourceBlock.getSymmetryFactor.return_value = 3
+        self.destinationBlock.getSymmetryFactor.return_value = 1
+        self._mappingTestHelper(self.sourceBlock, self.destinationBlock, 3)
