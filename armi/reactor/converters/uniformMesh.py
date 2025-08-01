@@ -57,8 +57,8 @@ import collections
 import copy
 import glob
 import re
-from timeit import default_timer as timer
 import typing
+from timeit import default_timer as timer
 
 import numpy as np
 
@@ -1441,10 +1441,16 @@ class ParamMapper:
             multiplier = self.getFactorSymmetry(paramName, symmetryFactor)
             val = block.p[paramName]
             # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, list, np.ndarray)):
-                paramVals.append(np.array(val) * multiplier if len(val) > 0 else None)
+            if val is None:
+                if isinstance(val, (tuple, list, np.ndarray)):
+                    paramVals.append(np.array(val) if len(val) > 0 else None)
+                else:
+                    paramVals.append(val)
             else:
-                paramVals.append(val * multiplier)
+                if isinstance(val, (tuple, list, np.ndarray)):
+                    paramVals.append(np.array(val) * multiplier if len(val) > 0 else None)
+                else:
+                    paramVals.append(val * multiplier)
 
         return np.array(paramVals, dtype=object)
 
@@ -1452,7 +1458,10 @@ class ParamMapper:
         """Assigns a set of float/integer/string values to a given set of parameters on a block."""
         symmetryFactor = block.getSymmetryFactor()
         for paramName, val in zip(paramNames, vals):
-            block.p[paramName] = val / self.getFactorSymmetry(paramName, symmetryFactor)
+            if val is None:
+                block.p[paramName] = val
+            else:
+                block.p[paramName] = val / self.getFactorSymmetry(paramName, symmetryFactor)
 
     def _arrayParamSetter(self, block: "Block", arrayVals, paramNames):
         """Assigns a set of list/array values to a given set of parameters on a block."""
