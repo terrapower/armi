@@ -419,13 +419,14 @@ class FuelHandler:
             # find the assembly closest to xt,yt if coords are given without considering params.
             aTarg = None
             minD = 1e10
-            xt, yt = coords  # assume (x,y) tuple.
-            for a in self.r.core.getAssemblies():
+            xt, yt = coords  # assume (x,y) tuple
+            for a in self.r.core:
                 x, y, _ = a.spatialLocator.getLocalCoordinates()
                 d = (y - yt) ** 2 + (x - xt) ** 2
                 if d < minD:
                     minD = d
                     aTarg = a
+
             return aTarg
 
         if findFromSfp:
@@ -1295,7 +1296,7 @@ class FuelHandler:
     def prepShuffleMap(self):
         """Prepare a table of current locations for plotting shuffle maneuvers."""
         self.oldLocations = {}
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             self.oldLocations[a.getName()] = a.spatialLocator.getGlobalCoordinates()
 
     def makeShuffleArrows(self):
@@ -1309,7 +1310,7 @@ class FuelHandler:
         """
         arrows = []
         runLog.extra("Building list of shuffle arrows.")
-        for a in self.r.core.getAssemblies():
+        for a in self.r.core:
             currentCoords = a.spatialLocator.getGlobalCoordinates()
             oldCoords = self.oldLocations.get(a.getName(), None)
             if oldCoords is None:

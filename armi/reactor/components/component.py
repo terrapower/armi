@@ -21,7 +21,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Optional
+from typing import Optional, Union
 
 import numpy as np
 
@@ -304,9 +304,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
                 except Exception:
                     if value.count(".") > 1:
-                        raise ValueError(f"Component names should not have periods in them: `{value}`")
+                        raise ValueError(
+                            f"Name of {self} has a period in it. "
+                            f"Components cannot not have periods in their names: `{value}`"
+                        )
                     else:
-                        raise KeyError(f"Bad component link `{dimName}` defined as `{value}`")
+                        raise KeyError(f"Bad component link `{dimName}` defined as `{value}` in {self}")
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
@@ -642,7 +645,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return 0.0
 
-    def getNuclideNumberDensities(self, nucNames):
+    def getNuclideNumberDensities(self, nucNames: list[str]) -> list[float]:
         """Return a list of number densities for the nuc names requested."""
         if isinstance(nucNames, (list, tuple, np.ndarray)):
             byteNucs = np.asanyarray(nucNames, dtype="S6")
@@ -863,7 +866,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         except ZeroDivisionError:
             return 0.0
 
-    def getMass(self, nuclideNames=None):
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         r"""
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
