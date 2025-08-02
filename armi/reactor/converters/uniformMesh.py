@@ -58,6 +58,8 @@ import copy
 import glob
 import re
 from timeit import default_timer as timer
+from multiprocessing import Pool
+from functools import partial
 
 import numpy as np
 
@@ -1001,16 +1003,24 @@ class UniformMeshGeometryConverter(GeometryConverter):
         runLog.debug(
             f"Creating new assemblies from {self._sourceReactor.core} with a uniform mesh of {self._uniformMesh}"
         )
-        for sourceAssem in self._sourceReactor.core:
-            newAssem = self.makeAssemWithUniformMesh(
-                sourceAssem,
-                self._uniformMesh,
-                paramMapper=self.paramMapper,
-                includePinCoordinates=self.includePinCoordinates,
-            )
-            src = sourceAssem.spatialLocator
-            newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
-            self.convReactor.core.add(newAssem, newLoc)
+        # for sourceAssem in self._sourceReactor.core:
+        #    newAssem = self.makeAssemWithUniformMesh(
+        #        sourceAssem,
+        #        self._uniformMesh,
+        #        paramMapper=self.paramMapper,
+        #        includePinCoordinates=self.includePinCoordinates,
+        #    )
+        #    src = sourceAssem.spatialLocator
+        #    newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
+        #    self.convReactor.core.add(newAssem, newLoc)
+        # assemblies = self._sourceReactor.core.getAssemblies()
+        with Pool(4) as pool:
+            for index, newAssem in enumerate(pool.imap(
+                    partial(UniformMeshGeometryConverter.makeAssemWithUniformMesh, newMesh=self._uniformMesh, paramMapper=self.paramMapper, includePinCoordinates=self.includePinCoordinates),  self._sourceReactor.core)):
+                sourceAssem = self._sourceReactor.core[index]
+                src = sourceAssem.spatialLocator
+                newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
+                self.convReactor.core.add(newAssem, newLoc)
 
     def _clearStateOnReactor(self, reactor, cache):
         """
