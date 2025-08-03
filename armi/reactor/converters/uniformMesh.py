@@ -57,9 +57,9 @@ import collections
 import copy
 import glob
 import re
-from timeit import default_timer as timer
-from multiprocessing import Pool
 from functools import partial
+from multiprocessing import Pool
+from timeit import default_timer as timer
 
 import numpy as np
 
@@ -1016,7 +1016,11 @@ class UniformMeshGeometryConverter(GeometryConverter):
         # assemblies = self._sourceReactor.core.getAssemblies()
         with Pool(4) as pool:
             for index, newAssem in enumerate(pool.imap(
-                    partial(UniformMeshGeometryConverter.makeAssemWithUniformMesh, newMesh=self._uniformMesh, paramMapper=self.paramMapper, includePinCoordinates=self.includePinCoordinates),  self._sourceReactor.core)):
+                    partial(
+                        UniformMeshGeometryConverter.makeAssemWithUniformMesh,
+                        newMesh=self._uniformMesh,
+                        paramMapper=self.paramMapper,
+                        includePinCoordinates=self.includePinCoordinates),  self._sourceReactor.core)):
                 sourceAssem = self._sourceReactor.core[index]
                 src = sourceAssem.spatialLocator
                 newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
