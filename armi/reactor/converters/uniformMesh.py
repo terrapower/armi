@@ -1392,7 +1392,7 @@ class ParamMapper:
     the same data.
     """
 
-    def __init__(self, reactorParamNames, blockParamNames, b):
+    def __init__(self, reactorParamNames: list[str], blockParamNames: list[str], b: "Block"):
         """
         Initialize the list of parameter defaults.
 
@@ -1420,7 +1420,7 @@ class ParamMapper:
         self.reactorParamNames = reactorParamNames
         self.blockParamNames = blockParamNames
 
-    def paramSetter(self, block: "Block", vals, paramNames):
+    def paramSetter(self, block: "Block", vals: list, paramNames: list[str]):
         """Sets block parameter data."""
         for paramName, val in zip(paramNames, vals):
             # Skip setting None values.
@@ -1433,7 +1433,7 @@ class ParamMapper:
                 print(paramName)
                 self._scalarParamSetter(block, [val], [paramName])
 
-    def paramGetter(self, block: "Block", paramNames):
+    def paramGetter(self, block: "Block", paramNames: list[str]):
         """Returns block parameter values as an array in the order of the parameter names given."""
         paramVals = []
         symmetryFactor = block.getSymmetryFactor()
@@ -1442,19 +1442,15 @@ class ParamMapper:
             val = block.p[paramName]
             # list-like should be treated as a numpy array
             if val is None:
-                if isinstance(val, (tuple, list, np.ndarray)):
-                    paramVals.append(np.array(val) if len(val) > 0 else None)
-                else:
-                    paramVals.append(val)
+                paramVals.append(val)
+            elif isinstance(val, (tuple, list, np.ndarray)):
+                paramVals.append(np.array(val) * multiplier if len(val) > 0 else None)
             else:
-                if isinstance(val, (tuple, list, np.ndarray)):
-                    paramVals.append(np.array(val) * multiplier if len(val) > 0 else None)
-                else:
-                    paramVals.append(val * multiplier)
+                paramVals.append(val * multiplier)
 
         return np.array(paramVals, dtype=object)
 
-    def _scalarParamSetter(self, block: "Block", vals, paramNames):
+    def _scalarParamSetter(self, block: "Block", vals: list, paramNames: list[str]):
         """Assigns a set of float/integer/string values to a given set of parameters on a block."""
         symmetryFactor = block.getSymmetryFactor()
         for paramName, val in zip(paramNames, vals):
@@ -1463,7 +1459,7 @@ class ParamMapper:
             else:
                 block.p[paramName] = val / self.getFactorSymmetry(paramName, symmetryFactor)
 
-    def _arrayParamSetter(self, block: "Block", arrayVals, paramNames):
+    def _arrayParamSetter(self, block: "Block", arrayVals: list, paramNames: list[str]):
         """Assigns a set of list/array values to a given set of parameters on a block."""
         symmetryFactor = block.getSymmetryFactor()
         for paramName, vals in zip(paramNames, arrayVals):
@@ -1471,7 +1467,7 @@ class ParamMapper:
                 continue
             block.p[paramName] = np.array(vals) / self.getFactorSymmetry(paramName, symmetryFactor)
 
-    def getFactorSymmetry(self, paramName, symmetryFactor):
+    def getFactorSymmetry(self, paramName: str, symmetryFactor: int):
         """Returns the symmetry factor if the parameter is volume integrated, returns 1 otherwise."""
         if self.isVolIntegrated[paramName]:
             return symmetryFactor
