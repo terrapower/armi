@@ -83,4 +83,3 @@ def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
         raise ValueError(msg.format(requestedType, evaluated_source))
 
     return evaluated_source
-
