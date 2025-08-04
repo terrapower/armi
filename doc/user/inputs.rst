@@ -380,7 +380,7 @@ A few examples of restart cases:
 
        sequence:
         1:
-          - cascade: ["Type 1 outer fuel", "009-045", "008-004"]
+          - cascade: ["outer fuel", "009-045", "008-004"]
             fuelEnrichment: [0, 12, 14, 15, 0]
             rotations: {"009-045": 60}
         2: *1
