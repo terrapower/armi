@@ -740,26 +740,33 @@ class TestParamMapper(unittest.TestCase):
         self.sourceBlock.getSymmetryFactor = Mock()
         self.destinationBlock.getSymmetryFactor = Mock()
 
-    def _mappingTestHelper(self, sourceBlock, destinationBlock, expectedRatioVolumeIntegrated):
-        """Test helper to run block comparison when mapping parameters."""
-        paramMapper = uniformMesh.ParamMapper([], self.allParameterNames, sourceBlock)
-        sourceValues = paramMapper.paramGetter(sourceBlock, self.allParameterNames)
-        paramMapper.paramSetter(destinationBlock, sourceValues, self.allParameterNames)
+    def mappingTestHelper(self, expectedRatioVolumeIntegrated):
+        """
+        Test helper to run block comparison when mapping parameters.
+
+        Parameters
+        ----------
+        expectedRatioVolumeIntegrated : int, float
+            The ratio expected for volume integrated parameters when dividing the destination value by the source value.
+        """
+        paramMapper = uniformMesh.ParamMapper([], self.allParameterNames, self.sourceBlock)
+        sourceValues = paramMapper.paramGetter(self.sourceBlock, self.allParameterNames)
+        paramMapper.paramSetter(self.destinationBlock, sourceValues, self.allParameterNames)
         for paramName in self.volumeIntegratedParameterNames:
-            ratio = destinationBlock.p[paramName] / sourceBlock.p[paramName]
+            ratio = self.destinationBlock.p[paramName] / self.sourceBlock.p[paramName]
             np.testing.assert_equal(ratio, expectedRatioVolumeIntegrated)
         for paramName in self.regularParameterNames:
-            ratio = destinationBlock.p[paramName] / sourceBlock.p[paramName]
+            ratio = self.destinationBlock.p[paramName] / self.sourceBlock.p[paramName]
             np.testing.assert_equal(ratio, 1)
 
     def test_mappingSameSymmetry(self):
         """Test mapping parameters between blocks with similar and dissimilar symmetry factors."""
         self.sourceBlock.getSymmetryFactor.return_value = 3
         self.destinationBlock.getSymmetryFactor.return_value = 3
-        self._mappingTestHelper(self.sourceBlock, self.destinationBlock, 1)
+        self.mappingTestHelper(1)
 
     def test_mappingDifferentSymmetry(self):
         """Test mapping parameters between blocks with similar and dissimilar symmetry factors."""
         self.sourceBlock.getSymmetryFactor.return_value = 3
         self.destinationBlock.getSymmetryFactor.return_value = 1
-        self._mappingTestHelper(self.sourceBlock, self.destinationBlock, 3)
+        self.mappingTestHelper(3)
