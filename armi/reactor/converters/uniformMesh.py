@@ -1430,7 +1430,6 @@ class ParamMapper:
             if isinstance(val, (tuple, list, np.ndarray)):
                 self._arrayParamSetter(block, [val], [paramName])
             else:
-                print(paramName)
                 self._scalarParamSetter(block, [val], [paramName])
 
     def paramGetter(self, block: "Block", paramNames: list[str]):
