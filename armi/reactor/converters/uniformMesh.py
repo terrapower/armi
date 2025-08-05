@@ -1014,10 +1014,14 @@ class UniformMeshGeometryConverter(GeometryConverter):
         #    newLoc = self.convReactor.core.spatialGrid[src.i, src.j, 0]
         #    self.convReactor.core.add(newAssem, newLoc)
         # assemblies = self._sourceReactor.core.getAssemblies()
-        with Pool(4) as pool:
+        nThreads = 1
+        if "cpusPerTask" in self._cs:
+            nThreads = self._cs["cpusPerTask"]
+
+        with Pool(nThreads) as pool:
             for index, newAssem in enumerate(pool.imap(
                     partial(
-                        UniformMeshGeometryConverter.makeAssemWithUniformMesh,
+                        self.makeAssemWithUniformMesh,
                         newMesh=self._uniformMesh,
                         paramMapper=self.paramMapper,
                         includePinCoordinates=self.includePinCoordinates),  self._sourceReactor.core)):
