@@ -55,6 +55,8 @@ def _findOneLineData(lines: list, prNum: str, key: str):
     ----------
     lines : list
         The GH CLI dump of a PR, split into lines for convenience.
+    prNum : str
+        The GitHub PR number in question.
     key : str
         The substring that the line in questions starts with.
 
