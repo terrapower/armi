@@ -48,7 +48,7 @@ PR_TYPES = {
 }
 
 
-def _findOneLineData(lines: list, key: str):
+def _findOneLineData(lines: list, prNum: str, key: str):
     """Helper method to find a single line in a GH CLI PR dump.
 
     Parameters
@@ -67,6 +67,7 @@ def _findOneLineData(lines: list, key: str):
         if line.startswith(key):
             return line.split(key)[1].strip()
 
+    print(f"WARNING: Could not find {key} in PR#{prNum}.")
     return "TBD"
 
 
@@ -87,29 +88,29 @@ def _buildScrLine(prNum: str):
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
     # grab title
-    title = _findOneLineData(lines, "title:")
+    title = _findOneLineData(lines, prNum, "title:")
 
     # grab author
-    author = _findOneLineData(lines, "author:")
+    author = _findOneLineData(lines, prNum, "author:")
     author = GITHUB_USERS.get(author, author)
 
     # grab reviewer(s)
-    reviewers = _findOneLineData(lines, "reviewers:")
+    reviewers = _findOneLineData(lines, prNum, "reviewers:")
     reviewers = [rr.split("(")[0].strip() for rr in reviewers.split(",")]
     reviewers = [GITHUB_USERS.get(rr, rr) for rr in reviewers]
     reviewers = ", ".join(reviewers)
 
     # grab one-line description
-    scrType = _findOneLineData(lines, "Change Type:")
+    scrType = _findOneLineData(lines, prNum, "Change Type:")
     if scrType not in PR_TYPES:
         print(f"WARNING: invalid change type '{scrType}' for PR#{prNum}")
         scrType = "trivial"
 
     # grab one-line description
-    desc = _findOneLineData(lines, "One-Sentence Description:")
+    desc = _findOneLineData(lines, prNum, "One-Sentence Description:")
 
     # grab impact on requirements
-    impact = _findOneLineData(lines, "One-line Impact on Requirements:")
+    impact = _findOneLineData(lines, prNum, "One-line Impact on Requirements:")
 
     # build RST line for a list-table, representing this data
     tab = "   "
@@ -173,7 +174,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 1001, 100):
-        gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
+        gitCmd = f"git log -n {num} --pretty=oneline main".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
