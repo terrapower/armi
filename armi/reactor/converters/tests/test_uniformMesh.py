@@ -39,7 +39,6 @@ class DummyFluxOptions:
 class TestConverterFactory(unittest.TestCase):
     def setUp(self):
         self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
-        reduceTestReactorRings(self.r, self.o.cs, 2)
 
         self.dummyOptions = DummyFluxOptions(self.o.cs)
 
@@ -62,7 +61,6 @@ class TestAssemblyUniformMesh(unittest.TestCase):
 
     def setUp(self):
         self.o, self.r = loadTestReactor(inputFilePath=os.path.join(TEST_ROOT, "detailedAxialExpansion"))
-        reduceTestReactorRings(self.r, self.o.cs, 2)
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs)
         self.converter._sourceReactor = self.r
@@ -81,7 +79,8 @@ class TestAssemblyUniformMesh(unittest.TestCase):
         )
 
         prevB = None
-        for newB, sourceB in zip(newAssem, sourceAssem):
+        for newB in newAssem:
+            sourceB = sourceAssem.getBlockAtElevation(newB.p.z)
             if newB.isFuel() and sourceB.isFuel():
                 self.assertEqual(newB.p["xsType"], sourceB.p["xsType"])
             elif not newB.isFuel() and not sourceB.isFuel():
