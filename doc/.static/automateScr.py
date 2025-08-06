@@ -21,6 +21,8 @@ generating an SCR in ARMI.
 
 import subprocess
 
+import requests
+
 # A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.
 GITHUB_USERS = {
     "aaronjamesreynolds": "Aaron Reynolds",
@@ -69,7 +71,7 @@ def _findOneLineData(lines: list, prNum: str, key: str):
         if line.startswith(key):
             return line.split(key)[1].strip()
 
-    print(f"WARNING: Could not find {key} in PR#{prNum}.")
+    print(f"WARNING: SCR: Could not find {key} in PR#{prNum}.")
     return "TBD"
 
 
@@ -105,7 +107,7 @@ def _buildScrLine(prNum: str):
     # grab one-line description
     scrType = _findOneLineData(lines, prNum, "Change Type:")
     if scrType not in PR_TYPES:
-        print(f"WARNING: invalid change type '{scrType}' for PR#{prNum}")
+        print(f"WARNING: SCR: Invalid change type '{scrType}' for PR#{prNum}")
         scrType = "trivial"
 
     # grab one-line description
@@ -157,6 +159,28 @@ def _buildTableHeader(scrType: str):
     return content
 
 
+def isMainPR(prNum: int):
+    """Determine if this PR is into the ARMI main branch.
+
+    Parameters
+    ----------
+    prNum : int
+        The number of this PR.
+
+    Returns
+    -------
+    bool
+        True if this PR is merging INTO the ARMI main branch. Default is True.
+    """
+    try:
+        url = f"https://github.com/terrapower/armi/pull/{prNum}"
+        r = requests.get(url)
+        return "terrapower/armi:main" in r.text
+    except Exception as e:
+        print(f"WARNING: SCR: Failed to determine if PR#{prNum} merged into the main branch: {e}")
+        return True
+
+
 def buildScrTable(thisPrNum: int, pastCommit: str):
     """Helper method to build an RST list-table for an SCR.
 
@@ -176,7 +200,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 1001, 100):
-        gitCmd = f"git log -n {num} --pretty=oneline main".split(" ")
+        gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
@@ -202,6 +226,8 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 3. Build a table row for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
+        if not isMainPR(prNum):
+            continue
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
