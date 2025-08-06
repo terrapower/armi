@@ -224,7 +224,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 3. Build a table row for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
-        if not isMainPR(thisPrNum):
+        if not isMainPR(prNum):
             continue
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
