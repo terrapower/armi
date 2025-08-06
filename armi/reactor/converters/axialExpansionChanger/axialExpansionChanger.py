@@ -378,7 +378,7 @@ class AxialExpansionChanger:
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
                         delta = b.getHeight() - c.height
-                        if abs(delta) > 1e-12 and delta > 0.0:
+                        if delta > 0.0:
                             ## only move mass from the above comp to the current comp. mass removal from the
                             #  above comp happens when the lower bound of the above block shifts up
                             self.addMassToComponent(
@@ -386,7 +386,7 @@ class AxialExpansionChanger:
                                 toComp=c,
                                 delta=delta,
                             )
-                        elif abs(delta) > 1e-12 and delta < 0.0:
+                        elif delta < 0.0:
                             ## only move mass from the comp to the comp above. mass removal from the
                             #  current comp happens when the upper bound of the current block shifts down
                             self.addMassToComponent(
@@ -394,7 +394,6 @@ class AxialExpansionChanger:
                                 toComp=cAbove,
                                 delta=delta,
                             )
-                    if cAbove:
                         cAbove.zbottom = c.ztop
                         cAbove.ztop = cAbove.height + cAbove.zbottom
             else:
