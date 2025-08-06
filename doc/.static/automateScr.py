@@ -69,7 +69,7 @@ def _findOneLineData(lines: list, prNum: str, key: str):
         if line.startswith(key):
             return line.split(key)[1].strip()
 
-    print(f"WARNING: Could not find {key} in PR#{prNum}.")
+    print(f"WARNING: SCR: Could not find {key} in PR#{prNum}.")
     return "TBD"
 
 
@@ -88,8 +88,6 @@ def _buildScrLine(prNum: str):
     """
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
-    print(lines)
-    exit(1)
 
     # grab title
     title = _findOneLineData(lines, prNum, "title:")
@@ -107,7 +105,7 @@ def _buildScrLine(prNum: str):
     # grab one-line description
     scrType = _findOneLineData(lines, prNum, "Change Type:")
     if scrType not in PR_TYPES:
-        print(f"WARNING: invalid change type '{scrType}' for PR#{prNum}")
+        print(f"WARNING: SCR: Invalid change type '{scrType}' for PR#{prNum}")
         scrType = "trivial"
 
     # grab one-line description
@@ -159,6 +157,27 @@ def _buildTableHeader(scrType: str):
     return content
 
 
+def isMainPR(prNum: int):
+    """Determine if this PR is into the ARMI main branch.
+
+    Parameters
+    ----------
+    prNum : int
+        The number of this PR.
+
+    Returns
+    -------
+    bool
+        True if this PR is merging INTO the ARMI main branch. Default is True.
+    """
+    try:
+        proc = subprocess.Popen(f"curl https://github.com/terrapower/armi/pull/{prNum}", stdout=subprocess.PIPE)
+        txt = proc.communicate()[0].decode("utf-8")
+        return "terrapower/armi:main" in txt
+    except Exception:
+        return True
+
+
 def buildScrTable(thisPrNum: int, pastCommit: str):
     """Helper method to build an RST list-table for an SCR.
 
@@ -204,6 +223,8 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 3. Build a table row for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
+        if not isMainPR(thisPrNum):
+            continue
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
