@@ -88,6 +88,8 @@ def _buildScrLine(prNum: str):
     """
     txt = subprocess.check_output(["gh", "pr", "view", prNum]).decode("utf-8")
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
+    print(lines)
+    exit(1)
 
     # grab title
     title = _findOneLineData(lines, prNum, "title:")
@@ -176,7 +178,7 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 1. Get a list of all the commits between this one and the reference
     txt = ""
     for num in range(100, 1001, 100):
-        gitCmd = f"git log -n {num} --pretty=oneline --all --branches=main*".split(" ")
+        gitCmd = f"git log -n {num} --pretty=oneline --all".split(" ")
         txt = subprocess.check_output(gitCmd).decode("utf-8")
         if pastCommit in txt:
             break
