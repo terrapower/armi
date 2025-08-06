@@ -191,10 +191,6 @@ def factory(cs, bp) -> Reactor:
     if cs[CONF_SORT_REACTOR]:
         r.sort()
     else:
-        runLog.warning(
-            "DeprecationWarning: This Reactor is not being sorted on blueprint read. Due to the "
-            f"setting {CONF_SORT_REACTOR}, this Reactor is unsorted. But this feature is temporary "
-            "and will be removed by 2024."
-        )
+        runLog.info(f"Due to the setting {CONF_SORT_REACTOR}, this Reactor is unsorted.")
 
     return r
