@@ -846,6 +846,23 @@ class TestDetermineTargetComponent(AxialExpansionTestBase):
         coolDims = {"Tinput": 25.0, "Thot": 25.0}
         self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
 
+    def test_getTargetComponent(self):
+        b = HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        clad = Circle("clad", "FakeMat", **cladDims)
+        b.add(fuel)
+        b.add(clad)
+        b.add(self.coolant)
+        self.expData.setTargetComponent(b, True)
+        self.assertEqual(fuel, self.expData.getTargetComponent(b))
+
+    def test_getTargetComponent_NoneFound(self):
+        b = HexBlock("fuel", height=10.0)
+        with self.assertRaisesRegex(RuntimeError, f"No target component found for {b} in"):
+            self.expData.getTargetComponent(b)
+
     def test_determineTargetComponent(self):
         """Provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER."""
         b = HexBlock("fuel", height=10.0)

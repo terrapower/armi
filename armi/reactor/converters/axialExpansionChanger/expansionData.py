@@ -365,4 +365,7 @@ class ExpansionData:
             the block to query for the target component
         """
         c = filter(self.isTargetComponent, iterSolidComponents(b))
-        return next(c)
+        try:
+            return next(c)
+        except StopIteration:
+            raise RuntimeError(f"No target component found for {b} in {b.parent}!")
