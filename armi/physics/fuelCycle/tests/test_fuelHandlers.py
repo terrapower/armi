@@ -27,6 +27,7 @@ from unittest.mock import patch
 import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
+from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
     CONF_ASSEMBLY_ROTATION_ALG,
@@ -532,17 +533,17 @@ class TestFuelHandler(FuelHandlerTestHelper):
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
         self.assertEqual(len(moves), 3)
         firstMove = moves[1][0]
-        self.assertEqual(firstMove[0], "002-001")
-        self.assertEqual(firstMove[1], "SFP")
-        self.assertEqual(len(firstMove[2]), numblocks)
-        self.assertEqual(firstMove[3], "igniter fuel")
-        self.assertEqual(firstMove[4], None)
+        self.assertEqual(firstMove.fromLoc, "002-001")
+        self.assertEqual(firstMove.toLoc, "SFP")
+        self.assertEqual(len(firstMove.enrichList), numblocks)
+        self.assertEqual(firstMove.assemType, "igniter fuel")
+        self.assertIsNone(firstMove.movingAssemName)
 
         # check the move that came back out of the SFP
         sfpMove = moves[2][-2]
-        self.assertEqual(sfpMove[0], "SFP")
-        self.assertEqual(sfpMove[1], "005-003")
-        self.assertEqual(sfpMove[4], "A0073")  # name of assem in SFP
+        self.assertEqual(sfpMove.fromLoc, "SFP")
+        self.assertEqual(sfpMove.toLoc, "005-003")
+        self.assertEqual(sfpMove.movingAssemName, "A0073")  # name of assem in SFP
 
         # make sure we fail hard if the file doesn't exist
         with self.assertRaises(RuntimeError):
@@ -554,42 +555,42 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.maxDiff = None
         expected = {
             1: [
-                ("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                ("009-045", "008-004", [], None, None),
-                ("008-004", "007-001", [], None, None),
-                ("007-001", "006-005", [], None, None),
-                ("006-005", "SFP", [], None, None),
-                ("009-045", "009-045", [], None, None, 60.0),
-                ("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                ("010-046", "009-045", [], None, None),
-                ("009-045", "008-004", [], None, None),
-                ("008-004", "007-001", [], None, None),
-                ("007-001", "SFP", [], None, None),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("009-045", "009-045", [], None, None, 60.0),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("010-046", "009-045", [], None, None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "SFP", [], None, None),
             ],
             2: [
-                ("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                ("009-045", "008-004", [], None, None),
-                ("008-004", "007-001", [], None, None),
-                ("007-001", "006-005", [], None, None),
-                ("006-005", "SFP", [], None, None),
-                ("009-045", "009-045", [], None, None, 60.0),
-                ("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                ("010-046", "009-045", [], None, None),
-                ("009-045", "008-004", [], None, None),
-                ("008-004", "007-001", [], None, None),
-                ("007-001", "SFP", [], None, None),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("009-045", "009-045", [], None, None, 60.0),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("010-046", "009-045", [], None, None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "SFP", [], None, None),
             ],
             3: [
-                ("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                ("009-045", "008-004", [], None, None),
-                ("008-004", "007-001", [], None, None),
-                ("007-001", "006-005", [], None, None),
-                ("006-005", "SFP", [], None, None),
-                ("009-045", "009-045", [], None, None, 60.0),
-                ("009-045", "008-004", [], None, None),
-                ("008-004", "009-045", [], None, None),
-                ("008-004", "009-045", [], None, None),
-                ("009-045", "008-004", [], None, None),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("009-045", "009-045", [], None, None, 60.0),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "009-045", [], None, None),
+                AssemblyMove("008-004", "009-045", [], None, None),
+                AssemblyMove("009-045", "008-004", [], None, None),
             ],
         }
         self.assertEqual(moves, expected)

@@ -155,30 +155,26 @@ class FuelHandlerInterface(interfaces.Interface):
             out.write("Before cycle {0}:\n".format(cycle + 1))
             movesThisCycle = self.r.core.moves.get(cycle)
             if movesThisCycle is not None:
-                for (
-                    fromLoc,
-                    toLoc,
-                    chargeEnrich,
-                    assemblyType,
-                    movingAssemName,
-                ) in movesThisCycle:
-                    enrichLine = " ".join(["{0:.8f}".format(enrich) for enrich in chargeEnrich])
-                    if fromLoc in ["ExCore", "SFP"]:
+                for move in movesThisCycle:
+                    enrichLine = " ".join(
+                        ["{0:.8f}".format(enrich) for enrich in move.enrichList]
+                    )
+                    if move.fromLoc in ["ExCore", "SFP"]:
                         # this is a re-entering assembly. Give extra info so repeat shuffles can handle it
                         out.write(
                             "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n".format(
-                                fromLoc,
-                                toLoc,
-                                assemblyType,
+                                move.fromLoc,
+                                move.toLoc,
+                                move.assemType,
                                 enrichLine,
-                                movingAssemName,
+                                move.movingAssemName,
                             )
                         )
                     else:
                         # skip extra info. regular expression in readMoves will handle it just fine.
                         out.write(
                             "{0} moved to {1} with assembly type {2} with enrich list: {3}\n".format(
-                                fromLoc, toLoc, assemblyType, enrichLine
+                                move.fromLoc, move.toLoc, move.assemType, enrichLine
                             )
                         )
             out.write("\n")

@@ -372,18 +372,32 @@ A few examples of restart cases:
    Users may also define a custom shuffle plan in a YAML file referenced by the
    ``shuffleSequenceFile`` setting. The YAML format organizes data by cycle in a
    ``sequence`` mapping. Each cycle contains a list of high-level actions such as
-   ``cascade`` chains, ``rotations``, and ``misloadSwap`` entries. Cascades
-   describe a new assembly type moving through a series of locations until
-   discharge. Optional ``fuelEnrichment`` lists can specify enrichment for the
-   fresh assembly. ``rotations`` must be in multiples of 60° and are applied
-   after all moves in that cycle. For example::
+   ``cascade`` chains, ``misloadSwap`` entries, and optional manual
+   ``rotations``. Cascades describe a new assembly type moving through a series
+   of locations until discharge. Optional ``fuelEnrichment`` lists specify the
+   U235 weight percent enrichment for each axial block in the fresh assembly,
+   from bottom to top, including zeroes for non-fuel blocks. ``misloadSwap``
+   swaps the assemblies at two locations after all cascades are processed but
+   before any rotations are applied. Manual ``rotations`` map final location
+   labels to relative angles in degrees (multiples of 60°) and are performed
+   after any algorithmic rotation routines. Rotations apply to the assembly that
+   ends up at the given location once all moves and swaps in that cycle are
+   complete. Assemblies can be discharged to the spent fuel pool by ending a
+   cascade with ``SFP`` or removed from the model entirely by ending with
+   ``ExCore``. When an assembly is sent to the ``SFP`` it is only retained if the
+   ``trackAssems`` setting is True; ``ExCore`` always deletes the assembly and
+   omitting an ex-core destination also removes it unless tracking is enabled.
+   For example::
 
        sequence:
         1:
-          - cascade: ["outer fuel", "009-045", "008-004"]
-            fuelEnrichment: [0, 12, 14, 15, 0]
+          - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
+            fuelEnrichment: [0, 12, 14, 15, 0]  # wt% U235 by block
             rotations: {"009-045": 60}
-        2: *1
+          - misloadSwap: ["009-045", "008-004"]
+        2:
+          - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
+            fuelEnrichment: [0, 12, 14, 15, 0]
 
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.

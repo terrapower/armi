@@ -30,6 +30,8 @@ import inspect
 import math
 import os
 import re
+from dataclasses import dataclass
+from typing import List, Optional
 
 import numpy as np
 
@@ -44,6 +46,34 @@ from armi.physics.fuelCycle.settings import (
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils.customExceptions import InputError
+
+
+@dataclass(eq=True)
+class AssemblyMove:
+    """Description of an individual shuffle move.
+
+    Parameters
+    ----------
+    fromLoc : str
+        Original location label.
+    toLoc : str
+        Destination location label.
+    enrichList : list[float]
+        Axial U235 weight percent enrichment values for each block.
+    assemType : str, optional
+        Type of assembly that is moving.
+    movingAssemName : str, optional
+        Name of the assembly moving (for SFP/ExCore interactions).
+    rotation : float, optional
+        Degrees of manual rotation to apply after shuffling.
+    """
+
+    fromLoc: str
+    toLoc: str
+    enrichList: List[float]
+    assemType: Optional[str] = None
+    movingAssemName: Optional[str] = None
+    rotation: Optional[float] = None
 
 
 class FuelHandler:
@@ -963,10 +993,10 @@ class FuelHandler:
         -------
         moves : dict
             A dictionary of all the moves. Keys are the cycle number. Values are a list
-            of tuples, one tuple for each individual move that happened in the cycle.
-            The items in the tuple are (oldLoc, newLoc, enrichList, assemType).
-            Where oldLoc and newLoc are str representations of the locations and
-            enrichList is a list of mass enrichments from bottom to top.
+            of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects, one for each individual
+            move that happened in the cycle. ``oldLoc`` and ``newLoc`` are string
+            representations of the locations and ``enrichList`` is a list of mass
+            enrichments from bottom to top.
 
         See Also
         --------
@@ -1008,7 +1038,9 @@ class FuelHandler:
                 if movingAssemName:
                     movingAssemName = movingAssemName.split("=")[1]  # extract the actual assembly name.
                 enrichList = [float(i) for i in m.group(5).split()]
-                moves[cycle].append((oldLoc, newLoc, enrichList, assemType, movingAssemName))
+                moves[cycle].append(
+                    AssemblyMove(oldLoc, newLoc, enrichList, assemType, movingAssemName)
+                )
                 numMoves += 1
             elif "moved" in line:
                 # very old shuffleLogic file.
@@ -1027,7 +1059,7 @@ class FuelHandler:
                 newLoc = m.group(2)
                 enrichList = [float(i) for i in m.group(3).split()]
                 # old loading style, just assume that there is a booster as our surrogate
-                moves[cycle].append((oldLoc, newLoc, enrichList, None))
+                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList, None))
                 numMoves += 1
 
         f.close()
@@ -1068,18 +1100,21 @@ class FuelHandler:
                         continue
                     enrich = [float(e) for e in action.get("fuelEnrichment", [])]
                     # fresh load from LoadQueue
-                    moves[cycle].append(("LoadQueue", locs[0], enrich, assemType, None))
+                    moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType, None))
                     for i in range(len(locs) - 1):
-                        moves[cycle].append((locs[i], locs[i + 1], [], None, None))
-                    moves[cycle].append((locs[-1], "SFP", [], None, None))
+                        moves[cycle].append(AssemblyMove(locs[i], locs[i + 1], [], None, None))
+                    if locs[-1] not in ["SFP", "ExCore"]:
+                        moves[cycle].append(AssemblyMove(locs[-1], "SFP", [], None, None))
 
                     for loc, angle in (action.get("rotations") or {}).items():
-                        moves[cycle].append((loc, loc, [], None, None, float(angle)))
+                        moves[cycle].append(
+                            AssemblyMove(loc, loc, [], None, None, float(angle))
+                        )
 
                 if "misloadSwap" in action:
                     loc1, loc2 = action["misloadSwap"]
-                    moves[cycle].append((loc1, loc2, [], None, None))
-                    moves[cycle].append((loc2, loc1, [], None, None))
+                    moves[cycle].append(AssemblyMove(loc1, loc2, [], None, None))
+                    moves[cycle].append(AssemblyMove(loc2, loc1, [], None, None))
 
         return moves
 
@@ -1099,7 +1134,7 @@ class FuelHandler:
         Parameters
         ----------
         moveList : list
-            a list of (fromLoc,toLoc,enrichList,assemType,assemName,rotation) tuples that occurred at a single outage.
+            a list of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects that occurred at a single outage.
 
         startingAt : str
             A location label where the chain would start. This is important because the discharge
@@ -1131,10 +1166,8 @@ class FuelHandler:
         assemType = None  # in case this is a load chain, prep for getting an assembly type
 
         for move in moveList:
-            if len(move) == 6:
-                fromLoc, toLoc, _enrichList, _assemblyType, _assemName, _rot = move
-            else:
-                fromLoc, toLoc, _enrichList, _assemblyType, _assemName = move
+            fromLoc = move.fromLoc
+            toLoc = move.toLoc
             if "SFP" in toLoc and "LoadQueue" in fromLoc:
                 # skip dummy moves
                 continue
@@ -1152,23 +1185,11 @@ class FuelHandler:
                     # look for something going to where the previous one is from
                     lookingFor = chain[-1]
                     for innerMove in moveList:
-                        if len(innerMove) == 6:
-                            (
-                                cFromLoc,
-                                cToLoc,
-                                cEnrichList,
-                                cAssemblyType,
-                                cAssemName,
-                                _rot,
-                            ) = innerMove
-                        else:
-                            (
-                                cFromLoc,
-                                cToLoc,
-                                cEnrichList,
-                                cAssemblyType,
-                                cAssemName,
-                            ) = innerMove
+                        cFromLoc = innerMove.fromLoc
+                        cToLoc = innerMove.toLoc
+                        cEnrichList = innerMove.enrichList
+                        cAssemblyType = innerMove.assemType
+                        cAssemName = innerMove.movingAssemName
                         if cToLoc == lookingFor:
                             chain.append(cFromLoc)
                             if cFromLoc in ["LoadQueue", "ExCore", "SFP"]:
@@ -1206,21 +1227,8 @@ class FuelHandler:
         Parameters
         ----------
         moveList : list
-            A list of information about fuel management from a previous case. Each entry represents a
-            move and includes the following items as a tuple:
-
-            fromLoc
-                the label of where the assembly was before the move
-            toLoc
-                the label of where the assembly was after the move
-            enrichList
-                a list of block enrichments for the assembly
-            assemType
-                the type of assembly that this is
-            movingAssemName
-                the name of the assembly that is moving from to
-            rot
-                the rotation to apply to the assembly after the move (optional)
+            A list of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects describing each
+            move.
 
         Returns
         -------
@@ -1261,11 +1269,9 @@ class FuelHandler:
 
         # first handle all charge/discharge chains by looking for things going to SFP
         for move in moveList:
-            if len(move) == 6:
-                fromLoc, toLoc, _enrichList, _assemType, _movingAssemName, rot = move
-            else:
-                fromLoc, toLoc, _enrichList, _assemType, _movingAssemName = move
-                rot = None
+            fromLoc = move.fromLoc
+            toLoc = move.toLoc
+            rot = move.rotation
             if fromLoc == toLoc:
                 if rot is not None:
                     rotations.append((fromLoc, rot))
@@ -1276,7 +1282,9 @@ class FuelHandler:
 
             elif "SFP" in toLoc or "ExCore" in toLoc:
                 # discharge. Track chain.
-                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(moveList, startingAt=fromLoc)
+                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(
+                    moveList, startingAt=fromLoc
+                )
                 runLog.extra("Load Chain with load assem {0}: {1}".format(assemType, chain))
                 loadChains.append(chain)
                 enriches.append(enrichList)
@@ -1289,11 +1297,10 @@ class FuelHandler:
         # go through again, looking for stuff that isn't in chains.
         # put them in loop type 3 moves (arbitrary order)
         for move in moveList:
-            if len(move) == 6:
-                fromLoc, toLoc, _enrichList, assemType, _movingAssemName, rot = move
-            else:
-                fromLoc, toLoc, _enrichList, assemType, _movingAssemName = move
-                rot = None
+            fromLoc = move.fromLoc
+            toLoc = move.toLoc
+            assemType = move.assemType
+            rot = move.rotation
             if fromLoc == toLoc:
                 # rotation or no-op
                 continue
@@ -1305,7 +1312,9 @@ class FuelHandler:
                 continue
             else:
                 # normal move
-                chain, _enrichList, _assemType, _loadAssemName = FuelHandler.trackChain(moveList, startingAt=fromLoc)
+                chain, _enrichList, _assemType, _loadAssemName = FuelHandler.trackChain(
+                    moveList, startingAt=fromLoc
+                )
                 loopChains.append(chain)
                 alreadyDone.extend(chain)
 
