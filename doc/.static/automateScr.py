@@ -174,7 +174,8 @@ def isMainPR(prNum: int):
         proc = subprocess.Popen(f"curl https://github.com/terrapower/armi/pull/{prNum}", stdout=subprocess.PIPE)
         txt = proc.communicate()[0].decode("utf-8")
         return "terrapower/armi:main" in txt
-    except Exception:
+    except Exception as e:
+        print(f"Failed to determine if this PR merged into the main branch: {e}")
         return True
 
 
