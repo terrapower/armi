@@ -177,7 +177,7 @@ def isMainPR(prNum: int):
         r = requests.get(url)
         return "terrapower/armi:main" in r.text
     except Exception as e:
-        print(f"Failed to determine if this PR merged into the main branch: {e}")
+        print(f"WARNING: SCR: Failed to determine if PR#{prNum} merged into the main branch: {e}")
         return True
 
 
