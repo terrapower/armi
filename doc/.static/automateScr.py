@@ -21,6 +21,8 @@ generating an SCR in ARMI.
 
 import subprocess
 
+import requests
+
 # A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.
 GITHUB_USERS = {
     "aaronjamesreynolds": "Aaron Reynolds",
@@ -171,9 +173,9 @@ def isMainPR(prNum: int):
         True if this PR is merging INTO the ARMI main branch. Default is True.
     """
     try:
-        cmd = f"curl https://github.com/terrapower/armi/pull/{prNum}"
-        txt = subprocess.check_output(cmd).decode("utf-8")
-        return "terrapower/armi:main" in txt
+        url = f"https://github.com/terrapower/armi/pull/{prNum}"
+        r = requests.get(url)
+        return "terrapower/armi:main" in r.text
     except Exception as e:
         print(f"Failed to determine if this PR merged into the main branch: {e}")
         return True
