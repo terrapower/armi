@@ -356,22 +356,22 @@ class AxialExpansionChanger:
         for ib, b in enumerate(self.linked.a):
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
-                c = self.expansionData.getTargetComponent(b)
+                targetComp = self.expansionData.getTargetComponent(b)
                 # redefine block bounds based on target component
-                b.p.zbottom = c.zbottom
-                b.p.ztop = c.ztop
+                b.p.zbottom = targetComp.zbottom
+                b.p.ztop = targetComp.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
                 b.clearCache()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
                 # if the linked component above is the target component for the block above, align them
                 # e.g., for expansion, this shifts up the target component in the block above
-                if self.expansionData.isTargetComponent(self.linked.linkedComponents[c].upper):
-                    cAbove = self.linked.linkedComponents[c].upper
-                    cAbove.zbottom = c.ztop
-                    cAbove.ztop = cAbove.height + cAbove.zbottom
+                if self.expansionData.isTargetComponent(self.linked.linkedComponents[targetComp].upper):
+                    targetCompAbove = self.linked.linkedComponents[targetComp].upper
+                    targetCompAbove.zbottom = targetComp.ztop
+                    targetCompAbove.ztop = targetCompAbove.height + targetCompAbove.zbottom
 
                 # deal with non-target components
-                for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
+                for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
 
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
