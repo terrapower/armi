@@ -374,7 +374,7 @@ class AxialExpansionChanger:
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
 
                     cAbove = self.linked.linkedComponents[c].upper
-                    if cAbove:
+                    if cAbove is not None:
                         # align components
                         cAbove.zbottom = c.ztop
                         cAbove.ztop = cAbove.zbottom + cAbove.height
