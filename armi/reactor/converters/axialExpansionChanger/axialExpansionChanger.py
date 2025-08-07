@@ -459,10 +459,9 @@ class AxialExpansionChanger:
                 # contraction, add mass to fromComp
                 return self._noRedistribution(fromComp, delta)
 
-        delta = abs(delta)
         ## calculate new number densities for each isotope based on the expected total mass
         toCompVolume = toComp.getArea() * toComp.height
-        fromCompVolume = fromComp.getArea() * delta
+        fromCompVolume = fromComp.getArea() * abs(delta)
         newVolume = fromCompVolume + toCompVolume
 
         ## calculate the mass of each nuclide
