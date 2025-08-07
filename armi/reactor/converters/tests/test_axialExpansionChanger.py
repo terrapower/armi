@@ -205,18 +205,7 @@ class TestMultiPinConservation(AxialExpansionTestBase):
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
-
-        _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
-        cFlags = list(newTotalCMassByFlag.keys())
-        for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
-            if Flags.TEST in cFlags[i] and Flags.FUEL in cFlags[i]:
-                # since test_expandAndContractPrescribed can be checked to 10 places for the test fuel, setting this
-                # to be a larger allowable difference is getting chalked up to precision limitations with thermal exp.
-                self.assertLess(
-                    abs(newMass - origMass) / origMass * 100.0, 0.04, msg=f"{cFlags[i]} is unacceptably different!"
-                )
-            else:
-                self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
+        self.checkConservation()
 
     def test_expandThermal(self):
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):

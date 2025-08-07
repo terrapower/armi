@@ -357,8 +357,6 @@ class AxialExpansionChanger:
             isDummyBlock = ib == (numOfBlocks - 1)
             if not isDummyBlock:
                 c = self.expansionData.getTargetComponent(b)
-                c.zbottom = 0.0 if ib == 0 else self.linked.linkedBlocks[b].lower.p.ztop
-                c.height = c.ztop - c.zbottom
                 # redefine block bounds based on target component
                 b.p.zbottom = c.zbottom
                 b.p.ztop = c.ztop
@@ -374,10 +372,15 @@ class AxialExpansionChanger:
 
                 # deal with non-target components
                 for c in filter(lambda c: not self.expansionData.isTargetComponent(c), iterSolidComponents(b)):
-                    # redistribute mass
+
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove:
-                        delta = b.getHeight() - c.height
+                        # align components
+                        cAbove.zbottom = c.ztop
+                        cAbove.ztop = cAbove.zbottom + cAbove.height
+
+                        # redistribute mass
+                        delta = b.p.ztop - c.ztop
                         if delta > 0.0:
                             ## only move mass from the above comp to the current comp. mass removal from the
                             #  above comp happens when the lower bound of the above block shifts up
@@ -386,6 +389,16 @@ class AxialExpansionChanger:
                                 toComp=c,
                                 delta=delta,
                             )
+                            self.rmMassFromComponent(
+                                fromComp=cAbove,
+                                delta=-delta,
+                            )
+                            # shift the height and ztop of the current component upwards
+                            c.height += delta
+                            c.ztop += delta
+                            # the height of cAbove shrinks and the zbottom moves upwards
+                            cAbove.height -= delta
+                            cAbove.zbottom += delta
                         elif delta < 0.0:
                             ## only move mass from the comp to the comp above. mass removal from the
                             #  current comp happens when the upper bound of the current block shifts down
@@ -394,8 +407,18 @@ class AxialExpansionChanger:
                                 toComp=cAbove,
                                 delta=delta,
                             )
-                        cAbove.zbottom = c.ztop
-                        cAbove.ztop = cAbove.height + cAbove.zbottom
+                            self.rmMassFromComponent(
+                                fromComp=c,
+                                delta=-delta,
+                            )
+                            # shift the height and ztop of the current component downwards (delta is negative!)
+                            c.height += delta
+                            c.ztop += delta
+                            # the height of cAbove grows and the zbottom moves downwards (delta is negative!)
+                            cAbove.height -= delta
+                            cAbove.zbottom += delta
+                        else:
+                            pass
             else:
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
@@ -456,6 +479,27 @@ class AxialExpansionChanger:
 
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
+
+    def rmMassFromComponent(self, fromComp: "Component", delta: float):
+        """Create new number densities for the component that is having mass removed."""
+        nucsFrom = fromComp.getNuclides()
+
+        # calculate the new volume
+        newFromCompVolume = fromComp.getArea() * (fromComp.height + delta)
+
+        # calculate the mass of each nuclide for the given new volume
+        massByNucFrom = {}
+        for nuc in nucsFrom:
+            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, newFromCompVolume, fromComp.getNumberDensity(nuc))
+
+        # calculate the number density of each nuclide for the given new volume
+        newNDens: dict[str, float] = {}
+        for nuc in nucsFrom:
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc], newFromCompVolume)
+
+        # Set newNDens on fromComp
+        fromComp.setNumberDensities(newNDens)
+
 
     def _noRedistribution(self, c: "Component", delta: float):
         """Calculate new number densities for each isotope based on the expected total mass.
