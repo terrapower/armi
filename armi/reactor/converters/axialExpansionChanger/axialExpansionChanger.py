@@ -464,17 +464,12 @@ class AxialExpansionChanger:
         fromCompVolume = fromComp.getArea() * abs(delta)
         newVolume = fromCompVolume + toCompVolume
 
-        ## calculate the mass of each nuclide
-        massByNucFrom = {}
-        massByNucTo = {}
-        for nuc in nucsFrom:
-            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
-            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
-
-        ## calculate the ndens from the new mass
+        ## calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
         for nuc in nucsFrom:
-            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc] + massByNucTo[nuc], newVolume)
+            massByNucFrom = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
+            massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
 
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
@@ -486,15 +481,11 @@ class AxialExpansionChanger:
         # calculate the new volume
         newFromCompVolume = fromComp.getArea() * (fromComp.height + delta)
 
-        # calculate the mass of each nuclide for the given new volume
-        massByNucFrom = {}
-        for nuc in nucsFrom:
-            massByNucFrom[nuc] = densityTools.getMassInGrams(nuc, newFromCompVolume, fromComp.getNumberDensity(nuc))
-
-        # calculate the number density of each nuclide for the given new volume
+        ## calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
         for nuc in nucsFrom:
-            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom[nuc], newFromCompVolume)
+            massByNucFrom = densityTools.getMassInGrams(nuc, newFromCompVolume, fromComp.getNumberDensity(nuc))
+            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom, newFromCompVolume)
 
         # Set newNDens on fromComp
         fromComp.setNumberDensities(newNDens)
