@@ -564,3 +564,10 @@ def _checkBlockHeight(b):
 
     if b.getHeight() < 0.0:
         raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
+
+    for c in iterSolidComponents(b):
+        if c.height - b.getHeight() > 1e-12:
+            msg = f"Component heights in the block have gotten out of sync with block height.\n{b.getHeight()}"
+            for c in iterSolidComponents(b):
+                msg += f"\n{c, c.height}"
+            raise RuntimeError(msg)
