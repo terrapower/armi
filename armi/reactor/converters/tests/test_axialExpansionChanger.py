@@ -196,6 +196,11 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         return blockHeights, compMassByBlock, totalCMassByFlags
 
     def test_expandAndContractThermal(self):
+        """
+        change fuel and test fuel isothermal pass
+        change fuel non-isothermal and test fuel isothermal pass
+        change test fuel non-isothermal fail
+        """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
                 if c.hasFlags(Flags.TEST):
@@ -208,8 +213,12 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         self.checkConservation()
 
     def test_expandThermal(self):
+        """
+        Change fuel: isothermal and non-isothermal pass
+        Change test fuel: isothermal pass, non-isothermal fail
+        """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
                 newTemp = c.temperatureInC + 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -217,6 +226,10 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         self.checkConservation()
 
     def test_contractThermal(self):
+        """
+        Change fuel: isothermal and non-isothermal pass
+        Change test fuel: isothermal pass, non-isothermal fail
+        """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
                 newTemp = c.temperatureInC - 100.0 * i
@@ -228,9 +241,9 @@ class TestMultiPinConservation(AxialExpansionTestBase):
     def test_expandPrescribed(self):
         cList = []
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
                 cList.append(c)
-        pList = zeros(len(cList)) + 1.1
+        pList = zeros(len(cList)) + 1.2
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
@@ -261,7 +274,16 @@ class TestMultiPinConservation(AxialExpansionTestBase):
 
     def checkConservation(self):
         _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
+
+        for block in _newCMassesByBlock.keys():
+            print(f"\n{block.name}")
+            for new, old in zip(_newCMassesByBlock[block], self.origCMassesByBlock[block]):
+                print(new.cFlags, new.mass - old.mass)
+
         cFlags = list(newTotalCMassByFlag.keys())
+        for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
+            print(cFlags[i], newMass - origMass)
+
         for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
             self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
 

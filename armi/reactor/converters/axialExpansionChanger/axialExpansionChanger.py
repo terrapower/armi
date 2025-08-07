@@ -393,12 +393,7 @@ class AxialExpansionChanger:
                                 fromComp=cAbove,
                                 delta=-delta,
                             )
-                            # shift the height and ztop of the current component upwards
-                            c.height += delta
-                            c.ztop += delta
-                            # the height of cAbove shrinks and the zbottom moves upwards
-                            cAbove.height -= delta
-                            cAbove.zbottom += delta
+                            self.shiftLinkedCompsForDelta(c, cAbove, delta)
                         elif delta < 0.0:
                             ## only move mass from the comp to the comp above. mass removal from the
                             #  current comp happens when the upper bound of the current block shifts down
@@ -411,12 +406,7 @@ class AxialExpansionChanger:
                                 fromComp=c,
                                 delta=-delta,
                             )
-                            # shift the height and ztop of the current component downwards (delta is negative!)
-                            c.height += delta
-                            c.ztop += delta
-                            # the height of cAbove grows and the zbottom moves downwards (delta is negative!)
-                            cAbove.height -= delta
-                            cAbove.zbottom += delta
+                            self.shiftLinkedCompsForDelta(c, cAbove, delta)
                         else:
                             pass
             else:
@@ -431,6 +421,14 @@ class AxialExpansionChanger:
         bounds = list(self.linked.a.spatialGrid._bounds)
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
+
+    def shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", delta: float):
+        # shift the height and ztop of the current component downwards (-delta) or upwards (+delta)
+        c.height += delta
+        c.ztop += delta
+        # the height and zbottom of cAbove grows and moves downwards (-delta) or shrinks and moves upward (+delta)
+        cAbove.height -= delta
+        cAbove.zbottom += delta
 
     def addMassToComponent(self, fromComp: "Component", toComp: "Component", delta: float):
         """
@@ -489,30 +487,6 @@ class AxialExpansionChanger:
 
         # Set newNDens on fromComp
         fromComp.setNumberDensities(newNDens)
-
-
-    def _noRedistribution(self, c: "Component", delta: float):
-        """Calculate new number densities for each isotope based on the expected total mass.
-
-        Parameters
-        ----------
-        c
-            Component which is going to have mass increased by a length of delta
-        delta
-            The length, in cm, which corresponds to how much mass will increase by
-        """
-        # get new volume
-        newVolume = c.getArea() * (c.height + delta)
-        # get mass fractions per nuclide for the new volume
-        massByNucTo = {}
-        for nuc in c.getNuclides():
-            massByNucTo[nuc] = densityTools.getMassInGrams(nuc, newVolume, c.getNumberDensity(nuc))
-        # calculate the number densities that generate the new mass per nuclide
-        newNDens: dict[str, float] = {}
-        for nuc in c.getNuclides():
-            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucTo[nuc], newVolume)
-        ## Set newNDens on toComp
-        c.setNumberDensities(newNDens)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
