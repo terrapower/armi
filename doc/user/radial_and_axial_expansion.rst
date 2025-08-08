@@ -10,6 +10,11 @@ expansion happens by default but there are several settings that control axial e
 * ``assemFlagsToSkipAxialExpansion`` - Assemblies with a flag in this list will not be axially expanded.
 * ``detailedAxialExpansion`` - Allow each assembly to expand independently. This will result in a non-uniform mesh.
 
+By default, ARMI runs radial and axial expansion when objects are created from blueprints. That is, when the reactor is
+created from blueprints at BOL, these calculations are performed. But also at BOC if new assemblies are added to the
+core, then expansion will happen again when the assembly object is created from blueprints.
+
+
 Thermal Expansion
 =================
 ARMI treats thermal expansion as a linear phenomena using a standard linear expansion relationship,
