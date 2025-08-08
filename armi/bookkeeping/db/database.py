@@ -1680,10 +1680,10 @@ def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
     assert startTime >= 0.0, f"The start time cannot be negative: {startTime}."
     assert endTime >= startTime, f"The end time {endTime} is not greater than the start time {startTime}."
 
-    # open H5
+    # open the H5 file directly
     h5 = h5py.File(dbPath, "r")
 
-    # load Settings Object
+    # load Settings object
     cs = settings.Settings()
     cs.caseTitle = os.path.splitext(os.path.basename(dbPath))[0]
     cs.loadFromString(h5["inputs/settings"].asstr()[()], handleInvalids=True)
@@ -1699,26 +1699,25 @@ def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
     timePassed = 0
     endFound = False
     cycleNodes = []
-    for cycle in range(len(stepLengths)):
-        for node in range(len(stepLengths[cycle])):
-            timePassed += stepLengths[cycle][node]
-            print(cycle, node, timePassed)
+    for cycle, nodes in enumerate(stepLengths):
+        for node, timeStep in enumerate(nodes):
+            timePassed += timeStep
             if not cycleNodes and timePassed >= startTime:
                 cycleNodes.append((cycle, node))
-            if timePassed >= endTime:
+            elif cycleNodes:
                 cycleNodes.append((cycle, node))
+
+            if timePassed >= endTime:
                 endFound = True
                 break
 
         if endFound:
             break
 
+    # more validation
     if not cycleNodes:
         raise ValueError(f"Provided start time {startTime} was greater than the run time of the model: {timePassed}.")
-    elif cycleNodes[0] == cycleNodes[1]:
-        cycleNodes = [cycleNodes[0]]
-
-    if errorIfNotExactlyOne and len(cycleNodes) != 1:
+    elif errorIfNotExactlyOne and len(cycleNodes) != 1:
         raise ValueError(f"Did not find exactly one cycle/node pair: {cycleNodes}")
 
     return cycleNodes

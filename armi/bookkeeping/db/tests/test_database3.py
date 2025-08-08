@@ -909,13 +909,13 @@ grids:
         self.assertEqual(cycleNodes, [(0, 0), (0, 1)])
 
         cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 2300, False)
-        self.assertEqual(cycleNodes, [(0, 0), (1, 0)])
+        self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0)])
 
         cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 3123, False)
-        self.assertEqual(cycleNodes, [(0, 0), (1, 1)])
+        self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0), (1, 1)])
 
         cycleNodes = getCycleNodeAtTime(self.db.fileName, 123, 4000, False)
-        self.assertEqual(cycleNodes, [(0, 0), (1, 1)])
+        self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0), (1, 1)])
 
         # test some exceptions are correctly raised
         with self.assertRaises(AssertionError):
