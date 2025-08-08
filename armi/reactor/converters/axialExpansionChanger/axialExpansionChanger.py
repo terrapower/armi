@@ -532,7 +532,7 @@ def _checkBlockHeight(b):
 
     for c in iterSolidComponents(b):
         if c.height - b.getHeight() > 1e-12:
-            msg = f"Component heights in the block have gotten out of sync with block height.\n{b.getHeight()}"
+            msg = f"Component heights have gotten out of sync with height of {b}.\nBlock Height = {b.getHeight()}"
             for c in iterSolidComponents(b):
-                msg += f"\n{c, c.height}"
+                msg += f"\n{c}, {c.height}"
             raise RuntimeError(msg)
