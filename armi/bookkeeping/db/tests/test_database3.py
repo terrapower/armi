@@ -25,7 +25,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db import _getH5File, database, loadOperator
-from armi.bookkeeping.db.database import Database, getCycleNodeAtTime
+from armi.bookkeeping.db.database import Database
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -60,7 +60,7 @@ class TestDatabase(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database.Database = self.dbi.database
+        self.db: Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
         # used to test location-based history. see details below
@@ -221,7 +221,7 @@ class TestDatabaseSmaller(unittest.TestCase):
 
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=self._testMethodName + ".h5")
-        self.db: database.Database = self.dbi.database
+        self.db: Database = self.dbi.database
         self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
@@ -412,7 +412,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
         randomText = "this isn't a reference to another dataset"
-        database.Database._writeAttrs(
+        Database._writeAttrs(
             tnGroup["layout/serialNum"],
             tnGroup,
             {
@@ -422,7 +422,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         )
 
         db_path = "restartDB.h5"
-        db2 = database.Database(db_path, "w")
+        db2 = Database(db_path, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -436,7 +436,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             )
 
             # exercise the _resolveAttrs function
-            attrs = database.Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
+            attrs = Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
             self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
 
             keys = sorted(db2.keys())
@@ -489,7 +489,7 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_grabLocalCommitHash(self):
         """Test of static method to grab a local commit hash with ARMI version."""
         # 1. test outside a Git repo
-        localHash = database.Database.grabLocalCommitHash()
+        localHash = Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 2. test inside an empty git repo
@@ -504,7 +504,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             return
 
         self.assertEqual(code, 0)
-        localHash = database.Database.grabLocalCommitHash()
+        localHash = Database.grabLocalCommitHash()
         self.assertEqual(localHash, "unknown")
 
         # 3. test inside a git repo with one tag
@@ -527,7 +527,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertEqual(code, 0)
 
         # test that we recover the correct commit hash
-        localHash = database.Database.grabLocalCommitHash()
+        localHash = Database.grabLocalCommitHash()
         self.assertEqual(localHash, "thanks")
 
         # delete the .git directory
@@ -572,7 +572,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.assertIn("blocks:", inputs[1])
 
     def test_deleting(self):
-        self.assertTrue(isinstance(self.db, database.Database))
+        self.assertTrue(isinstance(self.db, Database))
         del self.db
         self.assertFalse(hasattr(self, "db"))
         self.db = self.dbi.database
@@ -794,7 +794,7 @@ grids:
         self.o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
         self.dbi.initDB(fName=f"{self._testMethodName}.h5")
-        self.db: database.Database = self.dbi.database
+        self.db: Database = self.dbi.database
 
     def tearDown(self):
         self.db.close()
@@ -831,7 +831,7 @@ grids:
         self.db.close()
 
         # open the DB and verify, the first timenode
-        with database.Database(self.db.fileName, "r") as db:
+        with Database(self.db.fileName, "r") as db:
             r0 = db.load(0, 0, allowMissing=True)
             self.assertEqual(r0.p.cycle, 0)
             self.assertEqual(r0.p.timeNode, 0)
@@ -854,7 +854,7 @@ grids:
             self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
 
         # open the DB and verify, the second timenode
-        with database.Database(self.db.fileName, "r") as db:
+        with Database(self.db.fileName, "r") as db:
             r1 = db.load(0, 1, allowMissing=True)
             self.assertEqual(r1.p.cycle, 0)
             self.assertEqual(r1.p.timeNode, 1)
@@ -892,40 +892,40 @@ grids:
             circleGroup.create_dataset("massHmBOL", data=badData)
 
         with self.assertRaises(ValueError):
-            with database.Database(self.db.fileName, "r") as db:
+            with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
 
     def test_getCycleNodeAtTime(self):
         self.db.close()
 
         # test that the math works correctly
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 0, 100, False)
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 100, False)
         self.assertEqual(cycleNodes, [(0, 0)])
 
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 456, 890, False)
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 456, 890, False)
         self.assertEqual(cycleNodes, [(0, 0)])
 
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 1300, False)
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 200, 1300, False)
         self.assertEqual(cycleNodes, [(0, 0), (0, 1)])
 
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 2300, False)
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 200, 2300, False)
         self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0)])
 
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 3123, False)
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 200, 3123, False)
         self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0), (1, 1)])
 
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 123, 4000, False)
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 123, 4000, False)
         self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0), (1, 1)])
 
         # test some exceptions are correctly raised
         with self.assertRaises(AssertionError):
-            getCycleNodeAtTime(self.db.fileName, -1, 100, False)
+            Database.getCycleNodeAtTime(self.db.fileName, -1, 100, False)
 
         with self.assertRaises(AssertionError):
-            getCycleNodeAtTime(self.db.fileName, 300, 100, False)
+            Database.getCycleNodeAtTime(self.db.fileName, 300, 100, False)
 
         with self.assertRaises(ValueError):
-            getCycleNodeAtTime(self.db.fileName, 5000, 6000, False)
+            Database.getCycleNodeAtTime(self.db.fileName, 5000, 6000, False)
 
         with self.assertRaises(ValueError):
-            getCycleNodeAtTime(self.db.fileName, 200, 1400, True)
+            Database.getCycleNodeAtTime(self.db.fileName, 200, 1400, True)
