@@ -165,7 +165,7 @@ class ExpansionData:
                 )
 
             blockAveTemp = mean(tmpMapping)
-            for c in b:
+            for c in iterSolidComponents(b):
                 self.updateComponentTemp(c, blockAveTemp)
 
     def updateComponentTemp(self, c: "Component", temp: float):
