@@ -672,7 +672,7 @@ class TestConservation(AxialExpansionTestBase):
         newTemp = 500.0
         # apply new temp to the pin and clad components of each block
         for b in self.a:
-            for c in b[0:2]:
+            for c in b.getComponents([Flags.FUEL, Flags.CLAD]):
                 stdThermExpFactor[c] = c.getThermalExpansionFactor()
                 self.obj.expansionData.updateComponentTemp(c, newTemp)
 
@@ -680,8 +680,8 @@ class TestConservation(AxialExpansionTestBase):
 
         # skip dummy block, it's just coolant and doesn't expand.
         for b in self.a[:-1]:
-            for ic, c in enumerate(b):
-                if ic <= 1:
+            for c in b:
+                if c.hasFlags([Flags.FUEL, Flags.CLAD]):
                     self.assertNotEqual(
                         stdThermExpFactor[c],
                         self.obj.expansionData.getExpansionFactor(c),
