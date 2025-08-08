@@ -609,9 +609,9 @@ class TestConservation(AxialExpansionTestBase):
         assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("aclp", "FakeMat", 25.0, 10.0))  # "aclp plenum" also works
-        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
+        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0, True))
+        assembly.add(_buildTestBlock("aclp", "FakeMat", 25.0, 10.0, True))  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0, True))
         assembly.add(_buildDummySodium(25.0, 10.0))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
@@ -1147,14 +1147,14 @@ def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
     assembly.add(_buildTestBlock("shield", name, hotTemp, height))
     assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
     assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
-    assembly.add(_buildTestBlock("plenum", name, hotTemp, height))
+    assembly.add(_buildTestBlock("plenum", name, hotTemp, height, True))
     assembly.add(_buildDummySodium(hotTemp, height))
     assembly.calculateZCoords()
     assembly.reestablishBlockOrder()
     return assembly
 
 
-def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
+def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, plenum: bool = False):
     """Return a simple pin type block filled with coolant and surrounded by duct.
 
     Parameters
@@ -1167,7 +1167,8 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
     b = HexBlock(blockType, height=height)
 
     fuelDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.77, "mult": 127.0}
+    bondDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.78, "id": 0.76, "mult": 127.0}
+    cladDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.78, "mult": 127.0}
     ductDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 16, "ip": 15.3, "mult": 1.0}
     intercoolantDims = {
         "Tinput": 25.0,
@@ -1178,13 +1179,18 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
     }
     coolDims = {"Tinput": 25.0, "Thot": hotTemp}
     mainType = Circle(blockType, name, **fuelDims)
+    bond = Circle("bond", "Sodium", **bondDims)
     clad = Circle("clad", name, **cladDims)
     duct = Hexagon("duct", name, **ductDims)
 
     coolant = DerivedShape("coolant", "Sodium", **coolDims)
     intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
 
-    b.add(mainType)
+    if plenum:
+        b.add(Circle("gap", "Air", **fuelDims))
+    else:
+        b.add(mainType)
+    b.add(bond)
     b.add(clad)
     b.add(duct)
     b.add(coolant)
