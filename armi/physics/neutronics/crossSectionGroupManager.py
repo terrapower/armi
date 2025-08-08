@@ -390,11 +390,11 @@ class AverageBlockCollection(BlockCollection):
         numberDensities : dict
             nucName, ndens data (atoms/bn-cm)
         """
-        nuclides = self.allNuclidesInProblem
         blocks = self.getCandidateBlocks()
         weights = np.array([self.getWeight(b) for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        nuclides = self._getAllNucs(components)
         ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
         return dict(zip(nuclides, ndens))
 
@@ -463,6 +463,14 @@ class AverageBlockCollection(BlockCollection):
                     return False
         else:
             return True
+
+    @staticmethod
+    def _getAllNucs(components):
+        """Iterate through components and get all unique nuclides."""
+        nucs = set()
+        for c in components:
+            nucs = nucs.union(c.getNuclides())
+        return sorted(list(nucs))
 
 
 def getBlockNuclideTemperature(block, nuclide):
@@ -572,14 +580,6 @@ class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
         repBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return repBlock
-
-    @staticmethod
-    def _getAllNucs(components):
-        """Iterate through components and get all unique nuclides."""
-        nucs = set()
-        for c in components:
-            nucs = nucs.union(c.getNuclides())
-        return sorted(list(nucs))
 
     @staticmethod
     def _checkComponentConsistency(b, repBlock):

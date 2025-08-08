@@ -15,30 +15,25 @@
 """
 ASCII maps are little grids of letters/numbers that represent some kind of a lattice.
 
-These are commonly used in nuclear analysis to represent core maps, pin layouts, etc.
-in input files. This module reads various text and interprets them into meaningful
-data structures.
+These are commonly used in nuclear analysis to represent core maps, pin layouts, etc. in input files. This module reads
+various text and interprets them into meaningful data structures.
 
-We make classes for different geometries to share code. This will eventually be
-expanded for various symmetries that are applicable to cores, assemblies, etc.
+We make classes for different geometries to share code. This will eventually be expanded for various symmetries that are
+applicable to cores, assemblies, etc.
 
-This is as attempted reimplementation of AsciiMaps aiming for simplicity,
-though inherently this work is complex.
+This is as attempted reimplementation of AsciiMaps aiming for simplicity, though inherently this work is complex.
 
 Some vocabulary used here:
 
 column, line
-    column and line numbers in the actual ascii text representation. What
-    you would see in a text editor.
+    column and line numbers in the actual ascii text representation. What you would see in a text editor.
 
 offset
-    The number of spaces needed at the beginning a line to properly orient
-    the ascii representation.
+    The number of spaces needed at the beginning a line to properly orient the ascii representation.
 
 i, j
-    Indices in the grid itself. For Cartesian, j is like the line number,
-    but in other geometries (like hex), it is a totally different
-    coordinate system.
+    Indices in the grid itself. For Cartesian, j is like the line number, but in other geometries (like hex), it is a
+    totally different coordinate system.
 
 See Also
 --------
@@ -62,8 +57,7 @@ class AsciiMap:
     """
     Base class for maps.
 
-    These should be able to read and write ASCII maps loaded either from text
-    or programmatically with i,j / specifiers.
+    These should be able to read and write ASCII maps loaded either from text or programmatically with i,j / specifiers.
     """
 
     def __init__(self):
@@ -93,6 +87,9 @@ class AsciiMap:
 
         self._asciiLinesOffCorner = 0
         """Number of ascii lines chopped of corners"""
+
+        self.endsWithPlaceholder = False
+        """Handling a special case where we don't want to trim a trailing placeholder from a ASCII map."""
 
     def writeAscii(self, stream):
         """Write out the ascii representation."""
@@ -138,6 +135,7 @@ class AsciiMap:
             Custom string that describes the ASCII map of the core.
         """
         text = text.strip().splitlines()
+        self.endsWithPlaceholder = text[-1].rstrip().endswith(PLACEHOLDER)
 
         self.asciiLines = []
         self._asciiMaxCol = 0
@@ -162,8 +160,7 @@ class AsciiMap:
 
     def _updateDimensionsFromAsciiLines(self):
         """
-        When converting ascii to data we need to infer the ijMax before reading
-        the ij indices.
+        When converting ascii to data we need to infer the ijMax before reading the ij indices.
 
         See Also
         --------
@@ -198,12 +195,11 @@ class AsciiMap:
         """
         Convert a prepared asciiLabelByIndices to ascii lines and offsets.
 
-        This is used when you have i,j/specifier data and want to create a ascii map from it
-        as opposed to reading a ascii map from a stream.
+        This is used when you have i,j/specifier data and want to create a ascii map from it as opposed to reading a
+        ascii map from a stream.
 
-        As long as the map knows how to convert lineNum and colNums into ij indices, this
-        is universal. In some implementations, this operation is in a different
-        method for efficiency.
+        As long as the map knows how to convert lineNum and colNums into ij indices, this is universal. In some
+        implementations, this operation is in a different method for efficiency.
         """
         self._updateDimensionsFromData()
         self.asciiLines = []
@@ -218,24 +214,25 @@ class AsciiMap:
         # clean data
         noDataLinesYet = True  # handle all-placeholder rows
         newLines = []
-        for line in self.asciiLines:
+        lastLine = len(self.asciiLines) - 1
+        for i, line in enumerate(self.asciiLines):
             if re.search(f"^[{PLACEHOLDER}]+$", "".join(line)) and noDataLinesYet:
                 continue
 
             noDataLinesYet = False
             newLine = self._removeTrailingPlaceholders(line)
             if newLine:
+                if i == lastLine and self.endsWithPlaceholder and newLine[-1] != PLACEHOLDER:
+                    newLine.append(PLACEHOLDER)
                 newLines.append(newLine)
             else:
-                # if entire newline is wiped out, it's a full row of placeholders!
-                # but oops this actually still won't work. Needs more work when
-                # doing pure rows from data is made programmatically.
-                raise ValueError("Cannot write asciimaps with blank rows from pure data yet.")
+                # If entire newline is wiped out, it's a full row of placeholders. That seems wrong.
+                raise ValueError("Cannot write asciimaps with blank rows from pure data.")
 
         if not newLines:
             raise ValueError("No data found")
-        self.asciiLines = newLines
 
+        self.asciiLines = newLines
         self._updateSlotSizeFromData()
         self._makeOffsets()
 
@@ -248,6 +245,7 @@ class AsciiMap:
                 continue
             noDataYet = False
             newLine.append(col)
+
         newLine.reverse()
         return newLine
 
@@ -330,11 +328,9 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
     - i increments on the 30-degree ray
     - j increments on the 90-degree ray
 
-    In all flats-up hex maps, i increments by 2*col for each col
-    and j decrements by col from the base.
+    In all flats-up hex maps, i increments by 2*col for each col and j decrements by col from the base.
 
-    These are much more complex maps than the tips up ones because
-    there are 2 ascii lines for every j index (jaggedly).
+    These are much more complex maps than the tips up ones because there are 2 ascii lines for every j index (jaggedly).
 
     Lines are read from the bottom of the ascii map up in this case.
     """
@@ -396,8 +392,7 @@ class AsciiMapHexThirdFlatsUp(AsciiMap):
 
         Notes
         -----
-        Not used in reading from file b/c too many calls to base
-        but convenient for writing from ij data
+        Not used in reading from file b/c too many calls to base but convenient for writing from ij data
         """
         iBase, jBase = self._getIJBaseByAsciiLine(lineNum)
         return self._getIJFromColAndBase(columnNum, iBase, jBase)
@@ -466,10 +461,8 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
 
     Notes
     -----
-    Rather than making a consistent base, we switch base angles
-    with this one because otherwise there would be a ridiculous
-    number of placeholders on the left. This makes this one's
-    base computation more complex.
+    Rather than making a consistent base, we switch base angles with this one because otherwise there would be a
+    ridiculous number of placeholders on the left. This makes this one's base computation more complex.
 
     We also allow all corners to be cut off on these, further complicating things.
     """
@@ -482,12 +475,10 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
 
         Recall that there are 2 ascii lines per j index because jagged.
 
-        If hex corners are omitted, we must offset the line num to get
-        the base right (complexity!)
+        If hex corners are omitted, we must offset the line num to get the base right (complexity!)
 
-        In this orientation, we need the _ijMax to help orient us. This
-        represents the number of ascii lines between the center of the core
-        and the top (or bottom)
+        In this orientation, we need the _ijMax to help orient us. This represents the number of ascii lines between the
+        center of the core and the top (or bottom)
         """
         # handle potentially-omitted corners
         asciiLineNum += self._asciiLinesOffCorner
@@ -510,8 +501,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
         """
         Handle offsets for full-hex flat grids.
 
-        Due to the staggered nature, these have 0 or 1 offsets on
-        top and then 0 or 1 + an actual offset on the bottom.
+        Due to the staggered nature, these have 0 or 1 offsets on top and then 0 or 1 + an actual offset on the bottom.
         """
         # max lines required if corners were not cut off
         maxIJIndex = self._ijMax
@@ -524,8 +514,7 @@ class AsciiMapHexFullFlatsUp(AsciiMapHexThirdFlatsUp):
         # going away from the left edge, the offsets increase linearly
         self.asciiOffsets.extend(range(maxIJIndex + 1))
 
-        # since we allow cut-off corners, we must truncate the offsets
-        # number of items in last line indicates how many
+        # since we allow cut-off corners, we must truncate the offsets number of items in last line indicates how many
         # need to be cut. (first line has placeholders...)
         cutoff = self._asciiLinesOffCorner
         if cutoff:
@@ -625,7 +614,7 @@ class AsciiMapHexFullTipsUp(AsciiMap):
 def asciiMapFromGeomAndDomain(
     geomType: Union[str, geometry.GeomType], domain: Union[str, geometry.DomainType]
 ) -> "AsciiMap":
-    """Get a ascii map class from a geometry and domain type."""
+    """Get a ASCII map class from a geometry and domain type."""
     from armi.reactor import geometry
 
     if (
@@ -634,7 +623,7 @@ def asciiMapFromGeomAndDomain(
     ):
         return AsciiMapHexFullTipsUp
 
-    MAP_FROM_GEOM = {
+    mapFromGeom = {
         (
             geometry.GeomType.HEX,
             geometry.DomainType.THIRD_CORE,
@@ -648,7 +637,7 @@ def asciiMapFromGeomAndDomain(
         ): AsciiMapCartesian,
     }
 
-    return MAP_FROM_GEOM[
+    return mapFromGeom[
         (
             geometry.GeomType.fromAny(geomType),
             geometry.DomainType.fromAny(domain),

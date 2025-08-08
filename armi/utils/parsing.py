@@ -17,8 +17,6 @@
 import ast
 import copy
 
-from dateutil import parser
-
 
 def tryLiteralEval(source):
     try:
@@ -85,11 +83,3 @@ def parseValue(source, requestedType, allowNone=False, matchingNonetype=True):
         raise ValueError(msg.format(requestedType, evaluated_source))
 
     return evaluated_source
-
-
-# -----------------------------------
-
-
-def datetimeFromStr(string):
-    """Converts an arbitrary string to a datetime object."""
-    return parser.parse(string)

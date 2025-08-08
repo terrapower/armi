@@ -266,6 +266,7 @@ class TestComponentAveraging(unittest.TestCase):
                     avgDensities[nuc],
                     msg=f"{nuc} density {compDensities[nuc]} not equal to {avgDensities[nuc]}!",
                 )
+            self.assertEqual(len(compDensities), len(avgDensities))
 
     def test_getAverageComponentTemperature(self):
         """Test mass-weighted component temperature averaging."""
