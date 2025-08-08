@@ -363,12 +363,32 @@ class AxialExpansionChanger:
                 b.p.height = b.p.ztop - b.p.zbottom
                 b.clearCache()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
-                # if the linked component above is the target component for the block above, align them
-                # e.g., for expansion, this shifts up the target component in the block above
-                if self.expansionData.isTargetComponent(self.linked.linkedComponents[targetComp].upper):
-                    targetCompAbove = self.linked.linkedComponents[targetComp].upper
-                    targetCompAbove.zbottom = targetComp.ztop
-                    targetCompAbove.ztop = targetCompAbove.height + targetCompAbove.zbottom
+                cLinkedAbove = self.linked.linkedComponents[targetComp].upper
+                if cLinkedAbove:
+                    if self.expansionData.isTargetComponent(cLinkedAbove):
+                        # the linked component in the block above is the target component for the block above.
+                        # e.g., fuel to fuel. Shift the target component in the block above up (expansion) or
+                        # down (contraction) without changing its height. In this case, component mass is conserved for
+                        # both target components.
+                        cLinkedAbove.zbottom = targetComp.ztop
+                        cLinkedAbove.ztop = cLinkedAbove.height + cLinkedAbove.zbottom
+                    else:
+                        # the current target component type continues in the block above, but the target component in
+                        # the block above is different. e.g., the transition from stationary duct to control material in
+                        # a typical pin-based reactor control assembly design. Shift the target component in the block
+                        # above up (expansion) or down (contraction) without changing its height. In this case,
+                        # component mass is conserved for both target components.
+                        for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
+                            c.zbottom = targetComp.ztop
+                            c.ztop = c.height + c.zbottom
+
+                if self.linked.linkedComponents[targetComp].upper is None and len(getSolidComponents(b)) == 1:
+                    # there is no linked component above and there is only one solid component in the current block.
+                    # push up (expansion) or pull down (contraction) all components in the block above.
+                    # e.g., the transition from grid plate to pin assembly.
+                    for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
+                        c.zbottom = b.p.ztop
+                        c.ztop = c.zbottom + c.height
 
                 # deal with non-target components
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
@@ -413,7 +433,7 @@ class AxialExpansionChanger:
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
 
-            _checkBlockHeight(b)
+            self._checkBlockHeight(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -516,23 +536,33 @@ class AxialExpansionChanger:
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
 
-def _checkBlockHeight(b):
-    """
-    Do some basic block height validation.
+    def _checkBlockHeight(self, b):
+        """
+        Do some basic block height validation.
 
-    Notes
-    -----
-    3cm is a presumptive lower threshold for DIF3D
-    """
-    if b.getHeight() < 3.0:
-        runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
+        Notes
+        -----
+        3cm is a presumptive lower threshold for DIF3D
+        """
+        if b.getHeight() < 3.0:
+            runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
 
-    if b.getHeight() < 0.0:
-        raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
+        if b.getHeight() < 0.0:
+            raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
 
-    for c in iterSolidComponents(b):
-        if c.height - b.getHeight() > 1e-12:
-            msg = f"Component heights have gotten out of sync with height of {b}.\nBlock Height = {b.getHeight()}"
-            for c in iterSolidComponents(b):
-                msg += f"\n{c}, {c.height}"
-            raise RuntimeError(msg)
+        for c in iterSolidComponents(b):
+            if c.height - b.getHeight() > 1e-12:
+                msg = f"Component heights have gotten out of sync with height of {b}.\nBlock Height = {b.getHeight()}"
+                for c in iterSolidComponents(b):
+                    msg += f"\n{c}, {c.height}"
+                raise RuntimeError(msg)
+
+        if self.linked.linkedBlocks[b].lower:
+            lowerBlock = self.linked.linkedBlocks[b].lower
+            if lowerBlock.p.ztop != b.p.zbottom:
+                raise RuntimeError(
+                    "Block heights have gone out of sync!\n"
+                    f"\t{lowerBlock.getType()}: {lowerBlock.p.ztop}\n"
+                    f"\t{b.getType()}: {b.p.zbottom}"
+                )
+
