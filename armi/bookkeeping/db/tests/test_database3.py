@@ -896,5 +896,36 @@ grids:
                 _r = db.load(0, 0, allowMissing=True)
 
     def test_getCycleNodeAtTime(self):
-        cycleNodes = getCycleNodeAtTime(self.db.fileName, 0, 1, False)
-        self.assertEqual(cycleNodes, [(0, 3), (0, 4)])
+        self.db.close()
+
+        # test that the math works correctly
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 0, 100, False)
+        self.assertEqual(cycleNodes, [(0, 0)])
+
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 456, 890, False)
+        self.assertEqual(cycleNodes, [(0, 0)])
+
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 1300, False)
+        self.assertEqual(cycleNodes, [(0, 0), (0, 1)])
+
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 2300, False)
+        self.assertEqual(cycleNodes, [(0, 0), (1, 0)])
+
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 200, 3123, False)
+        self.assertEqual(cycleNodes, [(0, 0), (1, 1)])
+
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 123, 4000, False)
+        self.assertEqual(cycleNodes, [(0, 0), (1, 1)])
+
+        # test some exceptions are correctly raised
+        with self.assertRaises(AssertionError):
+            getCycleNodeAtTime(self.db.fileName, -1, 100, False)
+
+        with self.assertRaises(AssertionError):
+            getCycleNodeAtTime(self.db.fileName, 300, 100, False)
+
+        with self.assertRaises(ValueError):
+            getCycleNodeAtTime(self.db.fileName, 5000, 6000, False)
+
+        with self.assertRaises(ValueError):
+            getCycleNodeAtTime(self.db.fileName, 200, 1400, True)

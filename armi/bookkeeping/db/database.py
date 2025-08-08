@@ -80,7 +80,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
 )
-from armi.utils import getNodesPerCycle, safeCopy, safeMove
+from armi.utils import getNodesPerCycle, getStepLengths, safeCopy, safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 # CONSTANTS
@@ -1657,7 +1657,7 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
 
 
 def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
-    """Given the path to an ARMI database file and a start and end time (in years), return the full set of all cycle /
+    """Given the path to an ARMI database file and a start and end time (in days), return the full set of all cycle /
     node combinations that correspond to that time period in the database.
 
     Parameters
@@ -1665,9 +1665,9 @@ def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
     dbPath : str
         File path to an ARMI database.
     startTime : int
-        In years, start of the desired interval.
+        In days, start of the desired interval.
     endTime : int
-        In years, end of the desired interval.
+        In days, end of the desired interval.
     errorIfNotExactlyOne : boolean
         Raise an error if more than one cycle/node combination is returned. Default is False.
 
@@ -1676,7 +1676,47 @@ def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
     list of two-tuples of integers
         A list of (cycle, node) combinations corresponding to the desired time interval.
     """
-    cycleNodes = [(0, 3), (0, 4)]  # TODO: placeholder
+    # basic sanity checks
+    assert startTime >= 0.0, f"The start time cannot be negative: {startTime}."
+    assert endTime >= startTime, f"The end time {endTime} is not greater than the start time {startTime}."
+
+    # open H5
+    h5 = h5py.File(dbPath, "r")
+
+    # load Settings Object
+    cs = settings.Settings()
+    cs.caseTitle = os.path.splitext(os.path.basename(dbPath))[0]
+    cs.loadFromString(h5["inputs/settings"].asstr()[()], handleInvalids=True)
+
+    # close H5
+    h5.close()
+    h5 = None
+
+    # read the step lengths from the run settings
+    stepLengths = getStepLengths(cs)
+
+    # do the math
+    timePassed = 0
+    endFound = False
+    cycleNodes = []
+    for cycle in range(len(stepLengths)):
+        for node in range(len(stepLengths[cycle])):
+            timePassed += stepLengths[cycle][node]
+            print(cycle, node, timePassed)
+            if not cycleNodes and timePassed >= startTime:
+                cycleNodes.append((cycle, node))
+            if timePassed >= endTime:
+                cycleNodes.append((cycle, node))
+                endFound = True
+                break
+
+        if endFound:
+            break
+
+    if not cycleNodes:
+        raise ValueError(f"Provided start time {startTime} was greater than the run time of the model: {timePassed}.")
+    elif cycleNodes[0] == cycleNodes[1]:
+        cycleNodes = [cycleNodes[0]]
 
     if errorIfNotExactlyOne and len(cycleNodes) != 1:
         raise ValueError(f"Did not find exactly one cycle/node pair: {cycleNodes}")
