@@ -2,10 +2,13 @@
 Radial and Axial Expansion and Contraction
 ******************************************
 
-ARMI natively supports linear expansion in both the radial and axial dimensions. These expansion
-types function independently of one another and each have their own set of underlying assumptions
-and use-cases. Radial expansion happens by default but axial expansion only occurs if the setting
-``inputHeightsConsideredHot`` is set to ``False``.
+ARMI natively supports linear expansion in both the radial and axial dimensions for pin-type reactors. These expansion
+types function independently of one another and each have their own set of underlying assumptions and use-cases. Radial
+expansion happens by default but there are several settings that control axial expansion:
+
+* ``inputHeightsConsideredHot`` - Set this to ``False`` or axial expansion will not occur.
+* ``assemFlagsToSkipAxialExpansion`` - Assemblies with a flag in this list will not be axially expanded.
+* ``detailedAxialExpansion`` - Allow each assembly to expand independently. This will result in a non-uniform mesh.
 
 Thermal Expansion
 =================
