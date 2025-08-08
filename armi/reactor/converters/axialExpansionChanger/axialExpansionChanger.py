@@ -13,9 +13,11 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+from math import pi, sqrt
 import typing
 
 from numpy import array, array_equal
+from numpy.polynomial import Polynomial
 
 from armi import runLog
 from armi.materials.material import Fluid
@@ -25,6 +27,7 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
 )
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     ExpansionData,
+    getSolidComponents,
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
@@ -465,19 +468,32 @@ class AxialExpansionChanger:
         nucsFrom = fromComp.getNuclides()
         nucsTo = toComp.getNuclides()
         if not array_equal(nucsFrom, nucsTo):
-            runLog.warning(
+            raise RuntimeError(
                 f"Cannot redistribute mass from {fromComp} to {toComp} as they do not have the same nuclides.\n"
                 f"Instead, {toComp} will have it's mass changed based on the difference between its ztop and the top"
                 "of its block."
             )
-            if delta > 0:
-                # expansion, add mass to toComp
-                return self._noRedistribution(toComp, delta)
-            else:
-                # contraction, add mass to fromComp
-                return self._noRedistribution(fromComp, delta)
 
         ## calculate new number densities for each isotope based on the expected total mass
+        # origArea = toComp.getArea()
+
+        '''
+        new_area(ave.temperature) * b.height == (
+            toComp_area(toComp.temperature) * toComp.height + fromComp_area(fromComp.teperature) * delta
+        )
+        new_area(ave.temp) = (toComp_area(toComp.temperature) * toComp.height + fromComp_area(fromComp.teperature) * delta) / b.height
+        --> if the below goes well, we use some iterative tool from scipy to solve the above thing for ave.temp. black box new_area(ave.temp)
+            as some (non?)linear function to hand to a fancy and smart iterative tool. Newton iteration, etc.
+        pi r(ave.temp)**2 = RHS (divide the RHS by the mult!)
+        r(ave.temp) = sqrt(RHS / pi)
+        r_cold * thermalExpFactor = sqrt(RHS / pi)
+        thermalExpFactor = (1 + dLL) = sqrt(RHS / pi) / r_cold
+        dLL = sqrt(RHS / pi) / r_cold - 1
+        (dLL(ave.temp) - dll_cold) / (100 + dll_cold) = sqrt(RHS / pi) / r_cold - 1
+        dLL(ave.temp) = (sqrt(RHS / pi) / r_cold - 1) * (100 + dll_cold) + dll_cold
+        -0.73 + 3.489e-3 * tk - 5.154e-6 * tk2 + 4.39e-9 * tk3 = (sqrt(RHS / pi) / r_cold - 1) * 100 + dll_cold + dll_cold
+        --> solve the above for tk using numpy root solver.
+        '''
         toCompVolume = toComp.getArea() * toComp.height
         fromCompVolume = fromComp.getArea() * abs(delta)
         newVolume = fromCompVolume + toCompVolume
@@ -491,6 +507,19 @@ class AxialExpansionChanger:
 
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
+
+        # calculate the new temperature of toComp. Do not use component.setTemperature as this mucks with the
+        # number densities we just calculated.
+        # newToCompTemp = (
+        #     fromCompVolume/newVolume * fromComp.temperatureInC + toCompVolume/newVolume * toComp.temperatureInC
+        # )
+        rhs = (newVolume / toComp.p.mult) / (toComp.height + abs(delta))
+        dLL = (sqrt(rhs / pi) / (toComp.p.od / 2.0)) - 1.0
+        dLL_cold = toComp.material.linearExpansionPercent(Tc=toComp.inputTemperatureInC)
+        dLL_aveTemp = dLL * (100.0 + dLL_cold) + dLL_cold
+        newToCompTemp = Polynomial([-0.73 - dLL_aveTemp, 3.489e-3, -5.154e-6, 4.39e-9])
+        roots = newToCompTemp.roots()
+        toComp.temperatureInC = newToCompTemp
 
     def rmMassFromComponent(self, fromComp: "Component", delta: float):
         """Create new number densities for the component that is having mass removed."""
