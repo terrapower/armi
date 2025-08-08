@@ -80,7 +80,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_GROW_TO_FULL_CORE_AFTER_LOAD,
     CONF_SORT_REACTOR,
 )
-from armi.utils import getNodesPerCycle, safeCopy, safeMove
+from armi.utils import getNodesPerCycle, getStepLengths, safeCopy, safeMove
 from armi.utils.textProcessors import resolveMarkupInclusions
 
 # CONSTANTS
@@ -1462,6 +1462,73 @@ class Database:
             numberDensities = np.array(list(ndensDict.values()), dtype=np.float64)
             c.p["nuclides"] = nuclides
             c.p["numberDensities"] = numberDensities
+
+    @staticmethod
+    def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
+        """Given the path to an ARMI database file and a start and end time (in days), return the full set of all cycle
+        / node combinations that correspond to that time period in the database.
+
+        Parameters
+        ----------
+        dbPath : str
+            File path to an ARMI database.
+        startTime : int
+            In days, start of the desired interval.
+        endTime : int
+            In days, end of the desired interval.
+        errorIfNotExactlyOne : boolean
+            Raise an error if more than one cycle/node combination is returned. Default is False.
+
+        Returns
+        -------
+        list of two-tuples of integers
+            A list of (cycle, node) combinations corresponding to the desired time interval.
+        """
+        # basic sanity checks
+        assert startTime >= 0.0, f"The start time cannot be negative: {startTime}."
+        assert endTime >= startTime, f"The end time {endTime} is not greater than the start time {startTime}."
+
+        # open the H5 file directly
+        h5 = h5py.File(dbPath, "r")
+
+        # load Settings object
+        cs = settings.Settings()
+        cs.caseTitle = os.path.splitext(os.path.basename(dbPath))[0]
+        cs.loadFromString(h5["inputs/settings"].asstr()[()], handleInvalids=True)
+
+        # close H5
+        h5.close()
+        h5 = None
+
+        # read the step lengths from the run settings
+        stepLengths = getStepLengths(cs)
+
+        # do the math
+        timePassed = 0
+        endFound = False
+        cycleNodes = []
+        for cycle, nodes in enumerate(stepLengths):
+            for node, timeStep in enumerate(nodes):
+                timePassed += timeStep
+                if not cycleNodes and timePassed >= startTime:
+                    cycleNodes.append((cycle, node))
+                elif cycleNodes:
+                    cycleNodes.append((cycle, node))
+
+                if timePassed >= endTime:
+                    endFound = True
+                    break
+
+            if endFound:
+                break
+
+        # more validation
+        if not cycleNodes:
+            raise ValueError(f"Provided start time {startTime} was greater than the modeled period: {timePassed}.")
+        elif errorIfNotExactlyOne and len(cycleNodes) != 1:
+            raise ValueError(f"Did not find exactly one cycle/node pair: {cycleNodes}")
+
+        return cycleNodes
 
 
 def packSpecialData(
