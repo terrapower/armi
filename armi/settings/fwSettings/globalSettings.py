@@ -15,9 +15,8 @@
 """
 Framework-wide settings definitions and constants.
 
-This should contain Settings definitions for general-purpose "framework"
-settings. These should only include settings that are not related to any
-particular physics or plugins.
+This should contain Settings definitions for general-purpose "framework" settings. These should only include settings
+that are not related to any particular physics or plugins.
 """
 
 import os
@@ -30,7 +29,6 @@ from armi.settings import setting
 from armi.settings.fwSettings import tightCouplingSettings
 from armi.utils.mathematics import isMonotonic
 
-# Framework settings
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP = "assemFlagsToSkipAxialExpansion"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
@@ -40,7 +38,6 @@ CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_BETA = "beta"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
-CONF_TEMP_GROUPS = "tempGroups"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_BURN_STEPS = "burnSteps"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -79,8 +76,8 @@ CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_N_CYCLES = "nCycles"
-CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_N_TASKS = "nTasks"
+CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
@@ -90,8 +87,8 @@ CONF_POWER = "power"
 CONF_POWER_DENSITY = "powerDensity"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
-CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_REMOVE_PER_CYCLE = "removePerCycle"
+CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
 CONF_SMALL_RUN = "rmExternalFilesAtEOL"
@@ -102,6 +99,7 @@ CONF_STATIONARY_BLOCK_FLAGS = "stationaryBlockFlags"
 CONF_T_IN = "Tin"
 CONF_T_OUT = "Tout"
 CONF_TARGET_K = "targetK"  # lots of things use this
+CONF_TEMP_GROUPS = "tempGroups"
 CONF_TIGHT_COUPLING = "tightCoupling"
 CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
 CONF_TIGHT_COUPLING_SETTINGS = "tightCouplingSettings"

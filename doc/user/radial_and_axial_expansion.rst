@@ -2,10 +2,18 @@
 Radial and Axial Expansion and Contraction
 ******************************************
 
-ARMI natively supports linear expansion in both the radial and axial dimensions. These expansion
-types function independently of one another and each have their own set of underlying assumptions
-and use-cases. Radial expansion happens by default but axial expansion only occurs if the setting
-``inputHeightsConsideredHot`` is set to ``False``.
+ARMI natively supports linear expansion in both the radial and axial dimensions for pin-type reactors. These expansion
+types function independently of one another and each have their own set of underlying assumptions and use-cases. Radial
+expansion happens by default but there are several settings that control axial expansion:
+
+* ``inputHeightsConsideredHot`` - Indicates whether blueprints heights have already been thermally expanded. If ``False``, ARMI will expand components at BOL consistent with provided temperatures.
+* ``assemFlagsToSkipAxialExpansion`` - Assemblies with a flag in this list will not be axially expanded.
+* ``detailedAxialExpansion`` - Allow each assembly to expand independently. This will result in a non-uniform mesh.
+
+If they happen, ARMI runs radial and axial expansion when objects are created from blueprints. That is, when the reactor is
+created from blueprints at BOL, these calculations are performed. But also at BOC if new assemblies are added to the
+core, then expansion will happen again when the assembly object is created from blueprints.
+
 
 Thermal Expansion
 =================
