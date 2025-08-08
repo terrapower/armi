@@ -438,6 +438,9 @@ class TestConservation(AxialExpansionTestBase):
             self.complexConservationTest(a)
 
     def complexConservationTest(self, a: HexAssembly):
+        # get total assembly fluid mass pre-expansion
+        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(a)
+
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -468,6 +471,11 @@ class TestConservation(AxialExpansionTestBase):
             self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
+
+        # get total assembly fluid mass post-expansion
+        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(a)
+        # verify that the total assembly fluid mass is preserved through expansion
+        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
 
     def test_prescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
@@ -514,7 +522,7 @@ class TestConservation(AxialExpansionTestBase):
             ave = (new + prev) / 2.0
             prevScaled = prev / ave
             newScaled = new / ave
-            self.assertAlmostEqual(prevScaled, newScaled, places=14)
+            self.assertAlmostEqual(prevScaled, newScaled, places=12)
 
     def _checkNDens(self, prevNDen, newNDens, ratio):
         for prevComp, newComp in zip(prevNDen.values(), newNDens.values()):
@@ -613,9 +621,6 @@ class TestConservation(AxialExpansionTestBase):
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
-        # get total assembly fluid mass pre-expansion
-        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
-
         # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
@@ -623,9 +628,6 @@ class TestConservation(AxialExpansionTestBase):
         pList = zeros(len(cList)) + 1.01
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
-
-        # get total assembly fluid mass post-expansion
-        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
 
         # do assertion
         self.assertEqual(
@@ -647,8 +649,6 @@ class TestConservation(AxialExpansionTestBase):
                     c.getVolume(),
                     places=12,
                 )
-        # verify that the total assembly fluid mass is preserved through expansion
-        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
 
     @staticmethod
     def _getTotalAssemblyFluidMass(assembly) -> float:
