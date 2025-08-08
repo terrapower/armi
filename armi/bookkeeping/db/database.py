@@ -1654,3 +1654,31 @@ def collectBlockNumberDensities(blocks) -> Dict[str, np.ndarray]:
         dataDict[nb.getDatabaseName()] = nucDensityMatrix[:, ni]
 
     return dataDict
+
+
+def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
+    """Given the path to an ARMI database file and a start and end time (in years), return the full set of all cycle /
+    node combinations that correspond to that time period in the database.
+
+    Parameters
+    ----------
+    dbPath : str
+        File path to an ARMI database.
+    startTime : int
+        In years, start of the desired interval.
+    endTime : int
+        In years, end of the desired interval.
+    errorIfNotExactlyOne : boolean
+        Raise an error if more than one cycle/node combination is returned. Default is False.
+
+    Returns
+    -------
+    list of two-tuples of integers
+        A list of (cycle, node) combinations corresponding to the desired time interval.
+    """
+    cycleNodes = [(0, 3), (0, 4)]  # TODO: placeholder
+
+    if errorIfNotExactlyOne and len(cycleNodes) != 1:
+        raise ValueError(f"Did not find exactly one cycle/node pair: {cycleNodes}")
+
+    return cycleNodes

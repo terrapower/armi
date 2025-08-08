@@ -25,7 +25,7 @@ import h5py
 import numpy as np
 
 from armi.bookkeeping.db import _getH5File, database, loadOperator
-from armi.bookkeeping.db.database import Database
+from armi.bookkeeping.db.database import Database, getCycleNodeAtTime
 from armi.bookkeeping.db.databaseInterface import DatabaseInterface
 from armi.bookkeeping.db.jaggedArray import JaggedArray
 from armi.reactor import parameters
@@ -793,7 +793,7 @@ grids:
 
         self.o, self.r = loadTestReactor(thisDir, inputFileName="armiRunSmallest.yaml")
         self.dbi = DatabaseInterface(self.r, self.o.cs)
-        self.dbi.initDB(fName=self._testMethodName + ".h5")
+        self.dbi.initDB(fName=f"{self._testMethodName}.h5")
         self.db: database.Database = self.dbi.database
 
     def tearDown(self):
@@ -831,7 +831,7 @@ grids:
         self.db.close()
 
         # open the DB and verify, the first timenode
-        with database.Database(self._testMethodName + ".h5", "r") as db:
+        with database.Database(self.db.fileName, "r") as db:
             r0 = db.load(0, 0, allowMissing=True)
             self.assertEqual(r0.p.cycle, 0)
             self.assertEqual(r0.p.timeNode, 0)
@@ -854,7 +854,7 @@ grids:
             self.assertEqual(len(r0.excore["evst"].getChildren()), 0)
 
         # open the DB and verify, the second timenode
-        with database.Database(self._testMethodName + ".h5", "r") as db:
+        with database.Database(self.db.fileName, "r") as db:
             r1 = db.load(0, 1, allowMissing=True)
             self.assertEqual(r1.p.cycle, 0)
             self.assertEqual(r1.p.timeNode, 1)
@@ -894,3 +894,7 @@ grids:
         with self.assertRaises(ValueError):
             with database.Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
+
+    def test_getCycleNodeAtTime(self):
+        cycleNodes = getCycleNodeAtTime(self.db.fileName, 0, 1, False)
+        self.assertEqual(cycleNodes, [(0, 3), (0, 4)])
