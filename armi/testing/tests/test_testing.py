@@ -22,4 +22,4 @@ from armi.testing.symmetryTests import SymmetryFactorTester
 class TestSymmetryHelper(unittest.TestCase):
     def test_defaultSymmetry(self):
         symTester = SymmetryFactorTester()
-        _, _ = symTester.symmetryFactorBlockTest()
+        symTester.runSymmetryFactorTests(self, blockParams=["power"])
