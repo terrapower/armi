@@ -83,6 +83,7 @@ class TestDatabase(unittest.TestCase):
 
         grid = self.r.core.spatialGrid
 
+        t = 0
         for cycle in range(2):
             a1 = self.r.core.childrenByLocator[grid[cycle, 0, 0]]
             a2 = self.r.core.childrenByLocator[grid[0, 0, 0]]
@@ -94,12 +95,13 @@ class TestDatabase(unittest.TestCase):
             self.centralTopBlockSerialNums.append(c[-1].p.serialNum)
 
             for node in range(2):
-                self.r.p.cycle = cycle
-                self.r.p.timeNode = node
                 # something that splitDatabase won't change, so that we can make sure
                 # that the right data went to the right new groups/cycles
                 self.r.p.cycleLength = cycle
-
+                self.r.p.cycle = cycle
+                self.r.p.timeNode = node
+                t += 1.0
+                self.r.p.time = t
                 self.db.writeToDB(self.r)
 
         # add some more data that isn't written to the database to test the
@@ -205,6 +207,41 @@ class TestDatabase(unittest.TestCase):
         ):
             self.db.load(0, 0, cs=cs)
         mockGrow.assert_not_called()
+
+    def test_getCycleNodeAtTime(self):
+        self.makeShuffleHistory()
+        self.db.close()
+
+        # fileName = "C://Users/jstilley/codes/repos/nala/nala/reference-results/acceptanceTests/standard/standard.h5"
+
+        # test that the math works correctly
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 0.87, False)
+        self.assertEqual(cycleNodes, ["c00n00"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0.23, 1.2, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0.001, 2.345, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01", "c01n00"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 3.123, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01", "c01n00", "c01n01"])
+
+        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0.123, 4.0, False)
+        self.assertEqual(cycleNodes, ["c00n00", "c00n01", "c01n00", "c01n01"])
+
+        # test some exceptions are correctly raised
+        with self.assertRaises(AssertionError):
+            Database.getCycleNodeAtTime(self.db.fileName, -1, 1, False)
+
+        with self.assertRaises(AssertionError):
+            Database.getCycleNodeAtTime(self.db.fileName, 3, 1, False)
+
+        with self.assertRaises(ValueError):
+            Database.getCycleNodeAtTime(self.db.fileName, 5, 6, False)
+
+        with self.assertRaises(ValueError):
+            Database.getCycleNodeAtTime(self.db.fileName, 1, 140, True)
 
 
 class TestDatabaseSmaller(unittest.TestCase):
@@ -894,38 +931,3 @@ grids:
         with self.assertRaises(ValueError):
             with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
-
-    def test_getCycleNodeAtTime(self):
-        self.db.close()
-
-        # test that the math works correctly
-        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 100, False)
-        self.assertEqual(cycleNodes, [(0, 0)])
-
-        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 456, 890, False)
-        self.assertEqual(cycleNodes, [(0, 0)])
-
-        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 200, 1300, False)
-        self.assertEqual(cycleNodes, [(0, 0), (0, 1)])
-
-        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 200, 2300, False)
-        self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0)])
-
-        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 200, 3123, False)
-        self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0), (1, 1)])
-
-        cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 123, 4000, False)
-        self.assertEqual(cycleNodes, [(0, 0), (0, 1), (1, 0), (1, 1)])
-
-        # test some exceptions are correctly raised
-        with self.assertRaises(AssertionError):
-            Database.getCycleNodeAtTime(self.db.fileName, -1, 100, False)
-
-        with self.assertRaises(AssertionError):
-            Database.getCycleNodeAtTime(self.db.fileName, 300, 100, False)
-
-        with self.assertRaises(ValueError):
-            Database.getCycleNodeAtTime(self.db.fileName, 5000, 6000, False)
-
-        with self.assertRaises(ValueError):
-            Database.getCycleNodeAtTime(self.db.fileName, 200, 1400, True)
