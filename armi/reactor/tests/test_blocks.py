@@ -493,6 +493,24 @@ class Block_TestCase(unittest.TestCase):
         b1.add(fuel)
         self.assertEqual(b1.getSmearDensity(), 0.0)
 
+    def test_computeSmearDensity(self):
+        # test the null case
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], False)
+        self.assertEqual(smearDensity, 0.0)
+
+        # test one circle component
+        circles = self.block.getComponentsOfShape(components.Circle)
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [circles[0]], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        # use the test block
+        sortedCircles = self.block.getSortedComponentsInsideOfComponent(circles.pop())
+        smearDensity = blocks.Block.computeSmearDensity(123.4, sortedCircles, True)
+        self.assertAlmostEqual(smearDensity, 0.6352415979613774, delta=0.0001)
+
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1
         self.assertEqual(0.1, self.block.p[("buRate", 3)])
