@@ -44,6 +44,7 @@ from armi.physics.fuelCycle.settings import (
     CONF_SHUFFLE_SEQUENCE_FILE,
 )
 from armi.reactor.flags import Flags
+from armi.reactor import grids
 from armi.reactor.parameters import ParamLocation
 from armi.utils.customExceptions import InputError
 
@@ -1072,49 +1073,126 @@ class FuelHandler:
         """Read a shuffle file in YAML format."""
         try:
             from ruamel.yaml import YAML
+            from ruamel.yaml.constructor import DuplicateKeyError
         except ImportError:
             raise RuntimeError("ruamel.yaml is required to read YAML shuffle files")
 
         try:
             with open(fname, "r") as stream:
                 yaml = YAML(typ="safe")
+                yaml.allow_duplicate_keys = False
                 data = yaml.load(stream)
+        except DuplicateKeyError:
+            raise InputError("Duplicate cycle in shuffle YAML sequence")
         except OSError:
             raise RuntimeError(
                 "Could not find/open repeat shuffle file {} in working directory {}".format(fname, os.getcwd())
             )
 
+        if "sequence" not in data:
+            raise InputError("Shuffle YAML missing required 'sequence' mapping")
+
         moves = {}
-        # sequence mapping of cycles
-        for cycleKey, actions in (data.get("sequence") or {}).items():
+        # cycles may be provided in any order; verify only that there are no gaps
+        cycleNums = {int(c) for c in data["sequence"].keys()}
+        if cycleNums:
+            expected = set(range(min(cycleNums), max(cycleNums) + 1))
+            missing = sorted(expected - cycleNums)
+            if missing:
+                if len(missing) == 1:
+                    raise InputError(f"Missing cycle {missing[0]} in shuffle sequence")
+                raise InputError(f"Missing cycles {missing} in shuffle sequence")
+
+        for cycleKey, actions in data["sequence"].items():
             cycle = int(cycleKey)
             moves[cycle] = []
+            seenLocs = set()
+
+            def _validateLoc(loc):
+                if loc in {"SFP", "ExCore", "LoadQueue"}:
+                    return
+                try:
+                    grids.locatorLabelToIndices(loc)
+                except Exception:
+                    raise InputError(f"Invalid location label {loc} in shuffle YAML")
+
             for action in actions or []:
+                allowed = {"cascade", "fuelEnrichment", "rotations", "misloadSwap"}
+                unknown = set(action) - allowed
+                if unknown:
+                    raise InputError(
+                        f"Unknown action keys {unknown} in shuffle YAML"
+                    )
+
                 if "cascade" in action:
                     chain = list(action["cascade"])
-                    if not chain:
-                        continue
+                    if len(chain) < 2:
+                        raise InputError(
+                            "cascade must contain an assembly type and at least one location"
+                        )
+                    if any(not isinstance(item, str) for item in chain):
+                        raise InputError("cascade entries must be strings")
+
                     assemType = chain[0]
                     locs = chain[1:]
-                    if not locs:
-                        continue
-                    enrich = [float(e) for e in action.get("fuelEnrichment", [])]
-                    # fresh load from LoadQueue
-                    moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType, None))
-                    for i in range(len(locs) - 1):
-                        moves[cycle].append(AssemblyMove(locs[i], locs[i + 1], [], None, None))
-                    if locs[-1] not in ["SFP", "ExCore"]:
-                        moves[cycle].append(AssemblyMove(locs[-1], "SFP", [], None, None))
+                    for loc in locs:
+                        _validateLoc(loc)
+                        if loc not in {"SFP", "ExCore"}:
+                            if loc in seenLocs:
+                                raise InputError(
+                                    f"Location {loc} appears in multiple cascades in cycle {cycle}"
+                                )
+                            seenLocs.add(loc)
 
-                    for loc, angle in (action.get("rotations") or {}).items():
+                    enrich = []
+                    if "fuelEnrichment" in action:
+                        enrichList = action["fuelEnrichment"]
+                        try:
+                            enrich = [float(e) for e in enrichList]
+                        except (TypeError, ValueError):
+                            raise InputError(
+                                "fuelEnrichment values must be numeric"
+                            )
+                        if any(e < 0 or e > 100 for e in enrich):
+                            raise InputError(
+                                "fuelEnrichment values must be between 0 and 100"
+                            )
+
+                    moves[cycle].append(
+                        AssemblyMove("LoadQueue", locs[0], enrich, assemType, None)
+                    )
+                    for i in range(len(locs) - 1):
                         moves[cycle].append(
-                            AssemblyMove(loc, loc, [], None, None, float(angle))
+                            AssemblyMove(locs[i], locs[i + 1], [], None, None)
+                        )
+                    if locs[-1] not in ["SFP", "ExCore"]:
+                        moves[cycle].append(
+                            AssemblyMove(locs[-1], "SFP", [], None, None)
                         )
 
                 if "misloadSwap" in action:
-                    loc1, loc2 = action["misloadSwap"]
+                    swap = action["misloadSwap"]
+                    if not isinstance(swap, list) or len(swap) != 2:
+                        raise InputError(
+                            "misloadSwap must be a list of two location labels"
+                        )
+                    if any(not isinstance(item, str) for item in swap):
+                        raise InputError(
+                            "misloadSwap entries must be strings"
+                        )
+                    for loc in swap:
+                        _validateLoc(loc)
+                        seenLocs.add(loc)
+                    loc1, loc2 = swap
                     moves[cycle].append(AssemblyMove(loc1, loc2, [], None, None))
                     moves[cycle].append(AssemblyMove(loc2, loc1, [], None, None))
+
+                if "rotations" in action:
+                    for loc, angle in (action.get("rotations") or {}).items():
+                        _validateLoc(loc)
+                        moves[cycle].append(
+                            AssemblyMove(loc, loc, [], None, None, float(angle))
+                        )
 
         return moves
 

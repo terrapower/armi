@@ -373,20 +373,22 @@ A few examples of restart cases:
    ``shuffleSequenceFile`` setting. The YAML format organizes data by cycle in a
    ``sequence`` mapping. Each cycle contains a list of high-level actions such as
    ``cascade`` chains, ``misloadSwap`` entries, and optional manual
-   ``rotations``. Cascades describe a new assembly type moving through a series
-   of locations until discharge. Optional ``fuelEnrichment`` lists specify the
+   ``rotations``. Cascades describe a chain of assembly displacements 
+   beginning with a fresh fuel assembly and ending with the final location's
+   assembly being discharged. Optional ``fuelEnrichment`` lists specify the
    U235 weight percent enrichment for each axial block in the fresh assembly,
    from bottom to top, including zeroes for non-fuel blocks. ``misloadSwap``
    swaps the assemblies at two locations after all cascades are processed but
    before any rotations are applied. Manual ``rotations`` map final location
-   labels to relative angles in degrees (multiples of 60°) and are performed
-   after any algorithmic rotation routines. Rotations apply to the assembly that
-   ends up at the given location once all moves and swaps in that cycle are
-   complete. Assemblies can be discharged to the spent fuel pool by ending a
-   cascade with ``SFP`` or removed from the model entirely by ending with
-   ``ExCore``. When an assembly is sent to the ``SFP`` it is only retained if the
-   ``trackAssems`` setting is True; ``ExCore`` always deletes the assembly and
-   omitting an ex-core destination also removes it unless tracking is enabled.
+   labels to relative angles in degrees and are performed after any
+   algorithmic rotation routines. Valid angles depend on the assembly's
+   geometry. Rotations apply to the assembly that ends up at the given location
+   once all moves and swaps in that cycle are
+   complete. A cascade with no final destination defaults to discharging the
+   assembly to the spent fuel pool ``SFP``. Assemblies can also be removed from
+   the model entirely by ending with ``ExCore``. When an assembly is sent to the
+   ``SFP`` it is only retained if the ``trackAssems`` setting is True;
+   ``ExCore`` always deletes the assembly.
    For example::
 
        sequence:
