@@ -219,7 +219,8 @@ class TestMultiPinConservation(AxialExpansionTestBase):
             for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
                 for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
                     if c.hasFlags(Flags.TEST):
-                        newTemp = c.temperatureInC + (temp + 25.0) * i
+                        testTemp = temp + 25 if temp > 0 else temp - 25
+                        newTemp = c.temperatureInC + testTemp * i
                     else:
                         newTemp = c.temperatureInC + temp * i
                     self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
