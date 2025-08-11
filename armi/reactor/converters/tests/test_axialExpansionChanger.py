@@ -251,7 +251,7 @@ class TestMultiPinConservation(AxialExpansionTestBase):
     def test_contractPrescribed(self):
         cList = []
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
                 cList.append(c)
         pList = zeros(len(cList)) + 0.9
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
@@ -261,12 +261,12 @@ class TestMultiPinConservation(AxialExpansionTestBase):
     def test_expandAndContractPrescribed(self):
         cList = []
         pList = []
-        for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
+        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
                 if c.hasFlags(Flags.TEST):
-                    pList.append(1.2)
+                    pList.append(1.0 + 0.01 * i)
                 else:
-                    pList.append(1.1)
+                    pList.append(1.0 - 0.01 * i)
                 cList.append(c)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
@@ -288,6 +288,7 @@ class TestMultiPinConservation(AxialExpansionTestBase):
             self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight())
+
 
 class TestAxialExpansionHeight(AxialExpansionTestBase):
     """Verify that test assembly is expanded correctly."""

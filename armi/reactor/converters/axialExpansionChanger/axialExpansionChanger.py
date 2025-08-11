@@ -13,14 +13,9 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
-from math import pi, sqrt
 import typing
 
-from numpy import array, array_equal
-from numpy.polynomial import Polynomial
-
-# from scipy.optimize import minimize, Bounds
-# from scipy.optimize import minimize_scalar
+from numpy import array
 from scipy.optimize import brentq
 
 from armi import runLog
@@ -399,7 +394,6 @@ class AxialExpansionChanger:
 
                 # deal with non-target components
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
-
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove is not None:
                         # align components
@@ -409,33 +403,16 @@ class AxialExpansionChanger:
                         # redistribute mass
                         delta = b.p.ztop - c.ztop
                         if delta > 0.0:
-                            ## only move mass from the above comp to the current comp. mass removal from the
-                            #  above comp happens when the lower bound of the above block shifts up
-                            self.addMassToComponent(
-                                fromComp=cAbove,
-                                toComp=c,
-                                delta=delta,
-                            )
-                            self.rmMassFromComponent(
-                                fromComp=cAbove,
-                                delta=-delta,
-                            )
-                            self.shiftLinkedCompsForDelta(c, cAbove, delta)
+                            # move mass, m, from the above comp to the current comp. this adds mass, m, to current comp
+                            # and removes it from the above comp
+                            self.redistributeMass(cAbove, c, delta)
                         elif delta < 0.0:
-                            ## only move mass from the comp to the comp above. mass removal from the
-                            #  current comp happens when the upper bound of the current block shifts down
-                            self.addMassToComponent(
-                                fromComp=c,
-                                toComp=cAbove,
-                                delta=delta,
-                            )
-                            self.rmMassFromComponent(
-                                fromComp=c,
-                                delta=-delta,
-                            )
-                            self.shiftLinkedCompsForDelta(c, cAbove, delta)
-                        else:
-                            pass
+                            # move mass, m, from the current comp to the above comp. this adds mass, m, to the above
+                            # comp and removes it from the current comp
+                            self.redistributeMass(c, cAbove, delta)
+
+                        # realign components based on delta
+                        self.shiftLinkedCompsForDelta(c, cAbove, delta)
             else:
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
@@ -449,6 +426,17 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
+    def redistributeMass(self, fromComp: "Component", toComp: "Component", delta: float):
+        self.addMassToComponent(
+            fromComp=fromComp,
+            toComp=toComp,
+            delta=abs(delta),
+        )
+        self.rmMassFromComponent(
+            fromComp=fromComp,
+            delta=-delta,
+        )
+
     def shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", delta: float):
         # shift the height and ztop of the current component downwards (-delta) or upwards (+delta)
         c.height += delta
@@ -458,7 +446,7 @@ class AxialExpansionChanger:
         cAbove.zbottom += delta
 
     def addMassToComponent(self, fromComp: "Component", toComp: "Component", delta: float):
-        """
+        r"""
         Parameters
         ----------
         fromComp
@@ -467,44 +455,40 @@ class AxialExpansionChanger:
             Component that is recieving mass from fromComp
         delta
             The length, in cm, of fromComp being given to toComp
+
+        Notes
+        -----
+        When redistributing mass, if ``fromComp`` and ``toComp`` are different temperatures, the temperature of
+        ``toComp`` will change. Calculating this new temperature is non trivial due to thermal expansion. The following
+        defines what the area of ``toComp`` is post-redictribution,
+
+        .. math::
+
+            A_1(\hat{T}) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,
+            A_1(\hat{T}) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
+
+        This equation is then solved
+
+
+        where, :math`A_1, T_1, H_1`, are the area, temparature, and height of ``toComp``, :math:`A_2, T_2, H_2`, are the
+        area, temparature, and height of ``fromComp``, :math:`\delta` is the parameter ``delta``, and :math:`\hat{T}` is
+        the new temperature of ``toComp``, post-redistribution. Brent's method within ``scipy.optimize`` is used to
+        find the root of the above equation, indicating the value for :math:`\hat{T}`.
         """
-        # limitation: fromComp and toComp **must** have the same isotopics.
-        nucsFrom = fromComp.getNuclides()
-        nucsTo = toComp.getNuclides()
-        if not array_equal(nucsFrom, nucsTo):
+        # limitation: fromComp and toComp **must** be the same materials.
+        if type(fromComp.material) is not type(toComp.material):
             raise RuntimeError(
-                f"Cannot redistribute mass from {fromComp} to {toComp} as they do not have the same nuclides.\n"
-                f"Instead, {toComp} will have it's mass changed based on the difference between its ztop and the top"
-                "of its block."
+                f"Cannot redistribute mass from {fromComp} to {toComp} as they are not the same material.\n"
+                f"{type(fromComp.material)} is not {type(toComp.material)}"
             )
 
-        ## calculate new number densities for each isotope based on the expected total mass
-        # origArea = toComp.getArea()
-
-        '''
-        new_area(ave.temperature) * b.height == (
-            toComp_area(toComp.temperature) * toComp.height + fromComp_area(fromComp.teperature) * delta
-        )
-        new_area(ave.temp) = (toComp_area(toComp.temperature) * toComp.height + fromComp_area(fromComp.teperature) * delta) / b.height
-        --> if the below goes well, we use some iterative tool from scipy to solve the above thing for ave.temp. black box new_area(ave.temp)
-            as some (non?)linear function to hand to a fancy and smart iterative tool. Newton iteration, etc.
-        pi r(ave.temp)**2 = RHS (divide the RHS by the mult!)
-        r(ave.temp) = sqrt(RHS / pi)
-        r_cold * thermalExpFactor = sqrt(RHS / pi)
-        thermalExpFactor = (1 + dLL) = sqrt(RHS / pi) / r_cold
-        dLL = sqrt(RHS / pi) / r_cold - 1
-        (dLL(ave.temp) - dll_cold) / (100 + dll_cold) = sqrt(RHS / pi) / r_cold - 1
-        dLL(ave.temp) = (sqrt(RHS / pi) / r_cold - 1) * (100 + dll_cold) + dll_cold
-        -0.73 + 3.489e-3 * tk - 5.154e-6 * tk2 + 4.39e-9 * tk3 = (sqrt(RHS / pi) / r_cold - 1) * 100 + dll_cold + dll_cold
-        --> solve the above for tk using numpy root solver.
-        '''
         toCompVolume = toComp.getArea() * toComp.height
         fromCompVolume = fromComp.getArea() * abs(delta)
         newVolume = fromCompVolume + toCompVolume
 
         ## calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
-        for nuc in nucsFrom:
+        for nuc in fromComp.getNuclides():
             massByNucFrom = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
             massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
@@ -512,45 +496,25 @@ class AxialExpansionChanger:
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
 
-        # calculate the new temperature of toComp. Do not use component.setTemperature as this mucks with the
-        # number densities we just calculated.
-        newToCompTemp = (
-            fromCompVolume/newVolume * fromComp.temperatureInC + toCompVolume/newVolume * toComp.temperatureInC
-        )
-        rhs = newVolume / (toComp.height + abs(delta))
-        # newToCompTemp = minimize(fun = lambda T: toComp.getArea(Tc=T)/mult - rhs, x0 = newToCompTemp, bounds = Bounds(fromComp.temperatureInC, toComp.temperatureInC))
-        # newToCompTemp = minimize_scalar(fun = lambda T: (toComp.getArea(Tc=T) - rhs), method = "bounded", bounds=(790,800), tol=1e-9, options={'disp': True})
-        # newToCompTemp = brentq(lambda T: toComp.getArea(Tc=T) - rhs, 790, 810)
-        try:
+        # calculate the new temperature of toComp.
+        if fromComp.temperatureInC == toComp.temperatureInC:
+            newToCompTemp = toComp.temperatureInC
+        else:
+            rhs = newVolume / (toComp.height + abs(delta))
             newToCompTemp = brentq(
-                f = lambda T: toComp.getArea(Tc=T) - rhs,
-                a = fromComp.temperatureInC,
-                b = toComp.temperatureInC
+                f=lambda T: toComp.getArea(Tc=T) - rhs, a=fromComp.temperatureInC, b=toComp.temperatureInC
             )
-        except ValueError as ee:
-            if fromComp.temperatureInC == toComp.temperatureInC:
-                newToCompTemp = fromComp.temperatureInC
-            else:
-                raise ee
-
-        # r_cold = toComp.p.od / 2.0
-        # dLL = sqrt(rhs / pi) / r_cold - 1.0
-        # dLL_cold = toComp.material.linearExpansionPercent(Tc=toComp.inputTemperatureInC)
-        # dLL_aveTemp = dLL * (100.0 + dLL_cold) + dLL_cold
-        # newToCompTemp = Polynomial([-0.73 - dLL_aveTemp, 3.489e-3, -5.154e-6, 4.39e-9])
-        # roots = newToCompTemp.roots()
+        # Do not use component.setTemperature as this mucks with the number densities we just calculated.
         toComp.temperatureInC = newToCompTemp
 
     def rmMassFromComponent(self, fromComp: "Component", delta: float):
         """Create new number densities for the component that is having mass removed."""
-        nucsFrom = fromComp.getNuclides()
-
         # calculate the new volume
         newFromCompVolume = fromComp.getArea() * (fromComp.height + delta)
 
         ## calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
-        for nuc in nucsFrom:
+        for nuc in fromComp.getNuclides():
             massByNucFrom = densityTools.getMassInGrams(nuc, newFromCompVolume, fromComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom, newFromCompVolume)
 
@@ -584,7 +548,6 @@ class AxialExpansionChanger:
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
 
-
     def _checkBlockHeight(self, b):
         """
         Do some basic block height validation.
@@ -614,4 +577,3 @@ class AxialExpansionChanger:
                     f"\t{lowerBlock.getType()}: {lowerBlock.p.ztop}\n"
                     f"\t{b.getType()}: {b.p.zbottom}"
                 )
-
