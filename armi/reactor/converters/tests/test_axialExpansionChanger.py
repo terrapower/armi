@@ -212,6 +212,21 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
 
+    def test_roundTripThermal(self):
+        """Ensure that the original state of the assembly is recovered through thermal expansion."""
+        tempAdjust = [50, -50]
+        for temp in tempAdjust:
+            for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+                for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
+                    if c.hasFlags(Flags.TEST):
+                        newTemp = c.temperatureInC + (temp + 25.0) * i
+                    else:
+                        newTemp = c.temperatureInC + temp * i
+                    self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
+            self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+            self.axialExpChngr.axiallyExpandAssembly()
+        self.checkConservation()
+
     def test_expandThermal(self):
         """
         Change fuel: isothermal and non-isothermal pass
