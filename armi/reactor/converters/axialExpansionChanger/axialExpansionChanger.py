@@ -467,12 +467,9 @@ class AxialExpansionChanger:
             A_1(\hat{T}) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,
             A_1(\hat{T}) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
 
-        This equation is then solved
-
-
-        where, :math`A_1, T_1, H_1`, are the area, temparature, and height of ``toComp``, :math:`A_2, T_2, H_2`, are the
-        area, temparature, and height of ``fromComp``, :math:`\delta` is the parameter ``delta``, and :math:`\hat{T}` is
-        the new temperature of ``toComp``, post-redistribution. Brent's method within ``scipy.optimize`` is used to
+        Where, :math`A_1, T_1, H_1`, are the area, temparature, and height of ``toComp``, :math:`A_2, T_2`, are the
+        area and temparature of ``fromComp``, :math:`\delta` is the parameter ``delta``, and :math:`\hat{T}` is
+        the new temperature of ``toComp`` post-redistribution. Brent's method within ``scipy.optimize`` is used to
         find the root of the above equation, indicating the value for :math:`\hat{T}`.
         """
         # limitation: fromComp and toComp **must** be the same materials.
