@@ -431,7 +431,7 @@ class Inspector:
         )
 
         self.addQuery(
-            lambda: self.cs.get("shuffleSequenceFile")
+            lambda: self.cs["shuffleSequenceFile"]
             and not self._csRelativePathExists(self.cs["shuffleSequenceFile"])
             and not _willBeCopiedFrom(self.cs["shuffleSequenceFile"]),
             "The specified shuffle sequence file `{0}` does not exist. Run will crash.".format(

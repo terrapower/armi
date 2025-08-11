@@ -43,8 +43,8 @@ from armi.physics.fuelCycle.settings import (
     CONF_ASSEMBLY_ROTATION_ALG,
     CONF_SHUFFLE_SEQUENCE_FILE,
 )
-from armi.reactor.flags import Flags
 from armi.reactor import grids
+from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils.customExceptions import InputError
 
@@ -127,7 +127,7 @@ class FuelHandler:
             raise ValueError("Cannot perform two outages with same FuelHandler instance.")
 
         # determine if a repeat shuffle is occurring or a new shuffle pattern
-        if self.cs.get(CONF_SHUFFLE_SEQUENCE_FILE):
+        if self.cs[CONF_SHUFFLE_SEQUENCE_FILE]:
             if not os.path.exists(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]):
                 raise RuntimeError(
                     "Requested shuffle sequence file {0} does not exist. Cannot perform shuffling. ".format(
