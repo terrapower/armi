@@ -19,6 +19,10 @@ import typing
 from numpy import array, array_equal
 from numpy.polynomial import Polynomial
 
+# from scipy.optimize import minimize, Bounds
+# from scipy.optimize import minimize_scalar
+from scipy.optimize import brentq
+
 from armi import runLog
 from armi.materials.material import Fluid
 from armi.reactor.assemblies import Assembly
@@ -510,15 +514,31 @@ class AxialExpansionChanger:
 
         # calculate the new temperature of toComp. Do not use component.setTemperature as this mucks with the
         # number densities we just calculated.
-        # newToCompTemp = (
-        #     fromCompVolume/newVolume * fromComp.temperatureInC + toCompVolume/newVolume * toComp.temperatureInC
-        # )
-        rhs = (newVolume / toComp.p.mult) / (toComp.height + abs(delta))
-        dLL = (sqrt(rhs / pi) / (toComp.p.od / 2.0)) - 1.0
-        dLL_cold = toComp.material.linearExpansionPercent(Tc=toComp.inputTemperatureInC)
-        dLL_aveTemp = dLL * (100.0 + dLL_cold) + dLL_cold
-        newToCompTemp = Polynomial([-0.73 - dLL_aveTemp, 3.489e-3, -5.154e-6, 4.39e-9])
-        roots = newToCompTemp.roots()
+        newToCompTemp = (
+            fromCompVolume/newVolume * fromComp.temperatureInC + toCompVolume/newVolume * toComp.temperatureInC
+        )
+        rhs = newVolume / (toComp.height + abs(delta))
+        # newToCompTemp = minimize(fun = lambda T: toComp.getArea(Tc=T)/mult - rhs, x0 = newToCompTemp, bounds = Bounds(fromComp.temperatureInC, toComp.temperatureInC))
+        # newToCompTemp = minimize_scalar(fun = lambda T: (toComp.getArea(Tc=T) - rhs), method = "bounded", bounds=(790,800), tol=1e-9, options={'disp': True})
+        # newToCompTemp = brentq(lambda T: toComp.getArea(Tc=T) - rhs, 790, 810)
+        try:
+            newToCompTemp = brentq(
+                f = lambda T: toComp.getArea(Tc=T) - rhs,
+                a = fromComp.temperatureInC,
+                b = toComp.temperatureInC
+            )
+        except ValueError as ee:
+            if fromComp.temperatureInC == toComp.temperatureInC:
+                newToCompTemp = fromComp.temperatureInC
+            else:
+                raise ee
+
+        # r_cold = toComp.p.od / 2.0
+        # dLL = sqrt(rhs / pi) / r_cold - 1.0
+        # dLL_cold = toComp.material.linearExpansionPercent(Tc=toComp.inputTemperatureInC)
+        # dLL_aveTemp = dLL * (100.0 + dLL_cold) + dLL_cold
+        # newToCompTemp = Polynomial([-0.73 - dLL_aveTemp, 3.489e-3, -5.154e-6, 4.39e-9])
+        # roots = newToCompTemp.roots()
         toComp.temperatureInC = newToCompTemp
 
     def rmMassFromComponent(self, fromComp: "Component", delta: float):
