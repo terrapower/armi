@@ -1039,9 +1039,7 @@ class FuelHandler:
                 if movingAssemName:
                     movingAssemName = movingAssemName.split("=")[1]  # extract the actual assembly name.
                 enrichList = [float(i) for i in m.group(5).split()]
-                moves[cycle].append(
-                    AssemblyMove(oldLoc, newLoc, enrichList, assemType, movingAssemName)
-                )
+                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList, assemType, movingAssemName))
                 numMoves += 1
             elif "moved" in line:
                 # very old shuffleLogic file.
@@ -1120,16 +1118,12 @@ class FuelHandler:
                 allowed = {"cascade", "fuelEnrichment", "rotations", "misloadSwap"}
                 unknown = set(action) - allowed
                 if unknown:
-                    raise InputError(
-                        f"Unknown action keys {unknown} in shuffle YAML"
-                    )
+                    raise InputError(f"Unknown action keys {unknown} in shuffle YAML")
 
                 if "cascade" in action:
                     chain = list(action["cascade"])
                     if len(chain) < 2:
-                        raise InputError(
-                            "cascade must contain an assembly type and at least one location"
-                        )
+                        raise InputError("cascade must contain an assembly type and at least one location")
                     if any(not isinstance(item, str) for item in chain):
                         raise InputError("cascade entries must be strings")
 
@@ -1139,9 +1133,7 @@ class FuelHandler:
                         _validateLoc(loc)
                         if loc not in {"SFP", "ExCore"}:
                             if loc in seenLocs:
-                                raise InputError(
-                                    f"Location {loc} appears in multiple cascades in cycle {cycle}"
-                                )
+                                raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
                             seenLocs.add(loc)
 
                     enrich = []
@@ -1150,36 +1142,22 @@ class FuelHandler:
                         try:
                             enrich = [float(e) for e in enrichList]
                         except (TypeError, ValueError):
-                            raise InputError(
-                                "fuelEnrichment values must be numeric"
-                            )
+                            raise InputError("fuelEnrichment values must be numeric")
                         if any(e < 0 or e > 100 for e in enrich):
-                            raise InputError(
-                                "fuelEnrichment values must be between 0 and 100"
-                            )
+                            raise InputError("fuelEnrichment values must be between 0 and 100")
 
-                    moves[cycle].append(
-                        AssemblyMove("LoadQueue", locs[0], enrich, assemType, None)
-                    )
+                    moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType, None))
                     for i in range(len(locs) - 1):
-                        moves[cycle].append(
-                            AssemblyMove(locs[i], locs[i + 1], [], None, None)
-                        )
+                        moves[cycle].append(AssemblyMove(locs[i], locs[i + 1], [], None, None))
                     if locs[-1] not in ["SFP", "ExCore"]:
-                        moves[cycle].append(
-                            AssemblyMove(locs[-1], "SFP", [], None, None)
-                        )
+                        moves[cycle].append(AssemblyMove(locs[-1], "SFP", [], None, None))
 
                 if "misloadSwap" in action:
                     swap = action["misloadSwap"]
                     if not isinstance(swap, list) or len(swap) != 2:
-                        raise InputError(
-                            "misloadSwap must be a list of two location labels"
-                        )
+                        raise InputError("misloadSwap must be a list of two location labels")
                     if any(not isinstance(item, str) for item in swap):
-                        raise InputError(
-                            "misloadSwap entries must be strings"
-                        )
+                        raise InputError("misloadSwap entries must be strings")
                     for loc in swap:
                         _validateLoc(loc)
                         seenLocs.add(loc)
@@ -1190,9 +1168,7 @@ class FuelHandler:
                 if "rotations" in action:
                     for loc, angle in (action.get("rotations") or {}).items():
                         _validateLoc(loc)
-                        moves[cycle].append(
-                            AssemblyMove(loc, loc, [], None, None, float(angle))
-                        )
+                        moves[cycle].append(AssemblyMove(loc, loc, [], None, None, float(angle)))
 
         return moves
 
@@ -1360,9 +1336,7 @@ class FuelHandler:
 
             elif "SFP" in toLoc or "ExCore" in toLoc:
                 # discharge. Track chain.
-                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(
-                    moveList, startingAt=fromLoc
-                )
+                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(moveList, startingAt=fromLoc)
                 runLog.extra("Load Chain with load assem {0}: {1}".format(assemType, chain))
                 loadChains.append(chain)
                 enriches.append(enrichList)
@@ -1390,9 +1364,7 @@ class FuelHandler:
                 continue
             else:
                 # normal move
-                chain, _enrichList, _assemType, _loadAssemName = FuelHandler.trackChain(
-                    moveList, startingAt=fromLoc
-                )
+                chain, _enrichList, _assemType, _loadAssemName = FuelHandler.trackChain(moveList, startingAt=fromLoc)
                 loopChains.append(chain)
                 alreadyDone.extend(chain)
 
