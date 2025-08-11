@@ -285,7 +285,7 @@ class TestMultiPinConservation(AxialExpansionTestBase):
             print(cFlags[i], newMass - origMass)
 
         for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
-            self.assertAlmostEqual(origMass, newMass, places=10, msg=f"{cFlags[i]} are not the same!")
+            self.assertAlmostEqual(origMass, newMass, places=12, msg=f"{cFlags[i]} are not the same!")
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight())
 
@@ -521,11 +521,7 @@ class TestConservation(AxialExpansionTestBase):
 
     def _checkMass(self, prevMass, newMass):
         for prev, new in zip(prevMass.values(), newMass.values()):
-            # scaling helps check the assertion closer to machine precision
-            ave = (new + prev) / 2.0
-            prevScaled = prev / ave
-            newScaled = new / ave
-            self.assertAlmostEqual(prevScaled, newScaled, places=13)
+            self.assertAlmostEqual(prev, new, places=11)
 
     def _checkNDens(self, prevNDen, newNDens, ratio):
         for prevComp, newComp in zip(prevNDen.values(), newNDens.values()):
