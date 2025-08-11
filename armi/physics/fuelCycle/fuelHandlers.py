@@ -1188,7 +1188,8 @@ class FuelHandler:
         Parameters
         ----------
         moveList : list
-            a list of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects that occurred at a single outage.
+            a list of :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove`
+            objects that occurred at a single outage.
 
         startingAt : str
             A location label where the chain would start. This is important because the discharge
