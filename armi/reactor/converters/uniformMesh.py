@@ -57,6 +57,7 @@ import collections
 import copy
 import glob
 import re
+import typing
 from timeit import default_timer as timer
 
 import numpy as np
@@ -71,6 +72,9 @@ from armi.reactor.reactors import Core, Reactor
 from armi.settings.fwSettings.globalSettings import CONF_UNIFORM_MESH_MINIMUM_SIZE
 from armi.utils import iterables, plotting
 from armi.utils.mathematics import average1DWithinTolerance
+
+if typing.TYPE_CHECKING:
+    from armi.reactor.blocks import Block
 
 HEAVY_METAL_PARAMS = ["molesHmBOL", "massHmBOL"]
 
@@ -1388,7 +1392,7 @@ class ParamMapper:
     the same data.
     """
 
-    def __init__(self, reactorParamNames, blockParamNames, b):
+    def __init__(self, reactorParamNames: list[str], blockParamNames: list[str], b: "Block"):
         """
         Initialize the list of parameter defaults.
 
@@ -1416,8 +1420,7 @@ class ParamMapper:
         self.reactorParamNames = reactorParamNames
         self.blockParamNames = blockParamNames
 
-    @staticmethod
-    def paramSetter(block, vals, paramNames):
+    def paramSetter(self, block: "Block", vals: list, paramNames: list[str]):
         """Sets block parameter data."""
         for paramName, val in zip(paramNames, vals):
             # Skip setting None values.
@@ -1425,36 +1428,50 @@ class ParamMapper:
                 continue
 
             if isinstance(val, (tuple, list, np.ndarray)):
-                ParamMapper._arrayParamSetter(block, [val], [paramName])
+                self._arrayParamSetter(block, [val], [paramName])
             else:
-                ParamMapper._scalarParamSetter(block, [val], [paramName])
+                self._scalarParamSetter(block, [val], [paramName])
 
-    def paramGetter(self, block, paramNames):
+    def paramGetter(self, block: "Block", paramNames: list[str]):
         """Returns block parameter values as an array in the order of the parameter names given."""
         paramVals = []
+        symmetryFactor = block.getSymmetryFactor()
         for paramName in paramNames:
+            multiplier = self.getFactorSymmetry(paramName, symmetryFactor)
             val = block.p[paramName]
             # list-like should be treated as a numpy array
-            if isinstance(val, (tuple, list, np.ndarray)):
-                paramVals.append(np.array(val) if len(val) > 0 else None)
-            else:
+            if val is None:
                 paramVals.append(val)
+            elif isinstance(val, (tuple, list, np.ndarray)):
+                paramVals.append(np.array(val) * multiplier if len(val) > 0 else None)
+            else:
+                paramVals.append(val * multiplier)
 
         return np.array(paramVals, dtype=object)
 
-    @staticmethod
-    def _scalarParamSetter(block, vals, paramNames):
+    def _scalarParamSetter(self, block: "Block", vals: list, paramNames: list[str]):
         """Assigns a set of float/integer/string values to a given set of parameters on a block."""
+        symmetryFactor = block.getSymmetryFactor()
         for paramName, val in zip(paramNames, vals):
-            block.p[paramName] = val
+            if val is None:
+                block.p[paramName] = val
+            else:
+                block.p[paramName] = val / self.getFactorSymmetry(paramName, symmetryFactor)
 
-    @staticmethod
-    def _arrayParamSetter(block, arrayVals, paramNames):
+    def _arrayParamSetter(self, block: "Block", arrayVals: list, paramNames: list[str]):
         """Assigns a set of list/array values to a given set of parameters on a block."""
+        symmetryFactor = block.getSymmetryFactor()
         for paramName, vals in zip(paramNames, arrayVals):
             if vals is None:
                 continue
-            block.p[paramName] = np.array(vals)
+            block.p[paramName] = np.array(vals) / self.getFactorSymmetry(paramName, symmetryFactor)
+
+    def getFactorSymmetry(self, paramName: str, symmetryFactor: int):
+        """Returns the symmetry factor if the parameter is volume integrated, returns 1 otherwise."""
+        if self.isVolIntegrated[paramName]:
+            return symmetryFactor
+        else:
+            return 1
 
 
 def setNumberDensitiesFromOverlaps(block, overlappingBlockInfo):
