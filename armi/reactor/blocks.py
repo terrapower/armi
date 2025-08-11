@@ -229,10 +229,16 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
+        sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(clads.pop())
+
+        return self.computeSmearDensity(innerCladdingArea, sortedCompsInsideClad, cold)
+
+    @staticmethod
+    def computeSmearDensity(innerCladdingArea: float, sortedCompsInsideClad: list[components.Component], cold: bool):
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
         negativeArea = 0.0
-        for c in self.getSortedComponentsInsideOfComponent(clads.pop()):
+        for c in sortedCompsInsideClad:
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
@@ -255,10 +261,10 @@ class Block(composites.Composite):
                     negativeArea += abs(componentArea)
         if cold and negativeArea:
             raise ValueError(
-                f"Negative component areas exist on {self}. Check that the cold dimensions are "
+                "Negative component areas exist. Check that the cold dimensions are "
                 "properly aligned and no components overlap."
             )
-        innerCladdingArea += negativeArea  # See note 2
+        innerCladdingArea += negativeArea  # See note 2 of self.getSmearDensity
         totalMovableArea = innerCladdingArea - unmovableComponentArea
         smearDensity = fuelComponentArea / totalMovableArea
 
@@ -734,7 +740,6 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
-                child.p.puFrac = self.getPuMoles() / child.p.molesHmBOL if child.p.molesHmBOL > 0.0 else 0.0
 
         self.p.massHmBOL = massHmBOL
 

@@ -21,6 +21,8 @@ generating an SCR in ARMI.
 
 import subprocess
 
+import requests
+
 # A mapping of GitHub user names to actual names. Completely optional, just makes the SCR prettier.
 GITHUB_USERS = {
     "aaronjamesreynolds": "Aaron Reynolds",
@@ -48,13 +50,15 @@ PR_TYPES = {
 }
 
 
-def _findOneLineData(lines: list, key: str):
+def _findOneLineData(lines: list, prNum: str, key: str):
     """Helper method to find a single line in a GH CLI PR dump.
 
     Parameters
     ----------
     lines : list
         The GH CLI dump of a PR, split into lines for convenience.
+    prNum : str
+        The GitHub PR number in question.
     key : str
         The substring that the line in questions starts with.
 
@@ -67,6 +71,7 @@ def _findOneLineData(lines: list, key: str):
         if line.startswith(key):
             return line.split(key)[1].strip()
 
+    print(f"WARNING: SCR: Could not find {key} in PR#{prNum}.")
     return "TBD"
 
 
@@ -87,29 +92,29 @@ def _buildScrLine(prNum: str):
     lines = [ln.strip() for ln in txt.split("\n") if ln.strip()]
 
     # grab title
-    title = _findOneLineData(lines, "title:")
+    title = _findOneLineData(lines, prNum, "title:")
 
     # grab author
-    author = _findOneLineData(lines, "author:")
+    author = _findOneLineData(lines, prNum, "author:")
     author = GITHUB_USERS.get(author, author)
 
     # grab reviewer(s)
-    reviewers = _findOneLineData(lines, "reviewers:")
+    reviewers = _findOneLineData(lines, prNum, "reviewers:")
     reviewers = [rr.split("(")[0].strip() for rr in reviewers.split(",")]
     reviewers = [GITHUB_USERS.get(rr, rr) for rr in reviewers]
     reviewers = ", ".join(reviewers)
 
     # grab one-line description
-    scrType = _findOneLineData(lines, "Change Type:")
+    scrType = _findOneLineData(lines, prNum, "Change Type:")
     if scrType not in PR_TYPES:
-        print(f"WARNING: invalid change type '{scrType}' for PR#{prNum}")
+        print(f"WARNING: SCR: Invalid change type '{scrType}' for PR#{prNum}")
         scrType = "trivial"
 
     # grab one-line description
-    desc = _findOneLineData(lines, "One-Sentence Description:")
+    desc = _findOneLineData(lines, prNum, "One-Sentence Description:")
 
     # grab impact on requirements
-    impact = _findOneLineData(lines, "One-line Impact on Requirements:")
+    impact = _findOneLineData(lines, prNum, "One-line Impact on Requirements:")
 
     # build RST line for a list-table, representing this data
     tab = "   "
@@ -152,6 +157,28 @@ def _buildTableHeader(scrType: str):
     content += f"{tab}  - PR\n"
 
     return content
+
+
+def isMainPR(prNum: int):
+    """Determine if this PR is into the ARMI main branch.
+
+    Parameters
+    ----------
+    prNum : int
+        The number of this PR.
+
+    Returns
+    -------
+    bool
+        True if this PR is merging INTO the ARMI main branch. Default is True.
+    """
+    try:
+        url = f"https://github.com/terrapower/armi/pull/{prNum}"
+        r = requests.get(url)
+        return "terrapower/armi:main" in r.text
+    except Exception as e:
+        print(f"WARNING: SCR: Failed to determine if PR#{prNum} merged into the main branch: {e}")
+        return True
 
 
 def buildScrTable(thisPrNum: int, pastCommit: str):
@@ -199,6 +226,8 @@ def buildScrTable(thisPrNum: int, pastCommit: str):
     # 3. Build a table row for each SCR
     data = {"docs": [], "features": [], "fixes": [], "trivial": []}
     for prNum in sorted(prNums):
+        if not isMainPR(prNum):
+            continue
         row, scrType = _buildScrLine(str(prNum))
         data[scrType].append(row)
 
