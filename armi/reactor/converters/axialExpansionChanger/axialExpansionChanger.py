@@ -480,6 +480,11 @@ class AxialExpansionChanger:
         area and temparature of ``fromComp``, :math:`\delta` is the parameter ``deltaZTop``, and :math:`\hat{T}` is
         the new temperature of ``toComp`` post-redistribution. Brent's method within ``scipy.optimize`` is used to
         find the root of the above equation, indicating the value for :math:`\hat{T}`.
+
+        Raises
+        ------
+        RuntimeError if the linked components are not the same material; we cannot transfer mass between materials
+        because then the resulting material has unknown properties.
         """
         # limitation: fromComp and toComp **must** be the same materials.
         if type(fromComp.material) is not type(toComp.material):
