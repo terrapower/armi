@@ -305,6 +305,59 @@ class TestMultiPinConservation(AxialExpansionTestBase):
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight())
 
+class TestRedistributeMass(TestMultiPinConservation):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+
+    def setUp(self):
+        super().setUp()
+        self.b0: HexBlock = self.a.getFirstBlock(Flags.FUEL)
+        self.b1: HexBlock = self.axialExpChngr.linked.linkedBlocks[self.b0].upper
+        self.c0 = next(filter(lambda c: c.getType() == 'fuel test', self.b0))
+        self.origC0Temp = self.c0.temperatureInC
+        self.origC0Mass = self.c0.getMass()
+        self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
+        self.origC1Temp = self.c1.temperatureInC
+        self.origC1Mass = self.c1.getMass()
+
+    def test_addMassToComponent_nonTargetCompression_noThermal(self):
+        """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
+
+        Notes
+        -----
+        C0 shrinks resulting in c1 giving 10% of its mass to c0. c1 height does not change so it's mass loses 10%.
+        """
+        growFrac = 0.9
+        self.c0.height = self.b0.getHeight() * growFrac
+        self.c1.height = self.b1.getHeight()
+        # set the height of the components
+        delta = self.b0.getHeight() - self.c0.height
+        self.axialExpChngr.redistributeMass(
+            fromComp=self.c1,
+            toComp=self.c0,
+            delta=delta,
+        )
+        self.assertAlmostEqual(self.c1.getMass(), self.origC1Mass)
+        self.assertAlmostEqual(self.c0.getMass(), self.origC0Mass*growFrac + self.c1.getMass()*(1.0 - growFrac))
+
+        # assert the temperatures do not change yet
+        self.assertEqual(self.c0.temperatureInC, self.origC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.origC1Temp)
+
+        # now remove the c1 mass and assert it is only 90% of the orig
+        origC1Mass = self.c1.getMass()
+        self.axialExpChngr.rmMassFromComponent(fromComp=self.c1, delta=-delta)
+
+        # change b1.p.height for mass calculation.
+        # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
+        # given to c0.)
+        self.b1.setHeight(self.b1.getHeight()*growFrac)
+        self.assertAlmostEqual(self.c1.getMass(), origC1Mass*growFrac, places=12)
+        # assert the temperatures do not change
+        self.assertEqual(self.c0.temperatureInC, self.origC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.origC1Temp)
+
 
 class TestAxialExpansionHeight(AxialExpansionTestBase):
     """Verify that test assembly is expanded correctly."""
