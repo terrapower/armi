@@ -503,6 +503,7 @@ class AxialExpansionChanger:
             )
         # Do not use component.setTemperature as this mucks with the number densities we just calculated.
         toComp.temperatureInC = newToCompTemp
+        toComp.clearCache()
 
     def rmMassFromComponent(self, fromComp: "Component", delta: float):
         """Create new number densities for the component that is having mass removed."""
