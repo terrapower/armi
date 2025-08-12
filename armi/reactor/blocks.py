@@ -24,6 +24,7 @@ import copy
 import functools
 import math
 import operator
+import warnings
 from typing import ClassVar, Optional, Tuple, Type
 
 import numpy as np
@@ -355,36 +356,23 @@ class Block(composites.Composite):
         Parameters
         ----------
         fluxes : np.ndarray
-            The block-level pin multigroup fluxes. fluxes[i, g] represents the flux in group g for
-            pin i. Flux units are the standard n/cm^2/s.
-            The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
+            The block-level pin multigroup fluxes. ``fluxes[i, g]`` represents the flux in group g for
+            pin ``i`` located at ``self.getPinLocations()[i]``. Flux units are the standard n/cm^2/s.
         adjoint : bool, optional
             Whether to set real or adjoint data.
         gamma : bool, optional
             Whether to set gamma or neutron data.
-
-        Outputs
-        -------
-        self.p.pinMgFluxes : np.ndarray
-            The block-level pin multigroup fluxes. pinMgFluxes[i, g] represents the flux in group g
-            for pin i. Flux units are the standard n/cm^2/s.
-            The "ARMI pin ordering" is used, which is counter-clockwise from 3 o'clock.
         """
-        if self.hasFlags(Flags.FUEL):
-            pinFluxes = fluxes[(np.array(self.p.pinLocation) - 1)]
-        else:
-            pinFluxes = fluxes[:]
-
         if gamma:
             if adjoint:
                 raise ValueError("Adjoint gamma flux is currently unsupported.")
             else:
-                self.p.pinMgFluxesGamma = pinFluxes
+                self.p.pinMgFluxesGamma = fluxes
         else:
             if adjoint:
-                self.p.pinMgFluxesAdj = pinFluxes
+                self.p.pinMgFluxesAdj = fluxes
             else:
-                self.p.pinMgFluxes = pinFluxes
+                self.p.pinMgFluxes = fluxes
 
     def getMicroSuffix(self):
         """
@@ -1781,37 +1769,41 @@ class HexBlock(Block):
         return duct.getDimension("op")
 
     def initializePinLocations(self):
-        """Initialize pin locations."""
-        nPins = self.getNumPins()
-        self.p.pinLocation = list(range(1, nPins + 1))
+        """Initialize pin locations.
+
+        Deprecated. Use :meth:`assignPinIndices` to additionally update component parameters.
+        """
+        # stacklevel=2 means the warning traceback, file, and line numbers will reflect the caller
+        # of this method, not this method itself.
+        warnings.warn(
+            "HexBlock.initializePinLocations is deprecated. Please use assignPinIndices",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        self.assignPinIndices()
 
     def setPinPowers(self, powers, powerKeySuffix=""):
         """
-        Updates the pin linear power densities of this block for the current rotation.
-        The linear densities are represented by the *linPowByPin* parameter.
+        Updates the pin linear power densities of this block.
 
-        It is assumed that :py:meth:`.initializePinLocations` has already been executed for fueled
-        blocks in order to access the *pinLocation* parameter. The *pinLocation* parameter is not
-        accessed for non-fueled blocks.
+        The linear densities are represented by the ``linPowByPin`` parameter.
 
-        The *linPowByPin* parameter can be directly assigned to instead of using this method if the
+        It is expected that the ordering of ``powers`` is consistent with :meth:`getPinLocations`.
+        That helps ensure alignment with component-level look ups like
+        :meth:`~armi.reactor.components.Circle.getPinIndices`.
+
+        The ``linPowByPin`` parameter can be directly assigned to instead of using this method if the
         multiplicity of the pins in the block is equal to the number of pins in the block.
 
         Parameters
         ----------
         powers : list of floats, required
-            The block-level pin linear power densities. powers[i] represents the average linear
-            power density of pin i. The units of linear power density is watts/cm (i.e., watts
-            produced per cm of pin length). The "ARMI pin ordering" must be be used, which is
-            counter-clockwise from 3 o'clock.
-
+            The block-level pin linear power densities. ``powers[i]`` represents the average linear
+            power density of pin ``i`` location at ``self.getPinLocations()[i]``.
+            The units of linear power density is watts/cm (i.e., watts produced per cm of pin length).
         powerKeySuffix: str, optional
             Must be either an empty string, :py:const:`NEUTRON <armi.physics.neutronics.const.NEUTRON>`,
             or :py:const:`GAMMA <armi.physics.neutronics.const.GAMMA>`. Defaults to empty string.
-
-        Notes
-        -----
-        This method can handle assembly rotations by using the *pinLocation* parameter.
         """
         numPins = self.getNumPins()
         if not numPins or numPins != len(powers):
@@ -1820,18 +1812,7 @@ class HexBlock(Block):
             )
 
         powerKey = f"linPowByPin{powerKeySuffix}"
-        self.p[powerKey] = np.zeros(numPins)
-
-        # Loop through rings. The *pinLocation* parameter is only accessed for fueled blocks; it is
-        # assumed that non-fueled blocks do not use a rotation map.
-        for pinNum in range(numPins):
-            if self.hasFlags(Flags.FUEL):
-                # -1 is needed in order to map from pinLocations to list index
-                pinLoc = self.p.pinLocation[pinNum] - 1
-            else:
-                pinLoc = pinNum
-            pinLinPow = powers[pinLoc]
-            self.p[powerKey][pinNum] = pinLinPow
+        self.p[powerKey] = powers
 
         # If using the *powerKeySuffix* parameter, we also need to set total power, which is sum of
         # neutron and gamma powers. We assume that a solo gamma calculation to set total power does

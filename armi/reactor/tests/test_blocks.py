@@ -23,7 +23,7 @@ from glob import glob
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
 from armi import materials, runLog, settings, tests
 from armi.nucDirectory import nucDir, nuclideBases
@@ -1934,32 +1934,30 @@ class Block_TestCase(unittest.TestCase):
         )
 
     def test_pinMgFluxes(self):
-        """
-        Test setting/getting of pin-wise fluxes.
+        """Test setting/getting of pin-wise multigroup fluxes."""
+        self.assertIsNone(self.block.p.pinMgFluxes)
+        self.assertIsNone(self.block.p.pinMgFluxesAdj)
+        self.assertIsNone(self.block.p.pinMgFluxesGamma)
 
-        .. warning:: This will likely be pushed to the component level.
-        """
-        fluxes = np.random.rand(10, 33)
-        p, g = np.random.randint(low=0, high=[10, 33])
+        nFlux = np.random.rand(10, 33)
+        aFlux = np.random.random(nFlux.shape)
+        gFlux = np.random.random(nFlux.shape)
 
-        # Test without pinLocation
-        self.block.pinLocation = None
-        self.block.setPinMgFluxes(fluxes)
-        self.block.setPinMgFluxes(fluxes * 2, adjoint=True)
-        self.block.setPinMgFluxes(fluxes * 3, gamma=True)
-        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[p, g])
-        self.assertEqual(self.block.p.pinMgFluxesAdj.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxesAdj[p, g], fluxes[p, g] * 2)
-        self.assertEqual(self.block.p.pinMgFluxesGamma.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxesGamma[p, g], fluxes[p, g] * 3)
+        self.block.setPinMgFluxes(nFlux)
+        assert_array_equal(self.block.p.pinMgFluxes, nFlux)
+        self.assertIsNone(self.block.p.pinMgFluxesAdj)
+        self.assertIsNone(self.block.p.pinMgFluxesGamma)
 
-        # Test with pinLocation
-        self.block.setType(self.block.getType(), Flags.FUEL)
-        self.block.p.pinLocation = np.random.choice(10, size=10, replace=False) + 1
-        self.block.setPinMgFluxes(fluxes)
-        self.assertEqual(self.block.p.pinMgFluxes.shape, (10, 33))
-        self.assertEqual(self.block.p.pinMgFluxes[p, g], fluxes[self.block.p.pinLocation[p] - 1, g])
+        self.block.setPinMgFluxes(aFlux, adjoint=True)
+        assert_array_equal(self.block.p.pinMgFluxesAdj, aFlux)
+        # Make sure we didn't modify anything else
+        assert_array_equal(self.block.p.pinMgFluxes, nFlux)
+        self.assertIsNone(self.block.p.pinMgFluxesGamma)
+
+        self.block.setPinMgFluxes(gFlux, gamma=True)
+        assert_array_equal(self.block.p.pinMgFluxesGamma, gFlux)
+        assert_array_equal(self.block.p.pinMgFluxesAdj, aFlux)
+        assert_array_equal(self.block.p.pinMgFluxes, nFlux)
 
     def test_getComponentsInLinkedOrder(self):
         comps = self.block.getComponentsInLinkedOrder()
