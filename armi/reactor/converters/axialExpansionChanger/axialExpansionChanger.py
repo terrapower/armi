@@ -34,8 +34,8 @@ from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
 
 if typing.TYPE_CHECKING:
-    from armi.reactor.components.component import Component
     from armi.reactor.blocks import Block
+    from armi.reactor.components.component import Component
 
 
 def getDefaultReferenceAssem(assems):
@@ -389,7 +389,7 @@ class AxialExpansionChanger:
                     # there is no linked component above and there is only one solid component in the current block.
                     # push up (expansion) or pull down (contraction) all components in the block above.
                     # e.g., the transition from grid plate to pin assembly.
-                    if self.linked.linkedBlocks[b].upper: # split off to accommodate unit tests in other parts of ARMI
+                    if self.linked.linkedBlocks[b].upper:  # split off to accommodate unit tests in other parts of ARMI
                         for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
                             c.zbottom = b.p.ztop
                             c.ztop = c.zbottom + c.height
@@ -415,7 +415,7 @@ class AxialExpansionChanger:
 
                         # realign components based on delta
                         self.shiftLinkedCompsForDelta(c, cAbove, delta)
-            if b is self.dummyBlock or ib == (numOfBlocks-1):
+            if b is self.dummyBlock or ib == (numOfBlocks - 1):
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
                 if b is not self.dummyBlock:
