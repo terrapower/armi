@@ -21,11 +21,11 @@ are defined in this subpackage.
 
 import math
 import typing
-from armi.reactor.flags import Flags
 
 import numpy as np
 
 from armi.reactor.components import ShapedComponent, componentParameters
+from armi.reactor.flags import Flags
 
 
 class Circle(ShapedComponent):
