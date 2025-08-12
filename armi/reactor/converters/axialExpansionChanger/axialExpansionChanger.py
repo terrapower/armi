@@ -441,7 +441,7 @@ class AxialExpansionChanger:
             toComp=toComp,
             deltaZTop=abs(deltaZTop),
         )
-        self.rmMassFromComponent(
+        self.removeMassFromComponent(
             fromComp=fromComp,
             deltaZTop=-deltaZTop,
         )
@@ -514,7 +514,7 @@ class AxialExpansionChanger:
         toComp.temperatureInC = newToCompTemp
         toComp.clearCache()
 
-    def rmMassFromComponent(self, fromComp: "Component", deltaZTop: float):
+    def removeMassFromComponent(self, fromComp: "Component", deltaZTop: float):
         """Create new number densities for the component that is having mass removed."""
         # calculate the new volume
         newFromCompVolume = fromComp.getArea() * (fromComp.height + deltaZTop)
