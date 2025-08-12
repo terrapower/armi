@@ -341,6 +341,7 @@ class AxialExpansionChanger:
             top-most Block is is then updated to reflect any expansion/contraction.
         """
         mesh = [0.0]
+        numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
             f"for each block in assembly {self.linked.a}."
@@ -414,9 +415,16 @@ class AxialExpansionChanger:
 
                         # realign components based on delta
                         self.shiftLinkedCompsForDelta(c, cAbove, delta)
-            else:
+            if b is self.dummyBlock or ib == (numOfBlocks-1):
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
+                if b is not self.dummyBlock:
+                    # if an assembly doesn't have a dummy block, we still need to adjust the components within it in
+                    # order to keep them consistent with the block.
+                    for c in iterSolidComponents(b):
+                        c.zbottom = b.p.zbottom
+                        c.ztop = b.p.ztop
+                        c.height = c.ztop - c.zbottom
 
             self._checkBlockHeight(b)
             # redo mesh -- functionality based on assembly.calculateZCoords()
