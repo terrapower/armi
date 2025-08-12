@@ -247,7 +247,7 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         Change test fuel: isothermal pass, non-isothermal fail
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and not c.hasFlags(Flags.TEST), b):
+            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
                 newTemp = c.temperatureInC - 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
