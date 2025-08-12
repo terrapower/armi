@@ -506,9 +506,9 @@ class AxialExpansionChanger:
         if fromComp.temperatureInC == toComp.temperatureInC:
             newToCompTemp = toComp.temperatureInC
         else:
-            rhs = newVolume / (toComp.height + abs(delta))
+            targetArea = newVolume / (toComp.height + abs(delta))
             newToCompTemp = brentq(
-                f=lambda T: toComp.getArea(Tc=T) - rhs, a=fromComp.temperatureInC, b=toComp.temperatureInC
+                f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
             )
         # Do not use component.setTemperature as this mucks with the number densities we just calculated.
         toComp.temperatureInC = newToCompTemp
