@@ -2565,6 +2565,7 @@ blocks:
             Tinput: 25
             Thot: 600
             latticeIDs: [1]
+            flags: primary fuel
         clad 1: &clad_def
             shape: Circle
             material: Void
@@ -2576,6 +2577,7 @@ blocks:
         fuel 2:
             <<: *fuel_def
             latticeIDs: [2]
+            flags: secondary fuel
         clad 2:
             <<: *clad_def
             latticeIDs: [2]
@@ -2597,14 +2599,15 @@ grids:
     fuel grid:
         geom: hex_corners_up
         symmetry: full
+        # Kind of a convoluted map but helps test a lot of edge conditions
         lattice map: |
             - - -  1 1 1 1
-              - - 1 1 2 1 1
+              - - 1 1 1 1 1
                - 1 1 2 2 1 1
-                1 1 2 2 2 2 1
+                1 1 2 1 2 1 1
                  1 1 2 2 1 1
-                  1 1 2 1 1
-                   1 1 1 1
+                  1 1 1 1 1
+                   1 2 1 1
 nuclide flags:
 
 """
@@ -2660,6 +2663,51 @@ nuclide flags:
         clad = self.block.getComponents(Flags.CLAD)[0]
         self.assertIsInstance(clad, basicShapes.Circle)
         self.assertIsNone(clad.getPinIndices())
+
+    def test_locations(self):
+        """Ensure we have locations consistent with the lattice map."""
+        primary: components.Circle = self.block.getComponent(Flags.PRIMARY)
+        # Count the number of primary pins in the blueprint above
+        nPrimary = 30
+        expectedPrimaryRingPos = {
+            (1, 1),
+        }
+        # 12 and 18 pins in one-indexed rings three and four.
+        # remember that range is exclusive of the stop
+        expectedPrimaryRingPos.update((3, i) for i in range(1, 13))
+        expectedPrimaryRingPos.update((4, i) for i in range(1, 19))
+        # special pin designed to poke some edge cases
+        # remember ARMI hex positions start at 1 in the north east corner and go counterclockwise
+        trickyPin = (4, 11)
+        # drop the tricky pin in the fourth ring
+        expectedPrimaryRingPos.remove(trickyPin)
+        self._checkPinLocationsAndIndices(primary, nPrimary, expectedPrimaryRingPos)
+
+        secondary: components.Circle = self.block.getComponent(Flags.SECONDARY)
+        nSecondary = 7
+        # six pins in one-indexed ring two
+        expectedSecondaryRingPos = {(2, i) for i in range(1, 7)}
+        expectedSecondaryRingPos.add(trickyPin)
+        self._checkPinLocationsAndIndices(secondary, nSecondary, expectedSecondaryRingPos)
+
+    def _checkPinLocationsAndIndices(
+        self, pin: components.Circle, expectedNumPins: int, expectedRingPos: set[tuple[int, int]]
+    ):
+        self.assertEqual(
+            len(expectedRingPos),
+            expectedNumPins,
+            msg="Expected pins and locations differ. Your test inputs are not setup correct.",
+        )
+        self.assertEqual(pin.getDimension("mult"), expectedNumPins)
+        self.assertEqual(len(pin.spatialLocator), expectedNumPins)
+        primaryIndices = pin.getPinIndices()
+        self.assertIsNotNone(primaryIndices)
+        self.assertEqual(primaryIndices.size, expectedNumPins)
+        allLocations = self.block.getPinLocations()
+        for ix in primaryIndices:
+            loc = allLocations[ix]
+            ringPos = loc.getRingPos()
+            self.assertIn(ringPos, expectedRingPos, msg=f"{ix=} : {loc=}")
 
 
 class TestHexBlockOrientation(unittest.TestCase):
