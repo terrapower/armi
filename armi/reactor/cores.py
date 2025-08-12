@@ -2205,7 +2205,7 @@ class Core(composites.Composite):
 
         elif cs[CONF_ZONES_FILE]:
             runLog.info(f"Custom zoning strategy applied from {CONF_ZONES_FILE}.")
-            
+
             self.zones = Zones()
             with open(cs[CONF_ZONES_FILE]) as stream:
                 zonesDict = yaml.safe_load(stream)

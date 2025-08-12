@@ -627,8 +627,7 @@ class Inspector:
         )
         self.addQuery(
             lambda: (self.cs[CONF_ZONE_DEFINITIONS] and self.cs[CONF_ZONES_FILE]),
-            f"Cannot specify both {CONF_ZONE_DEFINITIONS} and {CONF_ZONES_FILE}. "
-            "Please remove one and resubmit.",
+            f"Cannot specify both {CONF_ZONE_DEFINITIONS} and {CONF_ZONES_FILE}. Please remove one and resubmit.",
             "",
             self.NO_ACTION,
         )
