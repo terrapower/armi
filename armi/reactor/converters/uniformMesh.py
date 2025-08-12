@@ -1042,7 +1042,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # Check if the source reactor has a value assigned for this
             # parameter and if so, then apply it. Otherwise, revert back to
             # the original value.
-            if sourceReactor.core.p[paramName] is not None or paramName not in self._cachedReactorCoreParamData:
+            paramDefined = isinstance(sourceReactor.core.p[paramName], np.ndarray) or sourceReactor.core.p[paramName]
+            if paramDefined or paramName not in self._cachedReactorCoreParamData:
                 val = sourceReactor.core.p[paramName]
             else:
                 val = self._cachedReactorCoreParamData[paramName]
