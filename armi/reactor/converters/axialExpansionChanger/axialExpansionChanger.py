@@ -403,18 +403,18 @@ class AxialExpansionChanger:
                         cAbove.ztop = cAbove.zbottom + cAbove.height
 
                         # redistribute mass
-                        delta = b.p.ztop - c.ztop
-                        if delta > 0.0:
+                        deltaZTop = b.p.ztop - c.ztop
+                        if deltaZTop > 0.0:
                             # move mass, m, from the above comp to the current comp. this adds mass, m, to current comp
                             # and removes it from the above comp
-                            self.redistributeMass(cAbove, c, delta)
-                        elif delta < 0.0:
+                            self.redistributeMass(cAbove, c, deltaZTop)
+                        elif deltaZTop < 0.0:
                             # move mass, m, from the current comp to the above comp. this adds mass, m, to the above
                             # comp and removes it from the current comp
-                            self.redistributeMass(c, cAbove, delta)
+                            self.redistributeMass(c, cAbove, deltaZTop)
 
-                        # realign components based on delta
-                        self.shiftLinkedCompsForDelta(c, cAbove, delta)
+                        # realign components based on deltaZTop
+                        self.shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
             if b is self.dummyBlock or ib == (numOfBlocks - 1):
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
@@ -435,26 +435,26 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
-    def redistributeMass(self, fromComp: "Component", toComp: "Component", delta: float):
+    def redistributeMass(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
         self.addMassToComponent(
             fromComp=fromComp,
             toComp=toComp,
-            delta=abs(delta),
+            deltaZTop=abs(deltaZTop),
         )
         self.rmMassFromComponent(
             fromComp=fromComp,
-            delta=-delta,
+            deltaZTop=-deltaZTop,
         )
 
-    def shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", delta: float):
-        # shift the height and ztop of the current component downwards (-delta) or upwards (+delta)
-        c.height += delta
-        c.ztop += delta
-        # the height and zbottom of cAbove grows and moves downwards (-delta) or shrinks and moves upward (+delta)
-        cAbove.height -= delta
-        cAbove.zbottom += delta
+    def shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
+        # shift the height and ztop of the current component downwards (-deltaZTop) or upwards (+deltaZTop)
+        c.height += deltaZTop
+        c.ztop += deltaZTop
+        # the height and zbottom of cAbove grows and moves downwards (-deltaZTop) or shrinks and moves upward (+deltaZTop)
+        cAbove.height -= deltaZTop
+        cAbove.zbottom += deltaZTop
 
-    def addMassToComponent(self, fromComp: "Component", toComp: "Component", delta: float):
+    def addMassToComponent(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
         r"""
         Parameters
         ----------
@@ -462,7 +462,7 @@ class AxialExpansionChanger:
             Component which is going to give mass to toComp
         toComp
             Component that is recieving mass from fromComp
-        delta
+        deltaZTop
             The length, in cm, of fromComp being given to toComp
 
         Notes
@@ -477,7 +477,7 @@ class AxialExpansionChanger:
             A_1(\hat{T}) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
 
         Where, :math`A_1, T_1, H_1`, are the area, temparature, and height of ``toComp``, :math:`A_2, T_2`, are the
-        area and temparature of ``fromComp``, :math:`\delta` is the parameter ``delta``, and :math:`\hat{T}` is
+        area and temparature of ``fromComp``, :math:`\delta` is the parameter ``deltaZTop``, and :math:`\hat{T}` is
         the new temperature of ``toComp`` post-redistribution. Brent's method within ``scipy.optimize`` is used to
         find the root of the above equation, indicating the value for :math:`\hat{T}`.
         """
@@ -489,7 +489,7 @@ class AxialExpansionChanger:
             )
 
         toCompVolume = toComp.getArea() * toComp.height
-        fromCompVolume = fromComp.getArea() * abs(delta)
+        fromCompVolume = fromComp.getArea() * abs(deltaZTop)
         newVolume = fromCompVolume + toCompVolume
 
         ## calculate the mass of each nuclide and then the ndens for the new mass
@@ -506,7 +506,7 @@ class AxialExpansionChanger:
         if fromComp.temperatureInC == toComp.temperatureInC:
             newToCompTemp = toComp.temperatureInC
         else:
-            targetArea = newVolume / (toComp.height + abs(delta))
+            targetArea = newVolume / (toComp.height + abs(deltaZTop))
             newToCompTemp = brentq(
                 f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
             )
@@ -514,10 +514,10 @@ class AxialExpansionChanger:
         toComp.temperatureInC = newToCompTemp
         toComp.clearCache()
 
-    def rmMassFromComponent(self, fromComp: "Component", delta: float):
+    def rmMassFromComponent(self, fromComp: "Component", deltaZTop: float):
         """Create new number densities for the component that is having mass removed."""
         # calculate the new volume
-        newFromCompVolume = fromComp.getArea() * (fromComp.height + delta)
+        newFromCompVolume = fromComp.getArea() * (fromComp.height + deltaZTop)
 
         ## calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
