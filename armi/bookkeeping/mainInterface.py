@@ -28,6 +28,8 @@ from armi.bookkeeping.db.database import Database
 from armi.settings.fwSettings.globalSettings import (
     CONF_COPY_FILES_FROM,
     CONF_COPY_FILES_TO,
+    CONF_ZONE_DEFINITIONS,
+    CONF_ZONES_FILE,
 )
 from armi.utils import pathTools
 from armi.utils.customExceptions import InputError
