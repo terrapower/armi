@@ -306,20 +306,25 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight())
 
 class TestRedistributeMass(TestMultiPinConservation):
+
+    b0: HexBlock
+    b1: HexBlock
+    c0: "Component"
+    origC0Temp: float
+    c1: "Component"
+    origC1Temp: float
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.places = 12
 
     def setUp(self):
         super().setUp()
-        self.b0: HexBlock = self.a.getFirstBlock(Flags.FUEL)
-        self.b1: HexBlock = self.axialExpChngr.linked.linkedBlocks[self.b0].upper
+        self.b0 = self.a.getFirstBlock(Flags.FUEL)
+        self.b1 = self.axialExpChngr.linked.linkedBlocks[self.b0].upper
         self.c0 = next(filter(lambda c: c.getType() == 'fuel test', self.b0))
-        self.origC0Temp = self.c0.temperatureInC
-        self.origC0Mass = self.c0.getMass()
         self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
-        self.origC1Temp = self.c1.temperatureInC
-        self.origC1Mass = self.c1.getMass()
 
     def test_addMassToComponent_nonTargetCompression_noThermal(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
@@ -329,25 +334,50 @@ class TestRedistributeMass(TestMultiPinConservation):
         C0 shrinks resulting in c1 giving 10% of its mass to c0. c1 height does not change so it's mass loses 10%.
         """
         growFrac = 0.9
+        # set the height of the components
         self.c0.height = self.b0.getHeight() * growFrac
         self.c1.height = self.b1.getHeight()
-        # set the height of the components
+        # set the original mass of the components, post expansion, pre redistribution
+        preRedistributionC0Mass = self.c0.getMass() * growFrac
+        preRedistributionC1Mass = self.c1.getMass()
+        # set the original temp of the components, post expansion, pre redistrubution
+        preRedistributionC0Temp = self.c0.temperatureInC
+        preRedistributionC1Temp = self.c1.temperatureInC
+
+        # calculate delta and perform the redistribution
         delta = self.b0.getHeight() - self.c0.height
         self.axialExpChngr.redistributeMass(
             fromComp=self.c1,
             toComp=self.c0,
             delta=delta,
         )
-        self.assertAlmostEqual(self.c1.getMass(), self.origC1Mass)
-        self.assertAlmostEqual(self.c0.getMass(), self.origC0Mass*growFrac + self.c1.getMass()*(1.0 - growFrac))
+        # ensure there is no difference in c1 mass
+        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass)
+        # ensure that the c0 mass has increased by delta/self.c1.height
+        self.assertAlmostEqual(
+            self.c0.getMass(),
+            preRedistributionC0Mass + self.c1.getMass()*(delta/self.c1.height),
+            places = self.places
+        )
+        # assert the temperatures do not change
+        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
 
-        # assert the temperatures do not change yet
-        self.assertEqual(self.c0.temperatureInC, self.origC0Temp)
-        self.assertEqual(self.c1.temperatureInC, self.origC1Temp)
-
-        # now remove the c1 mass and assert it is only 90% of the orig
-        origC1Mass = self.c1.getMass()
+        # now remove the c1 mass and ensure it's mass decreases by a factor of delta/self.c1.height
         self.axialExpChngr.rmMassFromComponent(fromComp=self.c1, delta=-delta)
+        # change b1.p.height for mass calculation.
+        # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
+        # given to c0.)
+        self.b1.p.height = self.c1.height - delta
+        self.b1.clearCache()
+        self.assertAlmostEqual(
+            self.c1.getMass(),
+            preRedistributionC1Mass*(1-delta/self.c1.height),
+            places=self.places
+        )
+        # assert the temperatures still do not change
+        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
 
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
