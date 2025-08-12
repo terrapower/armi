@@ -337,8 +337,12 @@ class TestRedistributeMass(TestMultiPinConservation):
         # update the ndens of c0 for the change in height too
         self.c0.changeNDensByFactor(1.0 / growFrac)
         # set the height of the components post expansion
+        self.c0.zbottom = self.b0.p.zbottom
         self.c0.height = self.b0.getHeight() * growFrac
+        self.c0.ztop = self.c0.zbottom + self.c0.height
+        self.c1.zbottom = self.b1.p.zbottom
         self.c1.height = self.b1.getHeight()
+        self.c1.ztop = self.c1.zbottom + self.c1.height
         # set the original mass of the components post expansion and pre redistribution
         # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
         # Doing so gets you to the true c0 mass.
@@ -349,7 +353,7 @@ class TestRedistributeMass(TestMultiPinConservation):
         preRedistributionC1Temp = self.c1.temperatureInC
 
         # calculate delta, the amount of mass getting moved, and perform the redistribution
-        delta = self.b0.getHeight() - self.c0.height
+        delta = self.b0.p.ztop - self.c0.ztop
         amountBeingRedistributed = preRedistributionC1Mass * abs(delta)/self.c1.height
         self.axialExpChngr.redistributeMass(
             fromComp=self.c1,
@@ -357,7 +361,7 @@ class TestRedistributeMass(TestMultiPinConservation):
             delta=delta,
         )
         # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass)
+        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places = self.places)
         # ensure that the c0 mass has increased by delta/self.c1.height
         self.assertAlmostEqual(
             self.c0.getMass(),
@@ -373,7 +377,7 @@ class TestRedistributeMass(TestMultiPinConservation):
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
-        self.b1.p.height = self.c1.height - delta
+        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + delta)
         self.b1.clearCache()
         self.assertAlmostEqual(
             self.c1.getMass(),
