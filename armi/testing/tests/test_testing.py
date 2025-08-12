@@ -20,6 +20,31 @@ from armi.testing.symmetryTests import SymmetryFactorTester
 
 
 class TestSymmetryHelper(unittest.TestCase):
+    def setUp(self):
+        self.symTester = SymmetryFactorTester()
+        self.defaultSymmetricBlockParams = [
+            "powerGenerated",
+            "power",
+            "powerGamma",
+            "powerNeutron",
+            "molesHmNow",
+            "molesHmBOL",
+            "massHmBOL",
+            "initialB10ComponentVol",
+            "kgFis",
+            "kgHM",
+        ]
+
     def test_defaultSymmetry(self):
-        symTester = SymmetryFactorTester()
-        symTester.runSymmetryFactorTests(self, blockParams=["power"])
+        self.symTester.runSymmetryFactorTests(self, blockParams=self.defaultSymmetricBlockParams)
+
+    def test_errorWhenNotDefined(self):
+        with self.assertRaises(AssertionError) as em:
+            self.symTester.runSymmetryFactorTests(self)
+            self.assertIn("but is not specified in the parameters expected to change", em.msg)
+
+    def test_errorWhenRequestedButNotExpanded(self):
+        with self.assertRaises(AssertionError) as em:
+            blockParams = self.defaultSymmetricBlockParams + ["nHMAtBOL"]
+            self.symTester.runSymmetryFactorTests(self, blockParams=blockParams)
+            self.assertIn("The after-to-before expansion ratio of parameter", em.msg)
