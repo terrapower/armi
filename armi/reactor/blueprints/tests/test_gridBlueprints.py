@@ -336,7 +336,7 @@ class TestGridBPRoundTripFull(unittest.TestCase):
         Test that a lattice map can be defined, written, and read in from blueprint file.
 
         .. test:: Define a lattice map in reactor core.
-            :id: T_ARMI_BP_GRID1
+            :id: T_ARMI_BP_GRID2
             :tests: R_ARMI_BP_GRID
         """
         grid = Grids.load(BIG_FULL_HEX_CORE)
