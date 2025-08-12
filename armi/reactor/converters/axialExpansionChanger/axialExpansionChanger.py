@@ -469,7 +469,7 @@ class AxialExpansionChanger:
         -----
         When redistributing mass, if ``fromComp`` and ``toComp`` are different temperatures, the temperature of
         ``toComp`` will change. Calculating this new temperature is non trivial due to thermal expansion. The following
-        defines what the area of ``toComp`` is post-redictribution,
+        defines what the area of ``toComp`` is post-redistribution,
 
         .. math::
 
