@@ -294,17 +294,8 @@ class TestMultiPinConservation(AxialExpansionTestBase):
     def checkConservation(self):
         _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
 
-        for block in _newCMassesByBlock.keys():
-            print(f"\n{block.name}")
-            for new, old in zip(_newCMassesByBlock[block], self.origCMassesByBlock[block]):
-                print(new.cFlags, new.mass - old.mass)
-
-        cFlags = list(newTotalCMassByFlag.keys())
-        for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
-            print(cFlags[i], newMass - origMass)
-
-        for i, (origMass, newMass) in enumerate(zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.values())):
-            self.assertAlmostEqual(origMass, newMass, places=12, msg=f"{cFlags[i]} are not the same!")
+        for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
+            self.assertAlmostEqual(origMass, newMass, places=12, msg=f"{cFlag} are not the same!")
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight())
 
@@ -1410,7 +1401,13 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, pl
 
     coolant = DerivedShape("coolant", "Sodium", Tinput=25.0, Thot=hotTemp)
     intercoolant = Hexagon(
-        "intercoolant", "Sodium", Tinput=25.0, Thot=hotTemp, op=17.0, ip=ductDims["op"], mult=1.0,
+        "intercoolant",
+        "Sodium",
+        Tinput=25.0,
+        Thot=hotTemp,
+        op=17.0,
+        ip=ductDims["op"],
+        mult=1.0,
     )
 
     if plenum:
