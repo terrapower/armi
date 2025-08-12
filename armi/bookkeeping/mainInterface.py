@@ -164,6 +164,9 @@ class MainInterface(interfaces.Interface):
 
                 self.o.reattach(r, self.cs)
 
+        if self.cs[CONF_ZONES_FILE] or self.cs[CONF_ZONE_DEFINITIONS]:
+            self.r.core.buildManualZones(self.cs)
+
     def interactEOL(self):
         if self.cs["rmExternalFilesAtEOL"]:
             # successful run with rmExternalFilesAtEOL activated. Clean things up.
