@@ -35,6 +35,7 @@ from armi.utils.customExceptions import InputError
 
 if typing.TYPE_CHECKING:
     from armi.reactor.components.component import Component
+    from armi.reactor.blocks import Block
 
 
 def getDefaultReferenceAssem(assems):
@@ -81,6 +82,7 @@ class AxialExpansionChanger:
 
     linked: typing.Optional[AssemblyAxialLinkage]
     expansionData: typing.Optional[ExpansionData]
+    dummyBlock: typing.Optional["Block"]
 
     def __init__(self, detailedAxialExpansion: bool = False):
         """
@@ -94,6 +96,7 @@ class AxialExpansionChanger:
         self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
+        self.dummyBlock = None
 
     @classmethod
     def expandColdDimsToHot(
@@ -312,8 +315,9 @@ class AxialExpansionChanger:
         - If false, the top most block in the assembly is artificially chopped
           to preserve the assembly height. A runLog.Warning also issued.
         """
-        top = self.linked.a[-1]
-        if not top.hasFlags(Flags.DUMMY):
+        if self.linked.a[-1].hasFlags(Flags.DUMMY):
+            self.dummyBlock = self.linked.a[-1]
+        else:
             runLog.warning(
                 f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
@@ -337,27 +341,23 @@ class AxialExpansionChanger:
             top-most Block is is then updated to reflect any expansion/contraction.
         """
         mesh = [0.0]
-        numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
             f"for each block in assembly {self.linked.a}."
         )
         # expand all of the components
-        for ib, b in enumerate(self.linked.a):
-            isDummyBlock = ib == (numOfBlocks - 1)
-            if not isDummyBlock:
-                for c in iterSolidComponents(b):
-                    growFrac = self.expansionData.getExpansionFactor(c)
-                    # component ndens and component heights are scaled to their respective growth factor
-                    c.changeNDensByFactor(1.0 / growFrac)
-                    c.zbottom = b.p.zbottom
-                    c.height = growFrac * b.getHeight()
-                    c.ztop = c.zbottom + c.height
+        for b in filter(lambda b: b is not self.dummyBlock, self.linked.a):
+            for c in iterSolidComponents(b):
+                growFrac = self.expansionData.getExpansionFactor(c)
+                # component ndens and component heights are scaled to their respective growth factor
+                c.changeNDensByFactor(1.0 / growFrac)
+                c.zbottom = b.p.zbottom
+                c.height = growFrac * b.getHeight()
+                c.ztop = c.zbottom + c.height
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
-            isDummyBlock = ib == (numOfBlocks - 1)
-            if not isDummyBlock:
+            if b is not self.dummyBlock:
                 targetComp = self.expansionData.getTargetComponent(b)
                 # redefine block bounds based on target component
                 b.p.zbottom = targetComp.zbottom
