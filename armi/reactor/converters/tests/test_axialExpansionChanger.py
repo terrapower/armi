@@ -355,6 +355,7 @@ class TestRedistributeMass(TestMultiPinConservation):
         # calculate delta, the amount of mass getting moved, and perform the redistribution
         delta = self.b0.p.ztop - self.c0.ztop
         amountBeingRedistributed = preRedistributionC1Mass * abs(delta)/self.c1.height
+        # perform the mass redistrbution from c1 to c0
         self.axialExpChngr.addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
@@ -362,17 +363,17 @@ class TestRedistributeMass(TestMultiPinConservation):
         )
         # ensure there is no difference in c1 mass
         self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places = self.places)
-        # ensure that the c0 mass has increased by delta/self.c1.height
+        # ensure that the c0 mass has increased by amountBeingRedistributed
         self.assertAlmostEqual(
             self.c0.getMass(),
             preRedistributionC0Mass + amountBeingRedistributed,
-            places = self.places
+            places = self.places,
         )
         # assert the temperatures do not change
         self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
         self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
 
-        # now remove the c1 mass and ensure it's mass decreases by a factor of delta/self.c1.height
+        # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
         self.axialExpChngr.rmMassFromComponent(fromComp=self.c1, delta=-delta)
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
@@ -424,21 +425,21 @@ class TestRedistributeMass(TestMultiPinConservation):
         self.axialExpChngr.addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
-            delta=delta
+            delta=delta,
         )
         # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places=self.places)
-        # ensure that the c0 mass has increased by delta/self.c0.height.
-        # self.assertAlmostEqual(
-        #     self.c0.getMass(),
-        #     preRedistributionC0Mass + amountBeingRedistributed,
-        #     places=self.places,
-        # )
+        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places = self.places)
+        # ensure that the c0 mass has increased by amountBeingRedistributed
+        self.assertAlmostEqual(
+            self.c0.getMass(),
+            preRedistributionC0Mass + amountBeingRedistributed,
+            places = self.places,
+        )
         # assert that the temperature of c1 is the same and that c0 has increased
         self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
         self.assertGreater(self.c0.temperatureInC, preRedistributionC0Temp)
 
-        # now remove the c1 mass and assert it is delta/self.c1.height less than its pre-redistribution value
+        # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
         self.axialExpChngr.rmMassFromComponent(fromComp=self.c1, delta=-delta)
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
