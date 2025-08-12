@@ -388,9 +388,10 @@ class AxialExpansionChanger:
                     # there is no linked component above and there is only one solid component in the current block.
                     # push up (expansion) or pull down (contraction) all components in the block above.
                     # e.g., the transition from grid plate to pin assembly.
-                    for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
-                        c.zbottom = b.p.ztop
-                        c.ztop = c.zbottom + c.height
+                    if self.linked.linkedBlocks[b].upper: # split off to accommodate unit tests in other parts of ARMI
+                        for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
+                            c.zbottom = b.p.ztop
+                            c.ztop = c.zbottom + c.height
 
                 # deal with non-target components
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
