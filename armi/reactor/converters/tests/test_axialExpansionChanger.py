@@ -1379,15 +1379,25 @@ def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
     return assembly
 
 
-def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, plenum: bool = False):
+def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, plenum: bool = False) -> HexBlock:
     """Return a simple pin type block filled with coolant and surrounded by duct.
 
     Parameters
     ----------
-    blockType : string
+    blockType
         determines which type of block you're building
-    name : string
+    name
         determines which material to use
+    hotTemp
+        the hot temperature of the block. This is synonomous with Thot in blueprints.
+    height
+        the height of the block
+    plenum
+        boolean to indicate if this is a plenum. if true, the pin is replaced by an air-filled gap.
+
+    Returns
+    -------
+    HexBlock for testing.
     """
     b = HexBlock(blockType, height=height)
 
