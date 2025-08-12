@@ -196,8 +196,9 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         return blockHeights, compMassByBlock, totalCMassByFlags
 
     def test_expandAndContractThermal(self):
-        """
-        change fuel and test fuel isothermal pass
+        """Test both.
+
+        Change fuel and test fuel isothermal pass
         change fuel non-isothermal and test fuel isothermal pass
         change test fuel non-isothermal fail
         """
@@ -229,7 +230,8 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         self.checkConservation()
 
     def test_expandThermal(self):
-        """
+        """Test expansion.
+
         Change fuel: isothermal and non-isothermal pass
         Change test fuel: isothermal pass, non-isothermal fail
         """
@@ -242,7 +244,8 @@ class TestMultiPinConservation(AxialExpansionTestBase):
         self.checkConservation()
 
     def test_contractThermal(self):
-        """
+        """Test contraction.
+
         Change fuel: isothermal and non-isothermal pass
         Change test fuel: isothermal pass, non-isothermal fail
         """
@@ -305,8 +308,8 @@ class TestMultiPinConservation(AxialExpansionTestBase):
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight())
 
-class TestRedistributeMass(TestMultiPinConservation):
 
+class TestRedistributeMass(TestMultiPinConservation):
     b0: HexBlock
     b1: HexBlock
     c0: "Component"
@@ -323,7 +326,7 @@ class TestRedistributeMass(TestMultiPinConservation):
         super().setUp()
         self.b0 = self.a.getFirstBlock(Flags.FUEL)
         self.b1 = self.axialExpChngr.linked.linkedBlocks[self.b0].upper
-        self.c0 = next(filter(lambda c: c.getType() == 'fuel test', self.b0))
+        self.c0 = next(filter(lambda c: c.getType() == "fuel test", self.b0))
         self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
 
     def test_addMassToComponent_nonTargetCompression_noThermal(self):
@@ -354,7 +357,7 @@ class TestRedistributeMass(TestMultiPinConservation):
 
         # calculate delta, the amount of mass getting moved, and perform the redistribution
         delta = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC1Mass * abs(delta)/self.c1.height
+        amountBeingRedistributed = preRedistributionC1Mass * abs(delta) / self.c1.height
         # perform the mass redistrbution from c1 to c0
         self.axialExpChngr.addMassToComponent(
             fromComp=self.c1,
@@ -362,12 +365,12 @@ class TestRedistributeMass(TestMultiPinConservation):
             delta=delta,
         )
         # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places = self.places)
+        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places=self.places)
         # ensure that the c0 mass has increased by amountBeingRedistributed
         self.assertAlmostEqual(
             self.c0.getMass(),
             preRedistributionC0Mass + amountBeingRedistributed,
-            places = self.places,
+            places=self.places,
         )
         # assert the temperatures do not change
         self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
@@ -381,9 +384,7 @@ class TestRedistributeMass(TestMultiPinConservation):
         self.b1.p.height = self.c1.ztop - (self.c1.zbottom + delta)
         self.b1.clearCache()
         self.assertAlmostEqual(
-            self.c1.getMass(),
-            preRedistributionC1Mass - amountBeingRedistributed,
-            places=self.places
+            self.c1.getMass(), preRedistributionC1Mass - amountBeingRedistributed, places=self.places
         )
         # assert the temperatures still do not change
         self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
@@ -394,7 +395,8 @@ class TestRedistributeMass(TestMultiPinConservation):
 
         Notes
         -----
-        C0 shrinks resulting in c1 giving X% of its mass to c0. c1 height does not change so it's mass loses X%."""
+        C0 shrinks resulting in c1 giving X% of its mass to c0. c1 height does not change so it's mass loses X%.
+        """
         newTemp = self.c0.temperatureInC - 100.0
         # updateComponentTemp updates ndens for update in AREA only
         self.axialExpChngr.expansionData.updateComponentTemp(self.c0, newTemp)
@@ -420,7 +422,7 @@ class TestRedistributeMass(TestMultiPinConservation):
 
         # calculate delta, the amount of mass getting moved, and perform the redistribution
         delta = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC1Mass * abs(delta)/self.c1.height
+        amountBeingRedistributed = preRedistributionC1Mass * abs(delta) / self.c1.height
         # perform the mass redistrbution from c1 to c0
         self.axialExpChngr.addMassToComponent(
             fromComp=self.c1,
@@ -428,12 +430,12 @@ class TestRedistributeMass(TestMultiPinConservation):
             delta=delta,
         )
         # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places = self.places)
+        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places=self.places)
         # ensure that the c0 mass has increased by amountBeingRedistributed
         self.assertAlmostEqual(
             self.c0.getMass(),
             preRedistributionC0Mass + amountBeingRedistributed,
-            places = self.places,
+            places=self.places,
         )
         # assert that the temperature of c1 is the same and that c0 has increased
         self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
@@ -447,14 +449,11 @@ class TestRedistributeMass(TestMultiPinConservation):
         self.b1.p.height = self.c1.ztop - (self.c1.zbottom + delta)
         self.b1.clearCache()
         self.assertAlmostEqual(
-            self.c1.getMass(),
-            preRedistributionC1Mass - amountBeingRedistributed,
-            places=self.places
+            self.c1.getMass(), preRedistributionC1Mass - amountBeingRedistributed, places=self.places
         )
         # assert the temperatures do not change
         self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
         self.assertGreater(self.c0.temperatureInC, preRedistributionC0Temp)
-
 
     def test_addMassToComponent_nonTargetExpansion_yesThermal(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
@@ -488,13 +487,9 @@ class TestRedistributeMass(TestMultiPinConservation):
 
         # calculate delta, the amount of mass getting moved, and perform the redistribution
         delta = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC0Mass * abs(delta)/self.c0.height
+        amountBeingRedistributed = preRedistributionC0Mass * abs(delta) / self.c0.height
         # perform the mass redistrbution from c0 to c1
-        self.axialExpChngr.addMassToComponent(
-            fromComp=self.c0,
-            toComp=self.c1,
-            delta=delta
-        )
+        self.axialExpChngr.addMassToComponent(fromComp=self.c0, toComp=self.c1, delta=delta)
         # ensure there is no difference in c0 mass
         self.assertAlmostEqual(preRedistributionC0Mass, self.c0.getMass() * growFrac, places=self.places)
         # ensure that the c1 mass has increased by delta/self.c0.height.
@@ -514,7 +509,9 @@ class TestRedistributeMass(TestMultiPinConservation):
 
         # now remove the c0 mass and assert it is delta/self.c0.height less than its pre-redistribution value
         self.axialExpChngr.rmMassFromComponent(fromComp=self.c0, delta=delta)
-        self.assertAlmostEqual(self.c0.getMass(), preRedistributionC0Mass - amountBeingRedistributed, places=self.places)
+        self.assertAlmostEqual(
+            self.c0.getMass(), preRedistributionC0Mass - amountBeingRedistributed, places=self.places
+        )
         # assert the c0 temperature does not change
         self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
 
