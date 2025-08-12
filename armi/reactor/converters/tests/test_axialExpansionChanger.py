@@ -1392,24 +1392,16 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, pl
     b = HexBlock(blockType, height=height)
 
     fuelDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.76, "id": 0.00, "mult": 127.0}
-    bondDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.78, "id": 0.76, "mult": 127.0}
-    cladDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.78, "mult": 127.0}
     ductDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 25.0,
-        "Thot": hotTemp,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": hotTemp}
     mainType = Circle(blockType, name, **fuelDims)
-    bond = Circle("bond", "Sodium", **bondDims)
-    clad = Circle("clad", name, **cladDims)
+    bond = Circle("bond", "Sodium", {"Tinput": 25.0, "Thot": hotTemp, "od": 0.78, "id": 0.76, "mult": 127.0})
+    clad = Circle("clad", name, {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.78, "mult": 127.0})
     duct = Hexagon("duct", name, **ductDims)
 
-    coolant = DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
+    coolant = DerivedShape("coolant", "Sodium", {"Tinput": 25.0, "Thot": hotTemp})
+    intercoolant = Hexagon(
+        "intercoolant", "Sodium", {"Tinput": 25.0, "Thot": hotTemp, "op": 17.0, "ip": ductDims["op"], "mult": 1.0}
+    )
 
     if plenum:
         b.add(Circle("gap", "Air", **fuelDims))
@@ -1431,8 +1423,7 @@ def _buildDummySodium(hotTemp: float, height: float):
     """Build a dummy sodium block."""
     b = HexBlock("dummy", height=height)
 
-    sodiumDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 17, "ip": 0.0, "mult": 1.0}
-    dummy = Hexagon("dummy coolant", "Sodium", **sodiumDims)
+    dummy = Hexagon("dummy coolant", "Sodium", {"Tinput": 25.0, "Thot": hotTemp, "op": 17, "ip": 0.0, "mult": 1.0})
 
     b.add(dummy)
     b.getVolumeFractions()
