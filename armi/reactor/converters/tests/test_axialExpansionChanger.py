@@ -355,7 +355,7 @@ class TestRedistributeMass(TestMultiPinConservation):
         # calculate delta, the amount of mass getting moved, and perform the redistribution
         delta = self.b0.p.ztop - self.c0.ztop
         amountBeingRedistributed = preRedistributionC1Mass * abs(delta)/self.c1.height
-        self.axialExpChngr.redistributeMass(
+        self.axialExpChngr.addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
             delta=delta,
