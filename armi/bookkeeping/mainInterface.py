@@ -54,6 +54,10 @@ class MainInterface(interfaces.Interface):
 
     name = "main"
 
+    @staticmethod
+    def specifyInputs(cs):
+        return {CONF_ZONES_FILE: cs[CONF_ZONES_FILE]}
+
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
         self._activateDBPrepRestart()
