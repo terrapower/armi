@@ -18,7 +18,7 @@ import os
 from typing import TYPE_CHECKING
 
 from dataclasses import dataclass
-from numpy import zeros
+from numpy import full
 
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
@@ -403,7 +403,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
             for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
                 cList.append(c)
-        pList = zeros(len(cList)) + 1.2
+        pList = full(len(cList), 1.2)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
@@ -413,7 +413,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
                 cList.append(c)
-        pList = zeros(len(cList)) + 0.9
+        pList = full(len(cList), 0.9)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
