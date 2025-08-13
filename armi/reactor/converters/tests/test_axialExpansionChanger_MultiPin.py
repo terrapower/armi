@@ -85,9 +85,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertAlmostEqual(refC1Zbottom, self.c1.zbottom, places=self.places)
 
     def test_redistributeMass_nonTargetExpansion_noThermal(self):
-        """Perform prescribed expansion of the test fuel component by calling ``redistributeMass``
+        """Perform prescribed expansion of the test fuel component by calling :py:meth:`redistributeMass`.
 
-        This test ensures that self.c0 and self.c1 change by the same expected amount.
+        Notes
+        -----
+        This test ensures that self.c0 and self.c1 change by the same expected amount and that the temperatures of the
+        components are managed correctly during the transfer of mass. For this test, since this is no thermal
+        expansion, we show that the component temperatures do not change after the call to :py:meth:`redistributeMass`.
         """
         growFrac = 1.10
         # update the ndens of c0 for the change in height too
@@ -133,7 +137,11 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         Notes
         -----
-        C0 shrinks resulting in c1 giving 10% of its mass to c0. c1 height does not change so it's mass loses 10%.
+        - C0 shrinks resulting in c1 giving 10% of its mass to c0. c1 height does not change so it's mass loses 10%.
+        - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
+        during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
+        temperatures do not change after the calls to :py:meth:`_addMassToComponent` and
+        :py:meth:`_removeMassFromComponent`.
         """
         growFrac = 0.9
         # update the ndens of c0 for the change in height too
@@ -188,7 +196,11 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         Notes
         -----
-        C0 shrinks resulting in c1 giving X% of its mass to c0. c1 height does not change so it's mass loses X%.
+        - C0 shrinks resulting in c1 giving X% of its mass to c0. c1 height does not change so its mass loses X%.
+        - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
+        during the transfer of mass. For this test, we show that the temperature of c0 increases after the call to
+        :py:meth:`_addMassToComponent`. This increase is due to the contribution from the hotter c1 component. We show
+        that the temperatures of c1 and c0 do not change after the call to :py:meth:`_removeMassFromComponent`.
         """
         newTemp = self.c0.temperatureInC - 100.0
         # updateComponentTemp updates ndens for update in AREA only
@@ -243,11 +255,15 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertGreater(self.c0.temperatureInC, preRedistributionC0Temp)
 
     def test_addMassToComponent_nonTargetExpansion_yesThermal(self):
-        """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
+        """Increase c0 by 100 deg C and and show that c0 mass is moved to c1.
 
         Notes
         -----
-        C0 expands resulting in c0 giving X% of its mass to c1. c0 height does not change so its mass loses X%.
+        - C0 expands resulting in c0 giving X% of its mass to c1. c0 height does not change so its mass loses X%.
+        - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
+        during the transfer of mass. For this test, we show that the temperature of c1 increases after the call to
+        :py:meth:`_addMassToComponent`. This increase is due to the contribution from the hotter c0 component. We show
+        that the temperatures of c1 and c0 do not change after the call to :py:meth:`_removeMassFromComponent`.
         """
         newTemp = self.c0.temperatureInC + 100.0
         # updateComponentTemp updates ndens for update in AREA only
@@ -256,13 +272,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
         # update the ndens of c0 for the change in height too
         self.c0.changeNDensByFactor(1.0 / growFrac)
-        # set the height of the components post expansion
-        self.c0.zbottom = self.b0.p.zbottom
-        self.c0.height = self.b0.getHeight() * growFrac
-        self.c0.ztop = self.c0.zbottom + self.c0.height
-        self.c1.zbottom = self.b1.p.zbottom
-        self.c1.height = self.b1.getHeight()
-        self.c1.ztop = self.c1.zbottom + self.c1.height
+        self._initializeComponentElevations(growFrac)
         # set the original mass of the components post expansion and pre redistribution
         # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
         # Doing so gets you to the true c0 mass.
