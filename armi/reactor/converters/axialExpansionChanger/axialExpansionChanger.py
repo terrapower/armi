@@ -449,15 +449,15 @@ class AxialExpansionChanger:
 
         See Also
         --------
-        :py:meth:`addMassToComponent`
-        :py:meth:`removeMassFromComponent`
+        :py:meth:`_addMassToComponent`
+        :py:meth:`_removeMassFromComponent`
         """
-        self.addMassToComponent(
+        self._addMassToComponent(
             fromComp=fromComp,
             toComp=toComp,
             deltaZTop=abs(deltaZTop),
         )
-        self.removeMassFromComponent(
+        self._removeMassFromComponent(
             fromComp=fromComp,
             deltaZTop=-deltaZTop,
         )
@@ -470,7 +470,7 @@ class AxialExpansionChanger:
         cAbove.height -= deltaZTop
         cAbove.zbottom += deltaZTop
 
-    def addMassToComponent(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
+    def _addMassToComponent(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
         r"""Given ``deltaZTop``, add mass from ``fromComp`` and give it to ``toComp``.
 
         Parameters
@@ -485,7 +485,7 @@ class AxialExpansionChanger:
         Notes
         -----
         Only the mass of ``toComp`` is changed in this method. To adjust the mass of ``fromComp``, call
-        :py:meth:`removeMassFromComponent` or the wrapper method :py:meth:`redistributeMass`.
+        :py:meth:`_removeMassFromComponent` or the wrapper method :py:meth:`redistributeMass`.
         When redistributing mass, if ``fromComp`` and ``toComp`` are different temperatures, the temperature of
         ``toComp`` will change. Calculating this new temperature is non trivial due to thermal expansion. The following
         defines what the area of ``toComp`` is post-redistribution,
@@ -509,7 +509,7 @@ class AxialExpansionChanger:
         See Also
         --------
         :py:meth:`redistributeMass`
-        :py:meth:`removeMassFromComponent`
+        :py:meth:`_removeMassFromComponent`
         """
         # limitation: fromComp and toComp **must** be the same materials.
         if type(fromComp.material) is not type(toComp.material):
@@ -544,7 +544,7 @@ class AxialExpansionChanger:
         toComp.temperatureInC = newToCompTemp
         toComp.clearCache()
 
-    def removeMassFromComponent(self, fromComp: "Component", deltaZTop: float):
+    def _removeMassFromComponent(self, fromComp: "Component", deltaZTop: float):
         """Given ``deltaZTop``, remove mass from ``fromComp``.
 
         Parameters

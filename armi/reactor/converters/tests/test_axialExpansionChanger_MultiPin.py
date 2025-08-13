@@ -166,7 +166,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         deltaZTop = self.b0.p.ztop - self.c0.ztop
         amountBeingRedistributed = preRedistributionC1Mass * abs(deltaZTop) / self.c1.height
         # perform the mass redistrbution from c1 to c0
-        self.axialExpChngr.addMassToComponent(
+        self.axialExpChngr._addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
             deltaZTop=deltaZTop,
@@ -184,7 +184,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
 
         # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
-        self.axialExpChngr.removeMassFromComponent(fromComp=self.c1, deltaZTop=-deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-deltaZTop)
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
@@ -231,7 +231,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         deltaZTop = self.b0.p.ztop - self.c0.ztop
         amountBeingRedistributed = preRedistributionC1Mass * abs(deltaZTop) / self.c1.height
         # perform the mass redistrbution from c1 to c0
-        self.axialExpChngr.addMassToComponent(
+        self.axialExpChngr._addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
             deltaZTop=deltaZTop,
@@ -249,7 +249,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertGreater(self.c0.temperatureInC, preRedistributionC0Temp)
 
         # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
-        self.axialExpChngr.removeMassFromComponent(fromComp=self.c1, deltaZTop=-deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-deltaZTop)
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
@@ -296,7 +296,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         deltaZTop = self.b0.p.ztop - self.c0.ztop
         amountBeingRedistributed = preRedistributionC0Mass * abs(deltaZTop) / self.c0.height
         # perform the mass redistrbution from c0 to c1
-        self.axialExpChngr.addMassToComponent(fromComp=self.c0, toComp=self.c1, deltaZTop=deltaZTop)
+        self.axialExpChngr._addMassToComponent(fromComp=self.c0, toComp=self.c1, deltaZTop=deltaZTop)
         # ensure there is no difference in c0 mass
         self.assertAlmostEqual(preRedistributionC0Mass, self.c0.getMass() * growFrac, places=self.places)
         # ensure that the c1 mass has increased by deltaZTop/self.c0.height.
@@ -315,7 +315,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertGreater(self.c1.temperatureInC, preRedistributionC1Temp)
 
         # now remove the c0 mass and assert it is deltaZTop/self.c0.height less than its pre-redistribution value
-        self.axialExpChngr.removeMassFromComponent(fromComp=self.c0, deltaZTop=deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=self.c0, deltaZTop=deltaZTop)
         self.assertAlmostEqual(
             self.c0.getMass(), preRedistributionC0Mass - amountBeingRedistributed, places=self.places
         )
