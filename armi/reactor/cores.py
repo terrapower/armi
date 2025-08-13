@@ -24,10 +24,10 @@ import copy
 import itertools
 import os
 import time
+from ruamel.yaml import YAML
 from typing import Callable, Iterator, Optional
 
 import numpy as np
-import yaml
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
@@ -2211,7 +2211,7 @@ class Core(composites.Composite):
 
             self.zones = Zones()
             with open(cs[CONF_ZONES_FILE]) as stream:
-                zonesDict = yaml.safe_load(stream)
+                zonesDict = YAML(typ="safe").load(stream)
 
             for assemblyLocation, zoneName in zonesDict["customZonesMap"].items():
                 # if the the zoneName isn't already a Zones key, then add a new Zone
