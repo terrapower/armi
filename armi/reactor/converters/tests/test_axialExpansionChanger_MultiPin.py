@@ -32,6 +32,10 @@ if TYPE_CHECKING:
     from armi.reactor.blocks import HexBlock
     from armi.reactor.components.component import Component
 
+@dataclass
+class StoreMass:
+    cFlags: str
+    mass: float
 
 class TestMultiPinConservationBase(AxialExpansionTestBase):
     @classmethod
@@ -315,11 +319,6 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 
     @staticmethod
     def getMassesForTest(a: "HexAssembly"):
-        @dataclass
-        class StoreMass:
-            cFlags: str
-            mass: float
-
         blockHeights: dict["HexBlock", float] = {}
         compMassByBlock: dict["HexBlock", StoreMass] = collections.defaultdict(list)
         totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
