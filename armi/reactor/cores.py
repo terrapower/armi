@@ -2213,13 +2213,13 @@ class Core(composites.Composite):
             with open(cs[CONF_ZONES_FILE]) as stream:
                 zonesDict = YAML(typ="safe").load(stream)
 
-            for assemblyLocation, zoneName in zonesDict["customZonesMap"].items():
+            for location, zoneName in zonesDict["customZonesMap"].items():
                 # if the the zoneName isn't already a Zones key, then add a new Zone
                 if zoneName not in self.zones:
-                    self.zones.addZone(Zone(zoneName, [assemblyLocation]))
+                    self.zones.addZone(Zone(zoneName, [location]))
                 # if the zoneName is already a Zones key, then add the location to the existing Zone
                 else:
-                    self.zones[zoneName].addLoc(assemblyLocation)
+                    self.zones[zoneName].addLoc(location)
 
             # sort the Zones
             self.zones.sortZones()
