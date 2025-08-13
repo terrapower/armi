@@ -21,6 +21,7 @@ at the unit test level, rather than during integration tests.
 EXPLAIN HOW TO USE THE UTILITIES HERE
 """
 
+import unittest
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Iterable, Union
@@ -29,11 +30,53 @@ from armi.reactor import assemblyParameters, blockParameters, parameters, reacto
 from armi.testing import loadTestReactor
 
 if TYPE_CHECKING:
-    from unittest import TestCase
-
     from armi.reactor import Core
     from armi.reactor.assemblies import Assembly
     from armi.reactor.blocks import Block
+
+
+class BasicArmiSymmetryTestHelper(unittest.TestCase):
+    pluginCoreParams = []
+    pluginAssemblyParams = []
+    pluginBlockParams = []
+    pluginSymmetricCoreParams = []
+    pluginSymmetricAssemblyParams = []
+    pluginSymmetricBlockParams = []
+
+    def setUp(self):
+        self.defaultSymmetricBlockParams = [
+            "powerGenerated",
+            "power",
+            "powerGamma",
+            "powerNeutron",
+            "molesHmNow",
+            "molesHmBOL",
+            "massHmBOL",
+            "initialB10ComponentVol",
+            "kgFis",
+            "kgHM",
+        ]
+        self.symmetricBlockParams = self.defaultSymmetricBlockParams + self.pluginSymmetricBlockParams
+        self.symTester = SymmetryFactorTester(
+            self,
+            pluginCoreParams=self.pluginCoreParams,
+            pluginAssemblyParams=self.pluginAssemblyParams,
+            pluginBlockParams=self.pluginBlockParams,
+        )
+
+    def test_defaultSymmetry(self):
+        self.symTester.runSymmetryFactorTests(blockParams=self.symmetricBlockParams)
+
+    def test_errorWhenNotDefined(self):
+        with self.assertRaises(AssertionError) as err:
+            self.symTester.runSymmetryFactorTests()
+            self.assertIn("but is not specified in the parameters expected to change", err.msg)
+
+    def test_errorWhenRequestedButNotExpanded(self):
+        with self.assertRaises(AssertionError) as err:
+            blockParams = self.defaultSymmetricBlockParams + ["nHMAtBOL"]
+            self.symTester.runSymmetryFactorTests(blockParams=blockParams)
+            self.assertIn("The after-to-before expansion ratio of parameter", err.msg)
 
 
 class SymmetryFactorTester:
@@ -47,7 +90,7 @@ class SymmetryFactorTester:
 
     def __init__(
         self,
-        testObject: "TestCase",
+        testObject: unittest.TestCase,
         pluginCoreParams: list[str] = [],
         pluginAssemblyParams: list[str] = [],
         pluginBlockParams: list[str] = [],

@@ -14,50 +14,8 @@
 
 """Unit tests for testing fixtures."""
 
-import unittest
-
-from armi.testing.symmetryTests import SymmetryFactorTester
+from armi.testing import symmetryTesting
 
 
-class BasicArmiSymmetryTestHelper(unittest.TestCase):
-    pluginCoreParams = []
-    pluginAssemblyParams = []
-    pluginBlockParams = []
-    pluginSymmetricCoreParams = []
-    pluginSymmetricAssemblyParams = []
-    pluginSymmetricBlockParams = []
-
-    def setUp(self):
-        self.defaultSymmetricBlockParams = [
-            "powerGenerated",
-            "power",
-            "powerGamma",
-            "powerNeutron",
-            "molesHmNow",
-            "molesHmBOL",
-            "massHmBOL",
-            "initialB10ComponentVol",
-            "kgFis",
-            "kgHM",
-        ]
-        self.symmetricBlockParams = self.defaultSymmetricBlockParams + self.pluginSymmetricBlockParams
-        self.symTester = SymmetryFactorTester(
-            self,
-            pluginCoreParams=self.pluginCoreParams,
-            pluginAssemblyParams=self.pluginAssemblyParams,
-            pluginBlockParams=self.pluginBlockParams,
-        )
-
-    def test_defaultSymmetry(self):
-        self.symTester.runSymmetryFactorTests(blockParams=self.symmetricBlockParams)
-
-    def test_errorWhenNotDefined(self):
-        with self.assertRaises(AssertionError) as em:
-            self.symTester.runSymmetryFactorTests()
-            self.assertIn("but is not specified in the parameters expected to change", em.msg)
-
-    def test_errorWhenRequestedButNotExpanded(self):
-        with self.assertRaises(AssertionError) as em:
-            blockParams = self.defaultSymmetricBlockParams + ["nHMAtBOL"]
-            self.symTester.runSymmetryFactorTests(blockParams=blockParams)
-            self.assertIn("The after-to-before expansion ratio of parameter", em.msg)
+class ArmiSymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
+    """Run the basic symmetry test helper."""
