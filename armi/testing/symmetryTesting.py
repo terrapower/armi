@@ -42,6 +42,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
     pluginSymmetricCoreParams = []
     pluginSymmetricAssemblyParams = []
     pluginSymmetricBlockParams = []
+    pluginParameterOverrides = {}
 
     def setUp(self):
         self.defaultSymmetricBlockParams = [
@@ -62,6 +63,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
             pluginCoreParams=self.pluginCoreParams,
             pluginAssemblyParams=self.pluginAssemblyParams,
             pluginBlockParams=self.pluginBlockParams,
+            pluginParameterOverrides=self.pluginParameterOverrides,
         )
 
     def test_defaultSymmetry(self):
