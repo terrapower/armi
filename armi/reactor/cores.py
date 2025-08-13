@@ -27,6 +27,7 @@ import time
 from typing import Callable, Iterator, Optional
 
 import numpy as np
+import yaml
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
@@ -42,6 +43,7 @@ from armi.reactor import (
     zones,
 )
 from armi.reactor.flags import Flags
+from armi.reactor.zones import Zone, Zones
 from armi.settings.fwSettings.globalSettings import (
     CONF_AUTOMATIC_VARIABLE_MESH,
     CONF_CIRCULAR_RING_PITCH,
@@ -52,6 +54,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_STATIONARY_BLOCK_FLAGS,
     CONF_TRACK_ASSEMS,
     CONF_ZONE_DEFINITIONS,
+    CONF_ZONES_FILE,
 )
 from armi.utils import createFormattedStrWithDelimiter, tabulate, units
 from armi.utils.iterables import Sequence
@@ -2212,14 +2215,14 @@ class Core(composites.Composite):
 
             for assemblyLocation, zoneName in zonesDict["customZonesMap"].items():
                 # if the the zoneName isn't already a Zones key, then add a new Zone
-                if zoneName not in r.core.zones:
-                    r.core.zones.addZone(Zone(zoneName, [assemblyLocation]))
+                if zoneName not in self.zones:
+                    self.zones.addZone(Zone(zoneName, [assemblyLocation]))
                 # if the zoneName is already a Zones key, then add the location to the existing Zone
                 else:
-                    r.core.zones[zoneName].addLoc(assemblyLocation)
+                    self.zones[zoneName].addLoc(assemblyLocation)
 
             # sort the Zones
-            r.core.zones.sortZones()
+            self.zones.sortZones()
 
         else:
             runLog.warn(f"No zones defined in either {CONF_ZONE_DEFINITIONS} or {CONF_ZONES_FILE} settings")
