@@ -15,9 +15,9 @@
 import collections
 import copy
 import os
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from dataclasses import dataclass
 from numpy import full
 
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
@@ -32,10 +32,12 @@ if TYPE_CHECKING:
     from armi.reactor.blocks import HexBlock
     from armi.reactor.components.component import Component
 
+
 @dataclass
 class StoreMass:
     cFlags: TypeSpec
     mass: float
+
 
 class TestMultiPinConservationBase(AxialExpansionTestBase):
     @classmethod
@@ -336,12 +338,15 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 
         return totalCMassByFlags
 
-    def test_expandAndContractThermal(self):
-        """Test both.
+    def test_expandThermalBothFuel(self):
+        """Perform thermal expansion on both fuel and test fuel components.
 
-        Change fuel and test fuel isothermal pass
-        change fuel non-isothermal and test fuel isothermal pass
-        change test fuel non-isothermal fail
+        Notes
+        -----
+        - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
+        - The test fuel and fuel components are scaled by different temperatures to simulate each pin design
+        existing at different temperatures.
+        - The 150 deg C and 50 deg C based temperature changes are arbitrarily chosen.
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in b.iterChildrenWithFlags(Flags.FUEL):
@@ -354,8 +359,17 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
 
-    def test_roundTripThermal(self):
-        """Ensure that the original state of the assembly is recovered through thermal expansion."""
+    def test_roundTripThermalBothFuel(self):
+        """Perform thermal expansion on both fuel and test fuel components and ensure that mass and total assembly
+        height is recovered.
+
+        Notes
+        -----
+        - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
+        - The test fuel and fuel components are scaled by different temperatures to simulate each pin design
+        existing at different temperatures.
+        - The 75 deg C and 50 deg C based temperature changes are arbitrarily chosen.
+        """
         tempAdjust = [50, -50]
         for temp in tempAdjust:
             for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
@@ -371,10 +385,12 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def test_expandThermal(self):
-        """Test expansion.
+        """Perform thermal expansion on the test fuel component.
 
-        Change fuel: isothermal and non-isothermal pass
-        Change test fuel: isothermal pass, non-isothermal fail
+        Notes
+        -----
+        - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
+        - The 100 deg C based temperature changes is arbitrarily chosen.
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
@@ -385,10 +401,12 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def test_contractThermal(self):
-        """Test contraction.
+        """Perform thermal contraction on the test fuel component.
 
-        Change fuel: isothermal and non-isothermal pass
-        Change test fuel: isothermal pass, non-isothermal fail
+        Notes
+        -----
+        - Each block is scaled by a decreasing temperature to simulate a variable axial temperature distribution.
+        - The -100 deg C based temperature changes is arbitrarily chosen.
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
             for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
@@ -399,6 +417,13 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def test_expandPrescribed(self):
+        """Perform prescribed expansion on the test fuel component.
+
+        Notes
+        -----
+        - The factor of 1.2 for component expansion is arbitrarily chosen. Note, if too large of a value is chosen,
+        the upper block heights will go negative and the axial expansion changer will hit a RuntimeError.
+        """
         cList = []
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
             for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
@@ -409,6 +434,12 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def test_contractPrescribed(self):
+        """Perform prescribed contraction on the test fuel component.
+
+        Notes
+        -----
+        - The factor of 0.9 for component contraction is arbitrarily chosen.
+        """
         cList = []
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
             for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
@@ -419,6 +450,16 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def test_expandAndContractPrescribed(self):
+        """Perform prescribed expansion and contraction on the test fuel component.
+
+        Notes
+        -----
+        - Each block is scaled by a different value to simulate a variable axial expansion profile (e.g., burnup driven
+        axial expansion commonly found in sodium fast reactors).
+        - The factor of +/- 0.01 for component expansion/contraction is arbitrarily chosen. Note, if too large of a
+        value is chosen, the upper block heights will go negative and the axial expansion changer will hit a
+        RuntimeError.
+        """
         cList = []
         pList = []
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
@@ -433,9 +474,13 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def checkConservation(self):
+        """Conservation of axial expansion is measured by ensuring the total assembly mass per component flag and total
+        assembly height is the same post exapansion.
+        """
+        # check total component mass by flag
         newTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
-
         for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
             self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
 
+        # check the assembly height is preserved
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), self.places)
