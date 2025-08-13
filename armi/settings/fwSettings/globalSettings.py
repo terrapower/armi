@@ -110,6 +110,7 @@ CONF_USER_PLUGINS = "userPlugins"
 CONF_VERBOSITY = "verbosity"
 CONF_VERSIONS = "versions"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
+CONF_ZONES_FILE = "zonesFile"
 
 
 def defineSettings() -> List[setting.Setting]:
@@ -739,7 +740,15 @@ def defineSettings() -> List[setting.Setting]:
             label="Zone Definitions",
             description="Manual definitions of zones as lists of assembly locations "
             "(e.g. 'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used "
-            "by various summary and calculation routines.",
+            f"by various summary and calculation routines. See also {CONF_ZONES_FILE} "
+            "for an alternative method of specifying zones.",
+        ),
+        setting.Setting(
+            CONF_ZONES_FILE,
+            default="",
+            label="Zones definition file",
+            description="Input file containing the definition of Zones to be applied to the reactor. "
+            f"See also {CONF_ZONE_DEFINITIONS} for an alternative method of specifying zones.",
         ),
         setting.Setting(
             CONF_ACCEPTABLE_BLOCK_AREA_ERROR,
