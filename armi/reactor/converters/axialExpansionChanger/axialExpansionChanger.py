@@ -463,10 +463,10 @@ class AxialExpansionChanger:
         )
 
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
-        # shift the height and ztop of the current component downwards (-deltaZTop) or upwards (+deltaZTop)
+        # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
         c.height += deltaZTop
         c.ztop += deltaZTop
-        # the height and zbottom of cAbove grows and moves downwards (-deltaZTop) or shrinks and moves upward (+deltaZTop)
+        # the height of cAbove grows and zbottom moves downwards (-deltaZTop) or shrinks and moves upward (+deltaZTop)
         cAbove.height -= deltaZTop
         cAbove.zbottom += deltaZTop
 
