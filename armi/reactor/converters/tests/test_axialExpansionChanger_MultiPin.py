@@ -99,39 +99,28 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = 1.10
         # update the ndens of c0 for the change in height too
         self.c0.changeNDensByFactor(1.0 / growFrac)
-        self._initializeComponentElevations(growFrac)
-        # set the original mass of the components post expansion and pre redistribution
-        # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
-        # Doing so gets you to the true c0 mass.
-        preRedistributionC0Mass = self.c0.getMass() * growFrac
-        preRedistributionC1Mass = self.c1.getMass()
-        # set the original temp of the components, post expansion, pre redistrubution
-        preRedistributionC0Temp = self.c0.temperatureInC
-        preRedistributionC1Temp = self.c1.temperatureInC
-        # calculate deltaZTop, the amount of mass getting moved, and perform the redistribution
-        deltaZTop = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC0Mass * abs(deltaZTop) / self.c0.height
-
+        self._initializeTest(growFrac)
+        amountBeingRedistributed = self.preRedistributionC0Mass * abs(self.deltaZTop) / self.c0.height
         # perform the redistrubtion in its entirety
-        self.axialExpChngr.redistributeMass(fromComp=self.c0, toComp=self.c1, deltaZTop=deltaZTop)
+        self.axialExpChngr.redistributeMass(fromComp=self.c0, toComp=self.c1, deltaZTop=self.deltaZTop)
         # assert the temperatures do not change
-        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
-        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
+        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
         # Ensure that c0 and c1 change by the anticipated amount
         self.assertAlmostEqual(
             self.c0.getMass(),
-            preRedistributionC0Mass - amountBeingRedistributed,
+            self.preRedistributionC0Mass - amountBeingRedistributed,
             places=self.places,
         )
         # ensure that the c1 mass has increased by deltaZTop/self.c0.height.
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
-        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + deltaZTop)
+        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + self.deltaZTop)
         self.b1.clearCache()
         self.assertAlmostEqual(
             self.c1.getMass(),
-            preRedistributionC1Mass + amountBeingRedistributed,
+            self.preRedistributionC1Mass + amountBeingRedistributed,
             places=self.places,
         )
 
@@ -149,50 +138,39 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = 0.9
         # update the ndens of c0 for the change in height too
         self.c0.changeNDensByFactor(1.0 / growFrac)
-        self._initializeComponentElevations(growFrac)
-        # set the original mass of the components post expansion and pre redistribution
-        # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
-        # Doing so gets you to the true c0 mass.
-        preRedistributionC0Mass = self.c0.getMass() * growFrac
-        preRedistributionC1Mass = self.c1.getMass()
-        # set the original temp of the components, post expansion, pre redistrubution
-        preRedistributionC0Temp = self.c0.temperatureInC
-        preRedistributionC1Temp = self.c1.temperatureInC
-
-        # calculate deltaZTop, the amount of mass getting moved, and perform the redistribution
-        deltaZTop = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC1Mass * abs(deltaZTop) / self.c1.height
+        self._initializeTest(growFrac)
+        amountBeingRedistributed = self.preRedistributionC1Mass * abs(self.deltaZTop) / self.c1.height
         # perform the mass redistrbution from c1 to c0
         self.axialExpChngr._addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
-            deltaZTop=deltaZTop,
+            deltaZTop=self.deltaZTop,
         )
         # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places=self.places)
+        self.assertAlmostEqual(self.c1.getMass(), self.preRedistributionC1Mass, places=self.places)
         # ensure that the c0 mass has increased by amountBeingRedistributed
         self.assertAlmostEqual(
             self.c0.getMass(),
-            preRedistributionC0Mass + amountBeingRedistributed,
+            self.preRedistributionC0Mass + amountBeingRedistributed,
             places=self.places,
         )
         # assert the temperatures do not change
-        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
-        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
+        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
 
         # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
-        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-self.deltaZTop)
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
-        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + deltaZTop)
+        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + self.deltaZTop)
         self.b1.clearCache()
         self.assertAlmostEqual(
-            self.c1.getMass(), preRedistributionC1Mass - amountBeingRedistributed, places=self.places
+            self.c1.getMass(), self.preRedistributionC1Mass - amountBeingRedistributed, places=self.places
         )
         # assert the temperatures still do not change
-        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
-        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
+        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
 
     def test_addMassToComponent_nonTargetCompression_yesThermal(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
@@ -212,50 +190,39 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
         # update the ndens of c0 for the change in height too
         self.c0.changeNDensByFactor(1.0 / growFrac)
-        self._initializeComponentElevations(growFrac)
-        # set the original mass of the components post expansion and pre redistribution
-        # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
-        # Doing so gets you to the true c0 mass.
-        preRedistributionC0Mass = self.c0.getMass() * growFrac
-        preRedistributionC1Mass = self.c1.getMass()
-        # set the original temp of the components, post expansion, pre redistrubution
-        preRedistributionC0Temp = self.c0.temperatureInC
-        preRedistributionC1Temp = self.c1.temperatureInC
-
-        # calculate deltaZTop, the amount of mass getting moved, and perform the redistribution
-        deltaZTop = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC1Mass * abs(deltaZTop) / self.c1.height
+        self._initializeTest(growFrac)
+        amountBeingRedistributed = self.preRedistributionC1Mass * abs(self.deltaZTop) / self.c1.height
         # perform the mass redistrbution from c1 to c0
         self.axialExpChngr._addMassToComponent(
             fromComp=self.c1,
             toComp=self.c0,
-            deltaZTop=deltaZTop,
+            deltaZTop=self.deltaZTop,
         )
         # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), preRedistributionC1Mass, places=self.places)
+        self.assertAlmostEqual(self.c1.getMass(), self.preRedistributionC1Mass, places=self.places)
         # ensure that the c0 mass has increased by amountBeingRedistributed
         self.assertAlmostEqual(
             self.c0.getMass(),
-            preRedistributionC0Mass + amountBeingRedistributed,
+            self.preRedistributionC0Mass + amountBeingRedistributed,
             places=self.places,
         )
         # assert that the temperature of c1 is the same and that c0 has increased
-        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
-        self.assertGreater(self.c0.temperatureInC, preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
+        self.assertGreater(self.c0.temperatureInC, self.preRedistributionC0Temp)
 
         # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
-        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-self.deltaZTop)
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
-        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + deltaZTop)
+        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + self.deltaZTop)
         self.b1.clearCache()
         self.assertAlmostEqual(
-            self.c1.getMass(), preRedistributionC1Mass - amountBeingRedistributed, places=self.places
+            self.c1.getMass(), self.preRedistributionC1Mass - amountBeingRedistributed, places=self.places
         )
         # assert the temperatures do not change
-        self.assertEqual(self.c1.temperatureInC, preRedistributionC1Temp)
-        self.assertGreater(self.c0.temperatureInC, preRedistributionC0Temp)
+        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
+        self.assertGreater(self.c0.temperatureInC, self.preRedistributionC0Temp)
 
     def test_addMassToComponent_nonTargetExpansion_yesThermal(self):
         """Increase c0 by 100 deg C and and show that c0 mass is moved to c1.
@@ -275,47 +242,36 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
         # update the ndens of c0 for the change in height too
         self.c0.changeNDensByFactor(1.0 / growFrac)
-        self._initializeComponentElevations(growFrac)
-        # set the original mass of the components post expansion and pre redistribution
-        # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
-        # Doing so gets you to the true c0 mass.
-        preRedistributionC0Mass = self.c0.getMass() * growFrac
-        preRedistributionC1Mass = self.c1.getMass()
-        # set the original temp of the components, post expansion, pre redistrubution
-        preRedistributionC0Temp = self.c0.temperatureInC
-        preRedistributionC1Temp = self.c1.temperatureInC
-
-        # calculate deltaZTop, the amount of mass getting moved, and perform the redistribution
-        deltaZTop = self.b0.p.ztop - self.c0.ztop
-        amountBeingRedistributed = preRedistributionC0Mass * abs(deltaZTop) / self.c0.height
+        self._initializeTest(growFrac)
+        amountBeingRedistributed = self.preRedistributionC0Mass * abs(self.deltaZTop) / self.c0.height
         # perform the mass redistrbution from c0 to c1
-        self.axialExpChngr._addMassToComponent(fromComp=self.c0, toComp=self.c1, deltaZTop=deltaZTop)
+        self.axialExpChngr._addMassToComponent(fromComp=self.c0, toComp=self.c1, deltaZTop=self.deltaZTop)
         # ensure there is no difference in c0 mass
-        self.assertAlmostEqual(preRedistributionC0Mass, self.c0.getMass() * growFrac, places=self.places)
+        self.assertAlmostEqual(self.preRedistributionC0Mass, self.c0.getMass() * growFrac, places=self.places)
         # ensure that the c1 mass has increased by deltaZTop/self.c0.height.
         # change b1.p.height for mass calculation.
         # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
         # given to c0.)
-        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + deltaZTop)
+        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + self.deltaZTop)
         self.b1.clearCache()
         self.assertAlmostEqual(
             self.c1.getMass(),
-            preRedistributionC1Mass + amountBeingRedistributed,
+            self.preRedistributionC1Mass + amountBeingRedistributed,
             places=self.places,
         )
         # assert that the temperature of c0 is the same and that c1 has increased
-        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
-        self.assertGreater(self.c1.temperatureInC, preRedistributionC1Temp)
+        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
+        self.assertGreater(self.c1.temperatureInC, self.preRedistributionC1Temp)
 
         # now remove the c0 mass and assert it is deltaZTop/self.c0.height less than its pre-redistribution value
-        self.axialExpChngr._removeMassFromComponent(fromComp=self.c0, deltaZTop=deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=self.c0, deltaZTop=self.deltaZTop)
         self.assertAlmostEqual(
-            self.c0.getMass(), preRedistributionC0Mass - amountBeingRedistributed, places=self.places
+            self.c0.getMass(), self.preRedistributionC0Mass - amountBeingRedistributed, places=self.places
         )
         # assert the c0 temperature does not change
-        self.assertEqual(self.c0.temperatureInC, preRedistributionC0Temp)
+        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
 
-    def _initializeComponentElevations(self, growFrac: float):
+    def _initializeTest(self, growFrac: float):
         """Set the height of the components post expansion."""
         self.c0.zbottom = self.b0.p.zbottom
         self.c0.height = self.b0.getHeight() * growFrac
@@ -323,6 +279,16 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.c1.zbottom = self.b1.p.zbottom
         self.c1.height = self.b1.getHeight()
         self.c1.ztop = self.c1.zbottom + self.c1.height
+        # set the original mass of the components post expansion and pre redistribution
+        # multiply c0.getMass() by growFrac since b0.p.height does not have that factor.
+        # Doing so gets you to the true c0 mass.
+        self.preRedistributionC0Mass = self.c0.getMass() * growFrac
+        self.preRedistributionC1Mass = self.c1.getMass()
+        # set the original temp of the components, post expansion, pre redistrubution
+        self.preRedistributionC0Temp = self.c0.temperatureInC
+        self.preRedistributionC1Temp = self.c1.temperatureInC
+        # calculate deltaZTop, the amount of mass getting moved, and perform the redistribution
+        self.deltaZTop = self.b0.p.ztop - self.c0.ztop
 
 
 class TestMultiPinConservation(TestMultiPinConservationBase):
