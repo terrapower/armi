@@ -340,6 +340,17 @@ class MultiIndexLocation(IndexLocation):
         IndexLocation.__init__(self, 0, 0, 0, grid)
         self._locations = []
 
+    def __eq__(self, other):
+        """Considered equal if the grids are identical and contained locations are identical.
+
+        Two ``MultiIndexLocation`` objects with the same total collection of locations, but in
+        different orders, will not be considered equal.
+        """
+        if isinstance(other, type(self)):
+            return self.grid == other.grid and self._locations == other._locations
+        # Different objects -> let other.__eq__(self) handle it
+        return NotImplemented
+
     def __getstate__(self) -> List[IndexLocation]:
         """Used in pickling and deepcopy, this detaches the grid."""
         return self._locations
