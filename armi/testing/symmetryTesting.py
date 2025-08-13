@@ -94,6 +94,7 @@ class SymmetryFactorTester:
         pluginCoreParams: list[str] = [],
         pluginAssemblyParams: list[str] = [],
         pluginBlockParams: list[str] = [],
+        pluginParameterOverrides: dict[str:Any] = {},
         paramsToIgnore: list[str] = [],
     ):
         self.o, self.r = loadTestReactor()
@@ -106,6 +107,10 @@ class SymmetryFactorTester:
         self.defaultParameterValue = 2
         # load default armi parameters for each object type
         self._loadDefaultParameters()
+        # some parameters have validation on their inputs and need specific settings
+        self.armiParameterOverrides = {"xsType": ["A"], "xsTypeNum": 65, "notes": ""}
+        self.pluginParameterOverrides = pluginParameterOverrides
+
         self.testObject = testObject
         self.pluginCoreParams = pluginCoreParams
         self.pluginAssemblyParams = pluginAssemblyParams
@@ -186,12 +191,10 @@ class SymmetryFactorTester:
         """
         for p in parameterNames:
             name = str(p)
-            if name == "xsType":
-                obj.p[name] = ["A"]
-            elif name == "xsTypeNum":
-                obj.p[name] = 65
-            elif name == "notes":
-                obj.p[name] = ""
+            if name in self.armiParameterOverrides.keys():
+                obj.p[name] = self.armiParameterOverrides[name]
+            elif name in self.pluginParameterOverrides.keys():
+                obj.p[name] = self.pluginParameterOverrides[name]
             else:
                 obj.p[name] = self.defaultParameterValue
 
