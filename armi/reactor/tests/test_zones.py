@@ -350,7 +350,7 @@ class TestZonesFile(unittest.TestCase):
 
         # build zones based on a file
         newSettings = {}
-        newSettings["zonesFile"] = os.path.join(os.path.abspath(__file__), "..", "zonesFile.yaml")
+        newSettings["zonesFile"] = os.path.join(THIS_DIR, "zonesFile.yaml")
         cs = self.o.cs.modified(newSettings=newSettings)
         self.r.core.buildManualZones(cs)
         self.zonez = self.r.core.zones
