@@ -2225,7 +2225,7 @@ class Core(composites.Composite):
             self.zones.sortZones()
 
         else:
-            runLog.warn(f"No zones defined in either {CONF_ZONE_DEFINITIONS} or {CONF_ZONES_FILE} settings")
+            runLog.warning(f"No zones defined in either {CONF_ZONE_DEFINITIONS} or {CONF_ZONES_FILE} settings")
 
     def iterBlocks(
         self,
