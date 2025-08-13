@@ -23,7 +23,7 @@ from numpy import zeros
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
-from armi.reactor.flags import Flags
+from armi.reactor.flags import Flags, TypeSpec
 from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
 
@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class StoreMass:
-    cFlags: str
+    cFlags: TypeSpec
     mass: float
 
 class TestMultiPinConservationBase(AxialExpansionTestBase):
