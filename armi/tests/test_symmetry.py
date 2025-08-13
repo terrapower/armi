@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for testing fixtures."""
+"""Unit tests for handling of symmetry-aware parameters."""
 
 from armi.testing import symmetryTesting
 
