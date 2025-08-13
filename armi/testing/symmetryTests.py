@@ -35,10 +35,6 @@ if TYPE_CHECKING:
     from armi.reactor.assemblies import Assembly
     from armi.reactor.blocks import Block
 
-# Some parameters change because of symmetry but are not "volume integrated"
-# so this marks them for skipping in the compare.
-PARAMS_TO_IGNORE = ["maxAssemNum"]
-
 
 class SymmetryFactorTester:
     """
@@ -55,6 +51,7 @@ class SymmetryFactorTester:
         pluginCoreParams: list[str] = [],
         pluginAssemblyParams: list[str] = [],
         pluginBlockParams: list[str] = [],
+        paramsToIgnore: list[str] = [],
     ):
         self.o, self.r = loadTestReactor()
         self.core = self.r.core
@@ -73,6 +70,12 @@ class SymmetryFactorTester:
         self._initializeCore()
         self._initializeAssembly()
         self._initializeBlock()
+
+        # Some parameters change because of symmetry but are not "volume integrated"
+        # so this marks them for skipping in the compare.
+        # Also allows plugins the flexibility to skip some parameters if needed.
+        self.paramsToIgnore = ["maxAssemNum"]
+        self.paramsToIgnore += paramsToIgnore
 
     @staticmethod
     def _getParameters(obj: object, paramList: Iterable[str]):
@@ -159,7 +162,7 @@ class SymmetryFactorTester:
         """Do a thing."""
         for paramName, perturbedValue in perturbedParameters.items():
             referenceValue = referenceParameters[paramName]
-            if referenceValue != perturbedValue and paramName not in PARAMS_TO_IGNORE:
+            if referenceValue != perturbedValue and paramName not in self.paramsToIgnore:
                 self.testObject.assertIn(
                     paramName,
                     expectedParameters,

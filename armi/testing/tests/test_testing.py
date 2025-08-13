@@ -20,6 +20,13 @@ from armi.testing.symmetryTests import SymmetryFactorTester
 
 
 class BasicArmiSymmetryTestHelper(unittest.TestCase):
+    pluginCoreParams = []
+    pluginAssemblyParams = []
+    pluginBlockParams = []
+    pluginSymmetricCoreParams = []
+    pluginSymmetricAssemblyParams = []
+    pluginSymmetricBlockParams = []
+
     def setUp(self):
         self.defaultSymmetricBlockParams = [
             "powerGenerated",
@@ -33,15 +40,16 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
             "kgFis",
             "kgHM",
         ]
-
-
-class TestSymmetryHelper(BasicArmiSymmetryTestHelper):
-    def setUp(self):
-        super().setUp()
-        self.symTester = SymmetryFactorTester(self)
+        self.symmetricBlockParams = self.defaultSymmetricBlockParams + self.pluginSymmetricBlockParams
+        self.symTester = SymmetryFactorTester(
+            self,
+            pluginCoreParams=self.pluginCoreParams,
+            pluginAssemblyParams=self.pluginAssemblyParams,
+            pluginBlockParams=self.pluginBlockParams,
+        )
 
     def test_defaultSymmetry(self):
-        self.symTester.runSymmetryFactorTests(blockParams=self.defaultSymmetricBlockParams)
+        self.symTester.runSymmetryFactorTests(blockParams=self.symmetricBlockParams)
 
     def test_errorWhenNotDefined(self):
         with self.assertRaises(AssertionError) as em:
