@@ -495,10 +495,11 @@ class AxialExpansionChanger:
             A_1(\hat{T}) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,
             A_1(\hat{T}) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
 
-        Where, :math`A_1, T_1, H_1`, are the area, temparature, and height of ``toComp``, :math:`A_2, T_2`, are the
+        Where, :math`A_1, T_1, H_1`, are the area, temperature, and height of ``toComp``, :math:`A_2, T_2`, are the
         area and temparature of ``fromComp``, :math:`\delta` is the parameter ``deltaZTop``, and :math:`\hat{T}` is
-        the new temperature of ``toComp`` post-redistribution. Brent's method within ``scipy.optimize`` is used to
-        find the root of the above equation, indicating the value for :math:`\hat{T}`.
+        the new temperature of ``toComp`` post-redistribution. :func:`scipy.optimize.brentq` is used to
+        find the root of the above equation, indicating the value for :math:`\hat{T}`
+        that finds the desired area, post-redistribution of mass.
 
         Raises
         ------

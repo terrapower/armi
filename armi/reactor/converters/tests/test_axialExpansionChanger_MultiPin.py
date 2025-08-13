@@ -17,7 +17,7 @@ import copy
 import os
 from typing import TYPE_CHECKING
 
-from attr import dataclass
+from dataclasses import dataclass
 from numpy import zeros
 
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
@@ -87,7 +87,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertEqual(refC1Zbottom, self.c1.zbottom)
 
     def test_redistributeMass_nonTargetExpansion_noThermal(self):
-        """Perform prescribed expansion of the test fuel component by calling :py:meth:`redistributeMass`.
+        """Perform prescribed expansion of the test fuel component by calling ``redistributeMass``
 
         This test ensures that self.c0 and self.c1 change by the same expected amount.
         """
@@ -339,7 +339,6 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         compMassByBlock: dict["HexBlock", StoreMass] = collections.defaultdict(list)
         totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
         for b in a:
-            # collect mass and height information
             blockHeights[b] = b.getHeight()
             for c in iterSolidComponents(b):
                 totalCMassByFlags[c.p.flags] += c.getMass()
@@ -355,7 +354,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         change test fuel non-isothermal fail
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
                 if c.hasFlags(Flags.TEST):
                     newTemp = c.temperatureInC + 150.0 * i
                 else:
@@ -370,7 +369,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         tempAdjust = [50, -50]
         for temp in tempAdjust:
             for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-                for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
+                for c in b.iterChildrenWithFlags(Flags.FUEL):
                     if c.hasFlags(Flags.TEST):
                         testTemp = temp + 25 if temp > 0 else temp - 25
                         newTemp = c.temperatureInC + testTemp * i
@@ -388,7 +387,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         Change test fuel: isothermal pass, non-isothermal fail
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
+            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST]):
                 newTemp = c.temperatureInC + 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -402,7 +401,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         Change test fuel: isothermal pass, non-isothermal fail
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
+            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST]):
                 newTemp = c.temperatureInC - 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -412,7 +411,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     def test_expandPrescribed(self):
         cList = []
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
+            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST]):
                 cList.append(c)
         pList = zeros(len(cList)) + 1.2
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
@@ -433,7 +432,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         cList = []
         pList = []
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL), b):
+            for c in b.iterChildrenWithFlags(Flags.FUEL)
                 if c.hasFlags(Flags.TEST):
                     pList.append(1.0 + 0.01 * i)
                 else:
