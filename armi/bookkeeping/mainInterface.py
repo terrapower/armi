@@ -56,7 +56,7 @@ class MainInterface(interfaces.Interface):
 
     @staticmethod
     def specifyInputs(cs):
-        return {CONF_ZONES_FILE: cs[CONF_ZONES_FILE]}
+        return {CONF_ZONES_FILE: [cs[CONF_ZONES_FILE]]}
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
