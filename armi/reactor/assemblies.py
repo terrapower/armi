@@ -944,7 +944,7 @@ class Assembly(composites.Composite):
         ----------
         zLower, zUpper : float
             Elevations in cm where blocks should be found.
-        eps : float
+        eps : float, optional
             Lower bound for relative block height fraction that we care about.
             Below this bound, small slivers of overlapping block are ignored.
 
