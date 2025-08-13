@@ -28,7 +28,7 @@ from armi.reactor import (
     reactors,
     zones,
 )
-from armi.reactor.tests import test_reactors
+from armi.testing import loadTestReactor
 from armi.tests import mockRunLogs
 
 THIS_DIR = os.path.dirname(__file__)
@@ -196,7 +196,7 @@ class TestZone(unittest.TestCase):
 class TestZones(unittest.TestCase):
     def setUp(self):
         # spin up the test reactor
-        self.o, self.r = test_reactors.loadTestReactor()
+        self.o, self.r = loadTestReactor()
 
         # build some generic test zones to get started with
         newSettings = {}
@@ -341,3 +341,27 @@ class TestZones(unittest.TestCase):
         self.assertEqual(list(zs._zones.keys())[0], "ring-1")
         self.assertEqual(list(zs._zones.keys())[1], "ring-2")
         self.assertEqual(list(zs._zones.keys())[2], "ring-3")
+
+
+class TestZonesFile(unittest.TestCase):
+    def setUp(self):
+        # spin up the test reactor
+        self.o, self.r = loadTestReactor()
+
+        # build zones based on a file
+        newSettings = {}
+        newSettings["zonesFile"] = os.path.join(os.path.abspath(__file__), "..", "zonesFile.yaml")
+        cs = self.o.cs.modified(newSettings=newSettings)
+        self.r.core.buildManualZones(cs)
+        self.zonez = self.r.core.zones
+
+    def test_zonesFile(self):
+        """
+        Test creating and interacting with a zones file.
+
+        .. test:: Create collection of Zones based on a yaml file.
+            :id: T_ARMI_ZONE5
+            :tests: R_ARMI_ZONE
+        """
+        self.assertEqual(set(["001-001"]), self.r.core.zones.getZoneLocations("a_zone"))
+        self.assertEqual(set(["002-001"]), self.r.core.zones.getZoneLocations("a_different_zone"))
