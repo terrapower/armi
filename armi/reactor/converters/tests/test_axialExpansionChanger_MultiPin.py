@@ -387,7 +387,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         Change test fuel: isothermal pass, non-isothermal fail
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST]):
+            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
                 newTemp = c.temperatureInC + 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -401,7 +401,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         Change test fuel: isothermal pass, non-isothermal fail
         """
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST]):
+            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
                 newTemp = c.temperatureInC - 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -411,7 +411,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     def test_expandPrescribed(self):
         cList = []
         for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
-            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST]):
+            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
                 cList.append(c)
         pList = zeros(len(cList)) + 1.2
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
@@ -432,7 +432,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         cList = []
         pList = []
         for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in b.iterChildrenWithFlags(Flags.FUEL)
+            for c in b.iterChildrenWithFlags(Flags.FUEL):
                 if c.hasFlags(Flags.TEST):
                     pList.append(1.0 + 0.01 * i)
                 else:
