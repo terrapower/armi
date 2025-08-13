@@ -20,17 +20,18 @@ from typing import TYPE_CHECKING
 
 from numpy import full
 
+from armi.materials.material import Fluid
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
 from armi.testing import loadTestReactor
 from armi.tests import TEST_ROOT
+from armi.reactor.components.component import Component
 
 if TYPE_CHECKING:
     from armi.reactor.assemblies import HexAssembly
     from armi.reactor.blocks import HexBlock
-    from armi.reactor.components.component import Component
 
 
 @dataclass
@@ -59,9 +60,9 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
 class TestRedistributeMass(TestMultiPinConservationBase):
     b0: "HexBlock"
     b1: "HexBlock"
-    c0: "Component"
+    c0: Component
     origC0Temp: float
-    c1: "Component"
+    c1: Component
     origC1Temp: float
 
     def setUp(self):
@@ -330,10 +331,27 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
 
     @staticmethod
-    def getTotalCompMassByFlag(a: "HexAssembly") -> dict[TypeSpec, float]:
+    def _isFluidButNotBond(c):
+        """Determine if a component is a fluid, but not Bond."""
+        return bool(isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND))
+
+    def getTotalCompMassByFlag(self, a: "HexAssembly") -> dict[TypeSpec, float]:
+        """Get the total mass of all components in the assembly, except Bond components.
+
+        Notes
+        -----
+        The axial expansion changer does not consider the expansion or contraction of fluids and therefore their
+        conservation is not guarunteed. The conservation of fluid mass is expected only if each component type on a
+        block has 1) uniform expansion rates and 2) axially isothermal fluid temperatures. For multipin assemblies,
+        the former is generally not met for Bond components; however since there is only one coolant and intercoolant
+        component in general, the conservation of mass for these components expected if axially isothermal fluid
+        temperatures are present.
+        """
         totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
         for b in a:
             for c in iterSolidComponents(b):
+                totalCMassByFlags[c.p.flags] += c.getMass()
+            for c in filter(lambda c: self._isFluidButNotBond(c), b):
                 totalCMassByFlags[c.p.flags] += c.getMass()
 
         return totalCMassByFlags
@@ -493,4 +511,4 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
             self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
 
         # check the assembly height is preserved
-        self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), self.places)
+        self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
