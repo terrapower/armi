@@ -76,6 +76,14 @@ class TestSpatialLocator(unittest.TestCase):
         loc2 = grids.IndexLocation(2, 2, 0, None)
         self.assertEqual(loc1 + loc2, grids.IndexLocation(3, 4, 0, None))
 
+    def test_multiIndexEq(self):
+        """Check multi index locations are only true if they live on the same grid and have the same locations."""
+        a = grids.MultiIndexLocation(None)
+        a.append(grids.IndexLocation(0, 0, 0, None))
+        b = grids.MultiIndexLocation(None)
+        b.append(grids.IndexLocation(1, 1, 1, None))
+        self.assertNotEqual(a, b)
+
     def test_recursion(self):
         """
         Make sure things work as expected with a chain of locators/grids/locators.
