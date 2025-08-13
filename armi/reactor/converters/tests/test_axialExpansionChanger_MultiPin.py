@@ -338,6 +338,16 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 
         return totalCMassByFlags
 
+    def _iterFuelBlocks(self):
+        """Iterate over blocks in self.a that have Flags.FUEL. Enumerator index starts at 1 to support scaling
+        block-wise values.
+        """
+        yield from enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1)
+
+    def _iterTestFuelCompsOnBlock(self, b: "HexBlock"):
+        """Iterate over components in b that exactly contain Flags.FUEL, Flags.TEST, and Flags.DEPLETABLE."""
+        yield from b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True)
+
     def test_expandThermalBothFuel(self):
         """Perform thermal expansion on both fuel and test fuel components.
 
@@ -348,7 +358,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         existing at different temperatures.
         - The 150 deg C and 50 deg C based temperature changes are arbitrarily chosen.
         """
-        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+        for i, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL):
                 if c.hasFlags(Flags.TEST):
                     newTemp = c.temperatureInC + 150.0 * i
@@ -372,7 +382,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         """
         tempAdjust = [50, -50]
         for temp in tempAdjust:
-            for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+            for i, b in self._iterFuelBlocks():
                 for c in b.iterChildrenWithFlags(Flags.FUEL):
                     if c.hasFlags(Flags.TEST):
                         testTemp = temp + 25 if temp > 0 else temp - 25
@@ -392,8 +402,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
         - The 100 deg C based temperature changes is arbitrarily chosen.
         """
-        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
+        for i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
                 newTemp = c.temperatureInC + 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -408,8 +418,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         - Each block is scaled by a decreasing temperature to simulate a variable axial temperature distribution.
         - The -100 deg C based temperature changes is arbitrarily chosen.
         """
-        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
-            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
+        for i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
                 newTemp = c.temperatureInC - 100.0 * i
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
@@ -425,8 +435,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         the upper block heights will go negative and the axial expansion changer will hit a RuntimeError.
         """
         cList = []
-        for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
-            for c in b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True):
+        for _i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
                 cList.append(c)
         pList = full(len(cList), 1.2)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
@@ -441,8 +451,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         - The factor of 0.9 for component contraction is arbitrarily chosen.
         """
         cList = []
-        for b in filter(lambda b: b.hasFlags(Flags.FUEL), self.a):
-            for c in filter(lambda c: c.hasFlags(Flags.FUEL) and c.hasFlags(Flags.TEST), b):
+        for _i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
                 cList.append(c)
         pList = full(len(cList), 0.9)
         self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
@@ -462,7 +472,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         """
         cList = []
         pList = []
-        for i, b in enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1):
+        for i, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL):
                 if c.hasFlags(Flags.TEST):
                     pList.append(1.0 + 0.01 * i)
