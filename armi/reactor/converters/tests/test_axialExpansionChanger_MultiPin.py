@@ -325,20 +325,16 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 class TestMultiPinConservation(TestMultiPinConservationBase):
     def setUp(self):
         super().setUp()
-        _origBHeight, _origCMassesByBlock, self.origTotalCMassByFlag = self.getMassesForTest(self.a)
+        self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
 
     @staticmethod
-    def getMassesForTest(a: "HexAssembly"):
-        blockHeights: dict["HexBlock", float] = {}
-        compMassByBlock: dict["HexBlock", StoreMass] = collections.defaultdict(list)
+    def getTotalCompMassByFlag(a: "HexAssembly") -> dict[TypeSpec, float]:
         totalCMassByFlags: dict[Flags, float] = collections.defaultdict(float)
         for b in a:
-            blockHeights[b] = b.getHeight()
             for c in iterSolidComponents(b):
                 totalCMassByFlags[c.p.flags] += c.getMass()
-                compMassByBlock[b].append(StoreMass(c.p.flags, c.getMass()))
 
-        return blockHeights, compMassByBlock, totalCMassByFlags
+        return totalCMassByFlags
 
     def test_expandAndContractThermal(self):
         """Test both.
@@ -437,7 +433,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
     def checkConservation(self):
-        _newBHeight, _newCMassesByBlock, newTotalCMassByFlag = self.getMassesForTest(self.a)
+        newTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
 
         for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
             self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
