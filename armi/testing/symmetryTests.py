@@ -49,7 +49,13 @@ class SymmetryFactorTester:
     the "expected" list an error is raised.
     """
 
-    def __init__(self, testObject: "TestCase"):
+    def __init__(
+        self,
+        testObject: "TestCase",
+        pluginCoreParams: list[str] = [],
+        pluginAssemblyParams: list[str] = [],
+        pluginBlockParams: list[str] = [],
+    ):
         self.o, self.r = loadTestReactor()
         self.core = self.r.core
         # there is exactly one assembly with 3-symmetry in the test core
@@ -61,6 +67,12 @@ class SymmetryFactorTester:
         # load default armi parameters for each object type
         self._loadDefaultParameters()
         self.testObject = testObject
+        self.pluginCoreParams = pluginCoreParams
+        self.pluginAssemblyParams = pluginAssemblyParams
+        self.pluginBlockParams = pluginBlockParams
+        self._initializeCore()
+        self._initializeAssembly()
+        self._initializeBlock()
 
     @staticmethod
     def _getParameters(obj: object, paramList: Iterable[str]):
@@ -75,6 +87,33 @@ class SymmetryFactorTester:
         self.defaultCoreParameterDefs = set(reactorParameters.defineCoreParameters())
         self.defaultAssemblyParameterDefs = set(assemblyParameters.getAssemblyParameterDefinitions())
         self.defaultBlockParameterDefs = set(blockParameters.getBlockParameterDefinitions())
+
+    def _initializeCore(self):
+        paramDefNames = [pdef.name for pdef in self.defaultCoreParameterDefs]
+        self.allCoreParameterKeys = (
+            set([p if isinstance(p, str) else p.name for p in self.core.p])
+            .union(paramDefNames)
+            .union(self.pluginCoreParams)
+        )
+        self._initializeParameters(self.allCoreParameterKeys, self.core)
+
+    def _initializeAssembly(self):
+        paramDefNames = [pdef.name for pdef in self.defaultAssemblyParameterDefs]
+        self.allAssemblyParameterKeys = (
+            set([p if isinstance(p, str) else p.name for p in self.partialAssembly.p])
+            .union(paramDefNames)
+            .union(self.pluginAssemblyParams)
+        )
+        self._initializeParameters(self.allAssemblyParameterKeys, self.partialAssembly)
+
+    def _initializeBlock(self):
+        paramDefNames = [pdef.name for pdef in self.defaultBlockParameterDefs]
+        self.allBlockParameterKeys = (
+            set([p if isinstance(p, str) else p.name for p in self.partialBlock.p])
+            .union(paramDefNames)
+            .union(self.pluginBlockParams)
+        )
+        self._initializeParameters(self.allBlockParameterKeys, self.partialBlock)
 
     def _initializeParameters(self, parameterNames, obj: Union["Core", "Assembly", "Block"]):
         """
@@ -109,25 +148,6 @@ class SymmetryFactorTester:
                 obj.p[name] = ""
             else:
                 obj.p[name] = self.defaultParameterValue
-
-    def _initializeCore(self):
-        paramDefNames = [pdef.name for pdef in self.defaultCoreParameterDefs]
-        self.allCoreParameterKeys = set([p if isinstance(p, str) else p.name for p in self.core.p]).union(paramDefNames)
-        self._initializeParameters(self.allCoreParameterKeys, self.core)
-
-    def _initializeAssembly(self):
-        paramDefNames = [pdef.name for pdef in self.defaultAssemblyParameterDefs]
-        self.allAssemblyParameterKeys = set(
-            [p if isinstance(p, str) else p.name for p in self.partialAssembly.p]
-        ).union(paramDefNames)
-        self._initializeParameters(self.allAssemblyParameterKeys, self.partialAssembly)
-
-    def _initializeBlock(self):
-        paramDefNames = [pdef.name for pdef in self.defaultBlockParameterDefs]
-        self.allBlockParameterKeys = set([p if isinstance(p, str) else p.name for p in self.partialBlock.p]).union(
-            paramDefNames
-        )
-        self._initializeParameters(self.allBlockParameterKeys, self.partialBlock)
 
     def _compareParameters(
         self,
@@ -200,9 +220,5 @@ class SymmetryFactorTester:
         blockParams : Iterable[str], optional
             Dictionary of block parameters that the user expects to be symmetry aware.
         """
-        self._initializeCore()
-        self._initializeAssembly()
-        self._initializeBlock()
-
         with self._checkCore(coreParams), self._checkAssembly(assemblyParams), self._checkBlock(blockParams):
             self.r.core.growToFullCore(self.o.cs)
