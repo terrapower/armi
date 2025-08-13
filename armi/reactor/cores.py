@@ -24,10 +24,10 @@ import copy
 import itertools
 import os
 import time
-from ruamel.yaml import YAML
 from typing import Callable, Iterator, Optional
 
 import numpy as np
+from ruamel.yaml import YAML
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
