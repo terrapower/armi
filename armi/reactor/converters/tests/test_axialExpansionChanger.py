@@ -320,6 +320,27 @@ class TestRedistributeMass(TestMultiPinConservation):
         self.c0 = next(filter(lambda c: c.getType() == "fuel test", self.b0))
         self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
 
+    def test_shiftLinkedCompsForDelta(self):
+        """Ensure that given a deltaZTop, component elevations are adjusted appropriately."""
+        # set the initial component elevations
+        self.c0.zbottom = self.b0.p.zbottom
+        self.c0.height = self.b0.getHeight()
+        self.c0.ztop = self.c0.zbottom + self.c0.height
+        self.c1.zbottom = self.b1.p.zbottom
+        self.c1.height = self.b1.getHeight()
+        self.c1.ztop = self.c1.zbottom + self.c1.height
+        # set what they should be after adjusting
+        delta = 0.1
+        refC0Height = self.c0.height + delta
+        refC0Ztop = self.c0.ztop + delta
+        refC1Height = self.c1.height - delta
+        refC1Zbottom = self.c1.zbottom + delta
+        self.axialExpChngr._shiftLinkedCompsForDelta(self.c0, self.c1, delta)
+        self.assertEqual(refC0Height, self.c0.height)
+        self.assertEqual(refC1Height, self.c1.height)
+        self.assertEqual(refC0Ztop, self.c0.ztop)
+        self.assertEqual(refC1Zbottom, self.c1.zbottom)
+
     def test_redistributeMass_nonTargetExpansion_noThermal(self):
         """Perform prescribed expansion of the test fuel component by calling :py:meth:`redistributeMass`.
 

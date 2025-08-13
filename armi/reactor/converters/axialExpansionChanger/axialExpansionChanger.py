@@ -414,7 +414,7 @@ class AxialExpansionChanger:
                             self.redistributeMass(c, cAbove, deltaZTop)
 
                         # realign components based on deltaZTop
-                        self.shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
+                        self._shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
             if b is self.dummyBlock or ib == (numOfBlocks - 1):
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
@@ -462,7 +462,7 @@ class AxialExpansionChanger:
             deltaZTop=-deltaZTop,
         )
 
-    def shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
+    def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
         # shift the height and ztop of the current component downwards (-deltaZTop) or upwards (+deltaZTop)
         c.height += deltaZTop
         c.ztop += deltaZTop
