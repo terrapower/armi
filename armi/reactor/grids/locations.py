@@ -427,6 +427,14 @@ class CoordinateLocation(IndexLocation):
 
     __slots__ = ()
 
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            # Mainly to avoid comparing against MultiIndexLocations
+            # Fuel pins may have a multi index location and the duct may
+            # have a coordinate location and we don't want them to be equal
+            return self.grid == other.grid and self.i == other.i and self.j == other.j and self.k == other.k
+        return NotImplemented
+
     def getLocalCoordinates(self, nativeCoords=False):
         """Return x,y,z coordinates in cm within the grid's coordinate system."""
         return self.indices
