@@ -21,17 +21,11 @@ at the unit test level, rather than during integration tests.
 EXPLAIN HOW TO USE THE UTILITIES HERE
 """
 
-import inspect
 from contextlib import contextmanager
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Iterable, Union
 
-import numpy as np
-
 from armi.reactor import assemblyParameters, blockParameters, parameters, reactorParameters
-from armi.reactor.components import componentParameters
-from armi.reactor.parameters import Parameter
-from armi.reactor.parameters.exceptions import ParameterError
 from armi.testing import loadTestReactor
 
 if TYPE_CHECKING:
@@ -115,19 +109,19 @@ class SymmetryFactorTester:
             else:
                 obj.p[name] = self.defaultParameterValue
 
-    def _initializeCore(self, coreParams):
+    def _initializeCore(self):
         paramDefNames = [pdef.name for pdef in self.defaultCoreParameterDefs]
         self.allCoreParameterKeys = set([p if isinstance(p, str) else p.name for p in self.core.p]).union(paramDefNames)
         self._initializeParameters(self.allCoreParameterKeys, self.core)
 
-    def _initializeAssembly(self, assemblyParams):
+    def _initializeAssembly(self):
         paramDefNames = [pdef.name for pdef in self.defaultAssemblyParameterDefs]
         self.allAssemblyParameterKeys = set(
             [p if isinstance(p, str) else p.name for p in self.partialAssembly.p]
         ).union(paramDefNames)
         self._initializeParameters(self.allAssemblyParameterKeys, self.partialAssembly)
 
-    def _initializeBlock(self, blockParams):
+    def _initializeBlock(self):
         paramDefNames = [pdef.name for pdef in self.defaultBlockParameterDefs]
         self.allBlockParameterKeys = set([p if isinstance(p, str) else p.name for p in self.partialBlock.p]).union(
             paramDefNames
@@ -207,9 +201,9 @@ class SymmetryFactorTester:
             Dictionary of block parameters that the user expects to be symmetry aware.
         """
         self.testObject = testObject
-        self._initializeCore(coreParams)
-        self._initializeAssembly(assemblyParams)
-        self._initializeBlock(blockParams)
+        self._initializeCore()
+        self._initializeAssembly()
+        self._initializeBlock()
 
         with self._checkCore(coreParams), self._checkAssembly(assemblyParams), self._checkBlock(blockParams):
             self.r.core.growToFullCore(self.o.cs)
