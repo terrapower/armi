@@ -49,7 +49,7 @@ class SymmetryFactorTester:
     the "expected" list an error is raised.
     """
 
-    def __init__(self):
+    def __init__(self, testObject: "TestCase"):
         self.o, self.r = loadTestReactor()
         self.core = self.r.core
         # there is exactly one assembly with 3-symmetry in the test core
@@ -60,6 +60,7 @@ class SymmetryFactorTester:
         self.defaultParameterValue = 2
         # load default armi parameters for each object type
         self._loadDefaultParameters()
+        self.testObject = testObject
 
     @staticmethod
     def _getParameters(obj: object, paramList: Iterable[str]):
@@ -177,7 +178,6 @@ class SymmetryFactorTester:
 
     def runSymmetryFactorTests(
         self,
-        testObject: "TestCase",
         coreParams: Iterable[str] = [],
         assemblyParams: Iterable[str] = [],
         blockParams: Iterable[str] = [],
@@ -200,7 +200,6 @@ class SymmetryFactorTester:
         blockParams : Iterable[str], optional
             Dictionary of block parameters that the user expects to be symmetry aware.
         """
-        self.testObject = testObject
         self._initializeCore()
         self._initializeAssembly()
         self._initializeBlock()

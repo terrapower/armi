@@ -1,4 +1,4 @@
-# Copyright 2021 TerraPower, LLC
+# Copyright 2025 TerraPower, LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import unittest
 from armi.testing.symmetryTests import SymmetryFactorTester
 
 
-class TestSymmetryHelper(unittest.TestCase):
+class BasicArmiSymmetryTestHelper(unittest.TestCase):
     def setUp(self):
-        self.symTester = SymmetryFactorTester()
         self.defaultSymmetricBlockParams = [
             "powerGenerated",
             "power",
@@ -35,16 +34,22 @@ class TestSymmetryHelper(unittest.TestCase):
             "kgHM",
         ]
 
+
+class TestSymmetryHelper(BasicArmiSymmetryTestHelper):
+    def setUp(self):
+        super().setUp()
+        self.symTester = SymmetryFactorTester(self)
+
     def test_defaultSymmetry(self):
-        self.symTester.runSymmetryFactorTests(self, blockParams=self.defaultSymmetricBlockParams)
+        self.symTester.runSymmetryFactorTests(blockParams=self.defaultSymmetricBlockParams)
 
     def test_errorWhenNotDefined(self):
         with self.assertRaises(AssertionError) as em:
-            self.symTester.runSymmetryFactorTests(self)
+            self.symTester.runSymmetryFactorTests()
             self.assertIn("but is not specified in the parameters expected to change", em.msg)
 
     def test_errorWhenRequestedButNotExpanded(self):
         with self.assertRaises(AssertionError) as em:
             blockParams = self.defaultSymmetricBlockParams + ["nHMAtBOL"]
-            self.symTester.runSymmetryFactorTests(self, blockParams=blockParams)
+            self.symTester.runSymmetryFactorTests(blockParams=blockParams)
             self.assertIn("The after-to-before expansion ratio of parameter", em.msg)
