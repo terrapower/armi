@@ -15,10 +15,10 @@
 from armi.physics.neutronics.parameters import getNeutronicsParameterDefinitions
 from armi.reactor.blocks import Block
 from armi.reactor.cores import Core
-from armi.testing.tests import test_testing
+from armi.testing import symmetryTesting
 
 
-class TestArmiNeutronicsParams(test_testing.BasicArmiSymmetryTestHelper):
+class TestArmiNeutronicsParams(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getNeutronicsParameterDefinitions()
         self.pluginCoreParams = [p if isinstance(p, str) else p.name for p in pluginParameters[Core]]
