@@ -131,41 +131,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         :py:meth:`_removeMassFromComponent`.
         """
         growFrac = 0.9
-        # update the ndens of c0 for the change in height too
-        self.c0.changeNDensByFactor(1.0 / growFrac)
-        self._initializeTest(growFrac)
-        amountBeingRedistributed = self.preRedistributionC1Mass * abs(self.deltaZTop) / self.c1.height
+        self._initializeTest(growFrac, fromComp=self.c1)
+
         # perform the mass redistrbution from c1 to c0
-        self.axialExpChngr._addMassToComponent(
-            fromComp=self.c1,
-            toComp=self.c0,
-            deltaZTop=self.deltaZTop,
-        )
-        # ensure there is no difference in c1 mass
-        self.assertAlmostEqual(self.c1.getMass(), self.preRedistributionC1Mass, places=self.places)
-        # ensure that the c0 mass has increased by amountBeingRedistributed
-        self.assertAlmostEqual(
-            self.c0.getMass(),
-            self.preRedistributionC0Mass + amountBeingRedistributed,
-            places=self.places,
-        )
-        # assert the temperatures do not change
-        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
-        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
+        self._addMassToCompWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
 
         # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
-        self.axialExpChngr._removeMassFromComponent(fromComp=self.c1, deltaZTop=-self.deltaZTop)
-        # change b1.p.height for mass calculation.
-        # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
-        # given to c0.)
-        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + self.deltaZTop)
-        self.b1.clearCache()
-        self.assertAlmostEqual(
-            self.c1.getMass(), self.preRedistributionC1Mass - amountBeingRedistributed, places=self.places
-        )
-        # assert the temperatures still do not change
-        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
-        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
+        self._rmMassFromCompWithTempAssert(fromComp=self.c1)
 
     def test_addMassToComponent_nonTargetCompression_yesThermal(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
