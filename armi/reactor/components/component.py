@@ -1388,6 +1388,11 @@ class Component(composites.Composite, metaclass=ComponentType):
         --------
         :meth`:armi.reactor.blocks.HexBlock.assignPinIndices`
         """
+        ix = self.p.pinIndices
+        if isinstance(ix, np.ndarray):
+            return ix
+        elif isinstance(ix, DimensionLink):
+            return ix.getLinkedComponent().getPinIndices()
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
