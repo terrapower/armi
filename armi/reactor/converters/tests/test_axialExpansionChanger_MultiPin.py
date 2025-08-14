@@ -242,7 +242,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.axialExpChngr._addMassToComponent(fromComp=self.c0, toComp=self.c1, deltaZTop=self.deltaZTop)
         # ensure there is no difference in c0 mass
         self.assertAlmostEqual(self.preRedistributionC0.mass, self.c0.getMass(), places=self.places)
-        self._updateB1Elevations()
+        self._updateToCompElevations(fromComp=self.c0, toComp=self.c1)
         # ensure the c1 mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
             self.c1.getMass(),
@@ -253,46 +253,44 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0.temp)
         self.assertGreater(self.c1.temperatureInC, self.preRedistributionC1.temp)
 
-        self._updateB1Elevations()
-
         # now remove the c0 mass and assert it is deltaZTop/self.c0.height less than its pre-redistribution value
         self._rmMassFromCompWithTempAssert(self.c0)
-        self._updateB0Elevations()
+        self._updateFromCompElevations(self.c0)
         self.assertAlmostEqual(
             self.c0.getMass(), self.preRedistributionC0.mass - amountBeingRedistributed, places=self.places
         )
 
-    def _updateB1Elevations(self):
+    def _updateToCompElevations(self, fromComp: Component, toComp: Component):
         # set c1 elevations based on c0
-        self.c1.zbottom = self.c0.ztop
-        self.c1.ztop = self.c1.zbottom + self.c1.height
+        toComp.zbottom = fromComp.ztop
+        toComp.ztop = toComp.zbottom + toComp.height
         # adjust b1 elevations based on c1
-        self.b1.ztop = self.c1.ztop
-        self.b1.zbottom = self.c1.zbottom
-        self.b1.p.height = self.b1.ztop - (self.b1.zbottom + self.deltaZTop)
+        toComp.parent.ztop = toComp.ztop
+        toComp.parent.zbottom = toComp.zbottom
+        toComp.parent.p.height = toComp.parent.ztop - (toComp.parent.zbottom + self.deltaZTop)
         # # set all other comp heights to match their blocks
         # for c1 in self.b1:
         #     c1.zbottom = self.b1.p.zbottom
         #     c1.ztop = self.b1.p.ztop
         #     c1.height = self.b1.getHeight()
         # clear the cache to update volume calculations
-        self.b1.clearCache()
+        toComp.parent.clearCache()
 
-    def _updateB0Elevations(self):
+    def _updateFromCompElevations(self, fromComp: Component):
         # adjust b1 elevations based on c1
-        self.c0.ztop += self.deltaZTop
-        self.c0.height += self.deltaZTop
+        fromComp.ztop += self.deltaZTop
+        fromComp.height += self.deltaZTop
         # adjust b0 elevations based on c0
-        self.b0.ztop = self.c0.ztop
-        self.b0.zbottom = self.c0.zbottom
-        self.b0.p.height = self.b0.ztop - self.b0.zbottom
+        fromComp.parent.ztop = fromComp.ztop
+        fromComp.parent.zbottom = fromComp.zbottom
+        fromComp.parent.p.height = fromComp.parent.ztop - fromComp.parent.zbottom
         # # set all other comp heights to match their blocks
         # for c1 in self.b1:
         #     c1.zbottom = self.b1.p.zbottom
         #     c1.ztop = self.b1.p.ztop
         #     c1.height = self.b1.getHeight()
         # clear the cache to update volume calculations
-        self.b0.clearCache()
+        fromComp.parent.clearCache()
 
     def _initializeTest(self, growFrac: float):
         """Set the height of the components post expansion."""
