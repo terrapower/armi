@@ -1325,7 +1325,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         return pinFluxes[self.p.pinNum - 1] * self.getVolume() / self.parent.getSymmetryFactor()
 
-    def getPinMgFluxes(self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False) -> np.ndarray:
+    def getPinMgFluxes(self, adjoint: bool = False, gamma: bool = False) -> np.ndarray[tuple[int, int], float]:
         """Retrieves the pin multigroup fluxes for the component.
 
         Parameters
