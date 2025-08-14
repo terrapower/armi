@@ -521,7 +521,7 @@ class Block_TestCase(unittest.TestCase):
 
         refSmearDensity = fuelCompArea / (innerCladdingArea - unmovableCompArea)
         smearDensity = blocks.Block.computeSmearDensity(153.81433981516477, sortedCircles, True)
-        self.assertAlmostEqual(smearDensity, refSmearDensity)
+        self.assertAlmostEqual(smearDensity, refSmearDensity, places=10)
 
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1
