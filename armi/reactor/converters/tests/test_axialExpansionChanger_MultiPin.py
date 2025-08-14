@@ -164,7 +164,15 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         self._rmMassFromCompWithTempAssert(self.c0)
 
-    def _updateToCompElevations(self, fromComp: Component, toComp: Component):
+    def _updateToCompElevations(self, toComp: Component):
+        """Shift ``toComp`` based on expansion or contraction of ``fromComp``, as indicated by ``self.deltaZTop``.
+
+        Notes
+        -----
+        If deltaZTop is negative, this indicates that ``fromComp`` has expanded and ``toComp`` needs to be shifted
+        upwards. If deltaZtop is positive, this indicates that ``fromComp`` has contracted and ``toComp`` need to be
+        shifted downwards.
+        """
         if self.deltaZTop < 0.0:
             toComp.zbottom -= self.deltaZTop
             toComp.height -= self.deltaZTop
@@ -176,12 +184,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         toComp.parent.ztop = toComp.ztop
         toComp.parent.zbottom = toComp.zbottom
         toComp.parent.p.height = toComp.height
-        # # set all other comp heights to match their blocks
-        # for c1 in self.b1:
-        #     c1.zbottom = self.b1.p.zbottom
-        #     c1.ztop = self.b1.p.ztop
-        #     c1.height = self.b1.getHeight()
-        # clear the cache to update volume calculations
         toComp.parent.clearCache()
 
     def _updateFromCompElevations(self, fromComp: Component):
@@ -196,16 +198,18 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         fromComp.parent.ztop = fromComp.ztop
         fromComp.parent.zbottom = fromComp.zbottom
         fromComp.parent.p.height = fromComp.parent.ztop - fromComp.parent.zbottom
-        # # set all other comp heights to match their blocks
-        # for c1 in self.b1:
-        #     c1.zbottom = self.b1.p.zbottom
-        #     c1.ztop = self.b1.p.ztop
-        #     c1.height = self.b1.getHeight()
         # clear the cache to update volume calculations
         fromComp.parent.clearCache()
 
     def _initializeTest(self, growFrac: float, fromComp: Component):
-        """Set the height of the components post expansion."""
+        """Initialize the tests.
+
+        Notes
+        -----
+        1) Set elevations of components and blocks post-expansion
+        2) Store post-expansion reference info
+        3) Store the amount of mass expeceted to be redistributed between components.
+        """
         # adjust c0 elevations per growFrac
         self.c0.zbottom = self.b0.p.zbottom
         self.c0.height = self.b0.getHeight() * growFrac
@@ -220,10 +224,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.b0.p.zbottom = self.c0.zbottom
         self.b0.p.ztop = self.c0.ztop
         self.b0.p.height = self.b0.p.ztop - self.b0.p.zbottom
-        # for c in filter(lambda c: c is not self.c0, self.b0):
-        #     c.zbottom = self.b0.p.zbottom
-        #     c.ztop = self.b0.p.ztop
-        #     c.height = self.b0.getHeight()
         # clear the cache to update volume calculations
         self.b0.clearCache()
 
@@ -244,6 +244,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             self.amountBeingRedistributed = self.preRedistributionC1.mass * abs(self.deltaZTop) / self.c1.height
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
+        """Pull the reference data needed for ``fromComp`` and ``toComp``."""
         fromCompRefData = (
             self.preRedistributionC0
             if fromComp.parent.name == self.preRedistributionC0.cType
@@ -260,6 +261,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         return fromCompRefData, toCompRefData
 
     def _addMassToCompWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
+        """Perform the mass redistribution from ``fromComp`` to ``toComp``.
+
+        Notes
+        -----
+        Two assertions are done: 1) the correct amount of mass is moved to ``toComp``. 2) the resulting temperatures
+        for ``fromComp`` and ``toComp`` are correct.
+        """
         # move mass from ``fromComp`` to ``toComp``
         self.axialExpChngr._addMassToComponent(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
 
@@ -267,7 +275,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # ensure there is no difference in fromComp mass
         self.assertAlmostEqual(fromCompRefData.mass, fromComp.getMass(), places=self.places)
         # ensure the toComp mass increases by amountBeingRedistributed
-        self._updateToCompElevations(fromComp=fromComp, toComp=toComp)
+        self._updateToCompElevations(toComp=toComp)
         self.assertAlmostEqual(
             toComp.getMass(),
             toCompRefData.mass + self.amountBeingRedistributed,
@@ -283,6 +291,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             self.assertEqual(toComp.temperatureInC, toCompRefData.temp)
 
     def _rmMassFromCompWithTempAssert(self, fromComp: Component):
+        """Remove the mass from ``fromComp``.
+
+        Notes
+        -----
+        Two assertions are done: 1) the correct amount of mass is moved to ``toComp``. 2) the resulting temperatures
+        for ``fromComp`` and ``toComp`` are correct.
+        """
         # remove mass from ``fromComp``
         self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=self.deltaZTop)
 
