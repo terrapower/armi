@@ -206,10 +206,14 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         Notes
         -----
-        1) Set elevations of components and blocks post-expansion
-        2) Store post-expansion reference info
+        1) Store reference mass and temperature information.
+        1) Set elevations of components and blocks post-expansion.
         3) Store the amount of mass expeceted to be redistributed between components.
         """
+        # set the original mass and temperature of the components post expansion and pre redistribution
+        self.originalC0 = StoreMassAndTemp(self.c0.parent.name, self.c0.getMass(), self.c0.temperatureInC)
+        self.originalC1 = StoreMassAndTemp(self.c1.parent.name, self.c1.getMass(), self.c1.temperatureInC)
+
         # adjust c0 elevations per growFrac
         self.c0.zbottom = self.b0.p.zbottom
         self.c0.height = self.b0.getHeight() * growFrac
@@ -234,30 +238,18 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             c.ztop = c.zbottom + c.height
         self.b1.clearCache()
 
-        # set the original mass and temperature of the components post expansion and pre redistribution
-        self.preRedistributionC0 = StoreMassAndTemp(self.c0.parent.name, self.c0.getMass(), self.c0.temperatureInC)
-        self.preRedistributionC1 = StoreMassAndTemp(self.c1.parent.name, self.c1.getMass(), self.c1.temperatureInC)
-
         if fromComp == self.c0:
-            self.amountBeingRedistributed = self.preRedistributionC0.mass * abs(self.deltaZTop) / self.c0.height
+            self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / self.c0.height
         else:
-            self.amountBeingRedistributed = self.preRedistributionC1.mass * abs(self.deltaZTop) / self.c1.height
+            self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / self.c1.height
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
         """Pull the reference data needed for ``fromComp`` and ``toComp``."""
-        fromCompRefData = (
-            self.preRedistributionC0
-            if fromComp.parent.name == self.preRedistributionC0.cType
-            else self.preRedistributionC1
-        )
+        fromCompRefData = self.originalC0 if fromComp.parent.name == self.originalC0.cType else self.originalC1
         if toComp is None:
             toCompRefData = None
         else:
-            toCompRefData = (
-                self.preRedistributionC0
-                if toComp.parent.name == self.preRedistributionC0.cType
-                else self.preRedistributionC1
-            )
+            toCompRefData = self.originalC0 if toComp.parent.name == self.originalC0.cType else self.originalC1
         return fromCompRefData, toCompRefData
 
     def _addMassToCompWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
