@@ -27,7 +27,7 @@ from armi.bookkeeping.report import reportingUtils
 from armi.physics import neutronics
 from armi.physics.neutronics.settings import CONF_NEUTRONICS_TYPE
 from armi.reactor.flags import Flags
-from armi.utils import reportPlotting, units
+from armi.utils import reportPlotting, tabulate, units
 
 ORDER = interfaces.STACK_ORDER.BEFORE + interfaces.STACK_ORDER.BOOKKEEPING
 
@@ -93,6 +93,25 @@ class ReportInterface(interfaces.Interface):
                 blocks.Block.plotFlux(self.r.core, fName=figName, peak=True, adjoint=adjoint)
             else:
                 runLog.warning("No mgFlux to plot in reports")
+
+        # Table of useful output parameters
+        peakTwoSigmaFuel = max([b.p.TH2SigmaCladIDT for assem in self.r.core for b in assem if assem.isFuel()])
+        runLog.info(
+            tabulate.tabulate(
+                tabular_data=[
+                    (
+                        self.r.p.cycle,
+                        self.r.p.timeNode,
+                        self.r.p.coupledIteration,
+                        self.r.core.p.keffUnc,
+                        peakTwoSigmaFuel,
+                        self.r.core.p.THdeltaPCore,
+                    )
+                ],
+                headers=["Cycle", "Node", "Couple", "Uncontrolled keff", "Peak 2-Sigma Fuel", "Core Pressure Drop"],
+                tablefmt="armi",
+            )
+        )
 
     def interactBOC(self, cycle=None):
         self.fuelCycleSummary["bocFissile"] = self.r.core.getTotalBlockParam("kgFis")
