@@ -42,6 +42,7 @@ from armi.reactor import (
     parameters,
 )
 from armi.reactor.components import basicShapes
+from armi.reactor.components.component import DimensionLink
 from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
 from armi.reactor.flags import Flags
@@ -2166,6 +2167,7 @@ class HexBlock(Block):
         # Usually things are linked to one of these "primary" flags, like
         # a cladding component having linked dimensions to a fuel component
         targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
+        primaryComponents: list[Circle] = []
         for c in self.iterChildren(predicate=lambda c: c.hasFlags(targetFlags) and isinstance(c, Circle)):
             localLocations = c.spatialLocator
             if isinstance(localLocations, grids.MultiIndexLocation):
@@ -2179,6 +2181,17 @@ class HexBlock(Block):
                 c.p.pinIndices = None
             else:
                 c.p.pinIndices = localIndices
+            primaryComponents.append(c)
+        # Go through all the other components and, if they share the same lattice sites, point
+        # their pin indies to the parent
+        for c in self:
+            for p in primaryComponents:
+                if p is c:
+                    break
+                # hack b/c all multindex loc is borked
+                if c.spatialLocator == p.spatialLocator:
+                    c.p.pinIndices = DimensionLink((p, "pinIndices"))
+                    break
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""

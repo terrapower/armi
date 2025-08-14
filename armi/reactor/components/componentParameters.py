@@ -177,6 +177,31 @@ def getComponentParameterDefinitions():
             description="Total number of moles of heavy metal at BOL.",
         )
 
+
+        def _validatePinIndices(self, val):
+            # Handle dimension link (tuple(component, str)) or array of ints or None
+            if isinstance(val, tuple) and len(val) == 2 and isinstance(val[1], str):
+                self._p_pinIndices = val
+            elif val is not None:
+                # unsigned short integer
+                # holds [0, 65_535] so at most, 65_535 pins per block
+                self._p_pinIndices = np.array(val, dtype=np.ushort)
+            else:
+                self._p_pinIndices = None
+
+        pb.defParam(
+            "pinIndices",
+            default=None,
+            description=(
+                "Indices within data arrays where values for this component are stored. "
+                "The array is zero indexed and structured such that the j-th pin on this "
+                "component can be found at ``Block.getPinLocations()[pinIndices[j]]``. "
+                "Could also be a link to the component that defines the pin indices."
+            ),
+            units=units.UNITLESS,
+            setter=_validatePinIndices,
+        )
+
     return pDefs
 
 
@@ -191,25 +216,6 @@ def getCircleParameterDefinitions():
 
         pb.defParam("op", units=units.CM, description="Outer pitch")
 
-        def _validatePinIndices(self, val):
-            if val is not None:
-                # unsigned short integer
-                # holds [0, 65_535] so at most, 65_535 pins per block
-                self._p_pinIndices = np.array(val, dtype=np.ushort)
-            else:
-                self._p_pinIndices = None
-
-        pb.defParam(
-            "pinIndices",
-            default=None,
-            description=(
-                "Indices within data arrays where values for this component are stored. "
-                "The array is zero indexed and structured such that the j-th pin on this "
-                "component can be found at ``Block.getPinLocations()[pinIndices[j]]``"
-            ),
-            units=units.UNITLESS,
-            setter=_validatePinIndices,
-        )
     return pDefs
 
 

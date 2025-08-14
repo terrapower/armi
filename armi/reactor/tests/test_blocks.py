@@ -2649,18 +2649,20 @@ nuclide flags:
     def test_noPinIndicesForHexes(self):
         """Test we never get pin indices for hexagons."""
         duct = self.block.getComponent(Flags.DUCT)
-        self.assertIsInstance(duct, basicShapes.Hexagon)
-        self.assertIsNone(duct.getPinIndices())
+        self.assertIsNone(duct.p.pinIndices)
+        indices = duct.getPinIndices()
+        self.assertIsNone(indices)
 
     def test_noPinIndicesForClad(self):
-        """Even though they're part of pins, assert we don't have a pin indices for cladding.
-
-        The rationale is we currently only care about indices for the fuel or control component
-        because that's usually the most exciting thing.
+        """Show the same indices for cladding are found for fuel that it wraps.
         """
         clad = self.block.getComponents(Flags.CLAD)[0]
-        self.assertIsInstance(clad, basicShapes.Circle)
-        self.assertIsNone(clad.getPinIndices())
+        cladIndices = clad.getPinIndices()
+        fuel = self.block.getComponents(Flags.FUEL)[0]
+        fuelIndices = fuel.getPinIndices()
+        # Show not only are they equal, we get literally the same object
+        # through the dimension linking
+        self.assertIs(cladIndices, fuelIndices)
 
     def test_locations(self):
         """Ensure we have locations consistent with the lattice map."""
