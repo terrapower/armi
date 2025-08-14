@@ -69,7 +69,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
     def test_shiftLinkedCompsForDelta(self):
         """Ensure that given a deltaZTop, component elevations are adjusted appropriately."""
-        self._initializeComponentElevations(growFrac=1.0)
+        self._initializeTest(growFrac=1.0, fromComp=self.c0) # setting fromComp is meaningless here
         # set what they should be after adjusting
         delta = 0.1
         refC0Height = self.c0.height + delta
@@ -115,10 +115,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = 0.9
         self._initializeTest(growFrac, fromComp=self.c1)
 
-        # perform the mass redistrbution from c1 to c0
         self._addMassToCompWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
 
-        # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
         self._rmMassFromCompWithTempAssert(fromComp=self.c1)
 
     def test_addMassToComponent_nonTargetCompression_yesThermal(self):
@@ -140,10 +138,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         self._initializeTest(growFrac, fromComp=self.c1)
 
-        # perform the mass redistrbution from c1 to c0
         self._addMassToCompWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True)
 
-        # now remove the c1 mass and ensure it's mass decreases by amountBeingRedistributed
         self._rmMassFromCompWithTempAssert(fromComp=self.c1)
 
     def test_addMassToComponent_nonTargetExpansion_yesThermal(self):
@@ -165,10 +161,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         self._initializeTest(growFrac, fromComp=self.c0)
 
-        # perform the mass redistrbution from c0 to c1
         self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
 
-        # now remove the c0 mass and assert it is deltaZTop/self.c0.height less than its pre-redistribution value
         self._rmMassFromCompWithTempAssert(self.c0)
 
 
