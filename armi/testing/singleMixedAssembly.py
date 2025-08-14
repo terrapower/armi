@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
+
+from armi.reactor.blueprints import Blueprints
+from armi.settings import Settings
+
 FULL_BP = """
 blocks:
     grid plate: &block_grid_plate
@@ -243,11 +248,8 @@ grids:
                1 1 2 2 1 1
                 1 1 2 1 1
                  1 1 1 1
-"""
+"""  # noqa: E501
 
-import io
-from armi.settings import Settings
-from armi.reactor.blueprints import Blueprints
 
 def buildMixedPinAssembly():
     cs = Settings()

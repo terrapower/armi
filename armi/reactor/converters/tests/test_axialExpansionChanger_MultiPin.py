@@ -20,12 +20,12 @@ from typing import TYPE_CHECKING, Optional
 from numpy import full
 
 from armi.materials.material import Fluid
-from armi.testing.singleMixedAssembly import buildMixedPinAssembly
+from armi.reactor.components.component import Component
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
-from armi.reactor.components.component import Component
+from armi.testing.singleMixedAssembly import buildMixedPinAssembly
 
 if TYPE_CHECKING:
     from armi.reactor.assemblies import HexAssembly
@@ -69,7 +69,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
     def test_shiftLinkedCompsForDelta(self):
         """Ensure that given a deltaZTop, component elevations are adjusted appropriately."""
-        self._initializeTest(growFrac=1.0, fromComp=self.c0) # setting fromComp is meaningless here
+        self._initializeTest(growFrac=1.0, fromComp=self.c0)  # setting fromComp is meaningless here
         # set what they should be after adjusting
         delta = 0.1
         refC0Height = self.c0.height + delta
@@ -99,7 +99,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
 
         self._rmMassFromCompWithTempAssert(self.c0)
-
 
     def test_addMassToComponent_nonTargetCompression_noThermal(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
@@ -164,7 +163,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
 
         self._rmMassFromCompWithTempAssert(self.c0)
-
 
     def _updateToCompElevations(self, fromComp: Component, toComp: Component):
         if self.deltaZTop < 0.0:
@@ -245,16 +243,23 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         else:
             self.amountBeingRedistributed = self.preRedistributionC1.mass * abs(self.deltaZTop) / self.c1.height
 
-
-    def _getReferenceData(self, fromComp:Component, toComp: Optional[Component]):
-        fromCompRefData = self.preRedistributionC0 if fromComp.parent.name == self.preRedistributionC0.cType else self.preRedistributionC1
+    def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
+        fromCompRefData = (
+            self.preRedistributionC0
+            if fromComp.parent.name == self.preRedistributionC0.cType
+            else self.preRedistributionC1
+        )
         if toComp is None:
             toCompRefData = None
         else:
-            toCompRefData = self.preRedistributionC0 if toComp.parent.name == self.preRedistributionC0.cType else self.preRedistributionC1
+            toCompRefData = (
+                self.preRedistributionC0
+                if toComp.parent.name == self.preRedistributionC0.cType
+                else self.preRedistributionC1
+            )
         return fromCompRefData, toCompRefData
 
-    def _addMassToCompWithTempAssert(self, fromComp:Component, toComp: Component, thermalExp: bool):
+    def _addMassToCompWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
         # move mass from ``fromComp`` to ``toComp``
         self.axialExpChngr._addMassToComponent(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
 
@@ -277,7 +282,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         else:
             self.assertEqual(toComp.temperatureInC, toCompRefData.temp)
 
-
     def _rmMassFromCompWithTempAssert(self, fromComp: Component):
         # remove mass from ``fromComp``
         self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=self.deltaZTop)
@@ -290,14 +294,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         )
         # assert the fromComp temperature does not change
         self.assertEqual(fromComp.temperatureInC, fromCompRefData.temp)
-
-
-
-    # def _addMassToComponentWAssert(self, fromComp: Component, toComp: Component, growFrac: float, preFromCompMass: float):
-    #     # perform the mass redistrbution from fromComp to toComp
-    #     self.axialExpChngr._addMassToComponent(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
-    #     # ensure there is no difference in fromComp mass
-    #     self.assertAlmostEqual(preFromCompMass, fromComp.getMass() * growFrac, places=self.places)
 
 
 class TestMultiPinConservation(TestMultiPinConservationBase):
