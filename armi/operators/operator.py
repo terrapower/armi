@@ -23,7 +23,6 @@ cycles, and out to the end of plant life.
 """
 
 import collections
-import math
 import os
 import re
 import time
@@ -602,8 +601,7 @@ class Operator:
 
     def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
-        if not math.isclose(self.r.p.availabilityFactor, 1):
-            self.r.p.time += self.r.p.cycleLength * (1 - self.r.p.availabilityFactor) / units.DAYS_PER_YEAR
+        self.r.p.time += self.r.p.cycleLength * (1 - self.r.p.availabilityFactor) / units.DAYS_PER_YEAR
 
         activeInterfaces = self.getActiveInterfaces("EOC", excludedInterfaceNames)
         self._interactAll("EOC", activeInterfaces, cycle)
