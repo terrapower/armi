@@ -14,19 +14,17 @@
 
 import collections
 import copy
-import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from numpy import full
 
 from armi.materials.material import Fluid
+from armi.testing.singleMixedAssembly import buildMixedPinAssembly
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
-from armi.testing import loadTestReactor
-from armi.tests import TEST_ROOT
 from armi.reactor.components.component import Component
 
 if TYPE_CHECKING:
@@ -44,11 +42,7 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        _oCold, rCold = loadTestReactor(
-            os.path.join(TEST_ROOT, "detailedAxialExpansion"),
-            customSettings={"inputHeightsConsideredHot": True},
-        )
-        cls.aRef = list(filter(lambda a: a.getType() == "multi pin fuel", rCold.blueprints.assemblies.values()))[0]
+        cls.aRef = buildMixedPinAssembly()
         cls.places = 12
 
     def setUp(self):
