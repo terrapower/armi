@@ -239,7 +239,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         amountBeingRedistributed = self._initializeTest(growFrac)
 
         # perform the mass redistrbution from c0 to c1
-        self.axialExpChngr._addMassToComponent(fromComp=self.c0, toComp=self.c1, deltaZTop=self.deltaZTop)
+        self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
         # ensure there is no difference in c0 mass
         self.assertAlmostEqual(self.preRedistributionC0.mass, self.c0.getMass(), places=self.places)
         self._updateToCompElevations(fromComp=self.c0, toComp=self.c1)
@@ -249,13 +249,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             self.preRedistributionC1.mass + amountBeingRedistributed,
             places=self.places,
         )
-        # assert that the temperature of c0 is the same and that c1 has increased
-        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0.temp)
-        self.assertGreater(self.c1.temperatureInC, self.preRedistributionC1.temp)
 
         # now remove the c0 mass and assert it is deltaZTop/self.c0.height less than its pre-redistribution value
         self._rmMassFromCompWithTempAssert(self.c0)
-        self._updateFromCompElevations(self.c0)
         self.assertAlmostEqual(
             self.c0.getMass(), self.preRedistributionC0.mass - amountBeingRedistributed, places=self.places
         )
@@ -323,15 +319,39 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # self.b1.clearCache()
 
         # set the original mass and temperature of the components post expansion and pre redistribution
-        self.preRedistributionC0 = StoreMassAndTemp(self.c0.getType(), self.c0.getMass(), self.c0.temperatureInC)
-        self.preRedistributionC1 = StoreMassAndTemp(self.c1.getType(), self.c1.getMass(), self.c1.temperatureInC)
+        self.preRedistributionC0 = StoreMassAndTemp(self.c0.parent.name, self.c0.getMass(), self.c0.temperatureInC)
+        self.preRedistributionC1 = StoreMassAndTemp(self.c1.parent.name, self.c1.getMass(), self.c1.temperatureInC)
 
         return self.preRedistributionC0.mass * abs(self.deltaZTop) / self.c0.height
 
+    def _addMassToCompWithTempAssert(self, fromComp:Component, toComp: Component, thermalExp: bool):
+        self.axialExpChngr._addMassToComponent(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
+        # assert that the temperature of c0 is the same
+        self.assertEqual(fromComp.temperatureInC, self.preRedistributionC0.temp)
+        if toComp.parent.name == self.preRedistributionC0.cType:
+            temperatureInC = self.preRedistributionC0.temp
+        elif toComp.parent.name == self.preRedistributionC1.cType:
+            temperatureInC = self.preRedistributionC1.temp
+        else:
+            raise RuntimeError
+        # assert toComp temp based on if thermal expansion
+        if thermalExp:
+            self.assertGreater(toComp.temperatureInC, temperatureInC)
+        else:
+            self.assertEqual(toComp.temperatureInC, temperatureInC)
+
+
     def _rmMassFromCompWithTempAssert(self, fromComp: Component):
         self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=self.deltaZTop)
-        # assert the c0 temperature does not change
-        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0.temp)
+        self._updateFromCompElevations(fromComp)
+        # assert the fromComp temperature does not change
+        if fromComp.parent.name == self.preRedistributionC0.cType:
+            self.assertEqual(fromComp.temperatureInC, self.preRedistributionC0.temp)
+        elif fromComp.parent.name == self.preRedistributionC1.cType:
+            self.assertEqual(fromComp.temperatureInC, self.preRedistributionC1.temp)
+        else:
+            raise RuntimeError
+
 
 
     # def _addMassToComponentWAssert(self, fromComp: Component, toComp: Component, growFrac: float, preFromCompMass: float):
