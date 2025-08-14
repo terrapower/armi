@@ -241,7 +241,7 @@ class Block(composites.Composite):
             Circular area inside the cladding.
         sortedCompsInsideClad : list
             A sorted list of Components inside the cladding.
-        cold : bool,
+        cold : bool
             If false, returns the smear density at hot temperatures
 
         Returns
