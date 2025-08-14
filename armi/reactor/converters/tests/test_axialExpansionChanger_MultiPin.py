@@ -83,41 +83,23 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertAlmostEqual(refC1Zbottom, self.c1.zbottom, places=self.places)
 
     def test_redistributeMass_nonTargetExpansion_noThermal(self):
-        """Perform prescribed expansion of the test fuel component by calling :py:meth:`redistributeMass`.
+        """With no temperature changes anywere, grow c0 by 10% and show that 10% of the c0 mass is moved to c1.
 
         Notes
         -----
-        This test ensures that self.c0 and self.c1 change by the same expected amount and that the temperatures of the
-        components are managed correctly during the transfer of mass. For this test, since this is no thermal
-        expansion, we show that the component temperatures do not change after the call to :py:meth:`redistributeMass`.
+        - C0 grows resulting in c0 giving 10% of its mass to c1. c1 height does not change so its mass gains 10%.
+        - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
+        during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
+        temperatures do not change after the calls to :py:meth:`_addMassToComponent` and
+        :py:meth:`_removeMassFromComponent`.
         """
         growFrac = 1.10
-        # update the ndens of c0 for the change in height too
-        self.c0.changeNDensByFactor(1.0 / growFrac)
-        self._initializeTest(growFrac)
-        amountBeingRedistributed = self.preRedistributionC0Mass * abs(self.deltaZTop) / self.c0.height
-        # perform the redistrubtion in its entirety
-        self.axialExpChngr.redistributeMass(fromComp=self.c0, toComp=self.c1, deltaZTop=self.deltaZTop)
-        # assert the temperatures do not change
-        self.assertEqual(self.c0.temperatureInC, self.preRedistributionC0Temp)
-        self.assertEqual(self.c1.temperatureInC, self.preRedistributionC1Temp)
-        # Ensure that c0 and c1 change by the anticipated amount
-        self.assertAlmostEqual(
-            self.c0.getMass(),
-            self.preRedistributionC0Mass - amountBeingRedistributed,
-            places=self.places,
-        )
-        # ensure that the c1 mass has increased by deltaZTop/self.c0.height.
-        # change b1.p.height for mass calculation.
-        # This effectively sets the c1 mass calculation relative to the new comp height (10% shorter since 10% was
-        # given to c0.)
-        self.b1.p.height = self.c1.ztop - (self.c1.zbottom + self.deltaZTop)
-        self.b1.clearCache()
-        self.assertAlmostEqual(
-            self.c1.getMass(),
-            self.preRedistributionC1Mass + amountBeingRedistributed,
-            places=self.places,
-        )
+        self._initializeTest(growFrac, fromComp=self.c0)
+
+        self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
+
+        self._rmMassFromCompWithTempAssert(self.c0)
+
 
     def test_addMassToComponent_nonTargetCompression_noThermal(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
