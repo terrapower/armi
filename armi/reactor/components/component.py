@@ -1364,7 +1364,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 param = "pinMgFluxes"
 
-        # Return pin fluxes
         try:
             return self.parent.p[param][indexMap]
         except Exception as ee:
