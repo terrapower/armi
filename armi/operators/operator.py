@@ -357,12 +357,13 @@ class Operator:
         self.r.p.availabilityFactor = self.availabilityFactors[cycle]
         self.r.p.cycle = cycle
         self.r.core.p.coupledIteration = 0
-        # self.r.p.time += self.r.p.cycleLength * (1.0 - self.r.p.availabilityFactor) / units.DAYS_PER_YEAR  # TODO
+
         if cycle == startingCycle:
             startingNode = self.r.p.timeNode
         else:
             startingNode = 0
             self.r.p.timeNode = startingNode
+
         halt = self.interactAllBOC(self.r.p.cycle)
         if halt:
             return False
@@ -394,7 +395,7 @@ class Operator:
     def _timeNodeLoop(self, cycle, timeNode):
         """Run the portion of the main loop that happens each subcycle."""
         self.r.p.timeNode = timeNode
-        self.r.p.time += self.r.o.stepLengths[cycle][timeNode - 1] / units.DAYS_PER_YEAR  # TODO: JOHN
+        self.r.p.time += self.r.o.stepLengths[cycle][timeNode - 1] / units.DAYS_PER_YEAR
         self.interactAllEveryNode(cycle, timeNode)
         self._performTightCoupling(cycle, timeNode)
 
@@ -601,7 +602,6 @@ class Operator:
 
     def interactAllEOC(self, cycle, excludedInterfaceNames=()):
         """Interact end of cycle for all enabled interfaces."""
-        # TODO: JOHN
         if not math.isclose(self.r.p.availabilityFactor, 1):
             self.r.p.time += self.r.p.cycleLength * (1 - self.r.p.availabilityFactor) / units.DAYS_PER_YEAR
 
