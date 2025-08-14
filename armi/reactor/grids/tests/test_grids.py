@@ -113,6 +113,13 @@ class TestSpatialLocator(unittest.TestCase):
         self.assertNotEqual(base, grids.CoordinateLocation(base.i, base.j - 2, base.k, base.grid))
         self.assertNotEqual(base, grids.CoordinateLocation(base.i, base.j, base.k + 13, base.grid))
 
+    def test_coordinateLocationHash(self):
+        """Ensure we can hash the location based on it's position, not the grid."""
+        a = grids.CoordinateLocation(5, 9, 1, MockStructuredGrid())
+        self.assertEqual(hash(a), hash((a.i, a.j, a.k)))
+        b = grids.CoordinateLocation(a.i, a.j, a.k, None)
+        self.assertEqual(hash(b), hash(a))
+
     def test_recursion(self):
         """
         Make sure things work as expected with a chain of locators/grids/locators.

@@ -435,6 +435,10 @@ class CoordinateLocation(IndexLocation):
             return self.grid == other.grid and self.i == other.i and self.j == other.j and self.k == other.k
         return NotImplemented
 
+    def __hash__(self):
+        """Hash based on the coordinates but not the grid."""
+        return hash((self.i, self.j, self.k))
+
     def getLocalCoordinates(self, nativeCoords=False):
         """Return x,y,z coordinates in cm within the grid's coordinate system."""
         return self.indices
