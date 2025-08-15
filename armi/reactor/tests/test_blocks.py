@@ -2544,7 +2544,7 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertIsNotNone(b.spatialGrid)
 
         b.assignPinIndices()
-        self.assertIsNone(fuel.p.pinIndices)
+        self.assertIsNotNone(fuel.p.pinIndices)
         indices = fuel.getPinIndices()
         self.assertIsNotNone(indices)
         np.testing.assert_allclose(indices, np.arange(169, dtype=int))
@@ -2653,14 +2653,16 @@ nuclide flags:
         indices = duct.getPinIndices()
         self.assertIsNone(indices)
 
-    def test_noPinIndicesForClad(self):
+    def test_recoverCladIndicesFromFuel(self):
         """Show the same indices for cladding are found for fuel that it wraps."""
         clad = self.block.getComponents(Flags.CLAD)[0]
         cladIndices = clad.getPinIndices()
         fuel = self.block.getComponents(Flags.FUEL)[0]
         fuelIndices = fuel.getPinIndices()
         # Show not only are they equal, we get literally the same object
-        # through the dimension linking
+        # through the dimension linking. This only works if the fuel pin
+        # is not at all the lattice sites, or else they'd both be equal
+        # equivalent to np.arange(0, N - 1) but different instances of the same data
         self.assertIs(cladIndices, fuelIndices)
 
     def test_locations(self):

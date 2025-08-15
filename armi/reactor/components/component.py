@@ -1390,8 +1390,12 @@ class Component(composites.Composite, metaclass=ComponentType):
         ix = self.p.pinIndices
         if isinstance(ix, np.ndarray):
             return ix
-        elif isinstance(ix, DimensionLink):
-            return ix.getLinkedComponent().getPinIndices()
+        # Find a sibling that has pin indices and has the same spatial locator as us
+        withPinIndices = (c for c in self.parent if c is not self and c.p.pinIndices is not None)
+        for sibling in withPinIndices:
+            if sibling.spatialLocator == self.spatialLocator:
+                return sibling.p.pinIndices
+        return None
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
