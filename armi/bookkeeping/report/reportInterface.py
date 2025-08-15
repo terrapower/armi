@@ -95,21 +95,28 @@ class ReportInterface(interfaces.Interface):
                 runLog.warning("No mgFlux to plot in reports")
 
         # Table of useful output parameters
-        peakTwoSigmaFuel = max([b.p.TH2SigmaCladIDT for assem in self.r.core for b in assem if assem.isFuel()])
+        # peakTwoSigmaFuel = max([b.p.TH2SigmaCladIDT for assem in self.r.core for b in assem if assem.isFuel()])
+        peakTwoSigmaFuel = -1
+        for assem in self.r.core:
+            if assem.isFuel():
+                for b in assem:
+                    if b.p.TH2SigmaCladIDT:
+                        peakTwoSigmaFuel = max(peakTwoSigmaFuel, b.p.TH2SigmaCladIDT)
         runLog.info(
-            tabulate.tabulate(
-                tabular_data=[
+            "\nSummary of reactor parameters:\n"
+            + tabulate.tabulate(
+                [
                     (
                         self.r.p.cycle,
                         self.r.p.timeNode,
-                        self.r.p.coupledIteration,
+                        self.r.core.p.coupledIteration,
                         self.r.core.p.keffUnc,
                         peakTwoSigmaFuel,
                         self.r.core.p.THdeltaPCore,
                     )
                 ],
                 headers=["Cycle", "Node", "Couple", "Uncontrolled keff", "Peak 2-Sigma Fuel", "Core Pressure Drop"],
-                tablefmt="armi",
+                tableFmt="armi",
             )
         )
 
