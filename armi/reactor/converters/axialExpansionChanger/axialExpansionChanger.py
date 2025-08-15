@@ -651,5 +651,6 @@ class AxialExpansionChanger:
                 runLog.warning(
                     "Block heights have gone out of sync!\n"
                     f"\t{lowerBlock.getType()}: {lowerBlock.p.ztop}\n"
-                    f"\t{b.getType()}: {b.p.zbottom}", single=True,
+                    f"\t{b.getType()}: {b.p.zbottom}",
+                    single=True,
                 )
