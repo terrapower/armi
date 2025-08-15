@@ -556,7 +556,7 @@ class AxialExpansionChanger:
                 f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
 
                 Instead, a volume weighted average temperature will be used. The consequence is that mass conservation
-                is no longer guarunteed for this component type on this assembly!
+                is no longer guaranteed for this component type on this assembly!
                 """
                 runLog.warning(dedent(msg))
                 newToCompTemp = (
