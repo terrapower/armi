@@ -21,7 +21,17 @@ from armi.testing import symmetryTesting
 class TestArmiNeutronicsParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getNeutronicsParameterDefinitions()
-        self.pluginCoreParams = [p if isinstance(p, str) else p.name for p in pluginParameters[Core]]
-        self.pluginBlockParams = [p if isinstance(p, str) else p.name for p in pluginParameters[Block]]
-        self.pluginSymmetricBlockParams = ["mgFlux", "adjMgFlux", "lastMgFlux", "mgFluxGamma", "reactionRates"]
+        self.pluginCoreParams = pluginParameters[Core]
+        self.pluginBlockParams = pluginParameters[Block]
+        self.pluginSymmetricBlockParams = [
+            "mgFlux",
+            "adjMgFlux",
+            "lastMgFlux",
+            "mgFluxGamma",
+            "reactionRates",
+            "power",
+            "powerGamma",
+            "powerNeutron",
+            "powerGenerated",
+        ]
         super().setUp()

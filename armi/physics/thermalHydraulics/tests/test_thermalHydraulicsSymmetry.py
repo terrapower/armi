@@ -20,5 +20,5 @@ from armi.testing import symmetryTesting
 class TestArmiThermalHydraulicsParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getParameterDefinitions()
-        self.pluginBlockParams = [p if isinstance(p, str) else p.name for p in pluginParameters[Block]]
+        self.pluginBlockParams = pluginParameters[Block]
         super().setUp()

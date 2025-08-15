@@ -20,7 +20,7 @@ from armi.testing import symmetryTesting
 class TestArmiFuelPerformanceParamSymmetry(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         pluginParameters = getFuelPerformanceParameterDefinitions()
-        self.pluginBlockParams = [p if isinstance(p, str) else p.name for p in pluginParameters[Block]]
+        self.pluginBlockParams = pluginParameters[Block]
         self.pluginParameterOverrides = {
             "gasReleaseFraction": 0.5,
             "bondRemoved": 0.5,
