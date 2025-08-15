@@ -22,6 +22,11 @@ The goal of this utility is to test symmetry intent, not functionality. This mea
 symmetry-aware operations are still responsible for testing the implemetation. This module serves as a check that the
 parameters that are expected to change with symmetry do indeed change.
 
+This might be obvious, but this test CANNOT detect errors where the parameter is not either:
+    1) Labeled as a symmetry-aware parameter in the parameter definition.
+    2) Labeled as a symmetry-aware parameter in the test.
+Failing to do either of the above will result in passing symmetry tests.
+
 The tests here use the `growToFullCore` since that should be one of the most mature symmetry-aware operations.
 
 This module provides the `BasicArmiSymmetryTestHelper` which is meant to be inherited into a downstream unit test.
