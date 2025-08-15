@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 class StoreMassAndTemp:
     cType: str
     mass: float
+    HMmass: float
     temp: float
 
 
@@ -211,8 +212,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         3) Store the amount of mass expeceted to be redistributed between components.
         """
         # set the original mass and temperature of the components post expansion and pre redistribution
-        self.originalC0 = StoreMassAndTemp(self.c0.parent.name, self.c0.getMass(), self.c0.temperatureInC)
-        self.originalC1 = StoreMassAndTemp(self.c1.parent.name, self.c1.getMass(), self.c1.temperatureInC)
+
+        self.originalC0 = StoreMassAndTemp(
+            self.c0.parent.name, self.c0.getMass(), self.c0.getHMMass(), self.c0.temperatureInC
+        )
+        self.originalC1 = StoreMassAndTemp(
+            self.c1.parent.name, self.c1.getMass(), self.c1.getHMMass(), self.c1.temperatureInC
+        )
 
         # adjust c0 elevations per growFrac
         self.c0.zbottom = self.b0.p.zbottom
@@ -273,6 +279,12 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             toCompRefData.mass + self.amountBeingRedistributed,
             places=self.places,
         )
+        HMfrac = toCompRefData.HMmass / toCompRefData.mass
+        self.assertAlmostEqual(
+            toComp.getHMMass(),
+            toCompRefData.HMmass + self.amountBeingRedistributed * HMfrac,
+            places=self.places,
+        )
 
         # fromComp temperature should not change because we've only removed mass
         self.assertEqual(fromComp.temperatureInC, fromCompRefData.temp)
@@ -298,6 +310,12 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self._updateFromCompElevations(fromComp)
         self.assertAlmostEqual(
             fromComp.getMass(), fromCompRefData.mass - self.amountBeingRedistributed, places=self.places
+        )
+        HMfrac = fromCompRefData.HMmass / fromCompRefData.mass
+        self.assertAlmostEqual(
+            fromComp.getHMMass(),
+            fromCompRefData.HMmass - self.amountBeingRedistributed * HMfrac,
+            places=self.places,
         )
         # assert the fromComp temperature does not change
         self.assertEqual(fromComp.temperatureInC, fromCompRefData.temp)

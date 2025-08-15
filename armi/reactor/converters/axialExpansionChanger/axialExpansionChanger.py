@@ -427,6 +427,9 @@ class AxialExpansionChanger:
                         c.height = c.ztop - c.zbottom
 
             self._checkBlockHeight(b)
+            # since some heavy metal may have moved around (e.g., if there are multiple fuel pins in a block), update
+            # BOL params that are useful for burnup and other calculations that rely on the HM inventory of a block.
+            b.completeInitialLoading()
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
