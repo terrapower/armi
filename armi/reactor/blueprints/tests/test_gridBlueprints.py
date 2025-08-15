@@ -30,7 +30,8 @@ LATTICE_BLUEPRINT = """
 control:
     geom: hex_corners_up
     symmetry: full
-    lattice pitch: {{hex: 1.2}}
+    lattice pitch: 
+      hex: 1.2
     lattice map: |
        - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
         - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
@@ -54,7 +55,8 @@ control:
 pins:
   geom: hex
   symmetry: full
-  lattice pitch: {{hex: 1.3}}
+  lattice pitch: 
+    hex: 1.3
   lattice map: |
     -   -   FP
       -   FP  FP
