@@ -30,7 +30,6 @@ The test helper uses the `SymmetryFactorTester` to handle the bookkeeping tasks 
 
 import unittest
 from contextlib import contextmanager
-from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Iterable, Union
 
 from armi.reactor import assemblyParameters, blockParameters, parameters, reactorParameters
@@ -68,19 +67,6 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
     def setUp(self):
         self._preprocessPluginParams()
-        self.defaultSymmetricBlockParams = [
-            # "powerGenerated",
-            # "power",
-            # "powerGamma",
-            # "powerNeutron",
-            # "molesHmNow",
-            # "molesHmBOL",
-            # "massHmBOL",
-            # "initialB10ComponentVol",
-            # "kgFis",
-            # "kgHM",
-        ]
-        self.symmetricBlockParams = self.defaultSymmetricBlockParams + self.pluginSymmetricBlockParams
         self.symTester = SymmetryFactorTester(
             self,
             pluginCoreParams=self.pluginCoreParams,
@@ -101,7 +87,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
         self.pluginSymmetricBlockParams = [p if isinstance(p, str) else p.name for p in self.pluginSymmetricBlockParams]
 
     def test_defaultSymmetry(self):
-        self.symTester.runSymmetryFactorTests(blockParams=self.symmetricBlockParams)
+        self.symTester.runSymmetryFactorTests(blockParams=self.pluginSymmetricBlockParams)
 
 
 class SymmetryFactorTester:
@@ -152,8 +138,7 @@ class SymmetryFactorTester:
 
     @staticmethod
     def _getParameters(obj: object, paramList: Iterable[str]):
-        # test if the deepcopy is necessary
-        return deepcopy({param: obj.p[param] for param in paramList})
+        return {param: obj.p[param] for param in paramList}
 
     @staticmethod
     def _getParamNamesFromDefs(pdefs: parameters.ParameterDefinitionCollection):
@@ -165,30 +150,13 @@ class SymmetryFactorTester:
         self.defaultBlockParameterDefs = set(blockParameters.getBlockParameterDefinitions())
 
     def _initializeCore(self):
-        # paramDefNames = [pdef.name for pdef in self.defaultCoreParameterDefs]
-        # self.allCoreParameterKeys = (
-        #     set([p if isinstance(p, str) else p.name for p in self.core.p])
-        #     .union(paramDefNames)
-        #     .union(self.pluginCoreParams)
-        # )
         self._initializeParameters(self.pluginCoreParams, self.core)
 
     def _initializeAssembly(self):
-        # paramDefNames = [pdef.name for pdef in self.defaultAssemblyParameterDefs]
-        self.allAssemblyParameterKeys = (
-            set([p if isinstance(p, str) else p.name for p in self.partialAssembly.p])
-            # .union(paramDefNames)
-            # .union(self.pluginAssemblyParams)
-        )
+        self.allAssemblyParameterKeys = set([p if isinstance(p, str) else p.name for p in self.partialAssembly.p])
         self._initializeParameters(self.allAssemblyParameterKeys, self.partialAssembly)
 
     def _initializeBlock(self):
-        # paramDefNames = [pdef.name for pdef in self.defaultBlockParameterDefs]
-        # self.allBlockParameterKeys = (
-        #     set([p if isinstance(p, str) else p.name for p in self.partialBlock.p])
-        #     .intersection(paramDefNames)
-        #     .union(self.pluginBlockParams)
-        # )
         self._initializeParameters(self.pluginBlockParams, self.partialBlock)
 
     def _initializeParameters(self, parameterNames, obj: Union["Core", "Assembly", "Block"]):
