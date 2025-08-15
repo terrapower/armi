@@ -35,4 +35,6 @@ class ArmiSymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
             "kgFis",
             "kgHM",
         ]
+        self.parameterOverrides = {"xsType": ["A"], "xsTypeNum": 65, "notes": ""}
+
         super().setUp()
