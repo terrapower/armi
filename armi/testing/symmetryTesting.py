@@ -52,9 +52,9 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
     This class is meant to be customized in a plugin to check the plugin-specific symmetry-aware parameters.
 
-    To use the test fixture, make a subclass test and assign the `*ParamsToTest` parameters in the `setUp` method of
-    the subclass. The subclass must have `super.setUp()` in it's `setUp` method at some point after the necessary plugin
-    attributes are assigned.
+    To use the test fixture, make a subclass test and assign the `*ParamsToTest` and `expectedSymmetric*` attributes in
+    the `setUp` method of the subclass. The subclass must have `super.setUp()` in it's `setUp` method at some point
+    after the necessary plugin attributes are assigned.
 
     Attributes
     ----------
@@ -145,11 +145,10 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
 class SymmetryFactorTester:
     """
-    A test helper for symmetry factors.
+    A test runner for symmetry factors.
 
-    Structured as a class so it can be imported with a list of expected parameters. The individual tests then check
-    which parameters are altered by symmetry-aware operations and if there are any parameters that change but are not in
-    the "expected" list an error is raised.
+    This class does the actual symmetry testing, but there is a lot of bookkeeping that isn't important to expose in the
+    test helper class so putting it here helps keep the BasicArmiSymmetryTestHelper clean.
     """
 
     def __init__(
@@ -302,7 +301,7 @@ class SymmetryFactorTester:
         """
         Runs tests on how symmetry factors apply to parameters during partial-to-full core coversions and vice-versa.
 
-        This helper provides a convenient way for plugins to test that symmetry factors are applied correctly to flagged
+        This method provides a convenient way for plugins to test that symmetry factors are applied correctly to flagged
         parameters when the core is converted.
 
         Parameters
