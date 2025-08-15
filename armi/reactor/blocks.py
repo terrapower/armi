@@ -42,9 +42,9 @@ from armi.reactor import (
     parameters,
 )
 from armi.reactor.components import basicShapes
-from armi.reactor.components.component import DimensionLink
 from armi.reactor.components.basicShapes import Circle, Hexagon
 from armi.reactor.components.complexShapes import Helix
+from armi.reactor.components.component import DimensionLink
 from armi.reactor.flags import Flags
 from armi.reactor.parameters import ParamLocation
 from armi.utils import densityTools, hexagon, iterables, units

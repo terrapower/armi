@@ -2654,8 +2654,7 @@ nuclide flags:
         self.assertIsNone(indices)
 
     def test_noPinIndicesForClad(self):
-        """Show the same indices for cladding are found for fuel that it wraps.
-        """
+        """Show the same indices for cladding are found for fuel that it wraps."""
         clad = self.block.getComponents(Flags.CLAD)[0]
         cladIndices = clad.getPinIndices()
         fuel = self.block.getComponents(Flags.FUEL)[0]
