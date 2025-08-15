@@ -57,37 +57,41 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
             self.pluginBlockParams = [p if isinstance(p, str) else p.name for p in getPluginBlockParameterDefinitions()]
     """
 
-    pluginCoreParams = []
-    pluginAssemblyParams = []
-    pluginBlockParams = []
-    pluginSymmetricCoreParams = []
-    pluginSymmetricAssemblyParams = []
-    pluginSymmetricBlockParams = []
-    pluginParameterOverrides = {}
+    coreParamsToTest = []
+    assemblyParamsToTest = []
+    blockParamsToTest = []
+    expectedSymmetricCoreParams = []
+    expectedSymmetricAssemblyParams = []
+    expectedSymmetricBlockParams = []
+    parameterOverrides = {}
 
     def setUp(self):
         self._preprocessPluginParams()
         self.symTester = SymmetryFactorTester(
             self,
-            pluginCoreParams=self.pluginCoreParams,
-            pluginAssemblyParams=self.pluginAssemblyParams,
-            pluginBlockParams=self.pluginBlockParams,
-            pluginParameterOverrides=self.pluginParameterOverrides,
+            pluginCoreParams=self.coreParamsToTest,
+            pluginAssemblyParams=self.assemblyParamsToTest,
+            pluginBlockParams=self.blockParamsToTest,
+            pluginParameterOverrides=self.parameterOverrides,
         )
 
     def _preprocessPluginParams(self):
         """Parameters can be provided as string names or whole parameter objects, need to convert to string name."""
-        self.pluginCoreParams = [p if isinstance(p, str) else p.name for p in self.pluginCoreParams]
-        self.pluginAssemblyParams = [p if isinstance(p, str) else p.name for p in self.pluginAssemblyParams]
-        self.pluginBlockParams = [p if isinstance(p, str) else p.name for p in self.pluginBlockParams]
-        self.pluginSymmetricCoreParams = [p if isinstance(p, str) else p.name for p in self.pluginSymmetricCoreParams]
-        self.pluginSymmetricAssemblyParams = [
-            p if isinstance(p, str) else p.name for p in self.pluginSymmetricAssemblyParams
+        self.coreParamsToTest = [p if isinstance(p, str) else p.name for p in self.coreParamsToTest]
+        self.assemblyParamsToTest = [p if isinstance(p, str) else p.name for p in self.assemblyParamsToTest]
+        self.blockParamsToTest = [p if isinstance(p, str) else p.name for p in self.blockParamsToTest]
+        self.expectedSymmetricCoreParams = [
+            p if isinstance(p, str) else p.name for p in self.expectedSymmetricCoreParams
         ]
-        self.pluginSymmetricBlockParams = [p if isinstance(p, str) else p.name for p in self.pluginSymmetricBlockParams]
+        self.expectedSymmetricAssemblyParams = [
+            p if isinstance(p, str) else p.name for p in self.expectedSymmetricAssemblyParams
+        ]
+        self.expectedSymmetricBlockParams = [
+            p if isinstance(p, str) else p.name for p in self.expectedSymmetricBlockParams
+        ]
 
     def test_defaultSymmetry(self):
-        self.symTester.runSymmetryFactorTests(blockParams=self.pluginSymmetricBlockParams)
+        self.symTester.runSymmetryFactorTests(expectedBlockParams=self.expectedSymmetricBlockParams)
 
 
 class SymmetryFactorTester:
@@ -218,33 +222,33 @@ class SymmetryFactorTester:
                 )
 
     @contextmanager
-    def _checkCore(self, userParams: Iterable[str]):
+    def _checkCore(self, expectedParams: Iterable[str]):
         coreReferenceParameters = self._getParameters(self.core, self.pluginCoreParams)
         yield  # yield to allow the core to be expanded
         corePerturbedParameters = self._getParameters(self.core, self.pluginCoreParams)
-        self._compareParameters(coreReferenceParameters, corePerturbedParameters, userParams, "core")
+        self._compareParameters(coreReferenceParameters, corePerturbedParameters, expectedParams, "core")
 
     @contextmanager
-    def _checkAssembly(self, userParams: Iterable[str]):
+    def _checkAssembly(self, expectedParams: Iterable[str]):
         assemblyReferenceParameters = self._getParameters(self.partialAssembly, self.pluginAssemblyParams)
         yield  # yield to allow the core to be expanded
         assemblyPerturbedParameters = self._getParameters(self.partialAssembly, self.pluginAssemblyParams)
         print("AAAAAA", assemblyReferenceParameters)
         print("BBBBB", assemblyPerturbedParameters)
-        self._compareParameters(assemblyReferenceParameters, assemblyPerturbedParameters, userParams, "assembly")
+        self._compareParameters(assemblyReferenceParameters, assemblyPerturbedParameters, expectedParams, "assembly")
 
     @contextmanager
-    def _checkBlock(self, userParams: Iterable[str]):
+    def _checkBlock(self, expectedParams: Iterable[str]):
         blockReferenceParameters = self._getParameters(self.partialBlock, self.pluginBlockParams)
         yield  # yield to allow the core to be expanded
         blockPerturbedParameters = self._getParameters(self.partialBlock, self.pluginBlockParams)
-        self._compareParameters(blockReferenceParameters, blockPerturbedParameters, userParams, "block")
+        self._compareParameters(blockReferenceParameters, blockPerturbedParameters, expectedParams, "block")
 
     def runSymmetryFactorTests(
         self,
-        coreParams: Iterable[str] = [],
-        assemblyParams: Iterable[str] = [],
-        blockParams: Iterable[str] = [],
+        expectedCoreParams: Iterable[str] = [],
+        expectedAssemblyParams: Iterable[str] = [],
+        expectedBlockParams: Iterable[str] = [],
     ):
         """
         Runs tests on how symmetry factors apply to parameters during partial-to-full core coversions and vice-versa.
@@ -264,5 +268,9 @@ class SymmetryFactorTester:
         blockParams : Iterable[str], optional
             Dictionary of block parameters that the user expects to be symmetry aware.
         """
-        with self._checkCore(coreParams), self._checkAssembly(assemblyParams), self._checkBlock(blockParams):
+        with (
+            self._checkCore(expectedCoreParams),
+            self._checkAssembly(expectedAssemblyParams),
+            self._checkBlock(expectedBlockParams),
+        ):
             self.r.core.growToFullCore(self.o.cs)

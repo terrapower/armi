@@ -24,10 +24,10 @@ class ArmiSymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
     """Run symmetry intentionality tests for ARMI."""
 
     def setUp(self):
-        self.pluginCoreParams = defineCoreParameters()
-        self.pluginAssemblyParams = getAssemblyParameterDefinitions()
-        self.pluginBlockParams = getBlockParameterDefinitions()
-        self.pluginSymmetricBlockParams = [
+        self.coreParamsToTest = defineCoreParameters()
+        self.assemblyParamsToTest = getAssemblyParameterDefinitions()
+        self.blockParamsToTest = getBlockParameterDefinitions()
+        self.expectedSymmetricBlockParams = [
             "molesHmNow",
             "molesHmBOL",
             "massHmBOL",

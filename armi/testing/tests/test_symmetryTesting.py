@@ -20,21 +20,25 @@ class SymmetryTestFixtureTester(symmetryTesting.BasicArmiSymmetryTestHelper):
     """Run the basic symmetry test helper with some input known to raise errors."""
 
     def setUp(self):
-        self.pluginBlockParams = ["zbottom", "massHmBOL"]
-        self.pluginSymmetricBlockParams = ["massHmBOL"]
+        self.blockParamsToTest = ["zbottom", "massHmBOL"]
+        self.expectedSymmetricBlockParams = ["massHmBOL"]
         return super().setUp()
 
     def test_errorWhenExpandedButNotRequested(self):
         if (
-            len(self.pluginSymmetricCoreParams + self.pluginSymmetricAssemblyParams + self.pluginSymmetricBlockParams)
+            len(
+                self.expectedSymmetricCoreParams
+                + self.expectedSymmetricAssemblyParams
+                + self.expectedSymmetricBlockParams
+            )
             > 0
         ):
             with self.assertRaises(AssertionError) as err:
                 self.symTester.runSymmetryFactorTests()
-                self.assertIn(f"The value of {self.pluginSymmetricBlockParams} on the", err.msg)
+                self.assertIn(f"The value of {self.expectedSymmetricBlockParams} on the", err.msg)
 
     def test_errorWhenRequestedButNotExpanded(self):
         with self.assertRaises(AssertionError) as err:
-            targetParam = self.pluginBlockParams[0]
-            self.symTester.runSymmetryFactorTests(blockParams=targetParam)
+            targetParam = self.blockParamsToTest[0]
+            self.symTester.runSymmetryFactorTests(expectedBlockParams=targetParam)
             self.assertIn(f"The after-to-before expansion ratio of parameter '{targetParam}'", err.msg)
