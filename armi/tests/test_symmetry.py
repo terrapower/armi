@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Unit tests for handling of symmetry-aware parameters."""
+"""
+Audit symmetry-aware parameters in baseline ARMI.
+
+See Also
+--------
+    armi.testing.symmetryTesting
+"""
 
 from armi.reactor.assemblyParameters import getAssemblyParameterDefinitions
 from armi.reactor.blockParameters import getBlockParameterDefinitions

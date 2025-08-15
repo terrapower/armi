@@ -200,7 +200,13 @@ class SymmetryFactorTester:
         expectedParameters: Iterable[str],
         scopeName: str,
     ):
-        """Do a thing."""
+        """
+        Run the comparison of reference parameters vs the perturbed parameters.
+
+        Tests:
+            1. Parameters that change after core expansion are in the list of parameters expected to change.
+            2. All parameters in the list of parameters expected to change do indeed change by the expected ratio.
+        """
         for paramName, perturbedValue in perturbedParameters.items():
             referenceValue = referenceParameters[paramName]
             if referenceValue != perturbedValue and paramName not in self.paramsToIgnore:
