@@ -387,6 +387,14 @@ class TestUniformMesh(unittest.TestCase):
 
         self.converter = uniformMesh.NeutronicsUniformMeshConverter(cs=self.o.cs, calcReactionRates=True)
 
+        # reactor parameters
+        self.r.core.p.beta = 700
+        self.r.core.p.betaComponents = [100, 150, 150, 100, 100, 100]
+        self.r.core.p.power = 10
+        self.reactorParamNames = ["beta", "betaComponents", "power", "keff", "keffUnc"]
+        self.converter._cachedReactorCoreParamData = {"powerDensity": 1.0}
+        self.paramMapper = uniformMesh.ParamMapper(self.reactorParamNames, [], self.r.core.getFirstBlock())
+
     def test_convertNumberDensities(self):
         """
         Test the reactor mass before and after conversion.
@@ -466,6 +474,14 @@ class TestUniformMesh(unittest.TestCase):
             for b in a:
                 self.assertTrue(b.p.rateAbs)
                 self.assertTrue(b.p.rateCap)
+
+        # reactor parameters
+        self.assertEqual(self.r.core.p.power, 10)
+        self.assertEqual(self.r.core.p.beta, 700)
+        self.assertEqual(self.r.core.p.powerDensity, 1.0)
+        self.assertEqual(self.r.core.p.keff, 1.0)
+        self.assertEqual(self.r.core.p.keffUnc, 0.0)
+        self.assertListEqual(self.r.core.p.betaComponents, [100, 150, 150, 100, 100, 100])
 
 
 class TestCalcReationRates(unittest.TestCase):

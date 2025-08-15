@@ -936,7 +936,7 @@ class Assembly(composites.Composite):
                 return bIndex
         return -1  # no block index found
 
-    def getBlocksBetweenElevations(self, zLower, zUpper):
+    def getBlocksBetweenElevations(self, zLower, zUpper, eps=1e-10):
         """
         Return block(s) between two axial elevations and their corresponding heights.
 
@@ -944,6 +944,9 @@ class Assembly(composites.Composite):
         ----------
         zLower, zUpper : float
             Elevations in cm where blocks should be found.
+        eps : float, optional
+            Lower bound for relative block height fraction that we care about.
+            Below this bound, small slivers of overlapping block are ignored.
 
 
         Returns
@@ -967,7 +970,6 @@ class Assembly(composites.Composite):
         [(Block1, 25.0), (Block2, 5.0)]
 
         """
-        EPS = 1e-10
         blocksHere = []
         allMeshPoints = set()
 
@@ -981,7 +983,7 @@ class Assembly(composites.Composite):
                 heightHere = top - bottom
 
                 # Filter out blocks that have an extremely small height fraction
-                if heightHere / b.getHeight() > EPS:
+                if heightHere / b.getHeight() > eps:
                     blocksHere.append((b, heightHere))
 
         totalHeight = 0.0
@@ -993,7 +995,7 @@ class Assembly(composites.Composite):
 
         # Verify that the heights of all the blocks are equal to the expected
         # height for the given zUpper and zLower.
-        if abs(totalHeight - expectedHeight) > 1e-5:
+        if abs(totalHeight - expectedHeight) / expectedHeight > 10.0 * eps:
             raise ValueError(
                 f"The cumulative height of {blocksHere} is {totalHeight} cm "
                 f"and does not equal the expected height of {expectedHeight} cm.\n"

@@ -771,7 +771,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         # prepare to change the densities with knowledge that dims could change due to material
         # thermal expansion dependence on composition
-        if self.p.numberDensities.size > 0:
+        if self.p.numberDensities is not None and self.p.numberDensities.size > 0:
             dLLprev = self.material.linearExpansionPercent(Tc=self.temperatureInC) / 100.0
             materialExpansion = True
         else:
@@ -788,8 +788,6 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         # change the densities
         if wipe:
-            self.p.numberDensities = None  # clear things not passed
-            self.p.nuclides = None  # clear things not passed
             self.p.nuclides = np.asanyarray(list(numberDensities.keys()), dtype="S6")
             self.p.numberDensities = np.array(list(numberDensities.values()))
         else:
