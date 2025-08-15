@@ -432,6 +432,17 @@ class Inspector:
         )
 
         self.addQuery(
+            lambda: self.cs["shuffleSequenceFile"]
+            and not self._csRelativePathExists(self.cs["shuffleSequenceFile"])
+            and not _willBeCopiedFrom(self.cs["shuffleSequenceFile"]),
+            "The specified shuffle sequence file `{0}` does not exist. Run will crash.".format(
+                self.cs["shuffleSequenceFile"]
+            ),
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
             lambda: not self.cs["power"] and not self.cs["powerDensity"],
             "No power or powerDensity set. You must always start by importing a base settings file.",
             "",

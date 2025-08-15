@@ -21,12 +21,14 @@ are called armiRun.yaml which is located in armi.tests
 import collections
 import copy
 import os
+import tempfile
 import unittest
 from unittest.mock import patch
 
 import numpy as np
 
 from armi.physics.fuelCycle import fuelHandlers, settings
+from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
 from armi.physics.fuelCycle.settings import (
     CONF_ASSEM_ROTATION_STATIONARY,
     CONF_ASSEMBLY_ROTATION_ALG,
@@ -45,6 +47,111 @@ from armi.reactor.zones import Zone
 from armi.settings import caseSettings
 from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
+from armi.utils.customExceptions import InputError
+
+
+class TestReadMovesYamlErrors(unittest.TestCase):
+    """Ensure malformed YAML inputs raise informative ``InputError``."""
+
+    def _run(self, text):
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(text)
+            fname = tf.name
+        try:
+            fuelHandlers.FuelHandler.readMovesYaml(fname)
+        finally:
+            os.remove(fname)
+
+    def test_missingSequence(self):
+        yaml_text = "foo: []\n"
+        with self.assertRaisesRegex(InputError, "sequence"):
+            self._run(yaml_text)
+
+    def test_unknownActionKey(self):
+        yaml_text = "sequence:\n  1:\n    - badAction: []\n"
+        with self.assertRaisesRegex(InputError, "Unknown action"):
+            self._run(yaml_text)
+
+    def test_badCascade(self):
+        cases = [
+            ("sequence:\n  1:\n    - cascade: ['only']\n", "cascade"),
+            ("sequence:\n  1:\n    - cascade: ['outer fuel', 1]\n", "cascade"),
+        ]
+        for yaml_text, msg in cases:
+            with self.subTest(yaml_text=yaml_text):
+                with self.assertRaisesRegex(InputError, msg):
+                    self._run(yaml_text)
+
+    def test_badMisloadSwap(self):
+        yaml_text = "sequence:\n  1:\n    - misloadSwap: ['009-045']\n"
+        with self.assertRaisesRegex(InputError, "misloadSwap"):
+            self._run(yaml_text)
+
+    def test_badFuelEnrichment(self):
+        cases = [
+            (
+                """sequence:\n  1:\n    - cascade: ['outer fuel', '009-045']\n      fuelEnrichment: ['a']\n""",
+                "fuelEnrichment",
+            ),
+            (
+                """sequence:\n  1:\n    - cascade: ['outer fuel', '009-045']\n      fuelEnrichment: [-1]\n""",
+                "fuelEnrichment",
+            ),
+            (
+                """sequence:\n  1:\n    - cascade: ['outer fuel', '009-045']\n      fuelEnrichment: [101]\n""",
+                "fuelEnrichment",
+            ),
+        ]
+        for yaml_text, msg in cases:
+            with self.subTest(yaml_text=yaml_text):
+                with self.assertRaisesRegex(InputError, msg):
+                    self._run(yaml_text)
+
+    def test_rotationInvalidLocation(self):
+        yaml_text = "sequence:\n  1:\n    - rotations: {'badLoc': 30}\n"
+        with self.assertRaisesRegex(InputError, "Invalid location"):
+            self._run(yaml_text)
+
+    def test_duplicateCascadeLocation(self):
+        yaml_text = (
+            "sequence:\n  1:\n    - cascade: ['outer', '009-045', '008-001']\n"
+            "    - cascade: ['outer', '009-045', '007-002']\n"
+        )
+        with self.assertRaisesRegex(InputError, "009-045"):
+            self._run(yaml_text)
+
+    def test_invalidCascadeLocation(self):
+        yaml_text = "sequence:\n  1:\n    - cascade: ['outer', 'badLoc']\n"
+        with self.assertRaisesRegex(InputError, "Invalid location"):
+            self._run(yaml_text)
+
+    def test_missingCycle(self):
+        yaml_text = "sequence:\n  1: []\n  3: []\n"
+        with self.assertRaisesRegex(InputError, "Missing cycle 2"):
+            self._run(yaml_text)
+
+    def test_duplicateCycle(self):
+        yaml_text = "sequence:\n  1: []\n  1: []\n"
+        with self.assertRaisesRegex(InputError, "Duplicate cycle"):
+            self._run(yaml_text)
+
+
+class TestReadMovesYamlFeatures(unittest.TestCase):
+    """Miscellaneous behavior of :meth:`FuelHandler.readMovesYaml`."""
+
+    def _read(self, text):
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(text)
+            fname = tf.name
+        try:
+            return fuelHandlers.FuelHandler.readMovesYaml(fname)
+        finally:
+            os.remove(fname)
+
+    def test_cycles_out_of_order(self):
+        yaml_text = "sequence:\n  1: []\n  2: []\n  4: []\n  3: []\n"
+        moves = self._read(yaml_text)
+        self.assertEqual(list(moves.keys()), [1, 2, 4, 3])
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -532,21 +639,65 @@ class TestFuelHandler(FuelHandlerTestHelper):
         moves = fh.readMoves("armiRun-SHUFFLES.txt")
         self.assertEqual(len(moves), 3)
         firstMove = moves[1][0]
-        self.assertEqual(firstMove[0], "002-001")
-        self.assertEqual(firstMove[1], "SFP")
-        self.assertEqual(len(firstMove[2]), numblocks)
-        self.assertEqual(firstMove[3], "igniter fuel")
-        self.assertEqual(firstMove[4], None)
+        self.assertEqual(firstMove.fromLoc, "002-001")
+        self.assertEqual(firstMove.toLoc, "SFP")
+        self.assertEqual(len(firstMove.enrichList), numblocks)
+        self.assertEqual(firstMove.assemType, "igniter fuel")
+        self.assertIsNone(firstMove.movingAssemName)
 
         # check the move that came back out of the SFP
         sfpMove = moves[2][-2]
-        self.assertEqual(sfpMove[0], "SFP")
-        self.assertEqual(sfpMove[1], "005-003")
-        self.assertEqual(sfpMove[4], "A0073")  # name of assem in SFP
+        self.assertEqual(sfpMove.fromLoc, "SFP")
+        self.assertEqual(sfpMove.toLoc, "005-003")
+        self.assertEqual(sfpMove.movingAssemName, "A0073")  # name of assem in SFP
 
         # make sure we fail hard if the file doesn't exist
         with self.assertRaises(RuntimeError):
             fh.readMoves("totall_fictional_file.txt")
+
+    def test_readMovesYaml(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        self.maxDiff = None
+        expected = {
+            1: [
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("009-045", "009-045", [], None, None, 60.0),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("010-046", "011-046", [], None, None),
+                AssemblyMove("011-046", "012-046", [], None, None),
+                AssemblyMove("012-046", "ExCore", [], None, None),
+            ],
+            2: [
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("009-045", "009-045", [], None, None, 60.0),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("010-046", "011-046", [], None, None),
+                AssemblyMove("011-046", "012-046", [], None, None),
+                AssemblyMove("012-046", "ExCore", [], None, None),
+            ],
+            3: [
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "007-001", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("009-045", "009-045", [], None, None, 60.0),
+                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("008-004", "009-045", [], None, None),
+                AssemblyMove("008-004", "009-045", [], None, None),
+                AssemblyMove("009-045", "008-004", [], None, None),
+            ],
+        }
+        self.assertEqual(moves, expected)
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -557,6 +708,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             _,
             _,
             loadNames,
+            rotations,
             _,
         ) = fh.processMoveList(moves[2])
         self.assertIn("A0073", loadNames)
@@ -564,6 +716,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertNotIn("SFP", loadChains)
         self.assertNotIn("LoadQueue", loadChains)
         self.assertFalse(loopChains)
+        self.assertFalse(rotations)
+
+    def test_processMoveList_yaml(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        loadChains, loopChains, enriches, loadTypes, loadNames, rotations, _ = fh.processMoveList(moves[1])
+        self.assertEqual(len(loadChains), 2)
+        self.assertTrue(any(enriches))
+        self.assertTrue(rotations)
 
     def test_getFactorList(self):
         fh = fuelHandlers.FuelHandler(self.o)
