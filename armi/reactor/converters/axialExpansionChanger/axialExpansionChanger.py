@@ -555,9 +555,8 @@ class AxialExpansionChanger:
                 f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
                 f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
 
-                Mass conservation is no longer guarunteed for this component type on this assembly!
-                Based on the case setting FIXME, a volume
-                weighted average temperature will be used.
+                Instead, a volume weighted average temperature will be used. The consequence is that mass conservation
+                is no longer guarunteed for this component type on this assembly!
                 """
                 runLog.warning(dedent(msg))
                 newToCompTemp = (
@@ -644,13 +643,13 @@ class AxialExpansionChanger:
                 msg = f"Component heights have gotten out of sync with height of {b}.\nBlock Height = {b.getHeight()}"
                 for c in iterSolidComponents(b):
                     msg += f"\n{c}, {c.height}"
-                raise RuntimeError(msg)
+                runLog.warning(msg, single=True)
 
         if self.linked.linkedBlocks[b].lower:
             lowerBlock = self.linked.linkedBlocks[b].lower
             if lowerBlock.p.ztop != b.p.zbottom:
-                raise RuntimeError(
+                runLog.warning(
                     "Block heights have gone out of sync!\n"
                     f"\t{lowerBlock.getType()}: {lowerBlock.p.ztop}\n"
-                    f"\t{b.getType()}: {b.p.zbottom}"
+                    f"\t{b.getType()}: {b.p.zbottom}", single=True,
                 )
