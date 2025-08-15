@@ -14,8 +14,25 @@
 
 """Unit tests for handling of symmetry-aware parameters."""
 
+from armi.reactor.assemblyParameters import getAssemblyParameterDefinitions
+from armi.reactor.blockParameters import getBlockParameterDefinitions
+from armi.reactor.reactorParameters import defineCoreParameters
 from armi.testing import symmetryTesting
 
 
 class ArmiSymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
-    """Run the basic symmetry test helper."""
+    """Run symmetry intentionality tests for ARMI."""
+
+    def setUp(self):
+        self.pluginCoreParams = defineCoreParameters()
+        self.pluginAssemblyParams = getAssemblyParameterDefinitions()
+        self.pluginBlockParams = getBlockParameterDefinitions()
+        self.pluginSymmetricBlockParams = [
+            "molesHmNow",
+            "molesHmBOL",
+            "massHmBOL",
+            "initialB10ComponentVol",
+            "kgFis",
+            "kgHM",
+        ]
+        super().setUp()
