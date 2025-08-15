@@ -54,8 +54,31 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
     To use the test fixture, make a subclass test and assign the `*ParamsToTest` parameters in the `setUp` method of
     the subclass. The subclass must have `super.setUp()` in it's `setUp` method at some point after the necessary plugin
-    attributes are assigned. For example:
+    attributes are assigned.
 
+    Attributes
+    ----------
+    coreParamsToTest : Iterable[str] | armi.reactor.parameters.parameterDefinitionCollection, optional
+        Core parameters that should be initialized and tested.
+    assemblyParamsToTest : Iterable[str] | armi.reactor.parameters.parameterDefinitionCollection, optional
+        Assembly parameters that should be initialized and tested.
+    blockParamsToTest : Iterable[str] | armi.reactor.parameters.parameterDefinitionCollection, optional
+        Block parameters that should be initialized and tested.
+    expectedSymmetricCoreParams : Iterable[str], optional
+        Core parameters that are expected to change with symmetry.
+    expectedSymmetricAssemblyParams : Iterable[str], optional
+        Assembly parameters that are expected to change with symmetry.
+    expectedSymmetricBlockParams : Iterable[str], optional
+        Block Parameters that are expected to change with symmetry.
+    parameterOverrides : dict[str: Any], optional
+        Dictionary of specific values to assign to a particular parameter. Useful for parameters that have validators.
+    paramsToIgnore : Iterable[str], optional
+        Parameter names to ignore the comparison results for.
+
+
+    Example
+    -------
+    ```python
     class MySymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
         def setUp():
             # Tests are configured using attributes. Attributes must be set prior to calling super.setUp()
@@ -75,6 +98,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
             # Finish setting up the tests by calling the parent's `setUp` method.
             super.setUp()
+    ```
 
     It should generally not be necessary for the plugin to implement any further unit tests, the parent class contains
     a test method that should adequately verify the the expected symmetric parameters are indeed expanded.
