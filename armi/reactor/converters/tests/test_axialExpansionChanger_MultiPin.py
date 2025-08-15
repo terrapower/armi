@@ -288,7 +288,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         Notes
         -----
-        Two assertions are done: 1) the correct amount of mass is removed from ``fromComp``. 2) the 
+        Two assertions are done: 1) the correct amount of mass is removed from ``fromComp``. 2) the
         resulting temperature of ``fromComp`` is unchanged.
         """
         self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=self.deltaZTop)
