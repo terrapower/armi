@@ -186,7 +186,6 @@ def defineSettings() -> List[setting.Setting]:
         ),
         setting.Setting(
             CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL,
-            type=bool,
             default=True,
             label="Instead of failing, use a volume weighted average temperature for mass redistribution "
             "in axial expansion.",
