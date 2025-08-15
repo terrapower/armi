@@ -20,13 +20,8 @@ are defined in this subpackage.
 """
 
 import math
-import typing
-
-import numpy as np
 
 from armi.reactor.components import ShapedComponent, componentParameters
-from armi.reactor.components.component import DimensionLink
-from armi.reactor.flags import Flags
 
 
 class Circle(ShapedComponent):
@@ -94,17 +89,6 @@ class Circle(ShapedComponent):
         otherID, otherOD = other.getDimension("id"), other.getDimension("od")
         myID, myOD = self.getDimension("id"), self.getDimension("od")
         return otherID <= myID < otherOD and otherID < myOD <= otherOD
-
-    def getPinIndices(self) -> typing.Optional[np.ndarray[tuple[int], np.ushort]]:
-        pdata = self.p.pinIndices
-        if isinstance(pdata, np.ndarray):
-            return pdata
-        elif isinstance(pdata, DimensionLink):
-            return pdata.getLinkedComponent().getPinIndices()
-        if self.parent.spatialGrid is not None and self.hasFlags([Flags.FUEL, Flags.CONTROL]):
-            # Save space (RAM and HDD) by computing on the fly
-            return np.arange(self.getDimension("mult"), dtype=np.ushort)
-        return None
 
 
 class Hexagon(ShapedComponent):
