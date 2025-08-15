@@ -358,7 +358,7 @@ class AxialExpansionChanger:
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
-            if b is not self.dummyBlock:
+            if b is not self.dummyBlock and ib != (numOfBlocks - 1):
                 targetComp = self.expansionData.getTargetComponent(b)
                 # redefine block bounds based on target component
                 b.p.zbottom = targetComp.zbottom
