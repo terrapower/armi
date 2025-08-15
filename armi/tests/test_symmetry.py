@@ -36,5 +36,6 @@ class ArmiSymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
             "kgHM",
         ]
         self.parameterOverrides = {"xsType": ["A"], "xsTypeNum": 65, "notes": ""}
+        self.paramsToIgnore = ["maxAssemNum"]
 
         super().setUp()

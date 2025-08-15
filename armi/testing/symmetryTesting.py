@@ -64,6 +64,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
     expectedSymmetricAssemblyParams = []
     expectedSymmetricBlockParams = []
     parameterOverrides = {}
+    paramsToIgnore = []
 
     def setUp(self):
         self._preprocessPluginParams()
@@ -73,6 +74,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
             expectedSymmetricAssemblyParams=self.assemblyParamsToTest,
             expectedSymmetricBlockParams=self.blockParamsToTest,
             parameterOverrides=self.parameterOverrides,
+            paramsToIgnore=self.paramsToIgnore,
         )
 
     def _preprocessPluginParams(self):
@@ -136,8 +138,7 @@ class SymmetryFactorTester:
         # Some parameters change because of symmetry but are not "volume integrated"
         # so this marks them for skipping in the compare.
         # Also allows plugins the flexibility to skip some parameters if needed.
-        self.paramsToIgnore = ["maxAssemNum"]
-        self.paramsToIgnore += paramsToIgnore
+        self.paramsToIgnore = paramsToIgnore
 
     @staticmethod
     def _getParameters(obj: object, paramList: Iterable[str]):
