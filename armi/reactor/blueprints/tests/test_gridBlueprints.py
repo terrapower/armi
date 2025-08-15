@@ -30,6 +30,8 @@ LATTICE_BLUEPRINT = """
 control:
     geom: hex_corners_up
     symmetry: full
+    lattice pitch: 
+      hex: 1.2
     lattice map: |
        - - - - - - - - - 1 1 1 1 1 1 1 1 1 4
         - - - - - - - - 1 1 1 1 1 1 1 1 1 1 1
@@ -50,6 +52,29 @@ control:
                        1 1 1 1 1 1 1 1 1 1 1 1
                         1 6 1 1 1 1 1 1 1 1 1
                          1 1 1 1 1 1 1 1 1 1
+pins:
+  geom: hex
+  symmetry: full
+  lattice pitch: 
+    hex: 1.3
+  lattice map: |
+    -   -   FP
+      -   FP  FP
+    -   CL  CL  CL
+      FP  FP  FP  FP
+    FP  FP  FP  FP  FP
+      CL  CL  CL  CL
+    FP  FP  FP  FP  FP
+      FP  FP  FP  FP
+    CL  CL  CL  CL  CL
+      FP  FP  FP  FP
+    FP  FP  FP  FP  FP
+      CL  CL  CL  CL
+    FP  FP  FP  FP  FP
+      FP  FP  FP  FP
+        CL  CL  CL
+          FP  FP
+            FP
 
 sfp:
     geom: cartesian
@@ -387,8 +412,15 @@ class TestGridBlueprintsSection(unittest.TestCase):
 
     def test_simpleRead(self):
         gridDesign = self.grids["control"]
-        _ = gridDesign.construct()
+        grid = gridDesign.construct()
+        self.assertAlmostEqual(grid.pitch, 1.2)
         self.assertEqual(gridDesign.gridContents[-8, 0], "6")
+
+        gridDesign = self.grids["pins"]
+        grid = gridDesign.construct()
+        self.assertAlmostEqual(grid.pitch, 1.3)
+        self.assertEqual(gridDesign.gridContents[-4, 0], "FP")
+        self.assertEqual(gridDesign.gridContents[-3, 3], "CL")
 
         # Cartesian full, odd
         gridDesign2 = self.grids["sfp"]

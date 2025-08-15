@@ -493,6 +493,36 @@ class Block_TestCase(unittest.TestCase):
         b1.add(fuel)
         self.assertEqual(b1.getSmearDensity(), 0.0)
 
+    def test_computeSmearDensity(self):
+        # test the null case
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], False)
+        self.assertEqual(smearDensity, 0.0)
+
+        # test one circle component
+        circles = self.block.getComponentsOfShape(components.Circle)
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [circles[0]], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        # use the test block
+        clads = set(self.block.getComponents(Flags.CLAD)).intersection(set(circles))
+        cladID = np.mean([clad.getDimension("id", cold=True) for clad in clads])
+        sortedCircles = self.block.getSortedComponentsInsideOfComponent(circles.pop())
+
+        fuelCompArea = sum(f.getArea(cold=True) for f in self.block.getComponents(Flags.FUEL))
+        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.block.getNumComponents(Flags.FUEL)
+        unmovableCompArea = sum(
+            c.getArea(cold=True)
+            for c in sortedCircles
+            if not c.isFuel() and not c.hasFlags([Flags.SLUG, Flags.DUMMY]) and c.containsSolidMaterial()
+        )
+
+        refSmearDensity = fuelCompArea / (innerCladdingArea - unmovableCompArea)
+        smearDensity = blocks.Block.computeSmearDensity(153.81433981516477, sortedCircles, True)
+        self.assertAlmostEqual(smearDensity, refSmearDensity, places=10)
+
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1
         self.assertEqual(0.1, self.block.p[("buRate", 3)])
