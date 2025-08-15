@@ -22,6 +22,7 @@ class SymmetryTestFixtureTester(symmetryTesting.BasicArmiSymmetryTestHelper):
     def setUp(self):
         self.blockParamsToTest = ["zbottom", "massHmBOL"]
         self.expectedSymmetricBlockParams = ["massHmBOL"]
+        self.parameterOverrides = {"xsType": ["A"], "xsTypeNum": 65, "notes": ""}
         return super().setUp()
 
     def test_errorWhenExpandedButNotRequested(self):

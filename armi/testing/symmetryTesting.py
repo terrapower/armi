@@ -25,7 +25,7 @@ parameters that are expected to change with symmetry do indeed change.
 This might be obvious, but this test CANNOT detect errors where the parameter is not either:
     1) Labeled as a symmetry-aware parameter in the parameter definition.
     2) Labeled as a symmetry-aware parameter in the test.
-Failing to do either of the above will result in passing symmetry tests.
+Failing to do at least one of the above will result in passing symmetry tests.
 
 The tests here use the `growToFullCore` since that should be one of the most mature symmetry-aware operations.
 
@@ -52,14 +52,32 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
     This class is meant to be customized in a plugin to check the plugin-specific symmetry-aware parameters.
 
-    To use the test fixture, make a subclass test and assign the `plugin*` parameters below in the `setUp` method of
+    To use the test fixture, make a subclass test and assign the `*ParamsToTest` parameters in the `setUp` method of
     the subclass. The subclass must have `super.setUp()` in it's `setUp` method at some point after the necessary plugin
     attributes are assigned. For example:
 
-
     class MySymmetryTest(symmetryTesting.BasicArmiSymmetryTestHelper):
         def setUp():
-            self.pluginBlockParams = [p if isinstance(p, str) else p.name for p in getPluginBlockParameterDefinitions()]
+            # Tests are configured using attributes. Attributes must be set prior to calling super.setUp()
+            # Note that it is not required to set any attributes, all have empty defaults
+
+            # Repeat for self.coreParamsToTest and self.assemblyParamsToTest as necessary:
+            self.blockParamsToTest = [p if isinstance(p, str) else p.name for p in getPluginBlockParameterDefinitions()]
+
+            # Repeat for self.expectedSymmetricCoreParams and self.expectedSymmetricAssemblyParams as necessary:
+            self.expectedSymmetricBlockParams = ["mySymmetricBlockParam1", "mySymmetricBlockParam2"]
+
+            # Set specific parameter overrides if the parameters need a specific value (usually due to input validators)
+            self.parameterOverrides = {"parameterName1": value1, "parameterName2": value2}
+
+            # Set specific parameters to ignore in comparison.
+            self.paramsToIgnore = ["myIgnoredParameter"]
+
+            # Finish setting up the tests by calling the parent's `setUp` method.
+            super.setUp()
+
+    It should generally not be necessary for the plugin to implement any further unit tests, the parent class contains
+    a test method that should adequately verify the the expected symmetric parameters are indeed expanded.
     """
 
     coreParamsToTest = []
