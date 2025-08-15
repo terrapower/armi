@@ -14,6 +14,7 @@
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
 import typing
+from textwrap import dedent
 
 from numpy import array
 from scipy.optimize import brentq
@@ -30,6 +31,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
+from armi.settings.fwSettings.globalSettings import CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL
 from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
 
@@ -540,9 +542,32 @@ class AxialExpansionChanger:
             newToCompTemp = toComp.temperatureInC
         else:
             targetArea = newVolume / (toComp.height + abs(deltaZTop))
-            newToCompTemp = brentq(
-                f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
-            )
+            try:
+                newToCompTemp = brentq(
+                    f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
+                )
+            except ValueError:
+                msg = f"""
+                Temperature search algorithm in axial expansion has failed in {self.linked.a}
+                Trying to search for new temp between
+                    from --> {fromComp.parent} : {fromComp} at {fromComp.temperatureInC} C
+                      to --> {toComp.parent} : {toComp} at {toComp.temperatureInC} C
+
+                f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
+                f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
+
+                Mass conservation is no longer guarunteed for this component type on this assembly!
+                Based on the case setting {self.cs[CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL]}, a volume
+                weighted average temperature will be used.
+                """
+                runLog.warning(dedent(msg))
+                newToCompTemp = (
+                    fromCompVolume / newVolume * fromComp.temperatureInC
+                    + toCompVolume / newVolume * toComp.temperatureInC
+                )
+            except Exception as ee:
+                raise ee
+
         # Do not use component.setTemperature as this mucks with the number densities we just calculated.
         toComp.temperatureInC = newToCompTemp
         toComp.clearCache()

@@ -35,6 +35,7 @@ CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
 CONF_AVAILABILITY_FACTOR = "availabilityFactor"
 CONF_AVAILABILITY_FACTORS = "availabilityFactors"
 CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
+CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL = "axialExpUseAverageTempInsteadOfFail"
 CONF_BETA = "beta"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
@@ -182,6 +183,18 @@ def defineSettings() -> List[setting.Setting]:
             description="Multiplicative factor on the Global Flux number of mesh per "
             "block. Used for axial mesh refinement.",
             schema=vol.All(vol.Coerce(int), vol.Range(min=0, min_included=False)),
+        ),
+        setting.Setting(
+            CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL,
+            type=bool,
+            default=True,
+            label="Instead of failing, use a volume weighted average temperature for mass redistribution "
+            "in axial expansion.",
+            description="During axial expansion, mass redistribution between components of differing temperatures may "
+            "occur. The resulting temperature is calculated using Brent's method. A restriction of this method is that "
+            "the search bounds be opposite signs. In the case this does not occur, instead of failing, a volume "
+            "weighted average temperature is used. Unlike the temperature calculated by Brent's method, this average "
+            "temperature does not guaruntee mass conservation.",
         ),
         setting.Setting(
             CONF_UNIFORM_MESH_MINIMUM_SIZE,
