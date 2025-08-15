@@ -49,6 +49,7 @@ class ReportInterface(interfaces.Interface):
     def __init__(self, r, cs):
         interfaces.Interface.__init__(self, r, cs)
         self.fuelCycleSummary = {"bocFissile": 0.0}
+        self.tableParameters = []
 
     def distributable(self):
         """Disables distributing of this report by broadcast MPI."""
@@ -102,20 +103,19 @@ class ReportInterface(interfaces.Interface):
                 for b in assem:
                     if b.p.TH2SigmaCladIDT:
                         peakTwoSigmaFuel = max(peakTwoSigmaFuel, b.p.TH2SigmaCladIDT)
-        parameterData = [
-            (
-                self.r.p.cycle,
-                self.r.p.timeNode,
-                self.r.core.p.coupledIteration,
-                self.r.core.p.keffUnc,
-                peakTwoSigmaFuel,
-                self.r.core.p.THdeltaPCore,
-            )
+        nodeParameters = [
+            self.r.p.cycle,
+            self.r.p.timeNode,
+            self.r.core.p.coupledIteration,
+            self.r.core.p.keffUnc,
+            peakTwoSigmaFuel,
+            self.r.core.p.THdeltaPCore,
         ]
+        self.tableParameters.append(nodeParameters)
         runLog.info(
             "\nSummary of reactor parameters:\n"
             + tabulate.tabulate(
-                parameterData,
+                self.tableParameters,
                 headers=["Cycle", "Node", "Couple", "Uncontrolled keff", "Peak 2-Sigma Fuel", "Core Pressure Drop"],
                 tableFmt="armi",
             )
