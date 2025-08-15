@@ -84,6 +84,10 @@ class TestSpatialLocator(unittest.TestCase):
         b.append(grids.IndexLocation(1, 1, 1, None))
         self.assertNotEqual(a, b)
 
+        c = grids.MultiIndexLocation(None)
+        c.append(grids.IndexLocation(0, 0, 0, None))
+        self.assertEqual(a, c)
+
     def test_multiIndexEqWithLocations(self):
         """Two multi index locators on the same grid are equal."""
         grid = MockStructuredGrid()
