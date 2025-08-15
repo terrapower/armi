@@ -85,7 +85,7 @@ class Air(material.Fluid):
         """
         Tk = getTk(Tc, Tk)
         self.checkPropertyTempRange("pseudoDensity", Tk)
-        inv_Tk = 1.0 / getTk(Tc, Tk)
+        inv_Tk = 1.0 / Tk
         rho_kgPerM3 = 1.15675e03 * inv_Tk**2 + 3.43413e02 * inv_Tk + 2.99731e-03
         return rho_kgPerM3 / G_PER_CM3_TO_KG_PER_M3
 
