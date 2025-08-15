@@ -31,7 +31,6 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
-from armi.settings.fwSettings.globalSettings import CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL
 from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
 
