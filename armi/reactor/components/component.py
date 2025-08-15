@@ -52,7 +52,7 @@ _NICE_DIM_NAMES = {
 }
 
 
-class DimensionLink(tuple):
+class _DimensionLink(tuple):
     """
     A linked dimension, where one component uses a dimension from another.
 
@@ -74,7 +74,7 @@ class DimensionLink(tuple):
         return linkedComponent.getDimension(dimID, Tc=Tc, cold=cold)
 
     def __eq__(self, other):
-        otherDimension = other.resolveDimension() if isinstance(other, DimensionLink) else other
+        otherDimension = other.resolveDimension() if isinstance(other, _DimensionLink) else other
         return self.resolveDimension() == otherDimension
 
     def __ne__(self, other):
@@ -301,7 +301,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                     name = match.group(1)
                     comp = components[name]
                     linkedKey = match.group(2)
-                    self.p[dimName] = DimensionLink((comp, linkedKey))
+                    self.p[dimName] = _DimensionLink((comp, linkedKey))
                 except Exception:
                     if value.count(".") > 1:
                         raise ValueError(
@@ -313,7 +313,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
-        self.p[key] = DimensionLink((otherComp, otherCompKey))
+        self.p[key] = _DimensionLink((otherComp, otherCompKey))
 
     def setProperties(self, properties):
         """Apply thermo-mechanical properties of a Material."""
@@ -976,7 +976,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         """
         dimension = self.p[key]
 
-        if isinstance(dimension, DimensionLink):
+        if isinstance(dimension, _DimensionLink):
             return dimension.resolveDimension(Tc=Tc, cold=cold)
 
         if not dimension or cold or key not in self.THERMAL_EXPANSION_DIMS:
@@ -1001,7 +1001,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
     def dimensionIsLinked(self, key):
         """True if a the specified dimension is linked to another dimension."""
-        return key in self.p and isinstance(self.p[key], DimensionLink)
+        return key in self.p and isinstance(self.p[key], _DimensionLink)
 
     def getDimensionNamesLinkedTo(self, otherComponent):
         """Find dimension names linked to the other component in this component."""
@@ -1203,7 +1203,7 @@ class Component(composites.Composite, metaclass=ComponentType):
                 raise RuntimeError(
                     f"Could not find parameter {dimName} defined for {self}. Is the desired Component class?"
                 )
-            if isinstance(val, DimensionLink):
+            if isinstance(val, _DimensionLink):
                 linkedDims.append((self.p.paramDefs[dimName].fieldName, val))
                 del self.p[dimName]
 
