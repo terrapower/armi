@@ -94,6 +94,16 @@ class Operator:
         common control things like: how many cycles a reactor is being modeled for, how many timesteps are to be modeled
         per time node, the verbosity of the logging of the run, and which modeling steps will be run.
 
+
+    .. impl:: The operator shall advance the reactor through time.
+        :id: I_ARMI_DB_TIME2
+        :implements: R_ARMI_DB_TIME
+
+        A major design feature of any scientific model is time evolution of the physical system. The operator is in
+        charge of driving the reactor through time. It sets various parameters that define the temporal position of the
+        reactor: cycle, node, timeNode, and time.
+
+
     Attributes
     ----------
     cs : Settings
