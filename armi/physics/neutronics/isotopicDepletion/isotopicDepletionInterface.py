@@ -84,7 +84,7 @@ class AbstractIsotopicDepleter:
     """
 
     name = None
-    function = "depletion"
+    purpose = "depletion"
 
     def __init__(self, r=None, cs=None, o=None):
         self.r = r
