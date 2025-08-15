@@ -344,6 +344,7 @@ class AverageBlockCollection(BlockCollection):
             newBlock.setNumberDensities(self._getAverageNumberDensities())
 
         newBlock.p.percentBu = self._calcWeightedBurnup()
+        newBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return newBlock
 
@@ -389,11 +390,11 @@ class AverageBlockCollection(BlockCollection):
         numberDensities : dict
             nucName, ndens data (atoms/bn-cm)
         """
-        nuclides = self.allNuclidesInProblem
         blocks = self.getCandidateBlocks()
         weights = np.array([self.getWeight(b) for b in blocks])
         weights /= weights.sum()  # normalize by total weight
         components = [sorted(b.getComponents())[compIndex] for b in blocks]
+        nuclides = self._getAllNucs(components)
         ndens = weights.dot([c.getNuclideNumberDensities(nuclides) for c in components])
         return dict(zip(nuclides, ndens))
 
@@ -463,6 +464,14 @@ class AverageBlockCollection(BlockCollection):
         else:
             return True
 
+    @staticmethod
+    def _getAllNucs(components):
+        """Iterate through components and get all unique nuclides."""
+        nucs = set()
+        for c in components:
+            nucs = nucs.union(c.getNuclides())
+        return sorted(list(nucs))
+
 
 def getBlockNuclideTemperature(block, nuclide):
     """Return the average temperature for 1 nuclide."""
@@ -482,12 +491,21 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
 
     def getNumberDensitiesWithTrace(component, allNucNames):
         """Needed to make sure temperature of 0-density nuclides in fuel get fuel temperature."""
-        return [
-            component.p.numberDensities[nucName] or TRACE_NUMBER_DENSITY
-            if nucName in component.p.numberDensities
-            else 0.0
-            for nucName in allNucNames
-        ]
+        if component.p.nuclides is None:
+            return [0.0 for _nuc in allNucNames]
+
+        allByteNucs = [nucName.encode() for nucName in allNucNames]
+        ndens = []
+        nucCopy = np.array(component.p.nuclides)
+        nDensCopy = np.array(component.p.numberDensities)
+        reverseIndex = {nuc: i for i, nuc in enumerate(nucCopy)}
+        for nuc in allByteNucs:
+            i = reverseIndex.get(nuc, -1)
+            if i >= 0:
+                ndens.append(max(nDensCopy[i], TRACE_NUMBER_DENSITY))
+            else:
+                ndens.append(0.0)
+        return ndens
 
     vol = block.getVolume()
     components, volFracs = zip(*block.getVolumeFractions())
@@ -505,7 +523,7 @@ def getBlockNuclideTemperatureAvgTerms(block, allNucNames):
     return nvt, nv
 
 
-class CylindricalComponentsAverageBlockCollection(BlockCollection):
+class CylindricalComponentsAverageBlockCollection(AverageBlockCollection):
     """
     Creates a representative block for the purpose of cross section generation with a one-
     dimensional cylindrical model.
@@ -554,20 +572,14 @@ class CylindricalComponentsAverageBlockCollection(BlockCollection):
         repBlock.p.percentBu = self._calcWeightedBurnup()
         componentsInOrder = self._orderComponentsInGroup(repBlock)
 
-        for c, allSimilarComponents in zip(sorted(repBlock), componentsInOrder):
+        for i, (c, allSimilarComponents) in enumerate(zip(sorted(repBlock), componentsInOrder)):
             allNucsNames, densities = self._getAverageComponentNucs(allSimilarComponents, bWeights)
             for nuc, aDensity in zip(allNucsNames, densities):
                 c.setNumberDensity(nuc, aDensity)
+            c.temperatureInC = self._getAverageComponentTemperature(i)
+        repBlock.clearCache()
         self.calcAvgNuclideTemperatures()
         return repBlock
-
-    @staticmethod
-    def _getAllNucs(components):
-        """Iterate through components and get all unique nuclides."""
-        nucs = set()
-        for c in components:
-            nucs = nucs.union(c.getNuclides())
-        return sorted(list(nucs))
 
     @staticmethod
     def _checkComponentConsistency(b, repBlock):

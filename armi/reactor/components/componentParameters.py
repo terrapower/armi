@@ -59,8 +59,16 @@ def getComponentParameterDefinitions():
 
         pb.defParam(
             "numberDensities",
+            setter=isNumpyArray("numberDensities"),
             units=f"#/(bn*{units.CM})",
             description="Number densities of each nuclide.",
+        )
+
+        pb.defParam(
+            "nuclides",
+            setter=isNumpyArray("nuclides"),
+            units=units.UNITLESS,
+            description="Nuclide names corresponding to numberDensities array.",
         )
 
         pb.defParam(
@@ -165,13 +173,6 @@ def getComponentParameterDefinitions():
             units=units.MOLES,
             default=0.0,
             description="Total number of moles of heavy metal at BOL.",
-        )
-
-        pb.defParam(
-            "puFrac",
-            default=0.0,
-            units=units.UNITLESS,
-            description="Current average Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
         )
 
     return pDefs

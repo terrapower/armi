@@ -15,9 +15,8 @@
 """
 Framework-wide settings definitions and constants.
 
-This should contain Settings definitions for general-purpose "framework"
-settings. These should only include settings that are not related to any
-particular physics or plugins.
+This should contain Settings definitions for general-purpose "framework" settings. These should only include settings
+that are not related to any particular physics or plugins.
 """
 
 import os
@@ -30,7 +29,6 @@ from armi.settings import setting
 from armi.settings.fwSettings import tightCouplingSettings
 from armi.utils.mathematics import isMonotonic
 
-# Framework settings
 CONF_ACCEPTABLE_BLOCK_AREA_ERROR = "acceptableBlockAreaError"
 CONF_ASSEM_FLAGS_SKIP_AXIAL_EXP = "assemFlagsToSkipAxialExpansion"
 CONF_AUTOMATIC_VARIABLE_MESH = "automaticVariableMesh"
@@ -40,7 +38,6 @@ CONF_AXIAL_MESH_REFINEMENT_FACTOR = "axialMeshRefinementFactor"
 CONF_BETA = "beta"
 CONF_BRANCH_VERBOSITY = "branchVerbosity"
 CONF_BU_GROUPS = "buGroups"
-CONF_TEMP_GROUPS = "tempGroups"
 CONF_BURN_CHAIN_FILE_NAME = "burnChainFileName"
 CONF_BURN_STEPS = "burnSteps"
 CONF_BURNUP_PEAKING_FACTOR = "burnupPeakingFactor"
@@ -79,8 +76,8 @@ CONF_MATERIAL_NAMESPACE_ORDER = "materialNamespaceOrder"
 CONF_MIN_MESH_SIZE_RATIO = "minMeshSizeRatio"
 CONF_MODULE_VERBOSITY = "moduleVerbosity"
 CONF_N_CYCLES = "nCycles"
-CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_N_TASKS = "nTasks"
+CONF_NON_UNIFORM_ASSEM_FLAGS = "nonUniformAssemFlags"
 CONF_OPERATOR_LOCATION = "operatorLocation"
 CONF_OUTPUT_CACHE_LOCATION = "outputCacheLocation"
 CONF_OUTPUT_FILE_EXTENSION = "outputFileExtension"
@@ -90,8 +87,8 @@ CONF_POWER = "power"
 CONF_POWER_DENSITY = "powerDensity"
 CONF_POWER_FRACTIONS = "powerFractions"
 CONF_PROFILE = "profile"
-CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_REMOVE_PER_CYCLE = "removePerCycle"
+CONF_RM_EXT_FILES_AT_BOC = "rmExternalFilesAtBOC"
 CONF_RUN_TYPE = "runType"
 CONF_SKIP_CYCLES = "skipCycles"
 CONF_SMALL_RUN = "rmExternalFilesAtEOL"
@@ -102,6 +99,7 @@ CONF_STATIONARY_BLOCK_FLAGS = "stationaryBlockFlags"
 CONF_T_IN = "Tin"
 CONF_T_OUT = "Tout"
 CONF_TARGET_K = "targetK"  # lots of things use this
+CONF_TEMP_GROUPS = "tempGroups"
 CONF_TIGHT_COUPLING = "tightCoupling"
 CONF_TIGHT_COUPLING_MAX_ITERS = "tightCouplingMaxNumIters"
 CONF_TIGHT_COUPLING_SETTINGS = "tightCouplingSettings"
@@ -112,6 +110,7 @@ CONF_USER_PLUGINS = "userPlugins"
 CONF_VERBOSITY = "verbosity"
 CONF_VERSIONS = "versions"
 CONF_ZONE_DEFINITIONS = "zoneDefinitions"
+CONF_ZONES_FILE = "zonesFile"
 
 
 def defineSettings() -> List[setting.Setting]:
@@ -689,7 +688,7 @@ def defineSettings() -> List[setting.Setting]:
             CONF_SORT_REACTOR,
             default=True,
             label="Do we want to automatically sort the Reactor?",
-            description="Deprecation Warning! This setting will be remove by 2024.",
+            description="If unsorted, ArmiObject IDs will be by the order they were added to the Reactor.",
         ),
         setting.Setting(
             CONF_RM_EXT_FILES_AT_BOC,
@@ -741,7 +740,15 @@ def defineSettings() -> List[setting.Setting]:
             label="Zone Definitions",
             description="Manual definitions of zones as lists of assembly locations "
             "(e.g. 'zoneName: loc1, loc2, loc3') . Zones are groups of assemblies used "
-            "by various summary and calculation routines.",
+            f"by various summary and calculation routines. See also {CONF_ZONES_FILE} "
+            "for an alternative method of specifying zones.",
+        ),
+        setting.Setting(
+            CONF_ZONES_FILE,
+            default="",
+            label="Zones definition file",
+            description="Input file containing the definition of Zones to be applied to the reactor. "
+            f"See also {CONF_ZONE_DEFINITIONS} for an alternative method of specifying zones.",
         ),
         setting.Setting(
             CONF_ACCEPTABLE_BLOCK_AREA_ERROR,

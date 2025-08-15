@@ -83,6 +83,47 @@ def buildSimpleFuelBlock():
     return b
 
 
+def buildLinkedFuelBlock():
+    """Return a simple hex block containing linked bond."""
+    b = blocks.HexBlock("fuel", height=10.0)
+
+    fuelDims = {"Tinput": 25.0, "Thot": 600, "od": 0.76, "id": 0.00, "mult": 127.0}
+    bondDims = {
+        "Tinput": 25.0,
+        "Thot": 450,
+        "od": "clad.id",
+        "id": "fuel.od",
+        "mult": 127.0,
+    }
+    cladDims = {"Tinput": 25.0, "Thot": 450, "od": 0.80, "id": 0.77, "mult": 127.0}
+    ductDims = {"Tinput": 25.0, "Thot": 400, "op": 16, "ip": 15.3, "mult": 1.0}
+    intercoolantDims = {
+        "Tinput": 400,
+        "Thot": 400,
+        "op": 17.0,
+        "ip": ductDims["op"],
+        "mult": 1.0,
+    }
+    coolDims = {"Tinput": 25.0, "Thot": 400}
+
+    fuel = components.Circle("fuel", "UZr", **fuelDims)
+    clad = components.Circle("clad", "HT9", **cladDims)
+    bondDims["components"] = {"clad": clad, "fuel": fuel}
+    bond = components.Circle("bond", "HT9", **bondDims)
+    duct = components.Hexagon("duct", "HT9", **ductDims)
+    coolant = components.DerivedShape("coolant", "Sodium", **coolDims)
+    intercoolant = components.Hexagon("intercoolant", "Sodium", **intercoolantDims)
+
+    b.add(fuel)
+    b.add(bond)
+    b.add(clad)
+    b.add(duct)
+    b.add(coolant)
+    b.add(intercoolant)
+
+    return b
+
+
 def loadTestBlock(cold=True, depletable=False) -> blocks.HexBlock:
     """Build an annular test block for evaluating unit tests."""
     caseSetting = settings.Settings()
@@ -368,6 +409,16 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
         )
         self.assertIsNotNone(r.excore.sfp.spatialGrid)
 
+    def test_orientationBOL(self):
+        _o, r = loadTestReactor(
+            os.path.join(TEST_ROOT, "smallestTestReactor"),
+            inputFileName="armiRunSmallest.yaml",
+        )
+
+        # Test the null-case; these should all be zero.
+        for a in r.core.iterChildren():
+            self.assertIsNone(a.p.orientation)
+
 
 class Block_TestCase(unittest.TestCase):
     def setUp(self):
@@ -441,6 +492,36 @@ class Block_TestCase(unittest.TestCase):
         fuel = components.Circle("fuel", "UZr", Tinput=25.0, Thot=25.0, od=0.84, id=0.6, mult=0)
         b1.add(fuel)
         self.assertEqual(b1.getSmearDensity(), 0.0)
+
+    def test_computeSmearDensity(self):
+        # test the null case
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [], False)
+        self.assertEqual(smearDensity, 0.0)
+
+        # test one circle component
+        circles = self.block.getComponentsOfShape(components.Circle)
+        smearDensity = blocks.Block.computeSmearDensity(123.4, [circles[0]], True)
+        self.assertEqual(smearDensity, 0.0)
+
+        # use the test block
+        clads = set(self.block.getComponents(Flags.CLAD)).intersection(set(circles))
+        cladID = np.mean([clad.getDimension("id", cold=True) for clad in clads])
+        sortedCircles = self.block.getSortedComponentsInsideOfComponent(circles.pop())
+
+        fuelCompArea = sum(f.getArea(cold=True) for f in self.block.getComponents(Flags.FUEL))
+        innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.block.getNumComponents(Flags.FUEL)
+        unmovableCompArea = sum(
+            c.getArea(cold=True)
+            for c in sortedCircles
+            if not c.isFuel() and not c.hasFlags([Flags.SLUG, Flags.DUMMY]) and c.containsSolidMaterial()
+        )
+
+        refSmearDensity = fuelCompArea / (innerCladdingArea - unmovableCompArea)
+        smearDensity = blocks.Block.computeSmearDensity(153.81433981516477, sortedCircles, True)
+        self.assertAlmostEqual(smearDensity, refSmearDensity, places=10)
 
     def test_timeNodeParams(self):
         self.block.p["buRate", 3] = 0.1

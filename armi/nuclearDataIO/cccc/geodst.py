@@ -263,7 +263,7 @@ class GeodstStream(cccc.StreamWithDataContainer):
                     self._metadata["NCINTJ"],
                     self._metadata["NCINTK"],
                 ),
-                dtype=np.int16,
+                dtype=np.int32,
             )
         for ki in range(self._metadata["NCINTK"]):
             with self.createRecord() as record:

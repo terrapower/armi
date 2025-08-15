@@ -162,7 +162,12 @@ class TestBlockCollectionAverage(unittest.TestCase):
         avgB = self.bc.createRepresentativeBlock()
         self.assertNotIn(avgB, self.bc)
         # (0 + 1 + 2 + 3 + 4) / 5 = 10/5 = 2.0
-        self.assertAlmostEqual(avgB.getNumberDensity("U235"), 2.0)
+        # adjust for thermal expansion between input temp (600 C) and average temp (603 C)
+        fuelMat = avgB.getComponent(Flags.FUEL).material
+        expansion = (1.0 + fuelMat.linearExpansionPercent(Tc=603.0) / 100.0) / (
+            1.0 + fuelMat.linearExpansionPercent(Tc=600.0) / 100.0
+        )
+        self.assertAlmostEqual(avgB.getNumberDensity("U235") / expansion**2, 2.0)
         # (0 + 1/4 + 2/4 + 3/4 + 4/4) / 5 * 100.0 = 50.0
         self.assertEqual(avgB.p.percentBu, 50.0)
 
@@ -261,6 +266,7 @@ class TestComponentAveraging(unittest.TestCase):
                     avgDensities[nuc],
                     msg=f"{nuc} density {compDensities[nuc]} not equal to {avgDensities[nuc]}!",
                 )
+            self.assertEqual(len(compDensities), len(avgDensities))
 
     def test_getAverageComponentTemperature(self):
         """Test mass-weighted component temperature averaging."""
@@ -818,7 +824,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         self.assertEqual("D", xsType3)
 
         # verify that we can get lowercase letters
-        xsTypes = self.csm.getNextAvailableXsTypes(27)
+        xsTypes = self.csm.getNextAvailableXsTypes(26)
         self.assertEqual("Y", xsTypes[-4])
         self.assertEqual("a", xsTypes[-3])
         self.assertEqual("b", xsTypes[-2])

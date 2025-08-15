@@ -27,6 +27,7 @@ import time
 from typing import Callable, Iterator, Optional
 
 import numpy as np
+from ruamel.yaml import YAML
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
@@ -42,6 +43,7 @@ from armi.reactor import (
     zones,
 )
 from armi.reactor.flags import Flags
+from armi.reactor.zones import Zone, Zones
 from armi.settings.fwSettings.globalSettings import (
     CONF_AUTOMATIC_VARIABLE_MESH,
     CONF_CIRCULAR_RING_PITCH,
@@ -52,6 +54,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_STATIONARY_BLOCK_FLAGS,
     CONF_TRACK_ASSEMS,
     CONF_ZONE_DEFINITIONS,
+    CONF_ZONES_FILE,
 )
 from armi.utils import createFormattedStrWithDelimiter, tabulate, units
 from armi.utils.iterables import Sequence
@@ -213,17 +216,33 @@ class Core(composites.Composite):
     @property
     def lib(self) -> Optional[xsLibraries.IsotxsLibrary]:
         """
-        Return the microscopic cross section library if one exists.
+        Return the microscopic cross section library, if one exists.
 
-        - If there is a library currently associated with the core, it will be returned
-        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as
-          ``ISOTXS`` object and returned.
-        - Finally, if no ``ISOTXS`` file exists in the working directory, a None will be returned.
+        - If there is a library currently associated with the Core, it will be returned
+        - Otherwise, an ``ISOTXS`` file will be searched for in the working directory, opened as ``ISOTXS`` object and
+          returned. If possible, it will find the correct file for the current cycle and timeNode.
+        - Finally, if no ``ISOTXS`` file exists in the working directory, a None value will be returned.
         """
-        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+        # determine the current cycle and timeNode
+        cycle = None
+        node = None
+        if self.r is not None:
+            cycle = self.r.p.cycle
+            node = self.r.p.timeNode
+
+        # if self._lib is None, try to find a local file
+        isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName(cycle, node)
         if self._lib is None and os.path.exists(isotxsFileName):
-            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+            # try to find the file for this specific cycle/node
+            runLog.info(f"Loading microscopic cross section library `{isotxsFileName}` at {cycle}/{node}")
             self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+        elif self._lib is None:
+            # try to find any local file, not labeled by cycle/node
+            isotxsFileName = nuclearDataIO.getExpectedISOTXSFileName()
+            if os.path.exists(isotxsFileName):
+                runLog.info(f"Loading microscopic cross section library `{isotxsFileName}`")
+                self._lib = nuclearDataIO.isotxs.readBinary(isotxsFileName)
+
         return self._lib
 
     @lib.setter
@@ -586,9 +605,10 @@ class Core(composites.Composite):
     def getNumHexRings(self):
         """Return the number of hex rings in the core. Based on location so indexing starts at 1."""
         maxRing = 0
-        for a in self.getAssemblies():
+        for a in self:
             ring, _pos = self.spatialGrid.getRingPos(a.spatialLocator)
             maxRing = max(maxRing, ring)
+
         return maxRing
 
     def getNumAssembliesWithAllRingsFilledOut(self, nRings):
@@ -734,7 +754,6 @@ class Core(composites.Composite):
         Notes
         -----
         Assumes that odd rings do not have an edge assembly in third core geometry.
-        These should be removed in: self._modifyGeometryAfterLoad during importGeom
         """
         numAssemsUpToOuterRing = self.getNumAssembliesWithAllRingsFilledOut(ring)
         numAssemsUpToInnerRing = self.getNumAssembliesWithAllRingsFilledOut(ring - 1)
@@ -1173,15 +1192,20 @@ class Core(composites.Composite):
             fuelNuclides = set()
             structureNuclides = set()
             for c in self.iterComponents():
+                compNuclides = []
                 # get only nuclides with non-zero number density
                 # nuclides could be present at 0.0 density just for XS generation
-                nuclides = [nuc for nuc, dens in c.getNumberDensities().items() if dens > 0.0]
+                if c.p.numberDensities is None:
+                    continue
+                for nuc, dens in zip(c.p.nuclides, c.p.numberDensities):
+                    if dens > 0.0:
+                        compNuclides.append(nuc.decode())
                 if c.getName() == "coolant":
-                    coolantNuclides.update(nuclides)
+                    coolantNuclides.update(compNuclides)
                 elif "fuel" in c.getName():
-                    fuelNuclides.update(nuclides)
+                    fuelNuclides.update(compNuclides)
                 else:
-                    structureNuclides.update(nuclides)
+                    structureNuclides.update(compNuclides)
             structureNuclides -= coolantNuclides
             structureNuclides -= fuelNuclides
             remainingNuclides = set(self.parent.blueprints.allNuclidesInProblem) - structureNuclides - coolantNuclides
@@ -2146,8 +2170,8 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined manually in the given Settings file, in the
-        `zoneDefinitions` setting.
+        Build the Zones that are defined in the given Settings, in the
+        `zoneDefinitions` or `zonesFile` case setting.
 
         Parameters
         ----------
@@ -2168,20 +2192,40 @@ class Core(composites.Composite):
         This function will just define the Zones it sees in the settings, it does not do any
         validation against a Core object to ensure those manual zones make sense.
         """
-        runLog.debug("Building Zones by manual definitions in `zoneDefinitions` setting")
-        stripper = lambda s: s.strip()
-        self.zones = zones.Zones()
+        if cs[CONF_ZONE_DEFINITIONS]:
+            runLog.info(f"Building Zones by manual definitions in {CONF_ZONE_DEFINITIONS} setting")
 
-        # parse the special input string for zone definitions
-        for zoneString in cs[CONF_ZONE_DEFINITIONS]:
-            zoneName, zoneLocs = zoneString.split(":")
-            zoneLocs = zoneLocs.split(",")
-            zone = zones.Zone(zoneName.strip())
-            zone.addLocs(map(stripper, zoneLocs))
-            self.zones.addZone(zone)
+            stripper = lambda s: s.strip()
+            self.zones = zones.Zones()
 
-        if not len(self.zones):
-            runLog.debug("No manual zones defined in `zoneDefinitions` setting")
+            # parse the special input string for zone definitions
+            for zoneString in cs[CONF_ZONE_DEFINITIONS]:
+                zoneName, zoneLocs = zoneString.split(":")
+                zoneLocs = zoneLocs.split(",")
+                zone = zones.Zone(zoneName.strip())
+                zone.addLocs(map(stripper, zoneLocs))
+                self.zones.addZone(zone)
+
+        elif cs[CONF_ZONES_FILE]:
+            runLog.info(f"Custom zoning strategy applied from {CONF_ZONES_FILE}.")
+
+            self.zones = Zones()
+            with open(cs[CONF_ZONES_FILE]) as stream:
+                zonesDict = YAML(typ="safe").load(stream)
+
+            for location, zoneName in zonesDict["customZonesMap"].items():
+                # if the the zoneName isn't already a Zones key, then add a new Zone
+                if zoneName not in self.zones:
+                    self.zones.addZone(Zone(zoneName, [location]))
+                # if the zoneName is already a Zones key, then add the location to the existing Zone
+                else:
+                    self.zones[zoneName].addLoc(location)
+
+            # sort the Zones
+            self.zones.sortZones()
+
+        else:
+            runLog.warning(f"No zones defined in either {CONF_ZONE_DEFINITIONS} or {CONF_ZONES_FILE} settings")
 
     def iterBlocks(
         self,

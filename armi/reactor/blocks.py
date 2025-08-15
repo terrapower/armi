@@ -166,9 +166,8 @@ class Block(composites.Composite):
 
         This also sets the block-level assembly-num param.
 
-        Once, we used a axial-character suffix to represent the axial index, but this is inherently
-        limited so we switched to a numerical name. The axial suffix needs can be brought in to
-        plugins that require them.
+        Once, we used a axial-character suffix to represent the axial index, but this is inherently limited so we
+        switched to a numerical name. The axial suffix needs can be brought in to plugins that require them.
 
         Examples
         --------
@@ -182,24 +181,22 @@ class Block(composites.Composite):
         """
         Compute the smear density of pins in this block.
 
-        Smear density is the area of the fuel divided by the area of the space available for fuel
-        inside the cladding. Other space filled with solid materials is not considered available. If
-        all the area is fuel, it has 100% smear density. Lower smear density allows more room for
-        swelling.
+        Smear density is the area of the fuel divided by the area of the space available for fuel inside the cladding.
+        Other space filled with solid materials is not considered available. If all the area is fuel, it has 100% smear
+        density. Lower smear density allows more room for swelling.
 
         Warning
         -------
-        This requires circular fuel and circular cladding. Designs that vary from this will be
-        wrong. It may make sense in the future to put this somewhere a bit more design specific.
+        This requires circular fuel and circular cladding. Designs that vary from this will be wrong. It may make sense
+        in the future to put this somewhere a bit more design specific.
 
         Notes
         -----
-        This only considers circular objects. If you have a cladding that is not a circle, it will
-        be ignored.
+        This only considers circular objects. If you have a cladding that is not a circle, it will be ignored.
 
-        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap represents
-        overlap area between two solid components. To account for this additional space within the
-        pin cladding the abs(negativeArea) is added to the inner cladding area.
+        Negative areas can exist for void gaps in the fuel pin. A negative area in a gap represents overlap area between
+        two solid components. To account for this additional space within the pin cladding the abs(negativeArea) is
+        added to the inner cladding area.
 
         Parameters
         ----------
@@ -222,6 +219,7 @@ class Block(composites.Composite):
         circles = self.getComponentsOfShape(components.Circle)
         if not circles:
             raise ValueError(f"Cannot get smear density of {self}. There are no circular components.")
+
         clads = set(self.getComponents(Flags.CLAD)).intersection(set(circles))
         if not clads:
             raise ValueError(f"Cannot get smear density of {self}. There are no clad components.")
@@ -229,16 +227,37 @@ class Block(composites.Composite):
         # Compute component areas
         cladID = np.mean([clad.getDimension("id", cold=cold) for clad in clads])
         innerCladdingArea = math.pi * (cladID**2) / 4.0 * self.getNumComponents(Flags.FUEL)
+        sortedCompsInsideClad = self.getSortedComponentsInsideOfComponent(clads.pop())
+
+        return self.computeSmearDensity(innerCladdingArea, sortedCompsInsideClad, cold)
+
+    @staticmethod
+    def computeSmearDensity(innerCladdingArea: float, sortedCompsInsideClad: list[components.Component], cold: bool):
+        """Compute the smear density for a sorted list of components.
+
+        Parameters
+        ----------
+        innerCladdingArea : float
+            Circular area inside the cladding.
+        sortedCompsInsideClad : list
+            A sorted list of Components inside the cladding.
+        cold : bool
+            If false, returns the smear density at hot temperatures
+
+        Returns
+        -------
+        float
+            The smear density as a fraction.
+        """
         fuelComponentArea = 0.0
         unmovableComponentArea = 0.0
         negativeArea = 0.0
-        for c in self.getSortedComponentsInsideOfComponent(clads.pop()):
+        for c in sortedCompsInsideClad:
             componentArea = c.getArea(cold=cold)
             if c.isFuel():
                 fuelComponentArea += componentArea
             elif c.hasFlags([Flags.SLUG, Flags.DUMMY]):
-                # this flag designates that this clad/slug combination isn't fuel and shouldn't be
-                # counted in the average
+                # this flag designates that this clad/slug combination isn't fuel and shouldn't be in the average
                 pass
             else:
                 if c.containsSolidMaterial():
@@ -253,12 +272,14 @@ class Block(composites.Composite):
                             )
                         )
                     negativeArea += abs(componentArea)
+
         if cold and negativeArea:
             raise ValueError(
-                f"Negative component areas exist on {self}. Check that the cold dimensions are "
-                "properly aligned and no components overlap."
+                "Negative component areas found. Check the cold dimensions are properly aligned and no components "
+                "overlap."
             )
-        innerCladdingArea += negativeArea  # See note 2
+
+        innerCladdingArea += negativeArea  # See note 2 of self.getSmearDensity
         totalMovableArea = innerCladdingArea - unmovableComponentArea
         smearDensity = fuelComponentArea / totalMovableArea
 
@@ -734,7 +755,6 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
-                child.p.puFrac = self.getPuMoles() / child.p.molesHmBOL if child.p.molesHmBOL > 0.0 else 0.0
 
         self.p.massHmBOL = massHmBOL
 
@@ -1843,7 +1863,9 @@ class HexBlock(Block):
         """
         rotNum = round((rad % (2 * math.pi)) / math.radians(60))
         self._rotateChildLocations(rad, rotNum)
-        self.p.orientation[2] += rotNum * 60
+        if self.p.orientation is None:
+            self.p.orientation = np.array([0.0, 0.0, 0.0])
+        self.p.orientation[2] += rotNum * 60.0
         self._rotateBoundaryParameters(rotNum)
         self._rotateDisplacement(rad)
 
@@ -1898,9 +1920,8 @@ class HexBlock(Block):
                     pass
                 else:
                     msg = (
-                        "No rotation method defined for spatial parameters that aren't "
-                        "defined once per hex edge/corner. No rotation performed "
-                        f"on {name}"
+                        "No rotation method defined for spatial parameters that aren't defined "
+                        f"once per hex edge/corner. No rotation performed on {name}"
                     )
                     runLog.warning(msg)
             elif isinstance(original, (int, float)):

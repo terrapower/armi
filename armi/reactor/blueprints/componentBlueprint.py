@@ -415,7 +415,7 @@ def insertDepletableNuclideKeys(c, blueprint):
         :py:func:`~armi.nucDirectory.nuclideBases.initReachableActiveNuclidesThroughBurnChain` to
         apply the user-specifications in the "nuclide flags" section of the blueprints to the
         Component such that all active isotopes and derivatives of those isotopes in the burn chain
-        are initialized to have an entry in the component's ``numberDensities`` dictionary.
+        are initialized to have an entry in the component's ``nuclides`` array.
 
         Note that certain case settings, including ``fpModel`` and ``fpModelLibrary``, may trigger
         modifications to the active nuclides specified by the user in the "nuclide flags" section of
@@ -433,7 +433,11 @@ def insertDepletableNuclideKeys(c, blueprint):
     """
     if c.hasFlags(Flags.DEPLETABLE):
         # depletable components, whether auto-derived or explicitly flagged need expanded nucs
-        nuclideBases.initReachableActiveNuclidesThroughBurnChain(
+        (
+            c.p.nuclides,
+            c.p.numberDensities,
+        ) = nuclideBases.initReachableActiveNuclidesThroughBurnChain(
+            c.p.nuclides,
             c.p.numberDensities,
             blueprint.activeNuclides,
         )

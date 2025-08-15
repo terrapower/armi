@@ -15,8 +15,7 @@
 """Read and/or write data files associated with nuclear data and reactor physics data."""
 # ruff: noqa: F401
 
-# export the cccc modules here to keep external clients happy,
-# though prefer full imports in new code
+# Export the cccc modules here for backward compatibility, though prefer full imports in new code.
 from armi.nuclearDataIO.cccc import (
     compxs,
     dif3d,
@@ -79,8 +78,7 @@ def _getNeutronKeywords(cycle, node, suffix, xsID):
     if cycle is not None and xsID is not None:
         raise ValueError("Keywords are over-specified. Choose `cycle` or `xsID` only")
 
-    # If neither cycle or xsID are provided there are no additional keywords to add
-    # to the file name
+    # If neither cycle or xsID are provided there are no additional keywords to add to the file name
     if cycle is None and xsID is None:
         keywords = []
     else:
@@ -92,6 +90,7 @@ def _getNeutronKeywords(cycle, node, suffix, xsID):
             keywords = [xsID]
             if suffix not in [None, ""]:
                 keywords.append("-" + suffix)
+
     return keywords
 
 

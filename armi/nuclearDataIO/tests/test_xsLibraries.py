@@ -262,6 +262,7 @@ class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
             "ISOAA-n24",
             "ISOBA-ISO",
             "ISOBA-n2",
+            "ISOBA",
             "ISOTXS",
             "ISOTXS-c2",
             "dummyISOTXS",
@@ -269,7 +270,7 @@ class TestGetISOTXSFilesInWorkingDirectory(unittest.TestCase):
             "ISOAA.BCD",
             "ISOCA-doppler",
             "ISOSA-void",
-            os.path.join("file-path", "ISOCA-ISO"),
+            os.path.join("file-path", "ISOCA"),
         ]
         filesInDirectory = shouldBeThere + shouldNotBeThere
         toMerge = xsLibraries.getISOTXSLibrariesToMerge("-n23", filesInDirectory)

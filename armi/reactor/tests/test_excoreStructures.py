@@ -14,10 +14,12 @@
 """Direct tests of the Excore Structures and Spent Fuel Pools."""
 
 from unittest import TestCase
+from unittest.mock import MagicMock
 
 from armi.reactor import grids
 from armi.reactor.composites import Composite
 from armi.reactor.excoreStructure import ExcoreCollection, ExcoreStructure
+from armi.reactor.reactors import Reactor
 from armi.reactor.spentFuelPool import SpentFuelPool
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 
@@ -42,11 +44,7 @@ class TestExcoreStructure(TestCase):
         self.assertIn("id:", rep)
 
     def test_parentReactor(self):
-        class Reactor(ExcoreStructure):
-            # This is just to make our tests lighter weight.
-            pass
-
-        fr = Reactor("Reactor")
+        fr = Reactor("Reactor", MagicMock())
         evst3 = ExcoreStructure("evst3", parent=fr)
         self.assertEqual(evst3.r, fr)
 

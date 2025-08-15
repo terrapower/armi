@@ -21,8 +21,8 @@ from armi.materials.air import Air
 from armi.utils import densityTools
 
 """
-Reference thermal physical properties from Table A.4 in Incropera, Frank P.,
-et al. Fundamentals of heat and mass transfer. Vol. 5. New York: Wiley, 2002.
+Reference thermal physical properties from Table A.4 in Incropera, Frank P., et al. Fundamentals of
+heat and mass transfer. Vol. 5. New York: Wiley, 2002.
 """
 
 REFERENCE_Tk = [
@@ -232,16 +232,22 @@ class Test_Air(unittest.TestCase):
         refO = 0.210748
         refAR = 0.004671
 
-        nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
+        nuclides, nDens = densityTools.getNDensFromMasses(air.pseudoDensity(Tk=300), air.massFrac)
 
-        error = math.fabs(nDens["C"] / sum(nDens.values()) - refC)
-        self.assertLess(error, 1e-4)
-        error = math.fabs(nDens["N"] / sum(nDens.values()) - refN)
-        self.assertLess(error, 1e-4)
-        error = math.fabs(nDens["O"] / sum(nDens.values()) - refO)
-        self.assertLess(error, 1e-4)
-        error = math.fabs(nDens["AR"] / sum(nDens.values()) - refAR)
-        self.assertLess(error, 1e-4)
+        diff = 1e-4
+        error = abs(nDens[0] / sum(nDens) - refC)
+        self.assertLess(error, diff)
+        error = abs(nDens[1] / sum(nDens) - refN)
+        self.assertLess(error, diff)
+        error = abs(nDens[2] / sum(nDens) - refO)
+        self.assertLess(error, diff)
+        error = abs(nDens[3] / sum(nDens) - refAR)
+        self.assertLess(error, diff)
+
+        self.assertEqual(nuclides[0].decode(), "C")
+        self.assertEqual(nuclides[1].decode(), "N")
+        self.assertEqual(nuclides[2].decode(), "O")
+        self.assertEqual(nuclides[3].decode(), "AR")
 
     def test_validRanges(self):
         air = Air()

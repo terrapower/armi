@@ -242,9 +242,11 @@ class TestDatabaseWriter(unittest.TestCase):
         cs = cs.modified(newSettings={"power": 0.0, "powerDensity": 9e4})
         self.o, cs = getSimpleDBOperator(cs)
         self.r = self.o.r
+        self.stateRetainer = self.r.retainState().__enter__()
 
     def tearDown(self):
         self.td.__exit__(None, None, None)
+        self.stateRetainer.__exit__()
 
     def test_writeSystemAttributes(self):
         """Test the writeSystemAttributes method.
@@ -398,9 +400,8 @@ class TestDatabaseReading(unittest.TestCase):
         cls.td = directoryChangers.TemporaryDirectoryChanger()
         cls.td.__enter__()
 
-        # The database writes the settings object to the DB rather
-        # than the original input file. This allows settings to be
-        # changed in memory like this and survive for testing.
+        # The database writes the settings object to the DB rather than the original input file.
+        # This allows settings to be changed in memory like this and survive for testing.
         newSettings = {"verbosity": "extra"}
         cls.nCycles = 2
         newSettings["nCycles"] = cls.nCycles
@@ -563,18 +564,8 @@ class TestDatabaseReading(unittest.TestCase):
         c1 = b1.getComponent(Flags.FUEL)
         c2 = b2.getComponent(Flags.FUEL)
 
-        self.assertIsInstance(c1.p.numberDensities, dict)
-        self.assertIsInstance(c2.p.numberDensities, dict)
-        keys1 = set(c1.p.numberDensities.keys())
-        keys2 = set(c2.p.numberDensities.keys())
-        self.assertEqual(keys1, keys2)
-
-        numDensVec1, numDensVec2 = [], []
-        for k in keys1:
-            numDensVec1.append(c1.p.numberDensities[k])
-            numDensVec2.append(c2.p.numberDensities[k])
-
-        assert_allclose(numDensVec1, numDensVec2)
+        for i, v1 in enumerate(c1.p.numberDensities):
+            self.assertAlmostEqual(v1, c2.p.numberDensities[i])
 
     def test_timesteps(self):
         with Database(self.dbName, "r") as db:

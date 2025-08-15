@@ -14,17 +14,20 @@
 
 """Tests for reactor blueprints."""
 
+import logging
 import os
 import unittest
 
-from armi import settings
+from armi import runLog, settings
 from armi.reactor import blueprints, reactors
 from armi.reactor.blueprints import gridBlueprint, reactorBlueprint
 from armi.reactor.blueprints.tests import test_customIsotopics
 from armi.reactor.composites import Composite
 from armi.reactor.excoreStructure import ExcoreStructure
-from armi.reactor.reactors import Core
+from armi.reactor.reactors import Core, loadFromCs
 from armi.reactor.spentFuelPool import SpentFuelPool
+from armi.settings.caseSettings import Settings
+from armi.tests import TEST_ROOT, mockRunLogs
 
 CORE_BLUEPRINT = """
 core:
@@ -56,6 +59,9 @@ core:
     grid contents:
       [0, 0]: IC
       [1, 1]: IC
+    orientationBOL:
+      [1, 1]: 60.0
+      [3, 2]: 120.0
 sfp:
     lattice pitch:
         x: 25.0
@@ -65,6 +71,9 @@ sfp:
     lattice map: |
       IC IC
       IC IC
+    orientationBOL:
+      [0, 0]: 60.0
+      [0, -1]: 120.0
 evst:
     lattice pitch:
         x: 32.0
@@ -213,3 +222,37 @@ class TestReactorBlueprints(unittest.TestCase):
         self.assertEqual(len(sfp.getChildren()), 4)
         sfp.add(evst.getChildren()[0])
         self.assertEqual(len(sfp.getChildren()), 5)
+
+    def test_orientationBOL(self):
+        core, sfp, _evst = self._setupReactor()
+
+        # test for hex core
+        a0 = core.getAssembly(locationString="001-001")
+        self.assertAlmostEqual(a0.p.orientation[2], 60.0, delta=1e-9)
+        a1 = core.getAssembly(locationString="003-002")
+        self.assertAlmostEqual(a1.p.orientation[2], 120.0, delta=1e-9)
+
+        # test cartesian, non-core
+        a0 = sfp.getAssembly("A0005")
+        self.assertAlmostEqual(a0.p.orientation[2], 60.0, delta=1e-9)
+        a1 = sfp.getAssembly("A0003")
+        self.assertAlmostEqual(a1.p.orientation[2], 120.0, delta=1e-9)
+
+    def test_fullCoreAreNotConverted(self):
+        """Prove that geometries aren't being converted when reading in a full-core BP."""
+        cs = Settings(os.path.join(TEST_ROOT, "smallHexReactor/smallHexReactor.yaml"))
+        runLog.setVerbosity(logging.INFO)
+        with mockRunLogs.BufferLog() as log:
+            self.assertEqual("", log.getStdout())
+            r = loadFromCs(cs)
+            # ensure that, for full core, only the correct parts of the geom modification are hit
+            self.assertIn("Applying Geometry Modifications", log.getStdout())
+            self.assertIn("Updating spatial grid", log.getStdout())
+            self.assertNotIn("Applying non-full core", log.getStdout())
+
+        a = r.core.getAssemblyWithStringLocation("003-012")
+        self.assertIn("fuel assembly", str(a).lower())
+
+        b = a[2]
+        self.assertIn("fuel", str(b).lower())
+        self.assertEqual(b.p.molesHmBOL, b.getHMMoles())
