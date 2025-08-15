@@ -102,19 +102,20 @@ class ReportInterface(interfaces.Interface):
                 for b in assem:
                     if b.p.TH2SigmaCladIDT:
                         peakTwoSigmaFuel = max(peakTwoSigmaFuel, b.p.TH2SigmaCladIDT)
+        parameterData = [
+            (
+                self.r.p.cycle,
+                self.r.p.timeNode,
+                self.r.core.p.coupledIteration,
+                self.r.core.p.keffUnc,
+                peakTwoSigmaFuel,
+                self.r.core.p.THdeltaPCore,
+            )
+        ]
         runLog.info(
             "\nSummary of reactor parameters:\n"
             + tabulate.tabulate(
-                [
-                    (
-                        self.r.p.cycle,
-                        self.r.p.timeNode,
-                        self.r.core.p.coupledIteration,
-                        self.r.core.p.keffUnc,
-                        peakTwoSigmaFuel,
-                        self.r.core.p.THdeltaPCore,
-                    )
-                ],
+                parameterData,
                 headers=["Cycle", "Node", "Couple", "Uncontrolled keff", "Peak 2-Sigma Fuel", "Core Pressure Drop"],
                 tableFmt="armi",
             )
