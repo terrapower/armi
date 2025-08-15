@@ -342,7 +342,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 
     def _iterTestFuelCompsOnBlock(self, b: "HexBlock"):
         """Iterate over components in b that exactly contain Flags.FUEL, Flags.TEST, and Flags.DEPLETABLE."""
-        yield from b.iterChildrenWithFlags([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exactMatch=True)
+        yield from b.iterChildrenWithFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exactMatch=True)
 
     def test_expandThermalBothFuel(self):
         """Perform thermal expansion on both fuel and test fuel components.
