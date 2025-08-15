@@ -557,7 +557,7 @@ class AxialExpansionChanger:
                 f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
 
                 Mass conservation is no longer guarunteed for this component type on this assembly!
-                Based on the case setting {self.cs[CONF_AXIAL_EXP_AVE_TEMP_INSTEAD_OF_FAIL]}, a volume
+                Based on the case setting FIXME, a volume
                 weighted average temperature will be used.
                 """
                 runLog.warning(dedent(msg))
