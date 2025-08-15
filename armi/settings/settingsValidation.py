@@ -346,6 +346,7 @@ class Inspector:
             CONF_XS_KERNEL,
             CONF_XS_SCATTERING_ORDER,
         )
+        from armi.settings.fwSettings.globalSettings import CONF_ZONE_DEFINITIONS, CONF_ZONES_FILE
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -621,6 +622,12 @@ class Inspector:
             lambda: (self.cs[CONF_BOUNDARIES] != neutronics.GENERAL_BC and self.cs[CONF_BC_COEFFICIENT]),
             f"General neutronic boundary condition was not selected, but `{CONF_BC_COEFFICIENT}` was defined. "
             f"Please enable `Generalized` neutronic boundary condition or disable `{CONF_BC_COEFFICIENT}`.",
+            "",
+            self.NO_ACTION,
+        )
+        self.addQuery(
+            lambda: (self.cs[CONF_ZONE_DEFINITIONS] and self.cs[CONF_ZONES_FILE]),
+            f"Cannot specify both {CONF_ZONE_DEFINITIONS} and {CONF_ZONES_FILE}. Please remove one and resubmit.",
             "",
             self.NO_ACTION,
         )

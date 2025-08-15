@@ -28,6 +28,8 @@ from armi.bookkeeping.db.database import Database
 from armi.settings.fwSettings.globalSettings import (
     CONF_COPY_FILES_FROM,
     CONF_COPY_FILES_TO,
+    CONF_ZONE_DEFINITIONS,
+    CONF_ZONES_FILE,
 )
 from armi.utils import pathTools
 from armi.utils.customExceptions import InputError
@@ -51,6 +53,10 @@ class MainInterface(interfaces.Interface):
     """
 
     name = "main"
+
+    @staticmethod
+    def specifyInputs(cs):
+        return {CONF_ZONES_FILE: [cs[CONF_ZONES_FILE]]}
 
     def interactBOL(self):
         interfaces.Interface.interactBOL(self)
@@ -163,6 +169,9 @@ class MainInterface(interfaces.Interface):
                     r = db.load(cycle, node, self.cs)
 
                 self.o.reattach(r, self.cs)
+
+        if self.cs[CONF_ZONES_FILE] or self.cs[CONF_ZONE_DEFINITIONS]:
+            self.r.core.buildManualZones(self.cs)
 
     def interactEOL(self):
         if self.cs["rmExternalFilesAtEOL"]:
