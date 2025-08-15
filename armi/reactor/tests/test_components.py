@@ -18,7 +18,6 @@ import copy
 import math
 import random
 import unittest
-from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose, assert_equal
@@ -2006,7 +2005,6 @@ class TestPinQuantities(unittest.TestCase):
         assert_equal(pinMgFluxes, simPinMgFluxes)
         assert_equal(pinMgFluxesAdj, simPinMgFluxesAdj)
         assert_equal(pinMgFluxesGamma, simPinMgFluxesGamma)
-
 
         # Check assertion for adjoint gamma flux
         with self.assertRaisesRegex(ValueError, "Adjoint gamma flux is currently unsupported."):

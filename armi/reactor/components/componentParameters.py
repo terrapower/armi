@@ -177,7 +177,6 @@ def getComponentParameterDefinitions():
             description="Total number of moles of heavy metal at BOL.",
         )
 
-
         def _validatePinIndices(self, val):
             # Handle dimension link (tuple(component, str)) or array of ints or None
             if isinstance(val, tuple) and len(val) == 2 and isinstance(val[1], str):
