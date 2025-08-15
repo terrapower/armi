@@ -131,7 +131,7 @@ class Triplet(yamlize.Object):
 
 
 class Pitch(yamlize.Object):
-    """A x, y, z triplet or triangular hex pitch for coordinates or lattice pitch."""
+    """A x, y, z triplet or triangular hex pitch for coordinates or lattice pitch for hexagonal grids."""
 
     hex = yamlize.Attribute(type=float, default=0.0)
     x = yamlize.Attribute(type=float, default=0.0)
