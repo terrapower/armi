@@ -71,7 +71,7 @@ class _PinTypeAssemblyModifier(inputModifiers.InputModifier):
                     newDim = getattr(c.p, dimName)
                     if isinstance(newDim, tuple):
                         # map linked component dimension
-                        link = component.DimensionLink(newDim)
+                        link = component._DimensionLink(newDim)
                         newDim = str(link)
                     if inpDim != newDim:
                         setattr(cDesign, dimName, newDim)
