@@ -101,7 +101,7 @@ class Operator:
 
         A major design feature of any scientific model is time evolution of the physical system. The operator is in
         charge of driving the reactor through time. It sets various parameters that define the temporal position of the
-        reactor: cycle, node, timeNode, and time.
+        reactor: cycle, node, timeNode, and time. This information is then stored in the output database.
 
 
     Attributes
