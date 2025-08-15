@@ -238,7 +238,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             c.ztop = c.zbottom + c.height
         self.b1.clearCache()
 
-        if fromComp == self.c0:
+        if fromComp is self.c0:
             self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / self.c0.height
         else:
             self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / self.c1.height
@@ -274,9 +274,10 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             places=self.places,
         )
 
-        # assert that the temperature of fromComp is the same
+        # fromComp temperature should not change because we've only removed mass
         self.assertEqual(fromComp.temperatureInC, fromCompRefData.temp)
-        # assert toComp temp based on if thermal expansion
+        # we expect the new temperature to be greater because we added mass from a
+        # material with a higher temperature
         if thermalExp:
             self.assertGreater(toComp.temperatureInC, toCompRefData.temp)
         else:
@@ -287,10 +288,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         Notes
         -----
-        Two assertions are done: 1) the correct amount of mass is moved to ``toComp``. 2) the resulting temperatures
-        for ``fromComp`` and ``toComp`` are correct.
+        Two assertions are done: 1) the correct amount of mass is removed from ``fromComp``. 2) the 
+        resulting temperature of ``fromComp`` is unchanged.
         """
-        # remove mass from ``fromComp``
         self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=self.deltaZTop)
 
         fromCompRefData, _toCompRefData = self._getReferenceData(fromComp, None)
@@ -311,7 +311,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
     @staticmethod
     def _isFluidButNotBond(c):
         """Determine if a component is a fluid, but not Bond."""
-        return bool(isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND))
+        return isinstance(c, Component) and isinstance(c.material, Fluid) and not c.hasFlags(Flags.BOND)
 
     def getTotalCompMassByFlag(self, a: "HexAssembly") -> dict[TypeSpec, float]:
         """Get the total mass of all components in the assembly, except Bond components.
@@ -329,7 +329,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for b in a:
             for c in iterSolidComponents(b):
                 totalCMassByFlags[c.p.flags] += c.getMass()
-            for c in filter(lambda c: self._isFluidButNotBond(c), b):
+            for c in filter(self._isFluidButNotBond, b):
                 totalCMassByFlags[c.p.flags] += c.getMass()
 
         return totalCMassByFlags
@@ -483,10 +483,8 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         """Conservation of axial expansion is measured by ensuring the total assembly mass per component flag and total
         assembly height is the same post exapansion.
         """
-        # check total component mass by flag
         newTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
         for origMass, (cFlag, newMass) in zip(self.origTotalCMassByFlag.values(), newTotalCMassByFlag.items()):
             self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
 
-        # check the assembly height is preserved
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
