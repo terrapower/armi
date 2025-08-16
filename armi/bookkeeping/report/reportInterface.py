@@ -72,7 +72,7 @@ class ReportInterface(interfaces.Interface):
 
         self.r.core.calcBlockMaxes()
         reportingUtils.summarizePowerPeaking(self.r.core)
-
+ 
         runLog.important("Cycle {}, node {} Summary: ".format(cycle, node))
         runLog.important(
             "  time= {0:8.2f} years, keff= {1:.12f} maxPD= {2:-8.2f} MW/m^2, maxBuI= {3:-8.4f} maxBuF= {4:8.4f}".format(
@@ -95,30 +95,35 @@ class ReportInterface(interfaces.Interface):
             else:
                 runLog.warning("No mgFlux to plot in reports")
 
-        # Table of useful output parameters
-        # peakTwoSigmaFuel = max([b.p.TH2SigmaCladIDT for assem in self.r.core for b in assem if assem.isFuel()])
-        peakTwoSigmaFuel = -1
-        for assem in self.r.core:
-            if assem.isFuel():
-                for b in assem:
-                    if b.p.TH2SigmaCladIDT:
-                        peakTwoSigmaFuel = max(peakTwoSigmaFuel, b.p.TH2SigmaCladIDT)
+        self.printParameterTable()
+
+    def printParameterTable(self):
+        def getMaxTHhotChannelCladIDT():
+            maxTHhotChannelCladIDT = 0
+            for a in r.core.getAssemblies():
+                THhotChannelCladIDT = a.getMaxParam("THhotChannelCladIDT")
+                if THhotChannelCladIDT > maxTHhotChannelCladIDT:
+                    maxTHhotChannelCladIDT = THhotChannelCladIDT
+            return maxTHhotChannelCladIDT
+
         nodeParameters = [
             self.r.p.cycle,
             self.r.p.timeNode,
             self.r.core.p.coupledIteration,
             self.r.core.p.keffUnc,
-            peakTwoSigmaFuel,
             self.r.core.p.THdeltaPCore,
         ]
+        paramNames = ["Cycle", "Node", "Couple", "Uncontrolled keff", "Core Pressure Drop"]
+        if self.r.core.p.maxTH2SigmaCladIDT:
+            paramNames.append("Peak 2-Sigma Fuel")
+            nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
+        else:
+            paramNames.append("Max Hot Channel Clad IDT")
+            nodeParameters.append(getMaxTHhotChannelCladIDT())
         self.tableParameters.append(nodeParameters)
         runLog.info(
-            "\nSummary of reactor parameters:\n"
-            + tabulate.tabulate(
-                self.tableParameters,
-                headers=["Cycle", "Node", "Couple", "Uncontrolled keff", "Peak 2-Sigma Fuel", "Core Pressure Drop"],
-                tableFmt="armi",
-            )
+            "Table of reactor parameters:\n"
+            + tabulate.tabulate(self.tableParameters, headers=paramNames, tableFmt="armi")
         )
 
     def interactBOC(self, cycle=None):
