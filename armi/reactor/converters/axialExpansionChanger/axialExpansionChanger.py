@@ -517,10 +517,18 @@ class AxialExpansionChanger:
         """
         # limitation: fromComp and toComp **must** be the same materials.
         if type(fromComp.material) is not type(toComp.material):
-            raise RuntimeError(
-                f"Cannot redistribute mass from {fromComp} to {toComp} as they are not the same material.\n"
-                f"{type(fromComp.material)} is not {type(toComp.material)}"
-            )
+            msg = f"""
+            Cannot redistribute mass between components that are different materials!
+                Trying to redistribte mass between the following components in {self.linked.a}:
+                    from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)}
+                      to --> {toComp.parent} : {toComp} : {type(toComp.material)}
+
+                Instead, mass will be removed from {fromComp} and {toComp} will be artificially expanded. The
+                consequence is that mass conservation is no longer guaranteed for the {toComp.getType()} component type
+                on this assembly!
+            """
+            runLog.warning(msg)
+            return
 
         toCompVolume = toComp.getArea() * toComp.height
         fromCompVolume = fromComp.getArea() * abs(deltaZTop)
