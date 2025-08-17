@@ -562,7 +562,7 @@ class AxialExpansionChanger:
         toComp.setNumberDensities(newNDens)
 
         # calculate the new temperature of toComp.
-        if fromComp.temperatureInC == toComp.temperatureInC:
+        if abs(fromComp.temperatureInC - toComp.temperatureInC) < 1e-10:
             newToCompTemp = toComp.temperatureInC
         else:
             targetArea = newVolume / (toComp.height + abs(deltaZTop))
