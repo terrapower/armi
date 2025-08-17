@@ -394,9 +394,26 @@ class AxialExpansionChanger:
                         for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
                             c.zbottom = b.p.ztop
                             c.ztop = c.zbottom + c.height
+                else:
+                    bAbove = self.linked.linkedBlocks[b].upper
+                    if bAbove is not self.dummyBlock or ib != (numOfBlocks - 2):
+                        targetCompAbove = self.expansionData.getTargetComponent(bAbove)
+                        if self.linked.linkedComponents[targetCompAbove].lower is None:
+                            # there is no linked component above and the target component in the block above has nothing linked
+                            # below it. In this case, shift the bounds of the target component in the block above to align
+                            # with the bounds of the current block.
+                            targetCompAbove.zbottom = b.p.ztop
+                            targetCompAbove.ztop = targetCompAbove.zbottom + targetCompAbove.height
+
 
                 # deal with non-target components
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
+                    if self.linked.linkedComponents[c].lower is None:
+                        # this component is not axially linked to anything below and needs to shift with its
+                        # respective parent block.
+                        c.zbottom = b.p.zbottom
+                        c.ztop = c.zbottom + c.height
+
                     cAbove = self.linked.linkedComponents[c].upper
                     if cAbove is not None:
                         # align components
