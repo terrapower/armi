@@ -144,7 +144,7 @@ class AxialExpansionChanger:
 
         See Also
         --------
-        :py:meth:`armi.reactor.converters.axialExpansionChanger.axialExpansionChanger.AxialExpansionChanger.applyColdHeightMassIncrease`
+        :py:meth:`applyColdHeightMassIncrease`
         """
         assems = list(assems)
         if not referenceAssembly:
@@ -399,12 +399,11 @@ class AxialExpansionChanger:
                     if bAbove is not self.dummyBlock or ib != (numOfBlocks - 2):
                         targetCompAbove = self.expansionData.getTargetComponent(bAbove)
                         if self.linked.linkedComponents[targetCompAbove].lower is None:
-                            # there is no linked component above and the target component in the block above has nothing linked
-                            # below it. In this case, shift the bounds of the target component in the block above to align
-                            # with the bounds of the current block.
+                            # there is no linked component above and the target component in the block above has
+                            # nothing linked below it. In this case, shift the bounds of the target component in the
+                            # block above to align with the bounds of the current block.
                             targetCompAbove.zbottom = b.p.ztop
                             targetCompAbove.ztop = targetCompAbove.zbottom + targetCompAbove.height
-
 
                 # deal with non-target components
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
