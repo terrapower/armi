@@ -368,7 +368,7 @@ class AxialExpansionChanger:
                 b.clearCache()
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
                 cLinkedAbove = self.linked.linkedComponents[targetComp].upper
-                if cLinkedAbove:
+                if cLinkedAbove is not None:
                     if self.expansionData.isTargetComponent(cLinkedAbove):
                         # the linked component in the block above is the target component for the block above.
                         # e.g., fuel to fuel. Shift the target component in the block above up (expansion) or
@@ -386,7 +386,7 @@ class AxialExpansionChanger:
                             c.zbottom = targetComp.ztop
                             c.ztop = c.height + c.zbottom
 
-                if self.linked.linkedComponents[targetComp].upper is None and len(getSolidComponents(b)) == 1:
+                elif len(getSolidComponents(b)) == 1:
                     # there is no linked component above and there is only one solid component in the current block.
                     # push up (expansion) or pull down (contraction) all components in the block above.
                     # e.g., the transition from grid plate to pin assembly.
