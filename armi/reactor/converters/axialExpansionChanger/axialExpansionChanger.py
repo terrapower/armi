@@ -540,11 +540,11 @@ class AxialExpansionChanger:
                     from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)}
                       to --> {toComp.parent} : {toComp} : {type(toComp.material)}
 
-                Instead, mass will be removed from {fromComp} and {toComp} will be artificially expanded. The
-                consequence is that mass conservation is no longer guaranteed for the {toComp.getType()} component type
-                on this assembly!
+                Instead, mass will be removed from ({fromComp} | {type(fromComp.material)}) and
+                ({toComp} | {type(toComp.material)} will be artificially expanded. The consequence is that mass
+                conservation is no longer guaranteed for the {toComp.getType()} component type on this assembly!
             """
-            runLog.warning(msg)
+            runLog.warning(dedent(msg))
             return
 
         toCompVolume = toComp.getArea() * toComp.height
@@ -571,23 +571,23 @@ class AxialExpansionChanger:
                     f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
                 )
             except ValueError:
-                msg = f"""
-                Temperature search algorithm in axial expansion has failed in {self.linked.a}
-                Trying to search for new temp between
-                    from --> {fromComp.parent} : {fromComp} at {fromComp.temperatureInC} C
-                      to --> {toComp.parent} : {toComp} at {toComp.temperatureInC} C
-
-                f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
-                f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
-
-                Instead, a volume weighted average temperature will be used. The consequence is that mass conservation
-                is no longer guaranteed for this component type on this assembly!
-                """
-                runLog.warning(dedent(msg))
                 newToCompTemp = (
                     fromCompVolume / newVolume * fromComp.temperatureInC
                     + toCompVolume / newVolume * toComp.temperatureInC
                 )
+                msg = f"""
+                Temperature search algorithm in axial expansion has failed in {self.linked.a}
+                Trying to search for new temp between
+                    from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)} at {fromComp.temperatureInC} C
+                      to --> {toComp.parent} : {toComp} : {type(toComp.material)} at {toComp.temperatureInC}
+
+                f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
+                f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
+
+                Instead, a volume weighted average temperature of {newToCompTemp} will be used. The consequence is that
+                mass conservation is no longer guaranteed for this component type on this assembly!
+                """
+                runLog.warning(dedent(msg))
             except Exception as ee:
                 raise ee
 
@@ -665,10 +665,23 @@ class AxialExpansionChanger:
 
         for c in iterSolidComponents(b):
             if c.height - b.getHeight() > 1e-12:
-                msg = f"Component heights have gotten out of sync with height of {b}.\nBlock Height = {b.getHeight()}"
-                for c in iterSolidComponents(b):
-                    msg += f"\n{c}, {c.height}"
-                runLog.warning(msg, single=True)
+                diff = c.height - b.getHeight()
+                expectedChange = "increase" if diff < 0.0 else "decrease"
+                msg = f"""
+                The height of {c} has gone out of sync with its parent block!
+                     Assembly: {self.linked.a}
+                        Block: {b}
+                    Component: {c}
+
+                        Block Height = {b.getHeight()}
+                    Component Height = {c.height}
+
+                The difference in height is {diff} cm. This difference will result in an artificial {expectedChange}
+                in the mass of {c}. This is indicative that there are multiple axial component terminations in {b}.
+                Per the ARMI User Manual, to preserve mass there can only be one axial component termination
+                per block.
+                """
+                runLog.warning(dedent(msg))
 
         if self.linked.linkedBlocks[b].lower:
             lowerBlock = self.linked.linkedBlocks[b].lower
