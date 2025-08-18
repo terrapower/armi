@@ -27,7 +27,6 @@ from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
 )
 from armi.reactor.converters.axialExpansionChanger.expansionData import (
     ExpansionData,
-    getSolidComponents,
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
@@ -83,7 +82,7 @@ class AxialExpansionChanger:
 
     linked: typing.Optional[AssemblyAxialLinkage]
     expansionData: typing.Optional[ExpansionData]
-    dummyBlock: typing.Optional["Block"]
+    topMostBlock: typing.Optional["Block"]
 
     def __init__(self, detailedAxialExpansion: bool = False):
         """
@@ -97,7 +96,7 @@ class AxialExpansionChanger:
         self._detailedAxialExpansion = detailedAxialExpansion
         self.linked = None
         self.expansionData = None
-        self.dummyBlock = None
+        self.topMostBlock = None
 
     @classmethod
     def expandColdDimsToHot(
@@ -316,9 +315,8 @@ class AxialExpansionChanger:
         - If false, the top most block in the assembly is artificially chopped
           to preserve the assembly height. A runLog.Warning also issued.
         """
-        if self.linked.a[-1].hasFlags(Flags.DUMMY):
-            self.dummyBlock = self.linked.a[-1]
-        else:
+        self.topMostBlock = self.linked.a[-1]
+        if not self.topMostBlock.hasFlags(Flags.DUMMY):
             runLog.warning(
                 f"No dummy block present at the top of {self.linked.a}! "
                 "Top most block will be artificially chopped "
@@ -342,13 +340,12 @@ class AxialExpansionChanger:
             top-most Block is is then updated to reflect any expansion/contraction.
         """
         mesh = [0.0]
-        numOfBlocks = self.linked.a.countBlocksWithFlags()
         runLog.debug(
             "Printing component expansion information (growth percentage and 'target component')"
             f"for each block in assembly {self.linked.a}."
         )
         # expand all of the components
-        for b in filter(lambda b: b is not self.dummyBlock, self.linked.a):
+        for b in self.linked.a:
             for c in iterSolidComponents(b):
                 growFrac = self.expansionData.getExpansionFactor(c)
                 # component ndens and component heights are scaled to their respective growth factor
@@ -359,7 +356,7 @@ class AxialExpansionChanger:
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
-            if b is not self.dummyBlock or ib != (numOfBlocks - 1):
+            if b is not self.topMostBlock:
                 targetComp = self.expansionData.getTargetComponent(b)
                 # redefine block bounds based on target component
                 b.p.zbottom = targetComp.zbottom
@@ -388,7 +385,12 @@ class AxialExpansionChanger:
 
                 else:
                     bAbove = self.linked.linkedBlocks[b].upper
-                    if bAbove is not self.dummyBlock or ib != (numOfBlocks - 2):
+                    if bAbove is self.topMostBlock:
+                        if not bAbove.hasFlags(Flags.DUMMY):
+                            for c in iterSolidComponents(bAbove):
+                                c.zbottom = b.p.ztop
+                                c.ztop = c.zbottom + c.height
+                    else:
                         targetCompAbove = self.expansionData.getTargetComponent(bAbove)
                         # shift the bounds of the target component in the block above to align with the bounds of the
                         # current block.
@@ -427,13 +429,13 @@ class AxialExpansionChanger:
                 b.p.height = b.p.ztop - b.p.zbottom
                 b.p.z = b.p.zbottom + b.getHeight() / 2.0
                 b.clearCache()
-                if b is not self.dummyBlock:
-                    # if an assembly doesn't have a dummy block, we still need to adjust the components within it in
-                    # order to keep them consistent with the block.
-                    for c in iterSolidComponents(b):
-                        c.zbottom = b.p.zbottom
-                        c.ztop = b.p.ztop
-                        c.height = c.ztop - c.zbottom
+                # If the self.topMostBlock is a dummy block, the following is meaningless as there are no solid
+                # components. However, if it is not a dummy block, we need to adjust the solid components within it in
+                # order to keep their elevation information consistent with the block.
+                for c in iterSolidComponents(b):
+                    c.zbottom = b.p.zbottom
+                    c.ztop = b.p.ztop
+                    c.height = c.ztop - c.zbottom
 
             self._checkBlockHeight(b)
             # since some heavy metal may have moved around (e.g., if there are multiple fuel pins in a block), update
