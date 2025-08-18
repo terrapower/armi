@@ -435,6 +435,7 @@ class AxialExpansionChanger:
             else:
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
+                b.p.z = b.p.zbottom + b.getHeight() / 2.0
                 b.clearCache()
                 if b is not self.dummyBlock:
                     # if an assembly doesn't have a dummy block, we still need to adjust the components within it in
