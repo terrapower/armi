@@ -2656,7 +2656,42 @@ class Composite(ArmiObject):
         return list(items)
 
     def getComponents(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Return a list of Component objects within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        list of Component
+            items matching typeSpec and exact criteria
+        """
         return list(self.iterComponents(typeSpec, exact))
+
+    def getFirstComponent(self, typeSpec: TypeSpec = None, exact=False):
+        """
+        Returns a single Component object within this Composite.
+
+        Parameters
+        ----------
+        typeSpec : TypeSpec
+            Component flags. Will restrict Components to specific ones matching the flags specified.
+        exact : bool, optional
+            Only match exact component labels (names). If True, 'coolant' will not match 'interCoolant'. This has no
+            impact if typeSpec is None.
+
+        Returns
+        -------
+        Component
+            The first item matching typeSpec and exact criteria
+        """
+        return next(self.iterComponents(typeSpec, exact))
 
     def iterComponents(self, typeSpec: TypeSpec = None, exact: bool = False) -> Iterator["Component"]:
         """

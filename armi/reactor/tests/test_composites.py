@@ -95,7 +95,7 @@ class TestCompositePattern(unittest.TestCase):
         runLog.setVerbosity("error")
         container = DummyComposite("inner test fuel", 99)
         for i in range(5):
-            leaf = DummyLeaf("duct {}".format(i), i + 100)
+            leaf = DummyLeaf(f"duct {i}", i + 100)
             leaf.setType("duct")
             container.add(leaf)
         nested = DummyComposite("clad", 98)
@@ -472,6 +472,28 @@ class TestCompositePattern(unittest.TestCase):
             self.assertAlmostEqual(rRatesAssem[key], val)
             self.assertAlmostEqual(rRatesCore[key], val)
             self.assertAlmostEqual(rRatesReactor[key], val)
+
+    def test_getFirstComponent(self):
+        c = self.container.getComponents()[0]
+        c0 = self.container.getFirstComponent()
+        self.assertEqual(c, c0)
+        self.assertIsInstance(c0, composites.Composite)
+
+        c = self.cladChild.getComponents()[0]
+        c0 = self.cladChild.getFirstComponent()
+        self.assertEqual(c, c0)
+        self.assertIsInstance(c0, composites.Composite)
+
+        c = self.secondGen.getComponents()[0]
+        c0 = self.secondGen.getFirstComponent()
+        self.assertEqual(c, c0)
+        self.assertIsInstance(c0, composites.Composite)
+
+        b = loadTestBlock()
+        c = b.getComponents()[0]
+        c0 = b.getFirstComponent()
+        self.assertEqual(c, c0)
+        self.assertIsInstance(c0, composites.Composite)
 
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
