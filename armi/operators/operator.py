@@ -406,6 +406,7 @@ class Operator:
         self.r.p.timeNode = timeNode
         if timeNode > 0:
             self.r.p.time += self.r.o.stepLengths[cycle][timeNode - 1] / units.DAYS_PER_YEAR
+
         self.interactAllEveryNode(cycle, timeNode)
         self._performTightCoupling(cycle, timeNode)
 
