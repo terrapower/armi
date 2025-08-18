@@ -359,7 +359,7 @@ class AxialExpansionChanger:
 
         # align blocks on target components
         for ib, b in enumerate(self.linked.a):
-            if b is not self.dummyBlock and ib != (numOfBlocks - 1):
+            if b is not self.dummyBlock or ib != (numOfBlocks - 1):
                 targetComp = self.expansionData.getTargetComponent(b)
                 # redefine block bounds based on target component
                 b.p.zbottom = targetComp.zbottom
@@ -432,9 +432,10 @@ class AxialExpansionChanger:
 
                         # realign components based on deltaZTop
                         self._shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
-            if b is self.dummyBlock or ib == (numOfBlocks - 1):
+            else:
                 b.p.zbottom = self.linked.linkedBlocks[b].lower.p.ztop
                 b.p.height = b.p.ztop - b.p.zbottom
+                b.clearCache()
                 if b is not self.dummyBlock:
                     # if an assembly doesn't have a dummy block, we still need to adjust the components within it in
                     # order to keep them consistent with the block.
