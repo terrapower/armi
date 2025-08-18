@@ -341,7 +341,7 @@ class Layout:
             elif issubclass(Klass, ExcoreStructure):
                 comp = Klass(name)
             elif issubclass(Klass, Component):
-                # init all dimensions to None, they will be loaded and assigned after load
+                # init all dimensions to 0, they will be loaded and assigned after load
                 kwargs = dict.fromkeys(Klass.DIMENSION_NAMES, 0)
                 kwargs["modArea"] = None
                 kwargs["material"] = material
