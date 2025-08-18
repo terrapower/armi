@@ -386,24 +386,14 @@ class AxialExpansionChanger:
                             c.zbottom = targetComp.ztop
                             c.ztop = c.height + c.zbottom
 
-                elif len(getSolidComponents(b)) == 1:
-                    # there is no linked component above and there is only one solid component in the current block.
-                    # push up (expansion) or pull down (contraction) all components in the block above.
-                    # e.g., the transition from grid plate to pin assembly.
-                    if self.linked.linkedBlocks[b].upper:  # split off to accommodate unit tests in other parts of ARMI
-                        for c in iterSolidComponents(self.linked.linkedBlocks[b].upper):
-                            c.zbottom = b.p.ztop
-                            c.ztop = c.zbottom + c.height
                 else:
                     bAbove = self.linked.linkedBlocks[b].upper
                     if bAbove is not self.dummyBlock or ib != (numOfBlocks - 2):
                         targetCompAbove = self.expansionData.getTargetComponent(bAbove)
-                        if self.linked.linkedComponents[targetCompAbove].lower is None:
-                            # there is no linked component above and the target component in the block above has
-                            # nothing linked below it. In this case, shift the bounds of the target component in the
-                            # block above to align with the bounds of the current block.
-                            targetCompAbove.zbottom = b.p.ztop
-                            targetCompAbove.ztop = targetCompAbove.zbottom + targetCompAbove.height
+                        # shift the bounds of the target component in the block above to align with the bounds of the
+                        # current block.
+                        targetCompAbove.zbottom = b.p.ztop
+                        targetCompAbove.ztop = targetCompAbove.zbottom + targetCompAbove.height
 
                 # deal with non-target components
                 for c in filter(lambda c: c is not targetComp, iterSolidComponents(b)):
