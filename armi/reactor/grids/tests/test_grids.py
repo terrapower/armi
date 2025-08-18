@@ -76,6 +76,54 @@ class TestSpatialLocator(unittest.TestCase):
         loc2 = grids.IndexLocation(2, 2, 0, None)
         self.assertEqual(loc1 + loc2, grids.IndexLocation(3, 4, 0, None))
 
+    def test_multiIndexEq(self):
+        """Check multi index locations are only true if they live on the same grid and have the same locations."""
+        a = grids.MultiIndexLocation(None)
+        a.append(grids.IndexLocation(0, 0, 0, None))
+        b = grids.MultiIndexLocation(None)
+        b.append(grids.IndexLocation(1, 1, 1, None))
+        self.assertNotEqual(a, b)
+
+        c = grids.MultiIndexLocation(None)
+        c.append(grids.IndexLocation(0, 0, 0, None))
+        self.assertEqual(a, c)
+
+    def test_multiIndexEqWithLocations(self):
+        """Two multi index locators on the same grid are equal."""
+        grid = MockStructuredGrid()
+        a = grids.MultiIndexLocation(grid)
+        a.extend((grids.IndexLocation(i, -i, i, grid) for i in range(5)))
+
+        b = grids.MultiIndexLocation(grid)
+        b.extend(a)
+
+        self.assertEqual(a, b)
+        # If the order differs but all the locations are the same, the locators are considered not equal
+        locs = list(a)
+        locs.insert(0, locs.pop())
+        c = grids.MultiIndexLocation(grid)
+        c.extend(locs)
+        self.assertNotEqual(c, a)
+
+    def test_coordinateLocationEq(self):
+        """Test for equality on the coordinate location object."""
+        base = grids.CoordinateLocation(1, -3, 5, MockStructuredGrid())
+        self.assertEqual(base, base)
+        self.assertEqual(base, grids.CoordinateLocation(base.i, base.j, base.k, base.grid))
+        self.assertNotEqual(base, grids.CoordinateLocation(base.i, base.j, base.k, None))
+        # Pick some points with different indices in one dimension
+        # Offsets are arbitrary
+        self.assertNotEqual(base, grids.CoordinateLocation(base.i + 1, base.j, base.k, base.grid))
+        self.assertNotEqual(base, grids.CoordinateLocation(base.i, base.j - 2, base.k, base.grid))
+        self.assertNotEqual(base, grids.CoordinateLocation(base.i, base.j, base.k + 13, base.grid))
+
+    def test_coordinateLocationHash(self):
+        """Ensure we can hash the location based on it's position, not the grid."""
+        a = grids.CoordinateLocation(5, 9, 1, MockStructuredGrid())
+        self.assertEqual(hash(a), hash((a.i, a.j, a.k)))
+        b = grids.CoordinateLocation(a.i, a.j, a.k, None)
+        self.assertEqual(hash(b), hash(a))
+
     def test_recursion(self):
         """
         Make sure things work as expected with a chain of locators/grids/locators.
