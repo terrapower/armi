@@ -74,7 +74,7 @@ class TestComplexShapes(unittest.TestCase):
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
 
-        # test that holeRadFromCenter does not change the area.
+        # Test that holeRadFromCenter does not change the area.
         comp2 = HoledHexagon(
             "TestHoledHexagonHoleRadFromCenter",
             material=self.material,
