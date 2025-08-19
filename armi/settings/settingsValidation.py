@@ -443,6 +443,17 @@ class Inspector:
         )
 
         self.addQuery(
+            lambda: sum(bool(setting) for setting in [
+            self.cs["shuffleSequenceFile"],
+            self.cs["explicitRepeatShuffles"], 
+            self.cs["shuffleLogic"]
+            ]) > 1,
+            "Only one shuffling method can be defined but multiple were found among: shuffleSequenceFile, explicitRepeatShuffles, and shuffleLogic. Please specify only one.",
+            "",
+            self.NO_ACTION,
+        )
+
+        self.addQuery(
             lambda: not self.cs["power"] and not self.cs["powerDensity"],
             "No power or powerDensity set. You must always start by importing a base settings file.",
             "",
