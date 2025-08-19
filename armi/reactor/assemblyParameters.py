@@ -38,7 +38,7 @@ def getAssemblyParameterDefinitions():
         pb.defParam(
             "guideTubeTopElevation",
             units=units.CM,
-            description=("Elevation of the guide tube from the bottom of the duct."),
+            description=("Elevation of the top of the guide tube relative to the bottom of the duct."),
             categories=[parameters.Category.assignInBlueprints],
             saveToDB=True,
             default=None,
