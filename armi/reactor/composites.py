@@ -2691,7 +2691,10 @@ class Composite(ArmiObject):
         Component
             The first item matching typeSpec and exact criteria
         """
-        return next(self.iterComponents(typeSpec, exact))
+        try:
+            return next(self.iterComponents(typeSpec, exact))
+        except StopIteration:
+            raise ValueError(f"No component matches {typeSpec} {exact}")
 
     def iterComponents(self, typeSpec: TypeSpec = None, exact: bool = False) -> Iterator["Component"]:
         """
