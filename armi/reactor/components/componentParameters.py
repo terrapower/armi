@@ -216,7 +216,6 @@ def getHoledHexagonParameterDefinitions():
             units=units.CM,
             description="Distance from the center of the hexagon to the center of the holes assuming the hole centers "
             "all lie on a circle.",
-            saveToDB=True,
             default=None,
         )
 
