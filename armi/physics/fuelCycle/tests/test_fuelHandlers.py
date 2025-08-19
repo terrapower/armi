@@ -108,7 +108,7 @@ class TestReadMovesYamlErrors(unittest.TestCase):
                     self._run(yaml_text)
 
     def test_rotationInvalidLocation(self):
-        yaml_text = "sequence:\n  1:\n    - rotations: {'badLoc': 30}\n"
+        yaml_text = "sequence:\n  1:\n    - extraRotations: {'badLoc': 30}\n"
         with self.assertRaisesRegex(InputError, "Invalid location"):
             self._run(yaml_text)
 

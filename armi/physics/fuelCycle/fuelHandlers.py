@@ -1121,7 +1121,7 @@ class FuelHandler:
                     raise InputError(f"Invalid location label {loc} in shuffle YAML")
 
             for action in actions or []:
-                allowed = {"cascade", "fuelEnrichment", "rotations", "misloadSwap"}
+                allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap"}
                 unknown = set(action) - allowed
                 if unknown:
                     raise InputError(f"Unknown action keys {unknown} in shuffle YAML")
@@ -1171,8 +1171,8 @@ class FuelHandler:
                     moves[cycle].append(AssemblyMove(loc1, loc2, [], None, None))
                     moves[cycle].append(AssemblyMove(loc2, loc1, [], None, None))
 
-                if "rotations" in action:
-                    for loc, angle in (action.get("rotations") or {}).items():
+                if "extraRotations" in action:
+                    for loc, angle in (action.get("extraRotations") or {}).items():
                         _validateLoc(loc)
                         moves[cycle].append(AssemblyMove(loc, loc, [], None, None, float(angle)))
 

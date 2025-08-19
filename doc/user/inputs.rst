@@ -371,35 +371,44 @@ A few examples of restart cases:
 
    Users may also define a custom shuffle plan in a YAML file referenced by the
    ``shuffleSequenceFile`` setting. The YAML format organizes data by cycle in a
-   ``sequence`` mapping. Each cycle contains a list of high-level actions such as
-   ``cascade`` chains, ``misloadSwap`` entries, and optional manual
-   ``rotations``. Cascades describe a chain of assembly displacements 
-   beginning with a fresh fuel assembly and ending with the final location's
-   assembly being discharged. Optional ``fuelEnrichment`` lists specify the
-   U235 weight percent enrichment for each axial block in the fresh assembly,
-   from bottom to top, including zeroes for non-fuel blocks. ``misloadSwap``
-   swaps the assemblies at two locations after all cascades are processed but
-   before any rotations are applied. Manual ``rotations`` map final location
-   labels to relative angles in degrees and are performed after any
-   algorithmic rotation routines defined with the ``assemblyRotationAlgorithm`` setting. 
-   Valid angles depend on the assembly's geometry. 
-   Rotations apply to the assembly that ends up at the given location once all moves 
-   and swaps in that cycle are complete. A cascade with no final destination 
-   defaults to discharging the assembly to the spent fuel pool ``SFP``. 
-   Assemblies can also be removed from the model entirely by ending with ``ExCore``. 
-   When an assembly is sent to the ``SFP`` it is only retained if the ``trackAssems`` 
-   setting is True; ``ExCore`` always deletes the assembly.
+   ``sequence`` mapping. Each cycle contains a list of high-level actions. An
+   action is a mapping containing one of the keys ``cascade``, ``misloadSwap``,
+   or ``extraRotations``. ``cascade`` chains describe a sequence of assembly
+   displacements beginning with a fresh fuel assembly and ending with the final
+   location's assembly being discharged. Optional ``fuelEnrichment`` lists
+   specify the U235 weight percent enrichment for each axial block in the fresh
+   assembly, from bottom to top, including zeroes for non-fuel blocks.
+   ``misloadSwap`` swaps the assemblies at two locations after all cascades are
+   processed. ``extraRotations`` map final location labels to relative
+   counterclockwise angles in degrees and are applied after all cascades,
+   misload swaps, and any algorithmic rotation routines defined with the
+   ``assemblyRotationAlgorithm`` setting. The angle is relative to the
+   assembly's current orientation and whatever assembly ends up at the given
+   location is rotated. Valid angles depend on the assembly's geometry.
+
+   Extra rotations therefore:
+
+   * apply to whatever assembly resides at the specified location once all
+     cascades and misload swaps are complete;
+   * rotate the assembly relative to its current orientation; and
+   * execute after any algorithmic rotation routines.
+
+   A cascade with no final destination defaults to discharging the assembly to
+   the spent fuel pool ``SFP``. Assemblies can also be removed from the model
+   entirely by ending with ``ExCore``. When an assembly is sent to the ``SFP`` it
+   is only retained if the ``trackAssems`` setting is True; ``ExCore`` always
+   deletes the assembly.
    For example::
 
        sequence:
-        1:
-          - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
-            fuelEnrichment: [0, 12, 14, 15, 0]  # wt% U235 by block
-            rotations: {"009-045": 60}
-          - misloadSwap: ["009-045", "008-004"]
-        2:
-          - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
-            fuelEnrichment: [0, 12, 14, 15, 0]
+         1:
+           - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
+             fuelEnrichment: [0, 12, 14, 15, 0]  # wt% U235 by block
+           - misloadSwap: ["009-045", "008-004"]
+           - extraRotations: {"009-045": 60}
+         2:
+           - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
+             fuelEnrichment: [0, 12, 14, 15, 0]
 
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
