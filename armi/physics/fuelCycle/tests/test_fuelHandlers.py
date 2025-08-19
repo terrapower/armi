@@ -658,7 +658,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_readMovesYaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
-        self.maxDiff = None
         expected = {
             1: [
                 AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
@@ -692,8 +691,6 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("006-005", "SFP", [], None, None),
                 AssemblyMove("009-045", "009-045", [], None, None, 60.0),
                 AssemblyMove("009-045", "008-004", [], None, None),
-                AssemblyMove("008-004", "009-045", [], None, None),
-                AssemblyMove("008-004", "009-045", [], None, None),
                 AssemblyMove("007-001", "006-005", [], None, None),
             ],
         }

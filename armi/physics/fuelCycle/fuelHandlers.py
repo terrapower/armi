@@ -1169,7 +1169,6 @@ class FuelHandler:
                         seenLocs.add(loc)
                     loc1, loc2 = swap
                     moves[cycle].append(AssemblyMove(loc1, loc2, [], None, None))
-                    moves[cycle].append(AssemblyMove(loc2, loc1, [], None, None))
 
                 if "extraRotations" in action:
                     for loc, angle in (action.get("extraRotations") or {}).items():
