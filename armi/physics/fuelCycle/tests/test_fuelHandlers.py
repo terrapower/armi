@@ -694,7 +694,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("009-045", "008-004", [], None, None),
                 AssemblyMove("008-004", "009-045", [], None, None),
                 AssemblyMove("008-004", "009-045", [], None, None),
-                AssemblyMove("009-045", "008-004", [], None, None),
+                AssemblyMove("007-001", "006-005", [], None, None),
             ],
         }
         self.assertEqual(moves, expected)

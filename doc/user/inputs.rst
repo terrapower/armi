@@ -396,9 +396,11 @@ A few examples of restart cases:
    A cascade with no final destination defaults to discharging the assembly to
    the spent fuel pool ``SFP``. Assemblies can also be removed from the model
    entirely by ending with ``ExCore``. When an assembly is sent to the ``SFP`` it
-   is only retained if the ``trackAssems`` setting is True; ``ExCore`` always
+   is only retained in memory if the ``trackAssems`` setting is True; ``ExCore`` always
    deletes the assembly.
-   For example::
+   For example
+   
+..  code:: yaml
 
        sequence:
          1:
@@ -410,6 +412,15 @@ A few examples of restart cases:
            - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
              fuelEnrichment: [0, 12, 14, 15, 0]
 
+.. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
+
+For cycle 1 above, the actions execute in the following order:
+
+   1. The assembly originally at ``008-004`` is discharged to the spent fuel pool ``SFP``.
+   2. The assembly originally at ``009-045`` moves to ``008-004``.
+   3. A fresh ``outer fuel`` assembly is created with the specified axial enrichment profile and inserted at ``009-045``.
+   4. The fresh assembly and the moved assembly are swapped, leaving the fresh assembly at ``008-004`` and the moved assembly back at ``009-045``.
+   5. The assembly now at ``009-045`` is rotated an additional 60 degrees counterclockwise.
 
 .. note:: The restart.dat file is required to repeat the exact fuel management methods during a branch search. These can potentially modify the reactor state in ways that cannot be captures with the SHUFFLES.txt file.
 

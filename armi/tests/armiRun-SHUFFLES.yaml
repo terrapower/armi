@@ -11,4 +11,4 @@ sequence:
   3:
     - *shuffle_1_9_45
     - misloadSwap: ["009-045", "008-004"]
-    - misloadSwap: ["008-004", "009-045"]
+    - misloadSwap: ["007-001", "006-005"]
