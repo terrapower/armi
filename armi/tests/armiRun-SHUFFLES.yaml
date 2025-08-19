@@ -3,10 +3,9 @@ sequence:
     - &shuffle_1_9_45
       cascade: ["outer fuel", "009-045", "008-004", "007-001", "006-005"]
       fuelEnrichment: [0, 12, 14, 15, 0]
-      extraRotations: {"009-045": 60}
+    - extraRotations: {"009-045": 60}
     - cascade: ["outer fuel", "010-046", "011-046", "012-046", "ExCore"]
       fuelEnrichment: [0, 12, 14, 15, 0]
-      extraRotations: {}
   2: *cycle_1
   3:
     - *shuffle_1_9_45

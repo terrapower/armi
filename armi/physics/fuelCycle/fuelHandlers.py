@@ -137,7 +137,7 @@ class FuelHandler:
                     )
                 )
             runLog.important("Applying shuffle sequence from {}".format(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]))
-            self.repeatShufflePattern(self.cs[CONF_SHUFFLE_SEQUENCE_FILE], yaml=True)
+            self.performShuffle(self.cs[CONF_SHUFFLE_SEQUENCE_FILE], yaml=True)
         elif self.cs["explicitRepeatShuffles"]:
             # repeated shuffle
             if not os.path.exists(self.cs["explicitRepeatShuffles"]):
@@ -147,7 +147,7 @@ class FuelHandler:
                     )
                 )
             runLog.important("Repeating a shuffling pattern from {}".format(self.cs["explicitRepeatShuffles"]))
-            self.repeatShufflePattern(self.cs["explicitRepeatShuffles"])
+            self.performShuffle(self.cs["explicitRepeatShuffles"])
         else:
             # Normal shuffle from user-provided shuffle logic input
             self.chooseSwaps(factor)
@@ -951,25 +951,25 @@ class FuelHandler:
                 continue
             self.swapAssemblies(assemList[0], assemList[level + 1])
 
-    def repeatShufflePattern(self, shuffleFile, yaml=False):
+    def performShuffle(self, shuffleFile, yaml=False):
         """
-        Repeats the fuel management from a previous ARMI run or processes a YAML shuffle file.
+        Execute shuffling instructions from a previous run or YAML file.
 
         Parameters
         ----------
         shuffleFile : str
-            The file name that contains the shuffling history
+            Path to the shuffle sequence file.
         yaml : bool, optional
             If True, interpret ``shuffleFile`` as a YAML shuffle sequence.
 
         Returns
         -------
         moved : list
-            list of assemblies that moved this cycle
+            List of assemblies that moved this cycle.
 
         Notes
         -----
-        typically the shuffle file will be ``caseTitle``-"SHUFFLES.txt" for text files
+        Typically the shuffle file from a previous run will be ``caseTitle``-"SHUFFLES.txt".
 
         See Also
         --------
@@ -1031,7 +1031,7 @@ class FuelHandler:
 
         See Also
         --------
-        repeatShufflePattern : reads this file and repeats the shuffling
+        performShuffle : reads this file and executes the shuffling
         outage : creates the moveList in the first place.
         makeShuffleReport : writes the file that is read here.
         """
@@ -1202,7 +1202,7 @@ class FuelHandler:
         If A moved to B, C moved to D, and B moved to C, this returns
         A, B, C ,D.
 
-        Used in some monte carlo physics writers and in repeatShufflePattern
+        Used in some monte carlo physics writers and in performShuffle
 
         Parameters
         ----------
@@ -1229,7 +1229,7 @@ class FuelHandler:
 
         See Also
         --------
-        repeatShufflePattern
+        performShuffle
         processMoveList
         """
         if alreadyDone is None:
@@ -1325,13 +1325,13 @@ class FuelHandler:
 
         Notes
         -----
-        Used in the some Monte Carlo interfaces to convert ARMI moves to their format moves. Also used in
+        Used in some Monte Carlo interfaces to convert ARMI moves to their format moves. Also used in
         repeat shuffling.
 
         See Also
         --------
         makeShuffleReport : writes the file that is being processed
-        repeatShufflePattern : uses this to repeat shuffles
+        performShuffle : uses this to repeat shuffles
         """
         alreadyDone = []
         loadChains = []  # moves that have discharges
@@ -1412,12 +1412,12 @@ class FuelHandler:
 
         See Also
         --------
-        repeatShufflePattern : coordinates the moves for this cycle
+        performShuffle  : coordinates the moves for this cycle
         processMoveList : builds the input lists
 
         Notes
         -----
-        This is a helper function for repeatShufflePattern
+        This is a helper function for performShuffle
         """
         moved = []
 
