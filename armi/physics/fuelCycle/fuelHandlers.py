@@ -824,6 +824,15 @@ class FuelHandler:
             assembly1.insert(assem1BlockIndex, assem2Block)
             assembly2.insert(assem2BlockIndex, assem1Block)
 
+    @staticmethod
+    def _validateLoc(loc):
+        if loc in {"SFP", "ExCore", "LoadQueue"}:
+            return
+        try:
+            grids.locatorLabelToIndices(loc)
+        except Exception:
+            raise InputError(f"Invalid location label {loc} in shuffle YAML")
+
     def dischargeSwap(self, incoming, outgoing):
         """Removes one assembly from the core and replace it with another assembly.
 
@@ -1107,16 +1116,12 @@ class FuelHandler:
             cycle = int(cycleKey)
             moves[cycle] = []
             seenLocs = set()
+            
+            if actions is None:
+                runLog.warning(f"Cycle {cycleKey} has no shuffle actions defined, skipping.")
+                continue
 
-            def _validateLoc(loc):
-                if loc in {"SFP", "ExCore", "LoadQueue"}:
-                    return
-                try:
-                    grids.locatorLabelToIndices(loc)
-                except Exception:
-                    raise InputError(f"Invalid location label {loc} in shuffle YAML")
-
-            for action in actions or []:
+            for action in actions:
                 allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap"}
                 unknown = set(action) - allowed
                 if unknown:
@@ -1132,44 +1137,43 @@ class FuelHandler:
                     assemType = chain[0]
                     locs = chain[1:]
                     for loc in locs:
-                        _validateLoc(loc)
+                        FuelHandler._validateLoc(loc)
                         if loc not in {"SFP", "ExCore"}:
                             if loc in seenLocs:
                                 raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
                             seenLocs.add(loc)
 
                     enrich = []
-                    if "fuelEnrichment" in action:
-                        enrichList = action["fuelEnrichment"]
-                        try:
-                            enrich = [float(e) for e in enrichList]
-                        except (TypeError, ValueError):
-                            raise InputError("fuelEnrichment values must be numeric")
-                        if any(e < 0 or e > 100 for e in enrich):
-                            raise InputError("fuelEnrichment values must be between 0 and 100")
+                    enrichList = action.get("fuelEnrichment", [])
+                    try:
+                        enrich = [float(e) for e in enrichList]
+                    except (TypeError, ValueError):
+                        raise InputError("fuelEnrichment values must be numeric")
+                    if any(e < 0 or e > 100 for e in enrich):
+                        raise InputError("fuelEnrichment values must be between 0 and 100")
 
-                    moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType, None))
+                    moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType))
                     for i in range(len(locs) - 1):
-                        moves[cycle].append(AssemblyMove(locs[i], locs[i + 1], [], None, None))
+                        moves[cycle].append(AssemblyMove(locs[i], locs[i + 1]))
                     if locs[-1] not in ["SFP", "ExCore"]:
-                        moves[cycle].append(AssemblyMove(locs[-1], "SFP", [], None, None))
+                        moves[cycle].append(AssemblyMove(locs[-1], "SFP"))
 
                 if "misloadSwap" in action:
                     swap = action["misloadSwap"]
                     if not isinstance(swap, list) or len(swap) != 2:
-                        raise InputError("misloadSwap must be a list of two location labels")
+                        raise InputError("misloadSwap must be a list of two location labels, got {swap}")
                     if any(not isinstance(item, str) for item in swap):
-                        raise InputError("misloadSwap entries must be strings")
+                        raise InputError("misloadSwap entries must be strings, got {swap}")
                     for loc in swap:
-                        _validateLoc(loc)
+                        FuelHandler._validateLoc(loc)
                         seenLocs.add(loc)
                     loc1, loc2 = swap
-                    moves[cycle].append(AssemblyMove(loc1, loc2, [], None, None))
+                    moves[cycle].append(AssemblyMove(loc1, loc2))
 
                 if "extraRotations" in action:
                     for loc, angle in (action.get("extraRotations") or {}).items():
-                        _validateLoc(loc)
-                        moves[cycle].append(AssemblyMove(loc, loc, [], None, None, float(angle)))
+                        FuelHandler._validateLoc(loc)
+                        moves[cycle].append(AssemblyMove(loc, loc, rotation=float(angle)))
 
         return moves
 
