@@ -825,13 +825,26 @@ class FuelHandler:
             assembly2.insert(assem2BlockIndex, assem1Block)
 
     @staticmethod
-    def _validateLoc(loc):
+    def _validateLoc(loc, cycle):
+        """Validate a location label from a shuffle YAML file.
+
+        Parameters
+        ----------
+        loc : str
+            Location label to validate.
+        cycle : int
+            Cycle currently being processed, used for context in error messages.
+        """
         if loc in {"SFP", "ExCore", "LoadQueue"}:
             return
+
         try:
             grids.locatorLabelToIndices(loc)
         except Exception:
-            raise InputError(f"Invalid location label {loc} in shuffle YAML")
+            raise InputError(
+                f"Invalid location label {loc!r} in cycle {cycle} in shuffle YAML. "
+                "Location labels must be non-empty and contain integers."
+            )
 
     def dischargeSwap(self, incoming, outgoing):
         """Removes one assembly from the core and replace it with another assembly.
@@ -1137,7 +1150,7 @@ class FuelHandler:
                     assemType = chain[0]
                     locs = chain[1:]
                     for loc in locs:
-                        FuelHandler._validateLoc(loc)
+                        FuelHandler._validateLoc(loc, cycle)
                         if loc not in {"SFP", "ExCore"}:
                             if loc in seenLocs:
                                 raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
@@ -1165,14 +1178,14 @@ class FuelHandler:
                     if any(not isinstance(item, str) for item in swap):
                         raise InputError("misloadSwap entries must be strings, got {swap}")
                     for loc in swap:
-                        FuelHandler._validateLoc(loc)
+                        FuelHandler._validateLoc(loc, cycle)
                         seenLocs.add(loc)
                     loc1, loc2 = swap
                     moves[cycle].append(AssemblyMove(loc1, loc2))
 
                 if "extraRotations" in action:
                     for loc, angle in (action.get("extraRotations") or {}).items():
-                        FuelHandler._validateLoc(loc)
+                        FuelHandler._validateLoc(loc, cycle)
                         moves[cycle].append(AssemblyMove(loc, loc, rotation=float(angle)))
 
         return moves
