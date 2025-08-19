@@ -1372,7 +1372,7 @@ class Component(composites.Composite, metaclass=ComponentType):
             runLog.error(ee)
             raise ValueError(msg) from ee
 
-    def getPinIndices(self) -> Optional[np.ndarray[tuple[int], np.ushort]]:
+    def getPinIndices(self) -> Optional[np.ndarray[tuple[int], np.uint16]]:
         """Find the indices for the locations where this component can be found in the block.
 
         Returns
