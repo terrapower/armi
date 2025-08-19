@@ -100,11 +100,22 @@ class ReportInterface(interfaces.Interface):
     def printParameterTable(self):
         def getMaxTHhotChannelCladIDT():
             maxTHhotChannelCladIDT = 0
-            for a in r.core.getAssemblies():
+            for a in self.r.core.getAssemblies():
                 THhotChannelCladIDT = a.getMaxParam("THhotChannelCladIDT")
                 if THhotChannelCladIDT > maxTHhotChannelCladIDT:
                     maxTHhotChannelCladIDT = THhotChannelCladIDT
             return maxTHhotChannelCladIDT
+        
+        def getMaxAssemblyPower():
+            maxAssemblyPower = 0
+            maxAssembly = None
+            for a in self.r.core.getAssemblies():
+                assemblyPower = sum(b.p.power for b in a)
+                if assemblyPower > maxAssemblyPower:
+                    maxAssemblyPower = assemblyPower
+                    maxAssembly = a
+            maxAssemblyPower /= 1e6
+            return maxAssemblyPower
 
         nodeParameters = [
             self.r.p.cycle,
@@ -112,8 +123,9 @@ class ReportInterface(interfaces.Interface):
             self.r.core.p.coupledIteration,
             self.r.core.p.keffUnc,
             self.r.core.p.THdeltaPCore,
+            getMaxAssemblyPower(),
         ]
-        paramNames = ["Cycle", "Node", "Couple", "Uncontrolled keff", "Core Pressure Drop"]
+        paramNames = ["Cycle", "Node", "Couple", "Unc keff", "Core Pressure Drop", "Max Assembly Power"]
         if self.r.core.p.maxTH2SigmaCladIDT:
             paramNames.append("Peak 2-Sigma Fuel")
             nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
