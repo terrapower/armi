@@ -956,11 +956,17 @@ class FuelHandler:
         # read moves file
         if yaml:
             moves = self.readMovesYaml(shuffleFile)
+            cycle = self.r.p.cycle
+            if cycle == 0:
+                # if cycle is 0, we are at the beginning of the first cycle
+                # this is a special case where we don't have any moves
+                # so we return an empty list
+                return []
         else:
             moves = self.readMoves(shuffleFile)
-        # get the correct cycle number
-        # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
-        cycle = self.r.p.cycle + 1
+            # get the correct cycle number
+            # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
+            cycle = self.r.p.cycle + 1
 
         # setup the load and loop chains to be run per cycle
         moveList = moves[cycle]
