@@ -835,7 +835,7 @@ class FuelHandler:
         cycle : int
             Cycle currently being processed, used for context in error messages.
         """
-        if loc in {"SFP", "ExCore", "LoadQueue"}:
+        if loc in {"SFP", "ExCore"}:
             return
 
         try:
@@ -1151,10 +1151,9 @@ class FuelHandler:
                     locs = chain[1:]
                     for loc in locs:
                         FuelHandler._validateLoc(loc, cycle)
-                        if loc not in {"SFP", "ExCore"}:
-                            if loc in seenLocs:
-                                raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
-                            seenLocs.add(loc)
+                        if loc not in {"SFP", "ExCore"} and loc in seenLocs:
+                            raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
+                        seenLocs.add(loc)
 
                     enrich = []
                     enrichList = action.get("fuelEnrichment", [])
@@ -1171,7 +1170,7 @@ class FuelHandler:
                     if locs[-1] not in ["SFP", "ExCore"]:
                         moves[cycle].append(AssemblyMove(locs[-1], "SFP"))
 
-                if "misloadSwap" in action:
+                elif "misloadSwap" in action:
                     swap = action["misloadSwap"]
                     if not isinstance(swap, list) or len(swap) != 2:
                         raise InputError("misloadSwap must be a list of two location labels, got {swap}")
@@ -1179,14 +1178,16 @@ class FuelHandler:
                         raise InputError("misloadSwap entries must be strings, got {swap}")
                     for loc in swap:
                         FuelHandler._validateLoc(loc, cycle)
-                        seenLocs.add(loc)
                     loc1, loc2 = swap
                     moves[cycle].append(AssemblyMove(loc1, loc2))
 
-                if "extraRotations" in action:
-                    for loc, angle in (action.get("extraRotations") or {}).items():
+                elif "extraRotations" in action:
+                    for loc, angle in action.get("extraRotations", {}).items():
                         FuelHandler._validateLoc(loc, cycle)
                         moves[cycle].append(AssemblyMove(loc, loc, rotation=float(angle)))
+
+                else:
+                    raise InputError(f"Unable to process {action} in {cycle}")
 
         return moves
 
