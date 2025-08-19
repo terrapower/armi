@@ -27,6 +27,7 @@ import time
 from typing import Callable, Iterator, Optional
 
 import numpy as np
+from ruamel.yaml import YAML
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
@@ -42,6 +43,7 @@ from armi.reactor import (
     zones,
 )
 from armi.reactor.flags import Flags
+from armi.reactor.zones import Zone, Zones
 from armi.settings.fwSettings.globalSettings import (
     CONF_AUTOMATIC_VARIABLE_MESH,
     CONF_CIRCULAR_RING_PITCH,
@@ -52,6 +54,7 @@ from armi.settings.fwSettings.globalSettings import (
     CONF_STATIONARY_BLOCK_FLAGS,
     CONF_TRACK_ASSEMS,
     CONF_ZONE_DEFINITIONS,
+    CONF_ZONES_FILE,
 )
 from armi.utils import createFormattedStrWithDelimiter, tabulate, units
 from armi.utils.iterables import Sequence
@@ -2169,8 +2172,8 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined manually in the given Settings file, in the
-        `zoneDefinitions` setting.
+        Build the Zones that are defined in the given Settings, in the
+        `zoneDefinitions` or `zonesFile` case setting.
 
         Parameters
         ----------
@@ -2191,20 +2194,40 @@ class Core(composites.Composite):
         This function will just define the Zones it sees in the settings, it does not do any
         validation against a Core object to ensure those manual zones make sense.
         """
-        runLog.debug("Building Zones by manual definitions in `zoneDefinitions` setting")
-        stripper = lambda s: s.strip()
-        self.zones = zones.Zones()
+        if cs[CONF_ZONE_DEFINITIONS]:
+            runLog.info(f"Building Zones by manual definitions in {CONF_ZONE_DEFINITIONS} setting")
 
-        # parse the special input string for zone definitions
-        for zoneString in cs[CONF_ZONE_DEFINITIONS]:
-            zoneName, zoneLocs = zoneString.split(":")
-            zoneLocs = zoneLocs.split(",")
-            zone = zones.Zone(zoneName.strip())
-            zone.addLocs(map(stripper, zoneLocs))
-            self.zones.addZone(zone)
+            stripper = lambda s: s.strip()
+            self.zones = zones.Zones()
 
-        if not len(self.zones):
-            runLog.debug("No manual zones defined in `zoneDefinitions` setting")
+            # parse the special input string for zone definitions
+            for zoneString in cs[CONF_ZONE_DEFINITIONS]:
+                zoneName, zoneLocs = zoneString.split(":")
+                zoneLocs = zoneLocs.split(",")
+                zone = zones.Zone(zoneName.strip())
+                zone.addLocs(map(stripper, zoneLocs))
+                self.zones.addZone(zone)
+
+        elif cs[CONF_ZONES_FILE]:
+            runLog.info(f"Custom zoning strategy applied from {CONF_ZONES_FILE}.")
+
+            self.zones = Zones()
+            with open(cs[CONF_ZONES_FILE]) as stream:
+                zonesDict = YAML(typ="safe").load(stream)
+
+            for location, zoneName in zonesDict["customZonesMap"].items():
+                # if the the zoneName isn't already a Zones key, then add a new Zone
+                if zoneName not in self.zones:
+                    self.zones.addZone(Zone(zoneName, [location]))
+                # if the zoneName is already a Zones key, then add the location to the existing Zone
+                else:
+                    self.zones[zoneName].addLoc(location)
+
+            # sort the Zones
+            self.zones.sortZones()
+
+        else:
+            runLog.warning(f"No zones defined in either {CONF_ZONE_DEFINITIONS} or {CONF_ZONES_FILE} settings")
 
     def iterBlocks(
         self,
