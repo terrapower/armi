@@ -200,19 +200,17 @@ class TestArmiCase(unittest.TestCase):
             case = cases.Case(cs)
 
             with mockRunLogs.BufferLog() as mock:
-                # we should start with a clean slate
+                # start with a clean slate
                 self.assertEqual("", mock.getStdout())
                 runLog.LOG.startLog("test_run")
                 runLog.LOG.setVerbosity(logging.INFO)
 
                 case.run()
 
-                self.assertIn("Triggering BOL Event", mock.getStdout())
-                self.assertIn("xsGroups", mock.getStdout())
-                self.assertIn(
-                    "Completed EveryNode - timestep: cycle 0, node 0, year 0.00 Event",
-                    mock.getStdout(),
-                )
+                stdOut = mock.getStdout()
+                self.assertIn("Triggering BOL Event", stdOut)
+                self.assertIn("xsGroups", stdOut)
+                self.assertIn("Completed EveryNode - timestep: cycle 0, node 0, year 0.00 Event", stdOut)
 
     def test_clone(self):
         testTitle = "CLONE_TEST"

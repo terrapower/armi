@@ -19,6 +19,7 @@ import unittest
 
 from armi.materials.air import Air
 from armi.utils import densityTools
+from armi.utils.units import getTc
 
 """
 Reference thermal physical properties from Table A.4 in Incropera, Frank P., et al. Fundamentals of
@@ -195,6 +196,8 @@ class Test_Air(unittest.TestCase):
         for Tk, densKgPerM3 in zip(REFERENCE_Tk, REFERENCE_DENSITY_KG_PER_M3):
             if Tk < 2400:
                 error = math.fabs((air.pseudoDensityKgM3(Tk=Tk) - densKgPerM3) / densKgPerM3)
+                self.assertLess(error, 1e-2)
+                error = math.fabs((air.pseudoDensityKgM3(Tc=getTc(Tk=Tk)) - densKgPerM3) / densKgPerM3)
                 self.assertLess(error, 1e-2)
 
     def test_heatCapacity(self):

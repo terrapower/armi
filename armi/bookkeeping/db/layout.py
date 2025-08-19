@@ -343,6 +343,7 @@ class Layout:
             elif issubclass(Klass, Component):
                 # init all dimensions to 0, they will be loaded and assigned after load
                 kwargs = dict.fromkeys(Klass.DIMENSION_NAMES, 0)
+                kwargs["modArea"] = None
                 kwargs["material"] = material
                 kwargs["name"] = name
                 kwargs["Tinput"] = temperatures[0]
