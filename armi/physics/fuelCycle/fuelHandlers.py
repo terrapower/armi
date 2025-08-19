@@ -1116,7 +1116,7 @@ class FuelHandler:
             cycle = int(cycleKey)
             moves[cycle] = []
             seenLocs = set()
-            
+
             if actions is None:
                 runLog.warning(f"Cycle {cycleKey} has no shuffle actions defined, skipping.")
                 continue
