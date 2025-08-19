@@ -452,7 +452,8 @@ class Inspector:
                 ]
             )
             > 1,
-            "Only one shuffling method can be defined but multiple were found among: shuffleSequenceFile, explicitRepeatShuffles, and shuffleLogic. Please specify only one.",
+            "Only one shuffling method can be defined but multiple were found among: shuffleSequenceFile, "
+            "explicitRepeatShuffles, and shuffleLogic. Please specify only one.",
             "",
             self.NO_ACTION,
         )
