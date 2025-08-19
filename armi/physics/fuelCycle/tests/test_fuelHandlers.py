@@ -67,6 +67,11 @@ class TestReadMovesYamlErrors(unittest.TestCase):
         with self.assertRaisesRegex(InputError, "sequence"):
             self._run(yaml_text)
 
+    def test_duplicateCycle(self):
+        yaml_text = "sequence:\n  1: []\n  1: []\n"
+        with self.assertRaisesRegex(InputError, r"(?i)\bduplicate key\b"):
+            self._run(yaml_text)
+
     def test_unknownActionKey(self):
         yaml_text = "sequence:\n  1:\n    - badAction: []\n"
         with self.assertRaisesRegex(InputError, "Unknown action"):
@@ -130,11 +135,6 @@ class TestReadMovesYamlErrors(unittest.TestCase):
         with self.assertRaisesRegex(InputError, "Missing cycle 2"):
             self._run(yaml_text)
 
-    def test_duplicateCycle(self):
-        yaml_text = "sequence:\n  1: []\n  1: []\n"
-        with self.assertRaisesRegex(InputError, "Duplicate cycle"):
-            self._run(yaml_text)
-
 
 class TestReadMovesYamlFeatures(unittest.TestCase):
     """Miscellaneous behavior of :meth:`FuelHandler.readMovesYaml`."""
@@ -148,10 +148,10 @@ class TestReadMovesYamlFeatures(unittest.TestCase):
         finally:
             os.remove(fname)
 
-    def test_cycles_out_of_order(self):
+    def test_cyclesOutOfOrder(self):
         yaml_text = "sequence:\n  1: []\n  2: []\n  4: []\n  3: []\n"
         moves = self._read(yaml_text)
-        self.assertEqual(list(moves.keys()), [1, 2, 4, 3])
+        self.assertEqual(list(moves), [1, 2, 4, 3])
 
 
 class FuelHandlerTestHelper(ArmiTestHelper):
@@ -643,13 +643,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.assertEqual(firstMove.toLoc, "SFP")
         self.assertEqual(len(firstMove.enrichList), numblocks)
         self.assertEqual(firstMove.assemType, "igniter fuel")
-        self.assertIsNone(firstMove.movingAssemName)
+        self.assertIsNone(firstMove.nameAtDischarge)
 
         # check the move that came back out of the SFP
         sfpMove = moves[2][-2]
         self.assertEqual(sfpMove.fromLoc, "SFP")
         self.assertEqual(sfpMove.toLoc, "005-003")
-        self.assertEqual(sfpMove.movingAssemName, "A0073")  # name of assem in SFP
+        self.assertEqual(sfpMove.nameAtDischarge, "A0073")  # name of assem in SFP
 
         # make sure we fail hard if the file doesn't exist
         with self.assertRaises(RuntimeError):
@@ -660,38 +660,38 @@ class TestFuelHandler(FuelHandlerTestHelper):
         moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
         expected = {
             1: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                AssemblyMove("009-045", "008-004", [], None, None),
-                AssemblyMove("008-004", "007-001", [], None, None),
-                AssemblyMove("007-001", "006-005", [], None, None),
-                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("009-045", "008-004"),
+                AssemblyMove("008-004", "007-001"),
+                AssemblyMove("007-001", "006-005"),
+                AssemblyMove("006-005", "SFP"),
                 AssemblyMove("009-045", "009-045", [], None, None, 60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                AssemblyMove("010-046", "011-046", [], None, None),
-                AssemblyMove("011-046", "012-046", [], None, None),
-                AssemblyMove("012-046", "ExCore", [], None, None),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("010-046", "011-046"),
+                AssemblyMove("011-046", "012-046"),
+                AssemblyMove("012-046", "ExCore"),
             ],
             2: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                AssemblyMove("009-045", "008-004", [], None, None),
-                AssemblyMove("008-004", "007-001", [], None, None),
-                AssemblyMove("007-001", "006-005", [], None, None),
-                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("009-045", "008-004"),
+                AssemblyMove("008-004", "007-001"),
+                AssemblyMove("007-001", "006-005"),
+                AssemblyMove("006-005", "SFP"),
                 AssemblyMove("009-045", "009-045", [], None, None, 60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                AssemblyMove("010-046", "011-046", [], None, None),
-                AssemblyMove("011-046", "012-046", [], None, None),
-                AssemblyMove("012-046", "ExCore", [], None, None),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("010-046", "011-046"),
+                AssemblyMove("011-046", "012-046"),
+                AssemblyMove("012-046", "ExCore"),
             ],
             3: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel", None),
-                AssemblyMove("009-045", "008-004", [], None, None),
-                AssemblyMove("008-004", "007-001", [], None, None),
-                AssemblyMove("007-001", "006-005", [], None, None),
-                AssemblyMove("006-005", "SFP", [], None, None),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("009-045", "008-004"),
+                AssemblyMove("008-004", "007-001"),
+                AssemblyMove("007-001", "006-005"),
+                AssemblyMove("006-005", "SFP"),
                 AssemblyMove("009-045", "009-045", [], None, None, 60.0),
-                AssemblyMove("009-045", "008-004", [], None, None),
-                AssemblyMove("007-001", "006-005", [], None, None),
+                AssemblyMove("009-045", "008-004"),
+                AssemblyMove("007-001", "006-005"),
             ],
         }
         self.assertEqual(moves, expected)

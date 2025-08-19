@@ -30,10 +30,12 @@ import inspect
 import math
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 import numpy as np
+from ruamel.yaml import YAML
+from ruamel.yaml.constructor import DuplicateKeyError
 
 from armi import runLog
 from armi.physics.fuelCycle import assemblyRotationAlgorithms as rotAlgos
@@ -63,7 +65,7 @@ class AssemblyMove:
         Axial U235 weight percent enrichment values for each block.
     assemType : str, optional
         Type of assembly that is moving.
-    movingAssemName : str, optional
+    nameAtDischarge : str, optional
         Name of the assembly moving (for SFP/ExCore interactions).
     rotation : float, optional
         Degrees of manual rotation to apply after shuffling.
@@ -71,9 +73,9 @@ class AssemblyMove:
 
     fromLoc: str
     toLoc: str
-    enrichList: List[float]
+    enrichList: List[float] = field(default_factory=list)
     assemType: Optional[str] = None
-    movingAssemName: Optional[str] = None
+    nameAtDischarge: Optional[str] = None
     rotation: Optional[float] = None
 
 
@@ -129,7 +131,7 @@ class FuelHandler:
         # determine if a repeat shuffle is occurring or a new shuffle pattern
         if self.cs[CONF_SHUFFLE_SEQUENCE_FILE]:
             if not os.path.exists(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]):
-                raise RuntimeError(
+                raise FileNotFoundError(
                     "Requested shuffle sequence file {0} does not exist. Cannot perform shuffling. ".format(
                         self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
                     )
@@ -1041,11 +1043,11 @@ class FuelHandler:
                 oldLoc = m.group(1)
                 newLoc = m.group(2)
                 assemType = m.group(3).strip()  # take off any possible trailing whitespace
-                movingAssemName = m.group(4)  # will be None for legacy shuffleLogic files. (pre 2013-08)
-                if movingAssemName:
-                    movingAssemName = movingAssemName.split("=")[1]  # extract the actual assembly name.
+                nameAtDischarge = m.group(4)  # will be None for legacy shuffleLogic files. (pre 2013-08)
+                if nameAtDischarge:
+                    nameAtDischarge = nameAtDischarge.split("=")[1]  # extract the actual assembly name.
                 enrichList = [float(i) for i in m.group(5).split()]
-                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList, assemType, movingAssemName))
+                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList, assemType, nameAtDischarge))
                 numMoves += 1
             elif "moved" in line:
                 # very old shuffleLogic file.
@@ -1076,22 +1078,16 @@ class FuelHandler:
     def readMovesYaml(fname):
         """Read a shuffle file in YAML format."""
         try:
-            from ruamel.yaml import YAML
-            from ruamel.yaml.constructor import DuplicateKeyError
-        except ImportError:
-            raise RuntimeError("ruamel.yaml is required to read YAML shuffle files")
-
-        try:
             with open(fname, "r") as stream:
                 yaml = YAML(typ="safe")
                 yaml.allow_duplicate_keys = False
                 data = yaml.load(stream)
-        except DuplicateKeyError:
-            raise InputError("Duplicate cycle in shuffle YAML sequence")
-        except OSError:
+        except DuplicateKeyError as e:
+            raise InputError(str(e)) from e
+        except OSError as ee:
             raise RuntimeError(
-                "Could not find/open repeat shuffle file {} in working directory {}".format(fname, os.getcwd())
-            )
+                f"Could not find/open repeat shuffle file {fname!r} in working directory {os.getcwd()}: {ee}"
+            ) from ee
 
         if "sequence" not in data:
             raise InputError("Shuffle YAML missing required 'sequence' mapping")
@@ -1249,7 +1245,7 @@ class FuelHandler:
                         cToLoc = innerMove.toLoc
                         cEnrichList = innerMove.enrichList
                         cAssemblyType = innerMove.assemType
-                        cAssemName = innerMove.movingAssemName
+                        cAssemName = innerMove.nameAtDischarge
                         if cToLoc == lookingFor:
                             chain.append(cFromLoc)
                             if cFromLoc in ["LoadQueue", "ExCore", "SFP"]:

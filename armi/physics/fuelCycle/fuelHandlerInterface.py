@@ -165,7 +165,7 @@ class FuelHandlerInterface(interfaces.Interface):
                                 move.toLoc,
                                 move.assemType,
                                 enrichLine,
-                                move.movingAssemName,
+                                move.nameAtDischarge,
                             )
                         )
                     else:
