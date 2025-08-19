@@ -211,6 +211,13 @@ def getHoledHexagonParameterDefinitions():
 
         pb.defParam("nHoles", units=units.UNITLESS, description="Number of interior holes")
 
+        pb.defParam(
+            "holeRadFromCenter",
+            units=units.CM,
+            description="Distance from the center of the hexagon to the center of the holes.",
+            default=None,
+        )
+
     return pDefs
 
 
