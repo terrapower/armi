@@ -179,9 +179,8 @@ def getComponentParameterDefinitions():
 
         def _validatePinIndices(self, val):
             if val is not None:
-                # unsigned short integer
                 # holds [0, 65_535] so at most, 65_535 pins per block
-                self._p_pinIndices = np.array(val, dtype=np.ushort)
+                self._p_pinIndices = np.array(val, dtype=np.uint16)
             else:
                 self._p_pinIndices = None
 
