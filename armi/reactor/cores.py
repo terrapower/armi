@@ -31,6 +31,7 @@ from ruamel.yaml import YAML
 
 from armi import getPluginManagerOrFail, nuclearDataIO, runLog
 from armi.nuclearDataIO import xsLibraries
+from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
 from armi.reactor import (
     assemblies,
     blocks,
@@ -1602,8 +1603,6 @@ class Core(composites.Composite):
 
     def setMoveList(self, cycle, oldLoc, newLoc, enrichList, assemblyType, assemName):
         """Tracks the movements in terms of locations and enrichments."""
-        from armi.physics.fuelCycle.fuelHandlers import AssemblyMove
-
         data = AssemblyMove(oldLoc, newLoc, enrichList, assemblyType, assemName)
         if self.moves.get(cycle) is None:
             self.moves[cycle] = []
