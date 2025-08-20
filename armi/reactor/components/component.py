@@ -21,7 +21,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 
