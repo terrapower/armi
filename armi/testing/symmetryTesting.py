@@ -177,7 +177,7 @@ class SymmetryFactorTester:
         return {param: obj.p[param] for param in paramList}
 
     @staticmethod
-    def _getParamNamesFromDefs(pdefs: parameters.ParameterDefinitionCollection):
+    def _getParamNamesFromDefs(pdefs: "parameters.ParameterDefinitionCollection"):
         return set([p.name for p in pdefs])
 
     def _initializeCore(self):
