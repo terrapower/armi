@@ -2165,6 +2165,7 @@ class HexBlock(Block):
         # Usually things are linked to one of these "primary" flags, like
         # a cladding component having linked dimensions to a fuel component
         targetFlags = (Flags.FUEL, Flags.CONTROL, Flags.SHIELD)
+        found = False
         for c in self.iterChildren(predicate=lambda c: c.hasFlags(targetFlags) and isinstance(c, Circle)):
             localLocations = c.spatialLocator
             if isinstance(localLocations, grids.MultiIndexLocation):
@@ -2175,6 +2176,20 @@ class HexBlock(Block):
                 continue
             localIndices = list(map(allIJ.index, localIJ))
             c.p.pinIndices = localIndices
+            found = True
+        if found:
+            return
+        for c in self.iterChildren(predicate=lambda c: c.hasFlags(Flags.CLAD) and isinstance(c, Circle)):
+            localLocations = c.spatialLocator
+            if isinstance(localLocations, grids.MultiIndexLocation):
+                localIJ = list(map(ijGetter, localLocations))
+            elif isinstance(localLocations, grids.IndexLocation):
+                localIJ = [ijGetter(localLocations)]
+            else:
+                continue
+            localIndices = list(map(allIJ.index, localIJ))
+            c.p.pinIndices = localIndices
+
 
     def getPinCenterFlatToFlat(self, cold=False):
         """Return the flat-to-flat distance between the centers of opposing pins in the outermost ring."""
