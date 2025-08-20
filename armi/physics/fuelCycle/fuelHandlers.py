@@ -1136,7 +1136,7 @@ class FuelHandler:
             elif cycle == 0:
                 raise InputError(
                     "Cycle 0 is not allowed in shuffle YAML. "
-                    "This cycle is reserved for the initial core loading." 
+                    "This cycle is reserved for the initial core loading."
                     "Shuffling is available at the beginning of cycle 1"
                 )
 
