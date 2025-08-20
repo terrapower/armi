@@ -155,7 +155,7 @@ class SymmetryFactorTester:
         self.partialAssembly = [a for a in self.r.core.getAssemblies() if a.getSymmetryFactor() == 3][0]
         self.partialBlock = self.partialAssembly.getBlocks()[0]
         # expectedSymmetry describes the ratio of (post-expansion / pre-expansion) values
-        self.expectedSymmetry = 3
+        self.expectedSymmetryRatio = 3
         self.defaultParameterValue = 2
         # some parameters have validation on their inputs and need specific settings
         self.parameterOverrides = armiSymmetryTester.parameterOverrides
@@ -247,9 +247,9 @@ class SymmetryFactorTester:
                 ratio = perturbedParameters[paramName] / referenceParameters[paramName]
                 self.testObject.assertEqual(
                     ratio,
-                    self.expectedSymmetry,
+                    self.expectedSymmetryRatio,
                     f"The after-to-before expansion ratio of parameter '{paramName}' was expected to be "
-                    f"{self.expectedSymmetry} but was instead {ratio} for the {scopeName}.",
+                    f"{self.expectedSymmetryRatio} but was instead {ratio} for the {scopeName}.",
                 )
 
     @contextmanager
@@ -302,4 +302,11 @@ class SymmetryFactorTester:
             self._checkAssembly(expectedAssemblyParams),
             self._checkBlock(expectedBlockParams),
         ):
-            self.r.core.growToFullCore(self.o.cs)
+            converter = self.r.core.growToFullCore(self.o.cs)
+        self.expectedSymmetryRatio = 1 / 3
+        with (
+            self._checkCore(expectedCoreParams),
+            self._checkAssembly(expectedAssemblyParams),
+            self._checkBlock(expectedBlockParams),
+        ):
+            converter.restorePreviousGeometry()
