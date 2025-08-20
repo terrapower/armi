@@ -115,14 +115,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
 
     def setUp(self):
         self._preprocessPluginParams()
-        self.symTester = SymmetryFactorTester(
-            self,
-            expectedSymmetricCoreParams=self.coreParamsToTest,
-            expectedSymmetricAssemblyParams=self.assemblyParamsToTest,
-            expectedSymmetricBlockParams=self.blockParamsToTest,
-            parameterOverrides=self.parameterOverrides,
-            paramsToIgnore=self.paramsToIgnore,
-        )
+        self.symTester = SymmetryFactorTester(self)
 
     def _preprocessPluginParams(self):
         """Parameters can be provided as string names or whole parameter objects, need to convert to string name."""
@@ -151,15 +144,7 @@ class SymmetryFactorTester:
     test helper class so putting it here helps keep the BasicArmiSymmetryTestHelper clean.
     """
 
-    def __init__(
-        self,
-        testObject: unittest.TestCase,
-        expectedSymmetricCoreParams: list[str] = [],
-        expectedSymmetricAssemblyParams: list[str] = [],
-        expectedSymmetricBlockParams: list[str] = [],
-        parameterOverrides: dict[str:Any] = {},
-        paramsToIgnore: list[str] = [],
-    ):
+    def __init__(self, armiSymmetryTester: BasicArmiSymmetryTestHelper):
         self.o, self.r = loadTestReactor()
         self.core = self.r.core
         # there is exactly one assembly with 3-symmetry in the test core
@@ -168,15 +153,13 @@ class SymmetryFactorTester:
         # expectedSymmetry describes the ratio of (post-expansion / pre-expansion) values
         self.expectedSymmetry = 3
         self.defaultParameterValue = 2
-        # load default armi parameters for each object type
-        self._loadDefaultParameters()
         # some parameters have validation on their inputs and need specific settings
-        self.parameterOverrides = parameterOverrides
+        self.parameterOverrides = armiSymmetryTester.parameterOverrides
 
-        self.testObject = testObject
-        self.expectedSymmetricCoreParams = expectedSymmetricCoreParams
-        self.expectedSymmetricAssemblyParams = expectedSymmetricAssemblyParams
-        self.expectedSymmetricBlockParams = expectedSymmetricBlockParams
+        self.testObject = armiSymmetryTester
+        self.coreParamsToTest = armiSymmetryTester.coreParamsToTest
+        self.assemblyParamsToTest = armiSymmetryTester.assemblyParamsToTest
+        self.blockParamsToTest = armiSymmetryTester.blockParamsToTest
         self._initializeCore()
         self._initializeAssembly()
         self._initializeBlock()
@@ -184,7 +167,7 @@ class SymmetryFactorTester:
         # Some parameters change because of symmetry but are not "volume integrated"
         # so this marks them for skipping in the compare.
         # Also allows plugins the flexibility to skip some parameters if needed.
-        self.paramsToIgnore = paramsToIgnore
+        self.paramsToIgnore = armiSymmetryTester.paramsToIgnore
 
     @staticmethod
     def _getParameters(obj: object, paramList: Iterable[str]):
@@ -195,14 +178,14 @@ class SymmetryFactorTester:
         return set([p.name for p in pdefs])
 
     def _initializeCore(self):
-        self._initializeParameters(self.expectedSymmetricCoreParams, self.core)
+        self._initializeParameters(self.coreParamsToTest, self.core)
 
     def _initializeAssembly(self):
         self.allAssemblyParameterKeys = set([p if isinstance(p, str) else p.name for p in self.partialAssembly.p])
         self._initializeParameters(self.allAssemblyParameterKeys, self.partialAssembly)
 
     def _initializeBlock(self):
-        self._initializeParameters(self.expectedSymmetricBlockParams, self.partialBlock)
+        self._initializeParameters(self.blockParamsToTest, self.partialBlock)
 
     def _initializeParameters(self, parameterNames, obj: Union["Core", "Assembly", "Block"]):
         """
@@ -268,23 +251,23 @@ class SymmetryFactorTester:
 
     @contextmanager
     def _checkCore(self, expectedParams: Iterable[str]):
-        coreReferenceParameters = self._getParameters(self.core, self.expectedSymmetricCoreParams)
+        coreReferenceParameters = self._getParameters(self.core, self.coreParamsToTest)
         yield  # yield to allow the core to be expanded
-        corePerturbedParameters = self._getParameters(self.core, self.expectedSymmetricCoreParams)
+        corePerturbedParameters = self._getParameters(self.core, self.coreParamsToTest)
         self._compareParameters(coreReferenceParameters, corePerturbedParameters, expectedParams, "core")
 
     @contextmanager
     def _checkAssembly(self, expectedParams: Iterable[str]):
-        assemblyReferenceParameters = self._getParameters(self.partialAssembly, self.expectedSymmetricAssemblyParams)
+        assemblyReferenceParameters = self._getParameters(self.partialAssembly, self.assemblyParamsToTest)
         yield  # yield to allow the core to be expanded
-        assemblyPerturbedParameters = self._getParameters(self.partialAssembly, self.expectedSymmetricAssemblyParams)
+        assemblyPerturbedParameters = self._getParameters(self.partialAssembly, self.assemblyParamsToTest)
         self._compareParameters(assemblyReferenceParameters, assemblyPerturbedParameters, expectedParams, "assembly")
 
     @contextmanager
     def _checkBlock(self, expectedParams: Iterable[str]):
-        blockReferenceParameters = self._getParameters(self.partialBlock, self.expectedSymmetricBlockParams)
+        blockReferenceParameters = self._getParameters(self.partialBlock, self.blockParamsToTest)
         yield  # yield to allow the core to be expanded
-        blockPerturbedParameters = self._getParameters(self.partialBlock, self.expectedSymmetricBlockParams)
+        blockPerturbedParameters = self._getParameters(self.partialBlock, self.blockParamsToTest)
         self._compareParameters(blockReferenceParameters, blockPerturbedParameters, expectedParams, "block")
 
     def runSymmetryFactorTests(
