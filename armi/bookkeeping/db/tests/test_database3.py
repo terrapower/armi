@@ -212,8 +212,6 @@ class TestDatabase(unittest.TestCase):
         self.makeShuffleHistory()
         self.db.close()
 
-        # fileName = "C://Users/jstilley/codes/repos/nala/nala/reference-results/acceptanceTests/standard/standard.h5"
-
         # test that the math works correctly
         cycleNodes = Database.getCycleNodeAtTime(self.db.fileName, 0, 0.87, False)
         self.assertEqual(cycleNodes, ["c00n00"])

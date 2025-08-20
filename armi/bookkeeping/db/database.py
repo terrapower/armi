@@ -1498,7 +1498,10 @@ class Database:
                     continue
 
                 thisTime = h5[h5Key]["Reactor"]["time"][0]
-                if startTime <= thisTime <= endTime:
+                if thisTime >= endTime:
+                    cycleNodes.append(h5Key)
+                    break
+                elif thisTime >= startTime:
                     cycleNodes.append(h5Key)
 
         # more validation
