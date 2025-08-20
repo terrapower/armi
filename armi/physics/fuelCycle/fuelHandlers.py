@@ -91,6 +91,9 @@ class FuelHandler:
     To use this, simply create an input Python file and point to it by path
     with the ``fuelHandler`` setting. In that file, subclass this object.
     """
+    
+    DISCHARGE_LOCS = frozenset({"SFP", "ExCore"})
+    """Special strings to indicate an assembly is no longer in the core."""
 
     def __init__(self, operator):
         # we need access to the operator to find the core, get settings, grab other interfaces, etc.
@@ -835,7 +838,7 @@ class FuelHandler:
         cycle : int
             Cycle currently being processed, used for context in error messages.
         """
-        if loc in {"SFP", "ExCore"}:
+        if loc in FuelHandler.DISCHARGE_LOCS:
             return
 
         try:
@@ -1157,8 +1160,10 @@ class FuelHandler:
                     locs = chain[1:]
                     for loc in locs:
                         FuelHandler._validateLoc(loc, cycle)
-                        if loc not in {"SFP", "ExCore"} and loc in seenLocs:
-                            raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
+                        if loc not in FuelHandler.DISCHARGE_LOCS and loc in seenLocs:
+                            raise InputError(
+                                f"Location {loc} appears in multiple cascades in cycle {cycle}"
+                            )
                         seenLocs.add(loc)
 
                     enrich = []
@@ -1173,7 +1178,7 @@ class FuelHandler:
                     moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType))
                     for i in range(len(locs) - 1):
                         moves[cycle].append(AssemblyMove(locs[i], locs[i + 1]))
-                    if locs[-1] not in ["SFP", "ExCore"]:
+                    if locs[-1] not in FuelHandler.DISCHARGE_LOCS:
                         moves[cycle].append(AssemblyMove(locs[-1], "SFP"))
 
                 elif "misloadSwap" in action:
@@ -1248,7 +1253,7 @@ class FuelHandler:
         for move in moveList:
             fromLoc = move.fromLoc
             toLoc = move.toLoc
-            if "SFP" in toLoc and "LoadQueue" in fromLoc:
+            if toLoc in FuelHandler.DISCHARGE_LOCS and "LoadQueue" in fromLoc:
                 # skip dummy moves
                 continue
             elif (fromLoc, toLoc) in alreadyDone:
@@ -1261,7 +1266,11 @@ class FuelHandler:
                 chain = [fromLoc]
                 safeCount = 0  # to break out of crazy loops.
                 complete = False
-                while chain[-1] not in ["LoadQueue", "ExCore", "SFP"] and not complete and safeCount < 100:
+                while (
+                    chain[-1] not in ({"LoadQueue"} | FuelHandler.DISCHARGE_LOCS)
+                    and not complete
+                    and safeCount < 100
+                ):
                     # look for something going to where the previous one is from
                     lookingFor = chain[-1]
                     for innerMove in moveList:
@@ -1272,7 +1281,7 @@ class FuelHandler:
                         cAssemName = innerMove.nameAtDischarge
                         if cToLoc == lookingFor:
                             chain.append(cFromLoc)
-                            if cFromLoc in ["LoadQueue", "ExCore", "SFP"]:
+                            if cFromLoc in ({"LoadQueue"} | FuelHandler.DISCHARGE_LOCS):
                                 # charge-discharge loop complete.
                                 enrich = cEnrichList
                                 loadName = cAssemName
@@ -1356,13 +1365,15 @@ class FuelHandler:
                 if rot is not None:
                     rotations.append((fromLoc, rot))
                 continue
-            if toLoc in ["SFP", "ExCore"] and "LoadQueue" in fromLoc:
+            if toLoc in self.DISCHARGE_LOCS and "LoadQueue" in fromLoc:
                 # skip dummy moves
                 continue
 
-            elif "SFP" in toLoc or "ExCore" in toLoc:
+            elif toLoc in self.DISCHARGE_LOCS:
                 # discharge. Track chain.
-                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(moveList, startingAt=fromLoc)
+                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(
+                    moveList, startingAt=fromLoc
+                )
                 runLog.extra("Load Chain with load assem {0}: {1}".format(assemType, chain))
                 loadChains.append(chain)
                 enriches.append(enrichList)
@@ -1380,7 +1391,7 @@ class FuelHandler:
             if fromLoc == toLoc:
                 # rotation or no-op
                 continue
-            if toLoc in ["SFP", "ExCore"] or fromLoc in ["LoadQueue", "SFP", "ExCore"]:
+            if toLoc in self.DISCHARGE_LOCS or fromLoc in ({"LoadQueue"} | self.DISCHARGE_LOCS):
                 # skip loads/discharges; they're already done.
                 continue
             elif fromLoc in alreadyDone:
