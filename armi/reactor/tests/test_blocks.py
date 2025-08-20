@@ -2650,8 +2650,8 @@ nuclide flags:
         """Test we never get pin indices for hexagons."""
         duct = self.block.getComponent(Flags.DUCT)
         self.assertIsNone(duct.p.pinIndices)
-        indices = duct.getPinIndices()
-        self.assertIsNone(indices)
+        with self.assertRaisesRegex(ValueError, "no pin indices"):
+            duct.getPinIndices()
 
     def test_recoverCladIndicesFromFuel(self):
         """Show the same indices for cladding are found for fuel that it wraps."""
