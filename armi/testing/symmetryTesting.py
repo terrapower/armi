@@ -133,7 +133,11 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
         ]
 
     def test_defaultSymmetry(self):
-        self.symTester.runSymmetryFactorTests(expectedBlockParams=self.expectedSymmetricBlockParams)
+        self.symTester.runSymmetryFactorTests(
+            expectedCoreParams=self.expectedSymmetricCoreParams,
+            expectedAssemblyParams=self.expectedSymmetricAssemblyParams,
+            expectedBlockParams=self.expectedSymmetricBlockParams,
+        )
 
 
 class SymmetryFactorTester:
