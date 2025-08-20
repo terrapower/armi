@@ -416,11 +416,11 @@ class AxialExpansionChanger:
                         if deltaZTop > 0.0:
                             # move mass, m, from the above comp to the current comp. this adds mass, m, to current comp
                             # and removes it from the above comp
-                            self._addMassToComponent(fromComp=cAbove, toComp=c, deltaZTop=deltaZTop)
+                            self.redistributeMass(fromComp=cAbove, toComp=c, deltaZTop=deltaZTop)
                         elif deltaZTop < 0.0:
                             # move mass, m, from the current comp to the above comp. this adds mass, m, to the above
                             # comp and removes it from the current comp
-                            self._addMassToComponent(fromComp=c, toComp=cAbove, deltaZTop=deltaZTop)
+                            self.redistributeMass(fromComp=c, toComp=cAbove, deltaZTop=deltaZTop)
 
                         # realign components based on deltaZTop
                         self._shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
@@ -440,7 +440,9 @@ class AxialExpansionChanger:
             self._checkBlockHeight(b)
             # since some heavy metal may have moved around (e.g., if there are multiple fuel pins in a block), update
             # BOL params that are useful for burnup and other calculations that rely on the HM inventory of a block.
-            b.completeInitialLoading()
+
+            self._recomputeBlockMassParams(b)
+
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -449,6 +451,18 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
+    def _recomputeBlockMassParams(self, b: "Block"):
+        """
+        After component initial mass parameters have been adjusted for expansion,
+        recompute block parameters that are derived from children.
+        """
+        paramsToMove = (
+            "massHmBOL",
+            "molesHmBOL",
+        )
+        for paramName in paramsToMove:
+            b.p[paramName] = sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None)
+
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
         # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
         c.height += deltaZTop
@@ -456,6 +470,35 @@ class AxialExpansionChanger:
         # the height of cAbove grows and zbottom moves downwards (-deltaZTop) or shrinks and moves upward (+deltaZTop)
         cAbove.height -= deltaZTop
         cAbove.zbottom += deltaZTop
+
+    def redistributeMass(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
+        """This is a wrapper method to perform a complete redistribution of mass between two components.
+
+        Parameters
+        ----------
+        fromComp
+            Component which is going to give mass to toComp
+        toComp
+            Component that is recieving mass from fromComp
+        deltaZTop
+            The length, in cm, of fromComp being given to toComp
+
+        See Also
+        --------
+        :py:meth:`_addMassToComponent`
+        :py:meth:`_adjustComponentMassParams`
+        """
+        self._addMassToComponent(
+            fromComp=fromComp,
+            toComp=toComp,
+            deltaZTop=abs(deltaZTop),
+        )
+
+        self._adjustMassParams(
+            fromComp=fromComp,
+            toComp=toComp,
+            deltaZTop=abs(deltaZTop),
+        )
 
     def _addMassToComponent(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
         r"""Given ``deltaZTop``, add mass from ``fromComp`` and give it to ``toComp``.
@@ -535,6 +578,24 @@ class AxialExpansionChanger:
         toComp.setNumberDensities(newNDens)
 
         toComp.clearCache()
+
+    def _adjustMassParams(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
+        """
+        Adjust the following parameters on fromComp and toComp:
+
+        * massHmBOL
+        * molesHmBOL
+        """
+        paramsToMove = (
+            "massHmBOL",
+            "molesHmBOL",
+        )
+        removalFrac = abs(deltaZTop) / fromComp.height
+        for paramName in paramsToMove:
+            if fromComp.p[paramName] is not None:
+                amountMoved = removalFrac * fromComp.p[paramName]
+                toComp.p[paramName] = toComp.p[paramName] + amountMoved
+                fromComp.p[paramName] = fromComp.p[paramName] - amountMoved
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.

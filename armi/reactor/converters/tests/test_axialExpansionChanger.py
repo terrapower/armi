@@ -313,6 +313,8 @@ class TestConservation(AxialExpansionTestBase):
         # get total assembly fluid mass pre-expansion
         preExpAssemFluidMass = self._getTotalAssemblyFluidMass(a)
 
+        origHMMass = sum(b.p.massHmBOL for b in a)
+        origHMMoles = sum(b.p.molesHmBOL for b in a)
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -337,12 +339,16 @@ class TestConservation(AxialExpansionTestBase):
                 newMass = a.getMass("U235" if a.hasFlags(Flags.FUEL) else "B10")
                 self.assertAlmostEqual(newMass / prevMass, 1.0, places=14, msg=f"{a}")
 
+        newHMMass = sum(b.p.massHmBOL for b in a)
+        newHMMoles = sum(b.p.molesHmBOL for b in a)
         newMasses, newNDens = self._getComponentMassAndNDens(a)
         # make sure that the assembly returned to the original state
         for orig, new in zip(origMesh, a.getAxialMesh()):
             self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
+        self.assertAlmostEqual(origHMMass, newHMMass, places=12, msg=f"{a}")
+        self.assertAlmostEqual(origHMMoles, newHMMoles, places=12, msg=f"{a}")
 
         # get total assembly fluid mass post-expansion
         postExpAssemFluidMass = self._getTotalAssemblyFluidMass(a)
