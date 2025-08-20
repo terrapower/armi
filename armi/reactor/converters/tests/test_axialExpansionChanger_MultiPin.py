@@ -37,6 +37,8 @@ class StoreMassAndTemp:
     cType: str
     mass: float
     HMmass: float
+    HMmassBOL: float
+    HMmolesBOL: float
     temp: float
 
 
@@ -214,10 +216,20 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         # set the original mass and temperature of the components post expansion and pre redistribution
 
         self.originalC0 = StoreMassAndTemp(
-            self.c0.parent.name, self.c0.getMass(), self.c0.getHMMass(), self.c0.temperatureInC
+            self.c0.parent.name,
+            self.c0.getMass(),
+            self.c0.getHMMass(),
+            self.c0.p.massHmBOL,
+            self.c0.p.molesHmBOL,
+            self.c0.temperatureInC,
         )
         self.originalC1 = StoreMassAndTemp(
-            self.c1.parent.name, self.c1.getMass(), self.c1.getHMMass(), self.c1.temperatureInC
+            self.c1.parent.name,
+            self.c1.getMass(),
+            self.c1.getHMMass(),
+            self.c1.p.massHmBOL,
+            self.c1.p.molesHmBOL,
+            self.c1.temperatureInC,
         )
 
         # adjust c0 elevations per growFrac
@@ -285,6 +297,16 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             toCompRefData.HMmass + self.amountBeingRedistributed * HMfrac,
             places=self.places,
         )
+        self.assertAlmostEqual(
+            toComp.p.massHmBOL / toCompRefData.HMmassBOL,
+            1.0 + abs(self.deltaZTop),
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            toComp.p.molesHmBOL / toCompRefData.HMmolesBOL,
+            1.0 + abs(self.deltaZTop),
+            places=self.places,
+        )
 
         # fromComp temperature should not change because we've only removed mass
         self.assertEqual(fromComp.temperatureInC, fromCompRefData.temp)
@@ -315,6 +337,16 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.assertAlmostEqual(
             fromComp.getHMMass(),
             fromCompRefData.HMmass - self.amountBeingRedistributed * HMfrac,
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            fromComp.p.massHmBOL / fromCompRefData.HMmassBOL,
+            1.0 + self.deltaZTop,
+            places=self.places,
+        )
+        self.assertAlmostEqual(
+            fromComp.p.molesHmBOL / fromCompRefData.HMmolesBOL,
+            1.0 + self.deltaZTop,
             places=self.places,
         )
         # assert the fromComp temperature does not change

@@ -16,11 +16,12 @@
 import typing
 from textwrap import dedent
 
-from numpy import array
+from numpy import array, sum
 from scipy.optimize import brentq
 
 from armi import runLog
 from armi.materials.material import Fluid
+from armi.nucDirectory import nucDir
 from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
@@ -30,7 +31,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     iterSolidComponents,
 )
 from armi.reactor.flags import Flags
-from armi.utils import densityTools
+from armi.utils import densityTools, units
 from armi.utils.customExceptions import InputError
 
 if typing.TYPE_CHECKING:
@@ -438,9 +439,6 @@ class AxialExpansionChanger:
                     c.height = c.ztop - c.zbottom
 
             self._checkBlockHeight(b)
-            # since some heavy metal may have moved around (e.g., if there are multiple fuel pins in a block), update
-            # BOL params that are useful for burnup and other calculations that rely on the HM inventory of a block.
-            b.completeInitialLoading()
             # redo mesh -- functionality based on assembly.calculateZCoords()
             mesh.append(b.p.ztop)
             b.spatialLocator = self.linked.a.spatialGrid[0, 0, ib]
@@ -551,6 +549,23 @@ class AxialExpansionChanger:
             massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
 
+        # update the BOL molesHmBOL and massHmBOL to stay consistent with the change in mass
+        toCompVolBOL = toComp.getArea(Tc=toComp.p.temperatureInCBOL) * toComp.parent.p.heightBOL
+        fromCompVolBOL = fromComp.getArea(Tc=fromComp.p.temperatureInCBOL) * abs(deltaZTop)
+        newBOLVol = toCompVolBOL + fromCompVolBOL
+        newNDensBOL: dict[str, float] = {}
+        for (nuc, ndens), ndensToComp in zip(
+            fromComp.p.numberDensitiesBOL.items(), toComp.p.numberDensitiesBOL.values()
+        ):
+            if nucDir.isHeavyMetal(nuc):
+                massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, ndens)
+                massByNucToCompBOL = densityTools.getMassInGrams(nuc, toCompVolBOL, ndensToComp)
+                newNDensBOL[nuc] = densityTools.calculateNumberDensity(
+                    nuc, massByNucFromCompBOL + massByNucToCompBOL, newBOLVol
+                )
+        toComp.p.molesHmBOL = sum(list(newNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
+        toComp.p.massHmBOL = densityTools.calculateMassDensity(newNDensBOL) * newBOLVol
+
         ## Set newNDens on toComp
         toComp.setNumberDensities(newNDens)
 
@@ -611,6 +626,18 @@ class AxialExpansionChanger:
         for nuc in fromComp.getNuclides():
             massByNucFrom = densityTools.getMassInGrams(nuc, newFromCompVolume, fromComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom, newFromCompVolume)
+
+        # update the BOL molesHmBO and massHmBOL to stay consistent with the change in mass
+        fromCompVolBOL = fromComp.getArea(Tc=fromComp.p.temperatureInCBOL) * (fromComp.parent.p.heightBOL + deltaZTop)
+        newNDensBOL: dict[str, float] = {}
+        for nuc, ndens in fromComp.p.numberDensitiesBOL.items():
+            if nucDir.isHeavyMetal(nuc):
+                massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, ndens)
+                newNDensBOL[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFromCompBOL, fromCompVolBOL)
+        fromComp.p.molesHmBOL = (
+            sum(list(newNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * fromCompVolBOL
+        )
+        fromComp.p.massHmBOL = densityTools.calculateMassDensity(newNDensBOL) * fromCompVolBOL
 
         # Set newNDens on fromComp
         fromComp.setNumberDensities(newNDens)
