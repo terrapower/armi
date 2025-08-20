@@ -29,6 +29,7 @@ from armi.reactor.converters.axialExpansionChanger.expansionData import (
     ExpansionData,
     iterSolidComponents,
 )
+from armi.reactor.parameters import ParamLocation
 from armi.reactor.flags import Flags
 from armi.utils import densityTools
 from armi.utils.customExceptions import InputError
@@ -461,7 +462,10 @@ class AxialExpansionChanger:
             "molesHmBOL",
         )
         for paramName in paramsToMove:
-            b.p[paramName] = sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None)
+            symmetryFactor = b.getSymmetryFactor() if b.p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED) else 1.0
+            b.p[paramName] = (
+                sum(c.p[paramName] for c in b.iterComponents() if c.p[paramName] is not None) / symmetryFactor
+            )
 
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
         # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
