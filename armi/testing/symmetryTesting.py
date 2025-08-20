@@ -194,11 +194,6 @@ class SymmetryFactorTester:
     def _getParamNamesFromDefs(pdefs: parameters.ParameterDefinitionCollection):
         return set([p.name for p in pdefs])
 
-    def _loadDefaultParameters(self):
-        self.defaultCoreParameterDefs = set(reactorParameters.defineCoreParameters())
-        self.defaultAssemblyParameterDefs = set(assemblyParameters.getAssemblyParameterDefinitions())
-        self.defaultBlockParameterDefs = set(blockParameters.getBlockParameterDefinitions())
-
     def _initializeCore(self):
         self._initializeParameters(self.expectedSymmetricCoreParams, self.core)
 
