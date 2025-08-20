@@ -1464,7 +1464,7 @@ class Database:
             c.p["numberDensities"] = numberDensities
 
     @staticmethod
-    def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=False):
+    def getCycleNodeAtTime(dbPath, startTime, endTime, errorIfNotExactlyOne=True):
         """Given the path to an ARMI database file and a start and end time (in years), return the full set of all time
         nodes that correspond to that time period in the database.
 
@@ -1477,7 +1477,7 @@ class Database:
         endTime : int
             In years, end of the desired interval.
         errorIfNotExactlyOne : boolean
-            Raise an error if more than one cycle/node combination is returned. Default is False.
+            Raise an error if more than one cycle/node combination is returned. Default is True.
 
         Returns
         -------
