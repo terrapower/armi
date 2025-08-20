@@ -1489,25 +1489,20 @@ class Database:
         assert endTime >= startTime, f"The end time ({endTime}) is not greater than the start time ({startTime})."
 
         # open the H5 file directly
-        h5 = h5py.File(dbPath, "r")
+        with h5py.File(dbPath, "r") as h5:
+            # read time steps in H5 file
+            thisTime = 0.0
+            cycleNodes = []
+            for h5Key in h5.keys():
+                if h5Key == "inputs":
+                    continue
 
-        # read time steps in H5 file
-        thisTime = 0.0
-        cycleNodes = []
-        for h5Key in h5.keys():
-            if h5Key == "inputs":
-                continue
-
-            thisTime = h5[h5Key]["Reactor"]["time"][0]
-            if thisTime >= endTime:
-                cycleNodes.append(h5Key)
-                break
-            elif thisTime >= startTime:
-                cycleNodes.append(h5Key)
-
-        # close H5
-        h5.close()
-        h5 = None
+                thisTime = h5[h5Key]["Reactor"]["time"][0]
+                if thisTime >= endTime:
+                    cycleNodes.append(h5Key)
+                    break
+                elif thisTime >= startTime:
+                    cycleNodes.append(h5Key)
 
         # more validation
         if not cycleNodes:
