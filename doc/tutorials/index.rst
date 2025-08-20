@@ -20,4 +20,5 @@ demonstrate in more detail how to interact with ARMI.
     data_model.ipynb
     making_your_first_app.rst
     param_sweep.ipynb
+    pin-rotations.ipynb
 
