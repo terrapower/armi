@@ -181,8 +181,7 @@ class SymmetryFactorTester:
         self._initializeParameters(self.coreParamsToTest, self.core)
 
     def _initializeAssembly(self):
-        self.allAssemblyParameterKeys = set([p if isinstance(p, str) else p.name for p in self.partialAssembly.p])
-        self._initializeParameters(self.allAssemblyParameterKeys, self.partialAssembly)
+        self._initializeParameters(self.assemblyParamsToTest, self.partialAssembly)
 
     def _initializeBlock(self):
         self._initializeParameters(self.blockParamsToTest, self.partialBlock)
