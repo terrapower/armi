@@ -21,7 +21,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 
@@ -1372,16 +1372,22 @@ class Component(composites.Composite, metaclass=ComponentType):
             runLog.error(ee)
             raise ValueError(msg) from ee
 
-    def getPinIndices(self) -> Optional[np.ndarray[tuple[int], np.uint16]]:
+    def getPinIndices(self) -> np.ndarray[tuple[int], np.uint16]:
         """Find the indices for the locations where this component can be found in the block.
 
         Returns
         -------
-        np.array[int] or None
-            None if this object is not a pin, or if this object is not the central component
-            in the pin. Otherwise, return the indices in various Block-level pin methods,
+        np.array[int]
+            The indices in various Block-level pin methods,
             e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`, that correspond to
             this component.
+
+        Raises
+        ------
+        ValueError
+            If this does not have pin indices. This can be the case for components that live
+            on blocks without spatial grids, or if they do not share lattice sites, via
+            ``spatialLocator`` with other pins.
 
         See Also
         --------
@@ -1395,7 +1401,8 @@ class Component(composites.Composite, metaclass=ComponentType):
         for sibling in withPinIndices:
             if sibling.spatialLocator == self.spatialLocator:
                 return sibling.p.pinIndices
-        return None
+        msg = f"{self} on {self.parent} has no pin indices."
+        raise ValueError(msg)
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""

@@ -2650,8 +2650,8 @@ nuclide flags:
         """Test we never get pin indices for hexagons."""
         duct = self.block.getComponent(Flags.DUCT)
         self.assertIsNone(duct.p.pinIndices)
-        indices = duct.getPinIndices()
-        self.assertIsNone(indices)
+        with self.assertRaisesRegex(ValueError, "no pin indices"):
+            duct.getPinIndices()
 
     def test_recoverCladIndicesFromFuel(self):
         """Show the same indices for cladding are found for fuel that it wraps."""
@@ -2709,6 +2709,18 @@ nuclide flags:
             loc = allLocations[ix]
             ringPos = loc.getRingPos()
             self.assertIn(ringPos, expectedRingPos, msg=f"{ix=} : {loc=}")
+
+    def test_nonFueledBlock(self):
+        """If we have no fuel, but we have clad, we should still have pin indices."""
+        nonFuel = copy.deepcopy(self._originalBlock)
+        # strip out fuel flags
+        for c in nonFuel.iterComponents(Flags.FUEL):
+            c.p.flags &= ~Flags.FUEL
+        nonFuel.assignPinIndices()
+        # Should still have what ARMI considers pins
+        self.assertTrue(nonFuel.getPinLocations())
+        for c in nonFuel.iterComponents(Flags.CLAD):
+            self.assertIsNotNone(c.getPinIndices())
 
 
 class TestHexBlockOrientation(unittest.TestCase):
