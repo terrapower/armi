@@ -91,7 +91,7 @@ class FuelHandler:
     To use this, simply create an input Python file and point to it by path
     with the ``fuelHandler`` setting. In that file, subclass this object.
     """
-    
+
     DISCHARGE_LOCS = frozenset({"SFP", "ExCore"})
     """Special strings to indicate an assembly is no longer in the core."""
 
@@ -1161,9 +1161,7 @@ class FuelHandler:
                     for loc in locs:
                         FuelHandler._validateLoc(loc, cycle)
                         if loc not in FuelHandler.DISCHARGE_LOCS and loc in seenLocs:
-                            raise InputError(
-                                f"Location {loc} appears in multiple cascades in cycle {cycle}"
-                            )
+                            raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
                         seenLocs.add(loc)
 
                     enrich = []
@@ -1267,9 +1265,7 @@ class FuelHandler:
                 safeCount = 0  # to break out of crazy loops.
                 complete = False
                 while (
-                    chain[-1] not in ({"LoadQueue"} | FuelHandler.DISCHARGE_LOCS)
-                    and not complete
-                    and safeCount < 100
+                    chain[-1] not in ({"LoadQueue"} | FuelHandler.DISCHARGE_LOCS) and not complete and safeCount < 100
                 ):
                     # look for something going to where the previous one is from
                     lookingFor = chain[-1]
@@ -1371,9 +1367,7 @@ class FuelHandler:
 
             elif toLoc in self.DISCHARGE_LOCS:
                 # discharge. Track chain.
-                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(
-                    moveList, startingAt=fromLoc
-                )
+                chain, enrichList, assemType, loadAssemName = FuelHandler.trackChain(moveList, startingAt=fromLoc)
                 runLog.extra("Load Chain with load assem {0}: {1}".format(assemType, chain))
                 loadChains.append(chain)
                 enriches.append(enrichList)
