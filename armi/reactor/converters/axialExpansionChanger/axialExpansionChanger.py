@@ -524,7 +524,7 @@ class AxialExpansionChanger:
             )
         toComp.setTemperature(newToCompTemp)
         newToCompArea = toComp.getArea()
-        newVolume = newToCompArea * toComp.height
+        newVolume = newToCompArea * (toComp.height + abs(deltaZTop))
 
         ## calculate the ndens for each nuclide
         newNDens: dict[str, float] = {}
