@@ -37,11 +37,10 @@ import unittest
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Iterable, Union
 
-from armi.reactor import assemblyParameters, blockParameters, parameters, reactorParameters
 from armi.testing import loadTestReactor
 
 if TYPE_CHECKING:
-    from armi.reactor import Core
+    from armi.reactor import Core, parameters
     from armi.reactor.assemblies import Assembly
     from armi.reactor.blocks import Block
 
