@@ -371,8 +371,10 @@ A few examples of restart cases:
 
    Users may also define a custom shuffle plan in a YAML file referenced by the
    ``shuffleSequenceFile`` setting. The YAML format organizes data by cycle in a
-   ``sequence`` mapping. Each cycle contains a list of high-level actions. An
-   action is a mapping containing one of the keys ``cascade``, ``misloadSwap``,
+   ``sequence`` mapping. Keys are the cycle where the shuffling should occur during 
+   the beginning-of-cycle step. The first available cycle where shuffling will occur 
+   is cycle 1. Each cycle contains a list of high-level actions. An action is a 
+   mapping containing one of the keys ``cascade``, ``misloadSwap``,
    or ``extraRotations``. ``cascade`` chains describe a sequence of assembly
    displacements beginning with a fresh fuel assembly and ending with the final
    location's assembly being discharged. Optional ``fuelEnrichment`` lists

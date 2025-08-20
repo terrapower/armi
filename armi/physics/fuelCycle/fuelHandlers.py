@@ -1088,7 +1088,7 @@ class FuelHandler:
                 newLoc = m.group(2)
                 enrichList = [float(i) for i in m.group(3).split()]
                 # old loading style, just assume that there is a booster as our surrogate
-                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList, None))
+                moves[cycle].append(AssemblyMove(oldLoc, newLoc, enrichList))
                 numMoves += 1
 
         f.close()
@@ -1102,7 +1102,6 @@ class FuelHandler:
         try:
             with open(fname, "r") as stream:
                 yaml = YAML(typ="safe")
-                yaml.allow_duplicate_keys = False
                 data = yaml.load(stream)
         except DuplicateKeyError as e:
             raise InputError(str(e)) from e
@@ -1130,9 +1129,16 @@ class FuelHandler:
             moves[cycle] = []
             seenLocs = set()
 
-            if actions is None:
+            if actions is None and cycle != 0:
                 runLog.warning(f"Cycle {cycleKey} has no shuffle actions defined, skipping.")
                 continue
+
+            elif cycle == 0:
+                raise InputError(
+                    "Cycle 0 is not allowed in shuffle YAML. "
+                    "This cycle is reserved for the initial core loading." 
+                    "Shuffling is available at the beginning of cycle 1"
+                )
 
             for action in actions:
                 allowed = {"cascade", "fuelEnrichment", "extraRotations", "misloadSwap"}
@@ -1371,8 +1377,6 @@ class FuelHandler:
         for move in moveList:
             fromLoc = move.fromLoc
             toLoc = move.toLoc
-            assemType = move.assemType
-            rot = move.rotation
             if fromLoc == toLoc:
                 # rotation or no-op
                 continue
