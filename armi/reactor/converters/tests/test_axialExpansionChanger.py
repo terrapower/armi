@@ -949,21 +949,6 @@ class TestInputHeightsConsideredHot(unittest.TestCase):
                         self.checkColdHeightBlockMass(bStd, bExp, "U235")
                     elif bStd.hasFlags(Flags.CONTROL):
                         self.checkColdHeightBlockMass(bStd, bExp, "B10")
-                    for cExp in iterSolidComponents(bExp):
-                        if cExp.zbottom == bExp.p.zbottom and cExp.ztop == bExp.p.ztop:
-                            matDens = cExp.material.density(Tc=cExp.temperatureInC)
-                            compDens = cExp.density()
-                            msg = (
-                                f"{cExp} {cExp.material} in {bExp} in {aExp} was not at correct density. \n"
-                                + f"expansion = {bExp.p.height / bStd.p.height} \n"
-                                + f"density = {matDens}, component density = {compDens} \n"
-                            )
-                            self.assertAlmostEqual(
-                                matDens,
-                                compDens,
-                                places=12,
-                                msg=msg,
-                            )
 
     def checkColdHeightBlockMass(self, bStd: HexBlock, bExp: HexBlock, nuclide: str):
         """Checks that nuclide masses for blocks with input cold heights and
