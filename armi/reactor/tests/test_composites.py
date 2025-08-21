@@ -476,23 +476,23 @@ class TestCompositePattern(unittest.TestCase):
     def test_getFirstComponent(self):
         c = self.container.getComponents()[0]
         c0 = self.container.getFirstComponent()
-        self.assertEqual(c, c0)
+        self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
 
         c = self.cladChild.getComponents()[0]
         c0 = self.cladChild.getFirstComponent()
-        self.assertEqual(c, c0)
+        self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
 
         c = self.secondGen.getComponents()[0]
         c0 = self.secondGen.getFirstComponent()
-        self.assertEqual(c, c0)
+        self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
 
         b = loadTestBlock()
         c = b.getComponents()[0]
         c0 = b.getFirstComponent()
-        self.assertEqual(c, c0)
+        self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
 
     def test_syncParameters(self):
