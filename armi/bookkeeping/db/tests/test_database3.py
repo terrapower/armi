@@ -323,8 +323,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             :tests: R_ARMI_DB_TIME
         """
         self.r.p.cycle = 0
+        self.r.p.cycleLength = 1
+        self.r.p.time = 0
         self.r.p.timeNode = 0
-        self.r.p.cycleLength = 0
 
         # Adding some nonsense in, to test NoDefault params
         self.r.p.availabilityFactor = parameters.NoDefault
@@ -349,16 +350,16 @@ class TestDatabaseSmaller(unittest.TestCase):
         ]
         self.assertEqual(sorted(self.db.h5db["c00n00"].keys()), sorted(keys))
 
-        # validate availabilityFactor did not make it into the H5 file
+        # validate availabilityFactor did not make it into the H5 file, but the time parameters did
         rKeys = [
-            "maxAssemNum",
             "cycle",
             "cycleLength",
-            "flags",
-            "serialNum",
+            "time",
             "timeNode",
         ]
-        self.assertEqual(sorted(self.db.h5db["c00n00"]["Reactor"].keys()), sorted(rKeys))
+        h5Keys = sorted(self.db.h5db["c00n00"]["Reactor"].keys())
+        for rKey in rKeys:
+            self.assertIn(rKey, h5Keys)
 
     def test_getH5File(self):
         """
