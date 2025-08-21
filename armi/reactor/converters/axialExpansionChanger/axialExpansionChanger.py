@@ -568,8 +568,8 @@ class AxialExpansionChanger:
         toComp.clearCache()
 
         # update BOL Params for fromComp
-        fromComp.p.molesHmBOL *= 1.0 - (abs(deltaZTop)/fromComp.parent.p.heightBOL)
-        fromComp.p.massHmBOL *= 1.0 - (abs(deltaZTop)/fromComp.parent.p.heightBOL)
+        fromComp.p.molesHmBOL *= 1.0 - (abs(deltaZTop) / fromComp.parent.p.heightBOL)
+        fromComp.p.massHmBOL *= 1.0 - (abs(deltaZTop) / fromComp.parent.p.heightBOL)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
