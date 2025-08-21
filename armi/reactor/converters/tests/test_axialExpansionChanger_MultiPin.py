@@ -258,8 +258,12 @@ class TestRedistributeMass(TestMultiPinConservationBase):
 
         if fromComp is self.c0:
             self.amountBeingRedistributed = self.originalC0.mass * abs(self.deltaZTop) / self.c0.height
+            self.amountBeingRedistributedBOLMass = self.originalC0.HMmassBOL * abs(self.deltaZTop) / self.b0.p.heightBOL
+            self.amountBeingRedistributedBOLMoles = self.originalC0.HMmolesBOL * abs(self.deltaZTop) / self.b0.p.heightBOL
         else:
             self.amountBeingRedistributed = self.originalC1.mass * abs(self.deltaZTop) / self.c1.height
+            self.amountBeingRedistributedBOLMass = self.originalC1.HMmassBOL * abs(self.deltaZTop) / self.b1.p.heightBOL
+            self.amountBeingRedistributedBOLMoles = self.originalC1.HMmolesBOL * abs(self.deltaZTop) / self.b1.p.heightBOL
 
     def _getReferenceData(self, fromComp: Component, toComp: Optional[Component]):
         """Pull the reference data needed for ``fromComp`` and ``toComp``."""
@@ -298,13 +302,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             places=self.places,
         )
         self.assertAlmostEqual(
-            toComp.p.massHmBOL / toCompRefData.HMmassBOL,
-            1.0 + abs(self.deltaZTop),
+            toComp.p.massHmBOL,
+            toCompRefData.HMmassBOL + self.amountBeingRedistributedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
-            toComp.p.molesHmBOL / toCompRefData.HMmolesBOL,
-            1.0 + abs(self.deltaZTop),
+            toComp.p.molesHmBOL,
+            toCompRefData.HMmolesBOL + self.amountBeingRedistributedBOLMoles,
             places=self.places,
         )
 
@@ -325,7 +329,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         Two assertions are done: 1) the correct amount of mass is removed from ``fromComp``. 2) the
         resulting temperature of ``fromComp`` is unchanged.
         """
-        self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=self.deltaZTop)
+        self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=-self.deltaZTop)
 
         fromCompRefData, _toCompRefData = self._getReferenceData(fromComp, None)
         # ensure the fromComp mass decreases by amountBeingRedistributed
@@ -340,13 +344,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             places=self.places,
         )
         self.assertAlmostEqual(
-            fromComp.p.massHmBOL / fromCompRefData.HMmassBOL,
-            1.0 + self.deltaZTop,
+            fromComp.p.massHmBOL,
+            fromCompRefData.HMmassBOL - self.amountBeingRedistributedBOLMass,
             places=self.places,
         )
         self.assertAlmostEqual(
-            fromComp.p.molesHmBOL / fromCompRefData.HMmolesBOL,
-            1.0 + self.deltaZTop,
+            fromComp.p.molesHmBOL,
+            fromCompRefData.HMmolesBOL - self.amountBeingRedistributedBOLMoles,
             places=self.places,
         )
         # assert the fromComp temperature does not change

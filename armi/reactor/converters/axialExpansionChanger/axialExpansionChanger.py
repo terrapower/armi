@@ -471,7 +471,7 @@ class AxialExpansionChanger:
         )
         self._removeMassFromComponent(
             fromComp=fromComp,
-            deltaZTop=-deltaZTop,
+            deltaZTop=abs(deltaZTop),
         )
 
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
@@ -618,29 +618,8 @@ class AxialExpansionChanger:
         :py:meth:`redistributeMass`
         :py:meth:`addMassFromComponent`
         """
-        # calculate the new volume
-        newFromCompVolume = fromComp.getArea() * (fromComp.height + deltaZTop)
-
-        ## calculate the mass of each nuclide and then the ndens for the new mass
-        newNDens: dict[str, float] = {}
-        for nuc in fromComp.getNuclides():
-            massByNucFrom = densityTools.getMassInGrams(nuc, newFromCompVolume, fromComp.getNumberDensity(nuc))
-            newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom, newFromCompVolume)
-
-        # update the BOL molesHmBO and massHmBOL to stay consistent with the change in mass
-        fromCompVolBOL = fromComp.getArea(Tc=fromComp.p.temperatureInCBOL) * (fromComp.parent.p.heightBOL + deltaZTop)
-        newNDensBOL: dict[str, float] = {}
-        for nuc, ndens in fromComp.p.numberDensitiesBOL.items():
-            if nucDir.isHeavyMetal(nuc):
-                massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, ndens)
-                newNDensBOL[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFromCompBOL, fromCompVolBOL)
-        fromComp.p.molesHmBOL = (
-            sum(list(newNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * fromCompVolBOL
-        )
-        fromComp.p.massHmBOL = densityTools.calculateMassDensity(newNDensBOL) * fromCompVolBOL
-
-        # Set newNDens on fromComp
-        fromComp.setNumberDensities(newNDens)
+        fromComp.p.molesHmBOL *= 1.0 - (abs(deltaZTop)/fromComp.parent.p.heightBOL)
+        fromComp.p.massHmBOL *= 1.0 - (abs(deltaZTop)/fromComp.parent.p.heightBOL)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
