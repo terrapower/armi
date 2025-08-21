@@ -477,7 +477,7 @@ temperatures. Consider,
   \hat{c}_{0,m} &= c_{0,m} + 0.1c_{1,m},
    &= \sum_{i=0}^N N_{i,0} A_0(T_0) h_0 + 0.1 \sum_{i=0}^N N_{i,1} A_1(T_1) h_1,
    :name: newCMass
-  \sum_{i=0}^N \hat{N}_{i,0} \hat{A}_0(\hat{T}_0) \hat{h}_0 &= \sum_{i=0}^N \left( N_{i,0} A_0(T_0) h_0 + 0.1 N_{i,1} A_1(T_1) h_1 \right),
+  \sum_{i=0}^N \hat{N}_{i,0} A_0(\hat{T}_0) \hat{h}_0 &= \sum_{i=0}^N \left( N_{i,0} A_0(T_0) h_0 + 0.1 N_{i,1} A_1(T_1) h_1 \right),
 
 where,
 
@@ -485,52 +485,85 @@ where,
 * :math:`h_{0/1}` is the height of component 0/1,
 * :math:`\hat{\square}` represents post-redistribution values.
 
-In :numref:`newCMass` there are two unknowns, :math:`\hat{T}_0` and :math:`\hat{N}_{i,0}`. For some given axial
-expansion, we can calculate an expected difference in z elevation between the ``axial expansion target component`` and
-a given non-target component,
+For a given non-target component, we can calculate an expected difference in z-elevation between it and the
+``axial expansion target component``,
 
 .. math::
 
-  \delta = b_{\text{ztop} - c^*_{\text{ztop}}
+  \delta = b_{\text{ztop} - c^*_{\text{ztop}}.
 
 .. note::
 
   1. Recall, axial block bounds are determined by the ``axial expansion target component`` so the top z-elevation ``ztop``
   for the block is the same as the top of the ``axial expansion target component``.
+  2. In the axial expansion module, components are given z-elevation attributes. This information is not serialized to
+  the database.
 
-
-.. math::
-  A_0(T_0) h_0 +
-
-
-
- Written out Equation \ref{eq::cMass0-complex} becomes,
-
-\begin{align}
-	c_{0,m} &= c_{0,m} + 0.3c_{1,m},\\[5pt]
-	&= \sum_{i=0}^N \frac{n^i_{c,0}}{\gamma_{c,0}} A_{c,0} b_{0,h} + 0.3 \sum_{i=0}^N \frac{n^i_{c,1}}{\gamma_{c,1}} A_{c,1} b_{1,h}.
-\end{align}
-
-
-Given Equation \ref{eq::cMass0-complex}, we can compute the expected total mass for $c_0$,
-\begin{equation}
-	\hat{c}_{0,m} = c_{0,m} + 0.3c_{1,m}.
-\end{equation}
-Given $\hat{c}_{0,m}$, we can compute the per isotope number density required to recover $\hat{c}_{0,m}$,
-\begin{equation}
-	\hat{N}^i = \frac{\hat{C}^i_{0,m}}{\hat{V}\sfrac{A^i}{N_A}}, \quad \forall i\in N
-\end{equation}
-where
-\begin{itemize}
-	\item $\hat{N}^i$ is the number density for isotope, $i$
-	\item $\hat{V}$ is the volume of the new block post redistribution
-	\item $A^i$ is the atomic mass of isotope, $i$
-	\item $N_A$ is Avodadro's number
-	\item $N$ is the total number isotopes for a given material
-\end{itemize}
-
+This value can then be used to calculate the height of the Component post-expansion,
 
 .. math::
 
-  A_1(\hat{T}) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,
-  A_1(\hat{T}) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
+  \hat{h}_0 = h_0 + \delta.
+
+With this height known, there are two unknowns in :numref:`newCMass`, :math:`\hat{T}_0` and :math:`\hat{N}_{i,0}`.
+
+The post-redistribution number densities, :math:`\hat{N}_{i,0}`, are solved by using the expected post-redistribution
+mass of each isotope and component volume. The mass of isotope, :math:`i`, for block 0/1 is calculated as follows,
+
+.. math::
+
+  m_{i,0/1} = N_{i,0/1} V_{0/1} \eta_i,
+
+where :math:`\eta_i` is the product of the atomic weight for isotope, :math:`i`, and a constant scaling from moles per
+cc to atoms per barn per cm.
+
+The post redistribution temperature, :math:`\hat{T}_0`, can be computed by minimizing the residual of difference between
+the area of the Component and its expected area,
+
+.. math::
+
+  A_0(\hat{T}_0) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,
+  :name: newTemp
+  A_0(\hat{T}_0) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
+
+:numref:`newTemp` is solved using Brent's method within ``scipy`` where the bounds of the solve are the temperatures of
+the two components exchanging mass, :math:`T_0` and :math:`T_1`.
+
+
+
+
+.. This :math:`\delta` value enables the calculation of an expected volume for :math:`\hat{c}_0`,
+
+.. .. math::
+
+..   \hat{V}_0 = A_0(T_0) h_0 + A_1(T_1) \delta.
+
+
+
+
+
+
+..  Written out Equation \ref{eq::cMass0-complex} becomes,
+
+.. \begin{align}
+.. 	c_{0,m} &= c_{0,m} + 0.3c_{1,m},\\[5pt]
+.. 	&= \sum_{i=0}^N \frac{n^i_{c,0}}{\gamma_{c,0}} A_{c,0} b_{0,h} + 0.3 \sum_{i=0}^N \frac{n^i_{c,1}}{\gamma_{c,1}} A_{c,1} b_{1,h}.
+.. \end{align}
+
+
+.. Given Equation \ref{eq::cMass0-complex}, we can compute the expected total mass for $c_0$,
+.. \begin{equation}
+.. 	\hat{c}_{0,m} = c_{0,m} + 0.3c_{1,m}.
+.. \end{equation}
+.. Given $\hat{c}_{0,m}$, we can compute the per isotope number density required to recover $\hat{c}_{0,m}$,
+.. \begin{equation}
+.. 	\hat{N}^i = \frac{\hat{C}^i_{0,m}}{\hat{V}\sfrac{A^i}{N_A}}, \quad \forall i\in N
+.. \end{equation}
+.. where
+.. \begin{itemize}
+.. 	\item $\hat{N}^i$ is the number density for isotope, $i$
+.. 	\item $\hat{V}$ is the volume of the new block post redistribution
+.. 	\item $A^i$ is the atomic mass of isotope, $i$
+.. 	\item $N_A$ is Avodadro's number
+.. 	\item $N$ is the total number isotopes for a given material
+.. \end{itemize}
