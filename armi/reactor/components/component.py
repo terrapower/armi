@@ -21,7 +21,7 @@ This module contains the abstract definition of a Component.
 
 import copy
 import re
-from typing import Optional
+from typing import Union
 
 import numpy as np
 
@@ -29,7 +29,7 @@ from armi import materials, runLog
 from armi.bookkeeping import report
 from armi.materials import custom, material, void
 from armi.nucDirectory import nuclideBases
-from armi.reactor import composites, flags, grids, parameters
+from armi.reactor import composites, flags, parameters
 from armi.reactor.components import componentParameters
 from armi.utils import densityTools
 from armi.utils.units import C_TO_K
@@ -304,9 +304,12 @@ class Component(composites.Composite, metaclass=ComponentType):
                     self.p[dimName] = _DimensionLink((comp, linkedKey))
                 except Exception:
                     if value.count(".") > 1:
-                        raise ValueError(f"Component names should not have periods in them: `{value}`")
+                        raise ValueError(
+                            f"Name of {self} has a period in it. "
+                            f"Components cannot not have periods in their names: `{value}`"
+                        )
                     else:
-                        raise KeyError(f"Bad component link `{dimName}` defined as `{value}`")
+                        raise KeyError(f"Bad component link `{dimName}` defined as `{value}` in {self}")
 
     def setLink(self, key, otherComp, otherCompKey):
         """Set the dimension link."""
@@ -642,7 +645,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         else:
             return 0.0
 
-    def getNuclideNumberDensities(self, nucNames):
+    def getNuclideNumberDensities(self, nucNames: list[str]) -> list[float]:
         """Return a list of number densities for the nuc names requested."""
         if isinstance(nucNames, (list, tuple, np.ndarray)):
             byteNucs = np.asanyarray(nucNames, dtype="S6")
@@ -863,7 +866,7 @@ class Component(composites.Composite, metaclass=ComponentType):
         except ZeroDivisionError:
             return 0.0
 
-    def getMass(self, nuclideNames=None):
+    def getMass(self, nuclideNames: Union[None, str, list[str]] = None) -> float:
         r"""
         Determine the mass in grams of nuclide(s) and/or elements in this object.
 
@@ -1322,7 +1325,7 @@ class Component(composites.Composite, metaclass=ComponentType):
 
         return pinFluxes[self.p.pinNum - 1] * self.getVolume() / self.parent.getSymmetryFactor()
 
-    def getPinMgFluxes(self, adjoint: Optional[bool] = False, gamma: Optional[bool] = False) -> np.ndarray:
+    def getPinMgFluxes(self, adjoint: bool = False, gamma: bool = False) -> np.ndarray[tuple[int, int], float]:
         """Retrieves the pin multigroup fluxes for the component.
 
         Parameters
@@ -1345,21 +1348,9 @@ class Component(composites.Composite, metaclass=ComponentType):
             If the location(s) of the component are not aligned with pin indices from the block.
             This would happen if this component is not actually a pin.
         """
-        # Get the (i, j, k) location of all pins from the parent block
-        indicesAll = {(loc.i, loc.j): i for i, loc in enumerate(self.parent.getPinLocations())}
-
-        # Retrieve the indices of this component
-        if isinstance(self.spatialLocator, grids.MultiIndexLocation):
-            indices = [(loc.i, loc.j) for loc in self.spatialLocator]
-        else:
-            indices = [(self.spatialLocator.i, self.spatialLocator.j)]
-
-        # Map this component's indices to block's pin indices
-        indexMap = list(map(indicesAll.get, indices))
-        if None in indexMap:
-            msg = f"Failed to retrieve pin indices for component {self}."
-            runLog.error(msg)
-            raise ValueError(msg)
+        # If we get a None, for a non-pin thing, the exception block at the bottom will catch
+        # that and inform the user. so we don't need to add extra guard rails here
+        indexMap = self.getPinIndices()
 
         # Get the parameter name we are trying to retrieve
         if gamma:
@@ -1373,7 +1364,6 @@ class Component(composites.Composite, metaclass=ComponentType):
             else:
                 param = "pinMgFluxes"
 
-        # Return pin fluxes
         try:
             return self.parent.p[param][indexMap]
         except Exception as ee:
@@ -1381,6 +1371,38 @@ class Component(composites.Composite, metaclass=ComponentType):
             runLog.error(msg)
             runLog.error(ee)
             raise ValueError(msg) from ee
+
+    def getPinIndices(self) -> np.ndarray[tuple[int], np.uint16]:
+        """Find the indices for the locations where this component can be found in the block.
+
+        Returns
+        -------
+        np.array[int]
+            The indices in various Block-level pin methods,
+            e.g., :meth:`armi.reactor.blocks.Block.getPinLocations`, that correspond to
+            this component.
+
+        Raises
+        ------
+        ValueError
+            If this does not have pin indices. This can be the case for components that live
+            on blocks without spatial grids, or if they do not share lattice sites, via
+            ``spatialLocator`` with other pins.
+
+        See Also
+        --------
+        :meth`:armi.reactor.blocks.HexBlock.assignPinIndices`
+        """
+        ix = self.p.pinIndices
+        if isinstance(ix, np.ndarray):
+            return ix
+        # Find a sibling that has pin indices and has the same spatial locator as us
+        withPinIndices = (c for c in self.parent if c is not self and c.p.pinIndices is not None)
+        for sibling in withPinIndices:
+            if sibling.spatialLocator == self.spatialLocator:
+                return sibling.p.pinIndices
+        msg = f"{self} on {self.parent} has no pin indices."
+        raise ValueError(msg)
 
     def density(self) -> float:
         """Returns the mass density of the object in g/cc."""
@@ -1450,5 +1472,3 @@ class Component(composites.Composite, metaclass=ComponentType):
 
 class ShapedComponent(Component):
     """A component with well-defined dimensions."""
-
-    pass

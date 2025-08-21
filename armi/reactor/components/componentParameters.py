@@ -14,6 +14,8 @@
 
 """Component parameter definitions."""
 
+import numpy as np
+
 from armi.reactor import parameters
 from armi.reactor.parameters import ParamLocation
 from armi.reactor.parameters.parameterDefinitions import isNumpyArray, isNumpyF32Array
@@ -175,11 +177,23 @@ def getComponentParameterDefinitions():
             description="Total number of moles of heavy metal at BOL.",
         )
 
+        def _validatePinIndices(self, val):
+            if val is not None:
+                # holds [0, 65_535] so at most, 65_535 pins per block
+                self._p_pinIndices = np.array(val, dtype=np.uint16)
+            else:
+                self._p_pinIndices = None
+
         pb.defParam(
-            "puFrac",
-            default=0.0,
+            "pinIndices",
+            default=None,
+            description=(
+                "Indices within data arrays where values for this component are stored. "
+                "The array is zero indexed and structured such that the j-th pin on this "
+                "component can be found at ``Block.getPinLocations()[pinIndices[j]]``. "
+            ),
             units=units.UNITLESS,
-            description="Current average Pu fraction. Calculated as the ratio of Pu mass to total HM mass.",
+            setter=_validatePinIndices,
         )
 
     return pDefs
