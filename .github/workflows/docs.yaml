@@ -55,11 +55,7 @@ jobs:
           make html
 
           echo "Build PDF docs..."
-          sudo apt-get install texlive-xetex=2021.20220204-1
-          sudo apt-get install texlive-latex-base=2021.20220204-1
-          sudo apt-get install texlive-fonts-recommended=2021.20220204-1
-          sudo apt-get install texlive-latex-extra=2021.20220204-1
-          sudo apt-get install texlive-full=2021.20220204-1
+          sudo apt-get install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1
           make latex
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
