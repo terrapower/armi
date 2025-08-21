@@ -38,15 +38,6 @@ def getBlockParameterDefinitions():
         )
 
         pb.defParam(
-            "pinLocation",
-            description="Location of fuel pins",
-            units=units.UNITLESS,
-            saveToDB=False,
-            default=None,
-            location=ParamLocation.CHILDREN,
-        )
-
-        pb.defParam(
             "detailedNDens",
             setter=isNumpyArray("detailedNDens"),
             units=f"atoms/(bn*{units.CM})",
