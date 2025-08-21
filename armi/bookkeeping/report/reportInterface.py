@@ -72,7 +72,7 @@ class ReportInterface(interfaces.Interface):
 
         self.r.core.calcBlockMaxes()
         reportingUtils.summarizePowerPeaking(self.r.core)
- 
+
         runLog.important("Cycle {}, node {} Summary: ".format(cycle, node))
         runLog.important(
             "  time= {0:8.2f} years, keff= {1:.12f} maxPD= {2:-8.2f} MW/m^2, maxBuI= {3:-8.4f} maxBuF= {4:8.4f}".format(
@@ -105,7 +105,7 @@ class ReportInterface(interfaces.Interface):
                 if THhotChannelCladIDT > maxTHhotChannelCladIDT:
                     maxTHhotChannelCladIDT = THhotChannelCladIDT
             return maxTHhotChannelCladIDT
-        
+
         def getMaxAssemblyPower():
             maxAssemblyPower = 0
             maxAssembly = None
@@ -122,10 +122,10 @@ class ReportInterface(interfaces.Interface):
             self.r.p.timeNode,
             self.r.core.p.coupledIteration,
             self.r.core.p.keffUnc,
-            self.r.core.p.THdeltaPCore,
+            self.r.core.p.THdeltaPCore / 1e6,
             getMaxAssemblyPower(),
         ]
-        paramNames = ["Cycle", "Node", "Couple", "Unc keff", "Core Pressure Drop", "Max Assembly Power"]
+        paramNames = ["Cycle", "Node", "Couple", "Unc keff", "Core\nPressure Drop [MPa]", "Max Assembly\nPower [MW]"]
         if self.r.core.p.maxTH2SigmaCladIDT:
             paramNames.append("Peak 2-Sigma Fuel")
             nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
@@ -137,6 +137,19 @@ class ReportInterface(interfaces.Interface):
             "Table of reactor parameters:\n"
             + tabulate.tabulate(self.tableParameters, headers=paramNames, tableFmt="armi")
         )
+
+        methodParams = [
+            self.r.p.cycle,
+            self.r.p.timeNode,
+            self.r.core.p.coupledIteration,
+            self.r.core.p.keffUnc,
+            self.r.core.p.THdeltaPCore / 1e6,
+        ]
+        # max assembly power
+        maxAssemblyPower = max([a.calcTotalParam("power") for a in self.r.core])
+        methodParams.append(maxAssemblyPower)
+        methodParams.append(self.r.core.p.maxTH2SigmaCladIDT)
+        runLog.info("Table using methods:\n" + tabulate.tabulate([methodParams], headers=paramNames, tableFmt="armi"))
 
     def interactBOC(self, cycle=None):
         self.fuelCycleSummary["bocFissile"] = self.r.core.getTotalBlockParam("kgFis")
