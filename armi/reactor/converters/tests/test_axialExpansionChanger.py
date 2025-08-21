@@ -1074,6 +1074,7 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, pl
     b.setType(blockType)
 
     b.getVolumeFractions()
+    b.completeInitialLoading()
 
     return b
 
