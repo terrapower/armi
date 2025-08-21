@@ -93,15 +93,11 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         - C0 grows resulting in c0 giving 10% of its mass to c1. c1 height does not change so its mass gains 10%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
         during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
-        temperatures do not change after the calls to :py:meth:`_addMassToComponent` and
-        :py:meth:`_removeMassFromComponent`.
+        temperatures do not change.
         """
         growFrac = 1.10
         self._initializeTest(growFrac, fromComp=self.c0)
-
-        self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
-
-        self._rmMassFromCompWithTempAssert(self.c0)
+        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=False)
 
     def test_addMassToComponent_nonTargetCompression_noThermal(self):
         """With no temperature changes anywere, shrink c0 by 10% and show that 10% of the c1 mass is moved to c0.
@@ -111,15 +107,11 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         - C0 shrinks resulting in c1 giving 10% of its mass to c0. c1 height does not change so it's mass loses 10%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
         during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
-        temperatures do not change after the calls to :py:meth:`_addMassToComponent` and
-        :py:meth:`_removeMassFromComponent`.
+        temperatures do not change.
         """
         growFrac = 0.9
         self._initializeTest(growFrac, fromComp=self.c1)
-
-        self._addMassToCompWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
-
-        self._rmMassFromCompWithTempAssert(fromComp=self.c1)
+        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=False)
 
     def test_addMassToComponent_nonTargetCompression_yesThermal(self):
         """Decrease c0 by 100 deg C and and show that c1 mass is moved to c0.
@@ -128,9 +120,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         -----
         - C0 shrinks resulting in c1 giving X% of its mass to c0. c1 height does not change so its mass loses X%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
-        during the transfer of mass. For this test, we show that the temperature of c0 increases after the call to
-        :py:meth:`_addMassToComponent`. This increase is due to the contribution from the hotter c1 component. We show
-        that the temperatures of c1 and c0 do not change after the call to :py:meth:`_removeMassFromComponent`.
+        during the transfer of mass. For this test, we show that the temperature of c0 increases and the temperature of
+        c1 does not change. The increase in temperature for c0 is due to the contribution from the hotter c1 component.
         """
         newTemp = self.c0.temperatureInC - 100.0
         # updateComponentTemp updates ndens for update in AREA only
@@ -139,10 +130,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
 
         self._initializeTest(growFrac, fromComp=self.c1)
-
-        self._addMassToCompWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True)
-
-        self._rmMassFromCompWithTempAssert(fromComp=self.c1)
+        self._redistributeMassWithTempAssert(fromComp=self.c1, toComp=self.c0, thermalExp=True)
 
     def test_addMassToComponent_nonTargetExpansion_yesThermal(self):
         """Increase c0 by 100 deg C and and show that c0 mass is moved to c1.
@@ -151,9 +139,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         -----
         - C0 expands resulting in c0 giving X% of its mass to c1. c0 height does not change so its mass loses X%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
-        during the transfer of mass. For this test, we show that the temperature of c1 increases after the call to
-        :py:meth:`_addMassToComponent`. This increase is due to the contribution from the hotter c0 component. We show
-        that the temperatures of c1 and c0 do not change after the call to :py:meth:`_removeMassFromComponent`.
+        during the transfer of mass. For this test, we show that the temperature of c1 increases and the temperature of
+        c0 does not change. The increase in temperature is due to the contribution from the hotter c0 component.
         """
         newTemp = self.c0.temperatureInC + 100.0
         # updateComponentTemp updates ndens for update in AREA only
@@ -162,10 +149,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         growFrac = self.axialExpChngr.expansionData.getExpansionFactor(self.c0)
 
         self._initializeTest(growFrac, fromComp=self.c0)
-
-        self._addMassToCompWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
-
-        self._rmMassFromCompWithTempAssert(self.c0)
+        self._redistributeMassWithTempAssert(fromComp=self.c0, toComp=self.c1, thermalExp=True)
 
     def _updateToCompElevations(self, toComp: Component):
         """Shift ``toComp`` based on expansion or contraction of ``fromComp``, as indicated by ``self.deltaZTop``.
@@ -274,7 +258,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             toCompRefData = self.originalC0 if toComp.parent.name == self.originalC0.cType else self.originalC1
         return fromCompRefData, toCompRefData
 
-    def _addMassToCompWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
+    def _redistributeMassWithTempAssert(self, fromComp: Component, toComp: Component, thermalExp: bool):
         """Perform the mass redistribution from ``fromComp`` to ``toComp``.
 
         Notes
@@ -283,13 +267,13 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         for ``fromComp`` and ``toComp`` are correct.
         """
         # move mass from ``fromComp`` to ``toComp``
-        self.axialExpChngr._addMassToComponent(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
+        self.axialExpChngr.redistributeMass(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
 
         fromCompRefData, toCompRefData = self._getReferenceData(fromComp, toComp)
-        # ensure there is no difference in fromComp mass
-        self.assertAlmostEqual(fromCompRefData.mass, fromComp.getMass(), places=self.places)
-        # ensure the toComp mass increases by amountBeingRedistributed
         self._updateToCompElevations(toComp=toComp)
+        self._updateFromCompElevations(fromComp=fromComp)
+
+        # ensure the toComp mass increases by amountBeingRedistributed
         self.assertAlmostEqual(
             toComp.getMass(),
             toCompRefData.mass + self.amountBeingRedistributed,
@@ -321,19 +305,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         else:
             self.assertEqual(toComp.temperatureInC, toCompRefData.temp)
 
-    def _rmMassFromCompWithTempAssert(self, fromComp: Component):
-        """Remove the mass from ``fromComp``.
-
-        Notes
-        -----
-        Two assertions are done: 1) the correct amount of mass is removed from ``fromComp``. 2) the
-        resulting temperature of ``fromComp`` is unchanged.
-        """
-        self.axialExpChngr._removeMassFromComponent(fromComp=fromComp, deltaZTop=-self.deltaZTop)
-
-        fromCompRefData, _toCompRefData = self._getReferenceData(fromComp, None)
         # ensure the fromComp mass decreases by amountBeingRedistributed
-        self._updateFromCompElevations(fromComp)
         self.assertAlmostEqual(
             fromComp.getMass(), fromCompRefData.mass - self.amountBeingRedistributed, places=self.places
         )
@@ -353,8 +325,6 @@ class TestRedistributeMass(TestMultiPinConservationBase):
             fromCompRefData.HMmolesBOL - self.amountBeingRedistributedBOLMoles,
             places=self.places,
         )
-        # assert the fromComp temperature does not change
-        self.assertEqual(fromComp.temperatureInC, fromCompRefData.temp)
 
 
 class TestMultiPinConservation(TestMultiPinConservationBase):

@@ -415,13 +415,9 @@ class AxialExpansionChanger:
                         # redistribute mass
                         deltaZTop = b.p.ztop - c.ztop
                         if deltaZTop > 0.0:
-                            # move mass, m, from the above comp to the current comp. this adds mass, m, to current comp
-                            # and removes it from the above comp
-                            self.redistributeMass(cAbove, c, deltaZTop)
+                            self.redistributeMass(fromComp=cAbove, toComp=c, deltaZTop=deltaZTop)
                         elif deltaZTop < 0.0:
-                            # move mass, m, from the current comp to the above comp. this adds mass, m, to the above
-                            # comp and removes it from the current comp
-                            self.redistributeMass(c, cAbove, deltaZTop)
+                            self.redistributeMass(fromComp=c, toComp=cAbove, deltaZTop=deltaZTop)
 
                         # realign components based on deltaZTop
                         self._shiftLinkedCompsForDelta(c, cAbove, deltaZTop)
@@ -447,33 +443,6 @@ class AxialExpansionChanger:
         bounds[2] = array(mesh)
         self.linked.a.spatialGrid._bounds = tuple(bounds)
 
-    def redistributeMass(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
-        """This is a wrapper method to perform a complete redistribution of mass between two components.
-
-        Parameters
-        ----------
-        fromComp
-            Component which is going to give mass to toComp
-        toComp
-            Component that is recieving mass from fromComp
-        deltaZTop
-            The length, in cm, of fromComp being given to toComp
-
-        See Also
-        --------
-        :py:meth:`_addMassToComponent`
-        :py:meth:`_removeMassFromComponent`
-        """
-        self._addMassToComponent(
-            fromComp=fromComp,
-            toComp=toComp,
-            deltaZTop=abs(deltaZTop),
-        )
-        self._removeMassFromComponent(
-            fromComp=fromComp,
-            deltaZTop=abs(deltaZTop),
-        )
-
     def _shiftLinkedCompsForDelta(self, c: "Component", cAbove: "Component", deltaZTop: float):
         # shift the height and ztop of c downwards (-deltaZTop) or upwards (+deltaZTop)
         c.height += deltaZTop
@@ -482,7 +451,7 @@ class AxialExpansionChanger:
         cAbove.height -= deltaZTop
         cAbove.zbottom += deltaZTop
 
-    def _addMassToComponent(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
+    def redistributeMass(self, fromComp: "Component", toComp: "Component", deltaZTop: float):
         r"""Given ``deltaZTop``, add mass from ``fromComp`` and give it to ``toComp``.
 
         Parameters
@@ -496,9 +465,9 @@ class AxialExpansionChanger:
 
         Notes
         -----
-        Only the mass of ``toComp`` is changed in this method. To adjust the mass of ``fromComp``, call
-        :py:meth:`_removeMassFromComponent` or the wrapper method :py:meth:`redistributeMass`.
-        When redistributing mass, if ``fromComp`` and ``toComp`` are different temperatures, the temperature of
+        Only the mass of ``toComp`` is changed in this method. The mass of ``fromComp`` is changed separately by
+        changing the height of ``fromComp`` -- the number densities of ``fromComp`` are not modified. When
+        redistributing mass, if ``fromComp`` and ``toComp`` are different temperatures, the temperature of
         ``toComp`` will change. Calculating this new temperature is non trivial due to thermal expansion. The following
         defines what the area of ``toComp`` is post-redistribution,
 
@@ -517,11 +486,6 @@ class AxialExpansionChanger:
         ------
         RuntimeError if the linked components are not the same material; we cannot transfer mass between materials
         because then the resulting material has unknown properties.
-
-        See Also
-        --------
-        :py:meth:`redistributeMass`
-        :py:meth:`_removeMassFromComponent`
         """
         # limitation: fromComp and toComp **must** be the same materials.
         if type(fromComp.material) is not type(toComp.material):
@@ -603,21 +567,7 @@ class AxialExpansionChanger:
         toComp.temperatureInC = newToCompTemp
         toComp.clearCache()
 
-    def _removeMassFromComponent(self, fromComp: "Component", deltaZTop: float):
-        """Given ``deltaZTop``, remove mass from ``fromComp``.
-
-        Parameters
-        ----------
-        fromComp
-            Component which is going to give mass to toComp
-        deltaZTop
-            The length, in cm, of fromComp being given to toComp
-
-        See Also
-        --------
-        :py:meth:`redistributeMass`
-        :py:meth:`addMassFromComponent`
-        """
+        # update BOL Params for fromComp
         fromComp.p.molesHmBOL *= 1.0 - (abs(deltaZTop)/fromComp.parent.p.heightBOL)
         fromComp.p.massHmBOL *= 1.0 - (abs(deltaZTop)/fromComp.parent.p.heightBOL)
 
