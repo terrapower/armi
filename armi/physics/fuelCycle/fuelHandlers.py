@@ -1169,9 +1169,9 @@ class FuelHandler:
                     try:
                         enrich = [float(e) for e in enrichList]
                     except (TypeError, ValueError):
-                        raise InputError("fuelEnrichment values must be numeric")
+                        raise InputError("fuelEnrichment values must be numeric. Got {enrichList}")
                     if any(e < 0 or e > 100 for e in enrich):
-                        raise InputError("fuelEnrichment values must be between 0 and 100")
+                        raise InputError("fuelEnrichment values must be between 0 and 100. Got {enrich}")
 
                     moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType))
                     for i in range(len(locs) - 1):
