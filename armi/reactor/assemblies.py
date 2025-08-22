@@ -1231,6 +1231,9 @@ class Assembly(composites.Composite):
                     b.autoCreateSpatialGrids(parentSpatialGrid)
                 except (ValueError, NotImplementedError) as e:
                     runLog.extra(str(e), single=True)
+            # Do more grid initializations from a manual or auto created grid
+            if b.spatialGrid is not None:
+                b.assignPinIndices()
 
 
 class HexAssembly(Assembly):
