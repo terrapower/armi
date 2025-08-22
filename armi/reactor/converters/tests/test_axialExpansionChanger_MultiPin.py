@@ -385,7 +385,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
-        self.checkConservation(tracerNuc)
+        self.checkConservation()
 
     def test_tracerNuclideExpansion_simple(self):
         """Thermally expand and ensure the tracer nuclide doesn't move all the way up the assembly."""
@@ -431,6 +431,9 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         for c in b.getComponents(Flags.FUEL):
             self.assertEqual(c.getNumberDensity(tracerNuc), 0.0, "Tracer nuclide appeared in the top fuel block!")
 
+        i, b = next(self._iterFuelBlocks())
+        for c in self._iterTestFuelCompsOnBlock(b):
+            self.assertGreater(c.getNumberDensity(tracerNuc), 0.0, "Tracer nuclide disappeared from bottom fuel block!")
 
     def test_contractThermal(self):
         """Perform thermal contraction on the test fuel component.
