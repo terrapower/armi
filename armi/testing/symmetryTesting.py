@@ -152,7 +152,7 @@ class SymmetryFactorTester:
     """
 
     def __init__(self, armiSymmetryTester: BasicArmiSymmetryTestHelper):
-        self.o, self.r = loadTestReactor()
+        self.o, self.r = loadTestReactor(customSettings=armiSymmetryTester.customSettings)
         self.core = self.r.core
         # there is exactly one assembly with 3-symmetry in the test core
         self.partialAssembly = [a for a in self.r.core.getAssemblies() if a.getSymmetryFactor() == 3][0]
