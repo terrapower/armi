@@ -385,7 +385,52 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
                 self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
-        self.checkConservation()
+        self.checkConservation(tracerNuc)
+
+    def test_tracerNuclideExpansion_simple(self):
+        """Thermally expand and ensure the tracer nuclide doesn't move all the way up the assembly."""
+        # add a nuclide Sthat doesn't exist in any other components in the first block of fuel
+        tracerNuc = "S32"
+        b = self.a.getFirstBlock(Flags.FUEL)
+        for c in b.getComponents(Flags.FUEL):
+            c.setNumberDensity(tracerNuc, 1.0)
+
+        for i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
+                newTemp = c.temperatureInC + 100.0 * i
+                self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
+        self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+        self.axialExpChngr.axiallyExpandAssembly()
+
+        for i, b in self._iterFuelBlocks():
+            for c in b.getComponents(Flags.FUEL):
+                print(c, c.getNumberDensity(tracerNuc))
+
+        for i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
+                print(c.getNumberDensity(tracerNuc))
+
+        self.assertEqual(b.getNumberDensity(tracerNuc), 0.0, "Tracer nuclide appeared in the top fuel block!")
+
+    def test_tracerNuclideContraction_simple(self):
+        """Thermally expand and ensure the tracer nuclide doesn't move all the way up the assembly."""
+        # add a nuclide Sthat doesn't exist in any other components in the first block of fuel
+        tracerNuc = "S32"
+        b = self.a.getFirstBlock(Flags.FUEL)
+        for c in b.getComponents(Flags.FUEL):
+            c.setNumberDensity(tracerNuc, 1.0)
+
+        for i, b in self._iterFuelBlocks():
+            for c in self._iterTestFuelCompsOnBlock(b):
+                newTemp = c.temperatureInC - 100.0 * i
+                self.axialExpChngr.expansionData.updateComponentTemp(c, newTemp)
+        self.axialExpChngr.expansionData.computeThermalExpansionFactors()
+        self.axialExpChngr.axiallyExpandAssembly()
+
+        b = self.a.getBlocks(Flags.FUEL)[-1]
+        for c in b.getComponents(Flags.FUEL):
+            self.assertEqual(c.getNumberDensity(tracerNuc), 0.0, "Tracer nuclide appeared in the top fuel block!")
+
 
     def test_contractThermal(self):
         """Perform thermal contraction on the test fuel component.
