@@ -418,7 +418,7 @@ mass post-axial expansion is not trivial. The ``axial expansion target component
 conservation of mass. For pinned-blocks, this is typically chosen to be the most neutronically important Component;
 e.g., in a fuel Block this is typically the fuel Component. Generally speaking, components which are not the axial
 expansion target will exhibit non-conservation on the Block-level as mass is redistributed across the axially-
-neighboring blocks; this is discussed in more detail in :numref:`_mass_redistribution`. However, the mass of all
+neighboring blocks; this is discussed in more detail in :numref:`mass_redistribution`. However, the mass of all
 solid components are designed to be conserved at the assembly-level if the following are met for a given assembly
 design.
 
@@ -439,29 +439,33 @@ blueprint which satisfy the above requirements.
 Block-Level Mass Redistribution
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:numref:`mass_redistribution_illustration` illustrates the mass redistribution process for axial expansion in ARMI given
+Figure :ref:`mass_redistribution_illustration` illustrates the mass redistribution process for axial expansion in ARMI given
 a uniform axial expansion of 10% for fuel components.
 
-.. figure:: doc/.static/mass_redistribution_illustration.png
+.. figure:: /.static/mass_redistribution_illustration.png
   :name: mass_redistribution_illustration
 
   Illustration of mass redistribution for axial expansion in ARMI.
 
-The redistribution process can be written mathematically. In :numref:`mass_redistribution_illustration`, consider the
+The redistribution process can be written mathematically. In Figure :ref:`mass_redistribution_illustration`, consider the
 exchange of mass between the clad in Block 0 and Block 1,
 
 .. math::
 	:name: cMass0
-	\hat{c}_{0,m} &= c_{0,m} + 0.1c_{1,m}
-	:name: cMass1
-	\hat{c}_{1,m} &= 0.9c_{1,m},
+
+	\hat{c}_{0,m} = c_{0,m} + 0.1c_{1,m}
+
+.. math::
+  :name: cMass1
+
+	\hat{c}_{1,m} = 0.9c_{1,m},
 
 where :math:`c_{0/1,m}` represents the clad mass in Block 0/1 prior to redistribution and :math:`\hat{c}_{0/1,m}`
 represents the clad mass in Block 0/1 after redistribution, respectively. Given :math:`\hat{c}_{0,m}` and
-:math:`\hat{c}_{1,m}`, the post-mass redistribution number densities, :math:`\hat{N}^{i,0/1}`, where the subscript
+:math:`\hat{c}_{1,m}`, the post-mass redistribution number densities, :math:`\hat{N}_{i,0/1}`, where the subscript
 :math:`i,0/1` represents isotope :math:`i` for Block 0/1, need to be computed.
 
-Computing :math:`\hat{N}^{i,1}` satisfying :math:`\hat{c}_{1,m}` can be found by scaling the pre-redistribution number
+Computing :math:`\hat{N}_{i,1}` satisfying :math:`\hat{c}_{1,m}` can be found by scaling the pre-redistribution number
 densities by the expansion factor. However, in ARMI, the number densities are not changed and the mass is decreased
 through the reduction in the height of the parent Block.
 
@@ -470,13 +474,14 @@ through the reduction in the height of the parent Block.
   Recall, component mass in ARMI is calculated as the product of the mass density of the component, the area of the
   component, and the height of the block. The mass of components can be tuned through either of these three parameters.
 
-Computing :math:`\hat{N}^{i,0}` is non-trivial as, in general, :math:`c_0` and :math:`c_1` are at different
+Computing :math:`\hat{N}_{i,0}` is non-trivial as, in general, :math:`c_0` and :math:`c_1` are at different
 temperatures. Consider,
 
 .. math::
-  \hat{c}_{0,m} &= c_{0,m} + 0.1c_{1,m},
-   &= \sum_{i=0}^N N_{i,0} A_0(T_0) h_0 + 0.1 \sum_{i=0}^N N_{i,1} A_1(T_1) h_1,
-   :name: newCMass
+  :name: newCMass
+
+  \hat{c}_{0,m} &= c_{0,m} + 0.1c_{1,m},\\
+  &= \sum_{i=0}^N N_{i,0} A_0(T_0) h_0 + 0.1 \sum_{i=0}^N N_{i,1} A_1(T_1) h_1,\\
   \sum_{i=0}^N \hat{N}_{i,0} A_0(\hat{T}_0) \hat{h}_0 &= \sum_{i=0}^N \left( N_{i,0} A_0(T_0) h_0 + 0.1 N_{i,1} A_1(T_1) h_1 \right),
 
 where,
@@ -490,14 +495,14 @@ For a given non-target component, we can calculate an expected difference in z-e
 
 .. math::
 
-  \delta = b_{\text{ztop} - c^*_{\text{ztop}}.
+  \delta = b_{\text{ztop}} - c^*_{\text{ztop}}.
 
 .. note::
 
-  1. Recall, axial block bounds are determined by the ``axial expansion target component`` so the top z-elevation ``ztop``
-  for the block is the same as the top of the ``axial expansion target component``.
-  2. In the axial expansion module, components are given z-elevation attributes. This information is not serialized to
-  the database.
+  #. Recall, axial block bounds are determined by the ``axial expansion target component`` so the top z-elevation ``ztop``
+     for the block is the same as the top of the ``axial expansion target component``.
+  #. In the axial expansion module, components are given z-elevation attributes. This information is not serialized to
+     the database.
 
 This value can then be used to calculate the height of the Component post-expansion,
 
@@ -505,28 +510,33 @@ This value can then be used to calculate the height of the Component post-expans
 
   \hat{h}_0 = h_0 + \delta.
 
-With this height known, there are two unknowns in :numref:`newCMass`, :math:`\hat{T}_0` and :math:`\hat{N}_{i,0}`.
+With this height known, there are two unknowns in Equation :eq:`newCMass`, :math:`\hat{T}_0` and :math:`\hat{N}_{i,0}`.
 
 The post-redistribution number densities, :math:`\hat{N}_{i,0}`, are solved by using the expected post-redistribution
 mass of each isotope and component volume. The mass of isotope, :math:`i`, for block 0/1 is calculated as follows,
 
 .. math::
 
-  m_{i,0/1} = N_{i,0/1} V_{0/1} \eta_i,
+  m_{i,0/1} = N_{i,0/1} V_{0/1} \alpha_i \chi,
 
-where :math:`\eta_i` is the product of the atomic weight for isotope, :math:`i`, and a constant scaling from moles per
-cc to atoms per barn per cm.
+where :math:`\alpha_i` is the atomic weight for isotope, :math:`i`, and :math:`\chi` is a constant scaling from moles per
+cc to atoms per barn per cm. Given the expected mass for isotope, :math:`i`, the post redistribution number density is
+calculated as follows,
+
+.. math::
+
+  \hat{N_{i,0}} = \frac{\left( m_{i,0} + m_{i,1} \right) * \chi}{ \left(A_1(T_1) H_1 + A_2(T_2)\delta\right) \eta_i}.
 
 The post redistribution temperature, :math:`\hat{T}_0`, can be computed by minimizing the residual of difference between
 the area of the Component and its expected area,
 
 .. math::
-
-  A_0(\hat{T}_0) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,
   :name: newTemp
+
+  A_0(\hat{T}_0) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,\\
   A_0(\hat{T}_0) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
 
-:numref:`newTemp` is solved using Brent's method within ``scipy`` where the bounds of the solve are the temperatures of
+Equation :eq:`newTemp` is solved using Brent's method within ``scipy`` where the bounds of the solve are the temperatures of
 the two components exchanging mass, :math:`T_0` and :math:`T_1`.
 
 
