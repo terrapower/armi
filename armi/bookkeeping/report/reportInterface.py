@@ -106,50 +106,32 @@ class ReportInterface(interfaces.Interface):
                     maxTHhotChannelCladIDT = THhotChannelCladIDT
             return maxTHhotChannelCladIDT
 
-        def getMaxAssemblyPower():
-            maxAssemblyPower = 0
-            maxAssembly = None
-            for a in self.r.core.getAssemblies():
-                assemblyPower = sum(b.p.power for b in a)
-                if assemblyPower > maxAssemblyPower:
-                    maxAssemblyPower = assemblyPower
-                    maxAssembly = a
-            maxAssemblyPower /= 1e6
-            return maxAssemblyPower
-
         nodeParameters = [
             self.r.p.cycle,
             self.r.p.timeNode,
             self.r.core.p.coupledIteration,
             self.r.core.p.keffUnc,
             self.r.core.p.THdeltaPCore / 1e6,
-            getMaxAssemblyPower(),
+            self.r.core.getMaxBlockParam('percentBuPeak')
         ]
-        paramNames = ["Cycle", "Node", "Couple", "Unc keff", "Core\nPressure Drop [MPa]", "Max Assembly\nPower [MW]"]
+        paramNames = ["Cycle", "Node", "Couple", "Unc keff", "Core\nPressure Drop [MPa]", "Peak Bu"]
+        
+        maxAssemblyPower = max([a.calcTotalParam("power") for a in self.r.core]) / 1e6
+        nodeParameters.append(maxAssemblyPower)
+        paramNames.append("Max Assembly\nPower [MW]")
+
         if self.r.core.p.maxTH2SigmaCladIDT:
             paramNames.append("Peak 2-Sigma Fuel")
             nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
         else:
             paramNames.append("Max Hot Channel Clad IDT")
             nodeParameters.append(getMaxTHhotChannelCladIDT())
+        
         self.tableParameters.append(nodeParameters)
         runLog.info(
             "Table of reactor parameters:\n"
             + tabulate.tabulate(self.tableParameters, headers=paramNames, tableFmt="armi")
         )
-
-        methodParams = [
-            self.r.p.cycle,
-            self.r.p.timeNode,
-            self.r.core.p.coupledIteration,
-            self.r.core.p.keffUnc,
-            self.r.core.p.THdeltaPCore / 1e6,
-        ]
-        # max assembly power
-        maxAssemblyPower = max([a.calcTotalParam("power") for a in self.r.core])
-        methodParams.append(maxAssemblyPower)
-        methodParams.append(self.r.core.p.maxTH2SigmaCladIDT)
-        runLog.info("Table using methods:\n" + tabulate.tabulate([methodParams], headers=paramNames, tableFmt="armi"))
 
     def interactBOC(self, cycle=None):
         self.fuelCycleSummary["bocFissile"] = self.r.core.getTotalBlockParam("kgFis")

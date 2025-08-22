@@ -1,4 +1,4 @@
-# Meant to be run from nala/nala/reference-results/sdvTests/refTest****
+# Meant to be run from directory containing database
 
 import sys
 import nala
@@ -20,18 +20,22 @@ Expects something like
 to be run from refTestBase/
 """
 case = sys.argv[1]
-if case[-1] == '/':
-    case = case[:-1]
-casefile = case + '/' + case + '.h5'
-casefile = case + '.h5'
+if case[-3:] == '.h5':
+    casefile = case
+else:
+    casefile = case + '.h5'
 
 # If nCycles and nNodes unset, use 0th cycle to get that info
 o = db.loadOperator(casefile, 0, 0)
 tableParameters = []
 tableParameters = updateTableParameters(0, 0, tableParameters, o=o)
-if len(sys.argv) > 2:
-    nCycles = sys.argv[2]
-    nNodes = sys.argv[3]
+nArgs = len(sys.argv)
+if nArgs == 4:
+    nCycles = int(sys.argv[2])
+    nNodes = int(sys.argv[3])
+elif nArgs == 3:
+    nCycles = int(sys.argv[2])
+    nNodes = o.cs['burnSteps'] + 1
 else:
     nCycles = o.cs['nCycles']
     nNodes = o.cs['burnSteps'] + 1
