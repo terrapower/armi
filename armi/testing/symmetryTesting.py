@@ -73,6 +73,9 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
         Dictionary of specific values to assign to a particular parameter. Useful for parameters that have validators.
     paramsToIgnore : Iterable[str], optional
         Parameter names to ignore the comparison results for.
+    customSettings : dict[str: Any]
+        Dictionary of custom settings that is passed to the test reactor builder. Useful for disabling features that
+        require additional input and are not useful for the symmetry audit.
 
 
     Example
@@ -111,6 +114,7 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
     expectedSymmetricBlockParams = []
     parameterOverrides = {}
     paramsToIgnore = []
+    customSettings = {}
 
     def setUp(self):
         self._preprocessPluginParams()
