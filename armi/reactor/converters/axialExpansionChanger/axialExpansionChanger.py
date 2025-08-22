@@ -555,7 +555,8 @@ class AxialExpansionChanger:
         ## calculate the mass of each nuclide
         newMass: dict[str, float] = {}
         massTo = massFrom = 0
-        for nuc in fromComp.getNuclides():
+        allNuclides = set(toComp.getNuclides).union(set(fromComp.getNuclides()))
+        for nuc in allNuclides:
             massByNucFrom = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
             massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
             newMass[nuc] = massByNucFrom + massByNucTo
@@ -575,7 +576,7 @@ class AxialExpansionChanger:
 
         ## calculate the ndens for each nuclide
         newNDens: dict[str, float] = {}
-        for nuc in fromComp.getNuclides():
+        for nuc in allNuclides:
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, newMass[nuc], newVolume)
 
         ## Set newNDens on toComp
