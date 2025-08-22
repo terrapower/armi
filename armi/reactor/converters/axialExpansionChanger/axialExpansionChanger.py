@@ -564,13 +564,11 @@ class AxialExpansionChanger:
             massTo += massByNucTo
 
         # calculate the new temperature, then area & volume of toComp
-        if abs(fromComp.temperatureInC - toComp.temperatureInC) < 1e-10:
-            newToCompTemp = toComp.temperatureInC
-        else:
+        if abs(fromComp.temperatureInC - toComp.temperatureInC) > 1e-10:
             newToCompTemp = ((toComp.temperatureInC * massTo) + (fromComp.temperatureInC * massFrom)) / (
                 massTo + massFrom
             )
-        toComp.setTemperature(newToCompTemp)
+            toComp.setTemperature(newToCompTemp)
         newToCompArea = toComp.getArea()
         newVolume = newToCompArea * (toComp.height + abs(deltaZTop))
 
