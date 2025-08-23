@@ -112,21 +112,40 @@ class ReportInterface(interfaces.Interface):
             self.r.core.p.coupledIteration,
             self.r.core.p.keffUnc,
             self.r.core.p.THdeltaPCore / 1e6,
-            self.r.core.getMaxBlockParam('percentBuPeak')
+            self.r.core.getMaxBlockParam("percentBuPeak"),
+            self.r.core.getMaxBlockParam("puFrac"),
+            self.r.core.getMaxParam("THmassFlowRate"),
         ]
-        paramNames = ["Cycle", "Node", "Couple", "Unc keff", "Core\nPressure Drop [MPa]", "Peak Bu"]
-        
+        paramNames = [
+            "Cycle",
+            "Node",
+            "Couple",
+            "Unc keff",
+            "Core Press.\nDrop [MPa]",
+            "Peak Pin\nBurnup",
+            "Peak Pu\nwt. frac",
+            "Max flow\nrate [kg/s]",
+        ]
+
         maxAssemblyPower = max([a.calcTotalParam("power") for a in self.r.core]) / 1e6
         nodeParameters.append(maxAssemblyPower)
         paramNames.append("Max Assembly\nPower [MW]")
 
+        maxPinLinPow = 0
+        for b in self.r.core.iterBlocks(Flags.FUEL):
+            if max(b.p.linPowByPin) > maxPinLinPow:
+                maxPinLinPow = max(b.p.linPowByPin)
+        nodeParameters.append(maxPinLinPow)
+        paramNames.append("Max Pin\nLin Pow [W/cm]")
+
+        # TH2SigmaCladIDT only exists if there is HCF uncertainty
         if self.r.core.p.maxTH2SigmaCladIDT:
             paramNames.append("Peak 2-Sigma Fuel")
             nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
         else:
             paramNames.append("Max Hot Channel Clad IDT")
             nodeParameters.append(getMaxTHhotChannelCladIDT())
-        
+
         self.tableParameters.append(nodeParameters)
         runLog.info(
             "Table of reactor parameters:\n"
