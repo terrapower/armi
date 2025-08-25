@@ -553,7 +553,7 @@ ensure that material properties post-redistribution are known (e.g., mixing diff
 material with unknown properties). If components of different materials are attempted to have their mass redistributed,
 the following warning is populated to the stdout:
 
-.. code-block:: TextLexer
+.. code-block::
 
   Cannot redistribute mass between components that are different materials!
     Trying to redistribute mass between the following components in <Assembly>:
@@ -572,7 +572,7 @@ in which Brent's method may fail are if Equation :eq:`newTemp` does not have opp
 temperature bound of if Equation :eq:`newTemp` is discontinuous. If the minimization routine fails, the following
 warning is printed to the stdout:
 
-.. code-block:: TextLexer
+.. code-block::
 
   Temperature search algorithm in axial expansion has failed in <Assembly>
   Trying to search for new temp between
@@ -601,7 +601,7 @@ However, these can go out of sync and have been found to be due incompatible blu
 :numref:`mass_conservation`, in order for mass to be conserved, each component must axially terminate in unique blocks.
 If a given blueprint does not meet this condition, the following warning may be raised for non-isothermal conditions:
 
-.. code-block:: TextLexer
+.. code-block::
 
   The height of <Component> has gone out of sync with its parent block!
      Assembly: <Assembly>
