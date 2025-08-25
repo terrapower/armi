@@ -139,8 +139,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         -----
         - C0 grows resulting in c0 giving 10% of its mass to c1. c1 height does not change so its mass gains 10%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
-        during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
-        temperatures do not change.
+          during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
+          temperatures do not change.
         """
         growFrac = 1.10
         self._initializeTest(growFrac, fromComp=self.c0)
@@ -153,8 +153,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         -----
         - C0 shrinks resulting in c1 giving 10% of its mass to c0. c1 height does not change so it's mass loses 10%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
-        during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
-        temperatures do not change.
+          during the transfer of mass. For this test, since this is not thermal expansion, we show that the component
+          temperatures do not change.
         """
         growFrac = 0.9
         self._initializeTest(growFrac, fromComp=self.c1)
@@ -167,8 +167,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         -----
         - C0 shrinks resulting in c1 giving X% of its mass to c0. c1 height does not change so its mass loses X%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
-        during the transfer of mass. For this test, we show that the temperature of c0 increases and the temperature of
-        c1 does not change. The increase in temperature for c0 is due to the contribution from the hotter c1 component.
+          during the transfer of mass. For this test, we show that the temperature of c0 increases and the temperature
+          of c1 does not change. The increase in temperature for c0 is due to the contribution from the hotter c1
+          component.
         """
         newTemp = self.c0.temperatureInC - 100.0
         # updateComponentTemp updates ndens for update in AREA only
@@ -186,8 +187,8 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         -----
         - C0 expands resulting in c0 giving X% of its mass to c1. c0 height does not change so its mass loses X%.
         - Additional assertions on temperature exist to ensure that the component temperatures are managed correctly
-        during the transfer of mass. For this test, we show that the temperature of c1 increases and the temperature of
-        c0 does not change. The increase in temperature is due to the contribution from the hotter c0 component.
+          during the transfer of mass. For this test, we show that the temperature of c1 increases and the temperature
+          of c0 does not change. The increase in temperature is due to the contribution from the hotter c0 component.
         """
         newTemp = self.c0.temperatureInC + 100.0
         # updateComponentTemp updates ndens for update in AREA only
@@ -420,7 +421,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         -----
         - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
         - The test fuel and fuel components are scaled by different temperatures to simulate each pin design
-        existing at different temperatures.
+          existing at different temperatures.
         - The 150 deg C and 50 deg C based temperature changes are arbitrarily chosen.
         """
         for i, b in self._iterFuelBlocks():
@@ -442,7 +443,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         -----
         - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
         - The test fuel and fuel components are scaled by different temperatures to simulate each pin design
-        existing at different temperatures.
+          existing at different temperatures.
         - The 75 deg C and 50 deg C based temperature changes are arbitrarily chosen.
         """
         tempAdjust = [50, -50]
@@ -515,7 +516,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         Notes
         -----
         - The factor of 1.2 for component expansion is arbitrarily chosen. Note, if too large of a value is chosen,
-        the upper block heights will go negative and the axial expansion changer will hit a RuntimeError.
+          the upper block heights will go negative and the axial expansion changer will hit a RuntimeError.
         """
         cList = []
         for _i, b in self._iterFuelBlocks():
@@ -548,10 +549,10 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         Notes
         -----
         - Each block is scaled by a different value to simulate a variable axial expansion profile (e.g., burnup driven
-        axial expansion commonly found in sodium fast reactors).
+          axial expansion commonly found in sodium fast reactors).
         - The factor of +/- 0.01 for component expansion/contraction is arbitrarily chosen. Note, if too large of a
-        value is chosen, the upper block heights will go negative and the axial expansion changer will hit a
-        RuntimeError.
+          value is chosen, the upper block heights will go negative and the axial expansion changer will hit a
+          RuntimeError.
         """
         cList = []
         pList = []
