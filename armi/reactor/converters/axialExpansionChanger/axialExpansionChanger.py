@@ -492,7 +492,7 @@ class AxialExpansionChanger:
         if type(fromComp.material) is not type(toComp.material):
             msg = f"""
             Cannot redistribute mass between components that are different materials!
-                Trying to redistribte mass between the following components in {self.linked.a}:
+                Trying to redistribute mass between the following components in {self.linked.a}:
                     from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)}
                       to --> {toComp.parent} : {toComp} : {type(toComp.material)}
 
@@ -556,7 +556,7 @@ class AxialExpansionChanger:
                 Temperature search algorithm in axial expansion has failed in {self.linked.a}
                 Trying to search for new temp between
                     from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)} at {fromComp.temperatureInC} C
-                      to --> {toComp.parent} : {toComp} : {type(toComp.material)} at {toComp.temperatureInC}
+                      to --> {toComp.parent} : {toComp} : {type(toComp.material)} at {toComp.temperatureInC} C
 
                 f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
                 f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}

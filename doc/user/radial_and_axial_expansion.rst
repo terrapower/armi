@@ -410,6 +410,7 @@ component`` block blueprint attribute. The following logic is used to infer the 
 #. "Dummy Blocks" are intended to only contain fluid (generally coolant fluid), and do not contain
    solid components, and therefore do not have an axial expansion target component.
 
+.. _mass_conservation:
 
 Mass Conservation
 -----------------
@@ -461,12 +462,12 @@ exchange of mass between the clad in Block 0 and Block 1,
 	\hat{c}_{1,m} = 0.9c_{1,m},
 
 where :math:`c_{0/1,m}` represents the clad mass in Block 0/1 prior to redistribution and :math:`\hat{c}_{0/1,m}`
-represents the clad mass in Block 0/1 after redistribution, respectively. Given :math:`\hat{c}_{0,m}` and
-:math:`\hat{c}_{1,m}`, the post-mass redistribution number densities, :math:`\hat{N}_{i,0/1}`, where the subscript
+represents the clad mass in Block 0/1 after redistribution, respectively. To compute the post-redistribution mass
+on-the-fly, the post-mass redistribution number densities, :math:`\hat{N}_{i,0/1}`, where the subscript
 :math:`i,0/1` represents isotope :math:`i` for Block 0/1, need to be computed.
 
 Computing :math:`\hat{N}_{i,1}` satisfying :math:`\hat{c}_{1,m}` can be found by scaling the pre-redistribution number
-densities by the expansion factor. However, in ARMI, the number densities are not changed and the mass is decreased
+densities by the expansion factor. In practice however, the number densities are not changed and the mass is decreased
 through the reduction in the height of the parent Block.
 
 .. note::
@@ -481,21 +482,24 @@ temperatures. Consider,
   :name: newCMass
 
   \hat{c}_{0,m} &= c_{0,m} + 0.1c_{1,m},\\
-  &= \sum_{i=0}^N N_{i,0} A_0(T_0) h_0 + 0.1 \sum_{i=0}^N N_{i,1} A_1(T_1) h_1,\\
-  \sum_{i=0}^N \hat{N}_{i,0} A_0(\hat{T}_0) \hat{h}_0 &= \sum_{i=0}^N \left( N_{i,0} A_0(T_0) h_0 + 0.1 N_{i,1} A_1(T_1) h_1 \right),
+  &= \sum_{x=0}^M N_{x,0} A_0(T_0) h_0 + 0.1 \sum_{j=0}^K N_{j,1} A_1(T_1) h_1,\\
+  \sum_{i=0}^P \hat{N}_{i,0} A_0(\hat{T}_0) \hat{h}_0 &= \sum_{x=0}^N N_{x,0} A_0(T_0) h_0 + \sum_{j=0}^K 0.1 N_{j,1} A_1(T_1) h_1 \big),
 
 where,
 
-* :math:`A_{0/1}(T_{0/1})` is the area of component 0/1 at temperature 0/1,
-* :math:`h_{0/1}` is the height of component 0/1,
-* :math:`\hat{\square}` represents post-redistribution values.
+* :math:`A_{0/1}(T_{0/1})` is the area of Component 0/1 at temperature 0/1,
+* :math:`h_{0/1}` is the height of Component 0/1,
+* :math:`N`, :math:`K` are the total number of isotopes in Component 0/1, respectively,
+* :math:`P` is the union of the isotopes in Component 0/1,
+* and :math:`\hat{\square}` represents post-redistribution values.
 
-For a given non-target component, we can calculate an expected difference in z-elevation between it and the
-``axial expansion target component``,
+The post-redistribution height, :math:`\hat{h}_0` is found to be the sum of the pre-expansion height, :math:`h_0`, and
+the different in z-elevation between it and the ``axial expansion target component`` for the Block, :math:`b`,
 
 .. math::
 
-  \delta = b_{\text{ztop}} - c^*_{\text{ztop}}.
+  \hat{h}_0 &= h_0 + \delta,\\
+  &= h_0 + \left(b_{\text{ztop}} - c_{\text{ztop}}\right).
 
 .. note::
 
@@ -504,76 +508,116 @@ For a given non-target component, we can calculate an expected difference in z-e
   #. In the axial expansion module, components are given z-elevation attributes. This information is not serialized to
      the database.
 
-This value can then be used to calculate the height of the Component post-expansion,
-
-.. math::
-
-  \hat{h}_0 = h_0 + \delta.
-
-With this height known, there are two unknowns in Equation :eq:`newCMass`, :math:`\hat{T}_0` and :math:`\hat{N}_{i,0}`.
-
-The post-redistribution number densities, :math:`\hat{N}_{i,0}`, are solved by using the expected post-redistribution
-mass of each isotope and component volume. The mass of isotope, :math:`i`, for block 0/1 is calculated as follows,
+With :math:`\hat{h}_0` known, the two remaining unknowns in Equation :eq:`newCMass` are the post-redistribution
+temperature, :math:`\hat{T}_0`, and number densities, :math:`\hat{N}_{i,0}`. The latter are solved by using the
+expected post-redistribution per-isotope mass and component volume. The mass of isotope, :math:`i`, for Block 0/1
+is calculated as follows,
 
 .. math::
 
   m_{i,0/1} = N_{i,0/1} V_{0/1} \alpha_i \chi,
 
 where :math:`\alpha_i` is the atomic weight for isotope, :math:`i`, and :math:`\chi` is a constant scaling from moles per
-cc to atoms per barn per cm. Given the expected mass for isotope, :math:`i`, the post redistribution number density is
-calculated as follows,
+cc to atoms per barn per cm. Given :math:`m_i`, the post redistribution number density is calculated as follows,
 
 .. math::
 
-  \hat{N_{i,0}} = \frac{\left( m_{i,0} + m_{i,1} \right) * \chi}{ \left(A_1(T_1) H_1 + A_2(T_2)\delta\right) \eta_i}.
+  \hat{N}_{i,0} = \frac{\left( m_{i,0} + m_{i,1} \right) \chi}{ \big(A_1(T_1) h_1 + A_2(T_2)\delta\big) \alpha_i}.
 
-The post redistribution temperature, :math:`\hat{T}_0`, can be computed by minimizing the residual of difference between
-the area of the Component and its expected area,
+The post redistribution temperature, :math:`\hat{T}_0`, is computed by minimizing the residual of the difference between
+the actual post-redistribution area of the Component and its expected area,
 
 .. math::
   :name: newTemp
 
-  A_0(\hat{T}_0) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,\\
-  A_0(\hat{T}_0) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
+  A_0(\hat{T}_0) \left( h_1 + \delta \right) &= A_1(T_1) h_1 + A_2(T_2)\delta,\\
+  A_0(\hat{T}_0) &= \frac{A_1(T_1) h_1 + A_2(T_2)\delta}{h_1 + \delta}.
 
-Equation :eq:`newTemp` is solved using Brent's method within ``scipy`` where the bounds of the solve are the temperatures of
-the two components exchanging mass, :math:`T_0` and :math:`T_1`.
+The minimization of Equation :eq:`newTemp` is solved using Brent's method within ``scipy`` where the bounds of the solve
+are the temperatures of the two components exchanging mass, :math:`T_0` and :math:`T_1`. In some instances, the
+minimization may fail. In this case, a mass weighted temperature is used instead,
 
+.. math::
+  :name: consolationPrize
 
-
-
-.. This :math:`\delta` value enables the calculation of an expected volume for :math:`\hat{c}_0`,
-
-.. .. math::
-
-..   \hat{V}_0 = A_0(T_0) h_0 + A_1(T_1) \delta.
+  \hat{T}_0 = \frac{m_{i,0}T_0 + m_{i,1}T_1}{m_{i,0} + m_{i,1}}.
 
 
+Warnings and Runtime Error Messages
+-----------------------------------
 
+Mass Redistribution Between Like Materials
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Mass redistribution is currently only possible between components that are the same material. This restriction is to
+ensure that material properties post-redistribution are known (e.g., mixing different alloys of metal may result in a
+material with unknown properties). If components of different materials are attempted to have their mass redistributed,
+the following warning is populated to the stdout:
 
+.. code-block:: TextLexer
 
+  Cannot redistribute mass between components that are different materials!
+    Trying to redistribute mass between the following components in <Assembly>:
+        from --> {<Block 0>} : {<Component 0>} : {<Material 0>}
+          to --> {<Block 1>} : {<Component 1>} : {<Material 1>}
 
-..  Written out Equation \ref{eq::cMass0-complex} becomes,
+    Instead, mass will be removed from (<Component 0> | <Material 0>) and
+    (<Component 1> | <Material 1> will be artificially expanded. The consequence is that mass
+    conservation is no longer guaranteed for the <Component 1> component type on this assembly!
 
-.. \begin{align}
-.. 	c_{0,m} &= c_{0,m} + 0.3c_{1,m},\\[5pt]
-.. 	&= \sum_{i=0}^N \frac{n^i_{c,0}}{\gamma_{c,0}} A_{c,0} b_{0,h} + 0.3 \sum_{i=0}^N \frac{n^i_{c,1}}{\gamma_{c,1}} A_{c,1} b_{1,h}.
-.. \end{align}
+Post-Redistribution Temperature Search Failure
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+As described in :numref:`mass_redistribution`, the minimization of Equation :eq:`newTemp` may fail. The two mechanisms
+in which Brent's method may fail are if Equation :eq:`newTemp` does not have opposite signs at each prescribed
+temperature bound of if Equation :eq:`newTemp` is discontinuous. If the minimization routine fails, the following
+warning is printed to the stdout:
 
-.. Given Equation \ref{eq::cMass0-complex}, we can compute the expected total mass for $c_0$,
-.. \begin{equation}
-.. 	\hat{c}_{0,m} = c_{0,m} + 0.3c_{1,m}.
-.. \end{equation}
-.. Given $\hat{c}_{0,m}$, we can compute the per isotope number density required to recover $\hat{c}_{0,m}$,
-.. \begin{equation}
-.. 	\hat{N}^i = \frac{\hat{C}^i_{0,m}}{\hat{V}\sfrac{A^i}{N_A}}, \quad \forall i\in N
-.. \end{equation}
-.. where
-.. \begin{itemize}
-.. 	\item $\hat{N}^i$ is the number density for isotope, $i$
-.. 	\item $\hat{V}$ is the volume of the new block post redistribution
-.. 	\item $A^i$ is the atomic mass of isotope, $i$
-.. 	\item $N_A$ is Avodadro's number
-.. 	\item $N$ is the total number isotopes for a given material
-.. \end{itemize}
+.. code-block:: TextLexer
+
+  Temperature search algorithm in axial expansion has failed in <Assembly>
+  Trying to search for new temp between
+      from --> <Block 0> : <Component 0> : <Material 0> at <Temperature 0> C
+        to --> <Block 1> : <Component 1> : <Material 1> at <Temperature 1> C
+
+  f(<Temperature 0>) = {Area 0(Tc=<Temperature 0>) - targetArea}
+  f(<Temperature 1>) = {Area 0(Tc=<Temperature 1>) - targetArea}
+
+  Instead, a mass weighted average temperature of {Component 0} will be used. The consequence is that
+  mass conservation is no longer guaranteed for this component type on this assembly!
+
+Negative Block or Component Heights
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If a Block or Component height becomes negative, an ``ArithmeticError`` is raised indicating which Block and/or
+Component has a negative height. Both signal a non-physical condition that is un-resolveable in the current
+implementation. This is often caused by thermal expansion of a solid component being drastically different that the
+other components nearby.
+
+Inconsistent Component and Block Heights
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The current implementation is designed such that the heights of each Component and their parent block remain consistent.
+However, these can go out of sync and have been found to be due incompatible blueprints definitions. As stated in
+:numref:`mass_conservation`, in order for mass to be conserved, each component must axially terminate in unique blocks.
+If a given blueprint does not meet this condition, the following warning may be raised for non-isothermal conditions:
+
+.. code-block:: TextLexer
+
+  The height of <Component> has gone out of sync with its parent block!
+     Assembly: <Assembly>
+        Block: <Block>
+    Component: <Component>
+
+        Block Height = <Block Height>
+    Component Height = <Component Height>
+
+  The difference in height is <height difference> cm. This difference will result in an artificial
+  <"increase" or "decrease"> in the mass of <Component>. This is indicative that there are multiple axial component
+  terminations in <Block>. Per the ARMI User Manual, to preserve mass there can only be one axial component termination
+  per block.
+
+If the different in height is positive, then the Component in question extends above the bounds of its parent Block and
+its mass will be artificially chopped proportional to the difference in height. If the difference in height is negative,
+the the Component in question stops below the bounds of the parent Block and its mass with artificially increase
+proportional to the different in height.
+
