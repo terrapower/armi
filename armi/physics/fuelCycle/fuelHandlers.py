@@ -176,7 +176,7 @@ class FuelHandler:
             if assem is None:
                 runLog.warning(f"No assembly found at {loc} for manual rotation")
                 continue
-            runLog.info(f"Rotating assembly {assem} in {loc} by {deg} degrees from shuffle file")
+            runLog.important(f"Rotating assembly {assem} in {loc} by {deg} degrees CCW from shuffle file")
             assem.rotate(math.radians(deg))
         self.pendingRotations = []
 
