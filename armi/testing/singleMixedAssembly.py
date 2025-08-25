@@ -17,7 +17,7 @@ import io
 from armi.reactor.blueprints import Blueprints
 from armi.settings import Settings
 
-FULL_BP = """
+BLOCK_DEFINITIONS = """
 blocks:
     grid plate: &block_grid_plate
         grid:
@@ -221,7 +221,9 @@ blocks:
             ip: 0.0
             mult: 1.0
             op: 19.0
+"""
 
+REGULAR_ASSEMBLY_DEF = """
 assemblies:
     multi pin fuel:
         specifier: LA
@@ -232,6 +234,9 @@ assemblies:
             U235_wt_frac: ['', '', 0.2, 0.2, 0.2, 0.2, '', '', '', '']
             ZR_wt_frac: ['', '', 0.07, 0.07, 0.07, 0.07, '', '', '', '']
         xs types: [A, A, B, C, C, D, A, A, A, A]
+"""  # noqa: E501
+
+GRID_DEFINITION = """
 grids:
     core:
         geom: hex
@@ -248,10 +253,11 @@ grids:
                1 1 2 2 1 1
                 1 1 2 1 1
                  1 1 1 1
-"""  # noqa: E501
+"""
 
 
 def buildMixedPinAssembly():
+    FULL_BP = BLOCK_DEFINITIONS + REGULAR_ASSEMBLY_DEF + GRID_DEFINITION
     cs = Settings()
     with io.StringIO(FULL_BP) as stream:
         blueprints = Blueprints.load(stream)

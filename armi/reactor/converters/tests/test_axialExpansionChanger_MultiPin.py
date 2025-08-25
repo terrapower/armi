@@ -14,22 +14,63 @@
 
 import collections
 import copy
+import io
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from numpy import full
 
 from armi.materials.material import Fluid
+from armi.reactor.blueprints import Blueprints
 from armi.reactor.components.component import Component
 from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
-from armi.testing.singleMixedAssembly import buildMixedPinAssembly
+from armi.settings.caseSettings import Settings
+from armi.testing.singleMixedAssembly import BLOCK_DEFINITIONS, GRID_DEFINITION, buildMixedPinAssembly
 
 if TYPE_CHECKING:
     from armi.reactor.assemblies import HexAssembly
     from armi.reactor.blocks import HexBlock
+
+FINE_ASSEMBLY_DEF = """
+assemblies:
+    multi pin fuel:
+        specifier: LA
+        blocks: [
+            *block_grid_plate, *block_fuel_multiPin_axial_shield,
+            *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
+            *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin,
+            *block_fuel_multiPin, *block_fuel_multiPin, *block_mixed_multiPin,
+            *block_mixed_multiPin, *block_aclp_multiPin, *block_plenum_multiPin,
+            *block_duct, *block_dummy
+        ]
+        height: [
+            1.0, 1.0,
+            0.5, 0.5, 0.5,
+            0.5, 0.5, 0.5,
+            0.5, 0.5, 1.0,
+            1.0, 1.0, 1.0,
+            1.0, 1.0
+        ]
+        axial mesh points: [
+            1, 1,
+            1, 1, 1,
+            1, 1, 1,
+            1, 1, 1,
+            1, 1, 1,
+            1, 1
+        ]
+        xs types: [
+            A, A,
+            B, B, B,
+            B, B, B,
+            B, B, C,
+            C, D, D,
+            A, A
+        ]
+"""  # noqa: E501
 
 
 @dataclass
@@ -53,6 +94,12 @@ class TestMultiPinConservationBase(AxialExpansionTestBase):
         self.a = copy.deepcopy(self.aRef)
         self.axialExpChngr = AxialExpansionChanger()
         self.axialExpChngr.setAssembly(self.a)
+
+    def _iterFuelBlocks(self):
+        """Iterate over blocks in self.a that have Flags.FUEL. Enumerator index starts at 1 to support scaling
+        block-wise values.
+        """
+        yield from enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1)
 
 
 class TestRedistributeMass(TestMultiPinConservationBase):
@@ -362,12 +409,6 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
 
         return totalCMassByFlags
 
-    def _iterFuelBlocks(self):
-        """Iterate over blocks in self.a that have Flags.FUEL. Enumerator index starts at 1 to support scaling
-        block-wise values.
-        """
-        yield from enumerate(filter(lambda b: b.hasFlags(Flags.FUEL), self.a), start=1)
-
     def _iterTestFuelCompsOnBlock(self, b: "HexBlock"):
         """Iterate over components in b that exactly contain Flags.FUEL, Flags.TEST, and Flags.DEPLETABLE."""
         yield from b.iterChildrenWithFlags(Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exactMatch=True)
@@ -534,3 +575,25 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
             self.assertAlmostEqual(origMass, newMass, places=self.places, msg=f"{cFlag} are not the same!")
 
         self.assertAlmostEqual(self.aRef.getTotalHeight(), self.a.getTotalHeight(), places=self.places)
+
+
+class TestExceptionForMultiPin(TestMultiPinConservationBase):
+    def setUp(self):
+        cs = Settings()
+        with io.StringIO(BLOCK_DEFINITIONS + FINE_ASSEMBLY_DEF + GRID_DEFINITION) as stream:
+            blueprints = Blueprints.load(stream)
+            blueprints._prepConstruction(cs)
+        self.a = list(blueprints.assemblies.values())[0]
+        self.axialExpChngr = AxialExpansionChanger()
+        self.axialExpChngr.setAssembly(self.a)
+
+    def test_failExpansionNegativeHeight(self):
+        """Purposefully fail."""
+        cList = []
+        for _i, b in self._iterFuelBlocks():
+            for c in b.iterChildrenWithFlags(Flags.FUEL | Flags.DEPLETABLE, exactMatch=True):
+                cList.append(c)
+        pList = full(len(cList), 1.3)
+        self.axialExpChngr.expansionData.setExpansionFactors(cList, pList)
+        with self.assertRaisesRegex(ArithmeticError, expected_regex="has a negative height! This is unphysical."):
+            self.axialExpChngr.axiallyExpandAssembly()

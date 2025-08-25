@@ -414,6 +414,7 @@ class AxialExpansionChanger:
 
                         # redistribute mass
                         deltaZTop = b.p.ztop - c.ztop
+                        self._checkComponentHeight(c)
                         if deltaZTop > 0.0:
                             self.redistributeMass(fromComp=cAbove, toComp=c, deltaZTop=deltaZTop)
                         elif deltaZTop < 0.0:
@@ -601,6 +602,18 @@ class AxialExpansionChanger:
             runLog.extra("Updated r.core.p.axialMesh (old, new)")
             for old, new in zip(oldMesh, r.core.p.axialMesh):
                 runLog.extra(f"{old:.6e}\t{new:.6e}")
+
+    def _checkComponentHeight(self, c):
+        if c.zbottom > c.ztop:
+            msg = f"""
+            {c} has a negative height! This is unphysical.
+                Assembly: {self.linked.a}
+                    Block: {c.parent}
+                Component: {c}
+
+                Component Height = {c.ztop} - {c.zbottom} = {c.height}.
+            """
+            raise ArithmeticError(dedent(msg))
 
     def _checkBlockHeight(self, b):
         """
