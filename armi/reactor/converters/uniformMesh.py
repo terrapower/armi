@@ -156,9 +156,14 @@ class UniformMeshGenerator:
         if self.minimumMeshSize is not None:
             self._decuspAxialMesh()
 
-    def _computeAverageAxialMesh(self):
+    def _computeAverageAxialMesh(self, includeSubMesh: bool = True):
         """
         Computes an average axial mesh based on the core's reference assembly.
+
+        Parameters
+        ----------
+        includeSubMesh: bool, optional
+            Whether to include the computational axial submesh in the average mesh.
 
         Notes
         -----
@@ -180,12 +185,12 @@ class UniformMeshGenerator:
         src = self._sourceReactor
         refAssem = src.core.refAssem
 
-        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem])[1:])
+        refNumPoints = len(src.core.findAllAxialMeshPoints([refAssem], applySubMesh=includeSubMesh)[1:])
         allMeshes = []
         for a in src.core:
             # Get the mesh points of the assembly, neglecting the first coordinate
             # (typically zero).
-            aMesh = src.core.findAllAxialMeshPoints([a])[1:]
+            aMesh = src.core.findAllAxialMeshPoints([a], applySubMesh=includeSubMesh)[1:]
             if len(aMesh) == refNumPoints:
                 allMeshes.append(aMesh)
 
@@ -516,6 +521,7 @@ class UniformMeshGeometryConverter(GeometryConverter):
             self._newAssembliesAdded = self.convReactor.core.getAssemblies()
 
         self.convReactor.core.updateAxialMesh()
+        self.convReactor.core.zones = self._sourceReactor.core.zones
         self._checkConversion()
         completeEndTime = timer()
         runLog.extra(f"Reactor core conversion time: {completeEndTime - completeStartTime} seconds")
@@ -1042,7 +1048,8 @@ class UniformMeshGeometryConverter(GeometryConverter):
             # Check if the source reactor has a value assigned for this
             # parameter and if so, then apply it. Otherwise, revert back to
             # the original value.
-            if sourceReactor.core.p[paramName] or paramName not in self._cachedReactorCoreParamData:
+            paramDefined = isinstance(sourceReactor.core.p[paramName], np.ndarray) or sourceReactor.core.p[paramName]
+            if paramDefined or paramName not in self._cachedReactorCoreParamData:
                 val = sourceReactor.core.p[paramName]
             else:
                 val = self._cachedReactorCoreParamData[paramName]
