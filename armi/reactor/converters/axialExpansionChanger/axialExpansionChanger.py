@@ -508,10 +508,14 @@ class AxialExpansionChanger:
 
         ## calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
+        massFrom = 0.0
+        massTo = 0.0
         for nuc in fromComp.getNuclides():
             massByNucFrom = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
             massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
+            massFrom += massByNucFrom
+            massTo += massByNucTo
 
         # update the BOL molesHmBOL and massHmBOL to stay consistent with the change in mass
         toCompVolBOL = toComp.getArea(Tc=toComp.p.temperatureInCBOL) * toComp.parent.p.heightBOL
@@ -543,9 +547,10 @@ class AxialExpansionChanger:
                     f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
                 )
             except ValueError:
+                totalMass = (massFrom + massTo)
                 newToCompTemp = (
-                    fromCompVolume / newVolume * fromComp.temperatureInC
-                    + toCompVolume / newVolume * toComp.temperatureInC
+                    massFrom / totalMass * fromComp.temperatureInC
+                    + massTo / totalMass * toComp.temperatureInC
                 )
                 msg = f"""
                 Temperature search algorithm in axial expansion has failed in {self.linked.a}
@@ -556,7 +561,7 @@ class AxialExpansionChanger:
                 f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
                 f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
 
-                Instead, a volume weighted average temperature of {newToCompTemp} will be used. The consequence is that
+                Instead, a mass weighted average temperature of {newToCompTemp} will be used. The consequence is that
                 mass conservation is no longer guaranteed for this component type on this assembly!
                 """
                 runLog.warning(dedent(msg))
