@@ -587,8 +587,8 @@ class TestExceptionForMultiPin(TestMultiPinConservationBase):
         self.axialExpChngr = AxialExpansionChanger()
         self.axialExpChngr.setAssembly(self.a)
 
-    def test_failExpansionNegativeHeight(self):
-        """Purposefully fail."""
+    def test_failExpansionNegativeComponentHeight(self):
+        """Show that the negative component height check can be caught."""
         cList = []
         for _i, b in self._iterFuelBlocks():
             for c in b.iterChildrenWithFlags(Flags.FUEL | Flags.DEPLETABLE, exactMatch=True):
