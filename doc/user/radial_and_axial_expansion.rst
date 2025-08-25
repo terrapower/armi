@@ -585,6 +585,11 @@ warning is printed to the stdout:
   Instead, a mass weighted average temperature of {Component 0} will be used. The consequence is that
   mass conservation is no longer guaranteed for this component type on this assembly!
 
+.. note::
+
+  The above warning has been limited to only components which have the ``FUEL`` or ``CONTROL`` flag. These are
+  determined to be the most neutronically important components where the impact of this warning are the most relevant.
+
 An example of where this warning may raise is in the following:
 
 #. If two axially linked components have the same ``Thot`` values and different ``Tinput`` values, they will be the same
@@ -630,3 +635,7 @@ its mass will be artificially chopped proportional to the difference in height. 
 the the Component in question stops below the bounds of the parent Block and its mass with artificially increase
 proportional to the different in height.
 
+.. note::
+
+  The above warning has been limited to only components which have the ``FUEL`` or ``CONTROL`` flag. These are
+  determined to be the most neutronically important components where the impact of this warning are the most relevant.
