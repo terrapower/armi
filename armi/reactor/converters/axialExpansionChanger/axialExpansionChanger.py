@@ -552,19 +552,22 @@ class AxialExpansionChanger:
                 newToCompTemp = (
                     massFrom / totalMass * fromComp.temperatureInC + massTo / totalMass * toComp.temperatureInC
                 )
-                msg = f"""
-                Temperature search algorithm in axial expansion has failed in {self.linked.a}
-                Trying to search for new temp between
-                    from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)} at {fromComp.temperatureInC} C
-                      to --> {toComp.parent} : {toComp} : {type(toComp.material)} at {toComp.temperatureInC} C
+                if (toComp.hasFlags(Flags.FUEL) or toComp.hasFlags(Flags.CONTROL)) or (
+                    fromComp.hasFlags(Flags.FUEL) or fromComp.hasFlags(Flags.CONTROL)
+                ):
+                    msg = f"""
+                    Temperature search algorithm in axial expansion has failed in {self.linked.a}
+                    Trying to search for new temp between
+                        from --> {fromComp.parent} : {fromComp} : {type(fromComp.material)} at {fromComp.temperatureInC} C
+                        to --> {toComp.parent} : {toComp} : {type(toComp.material)} at {toComp.temperatureInC} C
 
-                f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
-                f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
+                    f({fromComp.temperatureInC}) = {toComp.getArea(Tc=fromComp.temperatureInC) - targetArea}
+                    f({toComp.temperatureInC}) = {toComp.getArea(Tc=toComp.temperatureInC) - targetArea}
 
-                Instead, a mass weighted average temperature of {newToCompTemp} will be used. The consequence is that
-                mass conservation is no longer guaranteed for this component type on this assembly!
-                """
-                runLog.warning(dedent(msg))
+                    Instead, a mass weighted average temperature of {newToCompTemp} will be used. The consequence is that
+                    mass conservation is no longer guaranteed for this component type on this assembly!
+                    """  # noqa: E501
+                    runLog.warning(dedent(msg), label="Temp Search Failure")
             except Exception as ee:
                 raise ee
 
@@ -633,21 +636,22 @@ class AxialExpansionChanger:
             if c.height - b.getHeight() > 1e-12:
                 diff = c.height - b.getHeight()
                 expectedChange = "increase" if diff < 0.0 else "decrease"
-                msg = f"""
-                The height of {c} has gone out of sync with its parent block!
-                     Assembly: {self.linked.a}
-                        Block: {b}
-                    Component: {c}
+                if c.hasFlags(Flags.FUEL) or c.hasFlags(Flags.CONTROL):
+                    msg = f"""
+                    The height of {c} has gone out of sync with its parent block!
+                        Assembly: {self.linked.a}
+                            Block: {b}
+                        Component: {c}
 
-                        Block Height = {b.getHeight()}
-                    Component Height = {c.height}
+                            Block Height = {b.getHeight()}
+                        Component Height = {c.height}
 
-                The difference in height is {diff} cm. This difference will result in an artificial {expectedChange}
-                in the mass of {c}. This is indicative that there are multiple axial component terminations in {b}.
-                Per the ARMI User Manual, to preserve mass there can only be one axial component termination
-                per block.
-                """
-                runLog.warning(dedent(msg))
+                    The difference in height is {diff} cm. This difference will result in an artificial {expectedChange}
+                    in the mass of {c}. This is indicative that there are multiple axial component terminations in {b}.
+                    Per the ARMI User Manual, to preserve mass there can only be one axial component termination
+                    per block.
+                    """
+                    runLog.warning(dedent(msg), label="Component height different.")
 
         if self.linked.linkedBlocks[b].lower:
             lowerBlock = self.linked.linkedBlocks[b].lower
