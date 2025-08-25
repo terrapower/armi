@@ -3,7 +3,7 @@ name: Check License Lines
 permissions:
   contents: read
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   check-license-lines:

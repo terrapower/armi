@@ -24,10 +24,8 @@ jobs:
           python-version: 3.13
       - name: Update package index
         run: sudo apt-get update
-      - name: Install mpi libs
-        run: sudo apt-get -y install libopenmpi-dev
-      - name: Install Pandoc
-        run: sudo apt-get -y install pandoc
+      - name: Install apt-get libs
+        run: sudo apt-get -y install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make html/pdf Docs
@@ -52,15 +50,9 @@ jobs:
           cd doc
           git submodule init
           git submodule update
-          git fetch
           make html
 
           echo "Build PDF docs..."
-          sudo apt-get install texlive-xetex
-          sudo apt-get install texlive-latex-base
-          sudo apt-get install texlive-fonts-recommended
-          sudo apt-get install texlive-latex-extra
-          sudo apt-get install texlive-full
           make latex
           cd _build/latex/
           latexmk -pdf -f -interaction=nonstopmode ARMI.tex
