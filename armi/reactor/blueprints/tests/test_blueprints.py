@@ -269,10 +269,9 @@ grids:
         fa = design.constructAssem(cs, name="fuel a")
         fb = design.constructAssem(cs, name="fuel b")
         for paramDef in fa.p.paramDefs.inCategory(parameters.Category.assignInBlueprints):
-            # Semantics of __iter__() and items() is different now in the parameter
-            # system. Since we aren't using __slots__ anymore, we use the parameter
-            # definitions (which have a global-ish sense of `assigned`ness), so we can't
-            # tell, per-object, whether they've been set.
+            # Semantics of __iter__() and items() is different now in the parameter system. We use the parameter
+            # definitions (which have a global-ish sense of `assigned`ness), so we can't tell, per-object, whether
+            # they've been set.
             self.assertEqual(paramDef.default, fa.p[paramDef.name])
             self.assertIn(paramDef.name, fb.p)
 

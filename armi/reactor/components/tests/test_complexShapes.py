@@ -50,7 +50,7 @@ class TestComplexShapes(unittest.TestCase):
         holeOD = 0.5
         nHoles = 2
         comp = HoledHexagon(
-            "Test",
+            "TestHoledHexagon",
             material=self.material,
             Tinput=20,
             Thot=300,
@@ -73,6 +73,21 @@ class TestComplexShapes(unittest.TestCase):
             (self.hexArea(opHot) - nHoles * self.circArea(holeODHot)) * 2,
         )
         self.assertAlmostEqual(comp.getComponentArea(cold=False), comp.getComponentArea(Tc=300))
+
+        # Test that holeRadFromCenter does not change the area.
+        comp2 = HoledHexagon(
+            "TestHoledHexagonHoleRadFromCenter",
+            material=self.material,
+            Tinput=20,
+            Thot=300,
+            op=op,
+            holeOD=holeOD,
+            nHoles=nHoles,
+            holeRadFromCenter=(op + holeOD) / 2,
+            mult=2,
+        )
+        self.assertAlmostEqual(comp.getComponentArea(cold=True), comp2.getComponentArea(cold=True))
+        self.assertAlmostEqual(comp.getComponentArea(cold=False), comp2.getComponentArea(cold=False))
 
     def test_holedRectangle(self):
         lo = 2.0

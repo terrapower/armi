@@ -32,7 +32,7 @@ class HoledHexagon(basicShapes.Hexagon):
         method.
     """
 
-    THERMAL_EXPANSION_DIMS = {"op", "holeOD"}
+    THERMAL_EXPANSION_DIMS = {"op", "holeOD", "holeRadFromCenter"}
 
     pDefs = componentParameters.getHoledHexagonParameterDefinitions()
 
@@ -45,6 +45,7 @@ class HoledHexagon(basicShapes.Hexagon):
         op,
         holeOD,
         nHoles,
+        holeRadFromCenter=None,
         mult=1.0,
         modArea=None,
         isotopics=None,
@@ -61,7 +62,15 @@ class HoledHexagon(basicShapes.Hexagon):
             mergeWith=mergeWith,
             components=components,
         )
-        self._linkAndStoreDimensions(components, op=op, holeOD=holeOD, nHoles=nHoles, mult=mult, modArea=modArea)
+        self._linkAndStoreDimensions(
+            components,
+            op=op,
+            holeOD=holeOD,
+            nHoles=nHoles,
+            holeRadFromCenter=holeRadFromCenter,
+            mult=mult,
+            modArea=modArea,
+        )
 
     def getComponentArea(self, cold=False, Tc=None):
         """Computes the area for the hexagon with n number of circular holes in cm^2."""
