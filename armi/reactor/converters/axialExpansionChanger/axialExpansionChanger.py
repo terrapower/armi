@@ -510,7 +510,7 @@ class AxialExpansionChanger:
         newNDens: dict[str, float] = {}
         massFrom = 0.0
         massTo = 0.0
-        for nuc in fromComp.getNuclides():
+        for nuc in set(fromComp.getNuclides()).union(set(toComp.getNuclides())):
             massByNucFrom = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
             massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
@@ -547,10 +547,9 @@ class AxialExpansionChanger:
                     f=lambda T: toComp.getArea(Tc=T) - targetArea, a=fromComp.temperatureInC, b=toComp.temperatureInC
                 )
             except ValueError:
-                totalMass = (massFrom + massTo)
+                totalMass = massFrom + massTo
                 newToCompTemp = (
-                    massFrom / totalMass * fromComp.temperatureInC
-                    + massTo / totalMass * toComp.temperatureInC
+                    massFrom / totalMass * fromComp.temperatureInC + massTo / totalMass * toComp.temperatureInC
                 )
                 msg = f"""
                 Temperature search algorithm in axial expansion has failed in {self.linked.a}

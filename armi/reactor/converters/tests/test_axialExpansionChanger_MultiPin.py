@@ -425,7 +425,20 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         -----
         - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
         - The 100 deg C based temperature changes is arbitrarily chosen.
+        - An extra assertion in done in this test to ensure that isotopes uniquely found in each test are not dropped
+          when moving mass between blocks.
         """
+        search = lambda c: isinstance(c, Component) and c.hasFlags(
+            Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True
+        )
+        nucs = ["XE131", "I131", "NP237", "CM242"]
+        for i, c in enumerate(self.a.iterChildren(deep=True, predicate=search)):
+            self.assertEqual(c.getNumberDensity(nucs[i]), 0.0)
+            c.setNumberDensity(nucs[i], 1e-3)
+
+        # recalcualte the initial mass with the new isotope additions
+        self.origTotalCMassByFlag = self.getTotalCompMassByFlag(self.a)
+
         for i, b in self._iterFuelBlocks():
             for c in self._iterTestFuelCompsOnBlock(b):
                 newTemp = c.temperatureInC + 100.0 * i
@@ -433,6 +446,11 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.axialExpChngr.expansionData.computeThermalExpansionFactors()
         self.axialExpChngr.axiallyExpandAssembly()
         self.checkConservation()
+
+        expectedNucsPresent = [["XE131"], ["XE131", "I131"], ["I131", "NP237"], ["NP237", "CM242"]]
+        for i, c in enumerate(self.a.iterChildren(deep=True, predicate=search)):
+            for nuc in expectedNucsPresent[i]:
+                self.assertNotEqual(c.getNumberDensity(nuc), 0.0, msg=f"{nuc} not present in {c}!")
 
     def test_contractThermal(self):
         """Perform thermal contraction on the test fuel component.
