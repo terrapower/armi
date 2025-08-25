@@ -156,9 +156,14 @@ class UniformMeshGenerator:
         if self.minimumMeshSize is not None:
             self._decuspAxialMesh()
 
-    def _computeAverageAxialMesh(self, includeSubMesh=True):
+    def _computeAverageAxialMesh(self, includeSubMesh: bool = True):
         """
         Computes an average axial mesh based on the core's reference assembly.
+
+        Parameters
+        ----------
+        includeSubMesh: bool, optional
+            Whether to include the computational axial submesh in the average mesh.
 
         Notes
         -----
