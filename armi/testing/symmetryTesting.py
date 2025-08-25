@@ -106,15 +106,17 @@ class BasicArmiSymmetryTestHelper(unittest.TestCase):
     a test method that should adequately verify the the expected symmetric parameters are indeed expanded.
     """
 
-    coreParamsToTest = []
-    assemblyParamsToTest = []
-    blockParamsToTest = []
-    expectedSymmetricCoreParams = []
-    expectedSymmetricAssemblyParams = []
-    expectedSymmetricBlockParams = []
-    parameterOverrides = {}
-    paramsToIgnore = []
-    customSettings = {}
+    def __init__(self, methodName="runTest"):
+        self.coreParamsToTest = []
+        self.assemblyParamsToTest = []
+        self.blockParamsToTest = []
+        self.expectedSymmetricCoreParams = []
+        self.expectedSymmetricAssemblyParams = []
+        self.expectedSymmetricBlockParams = []
+        self.parameterOverrides = {}
+        self.paramsToIgnore = []
+        self.customSettings = {}
+        super().__init__(methodName)
 
     def setUp(self):
         self._preprocessPluginParams()
