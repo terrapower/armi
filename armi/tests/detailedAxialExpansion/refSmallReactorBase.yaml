@@ -113,9 +113,9 @@ blocks:
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    axial shield multiPin: &block_fuel_multiPin_axial_shield
-        grid name: fourPin
-        shield 1: &component_shield_shield1
+    axial shield twoPin: &block_fuel_multiPin_axial_shield
+        grid name: twoPin
+        shield: &component_shield_shield1
             shape: Circle
             material: HT9
             Tinput: 25.0
@@ -123,15 +123,15 @@ blocks:
             id: 0.0
             od: 0.86602
             latticeIDs: [1]
-        bond 1: &component_shield_bond1
+        bond: &component_shield_bond1
             shape: Circle
             material: Sodium
             Tinput: 25.0
             Thot: 470.0
-            id: shield 1.od
-            od: clad 1.id
+            id: shield.od
+            od: clad.id
             latticeIDs: [1]
-        clad 1: &component_shield_clad1
+        clad: &component_shield_clad1
             shape: Circle
             material: HT9
             Tinput: 25.0
@@ -139,7 +139,7 @@ blocks:
             id: 1.0
             od: 1.09
             latticeIDs: [1]
-        wire 1: &component_shield_wire1
+        wire: &component_shield_wire1
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -149,46 +149,24 @@ blocks:
             id: 0.0
             od: 0.10056
             latticeIDs: [1]
-        shield 2:
+        shield test:
             <<: *component_shield_shield1
             latticeIDs: [2]
-        bond 2:
+        bond test:
             <<: *component_shield_bond1
+            id: shield test.od
+            od: clad test.id
             latticeIDs: [2]
-        clad 2:
+        clad test:
             <<: *component_shield_clad1
             latticeIDs: [2]
-        wire 2:
+        wire test:
             <<: *component_shield_wire1
             latticeIDs: [2]
-        shield 3:
-            <<: *component_shield_shield1
-            latticeIDs: [3]
-        bond 3:
-            <<: *component_shield_bond1
-            latticeIDs: [3]
-        clad 3:
-            <<: *component_shield_clad1
-            latticeIDs: [3]
-        wire 3:
-            <<: *component_shield_wire1
-            latticeIDs: [3]
-        shield 4:
-            <<: *component_shield_shield1
-            latticeIDs: [4]
-        bond 4:
-            <<: *component_shield_bond1
-            latticeIDs: [4]
-        clad 4:
-            <<: *component_shield_clad1
-            latticeIDs: [4]
-        wire 4:
-            <<: *component_shield_wire1
-            latticeIDs: [4]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-        axial expansion target component: shield 1
+        axial expansion target component: shield
 
     fuel: &block_fuelPin
         fuel: &component_fuel_fuel
@@ -290,9 +268,9 @@ blocks:
         duct: *component_duct
         intercoolant: *component_intercoolant
 
-    fuel multiPin: &block_fuel_multiPin
-        grid name: fourPin
-        fuel 1: &component_fuelmultiPin
+    fuel twoPin: &block_fuel_multiPin
+        grid name: twoPin
+        fuel: &component_fuelmultiPin
             shape: Circle
             material: UZr
             Tinput: 25.0
@@ -300,15 +278,15 @@ blocks:
             id: 0.0
             od: 0.86602
             latticeIDs: [1]
-        bond 1: &component_fuelmultiPin_bond
+        bond: &component_fuelmultiPin_bond
             shape: Circle
             material: Sodium
             Tinput: 25.0
             Thot: 470.0
-            id: fuel 1.od
-            od: clad 1.id
+            id: fuel.od
+            od: clad.id
             latticeIDs: [1]
-        clad 1: &component_fuelmultiPin_clad1
+        clad: &component_fuelmultiPin_clad1
             shape: Circle
             material: HT9
             Tinput: 25.0
@@ -316,7 +294,7 @@ blocks:
             id: 1.0
             od: 1.09
             latticeIDs: [1]
-        wire 1: &component_fuelmultiPin_wire1
+        wire: &component_fuelmultiPin_wire1
             shape: Helix
             material: HT9
             Tinput: 25.0
@@ -326,46 +304,24 @@ blocks:
             id: 0.0
             od: 0.10056
             latticeIDs: [1]
-        fuel 2:
+        fuel test: &component_fuelmultiPin_fuel2
             <<: *component_fuelmultiPin
             latticeIDs: [2]
-        bond 2:
+        bond test: &component_fuelmultiPin_bond2
             <<: *component_fuelmultiPin_bond
+            id: fuel test.od
+            od: clad test.id
             latticeIDs: [2]
-        clad 2: &component_fuelmultiPin_clad2
+        clad test: &component_fuelmultiPin_clad2
             <<: *component_fuelmultiPin_clad1
             latticeIDs: [2]
-        wire 2: &component_fuelmultiPin_wire2
+        wire test: &component_fuelmultiPin_wire2
             <<: *component_fuelmultiPin_wire1
             latticeIDs: [2]
-        fuel 3:
-            <<: *component_fuelmultiPin
-            latticeIDs: [3]
-        bond 3:
-            <<: *component_fuelmultiPin_bond
-            latticeIDs: [3]
-        clad 3: &component_fuelmultiPin_clad3
-            <<: *component_fuelmultiPin_clad1
-            latticeIDs: [3]
-        wire 3: &component_fuelmultiPin_wire3
-            <<: *component_fuelmultiPin_wire1
-            latticeIDs: [3]
-        fuel 4:
-            <<: *component_fuelmultiPin
-            latticeIDs: [4]
-        bond 4:
-            <<: *component_fuelmultiPin_bond
-            latticeIDs: [4]
-        clad 4: &component_fuelmultiPin_clad4
-            <<: *component_fuelmultiPin_clad1
-            latticeIDs: [4]
-        wire 4: &component_fuelmultiPin_wire4
-            <<: *component_fuelmultiPin_wire1
-            latticeIDs: [4]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-        axial expansion target component: fuel 1
+        axial expansion target component: fuel
 
     plenum: &block_plenum
         gap:
@@ -393,39 +349,44 @@ blocks:
     aclp plenum: &block_aclp
         <<: *block_plenum
 
-    plenum 4pin: &block_plenum_multiPin
-        grid name: fourPin
-        gap 1: &component_plenummultiPin_gap1
+    plenum 2pin: &block_plenum_multiPin
+        grid name: twoPin
+        gap: &component_plenummultiPin_gap1
             shape: Circle
             material: Void
             Tinput: 25.0
             Thot: 600.0
             id: 0.0
-            od: clad 1.id
+            od: clad.id
             latticeIDs: [1]
-        clad 1: *component_fuelmultiPin_clad1
-        wire 1: *component_fuelmultiPin_wire1
-        gap 2:
+        clad: *component_fuelmultiPin_clad1
+        wire: *component_fuelmultiPin_wire1
+        gap test:
             <<: *component_plenummultiPin_gap1
+            od: clad test.id
             latticeIDs: [2]
-        clad 2: *component_fuelmultiPin_clad2
-        wire 2: *component_fuelmultiPin_wire2
-        gap 3:
-            <<: *component_plenummultiPin_gap1
-            latticeIDs: [3]
-        clad 3: *component_fuelmultiPin_clad3
-        wire 3: *component_fuelmultiPin_wire3
-        gap 4:
-            <<: *component_plenummultiPin_gap1
-            latticeIDs: [4]
-        clad 4: *component_fuelmultiPin_clad4
-        wire 4: *component_fuelmultiPin_wire4
+        clad test: *component_fuelmultiPin_clad2
+        wire test: *component_fuelmultiPin_wire2
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
-        axial expansion target component: clad 1
+        axial expansion target component: clad test
 
-    aclp plenum 4pin: &block_aclp_multiPin
+    mixed fuel plenum 2pin: &block_mixed_multiPin
+        grid name: twoPin
+        gap: *component_plenummultiPin_gap1
+        clad: *component_fuelmultiPin_clad1
+        wire: *component_fuelmultiPin_wire1
+        fuel test: *component_fuelmultiPin_fuel2
+        bond test: *component_fuelmultiPin_bond2
+        clad test: *component_fuelmultiPin_clad2
+        wire test: *component_fuelmultiPin_wire2
+        coolant: *component_coolant
+        duct: *component_duct
+        intercoolant: *component_intercoolant
+        axial expansion target component: fuel test
+
+    aclp plenum 2pin: &block_aclp_multiPin
         <<: *block_plenum_multiPin
 
     ## ------------------------------------------------------------------------------------
@@ -559,7 +520,7 @@ blocks:
         axial expansion target component: clad # not necessary, but useful for testing coverage
 
 assemblies:
-    heights: &highOffset_height [25.0, 27.5, 27.5, 27.5, 27.5, 15.0, 25.0, 25.0, 25.0, 17.5]
+    heights: &highOffset_height [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     axial mesh points: &standard_axial_mesh_points [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     igniter fuel:
         specifier: IC
@@ -573,7 +534,7 @@ assemblies:
     middle fuel:
         specifier: MC
         blocks: [*block_grid_plate, *block_fuel_axial_shield, *block_fuelPin_linedClad, *block_fuelPin_linedClad, *block_fuelPin_linedClad, *block_plenum, *block_aclp, *block_plenum, *block_duct, *block_dummy]
-        height: [25.0, 26.25, 26.25, 26.25, 26.25, 20.0, 25.0, 25.0, 25.0, 17.5]
+        height: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
     annular fuel:
@@ -584,22 +545,22 @@ assemblies:
         xs types: *igniter_fuel_xs_types
     multi pin fuel:
         specifier: LA
-        blocks: [*block_grid_plate, *block_fuel_multiPin_axial_shield, *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin, *block_plenum_multiPin, *block_aclp_multiPin, *block_plenum_multiPin, *block_duct, *block_dummy]
+        blocks: [*block_grid_plate, *block_fuel_multiPin_axial_shield, *block_fuel_multiPin, *block_fuel_multiPin, *block_fuel_multiPin, *block_mixed_multiPin, *block_aclp_multiPin, *block_plenum_multiPin, *block_duct, *block_dummy]
         height: *highOffset_height
         axial mesh points: *standard_axial_mesh_points
         material modifications:
-            U235_wt_frac: ['', '', 0.2, 0.2, 0.2, '', '', '', '', '']
-            ZR_wt_frac: ['', '', 0.07, 0.07, 0.06, '', '', '', '', '']
+            U235_wt_frac: ['', '', 0.2, 0.2, 0.2, 0.2, '', '', '', '']
+            ZR_wt_frac: ['', '', 0.07, 0.07, 0.07, 0.07, '', '', '', '']
         xs types: *igniter_fuel_xs_types
     control:
         specifier: PC
         blocks: [*block_grid_plate, *block_ctrl_duct, *block_ctrl_duct, *block_control, *block_control, *block_control, *block_control_plenum, *block_ctrl_duct, *block_ctrl_duct, *block_dummy]
-        height: [25.0, 1.0, 1.0, 25.0, 25.0, 25.0, 25.0, 49.0, 49.0, 17.5]
+        height: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types
     radial shield:
         specifier: SH
         blocks: [*block_grid_plate, *block_radial_shield, *block_radial_shield, *block_radial_shield, *block_radial_shield, *block_shield_plenum, *block_shield_aclp, *block_shield_plenum, *block_duct, *block_dummy]
-        height: [25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 25.0, 17.5]
+        height: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         axial mesh points: *standard_axial_mesh_points
         xs types: *igniter_fuel_xs_types

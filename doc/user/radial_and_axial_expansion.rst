@@ -413,14 +413,14 @@ component`` block blueprint attribute. The following logic is used to infer the 
 
 Mass Conservation
 -----------------
-Due to the requirement that all components within a Block be the same height, the conservation of
-mass post-axial expansion is not trivial. At the Block-level, the axial expansion target component
-is guaranteed to have its mass conserved post-axial expansion. For pinned-blocks, this is typically
-chosen to be the most neutronically important component; e.g., in a fuel Block this is typically the
-fuel component. All other components, assuming they expand at a different rate than the fuel, will
-exhibit non-conservation on the Block-level as mass is redistributed across the axially-neighboring
-blocks. However, the mass of all solid components at the assembly-level are designed to be conserved
-if the following are met for a given assembly design.
+Due to the fact that all components within a Block are the same height, the conservation of
+mass post-axial expansion is not trivial. The ``axial expansion target component`` plays a critical role in the
+conservation of mass. For pinned-blocks, this is typically chosen to be the most neutronically important Component;
+e.g., in a fuel Block this is typically the fuel Component. Generally speaking, components which are not the axial
+expansion target will exhibit non-conservation on the Block-level as mass is redistributed across the axially-
+neighboring blocks; this is discussed in more detail in :numref:`mass_redistribution`. However, the mass of all
+solid components are designed to be conserved at the assembly-level if the following are met for a given assembly
+design.
 
 #. Axial continuity of like-objects. E.g., pins, clad, etc.
 #. Components that may expand at different rates axially terminate in unique blocks
@@ -434,9 +434,146 @@ See `armi.tests.detailedAxialExpansion
 <https://github.com/terrapower/armi/tree/main/armi/tests/detailedAxialExpansion>`_ for an example
 blueprint which satisfy the above requirements.
 
-.. important::
+.. _mass_redistribution:
 
-    For sufficiently strong axial thermal gradients, conservation of mass may be lost on the
-    assembly for non-target components, albeit in relatively minor quantities. This is due to the
-    differing temperature between blocks, radial expansion effects, and how mass is redistributed
-    between blocks.
+Block-Level Mass Redistribution
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Figure :ref:`mass_redistribution_illustration` illustrates the mass redistribution process for axial expansion in ARMI given
+a uniform axial expansion of 10% for fuel components.
+
+.. figure:: /.static/mass_redistribution_illustration.png
+  :name: mass_redistribution_illustration
+
+  Illustration of mass redistribution for axial expansion in ARMI.
+
+The redistribution process can be written mathematically. In Figure :ref:`mass_redistribution_illustration`, consider the
+exchange of mass between the clad in Block 0 and Block 1,
+
+.. math::
+	:name: cMass0
+
+	\hat{c}_{0,m} = c_{0,m} + 0.1c_{1,m}
+
+.. math::
+  :name: cMass1
+
+	\hat{c}_{1,m} = 0.9c_{1,m},
+
+where :math:`c_{0/1,m}` represents the clad mass in Block 0/1 prior to redistribution and :math:`\hat{c}_{0/1,m}`
+represents the clad mass in Block 0/1 after redistribution, respectively. Given :math:`\hat{c}_{0,m}` and
+:math:`\hat{c}_{1,m}`, the post-mass redistribution number densities, :math:`\hat{N}_{i,0/1}`, where the subscript
+:math:`i,0/1` represents isotope :math:`i` for Block 0/1, need to be computed.
+
+Computing :math:`\hat{N}_{i,1}` satisfying :math:`\hat{c}_{1,m}` can be found by scaling the pre-redistribution number
+densities by the expansion factor. However, in ARMI, the number densities are not changed and the mass is decreased
+through the reduction in the height of the parent Block.
+
+.. note::
+
+  Recall, component mass in ARMI is calculated as the product of the mass density of the component, the area of the
+  component, and the height of the block. The mass of components can be tuned through either of these three parameters.
+
+Computing :math:`\hat{N}_{i,0}` is non-trivial as, in general, :math:`c_0` and :math:`c_1` are at different
+temperatures. Consider,
+
+.. math::
+  :name: newCMass
+
+  \hat{c}_{0,m} &= c_{0,m} + 0.1c_{1,m},\\
+  &= \sum_{i=0}^N N_{i,0} A_0(T_0) h_0 + 0.1 \sum_{i=0}^N N_{i,1} A_1(T_1) h_1,\\
+  \sum_{i=0}^N \hat{N}_{i,0} A_0(\hat{T}_0) \hat{h}_0 &= \sum_{i=0}^N \left( N_{i,0} A_0(T_0) h_0 + 0.1 N_{i,1} A_1(T_1) h_1 \right),
+
+where,
+
+* :math:`A_{0/1}(T_{0/1})` is the area of component 0/1 at temperature 0/1,
+* :math:`h_{0/1}` is the height of component 0/1,
+* :math:`\hat{\square}` represents post-redistribution values.
+
+For a given non-target component, we can calculate an expected difference in z-elevation between it and the
+``axial expansion target component``,
+
+.. math::
+
+  \delta = b_{\text{ztop}} - c^*_{\text{ztop}}.
+
+.. note::
+
+  #. Recall, axial block bounds are determined by the ``axial expansion target component`` so the top z-elevation ``ztop``
+     for the block is the same as the top of the ``axial expansion target component``.
+  #. In the axial expansion module, components are given z-elevation attributes. This information is not serialized to
+     the database.
+
+This value can then be used to calculate the height of the Component post-expansion,
+
+.. math::
+
+  \hat{h}_0 = h_0 + \delta.
+
+With this height known, there are two unknowns in Equation :eq:`newCMass`, :math:`\hat{T}_0` and :math:`\hat{N}_{i,0}`.
+
+The post-redistribution number densities, :math:`\hat{N}_{i,0}`, are solved by using the expected post-redistribution
+mass of each isotope and component volume. The mass of isotope, :math:`i`, for block 0/1 is calculated as follows,
+
+.. math::
+
+  m_{i,0/1} = N_{i,0/1} V_{0/1} \alpha_i \chi,
+
+where :math:`\alpha_i` is the atomic weight for isotope, :math:`i`, and :math:`\chi` is a constant scaling from moles per
+cc to atoms per barn per cm. Given the expected mass for isotope, :math:`i`, the post redistribution number density is
+calculated as follows,
+
+.. math::
+
+  \hat{N_{i,0}} = \frac{\left( m_{i,0} + m_{i,1} \right) * \chi}{ \left(A_1(T_1) H_1 + A_2(T_2)\delta\right) \eta_i}.
+
+The post redistribution temperature, :math:`\hat{T}_0`, can be computed by minimizing the residual of difference between
+the area of the Component and its expected area,
+
+.. math::
+  :name: newTemp
+
+  A_0(\hat{T}_0) \left( H_1 + \delta \right) &= A_1(T_1) H_1 + A_2(T_2)\delta,\\
+  A_0(\hat{T}_0) &= \frac{A_1(T_1) H_1 + A_2(T_2)\delta}{H_1 + \delta}.
+
+Equation :eq:`newTemp` is solved using Brent's method within ``scipy`` where the bounds of the solve are the temperatures of
+the two components exchanging mass, :math:`T_0` and :math:`T_1`.
+
+
+
+
+.. This :math:`\delta` value enables the calculation of an expected volume for :math:`\hat{c}_0`,
+
+.. .. math::
+
+..   \hat{V}_0 = A_0(T_0) h_0 + A_1(T_1) \delta.
+
+
+
+
+
+
+..  Written out Equation \ref{eq::cMass0-complex} becomes,
+
+.. \begin{align}
+.. 	c_{0,m} &= c_{0,m} + 0.3c_{1,m},\\[5pt]
+.. 	&= \sum_{i=0}^N \frac{n^i_{c,0}}{\gamma_{c,0}} A_{c,0} b_{0,h} + 0.3 \sum_{i=0}^N \frac{n^i_{c,1}}{\gamma_{c,1}} A_{c,1} b_{1,h}.
+.. \end{align}
+
+
+.. Given Equation \ref{eq::cMass0-complex}, we can compute the expected total mass for $c_0$,
+.. \begin{equation}
+.. 	\hat{c}_{0,m} = c_{0,m} + 0.3c_{1,m}.
+.. \end{equation}
+.. Given $\hat{c}_{0,m}$, we can compute the per isotope number density required to recover $\hat{c}_{0,m}$,
+.. \begin{equation}
+.. 	\hat{N}^i = \frac{\hat{C}^i_{0,m}}{\hat{V}\sfrac{A^i}{N_A}}, \quad \forall i\in N
+.. \end{equation}
+.. where
+.. \begin{itemize}
+.. 	\item $\hat{N}^i$ is the number density for isotope, $i$
+.. 	\item $\hat{V}$ is the volume of the new block post redistribution
+.. 	\item $A^i$ is the atomic mass of isotope, $i$
+.. 	\item $N_A$ is Avodadro's number
+.. 	\item $N$ is the total number isotopes for a given material
+.. \end{itemize}
