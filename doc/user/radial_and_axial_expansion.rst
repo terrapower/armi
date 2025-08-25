@@ -585,6 +585,15 @@ warning is printed to the stdout:
   Instead, a mass weighted average temperature of {Component 0} will be used. The consequence is that
   mass conservation is no longer guaranteed for this component type on this assembly!
 
+An example of where this warning may raise is in the following:
+
+#. If two axially linked components have the same ``Thot`` values and different ``Tinput`` values, they will be the same
+   temperature and have different areas. The range for the temperature search is null and will be impossible to find a
+   temperature satisfying Equation :eq:`newTemp`.
+#. If the coefficient of thermal expansion for a material is sufficiently small relative the difference in temperature
+   between two component, the bounds of Equation :eq:`newTemp` may not generate opposite signs and Brent's method will
+   fail.
+
 Negative Block or Component Heights
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
