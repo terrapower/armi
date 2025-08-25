@@ -394,9 +394,11 @@ class TestConservation(AxialExpansionTestBase):
 
     def _checkNDens(self, prevNDen, newNDens, ratio):
         for prevComp, newComp in zip(prevNDen.values(), newNDens.values()):
-            for prev, new in zip(prevComp.values(), newComp.values()):
-                if prev:
-                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
+            self.assertEqual(len(prevComp), len(newComp))
+            for nuc in prevComp.keys():
+                # some ndens values are 0.0, only check non-zero values
+                if prevComp[nuc]:
+                    self.assertAlmostEqual(prevComp[nuc] / newComp[nuc], ratio)
 
     def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
         """Check whether the detailedNDens of two input dictionaries containing the detailedNDens
