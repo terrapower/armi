@@ -1418,11 +1418,14 @@ class CrossSectionGroupManager(interfaces.Interface):
         the core to get by region cross sections and flux factors.
         """
         missingBlueprintBlocks = []
+        blockList = []
         for a in self.r.blueprints.assemblies.values():
-            for b in a:
-                if b.getMicroSuffix() not in blockCollectionsByXsGroup:
-                    b2 = copy.deepcopy(b)
-                    missingBlueprintBlocks.append(b2)
+            blockList.extend(b for b in a)
+        self._updateEnvironmentGroups(blockList)
+        for b in blockList:
+            if b.getMicroSuffix() not in blockCollectionsByXsGroup:
+                b2 = copy.deepcopy(b)
+                missingBlueprintBlocks.append(b2)
         return missingBlueprintBlocks
 
     def makeCrossSectionGroups(self):
