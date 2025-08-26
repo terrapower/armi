@@ -1170,8 +1170,8 @@ class FuelHandler:
                         enrich = [float(e) for e in enrichList]
                     except (TypeError, ValueError):
                         raise InputError("fuelEnrichment values must be numeric. Got {enrichList}")
-                    if any(e < 0 or e > 100 for e in enrich):
-                        raise InputError("fuelEnrichment values must be between 0 and 100. Got {enrich}")
+                    if any(e < 0 or e > 1 for e in enrich):
+                        raise InputError("fuelEnrichment values must be between 0 and 1. Got {enrich}")
 
                     moves[cycle].append(AssemblyMove("LoadQueue", locs[0], enrich, assemType))
                     for i in range(len(locs) - 1):
@@ -1189,6 +1189,7 @@ class FuelHandler:
                         FuelHandler._validateLoc(loc, cycle)
                     loc1, loc2 = swap
                     moves[cycle].append(AssemblyMove(loc1, loc2))
+                    moves[cycle].append(AssemblyMove(loc2, loc1))
 
                 elif "extraRotations" in action:
                     for loc, angle in action.get("extraRotations", {}).items():

@@ -378,7 +378,7 @@ A few examples of restart cases:
    or ``extraRotations``. ``cascade`` chains describe a sequence of assembly
    displacements beginning with a fresh fuel assembly and ending with the final
    location's assembly being discharged. Optional ``fuelEnrichment`` lists
-   specify the U235 weight percent enrichment for each axial block in the fresh
+   specify the U235 weight fraction enrichment for each axial block in the fresh
    assembly, from bottom to top, including zeroes for non-fuel blocks.
    ``misloadSwap`` swaps the assemblies at two locations after all cascades are
    processed. ``extraRotations`` map final location labels to relative
@@ -407,12 +407,12 @@ A few examples of restart cases:
        sequence:
          1:
            - cascade: ["outer fuel", "009-045", "008-004", "SFP"]
-             fuelEnrichment: [0, 12, 14, 15, 0]  # wt% U235 by block
+             fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]  # wt fraction U235 by block
            - misloadSwap: ["009-045", "008-004"]
            - extraRotations: {"009-045": 60}
          2:
            - cascade: ["outer fuel", "010-046", "009-045", "ExCore"]
-             fuelEnrichment: [0, 12, 14, 15, 0]
+             fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
 
 .. note:: Consider using yaml anchors ``&`` and aliases ``*`` to reduce repetition.
 

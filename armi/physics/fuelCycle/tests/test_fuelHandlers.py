@@ -34,6 +34,7 @@ from armi.physics.fuelCycle.settings import (
     CONF_ASSEMBLY_ROTATION_ALG,
     CONF_PLOT_SHUFFLE_ARROWS,
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
+    CONF_SHUFFLE_SEQUENCE_FILE,
 )
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
@@ -661,40 +662,93 @@ class TestFuelHandler(FuelHandlerTestHelper):
         self.maxDiff = None
         expected = {
             1: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "SFP"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("010-046", "011-046"),
                 AssemblyMove("011-046", "012-046"),
                 AssemblyMove("012-046", "ExCore"),
             ],
             2: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "SFP"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
-                AssemblyMove("LoadQueue", "010-046", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("010-046", "011-046"),
                 AssemblyMove("011-046", "012-046"),
                 AssemblyMove("012-046", "ExCore"),
             ],
             3: [
-                AssemblyMove("LoadQueue", "009-045", [0.0, 12.0, 14.0, 15.0, 0.0], "outer fuel"),
+                AssemblyMove("LoadQueue", "009-045", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "SFP"),
                 AssemblyMove("009-045", "008-004"),
+                AssemblyMove("008-004", "009-045"),
                 AssemblyMove("007-001", "006-005"),
+                AssemblyMove("006-005", "007-001"),
             ],
         }
         self.assertEqual(moves, expected)
+
+    def test_performShuffleYamlIntegration(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        yaml_text = (
+            "sequence:\n"
+            "  1:\n"
+            "    - misloadSwap: [\"005-023\", \"006-029\"]\n"
+            "    - cascade: [\"igniter fuel\", \"009-045\", \"008-004\", \"007-001\", \"006-005\"]\n"
+            "      fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]\n"
+            "    - extraRotations: {\"009-045\": 60}\n"
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(yaml_text)
+            fname = tf.name
+        try:
+            locs = ["009-045", "008-004", "007-001", "006-005", "005-023", "006-029"]
+            before = {loc: self.r.core.getAssemblyWithStringLocation(loc).getName() for loc in locs}
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            fh.outage()
+
+            fresh = self.r.core.getAssemblyWithStringLocation("009-045")
+            self.assertEqual(fresh.getType(), "igniter fuel")
+            self.assertNotIn(fresh.getName(), before.values())
+            self.assertAlmostEqual(fresh.p.orientation[2], 60.0)
+
+            self.assertEqual(
+                self.r.core.getAssemblyWithStringLocation("008-004").getName(),
+                before["009-045"],
+            )
+            self.assertEqual(
+                self.r.core.getAssemblyWithStringLocation("007-001").getName(),
+                before["008-004"],
+            )
+            self.assertEqual(
+                self.r.core.getAssemblyWithStringLocation("006-005").getName(),
+                before["007-001"],
+            )
+            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before["006-005"]))
+
+            self.assertEqual(
+                self.r.core.getAssemblyWithStringLocation("005-023").getName(),
+                before["006-029"],
+            )
+            self.assertEqual(
+                self.r.core.getAssemblyWithStringLocation("006-029").getName(),
+                before["005-023"],
+            )
+        finally:
+            os.remove(fname)
+
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
