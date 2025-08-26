@@ -18,7 +18,7 @@ import io
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
-from numpy import full
+from numpy import array, array_equal, full
 
 from armi.materials.material import Fluid
 from armi.reactor.blueprints import Blueprints
@@ -116,6 +116,31 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         self.b1 = self.axialExpChngr.linked.linkedBlocks[self.b0].upper
         self.c0 = next(filter(lambda c: c.getType() == "fuel test", self.b0))
         self.c1 = self.axialExpChngr.linked.linkedComponents[self.c0].upper
+
+    def test_getAllNucs(self):
+        nucsA = ["Zr90", "Zr91", "Zr92", "U235", "U238"]
+        nucsB = ["Zr90", "Zr91", "Zr92", "U233", "U238", "I131", "XE131", "NP237", "AM242", "AM242M"]
+        nucsC = self.axialExpChngr._getAllNucs(nucsA, nucsB)
+        # ensure nucsA and nucsB haven't changed
+        self.assertTrue(
+            array_equal(
+                array(nucsA),
+                array(["Zr90", "Zr91", "Zr92", "U235", "U238"]),
+            )
+        )
+        self.assertTrue(
+            array_equal(
+                array(nucsB),
+                array(["Zr90", "Zr91", "Zr92", "U233", "U238", "I131", "XE131", "NP237", "AM242", "AM242M"]),
+            )
+        )
+        # ensure nucsC is correct
+        self.assertTrue(
+            array_equal(
+                array(nucsC),
+                array(["Zr90", "Zr91", "Zr92", "I131", "XE131", "U233", "U235", "NP237", "U238", "AM242", "AM242M"]),
+            )
+        )
 
     def test_shiftLinkedCompsForDelta(self):
         """Ensure that given a deltaZTop, component elevations are adjusted appropriately."""

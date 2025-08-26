@@ -13,7 +13,9 @@
 # limitations under the License.
 """Enable component-wise axial expansion for assemblies and/or a reactor."""
 
+import re
 import typing
+from copy import deepcopy
 from textwrap import dedent
 
 from numpy import array, sum
@@ -511,7 +513,8 @@ class AxialExpansionChanger:
         newNDens: dict[str, float] = {}
         massFrom = 0.0
         massTo = 0.0
-        for nuc in set(fromComp.getNuclides()).union(set(toComp.getNuclides())):
+        nucs = self._getAllNucs(toComp.getNuclides(), fromComp.getNuclides())
+        for nuc in nucs:
             massByNucFrom = densityTools.getMassInGrams(nuc, fromCompVolume, fromComp.getNumberDensity(nuc))
             massByNucTo = densityTools.getMassInGrams(nuc, toCompVolume, toComp.getNumberDensity(nuc))
             newNDens[nuc] = densityTools.calculateNumberDensity(nuc, massByNucFrom + massByNucTo, newVolume)
@@ -578,6 +581,33 @@ class AxialExpansionChanger:
         # update BOL Params for fromComp
         fromComp.p.molesHmBOL *= 1.0 - (abs(deltaZTop) / fromComp.parent.p.heightBOL)
         fromComp.p.massHmBOL *= 1.0 - (abs(deltaZTop) / fromComp.parent.p.heightBOL)
+
+    @staticmethod
+    def sortKey(item):
+        match = re.search(r"([a-zA-Z]{1,2})(\d{1,3})([a-zA-Z]?)", item)
+        if match:
+            # Convert numeric parts to int for correct numerical sorting
+            element = match.group(1)
+            atomicWeight = int(match.group(2))
+            metastable = 1 if match.group(3) else 0
+            return (atomicWeight, element, metastable)
+        raise RuntimeError("Unknown isotope!")
+
+    def _getAllNucs(self, nucsA: list[str], nucsB: list[str]) -> list[str]:
+        """Return a list that contains all of the nuclides in nucsA and nucsB.
+
+        Notes
+        -----
+        The returned list is sorted by :py:meth:`sortKey`. Isotopes are sorted based on 1) atomic weight, 2) element,
+        and 3) metastable state.
+        """
+        allNucs = deepcopy(nucsA)
+        nucsToAdd = set(nucsB).difference(set(nucsA))
+        if not nucsToAdd:
+            return allNucs
+        for nucs in nucsToAdd:
+            allNucs.append(nucs)
+        return sorted(allNucs, key=self.sortKey)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
