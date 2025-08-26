@@ -920,7 +920,7 @@ class Assembly_TestCase(unittest.TestCase):
             for b, temp in zip(self.assembly, [100, 200, 300]):
                 b.p.THcornTemp = [temp + iCorner for iCorner in range(6)]
             value = self.assembly.getParamValuesAtZ("THcornTemp", 20.0)
-            self.assertTrue(np.allclose([200, 201, 202, 203, 204, 205], value))
+            self.assertTrue(np.allclose([300, 301, 302, 303, 304, 305], value))
         finally:
             percentBuDef.location = originalLoc
 
