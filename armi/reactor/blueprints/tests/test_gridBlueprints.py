@@ -23,7 +23,8 @@ if not isConfigured():
     configure()
 
 from armi.reactor.blueprints import Blueprints
-from armi.reactor.blueprints.gridBlueprint import Grids, saveToStream
+from armi.reactor.blueprints.gridBlueprint import Grids, Pitch, saveToStream
+from armi.utils.customExceptions import InputError
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
 LATTICE_BLUEPRINT = """
@@ -452,6 +453,16 @@ class TestGridBlueprintsSection(unittest.TestCase):
         self.assertEqual(gridDesign4.gridContents[-3, -3], "1")
         with self.assertRaises(KeyError):
             self.assertEqual(gridDesign4.gridContents[-4, -3], "1")
+
+    def test_pitchEdgeCases(self):
+        with self.assertRaises(TypeError):
+            Pitch(0, 0, 0, 0)
+
+        with self.assertRaises(InputError):
+            Pitch([1], 2, 3, 4)
+
+        with self.assertRaises(InputError):
+            Pitch([0], 0, 0, 0)
 
     def test_simpleReadLatticeMap(self):
         """Read lattice map and create a grid.
