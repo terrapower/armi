@@ -138,7 +138,7 @@ class Pitch(yamlize.Object):
     y = yamlize.Attribute(type=float, default=0.0)
     z = yamlize.Attribute(type=float, default=0.0)
 
-    def __init__(self, hex=0.0, x=0.0, y=0.0, z=0.0):
+    def __init__(self, hexPitch=0.0, x=0.0, y=0.0, z=0.0):
         """
         Parameters
         ----------
@@ -155,13 +155,13 @@ class Pitch(yamlize.Object):
         Raises
         ------
         InputError
-            * If a `hex` pitch and `x` or `y` pitch are provided simultaneously.
+            * If a `hexPitch` and `x` or `y` pitch are provided simultaneously.
             * If no non-zero value is provided for any parameter.
         """
-        if hex and (x or y):
+        if hexPitch and (x or y):
             raise InputError("Cannot mix `hex` with `x` and `y` attributes of `latticePitch`.")
 
-        if not any(hex, x, y, z):
+        if not any([hexPitch, x, y, z]):
             raise InputError("`lattice pitch` must have at least one non-zero attribute! Check the blueprints.")
 
         self.hex = hex or x
