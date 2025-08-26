@@ -700,13 +700,13 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_performShuffleYamlIntegration(self):
         fh = fuelHandlers.FuelHandler(self.o)
         yaml_text = """
-                sequence:
-                1:
-                    - misloadSwap: ["005-023", "006-029"]
-                    - cascade: ["igniter fuel", "009-045", "008-004", "007-001", "006-005"]
-                    fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
-                    - extraRotations: {"009-045": 60}
-            """
+        sequence:
+            1:
+                - misloadSwap: ["009-045", "008-004"]
+                - cascade: ["igniter fuel", "009-045", "008-004", "007-001", "006-005"]
+                  fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
+                - extraRotations: {"009-045": 60}
+        """
         with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
             tf.write(yaml_text)
             fname = tf.name
