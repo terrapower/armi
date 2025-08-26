@@ -2254,8 +2254,6 @@ class HexBlock(Block):
         wettedPinComponentFlags = (
             Flags.CLAD,
             Flags.WIRE,
-            Flags.CLAD | Flags.DEPLETABLE,
-            Flags.WIRE | Flags.DEPLETABLE,
         )
 
         # flags pertaining to components where both the interior and exterior are wetted
@@ -2272,8 +2270,8 @@ class HexBlock(Block):
 
         wettedPinComponents = []
         for flag in wettedPinComponentFlags:
-            c = self.getComponent(flag, exact=True)
-            wettedPinComponents.append(c) if c else None
+            comps = self.getComponents(flag)
+            wettedPinComponents += comps if comps else []
 
         wettedHollowCircleComponents = []
         wettedHollowHexComponents = []
@@ -2285,7 +2283,6 @@ class HexBlock(Block):
                 wettedHollowCircleComponents.append(c) if c else None
 
         # calculate wetted perimeters according to their geometries
-
         # hollow hexagon = 6 * ip / sqrt(3)
         wettedHollowHexagonPerimeter = 0.0
         for c in wettedHollowHexagonComponents:
@@ -2301,8 +2298,8 @@ class HexBlock(Block):
                     1.0,
                     math.pi * c.getDimension("helixDiameter") / c.getDimension("axialPitch"),
                 )
-            wettedPinPerimeter += c.getDimension("od") * correctionFactor
-        wettedPinPerimeter *= self.getNumPins() * math.pi
+            compWettedPerim = c.getDimension("od") * correctionFactor * c.getDimension("mult") * math.pi
+            wettedPinPerimeter += compWettedPerim
 
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
