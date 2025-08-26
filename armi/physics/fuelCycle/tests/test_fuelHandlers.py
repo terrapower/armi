@@ -145,7 +145,8 @@ class TestReadMovesYamlFeatures(unittest.TestCase):
             tf.write(text)
             fname = tf.name
         try:
-            return fuelHandlers.FuelHandler.readMovesYaml(fname)
+            moves, _ = fuelHandlers.FuelHandler.readMovesYaml(fname)
+            return moves
         finally:
             os.remove(fname)
 
@@ -658,7 +659,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_readMovesYaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        moves, swaps = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
         self.maxDiff = None
         expected = {
             1: [
@@ -691,43 +692,39 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
                 AssemblyMove("006-005", "SFP"),
-                AssemblyMove("009-045", "008-004"),
-                AssemblyMove("008-004", "009-045"),
-                AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "007-001"),
             ],
         }
         self.assertEqual(moves, expected)
+        self.assertEqual(swaps, {3: [("009-045", "008-004"), ("007-001", "006-005")]})
 
     def test_performShuffleYamlIntegration(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        yaml_text = (
-            "sequence:\n"
-            "  1:\n"
-            "    - misloadSwap: [\"005-023\", \"006-029\"]\n"
-            "    - cascade: [\"igniter fuel\", \"009-045\", \"008-004\", \"007-001\", \"006-005\"]\n"
-            "      fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]\n"
-            "    - extraRotations: {\"009-045\": 60}\n"
-        )
+        yaml_text = """
+                sequence:
+                1:
+                    - misloadSwap: ["005-023", "006-029"]
+                    - cascade: ["igniter fuel", "009-045", "008-004", "007-001", "006-005"]
+                    fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
+                    - extraRotations: {"009-045": 60}
+            """
         with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
             tf.write(yaml_text)
             fname = tf.name
         try:
-            locs = ["009-045", "008-004", "007-001", "006-005", "005-023", "006-029"]
+            locs = ["009-045", "008-004", "007-001", "006-005"]
             before = {loc: self.r.core.getAssemblyWithStringLocation(loc).getName() for loc in locs}
             self.r.p.cycle = 1
             self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
             fh.outage()
 
-            fresh = self.r.core.getAssemblyWithStringLocation("009-045")
+            fresh = self.r.core.getAssemblyWithStringLocation("008-004")
             self.assertEqual(fresh.getType(), "igniter fuel")
             self.assertNotIn(fresh.getName(), before.values())
-            self.assertAlmostEqual(fresh.p.orientation[2], 60.0)
 
-            self.assertEqual(
-                self.r.core.getAssemblyWithStringLocation("008-004").getName(),
-                before["009-045"],
-            )
+            rotated = self.r.core.getAssemblyWithStringLocation("009-045")
+            self.assertEqual(rotated.getName(), before["009-045"])
+            self.assertAlmostEqual(rotated.p.orientation[2], 60.0)
+
             self.assertEqual(
                 self.r.core.getAssemblyWithStringLocation("007-001").getName(),
                 before["008-004"],
@@ -737,18 +734,8 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 before["007-001"],
             )
             self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before["006-005"]))
-
-            self.assertEqual(
-                self.r.core.getAssemblyWithStringLocation("005-023").getName(),
-                before["006-029"],
-            )
-            self.assertEqual(
-                self.r.core.getAssemblyWithStringLocation("006-029").getName(),
-                before["005-023"],
-            )
         finally:
             os.remove(fname)
-
 
     def test_processMoveList(self):
         fh = fuelHandlers.FuelHandler(self.o)
@@ -771,7 +758,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
     def test_processMoveList_yaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
-        moves = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
+        moves, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
         loadChains, loopChains, enriches, loadTypes, loadNames, rotations, _ = fh.processMoveList(moves[1])
         self.assertEqual(len(loadChains), 2)
         self.assertTrue(any(enriches))

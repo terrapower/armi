@@ -30,6 +30,7 @@ import inspect
 import math
 import os
 import re
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -982,7 +983,7 @@ class FuelHandler:
         """
         # read moves file
         if yaml:
-            moves = self.readMovesYaml(shuffleFile)
+            moves, misloadSwaps = self.readMovesYaml(shuffleFile)
             cycle = self.r.p.cycle
             if cycle == 0:
                 # if cycle is 0, we are at the beginning of the first cycle
@@ -991,12 +992,14 @@ class FuelHandler:
                 return []
         else:
             moves = self.readMoves(shuffleFile)
+            misloadSwaps = {}
             # get the correct cycle number
             # +1 since cycles starts on 0 and looking for the end of 1st cycle shuffle
             cycle = self.r.p.cycle + 1
 
         # setup the load and loop chains to be run per cycle
         moveList = moves[cycle]
+        swaps = misloadSwaps.get(cycle, [])
         (
             loadChains,
             loopChains,
@@ -1009,6 +1012,16 @@ class FuelHandler:
 
         # Now have the move locations
         moved = self.doRepeatShuffle(loadChains, loopChains, enriches, loadChargeTypes, loadNames)
+
+        # Apply any misload swaps after performing cascades
+        for loc1, loc2 in swaps:
+            a1 = self.r.core.getAssemblyWithStringLocation(loc1)
+            a2 = self.r.core.getAssemblyWithStringLocation(loc2)
+            if a1 is None or a2 is None:
+                runLog.warning(f"Could not perform misload swap between {loc1} and {loc2}")
+                continue
+            self.swapAssemblies(a1, a2)
+            moved.extend([a1, a2])
         self.pendingRotations = rotations
 
         return moved
@@ -1117,6 +1130,7 @@ class FuelHandler:
             raise InputError("Shuffle YAML missing required 'sequence' mapping")
 
         moves = {}
+        misloadSwaps = defaultdict(list)
         # cycles may be provided in any order; verify only that there are no gaps
         cycleNums = {int(c) for c in data["sequence"].keys()}
         if cycleNums:
@@ -1188,8 +1202,7 @@ class FuelHandler:
                     for loc in swap:
                         FuelHandler._validateLoc(loc, cycle)
                     loc1, loc2 = swap
-                    moves[cycle].append(AssemblyMove(loc1, loc2))
-                    moves[cycle].append(AssemblyMove(loc2, loc1))
+                    misloadSwaps[cycle].append((loc1, loc2))
 
                 elif "extraRotations" in action:
                     for loc, angle in action.get("extraRotations", {}).items():
@@ -1199,7 +1212,7 @@ class FuelHandler:
                 else:
                     raise InputError(f"Unable to process {action} in {cycle}")
 
-        return moves
+        return moves, dict(misloadSwaps)
 
     @staticmethod
     def trackChain(moveList, startingAt, alreadyDone=None):
@@ -1283,8 +1296,8 @@ class FuelHandler:
                                 enrich = cEnrichList
                                 loadName = cAssemName
                                 assemType = cAssemblyType
-                                # break from here or else we might get the next LoadQueue's enrich.
-                                break
+                            # break after finding the first predecessor to avoid duplicates
+                            break
 
                     if chain[-1] == startingAt:
                         # non-charging loop complete
