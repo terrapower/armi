@@ -108,9 +108,6 @@ blocks:
         clad test:
             <<: *component_shield_clad1
             latticeIDs: [2]
-        wire test:
-            <<: *component_shield_wire1
-            latticeIDs: [2]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -163,9 +160,6 @@ blocks:
         clad test: &component_fuelmultiPin_clad2
             <<: *component_fuelmultiPin_clad1
             latticeIDs: [2]
-        wire test: &component_fuelmultiPin_wire2
-            <<: *component_fuelmultiPin_wire1
-            latticeIDs: [2]
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -188,7 +182,6 @@ blocks:
             od: clad test.id
             latticeIDs: [2]
         clad test: *component_fuelmultiPin_clad2
-        wire test: *component_fuelmultiPin_wire2
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
@@ -202,7 +195,6 @@ blocks:
         fuel test: *component_fuelmultiPin_fuel2
         bond test: *component_fuelmultiPin_bond2
         clad test: *component_fuelmultiPin_clad2
-        wire test: *component_fuelmultiPin_wire2
         coolant: *component_coolant
         duct: *component_duct
         intercoolant: *component_intercoolant
