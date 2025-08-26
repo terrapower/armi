@@ -136,9 +136,6 @@ class ReportInterface(interfaces.Interface):
         if self.r.core.p.maxTH2SigmaCladIDT:
             paramNames.append("Peak 2-Sigma Fuel")
             nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
-        else:
-            paramNames.append("Max Hot Channel Clad IDT")
-            nodeParameters.append(self.r.core.getMaxBlockParam("THhotChannelCladIDT"))
 
         self.tableParameters.append(nodeParameters)
         runLog.info(
