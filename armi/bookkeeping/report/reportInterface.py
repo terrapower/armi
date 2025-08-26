@@ -123,12 +123,14 @@ class ReportInterface(interfaces.Interface):
         nodeParameters.append(maxAssemblyPower)
         paramNames.append("Max Assembly\nPower [MW]")
 
-        maxPinLinPow = 0
-        for b in self.r.core.iterBlocks(Flags.FUEL):
-            if max(b.p.linPowByPin) > maxPinLinPow:
-                maxPinLinPow = max(b.p.linPowByPin)
-        nodeParameters.append(maxPinLinPow)
-        paramNames.append("Max Pin\nLin Pow [W/cm]")
+        # In some cases, some but not all fuel has linPowByPin
+        if self.r.core.getFirstBlock(Flags.FUEL).p.linPowByPin is not None:
+            maxPinLinPow = 0
+            for b in self.r.core.iterBlocks(Flags.FUEL):
+                if b.p.linPowByPin is not None and max(b.p.linPowByPin) > maxPinLinPow:
+                    maxPinLinPow = max(b.p.linPowByPin)
+            nodeParameters.append(maxPinLinPow)
+            paramNames.append("Max Pin\nLin Pow [W/cm]")
 
         # TH2SigmaCladIDT only exists if there is HCF uncertainty
         if self.r.core.p.maxTH2SigmaCladIDT:
