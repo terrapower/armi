@@ -98,14 +98,6 @@ class ReportInterface(interfaces.Interface):
         self.printParameterTable()
 
     def printParameterTable(self):
-        def getMaxTHhotChannelCladIDT():
-            maxTHhotChannelCladIDT = 0
-            for a in self.r.core.getAssemblies():
-                THhotChannelCladIDT = a.getMaxParam("THhotChannelCladIDT")
-                if THhotChannelCladIDT > maxTHhotChannelCladIDT:
-                    maxTHhotChannelCladIDT = THhotChannelCladIDT
-            return maxTHhotChannelCladIDT
-
         nodeParameters = [
             self.r.p.cycle,
             self.r.p.timeNode,
@@ -144,7 +136,7 @@ class ReportInterface(interfaces.Interface):
             nodeParameters.append(self.r.core.p.maxTH2SigmaCladIDT)
         else:
             paramNames.append("Max Hot Channel Clad IDT")
-            nodeParameters.append(getMaxTHhotChannelCladIDT())
+            nodeParameters.append(self.r.core.getMaxBlockParam("THhotChannelCladIDT"))
 
         self.tableParameters.append(nodeParameters)
         runLog.info(
