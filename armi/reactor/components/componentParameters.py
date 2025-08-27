@@ -62,7 +62,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "temperatureInCBOL",
             units=units.DEGC,
-            description="Component temperature in {} at BOL".format(units.DEGC),
+            description=f"Component temperature in {units.DEGC} at BOL",
         )
 
         pb.defParam(
