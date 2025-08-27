@@ -2271,7 +2271,7 @@ class HexBlock(Block):
         wettedPinComponents = []
         for flag in wettedPinComponentFlags:
             comps = self.getComponents(flag)
-            wettedPinComponents += comps if comps else []
+            wettedPinComponents.extend(comps)
 
         wettedHollowCircleComponents = []
         wettedHollowHexComponents = []
