@@ -1421,6 +1421,7 @@ class CrossSectionGroupManager(interfaces.Interface):
         blockList = []
         for a in self.r.blueprints.assemblies.values():
             blockList.extend(b for b in a)
+
         self._updateEnvironmentGroups(blockList)
         for b in blockList:
             if b.getMicroSuffix() not in blockCollectionsByXsGroup:

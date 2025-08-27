@@ -383,20 +383,22 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
         representativeBlockList = list(xsgm.representativeBlocks.values())
         representativeBlockList.sort(key=lambda repB: repB.getMass() / repB.getVolume())
 
-        assert len(representativeBlockList) == len(self.expectedBlockDensities)
+        self.assertEqual(len(representativeBlockList), len(self.expectedBlockDensities))
         for b, componentDensities, areas in zip(
             representativeBlockList, self.expectedBlockDensities, self.expectedAreas
         ):
-            assert len(b) == len(componentDensities) and len(b) == len(areas)
+            self.assertEqual(len(b), len(componentDensities))
+            self.assertEqual(len(b), len(areas))
             for c, compDensity, compArea in zip(b, componentDensities, areas):
-                assert compArea == c.getArea()
+                self.assertEqual(compArea, c.getArea())
                 cNucs = c.getNuclides()
-                assert len(cNucs) == len(compDensity), (cNucs, compDensity)
+                self.assertEqual(len(cNucs), len(compDensity), (cNucs, compDensity))
                 for nuc in cNucs:
                     self.assertAlmostEqual(c.getNumberDensity(nuc), compDensity[nuc])
 
-        assert "AC" in xsgm.representativeBlocks, (
-            "Assemblies not in the core should still have XS groupssee _getMissingBlueprintBlocks()"
+        self.assertIn("AC", xsgm.representativeBlocks, (
+                "Assemblies not in the core should still have XS groups, see _getMissingBlueprintBlocks()"
+            )
         )
 
 
@@ -741,6 +743,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])
+        self.csm._setTempGroupBounds([0, 100, 200])
         self.csm.interactBOL()
 
     def test_enableEnvGroupUpdates(self):
@@ -796,6 +799,14 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         self.assertEqual(len(blockCollectionsByXsGroup), 4)
         self.assertIn("AB", blockCollectionsByXsGroup)
+
+    def test_getMissingBlueprintBlocks(self):
+        """Test the function to get missing blueprints blocks."""
+        blockCollectionsByXsGroup = {}
+        blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
+        missingBlueprintBlocks = self.csm._getMissingBlueprintBlocks(blockCollectionsByXsGroup)
+        envGroups = set(b.p.envGroup for b in missingBlueprintBlocks)
+        self.assertGreater(len(envGroups), 1, "Blueprint block environment groups were not updated!")
 
     def test_calcWeightedBurnup(self):
         self.blockList[1].p.percentBu = 3.1
