@@ -248,38 +248,37 @@ class ComponentBlueprint(yamlize.Object):
 
         if densityFromCustomIsotopic <= 0:
             runLog.error(
-                "A zero or negative density was specified in a custom isotopics input. "
-                "This is not permitted, if a 0 density material is needed, use 'Void'. "
-                f"The component is {comp} and the isotopics entry is {self.isotopics}."
+                "A zero or negative density was specified in a custom isotopics input. This is not permitted, if a 0 "
+                f"density material is needed, use 'Void'. The component is {comp} and the isotopics entry is "
+                f"{self.isotopics}."
             )
             raise ValueError("A zero or negative density was specified in the custom isotopics for a component")
 
         mat = materials.resolveMaterialClassByName(self.material)()
         if not isinstance(mat, materials.Custom):
             # check for some problem cases
-            if "TD_frac" in matMods.keys():
+            overSpecs = [k for k in matMods if k.endswith("_frac")]
+            if len(overSpecs):
                 runLog.error(
-                    f"Both TD_frac and a custom isotopic with density {blueprint.customIsotopics[self.isotopics]} "
-                    f"has been specified for material {self.material}. This is an overspecification."
+                    f"Both {overSpecs} and a custom isotopic with density {blueprint.customIsotopics[self.isotopics]} "
+                    f"have been specified for material {self.material}. This is an overspecification."
                 )
+
             if not mat.density(Tc=self.Tinput) > 0:
                 runLog.error(
-                    f"A custom density has been assigned to material '{self.material}', which has no baseline "
-                    "density. Only materials with a starting density may be assigned a density. "
-                    "This comes up e.g. if isotopics are assigned to 'Void'."
+                    f"A custom density has been assigned to material '{self.material}', which has no baseline density. "
+                    "Only materials with a starting density may be assigned a density. This comes up e.g. if isotopics "
+                    "are assigned to 'Void'."
                 )
                 raise ValueError("Cannot apply custom densities to materials without density.")
 
-            # Apply a density scaling to account for the temperature change between
-            # Tinput and Thot
+            # Apply a density scaling to account for the temperature change between Tinput and Thot
             if isinstance(mat, materials.Fluid):
                 densityRatio = densityFromCustomIsotopic / mat.density(Tc=comp.inputTemperatureInC)
             else:
-                # for solids we need to consider if the input heights are hot or
-                # cold, in order to get the density correct.
-                # There may be a better place in the initialization to determine
-                # if the block height will be interpreted as hot dimensions, which would
-                # allow us to not have to pass the case settings down this far
+                # For solids we need to consider if the input heights are hot or cold, in order to get the density
+                # correct. There may be a better place in the initialization to determine if the block height will be
+                # interpreted as hot dimensions, which would allow us to not have to pass the case settings this far.
                 dLL = mat.linearExpansionFactor(Tc=comp.temperatureInC, T0=comp.inputTemperatureInC)
                 if inputHeightsConsideredHot:
                     f = 1.0 / (1 + dLL) ** 2
@@ -292,9 +291,8 @@ class ComponentBlueprint(yamlize.Object):
             comp.changeNDensByFactor(densityRatio)
 
             runLog.important(
-                "A custom material density was specified in the custom isotopics for non-custom "
-                f"material {mat}. The component density has been altered to "
-                f"{comp.density()} at temperature {comp.temperatureInC} C",
+                f"A custom material density was specified in the custom isotopics for non-custom material {mat}. The "
+                f"component density has been altered to {comp.density()} at temperature {comp.temperatureInC} C",
                 single=True,
             )
 
