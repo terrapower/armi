@@ -2,15 +2,12 @@
 Entry Points
 ************
 
-**Entry Points** are like the verbs that your App can *do*.
-The :py:mod:`built-in entry points <armi.cli>`
-offer basic functionality, like :py:class:`running a case <armi.cli.run.RunEntryPoint>`
-or :py:class:`opening up the GUI <armi.cli.gridGui.GridGuiEntryPoint>`, but
-the real joy of an application comes when you add your own project-specific
-entry points that do the actions that you commonly need done.
+**Entry Points** are like the verbs that your App can *do*. The :py:mod:`built-in entry points <armi.cli>` offer basic
+functionality, like :py:class:`running a case <armi.cli.run.RunEntryPoint>` or
+:py:class:`opening up the GUI <armi.cli.gridGui.GridGuiEntryPoint>`, but the real joy of an application comes when you
+add your own project-specific entry points that do the actions that you commonly need done.
 
-To make a new EntryPoint, first make a new module and subclass
-:py:class:`~armi.cli.entryPoint.EntryPoint`. Set the
+To make a new EntryPoint, first make a new module and subclass :py:class:`~armi.cli.entryPoint.EntryPoint`. Set the
 class attributes as follows:
 
 ``name``
@@ -32,21 +29,21 @@ Next, implement the :py:meth:`~armi.cli.entryPoint.EntryPoint.addOptions` method
 
 The values of the non-setting arguments will become attributes in ``self.args`` for later use.
 
-Finally, implement the :py:meth:`~armi.cli.entryPoint.EntryPoint.invoke` method
-with the code you'd like to run upon invocation of this entry point.
+Finally, implement the :py:meth:`~armi.cli.entryPoint.EntryPoint.invoke` method with the code you'd like to run upon
+invocation of this entry point.
 
 
 .. code-block:: python
     :caption: Example entry point
 
+    from armi import cases
     from armi.cli import entryPoint
 
     class SampleEntryPoint(entryPoint.EntryPoint):
         """
         Entry point title here.
 
-        Long description of entry point here. This will get picked
-        up and used as the help text on the command line itself!
+        Long description of entry point here. This will get picked up and used as the help text on the command line!
         """
 
         name = "do-my-thing"
@@ -64,8 +61,6 @@ with the code you'd like to run upon invocation of this entry point.
             )
 
         def invoke(self):
-            from armi import cases
-
             inputCase = cases.Case(cs=self.cs)
             print(f"The case is {inputCase}")
 
@@ -81,7 +76,12 @@ or (if ``myapp`` is not in your ``PYTHONPATH``)::
 
     python path/to/myapp do-my-thing --post-process settingsFile.yaml
 
-.. tip:: The settings file will be read into a ``Settings`` object. This ``Settings``
-    object will be passed widely around the code. Please do not edit these settings
-    during a run. The idea of "run settings" is a lot simpler to understand when they
-    don't change. And such changes tend to hide data from other developers.
+.. tip:: The settings file will be read into a ``Settings`` object. This ``Settings`` object will be passed widely
+    around the code. Please do not edit these settings during a run. The idea of "run settings" is a lot simpler to
+    understand when they don't change. And such changes tend to hide data from other developers.
+
+Every ``ArmiPlugin`` can subclass the ``defineEntryPoints`` method. This is the place to add all your entry points. ARMI
+comes with an extensive :py:class:`~armi.cli.EntryPointsPlugin` that comes with several CLI entry points that you will
+want. It is important to note that if you are building your own ARMI ``Application``, if you do not include the
+``EntryPointsPlugin``, you will not have these entry points. But that is fine if you do not want them or if only want
+some of them you can build your own list in a custom ``defineEntryPoints`` method.
