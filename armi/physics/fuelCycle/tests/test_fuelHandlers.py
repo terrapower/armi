@@ -22,7 +22,7 @@ import collections
 import copy
 import os
 import unittest
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 
@@ -172,13 +172,15 @@ class TestFuelHandler(FuelHandlerTestHelper):
 
         # symmetry factor == 3
         mockGetSymmetry.return_value = 3
-        a.p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
-        a[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
-        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
-        self.assertAlmostEqual(res, expectedValue * 3)
+        with patch(
+            "armi.reactor.parameters.parameterDefinitions.Parameter.location", new_callable=PropertyMock
+        ) as mock_assemblyParameterLocation:
+            mock_assemblyParameterLocation.return_value = ParamLocation.VOLUME_INTEGRATED
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+            self.assertAlmostEqual(res, expectedValue * 3)
 
-        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
-        self.assertAlmostEqual(res, expectedValue * 3)
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+            self.assertAlmostEqual(res, expectedValue * 3)
 
     def test_interactBOC(self):
         # set up mock interface
