@@ -807,7 +807,6 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         missingBlueprintBlocks = self.csm._getMissingBlueprintBlocks(blockCollectionsByXsGroup)
         envGroups = set(b.p.envGroup for b in missingBlueprintBlocks)
-        print(envGroups)
         self.assertGreater(len(envGroups), 1, "Blueprint block environment groups were not updated!")
 
     def test_calcWeightedBurnup(self):
@@ -1096,7 +1095,7 @@ class TestCrossSectionGroupManagerWithTempGrouping(unittest.TestCase):
         for b, env in zip(self.blockList, buAndTemps):
             bu, temp = env
             comps = b.getComponents(Flags.FUEL)
-            assert len(comps) == 1
+            self.assertEqual(len(comps), 1)
             c = next(iter(comps))
             c.setTemperature(temp)
             b.p.percentBu = bu
