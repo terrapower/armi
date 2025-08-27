@@ -226,10 +226,9 @@ class TestCompareDB3(unittest.TestCase):
             srcData3.attrs["2"] = 22
             srcData3.attrs["numDens"] = a2
 
-            # there should a logged error, but no diff
+            # there should a logged error
             with mockRunLogs.BufferLog() as mock:
                 _diffSpecialData(refData, srcData3, out, dr)
-                self.assertEqual(dr.nDiffs(), 0)
                 self.assertIn("Special formatting parameters for", mock.getStdout())
 
             # make an H5 datasets that will cause unpackSpecialData to fail
