@@ -313,8 +313,7 @@ def _diffSpecialData(
         return
 
     if srcData.attrs.get("dict", False):
-        # not bothering with dictionaries yet, though we will need to for things like
-        # number densities
+        out.writeln(f"Not comparing {name} as it is a dictionary.")
         return
 
     attrsMatch = True
