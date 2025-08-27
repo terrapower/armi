@@ -341,6 +341,7 @@ def _diffSpecialData(
             break
 
     if not attrsMatch:
+        diffResults.addDiff(compName, paramName, np.inf, np.inf, np.inf)
         return
 
     try:
