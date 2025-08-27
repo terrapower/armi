@@ -261,7 +261,8 @@ class ComponentBlueprint(yamlize.Object):
             if len(overSpecs):
                 runLog.error(
                     f"Both {overSpecs} and a custom isotopic with density {blueprint.customIsotopics[self.isotopics]} "
-                    f"have been specified for material {self.material}. This is an overspecification."
+                    f"have been specified for material {self.material}. This is an overspecification.",
+                    single=True,
                 )
 
             if not mat.density(Tc=self.Tinput) > 0:
