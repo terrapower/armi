@@ -744,7 +744,6 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         for bi, b in enumerate(self.blockList):
             b.p.percentBu = bi / 19.0 * 100
         self.csm._setBuGroupBounds([3, 10, 30, 100])
-        self.csm._setTempGroupBounds([0, 100, 200])
         self.csm.interactBOL()
 
     def test_enableEnvGroupUpdates(self):
@@ -803,6 +802,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
 
     def test_getMissingBlueprintBlocks(self):
         """Test the function to get missing blueprints blocks."""
+        self.csm._setTempGroupBounds([0, 100, 200])
         blockCollectionsByXsGroup = {}
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         missingBlueprintBlocks = self.csm._getMissingBlueprintBlocks(blockCollectionsByXsGroup)
