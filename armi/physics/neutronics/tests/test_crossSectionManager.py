@@ -396,9 +396,10 @@ class TestBlockCollectionComponentAverage(unittest.TestCase):
                 for nuc in cNucs:
                     self.assertAlmostEqual(c.getNumberDensity(nuc), compDensity[nuc])
 
-        self.assertIn("AC", xsgm.representativeBlocks, (
-                "Assemblies not in the core should still have XS groups, see _getMissingBlueprintBlocks()"
-            )
+        self.assertIn(
+            "AC",
+            xsgm.representativeBlocks,
+            ("Assemblies not in the core should still have XS groups, see _getMissingBlueprintBlocks()"),
         )
 
 
@@ -806,6 +807,7 @@ class TestCrossSectionGroupManager(unittest.TestCase):
         blockCollectionsByXsGroup = self.csm._addXsGroupsFromBlocks(blockCollectionsByXsGroup, self.blockList)
         missingBlueprintBlocks = self.csm._getMissingBlueprintBlocks(blockCollectionsByXsGroup)
         envGroups = set(b.p.envGroup for b in missingBlueprintBlocks)
+        print(envGroups)
         self.assertGreater(len(envGroups), 1, "Blueprint block environment groups were not updated!")
 
     def test_calcWeightedBurnup(self):
