@@ -334,3 +334,22 @@ class TestCompareDB3(unittest.TestCase):
         writeln.assert_called_once()
         # Ensure this is treated as a diff
         self.assertGreater(differ.nDiffs(), 0)
+
+    def test_nothingForDictionaries(self):
+        """Ensure we alert the user we do not perform diffs on dictionaries."""
+        differ = DiffResults(0.0)
+        with h5py.File(self._testMethodName + ".h5", "w") as f, OutputWriter(self._testMethodName + ".txt") as out:
+            first = f.create_dataset("first_dictionary", dtype=float)
+            first.attrs["dict"] = True
+            second = f.create_dataset("second_dictionary", dtype=float)
+            second.attrs["dict"] = True
+            with patch.object(out, "writeln") as writeln:
+                _diffSpecialData(first, second, out, differ)
+            # Not considered a diff
+            self.assertEqual(differ.nDiffs(), 0)
+            # But we've let the user know
+            writeln.assert_called_once()
+            # And the parameter is in the printed message
+            msg = writeln.call_args.args[0]
+            # NOTE If you try to grab first.name on the closed DB, you get None which is not helpful
+            self.assertIn(first.name, msg)
