@@ -1114,7 +1114,24 @@ class FuelHandler:
 
     @staticmethod
     def readMovesYaml(fname):
-        """Read a shuffle file in YAML format."""
+        r"""
+        Read a shuffle file in YAML format.
+
+        Parameters
+        ----------
+        fname : str
+            Path to the YAML-formatted shuffle file.
+
+        Returns
+        -------
+        moves : dict
+            Mapping of cycle numbers to lists of
+            :class:`~armi.physics.fuelCycle.fuelHandlers.AssemblyMove` objects that
+            describe the shuffle sequence.
+        misloadSwaps : dict
+            Mapping of cycle numbers to lists of location-pair tuples describing
+            assemblies to be swapped in order to simulate a misload.
+        """
         try:
             with open(fname, "r") as stream:
                 yaml = YAML(typ="safe")
