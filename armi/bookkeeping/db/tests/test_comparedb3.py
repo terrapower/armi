@@ -16,6 +16,7 @@
 
 import unittest
 import warnings
+from unittest.mock import patch
 
 import h5py
 import numpy as np
@@ -316,3 +317,20 @@ class TestCompareDB3(unittest.TestCase):
             # there should be no difference
             _compareAuxData(out, refData, srcData, dr)
             self.assertEqual(dr.nDiffs(), 0)
+
+    def test_differentlySizedSpecialData(self):
+        """Ensure that special formatting data that are differently sized report a diff."""
+        differ = DiffResults(0.0)
+        with h5py.File(self._testMethodName + ".h5", "w") as f, OutputWriter(self._testMethodName + ".txt") as out:
+            # Create two datasets with no data, but with different attributes
+            # The attributes are used in the special data checks
+            short = f.create_dataset("short", dtype=float)
+            short.attrs["offsets"] = np.arange(10)
+            long = f.create_dataset("long", dtype=float)
+            long.attrs["offsets"] = np.arange(100)
+            with patch.object(out, "writeln") as writeln:
+                _diffSpecialData(short, long, out, differ)
+        # Ensure the user is alerted the datasets have different parameters
+        writeln.assert_called_once()
+        # Ensure this is treated as a diff
+        self.assertGreater(differ.nDiffs(), 0)
