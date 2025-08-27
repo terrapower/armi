@@ -471,7 +471,6 @@ densities by the expansion factor. In practice however, the number densities are
 through the reduction in the height of the parent Block.
 
 .. note::
-
   Recall, component mass in ARMI is calculated as the product of the mass density of the component, the area of the
   component, and the height of the block. The mass of components can be tuned through either of these three parameters.
 
