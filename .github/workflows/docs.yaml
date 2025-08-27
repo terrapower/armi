@@ -22,10 +22,8 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.13
-      - name: Update package index
-        run: sudo apt-get update
       - name: Install apt-get libs
-        run: sudo apt-get -y install texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
+        run: sudo apt-get -y install --fix-missing texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
       - name: Setup Graphviz
         uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make html/pdf Docs
