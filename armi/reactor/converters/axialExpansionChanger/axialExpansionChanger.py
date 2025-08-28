@@ -15,7 +15,6 @@
 
 import re
 import typing
-from copy import deepcopy
 from textwrap import dedent
 
 from numpy import array, sum
@@ -584,11 +583,11 @@ class AxialExpansionChanger:
 
     @staticmethod
     def sortKey(item):
-        match = re.search(r"([a-zA-Z]{1,2})(\d{1,3})([a-zA-Z]?)", item)
+        match = re.search(r"([a-zA-Z]{1,2})(\d{1,3})?([a-zA-Z])?", item)
         if match:
             # Convert numeric parts to int for correct numerical sorting
             element = match.group(1)
-            atomicWeight = int(match.group(2))
+            atomicWeight = int(match.group(2)) if match.group(2) else 0
             metastable = 1 if match.group(3) else 0
             return (atomicWeight, element, metastable)
         raise RuntimeError(f"Unknown isotope! - {item}")
@@ -601,13 +600,8 @@ class AxialExpansionChanger:
         The returned list is sorted by :py:meth:`sortKey`. Isotopes are sorted based on 1) atomic weight, 2) element,
         and 3) metastable state.
         """
-        allNucs = deepcopy(nucsA)
-        nucsToAdd = set(nucsB).difference(set(nucsA))
-        if not nucsToAdd:
-            return allNucs
-        for nucs in nucsToAdd:
-            allNucs.append(nucs)
-        return sorted(allNucs, key=self.sortKey)
+        nucsToAdd = set(nucsA).union(set(nucsB))
+        return sorted(nucsToAdd, key=self.sortKey)
 
     def manageCoreMesh(self, r):
         """Manage core mesh post assembly-level expansion.
