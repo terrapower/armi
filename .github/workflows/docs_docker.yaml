@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build:
-    container: johnscience/armi:v2
+    container: johnscience/armi:v3
 
     # Building and deploying docs is broken on forked repos
     if: github.repository == 'terrapower/armi'
