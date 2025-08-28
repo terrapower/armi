@@ -611,7 +611,7 @@ class RedistributeMass:
                 mass conservation is no longer guaranteed for the {self.toComp.getType()} component type on this
                 assembly!
             """
-            runLog.warning(dedent(msg))
+            runLog.warning(dedent(msg), label="Cannot redistribute mass between different materials.", single=True)
             return
 
     def setNewToCompNDens(self):
