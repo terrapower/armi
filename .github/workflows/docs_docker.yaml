@@ -12,15 +12,13 @@ concurrency:
 
 jobs:
   build:
-    container: johnscience/armi
+    container: johnscience/armi:v2
 
     # Building and deploying docs is broken on forked repos
     if: github.repository == 'terrapower/armi'
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Setup Graphviz
-        uses: ts-graphviz/setup-graphviz@v2.0.2
       - name: Make html/pdf Docs
         continue-on-error: true
         env:
