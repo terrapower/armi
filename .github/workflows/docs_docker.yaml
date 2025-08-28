@@ -1,0 +1,73 @@
+name: Documentation using Docker
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    container: johnscience/armi
+
+    # Building and deploying docs is broken on forked repos
+    if: github.repository == 'terrapower/armi'
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Setup Graphviz
+        uses: ts-graphviz/setup-graphviz@v2.0.2
+      - name: Make html/pdf Docs
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: |
+          echo "Installing ARMI..."
+          set -x
+          pip install -U pip
+          pip install -e .[memprof,mpi,test,docs]
+
+          echo "Run unit tests..."
+          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
+          python doc/.static/cleanup_test_results.py test_results.xml
+
+          echo "Build HTML docs..."
+          cd doc
+          git submodule init
+          git submodule update
+          make html
+
+          echo "Build PDF docs..."
+          make latex
+          cd _build/latex/
+          latexmk -pdf -f -interaction=nonstopmode ARMI.tex
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4.6.1
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }}
+          repository-name: ${{ github.repository_owner }}/terrapower.github.io
+          branch: main
+          folder: doc/_build/html
+          target-folder: armi
+      - name: Archive HTML Docs
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-docs
+          path: doc/_build/html
+          retention-days: 5
+      - name: Archive PDF Docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-docs
+          path: doc/_build/latex/ARMI.pdf
+          retention-days: 5
