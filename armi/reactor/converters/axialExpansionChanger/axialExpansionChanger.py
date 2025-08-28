@@ -17,6 +17,7 @@ import re
 import typing
 from textwrap import dedent
 
+from math import isclose
 from numpy import array, sum
 from scipy.optimize import brentq
 
@@ -541,7 +542,9 @@ class AxialExpansionChanger:
         toComp.setNumberDensities(newNDens)
 
         # calculate the new temperature of toComp.
-        if abs(fromComp.temperatureInC - toComp.temperatureInC) < 1e-10:
+        if isclose(fromComp.temperatureInC, toComp.temperatureInC, rel_tol=1e-09):
+            # per isclose documentation, rel_tol of 1e-09 is roughly equivaluent to ensuring the temps are
+            # the same to roughly 9 digits.
             newToCompTemp = toComp.temperatureInC
         else:
             targetArea = newVolume / (toComp.height + abs(deltaZTop))
