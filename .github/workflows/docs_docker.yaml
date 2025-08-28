@@ -12,15 +12,17 @@ concurrency:
 
 jobs:
   build:
+    runs-on: ubuntu-22.04
     container: johnscience/armi:v3
 
     # Building and deploying docs is broken on forked repos
     if: github.repository == 'terrapower/armi'
-    runs-on: ubuntu-22.04
 
     steps:
       - name: Change ownership of /github/home
         run: chown -R $(whoami) /github/home
+      - name: Checkout repository
+        uses: actions/checkout@v2
       - name: Make html/pdf Docs
         continue-on-error: true
         env:
