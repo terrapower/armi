@@ -27,16 +27,15 @@ jobs:
         run: |
           echo "Installing ARMI..."
           set -x
-          which python3.13
-          python -m pip install -U pip
-          python -m pip install -e .[memprof,mpi,test,docs]
+          python3.13 -m pip install -U pip
+          python3.13 -m pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
-          python -m pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > python -m pytest_verbose_mpi1.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > python -m pytest_verbose_mpi2.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > python -m pytest_verbose_mpi3.log
-          python doc/.static/cleanup_test_results.py test_results.xml
+          python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > python3.13 -m pytest_verbose_mpi1.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > python3.13 -m pytest_verbose_mpi2.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > python3.13 -m pytest_verbose_mpi3.log
+          python3.13 doc/.static/cleanup_test_results.py test_results.xml
 
           echo "Build HTML docs..."
           cd doc
