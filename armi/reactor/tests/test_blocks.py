@@ -39,6 +39,7 @@ from armi.reactor.components import basicShapes, complexShapes
 from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import loadTestReactor
+from armi.testing.singleMixedAssembly import buildMixedPinAssembly
 from armi.tests import ISOAA_PATH, TEST_ROOT
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
@@ -1038,6 +1039,30 @@ class Block_TestCase(unittest.TestCase):
 
         # test getWettedPerimeter
         cur = b.getWettedPerimeter()
+        self.assertAlmostEqual(cur, ref)
+
+    def test_getWettedPerimeterMultiPins(self):
+        assembly = buildMixedPinAssembly()
+        block = assembly.getFirstBlock(Flags.FUEL)
+        # calculate the reference value
+        wires = block.getComponents(Flags.WIRE)
+        clads = block.getComponents(Flags.CLAD)
+        ref = 0
+        for wire in wires:
+            mult = wire.getDimension("mult")
+            correctionFactor = np.hypot(
+                1.0,
+                math.pi * wire.getDimension("helixDiameter") / wire.getDimension("axialPitch"),
+            )
+            wireDiam = wire.getDimension("od") * correctionFactor
+            ref += math.pi * wireDiam * mult
+        ref += sum(math.pi * clad.getDimension("od") * clad.getDimension("mult") for clad in clads)
+
+        ipDim = block.getDim(Flags.DUCT, "ip")
+        ref += 6 * ipDim / math.sqrt(3)
+
+        # test getWettedPerimeter
+        cur = block.getWettedPerimeter()
         self.assertAlmostEqual(cur, ref)
 
     def test_getFlowAreaPerPin(self):
