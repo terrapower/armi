@@ -15,9 +15,9 @@
 
 import re
 import typing
+from math import isclose
 from textwrap import dedent
 
-from math import isclose
 from numpy import array, sum
 from scipy.optimize import brentq
 
@@ -526,15 +526,15 @@ class AxialExpansionChanger:
         fromCompVolBOL = fromComp.getArea(Tc=fromComp.p.temperatureInCBOL) * abs(deltaZTop)
         newBOLVol = toCompVolBOL + fromCompVolBOL
         newNDensBOL: dict[str, float] = {}
-        for (nuc, ndens), ndensToComp in zip(
-            fromComp.p.numberDensitiesBOL.items(), toComp.p.numberDensitiesBOL.values()
-        ):
-            if nucDir.isHeavyMetal(nuc):
-                massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, ndens)
-                massByNucToCompBOL = densityTools.getMassInGrams(nuc, toCompVolBOL, ndensToComp)
-                newNDensBOL[nuc] = densityTools.calculateNumberDensity(
-                    nuc, massByNucFromCompBOL + massByNucToCompBOL, newBOLVol
-                )
+        fromCompNDensBOL = dict(zip(fromComp.p.nuclidesBOL, fromComp.p.numberDensitiesBOL))
+        toCompNDensBOL = dict(zip(toComp.p.nuclidesBOL, toComp.p.numberDensitiesBOL))
+        nucsBOL = self._getAllNucs(toComp.p.nuclidesBOL, fromComp.p.nuclidesBOL)
+        for nuc in filter(nucDir.isHeavyMetal, nucsBOL):
+            massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, fromCompNDensBOL.get(nuc, 0.0))
+            massByNucToCompBOL = densityTools.getMassInGrams(nuc, toCompVolBOL, toCompNDensBOL.get(nuc, 0.0))
+            newNDensBOL[nuc] = densityTools.calculateNumberDensity(
+                nuc, massByNucFromCompBOL + massByNucToCompBOL, newBOLVol
+            )
         toComp.p.molesHmBOL = sum(list(newNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
         toComp.p.massHmBOL = densityTools.calculateMassDensity(newNDensBOL) * newBOLVol
 

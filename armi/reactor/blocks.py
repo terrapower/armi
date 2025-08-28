@@ -747,7 +747,8 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
-                child.p.numberDensitiesBOL = child.getNumberDensities()
+                child.p.nuclidesBOL = child.getNuclides()
+                child.p.numberDensitiesBOL = child.getNuclideNumberDensities(child.p.nuclidesBOL)
                 child.p.temperatureInCBOL = child.temperatureInC
 
         self.p.massHmBOL = massHmBOL
