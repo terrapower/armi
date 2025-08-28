@@ -370,10 +370,9 @@ class AxialExpansionChanger:
                 cLinkedAbove = self.linked.linkedComponents[targetComp].upper
                 if cLinkedAbove is not None:
                     if self.expansionData.isTargetComponent(cLinkedAbove):
-                        # the linked component in the block above is the target component for the block above.
-                        # e.g., fuel to fuel. Shift the target component in the block above up (expansion) or
-                        # down (contraction) without changing its height. In this case, component mass is conserved for
-                        # both target components.
+                        # the linked component in the block above is the target component for that block. e.g., fuel to
+                        # fuel. Shift this linked target component up (expansion) or down (contraction) without changing
+                        # its height. In this case, component mass is conserved for both target components.
                         cLinkedAbove.zbottom = targetComp.ztop
                         cLinkedAbove.ztop = cLinkedAbove.height + cLinkedAbove.zbottom
                     else:
