@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Change ownership of /github/home
+        run: sudo chown -R $(whoami) /github/home
       - name: Make html/pdf Docs
         continue-on-error: true
         env:
