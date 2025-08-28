@@ -493,13 +493,30 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         - Each block is scaled by an increasing temperature to simulate a variable axial temperature distribution.
         - The 100 deg C based temperature changes is arbitrarily chosen.
         - An extra assertion in done in this test to ensure that isotopes uniquely found in each test are not dropped
-          when moving mass between blocks.
+          when moving mass between blocks. See the tables below for additional information on what is expected.
+
+          ==========  ==================
+          Component    Isotopes Present
+          ==========  ==================
+          0            XE131
+          1            I131
+          2            NP237
+          3            CM242
+          ==========  ==================
+
+          then after the axial expansion routine, we show that the following exists,
+
+          ==========  ==================
+          Component    Isotopes Present
+          ==========  ==================
+          0            XE131
+          1            I131, XE131
+          2            NP237, I131
+          3            CM242, NP237
+          ==========  ==================
         """
-        search = lambda c: isinstance(c, Component) and c.hasFlags(
-            Flags.FUEL | Flags.TEST | Flags.DEPLETABLE, exact=True
-        )
         nucs = ["XE131", "I131", "NP237", "CM242"]
-        for i, c in enumerate(self.a.iterChildren(deep=True, predicate=search)):
+        for i, c in enumerate(self.a.iterComponents([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exact=True)):
             self.assertEqual(c.getNumberDensity(nucs[i]), 0.0)
             c.setNumberDensity(nucs[i], 1e-3)
 
@@ -515,7 +532,7 @@ class TestMultiPinConservation(TestMultiPinConservationBase):
         self.checkConservation()
 
         expectedNucsPresent = [["XE131"], ["XE131", "I131"], ["I131", "NP237"], ["NP237", "CM242"]]
-        for i, c in enumerate(self.a.iterChildren(deep=True, predicate=search)):
+        for i, c in enumerate(self.a.iterComponents([Flags.FUEL, Flags.TEST, Flags.DEPLETABLE], exact=True)):
             for nuc in expectedNucsPresent[i]:
                 self.assertNotEqual(c.getNumberDensity(nuc), 0.0, msg=f"{nuc} not present in {c}!")
 
