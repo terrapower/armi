@@ -36,7 +36,7 @@ jobs:
           python3.13 -m pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
-          python3.13 -m pytest armi/tests/test_runLog.py
+          python3.13 -m pytest -v -n 4 armi/tests/test_runLog.py
           python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > python3.13 -m pytest_verbose_mpi1.log
           mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > python3.13 -m pytest_verbose_mpi2.log
