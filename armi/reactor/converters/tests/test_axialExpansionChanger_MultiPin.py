@@ -17,13 +17,14 @@ import copy
 import io
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
+from unittest.mock import MagicMock
 
 from numpy import array, array_equal, full
 
 from armi.materials.material import Fluid
 from armi.reactor.blueprints import Blueprints
 from armi.reactor.components.component import Component
-from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger
+from armi.reactor.converters.axialExpansionChanger.axialExpansionChanger import AxialExpansionChanger, RedistributeMass
 from armi.reactor.converters.axialExpansionChanger.expansionData import iterSolidComponents
 from armi.reactor.converters.tests.test_axialExpansionChanger import AxialExpansionTestBase
 from armi.reactor.flags import Flags, TypeSpec
@@ -120,7 +121,9 @@ class TestRedistributeMass(TestMultiPinConservationBase):
     def test_getAllNucs(self):
         nucsA = ["Zr90", "Zr91", "Zr92", "U235", "U238"]
         nucsB = ["Zr90", "Zr91", "Zr92", "U233", "U238", "I131", "XE131", "NP237", "AM242", "AM242M"]
-        nucsC = self.axialExpChngr._getAllNucs(nucsA, nucsB)
+        nucsC = RedistributeMass(MagicMock(), MagicMock(), MagicMock(), MagicMock(), initOnly=True)._getAllNucs(
+            nucsA, nucsB
+        )
         # ensure nucsA and nucsB haven't changed
         self.assertTrue(
             array_equal(
@@ -344,7 +347,7 @@ class TestRedistributeMass(TestMultiPinConservationBase):
         for ``fromComp`` and ``toComp`` are correct.
         """
         # move mass from ``fromComp`` to ``toComp``
-        self.axialExpChngr.redistributeMass(fromComp=fromComp, toComp=toComp, deltaZTop=self.deltaZTop)
+        RedistributeMass(fromComp=fromComp, toComp=toComp, assemName=repr(self.a), deltaZTop=self.deltaZTop)
 
         fromCompRefData, toCompRefData = self._getReferenceData(fromComp, toComp)
         self._updateToCompElevations(toComp=toComp)
