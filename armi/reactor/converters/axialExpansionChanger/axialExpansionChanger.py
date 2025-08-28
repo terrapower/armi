@@ -591,7 +591,7 @@ class AxialExpansionChanger:
             atomicWeight = int(match.group(2))
             metastable = 1 if match.group(3) else 0
             return (atomicWeight, element, metastable)
-        raise RuntimeError("Unknown isotope!")
+        raise RuntimeError(f"Unknown isotope! - {item}")
 
     def _getAllNucs(self, nucsA: list[str], nucsB: list[str]) -> list[str]:
         """Return a list that contains all of the nuclides in nucsA and nucsB.
