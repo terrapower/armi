@@ -569,10 +569,10 @@ class RedistributeMass:
         self.massFrom: float = 0.0
         self.massTo: float = 0.0
         if not initOnly:
-            self.compatabilityCheck()
             self.performRedistribution()
 
     def performRedistribution(self):
+        self.compatabilityCheck()
         self.setNewToCompNDens()
         self.setNewToCompTemperature()
         self.updateBOLParams()
@@ -637,7 +637,7 @@ class RedistributeMass:
         ## Set newNDens on toComp
         self.toComp.setNumberDensities(newNDens)
 
-    def setNewToCompTemperature(self, bol: bool = False):
+    def setNewToCompTemperature(self):
         r"""Calculate and set the post-redistribution temperature of toComp.
 
         Notes
@@ -698,7 +698,16 @@ class RedistributeMass:
         self.toComp.clearCache()
 
     def updateBOLParams(self):
-        """Update the BOL molesHmBOL and massHmBOL to stay consistent with the change in mass."""
+        """Update the BOL molesHmBOL and massHmBOL to stay consistent with the change in mass.
+
+        Notes
+        -----
+        Unlike the non-BOL information determined in py:meth:`setNewToCompNDens` and :py:meth:`setNewToCompTemperature`,
+        a new BOL temperature is not neccessary to be calculated here since we do not compute the ``massHmBOL`` or
+        ``moledHmBOL`` information on-the-fly; this allows us to directly set the new values. However, we do need to
+        compute the number densities and manually shift mass to account for the possibility of varying temperatures
+        between toComp and fromComp at BOL.
+        """
         toCompVolBOL = self.toComp.getArea(Tc=self.toComp.p.temperatureInCBOL) * self.toComp.parent.p.heightBOL
         fromCompVolBOL = self.fromComp.getArea(Tc=self.fromComp.p.temperatureInCBOL) * abs(self.deltaZTop)
         newBOLVol = toCompVolBOL + fromCompVolBOL
@@ -720,7 +729,7 @@ class RedistributeMass:
         self.fromComp.p.massHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)
 
     @staticmethod
-    def sortKey(item):
+    def _sortKey(item):
         match = re.search(r"([a-zA-Z]{1,2})(\d{1,3})?([a-zA-Z])?", item)
         if match:
             # Convert numeric parts to int for correct numerical sorting
@@ -739,4 +748,4 @@ class RedistributeMass:
         and 3) metastable state.
         """
         nucsToAdd = set(nucsA).union(set(nucsB))
-        return sorted(nucsToAdd, key=self.sortKey)
+        return sorted(nucsToAdd, key=self._sortKey)
