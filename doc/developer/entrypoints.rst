@@ -80,8 +80,9 @@ or (if ``myapp`` is not in your ``PYTHONPATH``)::
     around the code. Please do not edit these settings during a run. The idea of "run settings" is a lot simpler to
     understand when they don't change. And such changes tend to hide data from other developers.
 
-Every ``ArmiPlugin`` can subclass the ``defineEntryPoints`` method. This is the place to add all your entry points. ARMI
-comes with an extensive :py:class:`~armi.cli.EntryPointsPlugin` that comes with several CLI entry points that you will
-want. It is important to note that if you are building your own ARMI ``Application``, if you do not include the
-``EntryPointsPlugin``, you will not have these entry points. But that is fine if you do not want them or if only want
+To add entry points, ``ArmiPlugin``s can subclass the ``defineEntryPoints`` method. ARMI
+has an extensive :py:class:`~armi.cli.EntryPointsPlugin` that comes with several CLI entry points. 
+It is important to note that if you are building your own ARMI ``Application``, the
+``EntryPointsPlugin`` must be registered to access these entry points either by registration in the application or 
+subclassing :py:class:`~armi.apps.App`. If you do not want them or if only want
 some of them you can build your own list in a custom ``defineEntryPoints`` method.
