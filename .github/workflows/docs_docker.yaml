@@ -29,8 +29,7 @@ jobs:
         run: |
           echo "Installing ARMI..."
           set -x
-          pwd
-          ls
+          cd armi
           python3.13 -m pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
