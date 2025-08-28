@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "Installing ARMI..."
           set -x
-          python3.13 -m pip install -U pip
+          apt install --only-upgrade python3-pip
           python3.13 -m pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
