@@ -340,13 +340,21 @@ class Inspector:
     def _inspectSettings(self):
         """Check settings for inconsistencies."""
         from armi import operators
+        from armi.physics.fuelCycle.settings import (
+            CONF_SHUFFLE_LOGIC,
+            CONF_SHUFFLE_SEQUENCE_FILE,
+        )
         from armi.physics.neutronics.settings import (
             CONF_BC_COEFFICIENT,
             CONF_BOUNDARIES,
             CONF_XS_KERNEL,
             CONF_XS_SCATTERING_ORDER,
         )
-        from armi.settings.fwSettings.globalSettings import CONF_ZONE_DEFINITIONS, CONF_ZONES_FILE
+        from armi.settings.fwSettings.globalSettings import (
+            CONF_EXPLICIT_REPEAT_SHUFFLES,
+            CONF_ZONE_DEFINITIONS,
+            CONF_ZONES_FILE,
+        )
 
         self.addQueryBadLocationWillLikelyFail("operatorLocation")
 
@@ -421,22 +429,22 @@ class Inspector:
             return any(fName == os.path.split(copyFile)[1] for copyFile in self.cs["copyFilesFrom"])
 
         self.addQuery(
-            lambda: self.cs["explicitRepeatShuffles"]
-            and not self._csRelativePathExists(self.cs["explicitRepeatShuffles"])
-            and not _willBeCopiedFrom(self.cs["explicitRepeatShuffles"]),
+            lambda: self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES]
+            and not self._csRelativePathExists(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES])
+            and not _willBeCopiedFrom(self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES]),
             "The specified repeat shuffle file `{0}` does not exist, and won't be copied. Run will crash.".format(
-                self.cs["explicitRepeatShuffles"]
+                self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES]
             ),
             "",
             self.NO_ACTION,
         )
 
         self.addQuery(
-            lambda: self.cs["shuffleSequenceFile"]
-            and not self._csRelativePathExists(self.cs["shuffleSequenceFile"])
-            and not _willBeCopiedFrom(self.cs["shuffleSequenceFile"]),
+            lambda: self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
+            and not self._csRelativePathExists(self.cs[CONF_SHUFFLE_SEQUENCE_FILE])
+            and not _willBeCopiedFrom(self.cs[CONF_SHUFFLE_SEQUENCE_FILE]),
             "The specified shuffle sequence file `{0}` does not exist. Run will crash.".format(
-                self.cs["shuffleSequenceFile"]
+                self.cs[CONF_SHUFFLE_SEQUENCE_FILE]
             ),
             "",
             self.NO_ACTION,
@@ -446,9 +454,9 @@ class Inspector:
             lambda: sum(
                 bool(setting)
                 for setting in [
-                    self.cs["shuffleSequenceFile"],
-                    self.cs["explicitRepeatShuffles"],
-                    self.cs["shuffleLogic"],
+                    self.cs[CONF_SHUFFLE_SEQUENCE_FILE],
+                    self.cs[CONF_EXPLICIT_REPEAT_SHUFFLES],
+                    self.cs[CONF_SHUFFLE_LOGIC],
                 ]
             )
             > 1,

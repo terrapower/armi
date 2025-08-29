@@ -829,7 +829,7 @@ class FuelHandler:
             assembly2.insert(assem2BlockIndex, assem1Block)
 
     @staticmethod
-    def _validateLoc(loc, cycle):
+    def validateLoc(loc, cycle):
         """Validate a location label from a shuffle YAML file.
 
         Parameters
@@ -1132,6 +1132,7 @@ class FuelHandler:
             Mapping of cycle numbers to lists of location-pair tuples describing
             assemblies to be swapped in order to simulate a misload.
         """
+        # 1. load YAML file
         try:
             with open(fname, "r") as stream:
                 yaml = YAML(typ="safe")
@@ -1143,6 +1144,7 @@ class FuelHandler:
                 f"Could not find/open repeat shuffle file {fname!r} in working directory {os.getcwd()}: {ee}"
             ) from ee
 
+        # 2. perform various validation tests on the YAML data
         if "sequence" not in data:
             raise InputError("Shuffle YAML missing required 'sequence' mapping")
 
@@ -1158,6 +1160,7 @@ class FuelHandler:
                     raise InputError(f"Missing cycle {missing[0]} in shuffle sequence")
                 raise InputError(f"Missing cycles {missing} in shuffle sequence")
 
+        # 3. parse YAML file into shuffle data
         for cycleKey, actions in data["sequence"].items():
             cycle = int(cycleKey)
             moves[cycle] = []
@@ -1190,7 +1193,7 @@ class FuelHandler:
                     assemType = chain[0]
                     locs = chain[1:]
                     for loc in locs:
-                        FuelHandler._validateLoc(loc, cycle)
+                        FuelHandler.validateLoc(loc, cycle)
                         if loc not in FuelHandler.DISCHARGE_LOCS and loc in seenLocs:
                             raise InputError(f"Location {loc} appears in multiple cascades in cycle {cycle}")
                         seenLocs.add(loc)
@@ -1217,13 +1220,13 @@ class FuelHandler:
                     if any(not isinstance(item, str) for item in swap):
                         raise InputError("misloadSwap entries must be strings, got {swap}")
                     for loc in swap:
-                        FuelHandler._validateLoc(loc, cycle)
+                        FuelHandler.validateLoc(loc, cycle)
                     loc1, loc2 = swap
                     misloadSwaps[cycle].append((loc1, loc2))
 
                 elif "extraRotations" in action:
                     for loc, angle in action.get("extraRotations", {}).items():
-                        FuelHandler._validateLoc(loc, cycle)
+                        FuelHandler.validateLoc(loc, cycle)
                         moves[cycle].append(AssemblyMove(loc, loc, rotation=float(angle)))
 
                 else:
