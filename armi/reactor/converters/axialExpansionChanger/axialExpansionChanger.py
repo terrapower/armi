@@ -567,8 +567,8 @@ class RedistributeMass:
         self.deltaZTop = deltaZTop
         self.massFrom: float = 0.0
         self.massTo: float = 0.0
-        self.fromCompBOLNucs = [nucName.decode() for nucName in self.fromComp.nuclidesBOL]
-        self.toCompBOLNucs = [nucName.decode() for nucName in self.toComp.nuclidesBOL]
+        self.fromCompBOLNucs = [nucName.decode() for nucName in self.fromComp.p.nuclidesBOL]
+        self.toCompBOLNucs = [nucName.decode() for nucName in self.toComp.p.nuclidesBOL]
         if not initOnly:
             self.performRedistribution()
 
@@ -715,12 +715,12 @@ class RedistributeMass:
         compute the number densities and manually shift mass to account for the possibility of varying temperatures
         between toComp and fromComp at BOL.
         """
-        toCompVolBOL = self.toComp.getArea(Tc=self.toComp.temperatureInCBOL) * self.toComp.parent.p.heightBOL
-        fromCompVolBOL = self.fromComp.getArea(Tc=self.fromComp.temperatureInCBOL) * abs(self.deltaZTop)
+        toCompVolBOL = self.toComp.getArea(Tc=self.toComp.p.temperatureInCBOL) * self.toComp.parent.p.heightBOL
+        fromCompVolBOL = self.fromComp.getArea(Tc=self.fromComp.p.temperatureInCBOL) * abs(self.deltaZTop)
         newBOLVol = toCompVolBOL + fromCompVolBOL
         newNDensBOL: dict[str, float] = {}
-        fromCompNDensBOL = dict(zip(self.fromCompBOLNucs, self.fromComp.numberDensitiesBOL))
-        toCompNDensBOL = dict(zip(self.toCompBOLNucs, self.toComp.numberDensitiesBOL))
+        fromCompNDensBOL = dict(zip(self.fromCompBOLNucs, self.fromComp.p.numberDensitiesBOL))
+        toCompNDensBOL = dict(zip(self.toCompBOLNucs, self.toComp.p.numberDensitiesBOL))
         nucsBOL = self._getAllNucs(self.toCompBOLNucs, self.fromCompBOLNucs)
         for nuc in filter(nucDir.isHeavyMetal, nucsBOL):
             massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, fromCompNDensBOL.get(nuc, 0.0))
