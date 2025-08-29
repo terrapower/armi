@@ -631,7 +631,7 @@ class RedistributeMass:
         redistributing mass, if ``fromComp`` and ``toComp`` are different temperatures, the temperature of
         ``toComp`` will change. See :py:meth:`setNewToCompTemperature`.
         """
-        ## calculate the mass of each nuclide and then the ndens for the new mass
+        # calculate the mass of each nuclide and then the ndens for the new mass
         newNDens: dict[str, float] = {}
         nucs = self._getAllNucs(self.toComp.getNuclides(), self.fromComp.getNuclides())
         for nuc in nucs:
@@ -641,7 +641,7 @@ class RedistributeMass:
             self.massFrom += massByNucFrom
             self.massTo += massByNucTo
 
-        ## Set newNDens on toComp
+        # Set newNDens on toComp
         self.toComp.setNumberDensities(newNDens)
 
     def setNewToCompTemperature(self):
