@@ -405,17 +405,11 @@ class TestValidateSFPSpatialGrids(unittest.TestCase):
 
     def test_SFPSpatialGridExists(self):
         """Validate the spatial grid for a new SFP is not None if it was provided."""
-        _o, r = loadTestReactor(
-            os.path.join(TEST_ROOT, "smallestTestReactor"),
-            inputFileName="armiRunSmallest.yaml",
-        )
+        _o, r = loadTestReactor(os.path.join(TEST_ROOT, "smallestTestReactor"), inputFileName="armiRunSmallest.yaml")
         self.assertIsNotNone(r.excore.sfp.spatialGrid)
 
     def test_orientationBOL(self):
-        _o, r = loadTestReactor(
-            os.path.join(TEST_ROOT, "smallestTestReactor"),
-            inputFileName="armiRunSmallest.yaml",
-        )
+        _o, r = loadTestReactor(os.path.join(TEST_ROOT, "smallestTestReactor"), inputFileName="armiRunSmallest.yaml")
 
         # Test the null-case; these should all be zero.
         for a in r.core.iterChildren():
