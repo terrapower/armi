@@ -43,6 +43,11 @@ jobs:
 
           echo "Run unit tests..."
           python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_runLog.py > pytest_verbose.log
+          echo "============================================================"
+          ls
+          ls > tmp.txt
+          cat tmp.txt
+          echo "============================================================"
           python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_apps.py > pytest_verbose_mpi1.log
           python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_context.py > pytest_verbose_mpi2.log
           python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_plugins.py > pytest_verbose_mpi3.log
