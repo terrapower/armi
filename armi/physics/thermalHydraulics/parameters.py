@@ -211,15 +211,15 @@ def _getBlockParams():
         pb.defParam(
             "THcornTemp",
             units=units.DEGC,
-            description="Best estimate duct temperature [degC] for assembly corners",
-            location=ParamLocation.TOP | ParamLocation.CORNERS,
+            description="Mid-wall duct temperature for assembly corners",
+            location=ParamLocation.BOTTOM | ParamLocation.CORNERS,
         )
 
         pb.defParam(
             "THedgeTemp",
             units=units.DEGC,
-            description="Best estimate duct temperature for assembly edges",
-            location=ParamLocation.TOP | ParamLocation.EDGES,
+            description="Mid-wall duct temperature for assembly edges",
+            location=ParamLocation.BOTTOM | ParamLocation.EDGES,
         )
 
     with pDefs.createBuilder(default=0, categories=["thermal hydraulics", "mongoose"], saveToDB=True) as pb:
