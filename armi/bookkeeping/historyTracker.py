@@ -210,7 +210,8 @@ class HistoryTrackerInterface(interfaces.Interface):
 
     def _writeDetailAssemblyHistories(self):
         """Write data file with assembly histories."""
-        for a in self.getDetailAssemblies():
+        asm = filter(self.isDetailedAssembly, self.r.core)
+        for a in asm:
             self.writeAssemHistory(a)
 
     def _getAssemHistoryFileName(self, assem):
