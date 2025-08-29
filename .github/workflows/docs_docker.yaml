@@ -25,7 +25,9 @@ jobs:
 
     steps:
       - name: Change ownership of /github/home
-        run: chown -R $(whoami) /github/home
+        run: |
+          chown -R $(whoami) /github/home
+          chown -R $(whoami) /armi
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Make html/pdf Docs
