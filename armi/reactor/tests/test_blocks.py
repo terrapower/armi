@@ -2615,6 +2615,13 @@ class HexBlock_TestCase(unittest.TestCase):
     def test_getBoronMassEnrich(self):
         self.assertAlmostEqual(self.hexBlock.getBoronMassEnrich(), 0.0)
 
+    def test_rotationNumbers(self):
+        self.assertEqual(self.hexBlock.getRotationNum(), 0.0)
+        self.hexBlock.setRotationNum(1)
+        self.assertEqual(self.hexBlock.getRotationNum(), 1.0)
+        self.hexBlock.setRotationNum(2)
+        self.assertEqual(self.hexBlock.getRotationNum(), 2.0)
+
 
 class MultiPinIndicesTests(unittest.TestCase):
     BP_STR = """
