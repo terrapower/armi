@@ -2612,6 +2612,9 @@ class HexBlock_TestCase(unittest.TestCase):
     def test_getBlocks(self):
         self.assertEqual(len(self.hexBlock.getBlocks()), 1)
 
+    def test_getBoronMassEnrich(self):
+        self.assertAlmostEqual(self.hexBlock.getBoronMassEnrich(), 0.0)
+
 
 class MultiPinIndicesTests(unittest.TestCase):
     BP_STR = """
@@ -2967,11 +2970,15 @@ class ThRZBlock_TestCase(unittest.TestCase):
         self.assertEqual({15.0}, axialOuter)
 
     def test_verifyBlockDims(self):
-        """
-        This function is currently null. It consists of a single line that returns nothing. This
-        test covers that line. If the function is ever implemented, it can be tested here.
-        """
-        self.ThRZBlock.verifyBlockDims()
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate, before debug logging
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.setVerbosity(logging.WARNING)
+            runLog.LOG.startLog("test_updateComponentDims")
+
+            # the verify method throws a ton of warnings or raises errors when there are problems
+            self.ThRZBlock.verifyBlockDims()
+            self.assertEqual("", mock.getStdout())
 
     def test_getThetaRZGrid(self):
         """Since not applicable to ThetaRZ Grids."""
@@ -2999,13 +3006,17 @@ class ThRZBlock_TestCase(unittest.TestCase):
 
     def test_updateComponentDims(self):
         with mockRunLogs.BufferLog() as mock:
-            # we should start with a clean slate, before debug logging
+            # we should start with a clean slate, before logging
             self.assertEqual("", mock.getStdout())
             runLog.LOG.setVerbosity(logging.WARNING)
             runLog.LOG.startLog("test_updateComponentDims")
 
+            # if this fails, we get a warning. Here we just test the warning isn't thrown.
             self.ThRZBlock.updateComponentDims()
             self.assertEqual("", mock.getStdout())
+
+    def test_getBoronMassEnrich(self):
+        self.assertAlmostEqual(self.ThRZBlock.getBoronMassEnrich(), 0.0)
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
@@ -3014,8 +3025,7 @@ class CartesianBlock_TestCase(unittest.TestCase):
     PITCH = 70
 
     def setUp(self):
-        caseSetting = settings.Settings()
-        self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock", caseSetting)
+        self.cartesianBlock = blocks.CartesianBlock("TestCartesianBlock")
 
         self.cartesianComponent = components.HoledSquare(
             "duct",
@@ -3112,6 +3122,9 @@ class CartesianBlock_TestCase(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             self.cartesianBlock.getPinPitch(cold=True)
+
+    def test_getBoronMassEnrich(self):
+        self.assertAlmostEqual(self.cartesianBlock.getBoronMassEnrich(), 0.0)
 
 
 class MassConservationTests(unittest.TestCase):
