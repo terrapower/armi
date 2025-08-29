@@ -30,8 +30,6 @@ jobs:
           chown -R $(whoami) /__w/armi
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Try to set up GitHub CLI
-        uses: actions4gh/setup-gh@v1
       - name: Make HTML/PDF Docs
         continue-on-error: true
         env:
