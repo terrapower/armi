@@ -24,13 +24,13 @@ jobs:
     if: github.repository == 'terrapower/armi'
 
     steps:
-      - name: Change ownership of /github/home
+      - name: Change Ownership of Directories
         run: |
           chown -R $(whoami) /github/home
-          chown -R $(whoami) /armi
+          chown -R $(whoami) /__w/armi
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Make html/pdf Docs
+      - name: Make HTML/PDF Docs
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
