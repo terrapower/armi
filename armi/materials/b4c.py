@@ -35,7 +35,6 @@ class B4C(material.Material):
     propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
 
     def __init__(self):
-        self.b10WtFrac = None
         # TODO notes for PR: need to make this a class attribute so 1. a class that inherits from it has it and 2. so
         # we can have a natural default that can be edited according to material modifications. I want this here because
         # downstream there's a different natural b10 frac used and I need the set default mass fracs to work for both
@@ -47,8 +46,6 @@ class B4C(material.Material):
         if B10_wt_frac is not None:
             # we can't just use the generic enrichment adjustment here because the
             # carbon has to change with enrich.
-            self.b10WtFrac = B10_wt_frac
-            self.b10NumFrac = self.getNumEnrichFromMassEnrich(self.b10WtFrac)
             self.adjustMassEnrichment(B10_wt_frac)
         if theoretical_density is not None:
             runLog.warning(
@@ -149,18 +146,8 @@ class B4C(material.Material):
         # Journal of nuclear materials, 124, 185-194, (1984)."
         self.theoreticalDensityFrac = DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
 
-    # TODO there are two opposite methods here, which may be able to get cleaned up with better class design. Come back
-    # to this.
     @staticmethod
-    def getNumEnrichFromMassEnrich(b10WtFrac) -> float:
-        """Given a B10 weight fraction, give the B10 number fraction."""
-        b10AtomicMass = nuclideBases.byName["B10"].weight
-        b11AtomicMass = nuclideBases.byName["B11"].weight
-        b10NumFrac = b10WtFrac / b10AtomicMass / (b10WtFrac / b10AtomicMass + (1.0 - b10WtFrac) / b11AtomicMass)
-        return b10NumFrac
-
-    @staticmethod
-    def getMassEnrichmentFromNumEnrich(b10NumFrac) -> float:
+    def getMassEnrichmentFromNumEnrich(b10NumFrac: float) -> float:
         """Given a B10 number fraction, give the B10 weight fraction."""
         b10AtomicMass = nuclideBases.byName["B10"].weight
         b11AtomicMass = nuclideBases.byName["B11"].weight
