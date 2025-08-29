@@ -38,10 +38,15 @@ jobs:
           pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
-          pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
+          pytest --junit-xml=/__w/armi/armi/test_results.xml -v -n 4 armi > pytest_verbose.log
+          echo "============================================================"
+          ls
+          ls > tmp.txt
+          cat tmp.txt
+          echo "============================================================"
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=/__w/armi/armi/test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=/__w/armi/armi/test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
+          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=/__w/armi/armi/test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
           python doc/.static/cleanup_test_results.py test_results.xml
 
           echo "Build HTML docs..."
