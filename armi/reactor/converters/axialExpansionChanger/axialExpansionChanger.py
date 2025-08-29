@@ -737,7 +737,18 @@ class RedistributeMass:
 
     @staticmethod
     def _sortKey(item):
-        match = re.search(r"([a-zA-Z]{1,2})(\d{1,3})?([a-zA-Z])?", item)
+        """Break isotope string down by element, atomic weight, and metastable state for sorting. Raises a RuntimeError
+        if the string does not match the expected pattern.
+        """
+        pattern = re.compile(
+            r"""
+            ([a-zA-Z]{1,2}) # Element
+            (\d{1,3})?      # atomic weight (optional, e.g., "C")
+            ([a-zA-Z])?     # metastable state (optional, e.g., Am242M or Am242)
+            """,
+            re.VERBOSE,
+        )
+        match = re.search(pattern, item)
         if match:
             # Convert numeric parts to int for correct numerical sorting
             element = match.group(1)
