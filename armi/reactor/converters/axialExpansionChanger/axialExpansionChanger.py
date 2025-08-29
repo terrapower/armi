@@ -567,8 +567,6 @@ class RedistributeMass:
         self.deltaZTop = deltaZTop
         self.massFrom: float = 0.0
         self.massTo: float = 0.0
-        self.fromCompBOLNucs = [nucName.decode() for nucName in self.fromComp.p.nuclidesBOL]
-        self.toCompBOLNucs = [nucName.decode() for nucName in self.toComp.p.nuclidesBOL]
         if not initOnly:
             self.performRedistribution()
 
@@ -577,7 +575,8 @@ class RedistributeMass:
         if self.compatabilityCheck():
             self.setNewToCompNDens()
             self.setNewToCompTemperature()
-            self.updateBOLParams()
+            if self.fromComp.p.hmNuclidesBOL.any() and self.toComp.p.hmNuclidesBOL.any():
+                self.updateBOLParams()
 
     @property
     def fromCompVolume(self):
@@ -715,21 +714,28 @@ class RedistributeMass:
         compute the number densities and manually shift mass to account for the possibility of varying temperatures
         between toComp and fromComp at BOL.
         """
+        # build the BOL HM NDens dictionary
+        fromCompBOLNucs = [nucName.decode() for nucName in self.fromComp.p.hmNuclidesBOL]
+        toCompBOLNucs = [nucName.decode() for nucName in self.toComp.p.hmNuclidesBOL]
+        fromCompNDensBOL = dict(zip(fromCompBOLNucs, self.fromComp.p.hmNumberDensitiesBOL))
+        toCompNDensBOL = dict(zip(toCompBOLNucs, self.toComp.p.hmNumberDensitiesBOL))
+
+        # calculate the new BOL volume
         toCompVolBOL = self.toComp.getArea(Tc=self.toComp.p.temperatureInCBOL) * self.toComp.parent.p.heightBOL
         fromCompVolBOL = self.fromComp.getArea(Tc=self.fromComp.p.temperatureInCBOL) * abs(self.deltaZTop)
         newBOLVol = toCompVolBOL + fromCompVolBOL
-        newNDensBOL: dict[str, float] = {}
-        fromCompNDensBOL = dict(zip(self.fromCompBOLNucs, self.fromComp.p.numberDensitiesBOL))
-        toCompNDensBOL = dict(zip(self.toCompBOLNucs, self.toComp.p.numberDensitiesBOL))
-        nucsBOL = self._getAllNucs(self.toCompBOLNucs, self.fromCompBOLNucs)
-        for nuc in filter(nucDir.isHeavyMetal, nucsBOL):
-            massByNucFromCompBOL = densityTools.getMassInGrams(nuc, fromCompVolBOL, fromCompNDensBOL.get(nuc, 0.0))
-            massByNucToCompBOL = densityTools.getMassInGrams(nuc, toCompVolBOL, toCompNDensBOL.get(nuc, 0.0))
-            newNDensBOL[nuc] = densityTools.calculateNumberDensity(
-                nuc, massByNucFromCompBOL + massByNucToCompBOL, newBOLVol
+
+        # calculate new molesHmBOL and massHmBOL for toComp
+        newHMNDensBOL: dict[str, float] = {}
+        hmNucsBOL = self._getAllNucs(fromCompBOLNucs, toCompBOLNucs)
+        for hmNuc in hmNucsBOL:
+            hmMassByNucFromCompBOL = densityTools.getMassInGrams(hmNuc, fromCompVolBOL, fromCompNDensBOL.get(hmNuc, 0.0))
+            hmMassByNucToCompBOL = densityTools.getMassInGrams(hmNuc, toCompVolBOL, toCompNDensBOL.get(hmNuc, 0.0))
+            newHMNDensBOL[hmNuc] = densityTools.calculateNumberDensity(
+                hmNuc, hmMassByNucFromCompBOL + hmMassByNucToCompBOL, newBOLVol
             )
-        self.toComp.p.molesHmBOL = sum(list(newNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
-        self.toComp.p.massHmBOL = densityTools.calculateMassDensity(newNDensBOL) * newBOLVol
+        self.toComp.p.molesHmBOL = sum(list(newHMNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
+        self.toComp.p.massHmBOL = densityTools.calculateMassDensity(newHMNDensBOL) * newBOLVol
 
         # update BOL Params for fromComp
         self.fromComp.p.molesHmBOL *= 1.0 - (abs(self.deltaZTop) / self.fromComp.parent.p.heightBOL)

@@ -73,10 +73,10 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
-            "numberDensitiesBOL",
-            setter=isNumpyArray("numberDensitiesBOL"),
+            "hmNumberDensitiesBOL",
+            setter=isNumpyArray("hmNumberDensitiesBOL"),
             units=f"#/(bn*{units.CM})",
-            description="Number densities of each nuclide at BOL.",
+            description="Number densities of each heavy metal nuclide at BOL.",
         )
 
         pb.defParam(
@@ -87,10 +87,10 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
-            "nuclidesBOL",
-            setter=isNumpyArray("nuclidesBOL"),
+            "hmNuclidesBOL",
+            setter=isNumpyArray("hmNuclidesBOL"),
             units=units.UNITLESS,
-            description="Nuclide names at BOL corresponding to numberDensitiesBOL array.",
+            description="Heavy metal nuclide names at BOL corresponding to hmNumberDensitiesBOL array.",
         )
 
         pb.defParam(
