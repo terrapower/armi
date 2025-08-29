@@ -2026,9 +2026,10 @@ class Block_TestCase(unittest.TestCase):
         pin = b.getPlenumPin()
         self.assertTrue(pin)
 
-    def test_hasPinPitch(self):
-        hasPitch = self.block.hasPinPitch()
-        self.assertTrue(hasPitch)
+    def test_pinPitches(self):
+        self.assertTrue(self.block.hasPinPitch())
+        self.assertAlmostEqual(self.block.getPinPitch(cold=True), 1.15)
+        self.assertAlmostEqual(self.block.getPinPitch(cold=False), 1.15)
 
     def test_getReactionRates(self):
         block = blocks.HexBlock("HexBlock")
@@ -2602,6 +2603,11 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertIsNotNone(indices)
         np.testing.assert_allclose(indices, np.arange(169, dtype=int))
 
+    def test_pinPitches(self):
+        self.assertTrue(self.hexBlock.hasPinPitch())
+        self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=True), 0.11)
+        self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=False), 0.11)
+
 
 class MultiPinIndicesTests(unittest.TestCase):
     BP_STR = """
@@ -2978,6 +2984,15 @@ class ThRZBlock_TestCase(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             _ = self.ThRZBlock.getHydraulicDiameter()
 
+    def test_pinPitches(self):
+        self.assertFalse(self.ThRZBlock.hasPinPitch())
+
+        with self.assertRaises(AttributeError):
+            self.ThRZBlock.getPinPitch(cold=False)
+
+        with self.assertRaises(AttributeError):
+            self.ThRZBlock.getPinPitch(cold=True)
+
 
 class CartesianBlock_TestCase(unittest.TestCase):
     """Tests for blocks with rectangular/square outer shape."""
@@ -3074,6 +3089,15 @@ class CartesianBlock_TestCase(unittest.TestCase):
     def test_getHydraulicDiameter(self):
         with self.assertRaises(NotImplementedError):
             _ = self.cartesianBlock.getHydraulicDiameter()
+
+    def test_pinPitches(self):
+        self.assertFalse(self.cartesianBlock.hasPinPitch())
+
+        with self.assertRaises(AttributeError):
+            self.cartesianBlock.getPinPitch(cold=False)
+
+        with self.assertRaises(AttributeError):
+            self.cartesianBlock.getPinPitch(cold=True)
 
 
 class MassConservationTests(unittest.TestCase):
