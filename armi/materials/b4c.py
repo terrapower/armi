@@ -25,13 +25,12 @@ from armi.materials import material
 from armi.nucDirectory import nuclideBases
 from armi.utils.units import getTc
 
-DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
-DEFAULT_MASS_DENSITY = 2.52
-NATURAL_B10_NUM_FRAC = 0.199
-
 
 class B4C(material.Material):
+    DEFAULT_MASS_DENSITY = 2.52
+    DEFAULT_THEORETICAL_DENSITY_FRAC = 0.90
     enrichedNuclide = "B10"
+    NATURAL_B10_NUM_FRAC = 0.199
     propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
 
     def __init__(self):
@@ -39,7 +38,7 @@ class B4C(material.Material):
         # we can have a natural default that can be edited according to material modifications. I want this here because
         # downstream there's a different natural b10 frac used and I need the set default mass fracs to work for both
         # fracs
-        self.b10NumFrac = NATURAL_B10_NUM_FRAC
+        self.b10NumFrac = self.NATURAL_B10_NUM_FRAC
         super().__init__()
 
     def applyInputParams(self, B10_wt_frac=None, theoretical_density=None, TD_frac=None, *args, **kwargs):
@@ -141,10 +140,10 @@ class B4C(material.Material):
         self.setMassFrac("B10", gBoron10)
         self.setMassFrac("B11", gBoron11)
         self.setMassFrac("C", gCarbon)
-        self.refDens = DEFAULT_MASS_DENSITY
+        self.refDens = self.DEFAULT_MASS_DENSITY
         # TD reference : Dunner, Heuvel, "Absorber Materials for control rod systems of fast breeder reactors"
         # Journal of nuclear materials, 124, 185-194, (1984)."
-        self.theoreticalDensityFrac = DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
+        self.theoreticalDensityFrac = self.DEFAULT_THEORETICAL_DENSITY_FRAC  # normally is around 0.88-93.
 
     @staticmethod
     def getMassEnrichmentFromNumEnrich(b10NumFrac: float) -> float:
