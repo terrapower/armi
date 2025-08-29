@@ -23,7 +23,7 @@ import copy
 import os
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 
@@ -272,22 +272,32 @@ class TestFuelHandler(FuelHandlerTestHelper):
         for b in a:
             b.p["kInf"] = expectedValue
 
-        # symmetry factor == 1
-        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
-        self.assertEqual(res, expectedValue)
+        with patch(
+            "armi.reactor.parameters.parameterDefinitions.Parameter.location", new_callable=PropertyMock
+        ) as mock_assemblyParameterLocation:
+            mock_assemblyParameterLocation.return_value = ParamLocation.VOLUME_INTEGRATED
+            # symmetry factor == 1
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+            self.assertEqual(res, expectedValue)
 
-        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
-        self.assertEqual(res, expectedValue)
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+            self.assertEqual(res, expectedValue)
 
-        # symmetry factor == 3
-        mockGetSymmetry.return_value = 3
-        a.p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
-        a[0].p.paramDefs["kInf"].location = ParamLocation.VOLUME_INTEGRATED
-        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
-        self.assertAlmostEqual(res, expectedValue * 3)
+            # symmetry factor == 3
+            mockGetSymmetry.return_value = 3
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+            self.assertAlmostEqual(res, expectedValue * 3)
 
-        res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
-        self.assertAlmostEqual(res, expectedValue * 3)
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+            self.assertAlmostEqual(res, expectedValue * 3)
+
+            # not volume integrated and symmetry factor == 3
+            mock_assemblyParameterLocation.return_value = ParamLocation.AVERAGE
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", True)
+            self.assertEqual(res, expectedValue)
+
+            res = fuelHandlers.FuelHandler._getParamMax(a, "kInf", False)
+            self.assertEqual(res, expectedValue)
 
     def test_interactBOC(self):
         # set up mock interface
