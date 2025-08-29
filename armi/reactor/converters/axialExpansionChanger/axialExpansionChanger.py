@@ -605,7 +605,7 @@ class RedistributeMass:
         if type(self.fromComp.material) is not type(self.toComp.material):
             msg = f"""
             Cannot redistribute mass between components that are different materials!
-                Trying to redistribute mass between the following components in {self.linked.a}:
+                Trying to redistribute mass between the following components in {self.assemblyName}:
                     from --> {self.fromComp.parent} : {self.fromComp} : {type(self.fromComp.material)}
                       to --> {self.toComp.parent} : {self.toComp} : {type(self.toComp.material)}
 
@@ -683,7 +683,7 @@ class RedistributeMass:
                     self.fromComp.hasFlags(Flags.FUEL) or self.fromComp.hasFlags(Flags.CONTROL)
                 ):
                     msg = f"""
-                    Temperature search algorithm in axial expansion has failed in {self.linked.a}
+                    Temperature search algorithm in axial expansion has failed in {self.assemblyName}
                     Trying to search for new temp between
                         from --> {self.fromComp.parent} : {self.fromComp} : {type(self.fromComp.material)} at {self.fromComp.temperatureInC} C
                         to --> {self.toComp.parent} : {self.toComp} : {type(self.toComp.material)} at {self.toComp.temperatureInC} C
