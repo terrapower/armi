@@ -573,10 +573,11 @@ class RedistributeMass:
             self.performRedistribution()
 
     def performRedistribution(self):
-        self.compatabilityCheck()
-        self.setNewToCompNDens()
-        self.setNewToCompTemperature()
-        self.updateBOLParams()
+        """Perform the mass redistribution between two compatible components."""
+        if self.compatabilityCheck():
+            self.setNewToCompNDens()
+            self.setNewToCompTemperature()
+            self.updateBOLParams()
 
     @property
     def fromCompVolume(self):
@@ -591,13 +592,17 @@ class RedistributeMass:
         """Compute and return the new post-redistribution volume of toComp."""
         return self.toCompVolume + self.fromCompVolume
 
-    def compatabilityCheck(self):
+    def compatabilityCheck(self) -> bool:
         """Ensure fromComp and toComp are the same material.
 
         Notes
         -----
         If the linked components are not the same material, we cannot transfer mass between materials because then the
         resulting material has unknown properties.
+
+        Returns
+        -------
+        False if incompatible; true otherwise.
         """
         if type(self.fromComp.material) is not type(self.toComp.material):
             msg = f"""
@@ -612,7 +617,8 @@ class RedistributeMass:
                 assembly!
             """
             runLog.warning(dedent(msg), label="Cannot redistribute mass between different materials.", single=True)
-            return
+            return False
+        return True
 
     def setNewToCompNDens(self):
         """Calculate the post-redistribution number densities for toComp and determine how much mass is in play for
