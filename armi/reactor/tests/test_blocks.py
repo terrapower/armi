@@ -3133,6 +3133,11 @@ class CartesianBlock_TestCase(unittest.TestCase):
     def test_getBoronMassEnrich(self):
         self.assertAlmostEqual(self.cartesianBlock.getBoronMassEnrich(), 0.0)
 
+    def test_getPinCenterFlatToFlat(self):
+        r = tests.getEmptyHexReactor()
+        self.cartesianBlock.autoCreateSpatialGrids(r.core.spatialGrid)
+        self.assertAlmostEqual(self.cartesianBlock.getPinCenterFlatToFlat(), 14.0, delta=1e-6)
+
 
 class MassConservationTests(unittest.TestCase):
     """Tests designed to verify mass conservation during thermal expansion."""
