@@ -49,3 +49,10 @@ class B4C_TestCase(_Material_Test, unittest.TestCase):
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
+
+    def test_variousEdgeCases(self):
+        with self.assertRaises(ValueError):
+            self.mat.setNewMassFracsFromMassEnrich(-0.001)
+
+        with self.assertRaises(ValueError):
+            self.mat.setNewMassFracsFromMassEnrich(1.001)

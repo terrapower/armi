@@ -15,9 +15,9 @@
 """
 Boron carbide; a very typical reactor control material.
 
-Note that this material defaults to a theoretical density fraction of 0.9, reflecting
-the difficulty of producing B4C at 100% theoretical density in real life. To get
-different fraction, use the `TD_frac` material modification in your assembly definition.
+Note that this material defaults to a theoretical density fraction of 0.9, reflecting the difficulty of producing B4C at
+100% theoretical density in real life. To get different fraction, use the `TD_frac` material modification in your
+assembly definition.
 """
 
 from armi import runLog
@@ -34,10 +34,6 @@ class B4C(material.Material):
     propertyValidTemperature = {"linear expansion percent": ((25, 500), "C")}
 
     def __init__(self):
-        # TODO notes for PR: need to make this a class attribute so 1. a class that inherits from it has it and 2. so
-        # we can have a natural default that can be edited according to material modifications. I want this here because
-        # downstream there's a different natural b10 frac used and I need the set default mass fracs to work for both
-        # fracs
         self.b10NumFrac = self.NATURAL_B10_NUM_FRAC
         super().__init__()
 
@@ -158,7 +154,7 @@ class B4C(material.Material):
 
         Notes
         -----
-        - applies theoretical density of B4C to parent method
+        Applies theoretical density of B4C to parent method
         """
         return material.Material.pseudoDensity(self, Tk, Tc) * self.theoreticalDensityFrac
 
@@ -168,7 +164,7 @@ class B4C(material.Material):
 
         Notes
         -----
-        - applies theoretical density of B4C to parent method
+        Applies theoretical density of B4C to parent method
         """
         return material.Material.density(self, Tk, Tc) * self.theoreticalDensityFrac
 
