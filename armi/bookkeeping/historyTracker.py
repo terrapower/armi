@@ -261,9 +261,28 @@ class HistoryTrackerInterface(interfaces.Interface):
                 )
         return assems
 
+    def isDetailedAssembly(self, a: "Assembly"):
+        """Evaluate if this assembly is a detailed assembly in the core."""
+        name = a.getName()
+        if name in self.detailAssemblyNames:
+            inCore = self.r.core.assembliesByName.get(name)
+            return inCore is a
+        return False
+
     def getDetailBlocks(self) -> list["Block"]:
         """Get all blocks in all detail assemblies."""
         return [block for a in self.getDetailAssemblies() for block in a]
+
+    def isDetailedBlock(self, b: "Block"):
+        """Evaluate if this block is in a detailed assembly.
+
+        See Also
+        --------
+        isDetailedAssembly
+        """
+        if b.parent is not None:
+            return self.isDetailedAssembly(b.parent)
+        return False
 
     def filterTimeIndices(self, timeIndices, boc=False, moc=False, eoc=False):
         """Takes a list of time indices and filters them down to boc moc or eoc."""
