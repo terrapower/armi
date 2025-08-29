@@ -752,6 +752,9 @@ class Block(composites.Composite):
                     child.p.hmNuclidesBOL = [nuc for nuc in child.p.nuclides if nucDir.isHeavyMetal(nuc.decode())]
                     child.p.hmNumberDensitiesBOL = child.getNuclideNumberDensities(child.p.hmNuclidesBOL)
                     child.p.temperatureInCBOL = child.temperatureInC
+                else:
+                    child.p.hmNuclidesBOL = None
+                    child.p.hmNumberDensitiesBOL = None
 
         self.p.massHmBOL = massHmBOL
 

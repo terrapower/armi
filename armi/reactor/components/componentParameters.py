@@ -62,6 +62,7 @@ def getComponentParameterDefinitions():
         pb.defParam(
             "temperatureInCBOL",
             units=units.DEGC,
+            default=0.0,
             description=f"Component temperature in {units.DEGC} at BOL",
         )
 

@@ -23,7 +23,6 @@ from scipy.optimize import brentq
 
 from armi import runLog
 from armi.materials.material import Fluid
-from armi.nucDirectory import nucDir
 from armi.reactor.assemblies import Assembly
 from armi.reactor.converters.axialExpansionChanger.assemblyAxialLinkage import (
     AssemblyAxialLinkage,
@@ -575,7 +574,7 @@ class RedistributeMass:
         if self.compatabilityCheck():
             self.setNewToCompNDens()
             self.setNewToCompTemperature()
-            if self.fromComp.p.hmNuclidesBOL.any() and self.toComp.p.hmNuclidesBOL.any():
+            if self.fromComp.p.hmNuclidesBOL is not None and self.toComp.p.hmNuclidesBOL is not None:
                 self.updateBOLParams()
 
     @property
@@ -728,13 +727,15 @@ class RedistributeMass:
         # calculate new molesHmBOL and massHmBOL for toComp
         newHMNDensBOL: dict[str, float] = {}
         hmNucsBOL = self._getAllNucs(fromCompBOLNucs, toCompBOLNucs)
-        for hmNuc in hmNucsBOL:
-            hmMassByNucFromCompBOL = densityTools.getMassInGrams(hmNuc, fromCompVolBOL, fromCompNDensBOL.get(hmNuc, 0.0))
-            hmMassByNucToCompBOL = densityTools.getMassInGrams(hmNuc, toCompVolBOL, toCompNDensBOL.get(hmNuc, 0.0))
-            newHMNDensBOL[hmNuc] = densityTools.calculateNumberDensity(
-                hmNuc, hmMassByNucFromCompBOL + hmMassByNucToCompBOL, newBOLVol
+        for nuc in hmNucsBOL:
+            hmMassBOLByNucFromComp = densityTools.getMassInGrams(nuc, fromCompVolBOL, fromCompNDensBOL.get(nuc, 0.0))
+            hmMassBOLByNucToComp = densityTools.getMassInGrams(nuc, toCompVolBOL, toCompNDensBOL.get(nuc, 0.0))
+            newHMNDensBOL[nuc] = densityTools.calculateNumberDensity(
+                nuc, hmMassBOLByNucFromComp + hmMassBOLByNucToComp, newBOLVol
             )
-        self.toComp.p.molesHmBOL = sum(list(newHMNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
+        self.toComp.p.molesHmBOL = (
+            sum(list(newHMNDensBOL.values())) / units.MOLES_PER_CC_TO_ATOMS_PER_BARN_CM * newBOLVol
+        )
         self.toComp.p.massHmBOL = densityTools.calculateMassDensity(newHMNDensBOL) * newBOLVol
 
         # update BOL Params for fromComp
