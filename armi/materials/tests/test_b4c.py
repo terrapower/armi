@@ -35,6 +35,12 @@ class B4C_TestCase(_Material_Test, unittest.TestCase):
         self.B4C_both = B4C()
         self.B4C_both.applyInputParams(theoretical_density=0.5, TD_frac=0.4)
 
+        self.B4C_B10_frac = B4C()
+        self.B4C_B10_frac.applyInputParams(B10_wt_frac=0.2)
+
+        self.B4C_B10_TD_frac = B4C()
+        self.B4C_B10_TD_frac.applyInputParams(B10_wt_frac=0.2, TD_frac=0.4)
+
     def test_theoretical_pseudoDensity(self):
         ref = self.mat.pseudoDensity(500)
 
@@ -46,6 +52,12 @@ class B4C_TestCase(_Material_Test, unittest.TestCase):
 
         reduced = self.B4C_both.pseudoDensity(500)
         self.assertAlmostEqual(ref * 0.4 / DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
+
+        b10Obs = self.B4C_B10_frac.pseudoDensity(500)
+        self.assertAlmostEqual(2.26117309, b10Obs)
+
+        reduced = self.B4C_B10_TD_frac.pseudoDensity(500)
+        self.assertAlmostEqual(b10Obs * 0.4 / DEFAULT_THEORETICAL_DENSITY_FRAC, reduced)
 
     def test_propertyValidTemperature(self):
         self.assertGreater(len(self.mat.propertyValidTemperature), 0)
