@@ -37,7 +37,9 @@ class B4C(material.Material):
     def __init__(self):
         self.b10WtFrac = None
         # TODO notes for PR: need to make this a class attribute so 1. a class that inherits from it has it and 2. so
-        # we can have a natural default that can be edited according to material modifications.
+        # we can have a natural default that can be edited according to material modifications. I want this here because
+        # downstream there's a different natural b10 frac used and I need the set default mass fracs to work for both
+        # fracs
         self.b10NumFrac = NATURAL_B10_NUM_FRAC
         super().__init__()
 
@@ -48,7 +50,6 @@ class B4C(material.Material):
             self.b10WtFrac = B10_wt_frac
             self.b10NumFrac = self.getNumEnrichFromMassEnrich(self.b10WtFrac)
             self.adjustMassEnrichment(B10_wt_frac)
-        # TODO can we just deprecate?
         if theoretical_density is not None:
             runLog.warning(
                 "The 'theoretical_density' material modification for B4C will be "
