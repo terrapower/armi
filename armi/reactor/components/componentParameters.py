@@ -77,6 +77,7 @@ def getComponentParameterDefinitions():
             "hmNumberDensitiesBOL",
             setter=isNumpyArray("hmNumberDensitiesBOL"),
             units=f"#/(bn*{units.CM})",
+            default=None,
             description="Number densities of each heavy metal nuclide at BOL.",
         )
 
@@ -91,6 +92,7 @@ def getComponentParameterDefinitions():
             "hmNuclidesBOL",
             setter=isNumpyArray("hmNuclidesBOL"),
             units=units.UNITLESS,
+            default=None,
             description="Heavy metal nuclide names at BOL corresponding to hmNumberDensitiesBOL array.",
         )
 
