@@ -57,13 +57,9 @@ class AxialExpansionTestBase(unittest.TestCase):
         Flags.GUIDE_TUBE,
     ]
 
-    def setUp(self):
-        self.obj = AxialExpansionChanger()
-        self.componentMass = collections.defaultdict(list)
-        self.componentDensity = collections.defaultdict(list)
-        self.totalAssemblySteelMass = []
-        self.blockZtop = collections.defaultdict(list)
-        self.origNameSpace = _MATERIAL_NAMESPACE_ORDER
+    @classmethod
+    def setUpClass(cls):
+        cls.origNameSpace = _MATERIAL_NAMESPACE_ORDER
         # set namespace order for materials so that fake HT9 material can be found
         materials.setMaterialNamespaceOrder(
             [
@@ -72,9 +68,17 @@ class AxialExpansionTestBase(unittest.TestCase):
             ]
         )
 
-    def tearDown(self):
+    def setUp(self):
+        self.obj = AxialExpansionChanger()
+        self.componentMass = collections.defaultdict(list)
+        self.componentDensity = collections.defaultdict(list)
+        self.totalAssemblySteelMass = []
+        self.blockZtop = collections.defaultdict(list)
+
+    @classmethod
+    def tearDownClass(cls):
         # reset global namespace
-        materials.setMaterialNamespaceOrder(self.origNameSpace)
+        materials.setMaterialNamespaceOrder(cls.origNameSpace)
 
     def _getConservationMetrics(self, a):
         """Retrieves and stores various conservation metrics.
@@ -306,6 +310,9 @@ class TestConservation(AxialExpansionTestBase):
             self.complexConservationTest(a)
 
     def complexConservationTest(self, a: HexAssembly):
+        # get total assembly fluid mass pre-expansion
+        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(a)
+
         origMesh = a.getAxialMesh()[:-1]
         origMasses, origNDens = self._getComponentMassAndNDens(a)
         axialExpChngr = AxialExpansionChanger(detailedAxialExpansion=True)
@@ -336,6 +343,11 @@ class TestConservation(AxialExpansionTestBase):
             self.assertAlmostEqual(orig, new, places=12, msg=f"{a}")
         self._checkMass(origMasses, newMasses)
         self._checkNDens(origNDens, newNDens, 1.0)
+
+        # get total assembly fluid mass post-expansion
+        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(a)
+        # verify that the total assembly fluid mass is preserved through expansion
+        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
 
     def test_prescribedExpansionContractionConservation(self):
         """Expand all components and then contract back to original state.
@@ -378,17 +390,15 @@ class TestConservation(AxialExpansionTestBase):
 
     def _checkMass(self, prevMass, newMass):
         for prev, new in zip(prevMass.values(), newMass.values()):
-            # scaling helps check the assertion closer to machine precision
-            ave = (new + prev) / 2.0
-            prevScaled = prev / ave
-            newScaled = new / ave
-            self.assertAlmostEqual(prevScaled, newScaled, places=14)
+            self.assertAlmostEqual(prev, new, places=11)
 
     def _checkNDens(self, prevNDen, newNDens, ratio):
         for prevComp, newComp in zip(prevNDen.values(), newNDens.values()):
-            for prev, new in zip(prevComp.values(), newComp.values()):
-                if prev:
-                    self.assertAlmostEqual(prev / new, ratio, msg=f"{prev} / {new}")
+            self.assertEqual(len(prevComp), len(newComp))
+            for nuc in prevComp.keys():
+                # some ndens values are 0.0, only check non-zero values
+                if prevComp[nuc]:
+                    self.assertAlmostEqual(prevComp[nuc] / newComp[nuc], ratio)
 
     def _checkDetailedNDens(self, prevDetailedNDen, newDetailedNDens, ratio):
         """Check whether the detailedNDens of two input dictionaries containing the detailedNDens
@@ -469,9 +479,9 @@ class TestConservation(AxialExpansionTestBase):
         assembly.add(_buildTestBlock("shield", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
         assembly.add(_buildTestBlock("fuel", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
-        assembly.add(_buildTestBlock("aclp", "FakeMat", 25.0, 10.0))  # "aclp plenum" also works
-        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0))
+        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0, True))
+        assembly.add(_buildTestBlock("aclp", "FakeMat", 25.0, 10.0, True))  # "aclp plenum" also works
+        assembly.add(_buildTestBlock("plenum", "FakeMat", 25.0, 10.0, True))
         assembly.add(_buildDummySodium(25.0, 10.0))
         assembly.calculateZCoords()
         assembly.reestablishBlockOrder()
@@ -481,9 +491,6 @@ class TestConservation(AxialExpansionTestBase):
         aclpZTop = aclp.p.ztop
         aclpZBottom = aclp.p.zbottom
 
-        # get total assembly fluid mass pre-expansion
-        preExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
-
         # expand fuel
         # get fuel components
         cList = [c for b in assembly for c in b if c.hasFlags(Flags.FUEL)]
@@ -491,9 +498,6 @@ class TestConservation(AxialExpansionTestBase):
         pList = zeros(len(cList)) + 1.01
         chngr = AxialExpansionChanger()
         chngr.performPrescribedAxialExpansion(assembly, cList, pList, setFuel=True)
-
-        # get total assembly fluid mass post-expansion
-        postExpAssemFluidMass = self._getTotalAssemblyFluidMass(assembly)
 
         # do assertion
         self.assertEqual(
@@ -515,8 +519,6 @@ class TestConservation(AxialExpansionTestBase):
                     c.getVolume(),
                     places=12,
                 )
-        # verify that the total assembly fluid mass is preserved through expansion
-        self.assertAlmostEqual(preExpAssemFluidMass, postExpAssemFluidMass, places=11)
 
     @staticmethod
     def _getTotalAssemblyFluidMass(assembly) -> float:
@@ -540,7 +542,7 @@ class TestConservation(AxialExpansionTestBase):
         newTemp = 500.0
         # apply new temp to the pin and clad components of each block
         for b in self.a:
-            for c in b[0:2]:
+            for c in b.iterComponents([Flags.FUEL, Flags.CLAD]):
                 stdThermExpFactor[c] = c.getThermalExpansionFactor()
                 self.obj.expansionData.updateComponentTemp(c, newTemp)
 
@@ -548,8 +550,8 @@ class TestConservation(AxialExpansionTestBase):
 
         # skip dummy block, it's just coolant and doesn't expand.
         for b in self.a[:-1]:
-            for ic, c in enumerate(b):
-                if ic <= 1:
+            for c in b:
+                if c.hasFlags([Flags.FUEL, Flags.CLAD]):
                     self.assertNotEqual(
                         stdThermExpFactor[c],
                         self.obj.expansionData.getExpansionFactor(c),
@@ -588,8 +590,8 @@ class TestManageCoreMesh(unittest.TestCase):
     def test_manageCoreMesh(self):
         self.axialExpChngr.manageCoreMesh(self.r)
         newAxialMesh = self.r.core.p.axialMesh
-        # the top and bottom and top of the grid plate block are not expected to change
-        for old, new in zip(self.oldAxialMesh[2:-1], newAxialMesh[2:-1]):
+        # all solid components in fuel + plenum block expand so the first three points are not expected to change
+        for old, new in zip(self.oldAxialMesh[3:-1], newAxialMesh[3:-1]):
             self.assertLess(old, new)
 
     def test_componentConservation(self):
@@ -724,6 +726,23 @@ class TestDetermineTargetComponent(AxialExpansionTestBase):
         self.expData = ExpansionData([], setFuel=True, expandFromTinputToThot=True)
         coolDims = {"Tinput": 25.0, "Thot": 25.0}
         self.coolant = DerivedShape("coolant", "Sodium", **coolDims)
+
+    def test_getTargetComponent(self):
+        b = HexBlock("fuel", height=10.0)
+        fuelDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.76, "id": 0.00, "mult": 127.0}
+        cladDims = {"Tinput": 25.0, "Thot": 25.0, "od": 0.80, "id": 0.77, "mult": 127.0}
+        fuel = Circle("fuel", "FakeMat", **fuelDims)
+        clad = Circle("clad", "FakeMat", **cladDims)
+        b.add(fuel)
+        b.add(clad)
+        b.add(self.coolant)
+        self.expData.setTargetComponent(b, True)
+        self.assertEqual(fuel, self.expData.getTargetComponent(b))
+
+    def test_getTargetComponent_NoneFound(self):
+        b = HexBlock("fuel", height=10.0)
+        with self.assertRaisesRegex(RuntimeError, f"No target component found for {b} in"):
+            self.expData.getTargetComponent(b)
 
     def test_determineTargetComponent(self):
         """Provides coverage for searching TARGET_FLAGS_IN_PREFERRED_ORDER."""
@@ -998,44 +1017,58 @@ def buildTestAssemblyWithFakeMaterial(name: str, hot: bool = False):
     assembly.add(_buildTestBlock("shield", name, hotTemp, height))
     assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
     assembly.add(_buildTestBlock("fuel", name, hotTemp, height))
-    assembly.add(_buildTestBlock("plenum", name, hotTemp, height))
+    assembly.add(_buildTestBlock("plenum", name, hotTemp, height, True))
     assembly.add(_buildDummySodium(hotTemp, height))
     assembly.calculateZCoords()
     assembly.reestablishBlockOrder()
     return assembly
 
 
-def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
+def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float, plenum: bool = False) -> HexBlock:
     """Return a simple pin type block filled with coolant and surrounded by duct.
 
     Parameters
     ----------
-    blockType : string
+    blockType
         determines which type of block you're building
-    name : string
+    name
         determines which material to use
+    hotTemp
+        the hot temperature of the block. This is synonomous with Thot in blueprints.
+    height
+        the height of the block
+    plenum
+        boolean to indicate if this is a plenum. if true, the pin is replaced by an air-filled gap.
+
+    Returns
+    -------
+    HexBlock for testing.
     """
     b = HexBlock(blockType, height=height)
 
     fuelDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.76, "id": 0.00, "mult": 127.0}
-    cladDims = {"Tinput": 25.0, "Thot": hotTemp, "od": 0.80, "id": 0.77, "mult": 127.0}
     ductDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 16, "ip": 15.3, "mult": 1.0}
-    intercoolantDims = {
-        "Tinput": 25.0,
-        "Thot": hotTemp,
-        "op": 17.0,
-        "ip": ductDims["op"],
-        "mult": 1.0,
-    }
-    coolDims = {"Tinput": 25.0, "Thot": hotTemp}
     mainType = Circle(blockType, name, **fuelDims)
-    clad = Circle("clad", name, **cladDims)
+    bond = Circle("bond", "Sodium", Tinput=25.0, Thot=hotTemp, od=0.78, id=0.76, mult=127.0)
+    clad = Circle("clad", name, Tinput=25.0, Thot=hotTemp, od=0.80, id=0.78, mult=127.0)
     duct = Hexagon("duct", name, **ductDims)
 
-    coolant = DerivedShape("coolant", "Sodium", **coolDims)
-    intercoolant = Hexagon("intercoolant", "Sodium", **intercoolantDims)
+    coolant = DerivedShape("coolant", "Sodium", Tinput=25.0, Thot=hotTemp)
+    intercoolant = Hexagon(
+        "intercoolant",
+        "Sodium",
+        Tinput=25.0,
+        Thot=hotTemp,
+        op=17.0,
+        ip=ductDims["op"],
+        mult=1.0,
+    )
 
-    b.add(mainType)
+    if plenum:
+        b.add(Circle("gap", "Air", **fuelDims))
+    else:
+        b.add(mainType)
+    b.add(bond)
     b.add(clad)
     b.add(duct)
     b.add(coolant)
@@ -1043,6 +1076,7 @@ def _buildTestBlock(blockType: str, name: str, hotTemp: float, height: float):
     b.setType(blockType)
 
     b.getVolumeFractions()
+    b.completeInitialLoading()
 
     return b
 
@@ -1051,8 +1085,7 @@ def _buildDummySodium(hotTemp: float, height: float):
     """Build a dummy sodium block."""
     b = HexBlock("dummy", height=height)
 
-    sodiumDims = {"Tinput": 25.0, "Thot": hotTemp, "op": 17, "ip": 0.0, "mult": 1.0}
-    dummy = Hexagon("dummy coolant", "Sodium", **sodiumDims)
+    dummy = Hexagon("dummy coolant", "Sodium", Tinput=25.0, Thot=hotTemp, op=17, ip=0.0, mult=1.0)
 
     b.add(dummy)
     b.getVolumeFractions()

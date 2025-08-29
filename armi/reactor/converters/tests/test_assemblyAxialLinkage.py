@@ -234,11 +234,10 @@ class TestAreAxiallyLinked(AxialExpansionTestBase):
 class TestCheckOverlap(AxialExpansionTestBase):
     """Test axial linkage between components via the AssemblyAxialLinkage._checkOverlap."""
 
-    @classmethod
-    def setUpClass(cls):
+    def setUp(self):
         """Contains common dimensions for all component class types."""
-        super().setUp(cls)
-        cls.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
+        super().setUp()
+        self.common = ("test", "FakeMat", 25.0, 25.0)  # name, material, Tinput, Thot
 
     def runTest(
         self,

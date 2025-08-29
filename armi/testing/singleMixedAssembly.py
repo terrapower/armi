@@ -238,13 +238,9 @@ grids:
         geom: hex_corners_up
         symmetry: full
         lattice map: |
-          - - -  1 1 1 1
-            - - 1 1 2 1 1
-             - 1 1 2 2 1 1
-              1 1 2 2 2 1 1
-               1 1 2 2 1 1
-                1 1 2 1 1
-                 1 1 1 1
+            -  2 1
+              2 1 2
+               1 2
 """
 
 
