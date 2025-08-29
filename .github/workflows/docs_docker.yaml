@@ -30,6 +30,8 @@ jobs:
           chown -R $(whoami) /__w/armi
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Try to set up GitHub CLI
+        uses: actions4gh/setup-gh@v1
       - name: Make HTML/PDF Docs
         continue-on-error: true
         env:
@@ -49,6 +51,7 @@ jobs:
           python3.13 doc/.static/cleanup_test_results.py test_results.xml
 
           echo "Build HTML docs..."
+          apt-get install -y gh
           cd doc
           git submodule init
           git submodule update
