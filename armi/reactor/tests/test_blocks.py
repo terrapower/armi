@@ -15,6 +15,7 @@
 
 import copy
 import io
+import logging
 import math
 import os
 import shutil
@@ -40,7 +41,7 @@ from armi.reactor.flags import Flags
 from armi.reactor.tests.test_assemblies import makeTestAssembly
 from armi.testing import loadTestReactor
 from armi.testing.singleMixedAssembly import buildMixedPinAssembly
-from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.tests import ISOAA_PATH, TEST_ROOT, mockRunLogs
 from armi.utils import densityTools, hexagon, units
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 from armi.utils.units import (
@@ -2608,6 +2609,9 @@ class HexBlock_TestCase(unittest.TestCase):
         self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=True), 0.11)
         self.assertAlmostEqual(self.hexBlock.getPinPitch(cold=False), 0.11)
 
+    def test_getBlocks(self):
+        self.assertEqual(len(self.hexBlock.getBlocks()), 1)
+
 
 class MultiPinIndicesTests(unittest.TestCase):
     BP_STR = """
@@ -2992,6 +2996,16 @@ class ThRZBlock_TestCase(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             self.ThRZBlock.getPinPitch(cold=True)
+
+    def test_updateComponentDims(self):
+        with mockRunLogs.BufferLog() as mock:
+            # we should start with a clean slate, before debug logging
+            self.assertEqual("", mock.getStdout())
+            runLog.LOG.setVerbosity(logging.WARNING)
+            runLog.LOG.startLog("test_updateComponentDims")
+
+            self.ThRZBlock.updateComponentDims()
+            self.assertEqual("", mock.getStdout())
 
 
 class CartesianBlock_TestCase(unittest.TestCase):
