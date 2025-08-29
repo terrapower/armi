@@ -50,7 +50,7 @@ jobs:
           ls
           pwd
           ls ..
-          ls/
+          ls /
           echo "============================================================"
           python3.13 doc/.static/cleanup_test_results.py test_results.xml
 
