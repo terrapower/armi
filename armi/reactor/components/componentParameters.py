@@ -60,12 +60,6 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
-            "temperatureInCBOL",
-            units=units.DEGC,
-            description=f"Component temperature in {units.DEGC} at BOL",
-        )
-
-        pb.defParam(
             "numberDensities",
             setter=isNumpyArray("numberDensities"),
             units=f"#/(bn*{units.CM})",
@@ -73,24 +67,10 @@ def getComponentParameterDefinitions():
         )
 
         pb.defParam(
-            "numberDensitiesBOL",
-            setter=isNumpyArray("numberDensitiesBOL"),
-            units=f"#/(bn*{units.CM})",
-            description="Number densities of each nuclide at BOL.",
-        )
-
-        pb.defParam(
             "nuclides",
             setter=isNumpyArray("nuclides"),
             units=units.UNITLESS,
             description="Nuclide names corresponding to numberDensities array.",
-        )
-
-        pb.defParam(
-            "nuclidesBOL",
-            setter=isNumpyArray("nuclidesBOL"),
-            units=units.UNITLESS,
-            description="Nuclide names at BOL corresponding to numberDensitiesBOL array.",
         )
 
         pb.defParam(

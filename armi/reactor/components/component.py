@@ -221,6 +221,9 @@ class Component(composites.Composite, metaclass=ComponentType):
         self.setType(name)
         self.p.mergeWith = mergeWith
         self.p.customIsotopicsName = isotopics
+        self.nuclidesBOL: Union[None, np.array] = None
+        self.numberDensitiesBOL: Union[None, np.array] = None
+        self.temperatureInCBOL: Union[None, float] = None
 
     @property
     def temperatureInC(self):
