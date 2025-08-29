@@ -1130,9 +1130,7 @@ class Block(composites.Composite):
 
     def isPlenumPin(self, c):
         """Return True if the specified component is a plenum pin."""
-        # This assumes that anything with the GAP flag will have a valid 'id' dimension. If that
-        # were not the case, then we would need to protect the call to getDimension with a
-        # try/except
+        # This assumes that anything with the GAP flag will have a valid 'id' dimension.
         cIsCenterGapGap = isinstance(c, components.Component) and c.hasFlags(Flags.GAP) and c.getDimension("id") == 0
         return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
@@ -1148,19 +1146,17 @@ class Block(composites.Composite):
         Returns
         -------
         pitch : float or None
-            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch,
-            returns None
+            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch, returns None
         component : Component or None
-            Component that has the max pitch, if returnComp == True. If no component is found to
-            define the pitch, returns None
+            Component that has the max pitch, if returnComp == True. If no component is found to define the pitch,
+            returns None.
 
         Notes
         -----
-        The block stores a reference to the component that defines the pitch, making the assumption
-        that while the dimensions can change, the component containing the largest dimension will
-        not. This lets us skip the search for largest component. We still need to ask the largest
-        component for its current dimension in case its temperature changed, or was otherwise
-        modified.
+        The block stores a reference to the component that defines the pitch, making the assumption that while the
+        dimensions can change, the component containing the largest dimension will not. This lets us skip the search for
+        largest component. We still need to ask the largest component for its current dimension in case its temperature
+        changed, or was otherwise modified.
 
         See Also
         --------

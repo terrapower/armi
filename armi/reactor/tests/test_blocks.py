@@ -2011,6 +2011,21 @@ class Block_TestCase(unittest.TestCase):
         pin = self.block.getPlenumPin()
         self.assertIsNone(pin)
 
+        b = copy.deepcopy(self.block)
+        b.p.flags = Flags.fromString("plenum aclp")
+        pinDims = {
+            "Tinput": 25,
+            "Thot": 250,
+            "od": 1.0,
+            "id": 0,
+            "mult": 1,
+        }
+        pin = components.Circle("plenum pin", "HT9", **pinDims)
+        pin.p.flags = Flags.fromString("gap")
+        b.add(pin)
+        pin = b.getPlenumPin()
+        self.assertTrue(pin)
+
     def test_hasPinPitch(self):
         hasPitch = self.block.hasPinPitch()
         self.assertTrue(hasPitch)
