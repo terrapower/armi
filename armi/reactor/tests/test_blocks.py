@@ -2041,6 +2041,19 @@ class Block_TestCase(unittest.TestCase):
             {"nG": 0, "nF": 0, "n2n": 0, "nA": 0, "nP": 0, "n3n": 0},
         )
 
+    def test_getComponentsThatAreLinkedTo(self):
+        c = self.block.getFirstComponent(Flags.FUEL)
+        linked = self.block.getComponentsThatAreLinkedTo(c, "id")
+        self.assertEqual(linked[0][1], "od")
+
+        c = self.block.getFirstComponent(Flags.CLAD)
+        linked = self.block.getComponentsThatAreLinkedTo(c, "id")
+        self.assertEqual(linked[0][1], "od")
+
+        c = self.block.getFirstComponent(Flags.DUCT)
+        linked = self.block.getComponentsThatAreLinkedTo(c, "ip")
+        self.assertEqual(len(linked), 0)
+
 
 class BlockInputHeightsTests(unittest.TestCase):
     def test_foundReactor(self):
