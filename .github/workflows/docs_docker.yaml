@@ -1,4 +1,4 @@
-name: Documentation
+name: Documentation using Docker
 
 on:
   push:
@@ -12,21 +12,25 @@ concurrency:
 
 jobs:
   build:
+    runs-on: ubuntu-22.04
+    container: johnscience/armi:v5
+
+    # python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi > pytest_verbose.log
+    # mpiexec -n 2 --use-hwthread-cpus python3.13 -m pytest --junit-xml=test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
+    # mpiexec -n 2 --use-hwthread-cpus python3.13 -m pytest --junit-xml=test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
+    # mpiexec -n 2 --use-hwthread-cpus python3.13 -m pytest --junit-xml=test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
+
     # Building and deploying docs is broken on forked repos
     if: github.repository == 'terrapower/armi'
-    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.13
-      - name: Install apt-get libs
-        run: sudo apt-get -y install --fix-missing texlive-xetex=2021.20220204-1 texlive-latex-base=2021.20220204-1 texlive-fonts-recommended=2021.20220204-1 texlive-latex-extra=2021.20220204-1 texlive-full=2021.20220204-1 pandoc libopenmpi-dev
-      - name: Setup Graphviz
-        uses: ts-graphviz/setup-graphviz@v2.0.2
-      - name: Make html/pdf Docs
+      - name: Change Ownership of Directories
+        run: |
+          chown -R $(whoami) /github/home
+          chown -R $(whoami) /__w/armi
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Make HTML/PDF Docs
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -34,22 +38,24 @@ jobs:
         run: |
           echo "Installing ARMI..."
           set -x
-          #pip install -U pip
-          pip install -e .[memprof,mpi,test,docs]
+          python3.13 -m pip install -U setuptools
+          python3.13 -m pip install -e .[memprof,mpi,test,docs]
 
           echo "Run unit tests..."
-          pytest --junit-xml=/__w/armi/armi/test_results.xml -v -n 4 armi > pytest_verbose.log
+          python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_runLog.py > pytest_verbose.log
+          python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_apps.py > pytest_verbose_mpi1.log
+          python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_context.py > pytest_verbose_mpi2.log
+          python3.13 -m pytest --junit-xml=test_results.xml -v -n 4 armi/tests/test_plugins.py > pytest_verbose_mpi3.log
           echo "============================================================"
           ls
-          ls > tmp.txt
-          cat tmp.txt
+          pwd
+          ls ..
+          ls /
           echo "============================================================"
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=/__w/armi/armi/test_results_mpi1.xml armi/tests/test_mpiFeatures.py > pytest_verbose_mpi1.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=/__w/armi/armi/test_results_mpi2.xml armi/tests/test_mpiParameters.py > pytest_verbose_mpi2.log
-          mpiexec -n 2 --use-hwthread-cpus pytest --junit-xml=/__w/armi/armi/test_results_mpi3.xml armi/utils/tests/test_directoryChangersMpi.py > pytest_verbose_mpi3.log
-          python doc/.static/cleanup_test_results.py test_results.xml
+          python3.13 doc/.static/cleanup_test_results.py test_results.xml
 
           echo "Build HTML docs..."
+          apt-get install -y gh
           cd doc
           git submodule init
           git submodule update
