@@ -1022,7 +1022,7 @@ class Database:
                 data = np.array(pDef.serializer.unpack(data, dataSet.attrs[_SERIALIZER_VERSION], attrs))
 
             # nuclides are a special case where we want to keep in np.bytes_ format
-            if data.dtype.type is np.bytes_ and not re.search("[Nn]uclides", paramName):
+            if data.dtype.type is np.bytes_ and "nuclides" not in paramName.lower():
                 data = np.char.decode(data)
 
             if attrs.get("specialFormatting", False):
