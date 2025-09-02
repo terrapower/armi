@@ -54,6 +54,14 @@ class MockMpiComm:
         return self
 
 
+class MockMpiAction(MpiAction):
+    def broadcast(self, obj=None):
+        return 3
+
+    def invoke(self, o, r, cs):
+        return 7
+
+
 @unittest.skipUnless(context.MPI_RANK == 0, "test only on root node")
 class MpiIterTests(unittest.TestCase):
     def setUp(self):
@@ -186,6 +194,9 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Scanning all blocks", mock.getStdout())
             self.assertIn("Scanning blocks by name", mock.getStdout())
             self.assertIn("Scanning the ISOTXS library", mock.getStdout())
+
+    def test_invokeAsMaster(self):
+        self.assertEqual(7, MockMpiAction.invokeAsMaster(1, 2, 3))
 
 
 class QueueActionsTests(unittest.TestCase):
