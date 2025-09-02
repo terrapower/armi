@@ -744,6 +744,36 @@ class TestCompositeTree(unittest.TestCase):
         places = 6
         self.assertAlmostEqual(cur, ref, places=places)
 
+    def test_setMassFrac(self):
+        # build test component
+        c = DummyComposite("test_setMassFrac")
+        c.getHeight = lambda: 1.0
+
+        fuelDims = {"Tinput": 273.0, "Thot": 273.0, "od": 0.76, "id": 0.0, "mult": 1.0}
+        fuelComponent = components.Circle("fuel", "UZr", **fuelDims)
+        c.add(fuelComponent)
+
+        # test initial state
+        self.assertEqual(c.getFPMass(), 0.0)
+        self.assertAlmostEqual(c.getHMMass(), 6.468105962375698, delta=1e-6)
+        self.assertAlmostEqual(c.getMass(), 7.186784402639664, delta=1e-6)
+
+        # use setMassFrac
+        c.setMassFrac("U235", 0.99)
+        c.setMassFrac("U238", 0.01)
+
+        # test new state
+        self.assertEqual(c.getFPMass(), 0.0)
+        self.assertAlmostEqual(c.getHMMass(), 7.178895593948443, delta=1e-6)
+        self.assertAlmostEqual(c.getMass(), 7.186784402639666, delta=1e-6)
+
+        # test edge case were zero density
+        for nucName in c.getMassFracs().keys():
+            c.setNumberDensity(nucName, 0.0)
+
+        with self.assertRaises(ValueError):
+            c.setMassFrac("U235", 0.98)
+
     def test_getFissileMass(self):
         cur = self.block.getFissileMass()
 
