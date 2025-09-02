@@ -639,6 +639,21 @@ class TestCompositeTree(unittest.TestCase):
         with self.assertRaises(ValueError):
             otherBlock < self.block
 
+    def test_getAncestorWithFlags(self):
+        c = self.block.getAncestorWithFlags(Flags.FUEL)
+        self.assertIsNone(c)
+
+        comp = self.block.getFirstComponent()
+        c = comp.getAncestorWithFlags(Flags.FUEL)
+        self.assertIsNone(c)
+
+        compos = self.block.getChildrenWithFlags(Flags.FUEL)[0]
+        compon = compos.getFirstComponent()
+        c = compon.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(c, compon)
+        c = compos.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(c, compos)
+
     def test_summing(self):
         a = assemblies.Assembly("dummy")
         a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
