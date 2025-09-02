@@ -614,6 +614,7 @@ class TestDatabaseSmaller(unittest.TestCase):
         self.db = self.dbi.database
 
     def test_open(self):
+        self.assertTrue(self.db.isOpen())
         with self.assertRaises(ValueError):
             self.db.open()
 
@@ -675,7 +676,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             r.p.cycleLength = sum(cyclesSetting[cycle]["step days"])
             r.core.p.power = ratedPower * cyclesSetting[cycle]["power fractions"][node]
             db.writeToDB(r)
+        self.assertTrue(db.isOpen())
         db.close()
+        self.assertFalse(db.isOpen())
 
         self.dbi.prepRestartRun()
 
@@ -710,7 +713,9 @@ class TestDatabaseSmaller(unittest.TestCase):
             r.p.timeNode = node
             r.p.cycleLength = 2000
             db.writeToDB(r)
+        self.assertTrue(db.isOpen())
         db.close()
+        self.assertFalse(db.isOpen())
 
         with self.assertRaises(ValueError):
             self.dbi.prepRestartRun()
