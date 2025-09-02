@@ -86,6 +86,14 @@ class AxialExpansionChanger:
     expansionData: typing.Optional[ExpansionData]
     topMostBlock: typing.Optional["Block"]
 
+    # 3cm is a presumptive lower threshold for DIF3D
+    DIF3D_MIN_BLOCK_HEIGHT: float = 3.0
+    # when checking the diffference between the component and block heights, 1e-12 cm is used as a threshold to account
+    # for meaningful differences. This threshold filters out negligible differences arising from numerical precision
+    # that otherwise have a negliglble impact on the assembly post-axial expansion. Anything larger than this value is
+    # presumed to be valid of a warning that may warrant further investigation.
+    COMP_BLOCK_HEIGHT_DIFF_THRESHOLD: float = 1e-12
+
     def __init__(self, detailedAxialExpansion: bool = False):
         """
         Build an axial expansion converter.
@@ -496,21 +504,15 @@ class AxialExpansionChanger:
             raise ArithmeticError(dedent(msg))
 
     def _checkBlockHeight(self, b):
-        """
-        Do some basic block height validation.
-
-        Notes
-        -----
-        3cm is a presumptive lower threshold for DIF3D
-        """
-        if b.getHeight() < 3.0:
+        """Do some basic block height validation."""
+        if b.getHeight() < self.DIF3D_MIN_BLOCK_HEIGHT:
             runLog.debug(f"Block {b.name} ({str(b.p.flags)}) has a height less than 3.0 cm. ({b.getHeight():.12e})")
 
         if b.getHeight() < 0.0:
             raise ArithmeticError(f"Block {b.name} ({str(b.p.flags)}) has a negative height! ({b.getHeight():.12e})")
 
         for c in iterSolidComponents(b):
-            if c.height - b.getHeight() > 1e-12:
+            if c.height - b.getHeight() > self.COMP_BLOCK_HEIGHT_DIFF_THRESHOLD:
                 diff = c.height - b.getHeight()
                 expectedChange = "increase" if diff < 0.0 else "decrease"
                 if c.hasFlags(Flags.FUEL) or c.hasFlags(Flags.CONTROL):
