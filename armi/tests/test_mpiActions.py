@@ -55,6 +55,8 @@ class MockMpiComm:
 
 
 class MockMpiAction(MpiAction):
+    """Mock MPI Action, to simplify tests."""
+
     def broadcast(self, obj=None):
         return 3
 
@@ -153,7 +155,6 @@ class MpiIterTests(unittest.TestCase):
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
     def test_runActionsDistributionAction(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
@@ -162,9 +163,12 @@ class MpiIterTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
+        o.cs["verbosity"] = "debug"
+        res = act.invokeHook()
+        self.assertIsNone(res)
+
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
     def test_runActionsDistributeStateAction(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
@@ -175,7 +179,6 @@ class MpiIterTests(unittest.TestCase):
 
     @patch("armi.context.MPI_COMM", MockMpiComm())
     @patch("armi.context.MPI_SIZE", 4)
-    @patch("armi.context.MPI_RANK", 0)
     @patch("armi.context.MPI_DISTRIBUTABLE", True)
     def test_runActionsDistStateActionParallel(self):
         o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
