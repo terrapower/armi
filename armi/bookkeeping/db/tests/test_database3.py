@@ -125,22 +125,28 @@ class TestDatabase(unittest.TestCase):
         with self.assertRaises(KeyError):
             _r = self.db.load(0, 0)
 
-        # default load, should pass without error
+        # Default load, should pass without error
         _r = self.db.load(0, 0, allowMissing=True)
 
-        # show that we can use negative indices to load
+        # Show that we can use negative indices to load
         r = self.db.load(0, -2, allowMissing=True)
         self.assertEqual(r.p.timeNode, 1)
 
         with self.assertRaises(ValueError):
-            # makeShuffleHistory only populates 2 nodes, but the case settings
-            # defines 3, so we must check -4 before getting an error
+            # makeShuffleHistory only populates 2 nodes, but the case settings defines 3, so we must check -4 before
+            # getting an error
             self.db.load(0, -4, allowMissing=True)
 
+        # show we can delete a specify H5 key.
         del self.db.h5db["c00n00/Reactor/missingParam"]
         _r = self.db.load(0, 0, allowMissing=False)
 
-        # we shouldn't be able to set the fileName if a file is open
+        # show we can delete an entire time now from the DB.
+        del self.db[0, 0, ""]
+        with self.assertRaises(KeyError):
+            self.db.load(0, 0, allowMissing=False)
+
+        # We should not be able to set the fileName if a file is open.
         with self.assertRaises(RuntimeError):
             self.db.fileName = "whatever.h5"
 
@@ -457,8 +463,8 @@ class TestDatabaseSmaller(unittest.TestCase):
             },
         )
 
-        db_path = "restartDB.h5"
-        db2 = Database(db_path, "w")
+        dbPath = "restartDB.h5"
+        db2 = Database(dbPath, "w")
         with db2:
             db2.mergeHistory(self.db, 2, 2)
             self.r.p.cycle = 1
@@ -935,3 +941,16 @@ grids:
         with self.assertRaises(ValueError):
             with Database(self.db.fileName, "r") as db:
                 _r = db.load(0, 0, allowMissing=True)
+
+
+class TestSimplestDatabaseItems(unittest.TestCase):
+    """The tests here are simple, direct tests of Database, that don't need a DatabaseInterface or Reactor."""
+
+    def test_open(self):
+        dbPath = "test_open.h5"
+        db0 = Database(dbPath, "w")
+
+        self.assertFalse(db0.isOpen())
+        db0._permission = "mock"
+        with self.assertRaises(ValueError):
+            db0.open()
