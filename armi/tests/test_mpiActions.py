@@ -173,6 +173,18 @@ class MpiIterTests(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertIsNone(results[0])
 
+    @patch("armi.context.MPI_COMM", MockMpiComm())
+    @patch("armi.context.MPI_SIZE", 4)
+    @patch("armi.context.MPI_RANK", 0)
+    @patch("armi.context.MPI_DISTRIBUTABLE", True)
+    def test_runActionsDistStateActionParallel(self):
+        o, r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
+
+        act = DistributeStateAction([self.action])
+        results = runActions(o, r, o.cs, [act])
+        self.assertEqual(len(results), 1)
+        self.assertIsNone(results[0])
+
     def test_diagnosePickleErrorTestReactor(self):
         """Run _diagnosePickleError() on the test reactor.
 
