@@ -630,6 +630,15 @@ class TestCompositeTree(unittest.TestCase):
         otherBlock.spatialLocator = locator
         self.assertTrue(otherBlock < self.block)
 
+        # test some edge cases
+        otherBlock.spatialLocator._grid = None
+        with self.assertRaises(ValueError):
+            otherBlock < self.block
+
+        otherBlock.spatialLocator = None
+        with self.assertRaises(ValueError):
+            otherBlock < self.block
+
     def test_summing(self):
         a = assemblies.Assembly("dummy")
         a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
