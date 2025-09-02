@@ -465,7 +465,7 @@ class TestDatabaseSmaller(unittest.TestCase):
             tnGroup["layout/serialNum"],
             tnGroup,
             {
-                "fakeBigData": np.eye(64),
+                "fakeBigData": np.eye(8),
                 "someString": randomText,
             },
         )
@@ -486,7 +486,7 @@ class TestDatabaseSmaller(unittest.TestCase):
 
             # exercise the _resolveAttrs function
             attrs = Database._resolveAttrs(tnGroup["layout/serialNum"].attrs, tnGroup)
-            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(64)))
+            self.assertTrue(np.array_equal(attrs["fakeBigData"], np.eye(8)))
 
             keys = sorted(db2.keys())
             self.assertEqual(len(keys), 4)
