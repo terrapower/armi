@@ -429,9 +429,8 @@ class Database:
         """
         Write inputs into the database based the Settings.
 
-        This is not DRY on purpose. The goal is that any particular Database implementation should
-        be very stable, so we dont want it to be easy to change one Database implementation's
-        behavior when trying to change another's.
+        This is not DRY on purpose. The goal is that any particular Database implementation should be very stable, so we
+        dont want it to be easy to change one Database implementation's behavior when trying to change another's.
 
         .. impl:: The run settings are saved the settings file.
             :id: I_ARMI_DB_CS
@@ -491,9 +490,8 @@ class Database:
 
         Notes
         -----
-        This is used for restart runs with the standard operator for example. The current time step
-        (being loaded from) should not be copied, as that time steps data will be written at the end
-        of the time step.
+        This is used for restart runs with the standard operator for example. The current time step (being loaded from)
+        should not be copied, as that time steps data will be written at the end of the time step.
         """
         # iterate over the top level H5Groups and copy
         for time, h5ts in zip(inputDB.genTimeSteps(), inputDB.genTimeStepGroups()):
@@ -597,8 +595,7 @@ class Database:
         """
         Get the H5Group for the current ARMI timestep.
 
-        This method can be used to allow other interfaces to place data into the database at the
-        correct timestep.
+        This method can be used to allow other interfaces to place data into the database at the correct timestep.
         """
         groupName = getH5GroupName(r.p.cycle, r.p.timeNode, statePointName)
         if groupName in self.h5db:
@@ -677,8 +674,7 @@ class Database:
             place in time you want to load the reactor from. (That is, the cycle and node numbers.)
             Users can either pass the settings and blueprints directly into this method, or it will
             attempt to read them from the database file. The primary work done here is to read the
-            hierarchy of reactor objects from the data file, then reconstruct them in the correct
-            order.
+            hierarchy of reactor objects from the data file, then reconstruct them in the correct order.
 
         Parameters
         ----------
@@ -867,9 +863,8 @@ class Database:
         c = comps[0]
         groupName = c.__class__.__name__
         if groupName not in h5group:
-            # Only create the group if it doesn't already exist. This happens when
-            # re-writing params in the same time node (e.g. something changed between
-            # EveryNode and EOC)
+            # Only create the group if it doesn't already exist. This happens when re-writing params in the same time
+            # node (e.g. something changed between EveryNode and EOC)
             g = h5group.create_group(groupName, track_order=True)
         else:
             g = h5group[groupName]
@@ -927,16 +922,14 @@ class Database:
                     data = data.astype("S")
 
                 if data.dtype.kind == "O":
-                    # Something was added to the data array that caused np to want to
-                    # treat it as a general-purpose Object array. This usually happens
-                    # because:
+                    # Something was added to the data array that caused np to want to treat it as a general-purpose
+                    # Object array. This usually happens because:
                     # - the data contain NoDefaults
                     # - the data contain one or more Nones,
                     # - the data contain special types like tuples, dicts, etc
                     # - there is some sort of honest-to-goodness weird object
-                    # We want to support the first two cases with minimal intrusion, since
-                    # these should be pretty easy to faithfully represent in the db.
-                    # The last case isn't really worth supporting.
+                    # We want to support the first two cases with minimal intrusion, since these should be pretty easy
+                    # to faithfully represent in the db. The last case isn't really worth supporting.
 
                     if parameters.NoDefault in data:
                         data = None
@@ -949,15 +942,13 @@ class Database:
 
             try:
                 if paramDef.name in g:
-                    raise ValueError(
-                        "`{}` was already in `{}`. This time node should have been empty".format(paramDef.name, g)
-                    )
+                    raise ValueError(f"`{paramDef.name}` was already in `{g}`. This time node should have been empty")
 
                 dataset = g.create_dataset(paramDef.name, data=data, compression="gzip", track_order=True)
                 if any(attrs):
                     Database._writeAttrs(dataset, h5group, attrs)
             except Exception:
-                runLog.error("Failed to write {} to database. Data: {}".format(paramDef.name, data))
+                runLog.error(f"Failed to write {paramDef.name} to database. Data: {data}")
                 raise
         if isinstance(c, Block):
             self._addHomogenizedNumberDensityParams(comps, g)

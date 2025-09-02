@@ -455,8 +455,8 @@ class TestDatabaseSmaller(unittest.TestCase):
     def test_mergeHistory(self):
         self.makeHistory()
 
-        # put some big data in an HDF5 attribute. This will exercise the code that pulls
-        # such attributes into a formal dataset and a reference.
+        # put some big data in an HDF5 attribute. This will exercise the code that pulls such attributes into a formal
+        # dataset and a reference.
         self.r.p.cycle = 1
         self.r.p.timeNode = 0
         tnGroup = self.db.getH5Group(self.r)
@@ -955,9 +955,9 @@ class TestSimplestDatabaseItems(unittest.TestCase):
 
     def test_open(self):
         dbPath = "test_open.h5"
-        db0 = Database(dbPath, "w")
+        db = Database(dbPath, "w")
 
-        self.assertFalse(db0.isOpen())
-        db0._permission = "mock"
+        self.assertFalse(db.isOpen())
+        db._permission = "mock"
         with self.assertRaises(ValueError):
-            db0.open()
+            db.open()
