@@ -159,7 +159,7 @@ def getAssemblyParameterDefinitions():
             setter=_enforceNotesRestrictions,
         )
 
-    with pDefs.createBuilder(location="N/A", default=0.0, categories=["control rods"]) as pb:
+    with pDefs.createBuilder(location=ParamLocation.NA, default=0.0, categories=["control rods"]) as pb:
         pb.defParam(
             "crCriticalFraction",
             units=units.UNITLESS,
