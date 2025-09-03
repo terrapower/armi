@@ -18,7 +18,7 @@ import math
 import pathlib
 import random
 import unittest
-from unittest.mock import PropertyMock, patch
+from unittest.mock import patch
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -326,9 +326,7 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_scaleParamsWhenMoved(self):
         """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
-        with patch.object(
-            self.assembly.p.paramDefs["chargeFis"], "location", ParamLocation.VOLUME_INTEGRATED
-        ) as mock_assemblyParameterLocation:
+        with patch.object(self.assembly.p.paramDefs["chargeFis"], "location", ParamLocation.VOLUME_INTEGRATED):
             # patch makes all the parameters look volume integrated
             assemblyParams = {"chargeFis": 6.0, "chargeTime": 2}
             blockParams = {
