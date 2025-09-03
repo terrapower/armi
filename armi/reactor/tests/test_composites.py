@@ -513,6 +513,10 @@ class TestCompositePattern(unittest.TestCase):
         self.assertIs(c, c0)
         self.assertIsInstance(c0, composites.Composite)
 
+        # covering edge case: someone passes in a flag that doesn't exist on on the object
+        with self.assertRaises(ValueError):
+            b.getFirstComponent(typeSpec=Flags.POISON)
+
     def test_syncParameters(self):
         data = [{"serialNum": 123}, {"flags": "FAKE"}]
         numSynced = self.container._syncParameters(data, {})
