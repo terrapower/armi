@@ -654,6 +654,24 @@ class TestCompositeTree(unittest.TestCase):
         c = compos.getAncestorWithFlags(Flags.FUEL)
         self.assertEqual(c, compos)
 
+    def test_changeNDensByFactor(self):
+        c = deepcopy(self.block.getComponents(Flags.FUEL)[0])
+
+        # test inital state
+        dens = c.getNumberDensities()
+        self.assertAlmostEqual(dens["ZR"], 0.03302903991506813, delta=1e-6)
+        self.assertAlmostEqual(dens["U235"], 0.012819005788784095, delta=1e-6)
+        self.assertAlmostEqual(dens["U238"], 0.10125669470078642, delta=1e-6)
+
+        # change N dens
+        c.changeNDensByFactor(0.5)
+
+        # test new state
+        dens = c.getNumberDensities()
+        self.assertAlmostEqual(dens["ZR"], 0.03302903991506813 / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["U235"], 0.012819005788784095 / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["U238"], 0.10125669470078642 / 2, delta=1e-6)
+
     def test_summing(self):
         a = assemblies.Assembly("dummy")
         a.spatialGrid = grids.AxialGrid.fromNCells(2, armiObject=a)
