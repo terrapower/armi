@@ -44,7 +44,8 @@ class TestPlotting(unittest.TestCase):
     def setUpClass(cls):
         cls.o, cls.r = test_reactors.loadTestReactor(inputFileName="smallestTestReactor/armiRunSmallest.yaml")
 
-    def test_plotDepthMap(self):  # indirectly tests plot face map
+    def test_plotDepthMap(self):
+        """Indirectly tests plot face map."""
         with TemporaryDirectoryChanger():
             # set some params to visualize
             for i, b in enumerate(self.o.r.core.iterBlocks()):
@@ -56,6 +57,26 @@ class TestPlotting(unittest.TestCase):
             with self.assertRaises(ValueError):
                 r = getEmptyHexReactor()
                 plotting.plotBlockDepthMap(r.core)
+
+    def test_plotFaceMap(self):
+        """Indirectly tests plot face map."""
+        with TemporaryDirectoryChanger():
+            for i, b in enumerate(self.o.r.core.iterBlocks()):
+                b.p.percentBu = i / 100
+
+            # make sure some of the plot files exist
+            fName = plotting.plotFaceMap(self.r.core, param="percentBu", fName="faceMapPlot0.png", makeColorBar=True)
+            self._checkFileExists(fName)
+
+            fName = plotting.plotFaceMap(self.r.core, param="percentBu", fName="faceMapPlot1.png", vals="average")
+            self._checkFileExists(fName)
+
+            # catch an edge case error (bad val name)
+            with self.assertRaises(ValueError):
+                plotting.plotFaceMap(self.r.core, param="percentBu", fName="faceMapPlot2.png", vals="whoops")
+
+            # this should not throw an error
+            plotting.close()
 
     def test_plotAssemblyTypes(self):
         with TemporaryDirectoryChanger():
