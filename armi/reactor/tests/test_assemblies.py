@@ -18,6 +18,7 @@ import math
 import pathlib
 import random
 import unittest
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 from numpy.testing import assert_allclose
@@ -43,6 +44,7 @@ from armi.reactor.assemblies import (
     grids,
     runLog,
 )
+from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.tests import TEST_ROOT, mockRunLogs
 from armi.utils import directoryChangers, textProcessors
@@ -324,30 +326,38 @@ class Assembly_TestCase(unittest.TestCase):
 
     def test_scaleParamsWhenMoved(self):
         """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
-        blockParams = {
-            # volume integrated parameters
-            "massHmBOL": 9.0,
-            "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
-            "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
-            "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
-        }
-        for b in self.assembly.iterBlocks(Flags.FUEL):
-            b.p.update(blockParams)
+        with patch.object(
+            self.assembly.p.paramDefs["chargeFis"], "location", ParamLocation.VOLUME_INTEGRATED
+        ) as mock_assemblyParameterLocation:
+            # patch makes all the parameters look volume integrated
+            assemblyParams = {"chargeFis": 6.0, "chargeTime": 2}
+            blockParams = {
+                # volume integrated parameters
+                "massHmBOL": 9.0,
+                "molesHmBOL": np.array([[1, 2, 3], [4, 5, 6]]),  # ndarray for testing
+                "adjMgFlux": [1, 2, 3],  # Should normally be an ndarray, list for testing
+                "lastMgFlux": "foo",  # Should normally be an ndarray, str for testing
+            }
+            self.assembly.p.update(assemblyParams)
+            for b in self.assembly.iterBlocks(Flags.FUEL):
+                b.p.update(blockParams)
 
-        i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
-        locator = self.r.core.spatialGrid[i, j, 0]
-        self.assertEqual(self.assembly.getSymmetryFactor(), 1)
-        self.assembly.moveTo(locator)
-        self.assertEqual(self.assembly.getSymmetryFactor(), 3)
-        for b in self.assembly.iterBlocks(Flags.FUEL):
-            # float
-            assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
-            # np.ndarray
-            assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
-            # list
-            assert_allclose(np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3)
-            # string
-            self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
+            i, j = grids.HexGrid.getIndicesFromRingAndPos(1, 1)
+            locator = self.r.core.spatialGrid[i, j, 0]
+            self.assertEqual(self.assembly.getSymmetryFactor(), 1)
+            self.assembly.moveTo(locator)
+            self.assertEqual(self.assembly.getSymmetryFactor(), 3)
+            for b in self.assembly.iterBlocks(Flags.FUEL):
+                # float
+                assert_allclose(b.p["massHmBOL"] / blockParams["massHmBOL"], 1 / 3)
+                # np.ndarray
+                assert_allclose(b.p["molesHmBOL"] / blockParams["molesHmBOL"], 1 / 3)
+                # list
+                assert_allclose(np.array(b.p["adjMgFlux"]) / np.array(blockParams["adjMgFlux"]), 1 / 3)
+                # string
+                self.assertEqual(b.p["lastMgFlux"], blockParams["lastMgFlux"])
+            self.assertEqual(self.assembly.p["chargeFis"] / assemblyParams["chargeFis"], 1 / 3)
+            self.assertEqual(self.assembly.p["chargeTime"] / assemblyParams["chargeTime"], 1)
 
     def test_getName(self):
         cur = self.assembly.getName()
