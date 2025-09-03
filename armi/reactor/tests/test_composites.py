@@ -336,6 +336,24 @@ class TestCompositePattern(unittest.TestCase):
             self.assertTrue(self.container.hasFlags(t))
             self.assertFalse(self.container.hasFlags(t, exact=True))
 
+    def test_calcTotalParam(self):
+        refMinTotal = 21.0
+        kids = self.container.getChildren()
+
+        tot = self.container.calcTotalParam("serialNum", kids)
+        self.assertGreaterEqual(tot, refMinTotal)
+
+        tot = self.container.calcTotalParam("serialNum", kids, calcBasedOnFullObj=True)
+        self.assertGreaterEqual(tot, refMinTotal)
+
+        tot = self.container.calcTotalParam("serialNum", kids, typeSpec=Flags.FUEL)
+        self.assertEqual(tot, 0.0)
+
+        with self.assertRaises(ValueError):
+            self.container.calcTotalParam(
+                "power", self.container.getChildren(), addSymmetricPositions=True, calcBasedOnFullObj=True
+            )
+
     def test_getBoundingCirlceOuterDiameter(self):
         od = self.container.getBoundingCircleOuterDiameter()
         self.assertAlmostEqual(od, len(list(self.container.iterComponents())))
