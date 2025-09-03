@@ -1615,6 +1615,18 @@ class Block(composites.Composite):
 
         raise AttributeError(f"No ancestor of {self} has blueprints")
 
+    def sort(self):
+        """Sort the children on this block.
+
+        If there is a spatial grid, the previous pin indices on the components
+        is now invalid because the ordering of :meth:`getPinLocations` has maybe
+        changed since the ordering of components has changed. Reassign the pin
+        indices via :meth:`assignPinIndices` accordingly.
+        """
+        super().sort()
+        if self.spatialGrid is not None:
+            self.assignPinIndices()
+
 
 class HexBlock(Block):
     """
