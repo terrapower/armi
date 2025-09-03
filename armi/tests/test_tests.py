@@ -21,17 +21,17 @@ from armi import tests
 
 class TestCompareFiles(unittest.TestCase):
     def test_compareFileLine(self):
-        expected = "oh look, a number! 3.14 and some text and another number 1.5"
+        expected = "oh look, a number! 3.14 and some text and another number 1.5 and another 0.0"
 
         self.assertTrue(tests.ArmiTestHelper.compareLines(expected, expected))
         self.assertTrue(tests.ArmiTestHelper.compareLines(expected, expected, eps=0.01))
 
-        actual = "oh look, a number! 3.15 and some text and another number 1.6  "
+        actual = "oh look, a number! 3.15 and some text and another number 1.6 and another 0.0  "
         self.assertFalse(tests.ArmiTestHelper.compareLines(expected, actual, eps=0.04))
         self.assertTrue(tests.ArmiTestHelper.compareLines(expected, actual, eps=0.07))
 
-        actual = "oh look, a number! 3.15 and some text and another number 1.6 extra"
+        actual = "oh look, a number! 3.15 and some text and another number 1.6 extra and another 0.0"
         self.assertFalse(tests.ArmiTestHelper.compareLines(expected, actual, eps=0.04))
 
-        actual = "oh look, a number! notANumber and some text and another number 1.5"
+        actual = "oh look, a number! notANumber and some text and another number 1.5 and another 0.0"
         self.assertFalse(tests.ArmiTestHelper.compareLines(expected, actual, eps=0.04))
