@@ -31,6 +31,7 @@ import copy
 import math
 import operator
 import os
+from typing import TYPE_CHECKING, Union
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -56,6 +57,11 @@ from armi.reactor.parameters import (
     ParamLocation,
 )
 from armi.utils import hexagon, plotting, units
+
+if TYPE_CHECKING:
+    from armi.reactor import Core
+    from armi.reactor.assemblies import Assembly
+    from armi.reactor.blocks import Block
 
 BLOCK_AXIAL_MESH_SPACING = 20  # Block axial mesh spacing set for nodal diffusion calculation (cm)
 STR_SPACE = " "
@@ -1112,24 +1118,27 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     def __init__(self, cs=None):
         GeometryChanger.__init__(self, cs)
-        self.listOfVolIntegratedParamsToScale = []
+        self.listOfCoreVolIntegratedParamsToScale = []
+        self.listOfAssemblyVolIntegratedParamsToScale = []
+        self.listOfBlockVolIntegratedParamsToScale = []
 
-    def _scaleBlockVolIntegratedParams(self, b, direction):
+    @staticmethod
+    def _scaleVolIntegratedParams(obj, paramList, direction):
         if direction == "up":
             op = operator.mul
         elif direction == "down":
             op = operator.truediv
 
-        for param in self.listOfVolIntegratedParamsToScale:
-            if b.p[param] is None:
+        for param in paramList:
+            if obj.p[param] is None:
                 continue
-            if type(b.p[param]) is list:
+            if type(obj.p[param]) is list:
                 # some params like volume-integrated mg flux are lists
-                b.p[param] = [op(val, 3) for val in b.p[param]]
+                obj.p[param] = [op(val, 3) for val in obj.p[param]]
             else:
-                b.p[param] = op(b.p[param], 3)
+                obj.p[param] = op(obj.p[param], 3)
 
-    def convert(self, r):
+    def convert(self, r: reactors.Reactor):
         """
         Run the conversion.
 
@@ -1206,15 +1215,24 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             if a.getLocation() == "001-001":
                 runLog.extra(f"Modifying parameters in central assembly {a} to convert from 1/3 to full core")
 
-                if not self.listOfVolIntegratedParamsToScale:
+                if not self.listOfBlockVolIntegratedParamsToScale:
                     # populate the list with all parameters that are VOLUME_INTEGRATED
                     (
-                        self.listOfVolIntegratedParamsToScale,
+                        self.listOfBlockVolIntegratedParamsToScale,
                         _,
-                    ) = _generateListOfParamsToScale(self._sourceReactor.core, paramsToScaleSubset=[])
-
+                    ) = _generateListOfParamsToScale(self._sourceReactor.core.getFirstBlock(), paramsToScaleSubset=[])
+                if not self.listOfAssemblyVolIntegratedParamsToScale:
+                    (self.listOfAssemblyVolIntegratedParamsToScale, _) = _generateListOfParamsToScale(
+                        self._sourceReactor.core.getFirstAssembly(), paramsToScaleSubset=[]
+                    )
+                if not self.listOfCoreVolIntegratedParamsToScale:
+                    (self.listOfCoreVolIntegratedParamsToScale, _) = _generateListOfParamsToScale(
+                        self._sourceReactor.core, paramsToScaleSubset=[]
+                    )
+                self._scaleVolIntegratedParams(a, self.listOfAssemblyVolIntegratedParamsToScale, "up")
                 for b in a:
-                    self._scaleBlockVolIntegratedParams(b, "up")
+                    self._scaleVolIntegratedParams(b, self.listOfBlockVolIntegratedParamsToScale, "up")
+        self._scaleVolIntegratedParams(self._sourceReactor.core, self.listOfCoreVolIntegratedParamsToScale, "up")
 
         # set domain after expanding, because it isn't actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
@@ -1246,8 +1264,10 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # change the central assembly params back to 1/3
             a = r.core.getAssemblyWithStringLocation("001-001")
             runLog.extra(f"Modifying parameters in central assembly {a} to revert from full to 1/3 core")
+            self._scaleVolIntegratedParams(r.core, self.listOfCoreVolIntegratedParamsToScale, "down")
+            self._scaleVolIntegratedParams(a, self.listOfAssemblyVolIntegratedParamsToScale, "down")
             for b in a:
-                self._scaleBlockVolIntegratedParams(b, "down")
+                self._scaleVolIntegratedParams(b, self.listOfBlockVolIntegratedParamsToScale, "down")
         self.reset()
 
 
@@ -1369,7 +1389,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         self.reset()
 
     @staticmethod
-    def scaleParamsRelatedToSymmetry(core, paramsToScaleSubset=None):
+    def scaleParamsRelatedToSymmetry(core: reactors.Core, paramsToScaleSubset=None):
         """
         Scale volume-dependent params like power to account for cut-off edges.
 
@@ -1383,7 +1403,7 @@ class EdgeAssemblyChanger(GeometryChanger):
         armi.reactor.blocks.HexBlock.getSymmetryFactor
         """
         runLog.extra("Scaling edge-assembly parameters to account for full hexes instead of two halves")
-        completeListOfParamsToScale = _generateListOfParamsToScale(core, paramsToScaleSubset)
+        completeListOfBlockParamsToScale = _generateListOfParamsToScale(core.getFirstBlock(), paramsToScaleSubset)
         symmetricAssems = (
             core.getAssembliesOnSymmetryLine(grids.BOUNDARY_0_DEGREES),
             core.getAssembliesOnSymmetryLine(grids.BOUNDARY_120_DEGREES),
@@ -1393,20 +1413,15 @@ class EdgeAssemblyChanger(GeometryChanger):
 
         for a, aSymmetric in zip(*symmetricAssems):
             for b, bSymmetric in zip(a, aSymmetric):
-                _scaleParamsInBlock(b, bSymmetric, completeListOfParamsToScale)
+                _scaleParamsInBlock(b, bSymmetric, completeListOfBlockParamsToScale)
 
 
-def _generateListOfParamsToScale(core, paramsToScaleSubset):
+def _generateListOfParamsToScale(obj: Union["Core", "Assembly", "Block"], paramsToScaleSubset):
     fluxParamsToScale = (
-        core.getFirstBlock()
-        .p.paramDefs.inCategory(Category.fluxQuantities)
-        .inCategory(Category.multiGroupQuantities)
-        .names
+        obj.p.paramDefs.inCategory(Category.fluxQuantities).inCategory(Category.multiGroupQuantities).names
     )
-    listOfVolumeIntegratedParamsToScale = (
-        core.getFirstBlock()
-        .p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED)
-        .since(SINCE_LAST_GEOMETRY_TRANSFORMATION)
+    listOfVolumeIntegratedParamsToScale = obj.p.paramDefs.atLocation(ParamLocation.VOLUME_INTEGRATED).since(
+        SINCE_LAST_GEOMETRY_TRANSFORMATION
     )
     listOfVolumeIntegratedParamsToScale = listOfVolumeIntegratedParamsToScale.names
     if paramsToScaleSubset:
