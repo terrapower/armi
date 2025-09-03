@@ -25,7 +25,7 @@ from armi.nuclearDataIO.cccc import isotxs
 from armi.reactor import blueprints, reactors
 from armi.reactor.flags import Flags
 from armi.reactor.tests import test_reactors
-from armi.tests import ISOAA_PATH, TEST_ROOT
+from armi.tests import ISOAA_PATH, TEST_ROOT, getEmptyHexReactor
 from armi.utils import plotting
 from armi.utils.directoryChangers import TemporaryDirectoryChanger
 
@@ -36,9 +36,8 @@ class TestPlotting(unittest.TestCase):
 
     Notes
     -----
-    These tests don't do a great job of making sure the plot appears correctly,
-    but they do check that the lines of code run, and that an image is produced, and
-    demonstrate how they are meant to be called.
+    These tests don't do a great job of making sure the plot appears correctly, but they do check that the lines of code
+    run, and that an image is produced, and demonstrate how they are meant to be called.
     """
 
     @classmethod
@@ -52,6 +51,11 @@ class TestPlotting(unittest.TestCase):
                 b.p.percentBu = i / 100
             fName = plotting.plotBlockDepthMap(self.r.core, param="percentBu", fName="depthMapPlot.png", depthIndex=2)
             self._checkFileExists(fName)
+
+            # catch an edge case error (no matching assemblies)
+            with self.assertRaises(ValueError):
+                r = getEmptyHexReactor()
+                plotting.plotBlockDepthMap(r.core)
 
     def test_plotAssemblyTypes(self):
         with TemporaryDirectoryChanger():
@@ -185,7 +189,6 @@ class TestPatches(unittest.TestCase):
         patches = plotting._makeAssemPatches(rCartesian.core)
         self.assertEqual(nAssems, len(patches))
 
-        # just pick a given patch and ensure that it is square-like. orientation
-        # is not important here.
+        # Just pick a given patch and ensure that it is square-like. Orientation is not important here.
         vertices = patches[0].get_verts()
         self.assertEqual(len(vertices), 5)
