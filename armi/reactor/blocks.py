@@ -31,6 +31,7 @@ import numpy as np
 
 from armi import nuclideBases, runLog
 from armi.bookkeeping import report
+from armi.nucDirectory import nucDir
 from armi.nuclearDataIO import xsCollections
 from armi.physics.neutronics import GAMMA, NEUTRON
 from armi.reactor import (
@@ -747,6 +748,10 @@ class Block(composites.Composite):
             if isinstance(child, components.Component):
                 child.p.massHmBOL = hmMass
                 child.p.molesHmBOL = child.getHMMoles()
+                if child.p.molesHmBOL:
+                    child.p.hmNuclidesBOL = [nuc for nuc in child.p.nuclides if nucDir.isHeavyMetal(nuc.decode())]
+                    child.p.hmNumberDensitiesBOL = child.getNuclideNumberDensities(child.p.hmNuclidesBOL)
+                    child.p.temperatureInCBOL = child.temperatureInC
 
         self.p.massHmBOL = massHmBOL
 
@@ -1130,9 +1135,7 @@ class Block(composites.Composite):
 
     def isPlenumPin(self, c):
         """Return True if the specified component is a plenum pin."""
-        # This assumes that anything with the GAP flag will have a valid 'id' dimension. If that
-        # were not the case, then we would need to protect the call to getDimension with a
-        # try/except
+        # This assumes that anything with the GAP flag will have a valid 'id' dimension.
         cIsCenterGapGap = isinstance(c, components.Component) and c.hasFlags(Flags.GAP) and c.getDimension("id") == 0
         return self.hasFlags([Flags.PLENUM, Flags.ACLP]) and cIsCenterGapGap
 
@@ -1148,19 +1151,17 @@ class Block(composites.Composite):
         Returns
         -------
         pitch : float or None
-            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch,
-            returns None
+            Hex pitch in cm, if well-defined. If there is no clear component for determining pitch, returns None
         component : Component or None
-            Component that has the max pitch, if returnComp == True. If no component is found to
-            define the pitch, returns None
+            Component that has the max pitch, if returnComp == True. If no component is found to define the pitch,
+            returns None.
 
         Notes
         -----
-        The block stores a reference to the component that defines the pitch, making the assumption
-        that while the dimensions can change, the component containing the largest dimension will
-        not. This lets us skip the search for largest component. We still need to ask the largest
-        component for its current dimension in case its temperature changed, or was otherwise
-        modified.
+        The block stores a reference to the component that defines the pitch, making the assumption that while the
+        dimensions can change, the component containing the largest dimension will not. This lets us skip the search for
+        largest component. We still need to ask the largest component for its current dimension in case its temperature
+        changed, or was otherwise modified.
 
         See Also
         --------
@@ -1613,6 +1614,18 @@ class Block(composites.Composite):
             return heights[myIndex]
 
         raise AttributeError(f"No ancestor of {self} has blueprints")
+
+    def sort(self):
+        """Sort the children on this block.
+
+        If there is a spatial grid, the previous pin indices on the components
+        is now invalid because the ordering of :meth:`getPinLocations` has maybe
+        changed since the ordering of components has changed. Reassign the pin
+        indices via :meth:`assignPinIndices` accordingly.
+        """
+        super().sort()
+        if self.spatialGrid is not None:
+            self.assignPinIndices()
 
 
 class HexBlock(Block):
@@ -2254,8 +2267,6 @@ class HexBlock(Block):
         wettedPinComponentFlags = (
             Flags.CLAD,
             Flags.WIRE,
-            Flags.CLAD | Flags.DEPLETABLE,
-            Flags.WIRE | Flags.DEPLETABLE,
         )
 
         # flags pertaining to components where both the interior and exterior are wetted
@@ -2272,8 +2283,8 @@ class HexBlock(Block):
 
         wettedPinComponents = []
         for flag in wettedPinComponentFlags:
-            c = self.getComponent(flag, exact=True)
-            wettedPinComponents.append(c) if c else None
+            comps = self.getComponents(flag)
+            wettedPinComponents.extend(comps)
 
         wettedHollowCircleComponents = []
         wettedHollowHexComponents = []
@@ -2285,7 +2296,6 @@ class HexBlock(Block):
                 wettedHollowCircleComponents.append(c) if c else None
 
         # calculate wetted perimeters according to their geometries
-
         # hollow hexagon = 6 * ip / sqrt(3)
         wettedHollowHexagonPerimeter = 0.0
         for c in wettedHollowHexagonComponents:
@@ -2301,8 +2311,8 @@ class HexBlock(Block):
                     1.0,
                     math.pi * c.getDimension("helixDiameter") / c.getDimension("axialPitch"),
                 )
-            wettedPinPerimeter += c.getDimension("od") * correctionFactor
-        wettedPinPerimeter *= self.getNumPins() * math.pi
+            compWettedPerim = c.getDimension("od") * correctionFactor * c.getDimension("mult") * math.pi
+            wettedPinPerimeter += compWettedPerim
 
         # hollow circle = (id + od) * pi
         wettedHollowCirclePerimeter = 0.0
