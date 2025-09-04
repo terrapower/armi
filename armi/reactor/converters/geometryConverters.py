@@ -1118,7 +1118,6 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
 
     def __init__(self, cs=None):
         GeometryChanger.__init__(self, cs)
-        self.listOfCoreVolIntegratedParamsToScale = []
         self.listOfAssemblyVolIntegratedParamsToScale = []
         self.listOfBlockVolIntegratedParamsToScale = []
 
@@ -1225,14 +1224,9 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
                     (self.listOfAssemblyVolIntegratedParamsToScale, _) = _generateListOfParamsToScale(
                         self._sourceReactor.core.getFirstAssembly(), paramsToScaleSubset=[]
                     )
-                if not self.listOfCoreVolIntegratedParamsToScale:
-                    (self.listOfCoreVolIntegratedParamsToScale, _) = _generateListOfParamsToScale(
-                        self._sourceReactor.core, paramsToScaleSubset=[]
-                    )
                 self._scaleVolIntegratedParams(a, self.listOfAssemblyVolIntegratedParamsToScale, "up")
                 for b in a:
                     self._scaleVolIntegratedParams(b, self.listOfBlockVolIntegratedParamsToScale, "up")
-        self._scaleVolIntegratedParams(self._sourceReactor.core, self.listOfCoreVolIntegratedParamsToScale, "up")
 
         # set domain after expanding, because it isn't actually full core until it's
         # full core; setting the domain causes the core to clear its caches.
@@ -1264,7 +1258,6 @@ class ThirdCoreHexToFullCoreChanger(GeometryChanger):
             # change the central assembly params back to 1/3
             a = r.core.getAssemblyWithStringLocation("001-001")
             runLog.extra(f"Modifying parameters in central assembly {a} to revert from full to 1/3 core")
-            self._scaleVolIntegratedParams(r.core, self.listOfCoreVolIntegratedParamsToScale, "down")
             self._scaleVolIntegratedParams(a, self.listOfAssemblyVolIntegratedParamsToScale, "down")
             for b in a:
                 self._scaleVolIntegratedParams(b, self.listOfBlockVolIntegratedParamsToScale, "down")
