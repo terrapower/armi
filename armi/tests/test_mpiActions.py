@@ -211,6 +211,7 @@ class MpiIterTests(unittest.TestCase):
             self.assertIn("Scanning the ISOTXS library", mock.getStdout())
 
     def test_invokeAsMaster(self):
+        """Verify that calling invokeAsMaster calls invoke."""
         self.assertEqual(7, MockMpiAction.invokeAsMaster(1, 2, 3))
 
 
