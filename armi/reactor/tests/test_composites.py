@@ -662,19 +662,24 @@ class TestCompositeTree(unittest.TestCase):
             otherBlock < self.block
 
     def test_getAncestorWithFlags(self):
-        c = self.block.getAncestorWithFlags(Flags.FUEL)
-        self.assertIsNone(c)
+        # this test block is not part of an assembly, so it should not have a parent/ancestor
+        parent = self.block.getAncestorWithFlags(Flags.FUEL)
+        self.assertIsNone(parent)
 
-        comp = self.block.getFirstComponent()
-        c = comp.getAncestorWithFlags(Flags.FUEL)
-        self.assertIsNone(c)
+        # pick a component that is not part of a fuel composite, so it should not have a fuel ancestor
+        grandchild = self.block.getFirstComponent()
+        child = grandchild.getAncestorWithFlags(Flags.FUEL)
+        self.assertIsNone(child)
 
-        compos = self.block.getChildrenWithFlags(Flags.FUEL)[0]
-        compon = compos.getFirstComponent()
-        c = compon.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(c, compon)
-        c = compos.getAncestorWithFlags(Flags.FUEL)
-        self.assertEqual(c, compos)
+        # test the usual case: get a ancestor with the fuel flag
+        child = self.block.getChildrenWithFlags(Flags.FUEL)[0]
+        grandchild = child.getFirstComponent()
+        child1 = grandchild.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child1, grandchild)
+
+        # default case: the only ancestor with the fuel flag is the composite itself, so return that
+        child2 = child.getAncestorWithFlags(Flags.FUEL)
+        self.assertEqual(child2, child)
 
     def test_changeNDensByFactor(self):
         c = deepcopy(self.block.getComponents(Flags.FUEL)[0])
