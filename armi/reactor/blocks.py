@@ -1582,7 +1582,7 @@ class Block(composites.Composite):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """Returns fissile mass fraction of Uranium."""
+        """Returns fissile mass fraction of uranium."""
         U = elements.bySymbol["U"]
         compNucs = set(self.getNuclides())
         uraniumNucs = set(nuc.name for nuc in U.nuclides)
