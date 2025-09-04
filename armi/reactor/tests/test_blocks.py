@@ -1251,7 +1251,8 @@ class Block_TestCase(unittest.TestCase):
             self.block.getMicroSuffix()
 
     def test_getUraniumMassEnrich(self):
-        self.block.setNumberDensity("U234", 1.0E-4)
+        fuel = self.block.getComponent(Flags.FUEL)
+        fuel.setNumberDensity("U234", 1.0E-4)
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
@@ -1263,13 +1264,16 @@ class Block_TestCase(unittest.TestCase):
         self.assertAlmostEqual(cur, ref, places=places)
 
     def test_getUraniumNumEnrich(self):
+        fuel = self.block.getComponent(Flags.FUEL)
+        fuel.setNumberDensity("U234", 1.0E-4)
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
 
         u8 = self.block.getNumberDensity("U238")
         u5 = self.block.getNumberDensity("U235")
-        ref = u5 / (u8 + u5)
+        u4 = self.block.getNumberDensity("U234")
+        ref = u5 / (u8 + u5 + u4)
 
         self.assertAlmostEqual(cur, ref, places=6)
 
