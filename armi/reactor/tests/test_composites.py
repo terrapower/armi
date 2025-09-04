@@ -337,14 +337,14 @@ class TestCompositePattern(unittest.TestCase):
             self.assertFalse(self.container.hasFlags(t, exact=True))
 
     def test_calcTotalParam(self):
-        refMinTotal = 21.0
+        minSerialNumberCount = 21.0
         kids = self.container.getChildren()
 
         tot = self.container.calcTotalParam("serialNum", kids)
-        self.assertGreaterEqual(tot, refMinTotal)
+        self.assertGreaterEqual(tot, minSerialNumberCount)
 
         tot = self.container.calcTotalParam("serialNum", kids, calcBasedOnFullObj=True)
-        self.assertGreaterEqual(tot, refMinTotal)
+        self.assertGreaterEqual(tot, minSerialNumberCount)
 
         tot = self.container.calcTotalParam("serialNum", kids, typeSpec=Flags.FUEL)
         self.assertEqual(tot, 0.0)
