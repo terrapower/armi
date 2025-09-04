@@ -1252,7 +1252,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getUraniumMassEnrich(self):
         fuel = self.block.getComponent(Flags.FUEL)
-        fuel.setNumberDensity("U234", 1.0E-4)
+        fuel.setNumberDensity("U234", 1.0e-4)
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
@@ -1265,7 +1265,7 @@ class Block_TestCase(unittest.TestCase):
 
     def test_getUraniumNumEnrich(self):
         fuel = self.block.getComponent(Flags.FUEL)
-        fuel.setNumberDensity("U234", 1.0E-4)
+        fuel.setNumberDensity("U234", 1.0e-4)
         self.block.adjustUEnrich(0.25)
 
         cur = self.block.getUraniumNumEnrich()
