@@ -2639,12 +2639,16 @@ blocks:
             Tinput: 600
             Thot: 450
             latticeIDs: [1]
+        # Smaller pin so it gets placed earlier in the sorting
         fuel 2:
             <<: *fuel_def
+            id: 0.6
             latticeIDs: [2]
             flags: secondary fuel
         clad 2:
             <<: *clad_def
+            id: 0.62
+            od: 0.65
             latticeIDs: [2]
         duct:
             shape: Hexagon
@@ -2788,6 +2792,17 @@ nuclide flags:
         self.assertTrue(nonFuel.getPinLocations())
         for c in nonFuel.iterComponents(Flags.CLAD):
             self.assertIsNotNone(c.getPinIndices())
+
+    def test_reassignOnSort(self):
+        """Show the pin indices are reassigned when the block is sorted."""
+        # Make sure we get new block-level pin locations or else this test is meaningless
+        with patch.object(self.block, "assignPinIndices") as patchAssign:
+            self.block.sort()
+        newPinLocations = self.block.getPinLocations()
+        self.assertNotEqual(newPinLocations, self.allLocations, msg="Test requires new pin locations post-sort.")
+        # Make sure we called it. Other tests confirm that assignPinIndices is correct.
+        # this makes sure we've called it where we want to call it
+        patchAssign.assert_called_once()
 
 
 class TestHexBlockOrientation(unittest.TestCase):
