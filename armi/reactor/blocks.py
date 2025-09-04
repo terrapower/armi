@@ -30,6 +30,7 @@ from typing import Callable, ClassVar, Optional, Tuple, Type
 import numpy as np
 
 from armi import nuclideBases, runLog
+from armi.nucDirectory import elements
 from armi.bookkeeping import report
 from armi.nucDirectory import nucDir
 from armi.nuclearDataIO import xsCollections
@@ -1582,12 +1583,15 @@ class Block(composites.Composite):
         return b10 / total
 
     def getUraniumMassEnrich(self):
-        """Returns U-235 mass fraction assuming U-235 and U-238 only."""
+        """Returns U-235 mass fraction."""
         u5 = self.getMass("U235")
+        U = elements.bySymbol["U"]
+        blockNucs = self.getNuclides()
+        uraniumNucsPresent = [nuc.name for nuc in U.nuclides if nuc.name in blockNucs]
         if u5 < 1e-10:
             return 0.0
-        u8 = self.getMass("U238")
-        return u5 / (u8 + u5)
+        totalU = self.getMass(uraniumNucsPresent)
+        return u5 / totalU
 
     def getInputHeight(self) -> float:
         """Determine the input height from blueprints.
