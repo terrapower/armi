@@ -1583,16 +1583,11 @@ class Block(composites.Composite):
 
     def getUraniumMassEnrich(self):
         """Returns fissile mass fraction of uranium."""
-        U = elements.bySymbol["U"]
-        compNucs = set(self.getNuclides())
-        uraniumNucs = set(nuc.name for nuc in U.nuclides)
-        uraniumNucsPresent = compNucs & uraniumNucs
-        fissileNucsPresent = [nucName for nucName in uraniumNucsPresent if nuclideBases.byName[nucName].isFissile()]
-        fissileU = self.getMass(fissileNucsPresent)
-        totalU = self.getMass(list(uraniumNucsPresent))
+        totalU = self.getMass("U")
         if totalU < 1e-10:
             return 0.0
 
+        fissileU = self.getMass(["U233", "U235"])
         return fissileU / totalU
 
     def getInputHeight(self) -> float:
