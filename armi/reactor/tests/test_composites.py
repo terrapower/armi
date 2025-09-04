@@ -827,9 +827,7 @@ class TestCompositeTree(unittest.TestCase):
         self.assertAlmostEqual(c.getMass(), 7.186784402639666, delta=1e-6)
 
         # test edge case were zero density
-        for nucName in c.getMassFracs().keys():
-            c.setNumberDensity(nucName, 0.0)
-
+        c.setNumberDensities({})
         with self.assertRaises(ValueError):
             c.setMassFrac("U235", 0.98)
 
