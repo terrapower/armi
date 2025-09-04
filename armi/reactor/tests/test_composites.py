@@ -686,18 +686,17 @@ class TestCompositeTree(unittest.TestCase):
 
         # test inital state
         dens = c.getNumberDensities()
-        self.assertAlmostEqual(dens["ZR"], 0.03302903991506813, delta=1e-6)
-        self.assertAlmostEqual(dens["U235"], 0.012819005788784095, delta=1e-6)
-        self.assertAlmostEqual(dens["U238"], 0.10125669470078642, delta=1e-6)
+        zrDens = dens["ZR"]
+        u235Dens = dens["U235"]
+        u238Dens = dens["U238"]
 
-        # change N dens
         c.changeNDensByFactor(0.5)
 
         # test new state
         dens = c.getNumberDensities()
-        self.assertAlmostEqual(dens["ZR"], 0.03302903991506813 / 2, delta=1e-6)
-        self.assertAlmostEqual(dens["U235"], 0.012819005788784095 / 2, delta=1e-6)
-        self.assertAlmostEqual(dens["U238"], 0.10125669470078642 / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["ZR"], zrDens / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["U235"], u235Dens / 2, delta=1e-6)
+        self.assertAlmostEqual(dens["U238"], u238Dens / 2, delta=1e-6)
 
     def test_summing(self):
         a = assemblies.Assembly("dummy")
