@@ -1565,11 +1565,14 @@ class ArmiObject(metaclass=CompositeModelType):
 
     def getUraniumNumEnrich(self):
         """Returns U-235 number fraction."""
-        u8 = self.getNumberDensity("U238")
-        if u8 < 1e-10:
+        U = elements.bySymbol["U"]
+        uraniumNucsPresent = [nuc.name for nuc in U.nuclides if nuc.name in self.getNuclides()]
+        totalU = sum(self.getNuclideNumberDensities(uraniumNucsPresent))
+        if totalU < 1e-10:
             return 0.0
         u5 = self.getNumberDensity("U235")
-        return u5 / (u8 + u5)
+
+        return u5 / totalU
 
     def calcTotalParam(
         self,
