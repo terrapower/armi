@@ -192,11 +192,8 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(hist["chargeTime"][(2, 0)], 2)
 
         # test edge case: ancient DB file
-        v = self.db._versionMinor
-        self.db._versionMinor = 3
-        with self.assertRaises(ValueError):
+        with patch.object(self.db, "_versionMinor", 3), self.assertRaises(ValueError):
             self.db.getHistoriesByLocation([testBlock], params=["serialNum"], timeSteps=[(0, 0), (1, 0)])
-        self.db._versionMinor = v
 
     def test_fullCoreOnDbLoad(self):
         """Test we can expand a reactor to full core when loading from DB via settings."""
