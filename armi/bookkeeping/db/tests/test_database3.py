@@ -950,6 +950,13 @@ grids:
 class TestSimplestDatabaseItems(unittest.TestCase):
     """The tests here are simple, direct tests of Database, that don't need a DatabaseInterface or Reactor."""
 
+    def setUp(self):
+        self.td = TemporaryDirectoryChanger()
+        self.td.__enter__()
+
+    def tearDown(self):
+        self.td.__exit__(None, None, None)
+
     def test_open(self):
         dbPath = "test_open.h5"
         db = Database(dbPath, "w")
