@@ -1277,6 +1277,10 @@ class Block_TestCase(unittest.TestCase):
         cur = self.block.getUraniumNumEnrich()
         self.assertEqual(cur, 0.0)
 
+        self.block.setNumberDensity("U238", 0.0)
+        cur = self.block.getUraniumNumEnrich()
+        self.assertEqual(cur, 0.0)
+
     def test_getNumberOfAtoms(self):
         self.block.clearNumberDensities()
         refDict = {
