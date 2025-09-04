@@ -1251,6 +1251,7 @@ class Block_TestCase(unittest.TestCase):
             self.block.getMicroSuffix()
 
     def test_getUraniumMassEnrich(self):
+        self.block.setNumberDensity("U234", 1.0E-4)
         self.block.adjustUEnrich(0.25)
 
         ref = 0.25
