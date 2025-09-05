@@ -37,6 +37,7 @@ import sphinx_rtd_theme  # noqa: F401
 from docutils import nodes, statemachine
 from docutils.parsers.rst import Directive, directives
 from sphinx.domains.python import PythonDomain
+from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
 from sphinx_needs.api import add_dynamic_function
 
 from doc.getTestResults import getTestResult
@@ -331,8 +332,6 @@ exclude_patterns = [
     "**_reqs.rst",  # needed so included reqs files render
     ".DS_Store",
     "_build",
-    "gallery/README.rst",
-    "gallery/**/README.rst",
     "gallery/**/*.ipynb",  # prevent sphinx-gallery from causing duplicate source file errors
     "gallery/**/*.json",
     "gallery/**/*.md5",
@@ -455,8 +454,6 @@ latex_appendices = []
 latex_domain_indices = ["py-modindex"]
 
 # Configuration for the sphinx-gallery
-from sphinx_gallery.sorting import ExplicitOrder, FileNameSortKey
-
 sphinx_gallery_conf = {
     "examples_dirs": ["gallery-src"],
     "filename_pattern": re.escape(os.sep) + "run_",
@@ -474,10 +471,10 @@ sphinx_gallery_conf = {
     "default_thumb_file": os.path.join(STATIC_DIR, "TerraPowerLogo.png"),
 }
 
-suppress_warnings = ["autoapi.python_import_resolution"]
+suppress_warnings = ["autoapi.python_import_resolution", "config.cache"]
 
-# filter out this warning which shows up in sphinx-gallery builds. This is suggested in the
-# sphinx-gallery example but doesn't actually work?
+# Filter out this warning which shows up in sphinx-gallery builds. This is suggested in the sphinx-gallery example but
+# doesn't actually work?
 warnings.filterwarnings(
     "ignore",
     category=UserWarning,
