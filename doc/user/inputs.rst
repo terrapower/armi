@@ -399,10 +399,10 @@ Extra rotations therefore:
 * execute after any algorithmic rotation routines.
 
 A cascade with no final destination defaults to discharging the assembly to
-the spent fuel pool ``SFP``. Assemblies can also be removed from the model
-entirely by ending with ``ExCore``. When an assembly is sent to the ``SFP`` it
-is only retained in memory if the ``trackAssems`` setting is True; ``ExCore`` always
-deletes the assembly.
+``ExCore``. Assemblies can be retained in the model by ending the cascade with
+``SFP``. When ``SFP`` is specified, the discharged assembly is stored in the
+spent fuel pool even if the ``trackAssems`` setting is ``False``; ``ExCore``
+always deletes the assembly.
 For example
    
 ..  code:: yaml

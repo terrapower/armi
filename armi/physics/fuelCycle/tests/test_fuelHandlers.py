@@ -36,6 +36,7 @@ from armi.physics.fuelCycle.settings import (
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
     CONF_SHUFFLE_SEQUENCE_FILE,
 )
+from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
@@ -677,7 +678,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "SFP"),
+                AssemblyMove("006-005", "ExCore"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
                 AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("010-046", "011-046"),
@@ -689,7 +690,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "SFP"),
+                AssemblyMove("006-005", "ExCore"),
                 AssemblyMove("009-045", "009-045", rotation=60.0),
                 AssemblyMove("LoadQueue", "010-046", [0.0, 0.12, 0.14, 0.15, 0.0], "outer fuel"),
                 AssemblyMove("010-046", "011-046"),
@@ -701,7 +702,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 AssemblyMove("009-045", "008-004"),
                 AssemblyMove("008-004", "007-001"),
                 AssemblyMove("007-001", "006-005"),
-                AssemblyMove("006-005", "SFP"),
+                AssemblyMove("006-005", "ExCore"),
             ],
         }
         self.assertEqual(moves, expected)
@@ -724,7 +725,10 @@ class TestFuelHandler(FuelHandlerTestHelper):
             locs = ["009-045", "008-004", "007-001", "006-005"]
             before = {loc: self.r.core.getAssemblyWithStringLocation(loc).getName() for loc in locs}
             self.r.p.cycle = 1
-            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname})
+            self.o.cs = self.o.cs.modified(
+                newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False}
+            )
+            self.r.core._trackAssems = False
             fh.outage()
 
             fresh = self.r.core.getAssemblyWithStringLocation("008-004")
@@ -743,7 +747,32 @@ class TestFuelHandler(FuelHandlerTestHelper):
                 self.r.core.getAssemblyWithStringLocation("006-005").getName(),
                 before["007-001"],
             )
-            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before["006-005"]))
+            self.assertIsNone(self.r.excore["sfp"].getAssembly(before["006-005"]))
+        finally:
+            os.remove(fname)
+
+    def test_yamlSfpOverridesTrackAssems(self):
+        fh = fuelHandlers.FuelHandler(self.o)
+        yaml_text = """
+        sequence:
+            1:
+                - cascade: ["igniter fuel", "009-045", "SFP"]
+                  fuelEnrichment: [0, 0.12, 0.14, 0.15, 0]
+        """
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as tf:
+            tf.write(yaml_text)
+            fname = tf.name
+        try:
+            before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
+            self.r.p.cycle = 1
+            self.o.cs = self.o.cs.modified(
+                newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False}
+            )
+            self.r.core._trackAssems = False
+            fh.outage()
+
+            self.assertFalse(self.r.core._trackAssems)
+            self.assertIsNotNone(self.r.excore["sfp"].getAssembly(before))
         finally:
             os.remove(fname)
 
@@ -756,6 +785,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             _,
             _,
             loadNames,
+            _,
             rotations,
             _,
         ) = fh.processMoveList(moves[2])
@@ -769,7 +799,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
     def test_processMoveList_yaml(self):
         fh = fuelHandlers.FuelHandler(self.o)
         moves, _ = fh.readMovesYaml("armiRun-SHUFFLES.yaml")
-        loadChains, loopChains, enriches, loadTypes, loadNames, rotations, _ = fh.processMoveList(moves[1])
+        loadChains, loopChains, enriches, loadTypes, loadNames, _, rotations, _ = fh.processMoveList(moves[1])
         self.assertEqual(len(loadChains), 2)
         self.assertTrue(any(enriches))
         self.assertTrue(rotations)

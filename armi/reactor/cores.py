@@ -347,7 +347,7 @@ class Core(composites.Composite):
         for a in self.getAssemblies(includeAll=True):
             a.lastLocationLabel = a.getLocation()
 
-    def removeAssembly(self, a1, discharge=True):
+    def removeAssembly(self, a1, discharge=True, addToSFP=False):
         """
         Takes an assembly and puts it out of core.
 
@@ -357,11 +357,14 @@ class Core(composites.Composite):
             The assembly to remove
         discharge : bool, optional
             Discharge the assembly, including adding it to the SFP. Default: True
+        addToSFP : bool, optional
+            Store the discharged assembly in the SFP regardless of the
+            ``trackAssems`` setting. Default: False
 
         Notes
         -----
         Please expect this method will delete your assembly (instead of moving it into a Spent Fuel
-        Pool) unless you set the ``trackAssems`` to True in your settings file.
+        Pool) unless you set ``trackAssems`` to True or ``addToSFP`` is set to True.
 
         Originally, this held onto all assemblies in the Spend Fuel Pool. However, they use memory.
         And it is possible to have the history interface record only the parameters you need.
@@ -384,7 +387,7 @@ class Core(composites.Composite):
         a1.p.dischargeTime = self.r.p.time
         self.remove(a1)
 
-        if discharge and self._trackAssems:
+        if discharge and (self._trackAssems or addToSFP):
             if self.parent.excore.get("sfp") is not None:
                 self.parent.excore.sfp.add(a1)
             else:
