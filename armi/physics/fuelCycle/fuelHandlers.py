@@ -67,7 +67,7 @@ class AssemblyMove:
     assemType : str, optional
         Type of assembly that is moving.
     nameAtDischarge : str, optional
-        Name of the assembly moving (for SFP/ExCore interactions).
+        Name of the assembly moving (for SFP/delete interactions).
     rotation : float, optional
         Degrees of manual rotation to apply after shuffling.
     """
@@ -107,7 +107,7 @@ class FuelHandler:
     with the ``fuelHandler`` setting. In that file, subclass this object.
     """
 
-    DISCHARGE_LOCS = frozenset({"SFP", "ExCore"})
+    DISCHARGE_LOCS = frozenset({"SFP", "Delete"})
     """Special strings to indicate an assembly is no longer in the core."""
 
     def __init__(self, operator):
@@ -1133,8 +1133,8 @@ class FuelHandler:
         r"""
         Read a shuffle file in YAML format.
 
-        A cascade with no explicit final location discharges the assembly to
-        ``ExCore`` by default.
+        A cascade with no explicit final location deletes the assembly
+        by default.
 
         Parameters
         ----------
@@ -1230,7 +1230,7 @@ class FuelHandler:
                     for i in range(len(locs) - 1):
                         moves[cycle].append(AssemblyMove(locs[i], locs[i + 1]))
                     if locs[-1] not in FuelHandler.DISCHARGE_LOCS:
-                        moves[cycle].append(AssemblyMove(locs[-1], "ExCore"))
+                        moves[cycle].append(AssemblyMove(locs[-1], "Delete"))
 
                 elif "misloadSwap" in action:
                     swap = action["misloadSwap"]
@@ -1389,7 +1389,7 @@ class FuelHandler:
             loadNames : list[Optional[str]]
                 Assembly names of loads (e.g., from SFP).
             dischargeDests : list[str]
-                Final destinations for discharged assemblies.
+                Final destinations for discharged assemblies (e.g., ``SFP`` or ``Delete``).
             rotations : list[tuple[str, float]]
                 Manual rotations to apply (location, degrees).
             alreadyDone : list[str]
@@ -1414,7 +1414,7 @@ class FuelHandler:
         dischargeDests = []  # final destinations for discharged assemblies
         rotations = []
 
-        # first handle all charge/discharge chains by looking for things going to SFP/ExCore
+        # first handle all charge/discharge chains by looking for things going to SFP/Delete
         for move in moveList:
             fromLoc = move.fromLoc
             toLoc = move.toLoc
@@ -1493,7 +1493,7 @@ class FuelHandler:
             The assembly names of assemblies that get brought into the core (useful for pulling out
             of SFP for round 2, etc.)
         dischargeDests : list
-            Final destination for each load chain (e.g., ``SFP`` or ``ExCore``)
+            Final destination for each load chain (e.g., ``SFP`` or ``Delete``)
 
         See Also
         --------

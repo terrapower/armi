@@ -157,7 +157,7 @@ class FuelHandlerInterface(interfaces.Interface):
             if movesThisCycle is not None:
                 for move in movesThisCycle:
                     enrichLine = " ".join(["{0:.8f}".format(enrich) for enrich in move.enrichList])
-                    if move.fromLoc in ["ExCore", "SFP"]:
+                    if move.fromLoc in ["Delete", "SFP"]:
                         # this is a re-entering assembly. Give extra info so repeat shuffles can handle it
                         out.write(
                             "{0} moved to {1} with assembly type {2} ANAME={4} with enrich list: {3}\n".format(
