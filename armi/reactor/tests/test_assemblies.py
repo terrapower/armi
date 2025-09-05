@@ -327,7 +327,7 @@ class Assembly_TestCase(unittest.TestCase):
     def test_scaleParamsWhenMoved(self):
         """Volume integrated parameters must be scaled when an assembly is placed on a core boundary."""
         with patch.object(self.assembly.p.paramDefs["chargeFis"], "location", ParamLocation.VOLUME_INTEGRATED):
-            # patch makes all the parameters look volume integrated
+            # patch makes chargeFis look volume integrated
             assemblyParams = {"chargeFis": 6.0, "chargeTime": 2}
             blockParams = {
                 # volume integrated parameters
