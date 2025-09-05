@@ -2172,8 +2172,7 @@ class Core(composites.Composite):
 
     def buildManualZones(self, cs):
         """
-        Build the Zones that are defined in the given Settings, in the
-        `zoneDefinitions` or `zonesFile` case setting.
+        Build the Zones that are defined in the given Settings, in the `zoneDefinitions` or `zonesFile` case setting.
 
         Parameters
         ----------
@@ -2237,8 +2236,7 @@ class Core(composites.Composite):
     ) -> Iterator[blocks.Block]:
         """Iterate over the blocks in the core.
 
-        Useful for operations that just want to find all the blocks in the core with light
-        filtering.
+        Useful for operations that just want to find all the blocks in the core with light filtering.
 
         Parameters
         ----------
@@ -2257,30 +2255,29 @@ class Core(composites.Composite):
 
         Examples
         --------
-        Iterate over all fuel blocks::
-
         >>> for b in r.core.iterBlocks(Flags.FUEL):
         ...     pass
 
         See Also
         --------
-        :meth:`getBlocks` has more control over what is included in the returned list
-        including looking at the spent fuel pool and assemblies that may not exist now
-        but existed at BOL (via :meth:`getAssemblies`). But if you're just interested in
-        the blocks in the core now, maybe with a flag attached to that block, this is what
-        you should use.
+        The :py:meth:`getBlocks` has more control over what is included in the returned list including looking at the
+        spent fuel pool and assemblies that may not exist now but existed at BOL (via :meth:`getAssemblies`). But if
+        you're just interested in the blocks in the core now, maybe with a flag attached to that block, this is what you
+        should use.
 
         Notes
         -----
-        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If
-        this is not the case, consider using :meth:`iterChildren`.
+        Assumes your composite tree is structured ``Core`` -> ``Assembly`` -> ``Block``. If this is not the case,
+        consider using :meth:`iterChildren`.
         """
         if typeSpec is not None:
             typeChecker = lambda b: b.hasFlags(typeSpec, exact=exact)
         else:
             typeChecker = lambda _: True
+
         if predicate is not None:
             blockChecker = lambda b: typeChecker(b) and predicate(b)
         else:
             blockChecker = typeChecker
+
         return self.iterChildren(generationNum=2, predicate=blockChecker)
