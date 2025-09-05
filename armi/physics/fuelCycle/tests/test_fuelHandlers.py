@@ -36,7 +36,6 @@ from armi.physics.fuelCycle.settings import (
     CONF_RUN_LATTICE_BEFORE_SHUFFLING,
     CONF_SHUFFLE_SEQUENCE_FILE,
 )
-from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
 from armi.physics.neutronics.crossSectionGroupManager import CrossSectionGroupManager
 from armi.physics.neutronics.latticePhysics.latticePhysicsInterface import (
     LatticePhysicsInterface,
@@ -47,6 +46,7 @@ from armi.reactor.parameters import ParamLocation
 from armi.reactor.tests import test_reactors
 from armi.reactor.zones import Zone
 from armi.settings import caseSettings
+from armi.settings.fwSettings.globalSettings import CONF_TRACK_ASSEMS
 from armi.tests import TEST_ROOT, ArmiTestHelper, mockRunLogs
 from armi.utils import directoryChangers
 from armi.utils.customExceptions import InputError
@@ -725,9 +725,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
             locs = ["009-045", "008-004", "007-001", "006-005"]
             before = {loc: self.r.core.getAssemblyWithStringLocation(loc).getName() for loc in locs}
             self.r.p.cycle = 1
-            self.o.cs = self.o.cs.modified(
-                newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False}
-            )
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False})
             self.r.core._trackAssems = False
             fh.outage()
 
@@ -765,9 +763,7 @@ class TestFuelHandler(FuelHandlerTestHelper):
         try:
             before = self.r.core.getAssemblyWithStringLocation("009-045").getName()
             self.r.p.cycle = 1
-            self.o.cs = self.o.cs.modified(
-                newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False}
-            )
+            self.o.cs = self.o.cs.modified(newSettings={CONF_SHUFFLE_SEQUENCE_FILE: fname, CONF_TRACK_ASSEMS: False})
             self.r.core._trackAssems = False
             fh.outage()
 

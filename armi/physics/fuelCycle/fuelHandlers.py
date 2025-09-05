@@ -1449,7 +1449,9 @@ class FuelHandler:
                 continue
             else:
                 # normal move
-                chain, _enrichList, _assemType, _loadAssemName, _dest = FuelHandler.trackChain(moveList, startingAt=fromLoc)
+                chain, _enrichList, _assemType, _loadAssemName, _dest = FuelHandler.trackChain(
+                    moveList, startingAt=fromLoc
+                )
                 loopChains.append(chain)
                 alreadyDone.extend(chain)
 
@@ -1466,9 +1468,7 @@ class FuelHandler:
             alreadyDone,
         )
 
-    def doRepeatShuffle(
-        self, loadChains, loopChains, enriches, loadChargeTypes, loadNames, dischargeDests
-    ):
+    def doRepeatShuffle(self, loadChains, loopChains, enriches, loadChargeTypes, loadNames, dischargeDests):
         r"""
         Actually does the fuel movements required to repeat a shuffle order.
 
