@@ -259,8 +259,7 @@ class Material:
 
         Notes
         -----
-        For a detailed description of the linear expansion methodology, see
-        :ref:`thermalExpansion` in the documentation.
+        For a detailed description of the linear expansion methodology, see "thermalExpansion" in the documentation.
 
         Parameters
         ----------
